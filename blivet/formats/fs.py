@@ -31,14 +31,14 @@ import os
 import sys
 import tempfile
 import selinux
-from pyanaconda import isys
 
 from ..errors import *
 from . import DeviceFormat, register_device_format
-from pyanaconda import iutil
-from pyanaconda.flags import flags
+from .. import util
+from .. import platform
+from ..flags import flags
 from parted import fileSystemType
-from pyanaconda.anaconda_log import log_method_call
+from ..storage_log import log_method_call
 
 import logging
 log = logging.getLogger("storage")
@@ -117,15 +117,12 @@ class FS(DeviceFormat):
     _labelfs = ""                        # labeling utility
     _fsck = ""                           # fs check utility
     _fsckErrors = {}                     # fs check command error codes & msgs
-    _migratefs = ""                      # fs migration utility
     _infofs = ""                         # fs info utility
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
     _defaultLabelOptions = []
     _defaultCheckOptions = []
-    _defaultMigrateOptions = []
     _defaultInfoOptions = []
-    _migrationTarget = None
     _existingSizeFields = []
     _fsProfileSpecifier = None           # mkfs option specifying fsprofile
 
@@ -187,8 +184,7 @@ class FS(DeviceFormat):
         d = super(FS, self).dict
         d.update({"mountpoint": self.mountpoint, "size": self._size,
                   "label": self.label, "targetSize": self.targetSize,
-                  "mountable": self.mountable,
-                  "migratable": self.migratable})
+                  "mountable": self.mountable})
         return d
 
     def _setTargetSize(self, newsize):
@@ -259,13 +255,12 @@ class FS(DeviceFormat):
         size = self._size
 
         if self.infofsProg and self.exists and not size and \
-           iutil.find_program_in_path(self.infofsProg):
+           util.find_program_in_path(self.infofsProg):
             try:
                 values = []
                 argv = self._defaultInfoOptions + [ self.device ]
 
-                buf = iutil.execWithCapture(self.infofsProg, argv,
-                                            stderr="/dev/tty5")
+                buf = util.capture_output([self.infofsProg] + argv)
 
                 for line in buf.splitlines():
                     found = False
@@ -368,11 +363,8 @@ class FS(DeviceFormat):
         argv = self._getFormatOptions(options=options)
 
         try:
-            ret = iutil.execWithRedirect(self.mkfsProg,
-                                         argv,
-                                         stdout="/dev/tty5",
-                                         stderr="/dev/tty5")
-        except Exception as e:
+            ret = util.run_program([self.mkfsProg] + argv)
+        except OSError as e:
             raise FormatCreateError(e, self.device)
 
         if ret:
@@ -383,36 +375,6 @@ class FS(DeviceFormat):
 
         if self.label:
             self.writeLabel(self.label)
-
-    def doMigrate(self):
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        if not self.migratable or not self.migrate:
-            return
-
-        if not os.path.exists(self.device):
-            raise FSError("device does not exist")
-
-        argv = self._defaultMigrateOptions[:]
-        argv.append(self.device)
-        try:
-            rc = iutil.execWithRedirect(self.migratefsProg,
-                                        argv,
-                                        stdout = "/dev/tty5",
-                                        stderr = "/dev/tty5")
-        except Exception as e:
-            raise FSMigrateError("filesystem migration failed: %s" % e,
-                                 self.device)
-
-        if rc:
-            raise FSMigrateError("filesystem migration failed: %s" % rc,
-                                 self.device)
-
-        # the other option is to actually replace this instance with an
-        # instance of the new filesystem type.
-        self._type = self.migrationTarget
-        self._mountType = self.migrationTarget
 
     @property
     def resizeArgs(self):
@@ -454,15 +416,12 @@ class FS(DeviceFormat):
             log.info("Minimum size changed, setting targetSize on %s to %s" \
                      % (self.device, self.targetSize))
         try:
-            ret = iutil.execWithRedirect(self.resizefsProg,
-                                         self.resizeArgs,
-                                         stdout="/dev/tty5",
-                                         stderr="/dev/tty5")
-        except Exception as e:
+            ret = util.run_program([self.resizefsProg] + self.resizeArgs)
+        except OSError as e:
             raise FSResizeError(e, self.device)
 
         if ret:
-            raise FSResizeError("resize failed: %s" % ret.rc, self.device)
+            raise FSResizeError("resize failed: %s" % ret, self.device)
 
         self.doCheck()
 
@@ -493,11 +452,8 @@ class FS(DeviceFormat):
             raise FSError("device does not exist")
 
         try:
-            ret = iutil.execWithRedirect(self.fsckProg,
-                                         self._getCheckArgs(),
-                                         stdout="/dev/tty5",
-                                         stderr="/dev/tty5")
-        except Exception as e:
+            ret = util.run_program([self.fsckProg] + self._getCheckArgs())
+        except OSError as e:
             raise FSError("filesystem check failed: %s" % e)
 
         if self._fsckFailed(ret):
@@ -505,23 +461,7 @@ class FS(DeviceFormat):
                     {"type": self.type, "device": self.device}
 
             msg = self._fsckErrorMessage(ret)
-
-            # FIXME:  Bluh?
-            if False:
-                help = _("Errors like this usually mean there is a problem "
-                         "with the filesystem that will require user "
-                         "interaction to repair.  Before restarting "
-                         "installation, reboot to rescue mode or another "
-                         "system that allows you to repair the filesystem "
-                         "interactively.  Restart installation after you "
-                         "have corrected the problems on the filesystem.")
-
-                intf.messageWindow(_("Unrecoverable Error"),
-                                   hdr + "\n\n" + msg + "\n\n" + help,
-                                   custom_icon='error')
-                sys.exit(0)
-            else:
-                raise FSError(hdr + msg)
+            raise FSError(hdr + msg)
 
     def loadModule(self):
         """Load whatever kernel module is required to support this filesystem."""
@@ -532,10 +472,8 @@ class FS(DeviceFormat):
 
         for module in self._modules:
             try:
-                rc = iutil.execWithRedirect("modprobe", [module],
-                                            stdout="/dev/tty5",
-                                            stderr="/dev/tty5")
-            except Exception as e:
+                rc = util.run_program(["modprobe", module])
+            except OSError as e:
                 log.error("Could not load kernel module %s: %s" % (module, e))
                 self._supported = False
                 return
@@ -611,9 +549,9 @@ class FS(DeviceFormat):
         #
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
-        iutil.mkdirChain(chrootedMountpoint)
+        util.makedirs(chrootedMountpoint)
         if flags.selinux:
-            ret = isys.resetFileContext(mountpoint, chroot)
+            ret = util.reset_file_context(mountpoint, chroot)
             log.info("set SELinux context for mountpoint %s to %s" \
                      % (mountpoint, ret))
 
@@ -621,11 +559,13 @@ class FS(DeviceFormat):
         if not options or not isinstance(options, str):
             options = self.options
 
+        if isinstance(self, BindFS):
+            options = "bind," + options
+
         try: 
-            rc = isys.mount(self.device, chrootedMountpoint, 
+            rc = util.mount(self.device, chrootedMountpoint,
                             fstype=self.mountType,
-                            options=options,
-                            bindMount=isinstance(self, BindFS))
+                            options=options)
         except Exception as e:
             raise FSError("mount failed: %s" % e)
 
@@ -633,11 +573,11 @@ class FS(DeviceFormat):
             raise FSError("mount failed: %s" % rc)
 
         if flags.selinux and "ro" not in options.split(","):
-            ret = isys.resetFileContext(mountpoint, chroot)
+            ret = util.reset_file_context(mountpoint, chroot)
             log.info("set SELinux context for newly mounted filesystem "
                      "root at %s to %s" %(mountpoint, ret))
-            isys.setFileContext("%s/lost+found" % mountpoint,
-                                lost_and_found_context, chroot)
+            util.set_file_context("%s/lost+found" % mountpoint,
+                               lost_and_found_context, chroot)
 
         self._mountpoint = chrootedMountpoint
 
@@ -653,7 +593,7 @@ class FS(DeviceFormat):
         if not os.path.exists(self._mountpoint):
             raise FSError("mountpoint does not exist")
 
-        rc = isys.umount(self._mountpoint, removeDir = False)
+        rc = util.umount(self._mountpoint)
         if rc:
             raise FSError("umount failed")
 
@@ -677,9 +617,7 @@ class FS(DeviceFormat):
             raise FSError("device does not exist")
 
         argv = self._getLabelArgs(label)
-        rc = iutil.execWithRedirect(self.labelfsProg,
-                                    argv,
-                                    stderr="/dev/tty5")
+        rc = util.run_program([self.labelfsProg] + argv)
         if rc:
             raise FSError("label failed")
 
@@ -687,14 +625,14 @@ class FS(DeviceFormat):
         self.notifyKernel()
 
     def _getRandomUUID(self):
-        uuid = iutil.execWithCapture("uuidgen", []).strip()
+        uuid = util.capture_output(["uuidgen"]).strip()
         return uuid
 
     def writeRandomUUID(self):
         raise NotImplementedError("FS does not implement writeRandomUUID")
 
     @property
-    def isDirty(self):
+    def needsFSCheck(self):
         return False
 
     @property
@@ -718,18 +656,9 @@ class FS(DeviceFormat):
         return self._labelfs
 
     @property
-    def migratefsProg(self):
-        """ Program used to migrate filesystems of this type. """
-        return self._migratefs
-
-    @property
     def infofsProg(self):
         """ Program used to get information for this filesystem type. """
         return self._infofs
-
-    @property
-    def migrationTarget(self):
-        return self._migrationTarget
 
     @property
     def utilsAvailable(self):
@@ -739,7 +668,7 @@ class FS(DeviceFormat):
             if not prog:
                 continue
 
-            if not iutil.find_program_in_path(prog):
+            if not util.find_program_in_path(prog):
                 return False
 
         return True
@@ -805,34 +734,6 @@ class FS(DeviceFormat):
 
     options = property(_getOptions, _setOptions)
 
-    def _isMigratable(self):
-        """ Can filesystems of this type be migrated? """
-        return bool(self._migratable and self.migratefsProg and
-                    iutil.find_program_in_path(self.migratefsProg) and
-                    self.migrationTarget)
-
-    migratable = property(_isMigratable)
-
-    def _setMigrate(self, migrate):
-        if not migrate:
-            self._migrate = migrate
-            return
-
-        if self.migratable and self.exists:
-            self._migrate = migrate
-        else:
-            raise ValueError("cannot set migrate on non-migratable filesystem")
-
-    migrate = property(lambda f: f._migrate, lambda f,m: f._setMigrate(m))
-
-    @property
-    def type(self):
-        _type = self._type
-        if self.migrate:
-            _type = self.migrationTarget
-
-        return _type
-
     @property
     def mountType(self):
         if not self._mountType:
@@ -897,15 +798,16 @@ class Ext2FS(FS):
     _defaultCheckOptions = ["-f", "-p", "-C", "0"]
     _dump = True
     _check = True
-    _migratable = True
-    _migrationTarget = "ext3"
-    _migratefs = "tune2fs"
-    _defaultMigrateOptions = ["-j"]
     _infofs = "dumpe2fs"
     _defaultInfoOptions = ["-h"]
     _existingSizeFields = ["Block count:", "Block size:"]
     _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
+
+    def __init__(self, *args, **kwargs):
+        self.dirty = False
+        self.errors = False
+        super(Ext2FS, self).__init__(*args, **kwargs)
 
     def _fsckFailed(self, rc):
         for errorCode in self._fsckErrors.keys():
@@ -922,31 +824,14 @@ class Ext2FS(FS):
 
         return msg.strip()
 
-    def doMigrate(self):
-        # if journal already exists skip
-        if isys.ext2HasJournal(self.device):
-            log.info("Skipping migration of %s, has a journal already."
-                     % self.device)
-            return
-
-        FS.doMigrate(self)
-
-    def doFormat(self, *args, **kwargs):
-        FS.doFormat(self, *args, **kwargs)
-
     def writeRandomUUID(self):
         if not self.exists:
             raise FSError("filesystem does not exist")
 
         err = None
         try:
-            rc = iutil.execWithRedirect("tune2fs",
-                                        ["-U",
-                                         "random",
-                                         self.device],
-                                        stdout="/dev/tty5",
-                                        stderr="/dev/tty5")
-        except Exception as e:
+            rc = util.run_program(["tune2fs", "-U", "random", self.device])
+        except OSError as e:
             err = str(e)
         else:
             if rc:
@@ -966,22 +851,22 @@ class Ext2FS(FS):
 
             if self.exists and os.path.exists(self.device):
                 # get block size
-                buf = iutil.execWithCapture(self.infofsProg,
-                                            ["-h", self.device],
-                                            stderr="/dev/tty5")
+                buf = util.capture_output([self.infofsProg, "-h", self.device])
                 for line in buf.splitlines():
                     if line.startswith("Block size:"):
                         blockSize = int(line.split(" ")[-1])
-                        break
+
+                    if line.startswith("Filesystem state:"):
+                        self.dirty = "not clean" in line
+                        self.errors = "with errors" in line
 
                 if blockSize is None:
                     raise FSError("failed to get block size for %s filesystem "
                                   "on %s" % (self.mountType, self.device))
 
                 # get minimum size according to resize2fs
-                buf = iutil.execWithCapture(self.resizefsProg,
-                                            ["-P", self.device],
-                                            stderr="/dev/tty5")
+                buf = util.capture_output([self.resizefsProg,
+                                           "-P", self.device])
                 for line in buf.splitlines():
                     if "minimum size of the filesystem:" not in line:
                         continue
@@ -1012,8 +897,8 @@ class Ext2FS(FS):
         return self._minInstanceSize
 
     @property
-    def isDirty(self):
-        return isys.ext2IsDirty(self.device)
+    def needsFSCheck(self):
+        return self.dirty or self.errors
 
     @property
     def resizeArgs(self):
@@ -1027,9 +912,7 @@ class Ext3FS(Ext2FS):
     """ ext3 filesystem. """
     _type = "ext3"
     _defaultFormatOptions = ["-t", "ext3"]
-    _migratable = False
     _modules = ["ext3"]
-    _defaultMigrateOptions = ["-O", "extents"]
     partedSystem = fileSystemType["ext3"]
 
     # It is possible for a user to specify an fsprofile that defines a blocksize
@@ -1038,6 +921,10 @@ class Ext3FS(Ext2FS):
     # things they should know the implications of their chosen block size.
     _maxSize = 16 * 1024 * 1024
 
+    @property
+    def needsFSCheck(self):
+        return self.errors
+
 register_device_format(Ext3FS)
 
 
@@ -1045,7 +932,6 @@ class Ext4FS(Ext3FS):
     """ ext4 filesystem. """
     _type = "ext4"
     _defaultFormatOptions = ["-t", "ext4"]
-    _migratable = False
     _modules = ["ext4"]
     partedSystem = fileSystemType["ext4"]
 
@@ -1090,9 +976,7 @@ class EFIFS(FATFS):
 
     @property
     def supported(self):
-        from pyanaconda import platform
-        p = platform.getPlatform()
-        return (isinstance(p, platform.EFI) and
+        return (isinstance(platform.platform, platform.EFI) and
                 self.utilsAvailable)
 
 register_device_format(EFIFS)
@@ -1177,7 +1061,7 @@ class GFS2(FS):
     def supported(self):
         """ Is this filesystem a supported type? """
         supported = self._supported
-        if flags.cmdline.has_key("gfs2"):
+        if flags.gfs2:
             supported = self.utilsAvailable
 
         return supported
@@ -1209,7 +1093,7 @@ class JFS(FS):
     def supported(self):
         """ Is this filesystem a supported type? """
         supported = self._supported
-        if flags.cmdline.has_key("jfs"):
+        if flags.jfs:
             supported = self.utilsAvailable
 
         return supported
@@ -1243,7 +1127,7 @@ class ReiserFS(FS):
     def supported(self):
         """ Is this filesystem a supported type? """
         supported = self._supported
-        if flags.cmdline.has_key("reiserfs"):
+        if flags.reiserfs:
             supported = self.utilsAvailable
 
         return supported
@@ -1294,17 +1178,13 @@ class XFS(FS):
             return
 
         try:
-            iutil.execWithRedirect("xfs_freeze", ["-f", self.mountpoint],
-                                   stdout="/dev/tty5", stderr="/dev/tty5",
-                                   root=root)
-        except (RuntimeError, OSError) as e:
+            util.run_program(["xfs_freeze", "-f", self.mountpoint], root=root)
+        except OSError as e:
             log.error("failed to run xfs_freeze: %s" % e)
 
         try:
-            iutil.execWithRedirect("xfs_freeze", ["-u", self.mountpoint],
-                                   stdout="/dev/tty5", stderr="/dev/tty5",
-                                   root=root)
-        except (RuntimeError, OSError) as e:
+            util.run_program(["xfs_freeze", "-u", self.mountpoint], root=root)
+        except OSError as e:
             log.error("failed to run xfs_freeze: %s" % e)
 
 register_device_format(XFS)
@@ -1329,8 +1209,7 @@ class AppleBootstrapFS(HFS):
 
     @property
     def supported(self):
-        from pyanaconda import platform
-        return (isinstance(platform.getPlatform(), platform.NewWorldPPC)
+        return (isinstance(platform.platform, platform.NewWorldPPC)
                 and self.utilsAvailable)
 
 register_device_format(AppleBootstrapFS)
@@ -1385,11 +1264,9 @@ class NTFS(FS):
             # we try one time to determine the minimum size.
             size = self._minSize
             if self.exists and os.path.exists(self.device) and \
-               iutil.find_program_in_path(self.resizefsProg):
+               util.find_program_in_path(self.resizefsProg):
                 minSize = None
-                buf = iutil.execWithCapture(self.resizefsProg,
-                                            ["-m", self.device],
-                                            stderr = "/dev/tty5")
+                buf = util.run_program([self.resizefsProg, "-m", self.device])
                 for l in buf.split("\n"):
                     if not l.startswith("Minsize"):
                         continue
@@ -1418,7 +1295,12 @@ class NTFS(FS):
     def resizeArgs(self):
         # You must supply at least two '-f' options to ntfsresize or
         # the proceed question will be presented to you.
-        targetSize = (mib / mb) * self.targetSize # convert MiB to MB
+
+        # FIXME: This -1 is because our partition alignment calculations plus
+        # converting back and forth between MiB and MB means the filesystem is
+        # getting resized to be slightly larger than the partition holding it.
+        # This hack just makes the filesystem fit.
+        targetSize = (mib / mb) * (self.targetSize-1) # convert MiB to MB
         argv = ["-ff", "-s", "%dM" % (targetSize,), self.device]
         return argv
 
@@ -1471,7 +1353,6 @@ class Iso9660FS(FS):
     _linuxNative = False
     _dump = False
     _check = False
-    _migratable = False
     _defaultMountOptions = ["ro"]
 
 register_device_format(Iso9660FS)

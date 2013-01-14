@@ -23,7 +23,7 @@
 import os
 import re
 
-from pyanaconda import iutil
+from .. import util
 from ..errors import *
 
 import gettext
@@ -33,15 +33,14 @@ import logging
 log = logging.getLogger("storage")
 
 def btrfs(args, capture=False):
-    kwargs = {}
-    kwargs["stderr"] = "/dev/tty5"
     if capture:
-        exec_func = iutil.execWithCapture
+        exec_func = util.capture_output
     else:
-        exec_func = iutil.execWithRedirect
-        kwargs["stdout"] = "/dev/tty5"
+        exec_func = util.run_program
 
-    ret = exec_func("btrfs", args, **kwargs)
+    argv = ["btrfs"] + args
+
+    ret = exec_func(argv)
     if ret and not capture:
         raise BTRFSError(ret)
     return ret
@@ -65,8 +64,7 @@ def create_volume(devices, label=None, data=None, metadata=None):
 
     args.extend(devices)
 
-    ret = iutil.execWithRedirect("mkfs.btrfs", args,
-                                 stdout="/dev/tty5", stderr="/dev/tty5")
+    ret = util.run_program(["mkfs.btrfs"] + args)
     if ret:
         raise BTRFSError(ret)
 

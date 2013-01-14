@@ -40,11 +40,11 @@ import devicelibs.mpath
 import devicelibs.loop
 import devicelibs.edd
 from udev import *
-from pyanaconda import iutil
-from pyanaconda import platform
-from pyanaconda import tsort
-from pyanaconda.flags import flags
-from pyanaconda.anaconda_log import log_method_call, log_method_return
+import util
+from platform import platform
+import tsort
+from flags import flags
+from storage_log import log_method_call, log_method_return
 import parted
 import _ped
 
@@ -176,8 +176,6 @@ class DeviceTree(object):
         self.iscsi = iscsi
         self.dasd = dasd
         self.mpathFriendlyNames = getattr(conf, "mpathFriendlyNames", True)
-
-        self.platform = platform.getPlatform()
 
         self.diskImages = {}
         images = getattr(conf, "diskImages", {})
@@ -398,7 +396,7 @@ class DeviceTree(object):
             dev.volume._removeSubVolume(dev.name)
 
         self._devices.remove(dev)
-        if dev.name in self.names:
+        if dev.name in self.names and getattr(dev, "complete", True):
             self.names.remove(dev.name)
         log.info("removed %s %s (id %d) from device tree" % (dev.type,
                                                               dev.name,
@@ -450,7 +448,7 @@ class DeviceTree(object):
             # add the device back into the tree
             self._addDevice(action.device)
         elif action.isFormat and \
-             (action.isCreate or action.isMigrate or action.isResize):
+             (action.isCreate or action.isResize):
             action.cancel()
 
         self._actions.remove(action)
@@ -513,7 +511,9 @@ class DeviceTree(object):
                 if part.partType and part.isLogical and part.disk == dep.disk:
                     logicals.append(part)
 
-        for device in self.devices:
+        incomplete = [d for d in self._devices
+                            if not getattr(d, "complete", True)]
+        for device in self.devices + incomplete:
             if device.dependsOn(dep):
                 dependents.append(device)
             else:
@@ -612,7 +612,7 @@ class DeviceTree(object):
              udev_device_is_dm_crypt(info) or
              (udev_device_is_md(info) and not
               udev_device_get_md_container(info)))):
-            if iutil.get_sysfs_attr(info["sysfs_path"], 'ro') == '1':
+            if util.get_sysfs_attr(info["sysfs_path"], 'ro') == '1':
                 log.debug("Ignoring read only device %s" % name)
                 self.addIgnoredDisk(name)
                 return True
@@ -777,6 +777,9 @@ class DeviceTree(object):
         # something must be wrong -- if all of the slaves we in
         # the tree, this device should be as well
         if device is None:
+            if name is None:
+                name = udev_device_get_name(info)
+
             log.error("failed to scan md array %s" % name)
             try:
                 devicelibs.mdraid.mddeactivate("/dev/" + name)
@@ -1139,7 +1142,7 @@ class DeviceTree(object):
 
         # we're going to pass the "best" disklabel type into the DiskLabel
         # constructor, but it only has meaning for non-existent disklabels.
-        labelType = self.platform.bestDiskLabelType(device)
+        labelType = platform.bestDiskLabelType(device)
 
         try:
             format = getFormat("disklabel",
@@ -1315,16 +1318,16 @@ class DeviceTree(object):
         # lookup/create the VG and LVs
         try:
             vg_name = udev_device_get_vg_name(info)
+            vg_uuid = udev_device_get_vg_uuid(info)
         except KeyError:
             # no vg name means no vg -- we're done with this pv
             return
 
-        vg_device = self.getDeviceByName(vg_name)
+        vg_device = self.getDeviceByUuid(vg_uuid)
         if vg_device:
             vg_device._addDevice(device)
         else:
             try:
-                vg_uuid = udev_device_get_vg_uuid(info)
                 vg_size = udev_device_get_vg_size(info)
                 vg_free = udev_device_get_vg_free(info)
                 pe_size = udev_device_get_vg_extent_size(info)
@@ -1431,7 +1434,8 @@ class DeviceTree(object):
                     if md_name:
                         array = self.getDeviceByName(md_name)
                         if array and array.uuid != md_uuid:
-                            md_name = None
+                            log.error("found multiple devices with the name %s"
+                                        % md_name)
 
             log.info("using name %s for md array containing member %s"
                         % (md_name, device.name))
@@ -1673,7 +1677,7 @@ class DeviceTree(object):
     def updateDeviceFormat(self, device):
         log.info("updating format of device: %s" % device)
         try:
-            iutil.notify_kernel("/sys%s" % device.sysfsPath)
+            util.notify_kernel("/sys%s" % device.sysfsPath)
         except (ValueError, IOError) as e:
             log.warning("failed to notify kernel of change: %s" % e)
 
@@ -1684,25 +1688,15 @@ class DeviceTree(object):
             log.info("got format: %s" % device.format)
 
     def _handleInconsistencies(self):
-        def leafInconsistencies(device):
-            devicelibs.lvm.lvm_cc_addFilterRejectRegexp(device.name)
-            devicelibs.lvm.blacklistVG(device.name)
-            for parent in device.parents:
-                if parent.type == "partition":
-                    parent.format.inconsistentVG = True
-                    parent.protected = True
-                else:
-                    self.addIgnoredDisk(parent.name)
-                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(parent.name)
+        for vg in [d for d in self.devices if d.type == "lvmvg"]:
+            if vg.complete:
+                continue
 
-        for md in [d for d in self.leaves if d.type == "mdarray" and len(d.parents) < d.memberDevices]:
-            log.debug("removing incomplete/degraded md array %s" % md.name)
-            try:
-                md.teardown()
-            except StorageError as e:
-                log.error("failed to deactivate %s: %s" % (md.name, e))
-
-            self._removeDevice(md)
+            # Make sure lvm doesn't get confused by PVs that belong to
+            # incomplete VGs. We will remove the PVs from the blacklist when/if
+            # the time comes to remove the incomplete VG and its PVs.
+            for pv in vg.pvs:
+                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(pv.name)
 
     def hide(self, device):
         for d in self.getChildren(device):
@@ -2047,6 +2041,9 @@ class DeviceTree(object):
 
         found = None
         for device in self._devices:
+            if not getattr(device, "complete", True):
+                continue
+
             if device.name == name:
                 found = device
                 break
@@ -2068,6 +2065,9 @@ class DeviceTree(object):
         leaf = None
         other = None
         for device in self._devices:
+            if not getattr(device, "complete", True):
+                continue
+
             if (device.path == path or
                 ((device.type == "lvmlv" or device.type == "lvmvg") and
                  device.path == path.replace("--","-"))):
@@ -2104,6 +2104,9 @@ class DeviceTree(object):
         """ List of device instances """
         devices = []
         for device in self._devices:
+            if not getattr(device, "complete", True):
+                continue
+
             if device.uuid and device.uuid in [d.uuid for d in devices] and \
                not isinstance(device, NoDevice):
                 raise DeviceTreeError("duplicate uuids in device tree")
@@ -2264,10 +2267,10 @@ class DeviceTree(object):
             attr = None
             if "subvol=" in options:
                 attr = "name"
-                val = iutil.get_option_value("subvol", options)
+                val = util.get_option_value("subvol", options)
             elif "subvolid=" in options:
                 attr = "vol_id"
-                val = iutil.get_option_value("subvolid", options)
+                val = util.get_option_value("subvolid", options)
 
             if attr and val:
                 for subvol in device.subvolumes:

@@ -22,11 +22,11 @@
 
 import os
 
-from pyanaconda.baseudev import udev_get_device
-from pyanaconda.iutil import notify_kernel
-from pyanaconda.iutil import get_sysfs_path_by_name
-from pyanaconda.iutil import execWithRedirect
-from pyanaconda.anaconda_log import log_method_call
+from ..udev import udev_get_device
+from ..util import notify_kernel
+from ..util import get_sysfs_path_by_name
+from ..util import run_program
+from ..storage_log import log_method_call
 from ..errors import *
 from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
@@ -147,7 +147,6 @@ class DeviceFormat(object):
     _packages = []                      # required packages
     _services = []                      # required services
     _resizable = False                  # can be resized
-    _migratable = False                 # can be migrated
     _maxSize = 0                        # maximum size in MB
     _minSize = 0                        # minimum size in MB
     _dump = False
@@ -169,7 +168,6 @@ class DeviceFormat(object):
         self.exists = kwargs.get("exists")
         self.options = kwargs.get("options")
         self._majorminor = None
-        self._migrate = False
 
         # don't worry about existence if this is a DeviceFormat instance
         #if self.__class__ is DeviceFormat:
@@ -307,10 +305,8 @@ class DeviceFormat(object):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         try:
-            rc = execWithRedirect("wipefs", ["-a", self.device],
-                                  stderr="/dev/tty5",
-                                  stdout="/dev/tty5")
-        except Exception as e:
+            rc = run_program(["wipefs", "-a", self.device])
+        except OSError as e:
             err = str(e)
         else:
             err = ""
@@ -377,15 +373,6 @@ class DeviceFormat(object):
     def resizable(self):
         """ Can formats of this type be resized? """
         return self._resizable and self.exists
-
-    @property
-    def migratable(self):
-        """ Can formats of this type be migrated? """
-        return self._migratable
-
-    @property
-    def migrate(self):
-        return self._migrate
 
     @property
     def linuxNative(self):

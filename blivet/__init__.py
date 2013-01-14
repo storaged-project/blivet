@@ -20,6 +20,15 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+##
+## Default stub values for installer-specific stuff that gets set up in
+## enable_installer_mode.
+##
+isys = None
+ROOT_PATH = '/'
+shortProductName = ''
+bootLoaderError = Exception
+
 import os
 import time
 import stat
@@ -31,16 +40,9 @@ import copy
 import nss.nss
 import parted
 
-from pyanaconda import isys
-from pyanaconda import iutil
-from pyanaconda.constants import *
 from pykickstart.constants import *
-from pyanaconda.flags import flags
-from pyanaconda import tsort
-from pyanaconda.errors import *
-from pyanaconda.bootloader import BootLoaderError
-from pyanaconda.anaconda_log import log_method_call
 
+from storage_log import log_method_call
 from errors import *
 from devices import *
 from devicetree import DeviceTree
@@ -63,6 +65,11 @@ import iscsi
 import fcoe
 import zfcp
 import dasd
+import util
+import arch
+from flags import flags
+from platform import platform as _platform
+from size import Size
 
 import shelve
 import contextlib
@@ -72,6 +79,21 @@ _ = lambda x: gettext.ldgettext("anaconda", x)
 
 import logging
 log = logging.getLogger("storage")
+
+def enable_installer_mode():
+    global isys
+    global ROOT_PATH
+    global shortProductName
+    global get_bootloader
+    global BootLoaderError
+
+    from pyanaconda import isys
+    from pyanaconda.constants import ROOT_PATH
+    from pyanaconda.constants import shortProductName
+    from pyanaconda.bootloader import get_bootloader
+    from pyanaconda.bootloader import BootLoaderError
+
+    flags.installer_mode = True
 
 DEVICE_TYPE_LVM = 0
 DEVICE_TYPE_MD = 1
@@ -115,6 +137,9 @@ def getRAIDLevel(device):
     return raid_level
 
 def storageInitialize(storage, ksdata, protected):
+    from pyanaconda.flags import flags as anaconda_flags
+    flags.update_from_anaconda_flags(anaconda_flags)
+
     storage.shutdown()
 
     # touch /dev/.in_sysinit so that /lib/udev/rules.d/65-md-incremental.rules
@@ -123,8 +148,7 @@ def storageInitialize(storage, ksdata, protected):
 
     # XXX I don't understand why I have to do this, but this is needed to
     #     populate the udev db
-    iutil.execWithRedirect("udevadm", ["control", "--property=ANACONDA=1"],
-                           stdout="/dev/tty5", stderr="/dev/tty5")
+    util.run_program(["udevadm", "control", "--property=ANACONDA=1"])
     udev_trigger(subsystem="block", action="change")
 
     # Before we set up the storage system, we need to know which disks to
@@ -138,37 +162,27 @@ def storageInitialize(storage, ksdata, protected):
         storage.config.protectedDevSpecs.extend(protected)
         storage.reset()
 
-        if not flags.livecdInstall and not storage.protectedDevices:
-            if anaconda.upgrade:
-                return
-            else:
-                raise UnknownSourceDeviceError(protected)
+        if not flags.live_install and not storage.protectedDevices:
+            raise UnknownSourceDeviceError(protected)
     else:
         storage.reset()
 
     # kickstart uses all the disks
-    if flags.automatedInstall:
+    if flags.automated_install:
         if not ksdata.ignoredisk.onlyuse:
             ksdata.ignoredisk.onlyuse = [d.name for d in storage.disks \
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
             log.debug("onlyuse is now: %s" % (",".join(ksdata.ignoredisk.onlyuse)))
 
 def turnOnFilesystems(storage):
-    upgrade = "preupgrade" in flags.cmdline
+    if not flags.installer_mode:
+        return
 
-    if not upgrade:
-        if (flags.livecdInstall and not flags.imageInstall and not storage.fsset.active):
-            # turn off any swaps that we didn't turn on
-            # needed for live installs
-            iutil.execWithRedirect("swapoff", ["-a"],
-                                   stdout = "/dev/tty5", stderr="/dev/tty5")
-        storage.devicetree.teardownAll()
-
-    upgrade_migrate = False
-    if upgrade:
-        for d in storage.migratableDevices:
-            if d.format.migrate:
-                upgrade_migrate = True
+    if (flags.live_install and not flags.image_install and not storage.fsset.active):
+        # turn off any swaps that we didn't turn on
+        # needed for live installs
+        util.run_program(["swapoff", "-a"])
+    storage.devicetree.teardownAll()
 
     try:
         storage.doIt()
@@ -180,31 +194,15 @@ def turnOnFilesystems(storage):
 
         if errorHandler.cb(e, e.args[0], details=details) == ERROR_RAISE:
             raise
-    except FSMigrateError as e:
-        if errorHandler.cb(e, e.args[0], e.args[1]) == ERROR_RAISE:
-            raise
     except Exception as e:
         raise
 
-    if not upgrade:
-        storage.turnOnSwap()
-        # FIXME:  For livecd, skipRoot needs to be True.
-        storage.mountFilesystems(raiseErrors=False,
-                                 readOnly=False,
-                                 skipRoot=False)
-        writeEscrowPackets(storage)
-    else:
-        if upgrade_migrate:
-            # we should write out a new fstab with the migrated fstype
-            shutil.copyfile("%s/etc/fstab" % ROOT_PATH,
-                            "%s/etc/fstab.anaconda" % ROOT_PATH)
-            storage.fsset.write()
-
-        # and make sure /dev is mounted so we can read the bootloader
-        getFormat("bind",
-                  device="/dev",
-                  mountpoint="/dev",
-                  exists=True).mount(chroot=ROOT_PATH)
+    storage.turnOnSwap()
+    # FIXME:  For livecd, skipRoot needs to be True.
+    storage.mountFilesystems(raiseErrors=False,
+                             readOnly=False,
+                             skipRoot=False)
+    writeEscrowPackets(storage)
 
 def writeEscrowPackets(storage):
     escrowDevices = filter(lambda d: d.format.type == "luks" and \
@@ -281,17 +279,14 @@ class StorageDiscoveryConfig(object):
         self.zeroMbr = ksdata.zerombr.zerombr
 
 class Storage(object):
-    def __init__(self, data=None, platform=None):
+    def __init__(self, data=None):
         """ Create a Storage instance.
 
             Keyword Arguments:
 
                 data        -   a pykickstart Handler instance
-                platform    -   a Platform instance
-
         """
         self.data = data
-        self.platform = platform
         self._bootloader = None
 
         self.config = StorageDiscoveryConfig()
@@ -418,7 +413,7 @@ class Storage(object):
         if self.data:
             self.config.update(self.data)
 
-        if not flags.imageInstall:
+        if not flags.image_install:
             self.iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
@@ -426,9 +421,6 @@ class Storage(object):
                               self.config.exclusiveDisks,
                               self.config.initializeDisks)
         clearPartType = self.config.clearPartType # save this before overriding it
-        if self.data and self.data.upgrade.upgrade:
-            self.config.clearPartType = CLEARPART_TYPE_NONE
-
         if self.dasd:
             # Reset the internal dasd list (823534)
             self.dasd.clear_device_list()
@@ -790,9 +782,6 @@ class Storage(object):
                 - Needs some error handling
 
         """
-        if not hasattr(self.platform, "diskLabelTypes"):
-            raise StorageError("can't clear partitions without platform data")
-
         # Sort partitions by descending partition number to minimize confusing
         # things like multiple "destroy sda5" actions due to parted renumbering
         # partitions. This can still happen through the UI but it makes sense to
@@ -833,7 +822,7 @@ class Storage(object):
             if disk.format.labelType in magic_partitions:
                 number = magic_partitions[disk.format.labelType]
                 # remove the magic partition
-                for part in storage.partitions:
+                for part in disk.format.partitions:
                     if part.disk == disk and part.partedPartition.number == number:
                         log.debug("removing %s" % part.name)
                         # We can't schedule the magic partition for removal
@@ -848,10 +837,7 @@ class Storage(object):
         destroy_action = ActionDestroyFormat(disk)
         self.devicetree.registerAction(destroy_action)
 
-        if self.platform:
-            labelType = self.platform.bestDiskLabelType(disk)
-        else:
-            labelType = None
+        labelType = _platform.bestDiskLabelType(disk)
 
         # create a new disklabel on the disk
         newLabel = getFormat("disklabel", device=disk.path,
@@ -1055,7 +1041,7 @@ class Storage(object):
             if fmt:
                 mountpoint = getattr(fmt, "mountpoint", None)
 
-                kwargs["weight"] = self.platform.weight(mountpoint=mountpoint,
+                kwargs["weight"] = _platform.weight(mountpoint=mountpoint,
                                                         fstype=fmt.type)
 
 
@@ -1324,7 +1310,7 @@ class Storage(object):
         else:
             template = prefix
 
-        if flags.imageInstall:
+        if flags.image_install:
             template = "%s_image" % template
 
         names = self.names
@@ -1453,11 +1439,14 @@ class Storage(object):
             a really small /, etc).  Returns (errors, warnings) where
             each is a list of strings.
         """
-        checkSizes = [('/usr', 250), ('/tmp', 50), ('/var', 384),
-                      ('/home', 100), ('/boot', 75)]
         warnings = []
         errors = []
 
+        if not flags.installer_mode:
+            return (errors, warnings)
+
+        checkSizes = [('/usr', 250), ('/tmp', 50), ('/var', 384),
+                      ('/home', 100), ('/boot', 75)]
         mustbeonlinuxfs = ['/', '/var', '/tmp', '/usr', '/home', '/usr/share', '/usr/lib']
         mustbeonroot = ['/bin','/dev','/sbin','/etc','/lib','/root', '/mnt', 'lost+found', '/proc']
 
@@ -1486,7 +1475,7 @@ class Storage(object):
         # restricted to a single PV.  The backend support is there, but there are
         # no UI hook-ups to drive that functionality, but I do not personally
         # care.  --dcantrell
-        if iutil.isS390() and \
+        if arch.isS390() and \
            not self.mountpoints.has_key('/boot') and \
            root.type == 'lvmlv' and not root.singlePV:
             errors.append(_("This platform requires /boot on a dedicated "
@@ -1518,9 +1507,11 @@ class Storage(object):
                               % {"mount":mount, "format": device.format.name,
                                  "minSize": device.minSize, "maxSize": device.maxSize})
 
+        # FIXME: this does not work, but probably should
+        """
         usb_disks = []
         firewire_disks = []
-        for disk in self.disks:
+        #for disk in self.disks:
             if isys.driveUsesModule(disk.name, ["usb-storage", "ub"]):
                 usb_disks.append(disk)
             elif isys.driveUsesModule(disk.name, ["sbp2", "firewire-sbp2"]):
@@ -1545,6 +1536,7 @@ class Storage(object):
         if uses_firewire:
             warnings.append(_("Installing on a FireWire device.  This may "
                               "or may not produce a working system."))
+        """
 
         if self.bootloader and not self.bootloader.skip_bootloader:
             stage1 = self.bootloader.stage1_device
@@ -1569,7 +1561,7 @@ class Storage(object):
             #
             # check that GPT boot disk on BIOS system has a BIOS boot partition
             #
-            if self.platform.weight(fstype="biosboot") and \
+            if _platform.weight(fstype="biosboot") and \
                stage1 and stage1.isDisk and \
                getattr(stage1.format, "labelType", None) == "gpt":
                 missing = True
@@ -1586,9 +1578,7 @@ class Storage(object):
                                     "partition.") % productName)
 
         if not swaps:
-            from pyanaconda.storage.size import Size
-
-            installed = Size(spec="%s kb" % iutil.memInstalled())
+            installed = Size(spec="%s kb" % util.total_memory())
             required = Size(spec="%s kb" % isys.EARLY_SWAP_RAM)
 
             if installed < required:
@@ -1645,8 +1635,7 @@ class Storage(object):
     @property
     def packages(self):
         pkgs = set()
-        if self.platform:
-            pkgs.update(self.platform.packages)
+        pkgs.update(_platform.packages)
 
         if self.bootloader:
             pkgs.update(self.bootloader.packages)
@@ -1691,8 +1680,9 @@ class Storage(object):
 
     @property
     def bootloader(self):
-        if self._bootloader is None and self.platform is not None:
-            self._bootloader = self.platform.bootloaderClass(self.platform)
+        if self._bootloader is None and flags.installer_mode:
+            self._bootloader = get_bootloader()
+
         return self._bootloader
 
     def updateBootLoaderDiskList(self):
@@ -1758,10 +1748,6 @@ class Storage(object):
     @property
     def mountpoints(self):
         return self.fsset.mountpoints
-
-    @property
-    def migratableDevices(self):
-        return self.fsset.migratableDevices
 
     @property
     def rootDevice(self):
@@ -1848,7 +1834,7 @@ class Storage(object):
         elif mountpoint == "/boot":
             fstype = self.defaultBootFSType
         elif mountpoint == "/boot/efi":
-            if iutil.isMactel():
+            if arch.isMactel():
                 fstype = "hfs+"
             else:
                 fstype = "efi"
@@ -1884,6 +1870,9 @@ class Storage(object):
 
         if container:
             members = container.parents[:]
+        elif members:
+            # mdarray
+            container = device
 
         # The basis for whether we are modifying a member set versus creating
         # one must be the member list, as container will be None when modifying
@@ -1915,12 +1904,15 @@ class Storage(object):
         for member in members[:]:
             if any([d in remove_disks for d in member.disks]):
                 if isinstance(member, LUKSDevice):
-                    container.removeMember(member)
+                    if container:
+                        container.removeMember(member)
                     self.destroyDevice(member)
                     members.remove(member)
                     member = member.slave
                 else:
-                    container.removeMember(member)
+                    if container:
+                        container.removeMember(member)
+
                     members.remove(member)
 
                 self.destroyDevice(member)
@@ -1929,19 +1921,24 @@ class Storage(object):
             if isinstance(member, LUKSDevice):
                 if not factory.encrypted:
                     # encryption was toggled for the member devices
-                    container.removeMember(member)
+                    if container:
+                        container.removeMember(member)
+
                     self.destroyDevice(member)
                     members.remove(member)
 
                     self.formatDevice(member.slave,
                                       getFormat(factory.member_format))
                     members.append(member.slave)
-                    container.addMember(member.slave)
+                    if container:
+                        container.addMember(member.slave)
 
                 member = member.slave
             elif factory.encrypted:
                 # encryption was toggled for the member devices
-                container.removeMember(member)
+                if container:
+                    container.removeMember(member)
+
                 members.remove(member)
                 self.formatDevice(member, getFormat("luks"))
                 luks_member = LUKSDevice("luks-%s" % member.name,
@@ -1949,7 +1946,8 @@ class Storage(object):
                                     format=getFormat(factory.member_format))
                 self.createDevice(luks_member)
                 members.append(luks_member)
-                container.addMember(luks_member)
+                if container:
+                    container.addMember(luks_member)
 
             member.req_base_size = base_size
             member.req_size = member.req_base_size
@@ -2171,7 +2169,7 @@ class Storage(object):
 
         members = []
         if device and device.type == "mdarray":
-            members = device.parents
+            members = device.parents[:]
 
         try:
             parents = self.setContainerMembers(container, factory,
@@ -2203,6 +2201,9 @@ class Storage(object):
 
         # set up container
         if not container and factory.new_container_attr:
+            if not parents:
+                raise StorageError("not enough free space on disks")
+
             log.debug("creating new container")
             if container_name:
                 kwa = {"name": container_name}
@@ -2367,10 +2368,10 @@ def mountExistingSystem(fsset, rootDevice,
         readOnly = ""
 
     if rootDevice.protected and os.path.ismount("/mnt/install/isodir"):
-        isys.mount("/mnt/install/isodir",
+        util.mount("/mnt/install/isodir",
                    rootPath,
                    fstype=rootDevice.format.type,
-                   bindMount=True)
+                   options="bind")
     else:
         rootDevice.setup()
         rootDevice.format.mount(chroot=rootPath,
@@ -2382,7 +2383,7 @@ def mountExistingSystem(fsset, rootDevice,
     # check for dirty filesystems
     dirtyDevs = []
     for device in fsset.mountpoints.values():
-        if not hasattr(device.format, "isDirty"):
+        if not hasattr(device.format, "needsFSCheck"):
             continue
 
         try:
@@ -2391,7 +2392,7 @@ def mountExistingSystem(fsset, rootDevice,
             # we'll catch this in the main loop
             continue
 
-        if device.format.isDirty:
+        if device.format.needsFSCheck:
             log.info("%s contains a dirty %s filesystem" % (device.path,
                                                             device.format.type))
             dirtyDevs.append(device.path)
@@ -2710,7 +2711,6 @@ class FSSet(object):
         if fstype != "auto" and ftype != dtype:
             log.info("fstab says %s at %s is %s" % (dtype, mountpoint, ftype))
             if fmt.testMount():
-                # XXX we should probably disallow migration for this fs
                 device.format = fmt
             else:
                 device.teardown()
@@ -2813,6 +2813,9 @@ class FSSet(object):
 
     def turnOnSwap(self, rootPath="", upgrading=None):
         """ Activate the system's swap space. """
+        if not flags.installer_mode:
+            return
+
         for device in self.swapDevices:
             if isinstance(device, FileDevice):
                 # set up FileDevices' parents now that they are accessible
@@ -2840,6 +2843,9 @@ class FSSet(object):
     def mountFilesystems(self, rootPath="", readOnly=None,
                          skipRoot=False, raiseErrors=None):
         """ Mount the system's filesystems. """
+        if not flags.installer_mode:
+            return
+
         devices = self.mountpoints.values() + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.selinux, self.usb])
@@ -2875,7 +2881,7 @@ class FSSet(object):
 
             try:
                 device.setup()
-            except Exception as msg:
+            except Exception as e:
                 if errorHandler.cb(e, device) == ERROR_RAISE:
                     raise
                 else:
@@ -2962,16 +2968,6 @@ class FSSet(object):
                 if mountpoint == path:
                     return device
 
-    @property
-    def migratableDevices(self):
-        """ List of devices whose filesystems can be migrated. """
-        migratable = []
-        for device in self.devices:
-            if device.format.migratable and device.format.exists:
-                migratable.append(device)
-
-        return migratable
-
     def write(self):
         """ write out all config files based on the set of filesystems """
         # /etc/fstab
@@ -3003,9 +2999,9 @@ class FSSet(object):
             f.close()
         else:
             log.info("not writing out mpath configuration")
-        iutil.copy_to_sysimage("/etc/multipath/wwids")
+        util.copy_to_system("/etc/multipath/wwids")
         if self.devicetree.mpathFriendlyNames:
-            iutil.copy_to_sysimage("/etc/multipath/bindings")
+            util.copy_to_system("/etc/multipath/bindings")
 
     def crypttab(self):
         # if we are upgrading, do we want to update crypttab?
@@ -3149,7 +3145,7 @@ def getReleaseString():
     relVer = None
 
     try:
-        relArch = iutil.execWithCapture("arch", [], root=ROOT_PATH).strip()
+        relArch = util.capture_output(["arch"], root=ROOT_PATH).strip()
     except:
         relArch = None
 
@@ -3173,7 +3169,7 @@ def getReleaseString():
 
 def findExistingInstallations(devicetree):
     if not os.path.exists(ROOT_PATH):
-        iutil.mkdirChain(ROOT_PATH)
+        util.makedirs(ROOT_PATH)
 
     roots = []
     for device in devicetree.leaves:
@@ -3523,6 +3519,10 @@ class MDFactory(DeviceFactory):
     @property
     def device_size(self):
         return get_member_space(self.size, len(self.disks),
+                                level=self.raid_level)
+
+    def container_size_func(self, container, device=None):
+        return get_member_space(self.size, len(container.parents),
                                 level=self.raid_level)
 
     def new_device(self, *args, **kwargs):

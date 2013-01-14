@@ -18,18 +18,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pyanaconda.constants import *
-from udev import *
+from . import ROOT_PATH
+from udev import udev_settle
+from . import util
+from .flags import flags
 import os
-from pyanaconda import iutil
-from pyanaconda.flags import flags
 import logging
 import shutil
 import time
 import hashlib
 import random
 import itertools
-log = logging.getLogger("anaconda")
+log = logging.getLogger("storage")
 
 import gettext
 _ = lambda x: gettext.ldgettext("anaconda", x)
@@ -53,7 +53,7 @@ def has_iscsi():
         return False
 
     if not ISCSID:
-        location = iutil.find_program_in_path("iscsid")
+        location = util.find_program_in_path("iscsid")
         if not location:
             return False
         ISCSID = location
@@ -197,17 +197,12 @@ class iscsi(object):
         for iface in ifaces:
             iscsi_iface_name = "iface%d" % len(self.ifaces)
             #iscsiadm -m iface -I iface0 --op=new
-            iutil.execWithRedirect("iscsiadm",
-                                   ["-m", "iface", "-I", iscsi_iface_name, "--op=new"],
-                                   stdout="/dev/tty5",
-                                   stderr="/dev/tty5")
+            util.run_program(["iscsiadm", "-m", "iface",
+                              "-I", iscsi_iface_name, "--op=new"])
             #iscsiadm -m iface -I iface0 --op=update -n iface.net_ifacename -v eth0
-            iutil.execWithRedirect("iscsiadm",
-                                   ["-m", "iface", "-I", iscsi_iface_name,
-                                    "--op=update", "-n",
-                                    "iface.net_ifacename", "-v", iface],
-                                   stdout="/dev/tty5",
-                                   stderr="/dev/tty5")
+            util.run_program(["iscsiadm", "-m", "iface",
+                              "-I", iscsi_iface_name, "--op=update",
+                              "-n", "iface.net_ifacename", "-v", iface])
 
             self.ifaces[iscsi_iface_name] = iface
             log.debug("created_interface %s:%s" % (iscsi_iface_name, iface))
@@ -217,11 +212,8 @@ class iscsi(object):
             return None
         for iscsi_iface_name in self.ifaces:
             #iscsiadm -m iface -I iface0 --op=delete
-            iutil.execWithRedirect("iscsiadm",
-                                   ["-m", "iface", "-I", iscsi_iface_name,
-                                    "--op=delete"],
-                                   stdout="/dev/tty5",
-                                   stderr="/dev/tty5")
+            util.run_program(["iscsiadm", "-m", "iface",
+                              "-I", iscsi_iface_name, "--op=delete"])
         self.ifaces = {}
 
     def startup(self):
@@ -252,22 +244,19 @@ class iscsi(object):
                 os.makedirs(fulldir, 0755)
 
         log.info("iSCSI startup")
-        iutil.execWithRedirect('modprobe', ['-a'] + ISCSI_MODULES,
-                               stdout="/dev/tty5", stderr="/dev/tty5")
+        util.run_program(['modprobe', '-a'] + ISCSI_MODULES)
         # iscsiuio is needed by Broadcom offload cards (bnx2i). Currently
         # not present in iscsi-initiator-utils for Fedora.
         try:
-            iscsiuio = iutil.find_program_in_path('iscsiuio',
+            iscsiuio = util.find_program_in_path('iscsiuio',
                                                    raise_on_error=True)
         except RuntimeError:
             log.info("iscsi: iscsiuio not found.")
         else:
             log.debug("iscsi: iscsiuio is at %s" % iscsiuio)
-            iutil.execWithRedirect(iscsiuio, [],
-                                   stdout="/dev/tty5", stderr="/dev/tty5")
+            util.run_program([iscsiuio])
         # run the daemon
-        iutil.execWithRedirect(ISCSID, [],
-                               stdout="/dev/tty5", stderr="/dev/tty5")
+        util.run_program([ISCSID])
         time.sleep(1)
 
         self._startIBFT()

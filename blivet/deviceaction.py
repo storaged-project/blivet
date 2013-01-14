@@ -37,19 +37,27 @@ _ = lambda x: gettext.ldgettext("anaconda", x)
 import logging
 log = logging.getLogger("storage")
 
+from contextlib import contextmanager
+
+@contextmanager
+def progress_report_stub(message):
+    yield
+
+try:
+    from pyanaconda.progress import progress_report
+except ImportError:
+    progress_report = progress_report_stub
 
 # The values are just hints as to the ordering.
 # Eg: fsmod and devmod ordering depends on the mod (shrink -v- grow)
 ACTION_TYPE_NONE = 0
 ACTION_TYPE_DESTROY = 1000
 ACTION_TYPE_RESIZE = 500
-ACTION_TYPE_MIGRATE = 250
 ACTION_TYPE_CREATE = 100
 
 action_strings = {ACTION_TYPE_NONE: "None",
                   ACTION_TYPE_DESTROY: "Destroy",
                   ACTION_TYPE_RESIZE: "Resize",
-                  ACTION_TYPE_MIGRATE: "Migrate",
                   ACTION_TYPE_CREATE: "Create"}
 
 ACTION_OBJECT_NONE = 0
@@ -168,10 +176,6 @@ class DeviceAction(object):
         return self.type == ACTION_TYPE_CREATE
 
     @property
-    def isMigrate(self):
-        return self.type == ACTION_TYPE_MIGRATE
-
-    @property
     def isResize(self):
         return self.type == ACTION_TYPE_RESIZE
 
@@ -201,10 +205,7 @@ class DeviceAction(object):
         if self.isResize:
             s += " (%s)" % resize_strings[self.dir]
         if self.isFormat:
-            s += " %s" % self.format.desc
-            if self.isMigrate:
-                s += " to %s" % self.format.migrationTarget
-            s += " on"
+            s += " %s on" % self.format.desc
         s += " %s %s (id %d)" % (self.device.type, self.device.name,
                                  self.device.id)
         return s
@@ -414,8 +415,6 @@ class ActionCreateFormat(DeviceAction):
             self.origFormat = getFormat(None)
 
     def execute(self):
-        from pyanaconda.progress import progress_report
-
         msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
         with progress_report(msg):
             self.device.setup()
@@ -554,8 +553,6 @@ class ActionResizeFormat(DeviceAction):
         self.device.format.targetSize = newsize
 
     def execute(self):
-        from pyanaconda.progress import progress_report
-
         msg = _("Resizing filesystem on %(device)s") % {"device": self.device.path}
         with progress_report(msg):
             self.device.setup(orig=True)
@@ -588,28 +585,3 @@ class ActionResizeFormat(DeviceAction):
                 retval = True
 
         return retval
-
-
-class ActionMigrateFormat(DeviceAction):
-    """ An action representing the migration of an existing filesystem. """
-    type = ACTION_TYPE_MIGRATE
-    obj = ACTION_OBJECT_FORMAT
-
-    def __init__(self, device):
-        if not device.format.migratable or not device.format.exists:
-            raise ValueError("device format is not migratable")
-
-        DeviceAction.__init__(self, device)
-        self.device.format.migrate = True
-
-    def execute(self):
-        from pyanaconda.progress import progress_report
-
-        msg = _("Migrating filesystem on %(device)s") % {"device": self.device.path}
-        with progress_report(msg):
-            self.device.setup(orig=True)
-            self.device.format.doMigrate()
-
-    def cancel(self):
-        self.device.format.migrate = False
-
