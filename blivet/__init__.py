@@ -231,26 +231,6 @@ def writeEscrowPackets(storage):
     log.debug("escrow: writeEscrowPackets done")
 
 
-def undoEncryption(storage):
-    for device in storage.devicetree.getDevicesByType("luks/dm-crypt"):
-        if device.exists:
-            continue
-
-        slave = device.slave
-        format = device.format
-
-        # set any devices that depended on the luks device to now depend on
-        # the former slave device
-        for child in storage.devicetree.getChildren(device):
-            child.parents.remove(device)
-            device.removeChild()
-            child.parents.append(slave)
-
-        storage.devicetree.registerAction(ActionDestroyFormat(device))
-        storage.devicetree.registerAction(ActionDestroyDevice(device))
-        storage.devicetree.registerAction(ActionDestroyFormat(slave))
-        storage.devicetree.registerAction(ActionCreateFormat(slave, format))
-
 class StorageDiscoveryConfig(object):
     def __init__(self):
         # storage configuration variables
