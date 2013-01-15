@@ -1,6 +1,6 @@
-
-- Make a wiki page at http://fedoraproject.org/wiki/blivet
+- Set up a git repo on fedorahosted
 - Set up a transifex repository
+- Fedora package review
 - Write and package docs
 - Write and package unit tests
 
