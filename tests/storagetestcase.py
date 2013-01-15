@@ -51,7 +51,7 @@ class StorageTestCase(TestCase):
 
     def setUpStorage(self):
         self.setUpDeviceLibs()
-        self.storage = blivet.Storage(self.anaconda)
+        self.storage = blivet.Blivet(self.anaconda)
 
         # device status
         blivet.devices.StorageDevice.status = False

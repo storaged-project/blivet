@@ -258,15 +258,15 @@ class StorageDiscoveryConfig(object):
         self.initializeDisks = ksdata.clearpart.initAll
         self.zeroMbr = ksdata.zerombr.zerombr
 
-class Storage(object):
-    def __init__(self, data=None):
-        """ Create a Storage instance.
+class Blivet(object):
+    def __init__(self, ksdata=None):
+        """ Create a Blivet instance.
 
             Keyword Arguments:
 
                 data        -   a pykickstart Handler instance
         """
-        self.data = data
+        self.ksdata = data
         self._bootloader = None
 
         self.config = StorageDiscoveryConfig()
@@ -390,8 +390,8 @@ class Storage(object):
             if device.format.type == "luks" and device.format.exists:
                 self.__luksDevs[device.format.uuid] = device.format._LUKS__passphrase
 
-        if self.data:
-            self.config.update(self.data)
+        if self.ksdata:
+            self.config.update(self.ksdata)
 
         if not flags.image_install:
             self.iscsi.startup()
@@ -1067,8 +1067,8 @@ class Storage(object):
                 name = safe_name
         else:
             hostname = ""
-            if self.data and self.data.network.hostname is not None:
-                hostname = self.data.network.hostname
+            if self.ksdata and self.ksdata.network.hostname is not None:
+                hostname = self.ksdata.network.hostname
 
             name = self.suggestContainerName(hostname=hostname)
 
@@ -1144,8 +1144,8 @@ class Storage(object):
             # set up the volume label, using hostname if necessary
             if not name:
                 hostname = ""
-                if self.data and self.data.network.hostname is not None:
-                    hostname = self.data.network.hostname
+                if self.ksdata and self.ksdata.network.hostname is not None:
+                    hostname = self.ksdata.network.hostname
 
                 name = self.suggestContainerName(hostname=hostname)
             if "label" not in fmt_args:
@@ -1675,7 +1675,7 @@ class Storage(object):
 
     def setUpBootLoader(self):
         """ Propagate ksdata into BootLoader. """
-        if not self.bootloader or not self.data:
+        if not self.bootloader or not self.ksdata:
             log.warning("either ksdata or bootloader data missing")
             return
 
@@ -1683,7 +1683,7 @@ class Storage(object):
             log.info("user specified that bootloader install be skipped")
             return
 
-        self.bootloader.stage1_disk = self.devicetree.resolveDevice(self.data.bootloader.bootDrive)
+        self.bootloader.stage1_disk = self.devicetree.resolveDevice(self.ksdata.bootloader.bootDrive)
         self.bootloader.stage2_device = self.bootDevice
         try:
             self.bootloader.set_stage1_device(self.devices)
@@ -1693,8 +1693,8 @@ class Storage(object):
     @property
     def bootDisk(self):
         disk = None
-        if self.data:
-            spec = self.data.bootloader.bootDrive
+        if self.ksdata:
+            spec = self.ksdata.bootloader.bootDrive
             disk = self.devicetree.resolveDevice(spec)
         return disk
 
@@ -2100,7 +2100,7 @@ class Storage(object):
         fstype = kwargs.get("fstype")
         label = kwargs.get("label")
         disks = kwargs.get("disks")
-        encrypted = kwargs.get("encrypted", self.data.autopart.encrypted)
+        encrypted = kwargs.get("encrypted", self.ksdata.autopart.encrypted)
 
         name = kwargs.get("name")
         container_name = kwargs.get("container_name")
@@ -3283,14 +3283,14 @@ def parseFSTab(devicetree, chroot=None):
 class DeviceFactory(object):
     type_desc = None
     member_format = None        # format type for member devices
-    new_container_attr = None   # name of Storage method to create a container
-    new_device_attr = None      # name of Storage method to create a device
-    container_list_attr = None  # name of Storage attribute to list containers
+    new_container_attr = None   # name of Blivet method to create a container
+    new_device_attr = None      # name of Blivet method to create a device
+    container_list_attr = None  # name of Blivet attribute to list containers
     encrypt_members = False
     encrypt_leaves = True
 
     def __init__(self, storage, size, disks, raid_level, encrypted):
-        self.storage = storage          # the Storage instance
+        self.storage = storage          # the Blivet instance
         self.size = size                # the requested size for this device
         self.disks = disks              # the set of disks to allocate from
         self.raid_level = raid_level
