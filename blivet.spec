@@ -2,7 +2,7 @@
 Summary:  A python library for working with system storage
 Name: blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.1
+Version: 0.2
 Release: 1%{?dist}
 # This is a Red Hat maintained package which is specific to
 # our distribution.  Thus the source is only available from
@@ -17,9 +17,26 @@ BuildRequires: python-devel
 BuildRequires: gettext
 BuildRequires: python-setuptools-devel
 BuildRequires: transifex-client
+
 Requires: python
 Requires: anaconda
-# TODO: add runtime requires
+Requires: util-linux >= %{utillinuxver}
+Requires: parted >= %{partedver}
+Requires: pyparted >= %{pypartedver}
+Requires: device-mapper >= %{dmver}
+Requires: cryptsetup-luks
+Requires: python-cryptsetup >= %{pythoncryptsetupver}
+Requires: mdadm
+Requires: lvm2
+Requires: dosfstools
+Requires: e2fsprogs >= %{e2fsver}
+Requires: btrfs-progs
+%if ! 0%{?rhel}
+Requires: hfsplus-tools
+%endif
+Requires: python-pyblock >= %{pythonpyblockver}
+#Requires: fcoe-utils >= %{fcoeutilsver}
+
 
 %description
 The blivet package is a python module for examining and modifying storage configuration.
@@ -28,7 +45,7 @@ The blivet package is a python module for examining and modifying storage config
 %setup -q
 
 %build
-make
+#make
 
 %install
 rm -rf %{buildroot}
@@ -44,5 +61,10 @@ rm -rf %{buildroot}
 %{python_sitelib}/*
 
 %changelog
+* Tue Jan 15 2013 David Lehman <dlehman@redhat.com> 0.2-1
+- Updated source from final pre-split anaconda source.
+- Renamed pyanaconda.storage to blivet throughout.
+- Updated spec file to include runtime Requires.
+
 * Fri Jan 04 2013 David Lehman <dlehman@redhat.com> 0.1-1
 - Created package from anaconda storage module.
