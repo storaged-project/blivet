@@ -1,0 +1,4 @@
+*.pyc
+.*.swp
+blivet*.tar.gz
+blivet*.tar.bz2

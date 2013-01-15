@@ -1,0 +1,2 @@
+include COPYING ChangeLog Makefile blivet.spec
+recursive-include po *.po *.pot Makefile
