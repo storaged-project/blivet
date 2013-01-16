@@ -264,9 +264,9 @@ class Blivet(object):
 
             Keyword Arguments:
 
-                data        -   a pykickstart Handler instance
+                ksdata        -   a pykickstart Handler instance
         """
-        self.ksdata = data
+        self.ksdata = ksdata
         self._bootloader = None
 
         self.config = StorageDiscoveryConfig()
