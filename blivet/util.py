@@ -31,14 +31,11 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
                                 stderr=subprocess.STDOUT,
                                 preexec_fn=chroot, cwd=root, env=env)
 
-        while True:
-            out = proc.communicate()[0]
-            if out:
-                for line in out.splitlines():
-                    program_log.info(line)
+        out = proc.communicate()[0]
+        if out:
+            for line in out.splitlines():
+                program_log.info(line)
 
-            if proc.returncode is not None:
-                break
     except OSError as e:
         program_log.error("Error running %s: %s" % (argv[0], e.strerror))
         raise
