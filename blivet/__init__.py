@@ -93,6 +93,9 @@ def enable_installer_mode():
     from pyanaconda.bootloader import get_bootloader
     from pyanaconda.bootloader import BootLoaderError
 
+    from pyanaconda.anaconda_log import program_log_lock
+    util.program_log_lock = program_log_lock
+
     flags.installer_mode = True
 
 DEVICE_TYPE_LVM = 0

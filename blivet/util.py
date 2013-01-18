@@ -8,6 +8,10 @@ import logging
 log = logging.getLogger("storage")
 program_log = logging.getLogger("program")
 
+from threading import Lock
+# this will get set to anaconda's program_log_lock in enable_installer_mode
+program_log_lock = Lock()
+
 def _run_program(argv, root='/', stdin=None, env_prune=None):
     if env_prune is None:
         env_prune = []
@@ -16,31 +20,33 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
         if root and root != '/':
             os.chroot(root)
 
-    program_log.info("Running... %s" % argv)
+    with program_log_lock:
+        program_log.info("Running... %s" % " ".join(argv))
 
-    env = os.environ.copy()
-    env.update({"LC_ALL": "C",
-                "INSTALL_PATH": root})
-    for var in env_prune:
-        env.pop(var, None)
+        env = os.environ.copy()
+        env.update({"LC_ALL": "C",
+                    "INSTALL_PATH": root})
+        for var in env_prune:
+            env.pop(var, None)
 
-    try:
-        proc = subprocess.Popen(argv,
-                                stdin=stdin,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT,
-                                preexec_fn=chroot, cwd=root, env=env)
+        try:
+            proc = subprocess.Popen(argv,
+                                    stdin=stdin,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
+                                    preexec_fn=chroot, cwd=root, env=env)
 
-        out = proc.communicate()[0]
-        if out:
-            for line in out.splitlines():
-                program_log.info(line)
+            out = proc.communicate()[0]
+            if out:
+                for line in out.splitlines():
+                    program_log.info(line)
 
-    except OSError as e:
-        program_log.error("Error running %s: %s" % (argv[0], e.strerror))
-        raise
+        except OSError as e:
+            program_log.error("Error running %s: %s" % (argv[0], e.strerror))
+            raise
 
-    program_log.debug("Return code: %d" % proc.returncode)
+        program_log.debug("Return code: %d" % proc.returncode)
+
     return (proc.returncode, out)
 
 def run_program(*args, **kwargs):
