@@ -2,8 +2,8 @@
 
 from distutils.core import setup
 
-setup(name='blivet', version='0.2',
-      description='Python module for working with system storage',
+setup(name='blivet', version='0.3',
+      description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',
       packages=['blivet', 'blivet.devicelibs', 'blivet.formats'])

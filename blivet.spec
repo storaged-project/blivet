@@ -1,8 +1,7 @@
-# TODO: finalize summary/description text here, in setup.py and in README
-Summary:  A python library for working with system storage
+Summary:  A python module for system storage configuration
 Name: blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.2
+Version: 0.3
 Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Libraries
@@ -44,7 +43,7 @@ Requires: iscsi-initiator-utils-devel >= %{iscsiver}
 
 
 %description
-The blivet package is a python module for examining and modifying storage configuration.
+The blivet package is a full-featured python module for examining and modifying storage configuration.
 
 %prep
 %setup -q
@@ -66,6 +65,12 @@ rm -rf %{buildroot}
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 18 2013 David Lehman <dlehman@redhat.com> - 0.2-1
+- Add Requires: iscsi-initiator-utils, fcoe-utils, device-mapper-multipath. (dlehman)
+- Use a threading lock to control program log output. (dlehman)
+- Fix reference to data to refer to ksdata in Blivet constructor. (dlehman)
+- Remove the loop around proc.communicate in util._run_program. (dlehman)
+
 * Tue Jan 15 2013 David Lehman <dlehman@redhat.com> 0.2-1
 - Updated source from final pre-split anaconda source.
 - Renamed pyanaconda.storage to blivet throughout.
