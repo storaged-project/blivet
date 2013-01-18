@@ -4,13 +4,16 @@ Name: blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 0.2
 Release: 1%{?dist}
+License: GPLv2
+Group: System Environment/Libraries
 # This is a Red Hat maintained package which is specific to
 # our distribution.  Thus the source is only available from
 # within this srpm.
 Source0: %{name}-%{version}.tar.gz
 
-License: GPLv2
-Group: System Environment/Libraries
+%define fcoeutilsver 1.0.12-3.20100323git
+%define iscsiver 6.2.0.870-3
+
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: python-devel
@@ -35,7 +38,9 @@ Requires: btrfs-progs
 Requires: hfsplus-tools
 %endif
 Requires: python-pyblock >= %{pythonpyblockver}
-#Requires: fcoe-utils >= %{fcoeutilsver}
+Requires: device-mapper-multipath
+Requires: fcoe-utils >= %{fcoeutilsver}
+Requires: iscsi-initiator-utils-devel >= %{iscsiver}
 
 
 %description
