@@ -1,6 +1,7 @@
 PKGNAME=blivet
-VERSION=$(shell awk '/Version:/ { print $$2 }' $(PKGNAME).spec)
-RELEASE=$(shell awk '/Release:/ { print $$2 }' $(PKGNAME).spec | sed -e 's|%.*$$||g')
+SPECFILE=python-blivet.spec
+VERSION=$(shell awk '/Version:/ { print $$2 }' $(SPECFILE))
+RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g')
 TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 
 TX_PULL_ARGS = -a --disable-overwrite
@@ -64,11 +65,11 @@ bumpver: po-pull
 	@NEWSUBVER=$$((`echo $(VERSION) |cut -d . -f 3` + 1)) ; \
 	NEWVERSION=`echo $(VERSION).$$NEWSUBVER |cut -d . -f 1,2,4` ; \
 	DATELINE="* `date "+%a %b %d %Y"` `git config user.name` <`git config user.email`> - $$NEWVERSION-1"  ; \
-	cl=`grep -n %changelog blivet.spec |cut -d : -f 1` ; \
-	tail --lines=+$$(($$cl + 1)) blivet.spec > speclog ; \
-	(head -n $$cl blivet.spec ; echo "$$DATELINE" ; make --quiet rpmlog 2>/dev/null ; echo ""; cat speclog) > blivet.spec.new ; \
-	mv blivet.spec.new blivet.spec ; rm -f speclog ; \
-	sed -i "s/Version: $(VERSION)/Version: $$NEWVERSION/" blivet.spec ; \
+	cl=`grep -n %changelog $(SPECFILE) |cut -d : -f 1` ; \
+	tail --lines=+$$(($$cl + 1)) $(SPECFILE) > speclog ; \
+	(head -n $$cl $(SPECFILE) ; echo "$$DATELINE" ; make --quiet rpmlog 2>/dev/null ; echo ""; cat speclog) > $(SPECFILE).new ; \
+	mv $(SPECFILE).new $(SPECFILE) ; rm -f speclog ; \
+	sed -i "s/Version: $(VERSION)/Version: $$NEWVERSION/" $(SPECFILE) ; \
 	sed -i "s/version='$(VERSION)'/version='$$NEWVERSION'/" setup.py ; \
 	make -C po $(PKGNAME).pot ; \
 	tx push $(TX_PUSH_ARGS)

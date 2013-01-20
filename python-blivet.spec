@@ -1,5 +1,5 @@
 Summary:  A python module for system storage configuration
-Name: blivet
+Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 0.3
 Release: 1%{?dist}
@@ -45,7 +45,7 @@ Requires: iscsi-initiator-utils >= %{iscsiver}
 
 
 %description
-The blivet package is a full-featured python module for examining and modifying storage configuration.
+The python-blivet package is a full-featured python module for examining and modifying storage configuration.
 
 %prep
 %setup -q
