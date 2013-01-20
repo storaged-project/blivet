@@ -38,7 +38,9 @@ Requires: hfsplus-tools
 %endif
 Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
+%ifnarch s390 s390x
 Requires: fcoe-utils >= %{fcoeutilsver}
+%endif
 Requires: iscsi-initiator-utils >= %{iscsiver}
 
 
