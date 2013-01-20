@@ -2,3 +2,12 @@
 .*.swp
 blivet*.tar.gz
 blivet*.tar.bz2
+po/*.gmo
+po/*.po
+po/POTFILES
+po/en@boldquot.insert-header
+po/en@boldquot.po
+po/en@quot.insert-header
+po/en@quot.po
+po/remove-potcdate.sed
+po/stamp-po

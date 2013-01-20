@@ -39,7 +39,7 @@ Requires: hfsplus-tools
 Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
 Requires: fcoe-utils >= %{fcoeutilsver}
-Requires: iscsi-initiator-utils-devel >= %{iscsiver}
+Requires: iscsi-initiator-utils >= %{iscsiver}
 
 
 %description
@@ -49,7 +49,7 @@ The blivet package is a full-featured python module for examining and modifying 
 %setup -q
 
 %build
-#make
+make
 
 %install
 rm -rf %{buildroot}

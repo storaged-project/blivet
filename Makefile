@@ -3,15 +3,14 @@ VERSION=$(shell awk '/Version:/ { print $$2 }' $(PKGNAME).spec)
 RELEASE=$(shell awk '/Release:/ { print $$2 }' $(PKGNAME).spec | sed -e 's|%.*$$||g')
 TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 
-#TX_PULL_ARGS = -a --disable-overwrite
-#TX_PUSH_ARGS = -s
+TX_PULL_ARGS = -a --disable-overwrite
+TX_PUSH_ARGS = -s
 
 all:
 	$(MAKE) -C po
 
 po-pull:
-#	tx pull $(TX_PULL_ARGS)
-	@echo "po-pull not implemented"
+	tx pull $(TX_PULL_ARGS)
 
 check:
 	@echo "*** Running pylint to verify source ***"
@@ -37,6 +36,7 @@ archive: check tag
 	@rm -f ChangeLog
 	@make ChangeLog
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(TAG) > $(PKGNAME)-$(VERSION).tar
+	mkdir $(PKGNAME)-$(VERSION)
 	cp -r po $(PKGNAME)-$(VERSION)
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
 	tar -rf $(PKGNAME)-$(VERSION).tar $(PKGNAME)-$(VERSION)
