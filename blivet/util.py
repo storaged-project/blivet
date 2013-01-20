@@ -1,8 +1,7 @@
 import os
 import selinux
 import subprocess
-
-from size import Size
+import re
 
 import logging
 log = logging.getLogger("storage")
@@ -78,6 +77,49 @@ def umount(mountpoint):
         raise
 
     return rc
+
+def get_mount_paths(dev):
+    """ Given a device node path, return a list of all active mountpoints. """
+    mounts = open("/proc/mounts").readlines()
+    mount_paths = []
+    for mount in mounts:
+        try:
+            (device, path, rest) = mount.split(None, 2)
+        except ValueError:
+            continue
+
+        if dev == device:
+            mount_paths.append(path)
+
+    if mount_paths:
+        log.debug("%s is mounted on %s" % (dev, ', '.join(mount_paths)))
+    return mount_paths
+
+def get_mount_device(mountpoint):
+    """ Given a mountpoint, return the device node path mounted there. """
+    mounts = open("/proc/mounts").readlines()
+    mount_device = None
+    for mount in mounts:
+        try:
+            (device, path, rest) = mount.split(None, 2)
+        except ValueError:
+            continue
+
+        if path == mountpoint:
+            mount_device = device
+            break
+
+    if mount_device and re.match(r'/dev/loop\d+$', mount_device):
+        from blivet.devicelibs import loop
+        loop_name = os.path.basename(mount_device)
+        mount_device = loop.get_backing_file(loop_name)
+        log.debug("found backing file %s for loop device %s" % (mount_device,
+                                                                loop_name))
+
+    if mount_device:
+        log.debug("%s is mounted on %s" % (mount_device, mountpoint))
+
+    return mount_device
 
 def total_memory():
     """ Return the amount of system RAM in kilobytes. """
