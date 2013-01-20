@@ -1,6 +1,49 @@
-- Set up a git repo on fedorahosted
-- Set up a transifex repository
-- Fedora package review
 - Write and package docs
 - Write and package unit tests
+  - esp. Blivet.shouldClear
+- Example programs
+- API stability
+- normal (non-install) operating mode
+  - don't try to teardown devices that are in use
+  - don't teardown any devices that were active when we found them?
+  - allow multiple calls to processActions
+- aynschronous actions
+- event handling
+- snapshot support
+- support for managing container member set
+- API for managing fstab and crypttab
+- modularize newDevice by operation
+- scan in ignored disks (maybe not all children?) and then hide them
+  - otherwise they won't be visible in the storage spoke if ignored via
+    via ks.cfg
+- improve interaction with the environment
+  - detect mounts, active swaps, &c
+  - stop disabling udev-related activation
+  - improve detection of active devices and associated error
+    handling
+- figure out how to get fwraid and multipath detected and activated outside of
+  anaconda
+  - REMOVE MULTIPATH CONFIG GENERATION CODE
+  - open a bug against device-mapper-multipath
+    - include our blacklist and notify them that we're going to
+      start using their stock config post-f18 and that any bugs will
+      be reassigned to them
+      - include the default config via lorax and let 62-multipath.rules handle
+        multipath
+- raid level data type
+  - constants with string representations for all device types
+  - disk space function/method
+    - optional chunk size, member metadata size, &c
+- improve clarity of exceptions raised
+- btrfs
+  - raid10 needs four disks
+  - detection of btrfs raid level, compression
+- md name collisions in existing system
+- add StorageConfigurationError or similar so autopart failures due to the
+  sanity check can be handled by offering the option of keeping the layout to
+  attempt to fix the problem instead of always resetting
+- explicitly find and deactivate devices built on disks/partitions we're going
+  to clear?
+- resize luks
+- check for read-only before trying to use disks
 
