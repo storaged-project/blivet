@@ -34,6 +34,9 @@ Requires: lvm2
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: btrfs-progs
+%ifarch %{ix86} x86_64 ia64
+Requires: dmidecode
+%endif
 %if ! 0%{?rhel}
 Requires: hfsplus-tools
 %endif
