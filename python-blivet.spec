@@ -3,7 +3,7 @@ Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 0.4
 Release: 1%{?dist}
-License: GPLv2
+License: GPLv2+
 Group: System Environment/Libraries
 # This is a Red Hat maintained package which is specific to
 # our distribution.  Thus the source is only available from
@@ -11,18 +11,26 @@ Group: System Environment/Libraries
 %define realname blivet
 Source0: %{realname}-%{version}.tar.gz
 
+# Versions of required components (done so we make sure the buildrequires
+# match the requires versions of things).
+%define dmver 1.02.17-6
+%define pykickstartver 1.99.22
+%define partedver 1.8.1
+%define pypartedver 2.5-2
+%define pythonpyblockver 0.45
+%define e2fsver 1.41.0
+%define pythoncryptsetupver 0.1.1
+%define utillinuxver 2.15.1
 %define fcoeutilsver 1.0.12-3.20100323git
 %define iscsiver 6.2.0.870-3
 
 BuildArch: noarch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: python-devel
 BuildRequires: gettext
 BuildRequires: python-setuptools-devel
 BuildRequires: transifex-client
 
 Requires: python
-Requires: anaconda
+Requires: pykickstart >= %{pykickstartver}
 Requires: util-linux >= %{utillinuxver}
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
@@ -49,7 +57,8 @@ Requires: iscsi-initiator-utils >= %{iscsiver}
 
 
 %description
-The python-blivet package is a full-featured python module for examining and modifying storage configuration.
+The python-blivet package is a python module for examining and modifying
+storage configuration.
 
 %prep
 %setup -q -n %{realname}-%{version}
@@ -61,9 +70,6 @@ make
 rm -rf %{buildroot}
 make DESTDIR=%{buildroot} install
 %find_lang %{realname}
-
-%clean
-rm -rf %{buildroot}
 
 %files -f %{realname}.lang
 %defattr(-,root,root,-)
