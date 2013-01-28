@@ -403,7 +403,6 @@ class Blivet(object):
             self.dasd.startup(None,
                               self.config.exclusiveDisks,
                               self.config.initializeDisks)
-        clearPartType = self.config.clearPartType # save this before overriding it
         if self.dasd:
             # Reset the internal dasd list (823534)
             self.dasd.clear_device_list()
@@ -414,7 +413,6 @@ class Blivet(object):
                               iscsi=self.iscsi,
                               dasd=self.dasd)
         self.devicetree.populate(cleanupOnly=cleanupOnly)
-        self.config.clearPartType = clearPartType # set it back
         self.fsset = FSSet(self.devicetree)
         self.eddDict = get_edd_dict(self.partitioned)
         if self.bootloader:
