@@ -1212,7 +1212,7 @@ class DeviceTree(object):
                 mirrors[name]["log"] = lv_sizes[index]
 
             lv_dev = self.getDeviceByName(name)
-            if lv_dev is None:
+            if lv_dev is None and flags.installer_mode:
                 lv_uuid = lv_uuids[index]
                 lv_size = lv_sizes[index]
                 lv_device = LVMLogicalVolumeDevice(lv_name,
@@ -1798,7 +1798,7 @@ class DeviceTree(object):
 
         old_devices = {}
 
-        if os.access("/etc/multipath.conf", os.W_OK):
+        if os.access("/etc/multipath.conf", os.W_OK) and flags.installer_mode:
             self.__multipathConfigWriter.writeConfig(self.mpathFriendlyNames)
             self.topology = devicelibs.mpath.MultipathTopology(udev_get_block_devices())
             log.info("devices to scan: %s" %
@@ -1880,6 +1880,9 @@ class DeviceTree(object):
 
     def teardownAll(self):
         """ Run teardown methods on all devices. """
+        if not flags.installer_mode:
+            return
+
         for device in self.leaves:
             if device.protected:
                 continue

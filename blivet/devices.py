@@ -2120,7 +2120,7 @@ class LVMVolumeGroupDevice(DMDevice):
         device.addChild()
 
         # now see if the VG can be activated
-        if self.complete:
+        if self.complete and flags.installer_mode:
             self.setup()
 
     def _removeDevice(self, device):
@@ -2933,20 +2933,21 @@ class MDRaidArrayDevice(StorageDevice):
         self.devices.append(device)
         device.addChild()
 
-        device.setup()
-        udev_settle()
-
-        if self.spares > 0:
-            # mdadm doesn't like it when you try to incrementally add spares
-            return
-
-        try:
-            mdraid.mdadd(device.path)
-            # mdadd causes udev events
+        if flags.installer_mode:
+            device.setup()
             udev_settle()
-        except MDRaidError as e:
-            log.warning("failed to add member %s to md array %s: %s"
-                        % (device.path, self.path, e))
+
+            if self.spares > 0:
+                # mdadm doesn't like it when you try to incrementally add spares
+                return
+
+            try:
+                mdraid.mdadd(device.path)
+                # mdadd causes udev events
+                udev_settle()
+            except MDRaidError as e:
+                log.warning("failed to add member %s to md array %s: %s"
+                            % (device.path, self.path, e))
 
         if self.status:
             # we always probe since the device may not be set up when we want
@@ -4111,7 +4112,9 @@ class BTRFSVolumeDevice(BTRFSDevice):
 
     def listSubVolumes(self):
         subvols = []
-        self.setup(orig=True)
+        if flags.installer_mode:
+            self.setup(orig=True)
+
         try:
             self._do_temp_mount(orig=True)
         except FSError as e:
