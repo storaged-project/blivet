@@ -74,7 +74,7 @@ class DiskLabel(DeviceFormat):
 
         if self.partedDevice:
             # set up the parted objects and raise exception on failure
-            self._origPartedDisk = self.partedDisk.duplicate()
+            self.updateOrigPartedDisk()
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Disklabel instance.
@@ -130,6 +130,9 @@ class DiskLabel(DeviceFormat):
                   "offset": self.alignment.offset,
                   "grainSize": self.alignment.grainSize})
         return d
+
+    def updateOrigPartedDisk(self):
+        self._origPartedDisk = self.partedDisk.duplicate()
 
     def resetPartedDisk(self):
         """ Set this instance's partedDisk to reflect the disk's contents. """
@@ -290,6 +293,7 @@ class DiskLabel(DeviceFormat):
         except parted.DiskException as msg:
             raise DiskLabelCommitError(msg)
         else:
+            self.updateOrigPartedDisk()
             udev_settle()
 
     def commitToDisk(self):
@@ -300,6 +304,8 @@ class DiskLabel(DeviceFormat):
             self.partedDisk.commitToDevice()
         except parted.DiskException as msg:
             raise DiskLabelCommitError(msg)
+        else:
+            self.updateOrigPartedDisk()
 
     def addPartition(self, *args, **kwargs):
         partition = kwargs.get("partition", None)

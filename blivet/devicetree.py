@@ -84,6 +84,7 @@ class DeviceTree(object):
         # internal data members
         self._devices = []
         self._actions = []
+        self._completed_actions = []
 
         # a list of all device names we encounter
         self.names = []
@@ -235,7 +236,7 @@ class DeviceTree(object):
         for action in self._actions:
             log.debug("action: %s" % action)
 
-        for action in self._actions:
+        for action in self._actions[:]:
             log.info("executing action: %s" % action)
             if not dryRun:
                 try:
@@ -252,6 +253,8 @@ class DeviceTree(object):
                     if device.exists and isinstance(device, PartitionDevice):
                         device.updateName()
                         device.format.device = device.path
+
+                self._completed_actions.append(self._actions.pop(0))
 
     def _addDevice(self, newdev):
         """ Add a device to the tree.
