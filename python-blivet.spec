@@ -5,11 +5,8 @@ Version: 0.4
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
-# This is a Red Hat maintained package which is specific to
-# our distribution.  Thus the source is only available from
-# within this srpm.
 %define realname blivet
-Source0: %{realname}-%{version}.tar.gz
+Source0: http://git.fedorahosted.org/cgit/blivet.git/snapshot/%{realname}-%{version}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
