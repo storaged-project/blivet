@@ -163,12 +163,11 @@ def storageInitialize(storage, ksdata, protected):
     # Set up the protected partitions list now.
     if protected:
         storage.config.protectedDevSpecs.extend(protected)
-        storage.reset()
 
-        if not flags.live_install and not storage.protectedDevices:
-            raise UnknownSourceDeviceError(protected)
-    else:
-        storage.reset()
+    storage.reset()
+
+    if protected and not flags.live_install and not storage.protectedDevices:
+        raise UnknownSourceDeviceError(protected)
 
     # kickstart uses all the disks
     if flags.automated_install:
