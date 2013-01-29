@@ -922,6 +922,21 @@ class DeviceTree(object):
         uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
 
+        # make sure this device was not scheduled for removal and also has not
+        # been hidden
+        removed = [a.device for a in
+                    self.findActions(type="destroy", object="device")]
+        for ignored in removed + self._hidden:
+            if (sysfs_path and ignored.sysfsPath == sysfs_path) or \
+               (uuid and uuid in (ignored.uuid, ignored.format.uuid)):
+                if ignored in removed:
+                    reason = "removed"
+                else:
+                    reason = "hidden"
+
+                log.debug("skipping %s device %s" % (reason, name))
+                return
+
         # make sure we note the name of every device we see
         if name not in self.names:
             self.names.append(name)
