@@ -11,9 +11,6 @@
 - support for managing container member set
 - API for managing fstab and crypttab
 - modularize newDevice by operation
-- scan in ignored disks (maybe not all children?) and then hide them
-  - otherwise they won't be visible in the storage spoke if ignored via
-    via ks.cfg
 - improve interaction with the environment
   - detect mounts, active swaps, &c
   - disallow partitioning changes to disks with in-use partitions?

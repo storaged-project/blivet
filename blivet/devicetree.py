@@ -95,6 +95,7 @@ class DeviceTree(object):
         self.populated = False
 
         self.exclusiveDisks = getattr(conf, "exclusiveDisks", [])
+        self.ignoredDisks = getattr(conf, "ignoredDisks", [])
         self.iscsi = iscsi
         self.dasd = dasd
         self.mpathFriendlyNames = getattr(conf, "mpathFriendlyNames", True)
@@ -126,9 +127,6 @@ class DeviceTree(object):
             self.__luksDevs = luksDict
             self.__passphrases.extend([p for p in luksDict.values() if p])
 
-        self._ignoredDisks = []
-        for disk in getattr(conf, "ignoredDisks", []):
-            self.addIgnoredDisk(disk)
         devicelibs.lvm.lvm_cc_resetFilter()
 
         self._cleanup = False
@@ -140,7 +138,7 @@ class DeviceTree(object):
         self.exclusiveDisks = self.diskImages.keys()
 
     def addIgnoredDisk(self, disk):
-        self._ignoredDisks.append(disk)
+        self.ignoredDisks.append(disk)
         devicelibs.lvm.lvm_cc_addFilterRejectRegexp(disk)
 
     def pruneActions(self):
@@ -466,10 +464,6 @@ class DeviceTree(object):
         if not sysfs_path:
             return None
 
-        if name in self._ignoredDisks:
-            log.debug("device '%s' in ignoredDisks" % name)
-            return True
-
         # Special handling for mdraid external metadata sets (mdraid BIOSRAID):
         # 1) The containers are intermediate devices which will never be
         # in exclusiveDisks
@@ -488,6 +482,7 @@ class DeviceTree(object):
             # does not match the one in the array metadata
             alt_name = re.sub("_\d+$", "", md_name)
             raw_pattern = "isw_[a-z]*_%s"
+            # XXX FIXME: This is completely insane.
             for i in range(0, len(self.exclusiveDisks)):
                 if re.match(raw_pattern % md_name, self.exclusiveDisks[i]) or \
                    re.match(raw_pattern % alt_name, self.exclusiveDisks[i]):
@@ -510,38 +505,31 @@ class DeviceTree(object):
             # ignore loop devices unless they're backed by a file
             return (not devicelibs.loop.get_backing_file(name))
 
+        if self.udevDeviceIsDisk(info):
+            # Ignore any readonly disks
+            if util.get_sysfs_attr(info["sysfs_path"], 'ro') == '1':
+                log.debug("Ignoring read only device %s" % name)
+                # FIXME: We have to handle this better, ie: not ignore these.
+                self.addIgnoredDisk(name)
+                return True
+
+        # FIXME: check for virtual devices whose slaves are on the ignore list
+
+    def udevDeviceIsDisk(self, info):
         # We want exclusiveDisks to operate on anything that could be
         # considered a directly usable disk, ie: fwraid array, mpath, or disk.
         #
         # Unfortunately, since so many things are represented as disks by
         # udev/sysfs, we have to define what is a disk in terms of what is
         # not a disk.
-        if udev_device_is_disk(info) and \
-           not udev_device_is_dm_partition(info) and \
-           not udev_device_is_dm_lvm(info) and \
-           not udev_device_is_dm_crypt(info) and \
-           not (udev_device_is_md(info) and
-                not udev_device_get_md_container(info)):
-            if self.exclusiveDisks and name not in self.exclusiveDisks:
-                log.debug("device '%s' not in exclusiveDisks" % name)
-                self.addIgnoredDisk(name)
-                return True
-
-        # Ignore any readonly disks
-        if (udev_device_is_disk(info) and not
-            (udev_device_is_cdrom(info) or
-             udev_device_is_partition(info) or
-             udev_device_is_dm_partition(info) or
-             udev_device_is_dm_lvm(info) or
-             udev_device_is_dm_crypt(info) or
-             (udev_device_is_md(info) and not
-              udev_device_get_md_container(info)))):
-            if util.get_sysfs_attr(info["sysfs_path"], 'ro') == '1':
-                log.debug("Ignoring read only device %s" % name)
-                self.addIgnoredDisk(name)
-                return True
-
-        # FIXME: check for virtual devices whose slaves are on the ignore list
+        return (udev_device_is_disk(info) and
+                not (udev_device_is_cdrom(info) or
+                     udev_device_is_partition(info) or
+                     udev_device_is_dm_partition(info) or
+                     udev_device_is_dm_lvm(info) or
+                     udev_device_is_dm_crypt(info) or
+                     (udev_device_is_md(info) and
+                      not udev_device_get_md_container(info))))
 
     def addUdevLVDevice(self, info):
         name = udev_device_get_name(info)
@@ -954,28 +942,9 @@ class DeviceTree(object):
 
         if self.isIgnored(info):
             log.info("ignoring %s (%s)" % (name, sysfs_path))
-            if name not in self._ignoredDisks:
+            if name not in self.ignoredDisks:
                 self.addIgnoredDisk(name)
 
-            if udev_device_is_multipath_member(info):
-                # last time we are seeing this mpath member is now, so make sure
-                # LVM ignores its partitions too else a duplicate VG name could
-                # harm us later during partition creation:
-                if udev_device_is_dm(info):
-                    path = "/dev/mapper/%s" % name
-                else:
-                    path = "/dev/%s" % name
-                log.debug("adding partitions on %s to the lvm ignore list" % path)
-                partitions_paths = []
-                try:
-                    partitions_paths = [p.path
-                                       for p in parted.Disk(device=parted.Device(path=path)).partitions]
-                except (_ped.IOException, _ped.DeviceException, _ped.DiskLabelException) as e:
-                    log.error("Parted error scanning partitions on %s:" % path)
-                    log.error(str(e))
-                # slice off the "/dev/" part, lvm filter cares only about the rest
-                partitions_paths = [p[5:] for p in partitions_paths]
-                map(lvm.lvm_cc_addFilterRejectRegexp, partitions_paths)
             return
 
         log.info("scanning %s (%s)..." % (name, sysfs_path))
@@ -1460,7 +1429,7 @@ class DeviceTree(object):
         def _all_ignored(rss):
             retval = True
             for rs in rss:
-                if rs.name not in self._ignoredDisks:
+                if rs.name not in self.ignoredDisks:
                     retval = False
                     break
             return retval
@@ -1469,15 +1438,8 @@ class DeviceTree(object):
         rss = block.getRaidSetFromRelatedMem(uuid=uuid, name=name,
                                             major=major, minor=minor)
         if len(rss) == 0:
-            # we ignore the device in the hope that all the devices
-            # from this set will be ignored.
-            self.unusedRaidMembers.append(device.name)
-            self.addIgnoredDisk(device.name)
-            return
-
-        # We ignore the device if all the rss are in self._ignoredDisks
-        if _all_ignored(rss):
-            self.addIgnoredDisk(device.name)
+            log.warning("dmraid member %s does not appear to belong to any "
+                        "array" % device.name)
             return
 
         for rs in rss:
@@ -1836,7 +1798,7 @@ class DeviceTree(object):
 
     def _populate(self):
         log.info("DeviceTree.populate: ignoredDisks is %s ; exclusiveDisks is %s"
-                    % (self._ignoredDisks, self.exclusiveDisks))
+                    % (self.ignoredDisks, self.exclusiveDisks))
 
         self.setupDiskImages()
 
@@ -1944,6 +1906,12 @@ class DeviceTree(object):
         # After having the complete tree we make sure that the system
         # inconsistencies are ignored or resolved.
         self._handleInconsistencies()
+
+        # hide any subtrees that begin with an ignored disk
+        for disk in [d for d in self._devices if d.isDisk]:
+            if ((self.ignoredDisks and disk.name in self.ignoredDisks) or
+                (self.exclusiveDisks and disk.name not in self.ignoredDisks)):
+                self.hide(disk)
 
         self.teardownAll()
 
