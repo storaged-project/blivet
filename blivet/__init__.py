@@ -396,7 +396,7 @@ class Blivet(object):
         if self.ksdata:
             self.config.update(self.ksdata)
 
-        if not flags.image_install:
+        if flags.installer_mode and not flags.image_install:
             self.iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
@@ -422,7 +422,8 @@ class Blivet(object):
             self.bootloader.stage1_device = None
             self.bootloader.stage2_device = None
 
-        self.roots = findExistingInstallations(self.devicetree)
+        if flags.installer_mode:
+            self.roots = findExistingInstallations(self.devicetree)
 
         self.dumpState("initial")
 
