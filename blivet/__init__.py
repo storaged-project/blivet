@@ -37,7 +37,11 @@ import sys
 import statvfs
 import copy
 
-import nss.nss
+try:
+    import nss.nss
+except ImportError:
+    nss = None
+
 import parted
 
 from pykickstart.constants import *
@@ -215,6 +219,10 @@ def writeEscrowPackets(storage):
         return
 
     log.debug("escrow: writeEscrowPackets start")
+
+    if not nss:
+        log.error("escrow: no nss python module -- aborting")
+        return
 
     nss.nss.nss_init_nodb() # Does nothing if NSS is already initialized
 
