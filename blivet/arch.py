@@ -30,6 +30,9 @@ import os
 
 from .flags import flags
 
+# DMI information paths
+DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
+
 ## Get the SPARC machine variety type.
 # @return The SPARC machine type, or 0 if not SPARC.
 def getSparcMachine():
