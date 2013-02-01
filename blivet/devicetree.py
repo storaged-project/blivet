@@ -1499,7 +1499,8 @@ class DeviceTree(object):
         # If not, see if the user would like to create one.
         # XXX ignore disklabels on multipath or biosraid member disks
         if not udev_device_is_biosraid_member(info) and \
-           not udev_device_is_multipath_member(info):
+           not udev_device_is_multipath_member(info) and \
+           format_type != "iso9660":
             self.handleUdevDiskLabelFormat(info, device)
             if device.partitioned or self.isIgnored(info) or \
                (not device.partitionable and
