@@ -53,42 +53,42 @@ def has_lvm():
 # Theoretically we can handle all that can be handled with the LVM --config
 # argument.  For every time we call an lvm_cc (lvm compose config) funciton
 # we regenerate the config_args with all global info.
-config_args = [] # Holds the final argument list
 config_args_data = { "filterRejects": [],    # regular expressions to reject.
                             "filterAccepts": [] }   # regexp to accept
 
-def _composeConfig():
+def _getConfigArgs(**kwargs):
     """lvm command accepts lvm.conf type arguments preceded by --config. """
-    global config_args, config_args_data
+    global config_args_data
     config_args = []
+
+    read_only_locking = kwargs.get("read_only_locking", False)
 
     filter_string = ""
     rejects = config_args_data["filterRejects"]
     for reject in rejects:
         filter_string += ("\"r|/%s$|\"," % reject)
 
-    filter_string = " filter=[%s] " % filter_string.strip(",")
-
-    # As we add config strings we should check them all.
-    if filter_string == "":
-        # Nothing was really done.
-        return
+    if filter_string:
+        filter_string = " filter=[%s] " % filter_string.strip(",")
 
     # devices_string can have (inside the brackets) "dir", "scan",
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
+    config_string = ""
     devices_string = " devices {%s} " % (filter_string) # strings can be added
-    config_string = devices_string # more strings can be added.
-    config_args = ["--config", config_string]
+    if filter_string:
+        config_string += devices_string # more strings can be added.
+    if read_only_locking:
+        config_string += "global {locking_type=4} "
+    if config_string:
+        config_args = ["--config", config_string]
+    return config_args
 
 def lvm_cc_addFilterRejectRegexp(regexp):
     """ Add a regular expression to the --config string."""
     global config_args_data
     log.debug("lvm filter: adding %s to the reject list" % regexp)
     config_args_data["filterRejects"].append(regexp)
-
-    # compose config once more.
-    _composeConfig()
 
 def lvm_cc_removeFilterRejectRegexp(regexp):
     """ Remove a regular expression from the --config string."""
@@ -100,14 +100,10 @@ def lvm_cc_removeFilterRejectRegexp(regexp):
         log.debug("%s wasn't in the reject list" % regexp)
         return
 
-    # compose config once more.
-    _composeConfig()
-
 def lvm_cc_resetFilter():
-    global config_args, config_args_data
+    global config_args_data
     config_args_data["filterRejects"] = []
     config_args_data["filterAccepts"] = []
-    config_args = []
 # End config_args handling code.
 
 # Names that should not be used int the creation of VGs
@@ -166,7 +162,7 @@ def pvcreate(device):
     # we force dataalignment=1024k since we cannot get lvm to tell us what
     # the pe_start will be in advance
     args = ["pvcreate"] + \
-            config_args + \
+            _getConfigArgs() + \
             ["--dataalignment", "1024k"] + \
             [device]
 
@@ -178,7 +174,7 @@ def pvcreate(device):
 def pvresize(device, size):
     args = ["pvresize"] + \
             ["--setphysicalvolumesize", ("%dm" % size)] + \
-            config_args + \
+            _getConfigArgs() + \
             [device]
 
     try:
@@ -188,7 +184,7 @@ def pvresize(device, size):
 
 def pvremove(device):
     args = ["pvremove", "--force", "--force", "--yes"] + \
-            config_args + \
+            _getConfigArgs() + \
             [device]
 
     try:
@@ -209,7 +205,7 @@ def pvinfo(device):
             "--unit=k", "--nosuffix", "--nameprefixes", "--rows",
             "--unquoted", "--noheadings",
             "-opv_uuid,pe_start,vg_name,vg_uuid,vg_size,vg_free,vg_extent_size,vg_extent_count,vg_free_count,pv_count"] + \
-            config_args + \
+            _getConfigArgs(read_only_locking=True) + \
             [device]
 
     rc = util.capture_output(["lvm"] + args)
@@ -233,7 +229,7 @@ def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
     if pe_size:
         argv.extend(["-s", "%dm" % pe_size])
-    argv.extend(config_args)
+    argv.extend(_getConfigArgs())
     argv.append(vg_name)
     argv.extend(pv_list)
 
@@ -244,7 +240,7 @@ def vgcreate(vg_name, pv_list, pe_size):
 
 def vgremove(vg_name):
     args = ["vgremove", "--force"] + \
-            config_args +\
+            _getConfigArgs() +\
             [vg_name]
 
     try:
@@ -254,7 +250,7 @@ def vgremove(vg_name):
 
 def vgactivate(vg_name):
     args = ["vgchange", "-a", "y"] + \
-            config_args + \
+            _getConfigArgs() + \
             [vg_name]
 
     try:
@@ -264,7 +260,7 @@ def vgactivate(vg_name):
 
 def vgdeactivate(vg_name):
     args = ["vgchange", "-a", "n"] + \
-            config_args + \
+            _getConfigArgs() + \
             [vg_name]
 
     try:
@@ -280,7 +276,7 @@ def vgreduce(vg_name, pv_list, rm=False):
     the --removemissing option.
     """
     args = ["vgreduce"]
-    args.extend(config_args)
+    args.extend(_getConfigArgs())
     if rm:
         args.extend(["--removemissing", "--force", vg_name])
     else:
@@ -295,7 +291,7 @@ def vginfo(vg_name):
     args = ["vgs", "--noheadings", "--nosuffix"] + \
             ["--units", "m"] + \
             ["-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count"] + \
-            config_args + \
+            _getConfigArgs(read_only_locking=True) + \
             [vg_name]
 
     buf = util.capture_output(["lvm"] + args)
@@ -310,7 +306,7 @@ def lvs(vg_name):
             "--unit", "m", "--nosuffix", "--nameprefixes", "--rows",
             "--unquoted", "--noheadings",
             "-olv_name,lv_uuid,lv_size,lv_attr"] + \
-            config_args + \
+            _getConfigArgs(read_only_locking=True) + \
             [vg_name]
 
     rc = util.capture_output(["lvm"] + args)
@@ -332,7 +328,7 @@ def lvs(vg_name):
 
 def lvorigin(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "origin"] + \
-            config_args + \
+            _getConfigArgs(read_only_locking=True) + \
             ["%s/%s" % (vg_name, lv_name)]
 
     buf = util.capture_output(["lvm"] + args)
@@ -348,7 +344,7 @@ def lvcreate(vg_name, lv_name, size, pvs=[]):
     args = ["lvcreate"] + \
             ["-L", "%dm" % size] + \
             ["-n", lv_name] + \
-            config_args + \
+            _getConfigArgs() + \
             [vg_name] + pvs
 
     try:
@@ -358,7 +354,7 @@ def lvcreate(vg_name, lv_name, size, pvs=[]):
 
 def lvremove(vg_name, lv_name):
     args = ["lvremove"] + \
-            config_args + \
+            _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
@@ -369,7 +365,7 @@ def lvremove(vg_name, lv_name):
 def lvresize(vg_name, lv_name, size):
     args = ["lvresize"] + \
             ["--force", "-L", "%dm" % size] + \
-            config_args + \
+            _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
@@ -380,7 +376,7 @@ def lvresize(vg_name, lv_name, size):
 def lvactivate(vg_name, lv_name):
     # see if lvchange accepts paths of the form 'mapper/$vg-$lv'
     args = ["lvchange", "-a", "y"] + \
-            config_args + \
+            _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
@@ -390,7 +386,7 @@ def lvactivate(vg_name, lv_name):
 
 def lvdeactivate(vg_name, lv_name):
     args = ["lvchange", "-a", "n"] + \
-            config_args + \
+            _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
