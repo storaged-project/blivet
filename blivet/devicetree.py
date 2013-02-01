@@ -591,7 +591,8 @@ class DeviceTree(object):
                 log.debug("failed to find dm node for %s" % dmdev.name)
                 continue
 
-        cleanup_luks = udev_device_is_dm_luks(info) and self._cleanup
+        handle_luks = (udev_device_is_dm_luks(info) and
+                        (self._cleanup or not flags.installer_mode))
         slave_dev = None
         slave_info = None
         if device is None:
@@ -619,7 +620,7 @@ class DeviceTree(object):
                             log.error("failure scanning device %s: could not add slave %s" % (name, dev_name))
                             return
 
-                if cleanup_luks:
+                if handle_luks:
                     slave_info = new_info
 
             # try to get the device again now that we've got all the slaves
@@ -632,7 +633,7 @@ class DeviceTree(object):
 
             # if this is a luks device whose map name is not what we expect,
             # fix up the map name and see if that sorts us out
-            if device is None and cleanup_luks and slave_info and slave_dev:
+            if device is None and handle_luks and slave_info and slave_dev:
                 slave_dev.format.mapName = name
                 self.handleUdevLUKSFormat(slave_info, slave_dev)
 
