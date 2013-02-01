@@ -549,13 +549,20 @@ class DeviceTree(object):
         uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
 
-        # initiate detection of all PVs and hope that it leads to us having
-        # the VG and LVs in the tree
-        for pv_name in os.listdir("/sys" + sysfs_path + "/slaves"):
-            link = os.readlink("/sys" + sysfs_path + "/slaves/" + pv_name)
-            pv_sysfs_path = os.path.normpath(sysfs_path + '/slaves/' + link)
-            pv_info = udev_get_block_device(pv_sysfs_path)
-            self.addUdevDevice(pv_info)
+        vg_name = udev_device_get_lv_vg_name(info)
+        device = self.getDeviceByName(vg_name)
+        if device and not isinstance(device, LVMVolumeGroupDevice):
+            log.warning("found non-vg device with name %s" % vg_name)
+            device = None
+
+        if not device:
+            # initiate detection of all PVs and hope that it leads to us having
+            # the VG and LVs in the tree
+            for pv_name in os.listdir("/sys" + sysfs_path + "/slaves"):
+                link = os.readlink("/sys" + sysfs_path + "/slaves/" + pv_name)
+                pv_sysfs_path = os.path.normpath(sysfs_path + '/slaves/' + link)
+                pv_info = udev_get_block_device(pv_sysfs_path)
+                self.addUdevDevice(pv_info)
 
         vg_name = udev_device_get_lv_vg_name(info)
         device = self.getDeviceByName(vg_name)
@@ -973,6 +980,11 @@ class DeviceTree(object):
 
         log.info("scanning %s (%s)..." % (name, sysfs_path))
         device = self.getDeviceByName(name)
+        if device is None and udev_device_is_md(info):
+            device = self.getDeviceByName(udev_device_get_md_name(info))
+            if device and not isinstance(device, MDRaidArrayDevice):
+                # make sure any device we found is an md device
+                device = None
 
         #
         # The first step is to either look up or create the device
@@ -1150,10 +1162,22 @@ class DeviceTree(object):
         """
         ret = False
         vg_name = vg_device.name
-        lv_names = vg_device.lv_names
-        lv_uuids = vg_device.lv_uuids
-        lv_sizes = vg_device.lv_sizes
-        lv_attr = vg_device.lv_attr
+
+        if not flags.installer_mode:
+            info = devicelibs.lvm.lvs(vg_name)
+            try:
+                lv_names = udev_device_get_lv_names(info)
+                lv_uuids = udev_device_get_lv_uuids(info)
+                lv_sizes = udev_device_get_lv_sizes(info)
+                lv_attr = udev_device_get_lv_attr(info)
+            except KeyError as e:
+                log.warning("invalid data for %s: %s" % (vg_name, e))
+                return
+        else:
+            lv_names = vg_device.lv_names
+            lv_uuids = vg_device.lv_uuids
+            lv_sizes = vg_device.lv_sizes
+            lv_attr = vg_device.lv_attr
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s" % vg_name)
@@ -1230,8 +1254,8 @@ class DeviceTree(object):
 
                 mirrors[name]["log"] = lv_sizes[index]
 
-            lv_dev = self.getDeviceByName(name)
-            if lv_dev is None and flags.installer_mode:
+            lv_dev = self.getDeviceByUuid(lv_uuids[index])
+            if lv_dev is None:
                 lv_uuid = lv_uuids[index]
                 lv_size = lv_sizes[index]
                 lv_device = LVMLogicalVolumeDevice(lv_name,
@@ -1240,7 +1264,19 @@ class DeviceTree(object):
                                                    size=lv_size,
                                                    exists=True)
                 self._addDevice(lv_device)
-                lv_device.setup()
+                if flags.installer_mode:
+                    lv_device.setup()
+
+                if lv_device.status:
+                    lv_device.updateSysfsPath()
+                    lv_info = udev_get_block_device(lv_device.sysfsPath)
+                    if not lv_info:
+                        log.error("failed to get udev data for lv %s" % lv_device.name)
+                        continue
+
+                    # do format handling now
+                    self.addUdevDevice(lv_info)
+
                 ret = True
 
         for name, mirror in mirrors.items():
@@ -1336,8 +1372,8 @@ class DeviceTree(object):
                 log.warning("invalid data for %s: %s" % (name, e))
                 return
 
+            md_metadata = info.get("MD_METADATA")
             md_name = None
-            md_metadata = None
 
             # check the list of devices udev knows about to see if the array
             # this device belongs to is already active
@@ -1357,9 +1393,17 @@ class DeviceTree(object):
                 if dev_uuid == md_uuid and dev_level == md_level:
                     md_name = udev_device_get_md_name(dev)
                     md_metadata = dev.get("MD_METADATA")
+                    if not md_name:
+                        # containers don't typically have names and they also
+                        # don't have a symlink in /dev/md
+                        md_name = udev_device_get_name(dev)
+                        if md_level != "container" and \
+                           re.match(r'md\d+$', md_name):
+                            # md0 -> 0
+                            md_name = md_name[2:]
+
                     break
 
-            md_info = devicelibs.mdraid.mdexamine(device.path)
             if not md_metadata:
                 md_metadata = md_info.get("metadata", "0.90")
 
@@ -1552,6 +1596,9 @@ class DeviceTree(object):
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
+            if not flags.installer_mode:
+                info.update(devicelibs.mdraid.mdexamine(device.path))
+
             # mdraid
             try:
                 kwargs["mdUuid"] = udev_device_get_md_uuid(info)
@@ -1560,6 +1607,9 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev_device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
+            if not flags.installer_mode:
+                info.update(devicelibs.lvm.pvinfo(device.path))
+
             try:
                 kwargs["vgName"] = udev_device_get_vg_name(info)
             except KeyError as e:

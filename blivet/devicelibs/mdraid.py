@@ -234,11 +234,13 @@ def mddeactivate(device):
 
 def mdexamine(device):
     _vars = util.capture_output(["mdadm",
+                                 "--examine", "--export", device]).split()
+    _bvars = util.capture_output(["mdadm",
                                  "--examine", "--brief", device]).split()
 
     info = {}
-    if len(_vars) > 1 and _vars[1].startswith("/dev/md"):
-        info["device"] = _vars[1]
+    if len(_bvars) > 1 and _bvars[1].startswith("/dev/md"):
+        info["device"] = _bvars[1]
         _vars = _vars[2:]
     elif len(_vars) > 1:
         _vars = _vars[1:]
@@ -248,7 +250,16 @@ def mdexamine(device):
         if not equals:
             continue
 
-        info[name.lower()] = value.strip()
+        info[name] = value.strip()
+
+    if "MD_METADATA" not in info:
+        for var in _bvars:
+            (name, equals, value) = var.partition("=")
+            if not equals:
+                continue
+
+            if name == "metadata":
+                info["MD_METADATA"] = value
 
     return info
 

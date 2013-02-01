@@ -205,28 +205,27 @@ def pvinfo(device):
         pvs -o pv_name,pv_mda_count,vg_name,vg_uuid --config \
             'devices { scan = "/dev" filter = ["a/loop0/", "r/.*/"] }'
     """
-    #cfg = "'devices { scan = \"/dev\" filter = [\"a/%s/\", \"r/.*/\"] }'" 
-    args = ["pvs", "--noheadings"] + \
-            ["--units", "m"] + \
-            ["-o", "pv_name,pv_mda_count,vg_name,vg_uuid"] + \
+    args = ["pvs",
+            "--unit=k", "--nosuffix", "--nameprefixes", "--rows",
+            "--unquoted", "--noheadings",
+            "-opv_uuid,pe_start,vg_name,vg_uuid,vg_size,vg_free,vg_extent_size,vg_extent_count,vg_free_count,pv_count"] + \
             config_args + \
             [device]
 
     rc = util.capture_output(["lvm"] + args)
-    vals = rc.split()
-    if not vals:
-        raise LVMError("pvinfo failed for %s" % device)
+    _vars = rc.split()
+    info = {}
+    for var in _vars:
+        (name, equals, value) = var.partition("=")
+        if not equals:
+            continue
 
-    # don't raise an exception if pv is not a part of any vg
-    pv_name = vals[0]
-    try:
-        vg_name, vg_uuid = vals[2], vals[3]
-    except IndexError:
-        vg_name, vg_uuid = "", ""
-    
-    info = {'pv_name': pv_name,
-            'vg_name': vg_name,
-            'vg_uuid': vg_uuid}
+        if "," in value:
+            val = value.strip().split(",")
+        else:
+            val = value.strip()
+
+        info[name] = val
 
     return info
 
@@ -304,34 +303,32 @@ def vginfo(vg_name):
     if len(info) != 7:
         raise LVMError(_("vginfo failed for %s" % vg_name))
 
-    d = {}
-    (d['uuid'],d['size'],d['free'],d['pe_size'],
-     d['pe_count'],d['pe_free'],d['pv_count']) = info
-    return d
+    return info
 
 def lvs(vg_name):
-    args = ["lvs", "--noheadings", "--nosuffix"] + \
-            ["--units", "m"] + \
-            ["-o", "lv_name,lv_uuid,lv_size,lv_attr"] + \
+    args = ["lvs",
+            "--unit", "m", "--nosuffix", "--nameprefixes", "--rows",
+            "--unquoted", "--noheadings",
+            "-olv_name,lv_uuid,lv_size,lv_attr"] + \
             config_args + \
             [vg_name]
 
-    buf = util.capture_output(["lvm"] + args)
-
-    lvs = {}
-    for line in buf.splitlines():
-        line = line.strip()
-        if not line:
+    rc = util.capture_output(["lvm"] + args)
+    _vars = rc.split()
+    info = {}
+    for var in _vars:
+        (name, equals, value) = var.partition("=")
+        if not equals:
             continue
-        (name, uuid, size, attr) = line.split()
-        lvs[name] = {"size": size,
-                     "uuid": uuid,
-                     "attr": attr}
 
-    if not lvs:
-        raise LVMError(_("lvs failed for %s" % vg_name))
+        val = value.strip()
 
-    return lvs
+        if name not in info:
+            info[name] = []
+
+        info[name].append(val)
+
+    return info
 
 def lvorigin(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "origin"] + \
