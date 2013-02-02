@@ -136,7 +136,7 @@ def _schedulePartitions(storage, disks):
             log.info("skipping unneeded stage1 %s request" % request.fstype)
             log.debug(request)
 
-            if request.fstype == "efi":
+            if request.fstype == "efi" and stage1_device:
                 # Set the mountpoint for the existing EFI boot partition
                 stage1_device.format.mountpoint = "/boot/efi"
 
