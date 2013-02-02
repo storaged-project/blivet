@@ -315,7 +315,7 @@ class Blivet(object):
         self.doEncryptionPassphraseRetrofits()
 
         # now set the boot partition's flag
-        if self.bootloader:
+        if self.bootloader and not self.bootloader.skip_bootloader:
             if self.bootloader.stage2_bootable:
                 boot = self.bootDevice
             else:
