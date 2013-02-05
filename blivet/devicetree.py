@@ -1321,6 +1321,8 @@ class DeviceTree(object):
             if name not in self.names:
                 self.names.append(name)
 
+        self.handleVgLvs(vg_device)
+
     def handleUdevMDMemberFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
         # either look up or create the array device
@@ -1695,15 +1697,6 @@ class DeviceTree(object):
                 for parent in hidden.parents:
                     parent.addChild()
 
-    def _setupLvs(self):
-        ret = False
-
-        for device in self.getDevicesByType("lvmvg"):
-            if self.handleVgLvs(device):
-                ret = True
-
-        return ret
-
     def setupDiskImages(self):
         """ Set up devices to represent the disk image files. """
         for (name, path) in self.diskImages.items():
@@ -1883,17 +1876,6 @@ class DeviceTree(object):
                     devices.append(new_device)
 
             if len(devices) == 0:
-                # nothing is changing -- time to setup lvm lvs and scan them
-                # we delay this till all other devices are scanned so that
-                # 1) the lvm filter for ignored disks is completely setup
-                # 2) we have checked all devs for duplicate vg names
-                if self._setupLvs():
-                    # remove any logical volume devices from old_devices so
-                    # they will be re-scanned to get their formatting handled
-                    for (old_name, old_device) in old_devices.items():
-                        if udev_device_is_dm_lvm(old_device):
-                            del old_devices[old_name]
-                    continue
                 # nothing is changing -- we are finished building devices
                 break
 
