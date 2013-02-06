@@ -70,7 +70,7 @@ make DESTDIR=%{buildroot} install
 
 %files -f %{realname}.lang
 %defattr(-,root,root,-)
-%doc README ChangeLog COPYING
+%doc README ChangeLog COPYING examples
 %{python_sitelib}/*
 
 %changelog
