@@ -2214,7 +2214,10 @@ class DeviceTree(object):
                         device = self.getDeviceByName(lv)
 
         # check mount options for btrfs volumes in case it's a subvol
-        if device and device.type == "btrfs volume" and options:
+        if device and device.type.startswith("btrfs") and options:
+            # start with the volume -- not a subvolume
+            device = getattr(device, "volume", device)
+
             attr = None
             if "subvol=" in options:
                 attr = "name"
