@@ -55,6 +55,7 @@ from deviceaction import *
 from formats import getFormat
 from formats import get_device_format_class
 from formats import get_default_filesystem_type
+from formats.fs import nodev_filesystems
 import devicefactory
 from devicelibs.dm import name_from_dm_node
 from devicelibs.crypto import generateBackupPassphrase
@@ -405,6 +406,9 @@ class Blivet(object):
 
         if flags.installer_mode:
             self.roots = findExistingInstallations(self.devicetree)
+
+        if not flags.installer_mode:
+            self.getActiveMounts()
 
         self.dumpState("initial")
 
@@ -1870,6 +1874,56 @@ class Blivet(object):
 
         return new
 
+    def getActiveMounts(self):
+        """ Reflect active mounts in the appropriate devices' formats. """
+        log.info("collecting information about active mounts")
+        for line in open("/proc/mounts").readlines():
+            try:
+                (devspec, mountpoint, fstype, options, rest) = line.split(None,
+                                                                          4)
+            except IndexError:
+                blivet_log.error("failed to parse /proc/mounts line: %s" % line)
+                continue
+
+            if fstype == "btrfs":
+                # get the subvol name from /proc/self/mountinfo
+                for line in open("/proc/self/mountinfo").readlines():
+                    fields = line.split()
+                    _subvol = fields[3]
+                    _mountpoint = fields[4]
+                    _devspec = fields[9]
+                    if _mountpoint == mountpoint and _devspec == devspec:
+                        log.debug("subvol %s" % _subvol)
+                        options += ",subvol=%s" % _subvol[1:]
+
+            if fstype in nodev_filesystems:
+                if not flags.include_nodev:
+                    continue
+
+                log.info("found nodev %s filesystem mounted at %s"
+                            % (fstype, mountpoint))
+                # nodev filesystems require some special handling.
+                # For now, a lot of this is based on the idea that it's a losing
+                # battle to require the presence of an FS class for every type
+                # of nodev filesystem. Based on that idea, we just instantiate
+                # NoDevFS directly and then hack in the fstype as the device
+                # attribute.
+                fmt = getFormat("nodev")
+                fmt.device = fstype
+
+                # NoDevice also needs some special works since they don't have
+                # per-instance names in the kernel.
+                device = NoDevice(format=fmt)
+                n = len([d for d in self.devices if d.format.type == fstype])
+                device._name += ".%d" % n
+                self.devicetree._addDevice(device)
+                devspec = device.name
+
+            device = self.devicetree.resolveDevice(devspec, options=options)
+            if device is not None:
+                device.format.mountpoint = mountpoint   # for future mounts
+                device.format._mountpoint = mountpoint  # active mountpoint
+
 
 def mountExistingSystem(fsset, rootDevice,
                         allowDirty=None, dirtyCB=None,
@@ -2655,7 +2709,6 @@ class FSSet(object):
             fstab += line
 
         return fstab
-
 
 def getReleaseString():
     relName = None

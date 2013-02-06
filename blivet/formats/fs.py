@@ -57,14 +57,19 @@ mib = 1024 * 1024.0
 
 fs_configs = {}
 
-def get_kernel_filesystems():
-    fs_list = []
-    for line in open("/proc/filesystems").readlines():
-        fs_list.append(line.split()[-1])
-    return fs_list
+kernel_filesystems = []
+nodev_filesystems = []
 
-global kernel_filesystems
-kernel_filesystems = get_kernel_filesystems()
+def update_kernel_filesystems():
+    global kernel_filesystems
+    global nodev_filesystems
+    for line in open("/proc/filesystems").readlines():
+        fields = line.split()
+        kernel_filesystems.append(fields[-1])
+        if fields[0] == "nodev":
+            nodev_filesystems.append(fields[-1])
+
+update_kernel_filesystems()
 
 def fsConfigFromFile(config_file):
     """ Generate a set of attribute name/value pairs with which a
@@ -485,7 +490,7 @@ class FS(DeviceFormat):
 
         # If we successfully loaded a kernel module, for this filesystem, we
         # also need to update the list of supported filesystems.
-        kernel_filesystems = get_kernel_filesystems()
+        update_kernel_filesystems()
 
     def testMount(self, options=None):
         """ Try to mount the fs and return True if successful. """
@@ -1369,6 +1374,17 @@ class NoDevFS(FS):
 
     def _setDevice(self, devspec):
         self._device = devspec
+
+    @property
+    def type(self):
+        if self.device != self._type:
+            return self.device
+        else:
+            return self._type
+
+    @property
+    def mountType(self):
+        return self.device  # this is probably set to the real/specific fstype
 
     def _getExistingSize(self):
         pass

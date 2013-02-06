@@ -3415,7 +3415,7 @@ class NoDevice(StorageDevice):
                 format -- a DeviceFormat instance
         """
         if format:
-            name = format.type
+            name = format.device
         else:
             name = "none"
 
@@ -3424,7 +3424,8 @@ class NoDevice(StorageDevice):
     @property
     def path(self):
         """ Device node representing this device. """
-        return self.name
+        # the name may have a '.%d' suffix to make it unique
+        return self.name.split(".")[0]
 
     def setup(self, orig=False):
         """ Open, or set up, a device. """

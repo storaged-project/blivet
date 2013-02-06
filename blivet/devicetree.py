@@ -2142,6 +2142,8 @@ class DeviceTree(object):
                 if edd_number == spec:
                     device = self.getDeviceByName(edd_name)
                     break
+        elif options and "nodev" in options.split(","):
+            device = self.getDeviceByName(devspec)
         else:
             if not devspec.startswith("/dev/"):
                 device = self.getDeviceByName(devspec)

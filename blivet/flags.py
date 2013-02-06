@@ -54,6 +54,10 @@ class Flags(object):
 
         self.gpt = False
 
+        # whether to include nodev filesystems in the devicetree (only
+        # meaningful when flags.installer_mode is False)
+        self.include_nodev = False
+
         self.boot_cmdline = {}
 
         self.update_from_boot_cmdline()
