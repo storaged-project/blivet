@@ -454,6 +454,10 @@ class DeviceFactory(object):
         # TODO: striping, mirroring, &c
         # TODO: non-partition members (pv-on-md)
 
+        ##
+        ## Define and allocate container members.
+        ##
+
         # set_container_members can modify these, so save them now
         old_size = None
         old_disks = []
@@ -493,7 +497,9 @@ class DeviceFactory(object):
 
             raise
 
-        # set up container
+        ##
+        ## Create (or modify as needed) the container.
+        ##
         if not container and self.new_container_attr:
             if not parents:
                 raise StorageError("not enough free space on disks")
@@ -520,13 +526,21 @@ class DeviceFactory(object):
             parents = [container]
             log.debug("%r" % container)
 
+        ##
+        ## Create (or adjust as needed) the device.
+        ##
+
         # this will set the device's size if a device is passed in
         size = self.set_device_size(container, device=device)
+
         if device:
-            # We are adjusting a defined device: size, disk set, encryption,
-            # raid level, fstype. The StorageDevice instance exists, but the
-            # underlying device does not.
-            # TODO: handle toggling of encryption for leaf device
+            # We are adjusting a defined device: size, disk set, container
+            # member encryption, container raid level. The StorageDevice
+            # instance exists, but the underlying device does not.
+            # TODO: handle various other changes:
+            #       - toggle encryption for leaf device
+            #       - change raid level for device-level raid (lvm)
+            #       - change fstype, mountpoint, label
             e = None
             try:
                 self.post_create()
