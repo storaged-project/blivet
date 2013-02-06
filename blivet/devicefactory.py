@@ -159,7 +159,7 @@ class DeviceFactory(object):
         return self.size
 
     def set_container_members(self, container, members=None, device=None):
-        """ Set up and return the container's member partitions. """
+        """ Set up and return the container's member devices. """
         log_members = []
         if members:
             log_members = [str(m) for m in members]
@@ -176,11 +176,13 @@ class DeviceFactory(object):
         if self.container_size_func is None:
             return []
 
-        # set up member devices
         container_size = self.device_size
+
+        # list of disks to add/remove member devices to/from
         add_disks = []
         remove_disks = []
 
+        # set up member list and container based on the full argument set
         if members is None:
             members = []
 
@@ -189,6 +191,10 @@ class DeviceFactory(object):
         elif members:
             # mdarray
             container = device
+
+        ##
+        ## Determine the target disk set.
+        ##
 
         # XXX how can we detect/handle failure to use one or more of the disks?
         if members and device:
@@ -213,6 +219,9 @@ class DeviceFactory(object):
         # XXX TODO: multiple member devices per disk
 
         # prepare already-defined member partitions for reallocation
+        ##
+        ## Remove members from dropped disks.
+        ##
         for member in members[:]:
             if any([d in remove_disks for d in member.disks]):
                 if isinstance(member, LUKSDevice):
@@ -228,26 +237,28 @@ class DeviceFactory(object):
                     members.remove(member)
 
                 self.storage.destroyDevice(member)
+
+        ##
+        ## Handle toggling of member encryption.
+        ##
+        for member in members[:]:
+            member_encrypted = isinstance(member, LUKSDevice)
+            if member_encrypted and not self.encrypted:
+                if container:
+                    container.removeMember(member)
+
+                self.storage.destroyDevice(member)
+                members.remove(member)
+
+                self.storage.formatDevice(member.slave,
+                                          getFormat(self.member_format))
+                members.append(member.slave)
+                if container:
+                    container.addMember(member.slave)
+
                 continue
 
-            if isinstance(member, LUKSDevice):
-                if not self.encrypted:
-                    # encryption was toggled for the member devices
-                    if container:
-                        container.removeMember(member)
-
-                    self.storage.destroyDevice(member)
-                    members.remove(member)
-
-                    self.storage.formatDevice(member.slave,
-                                              getFormat(self.member_format))
-                    members.append(member.slave)
-                    if container:
-                        container.addMember(member.slave)
-
-                member = member.slave
-            elif self.encrypted:
-                # encryption was toggled for the member devices
+            if not member_encrypted and self.encrypted and self.encrypt_members:
                 if container:
                     container.removeMember(member)
 
@@ -261,11 +272,23 @@ class DeviceFactory(object):
                 if container:
                     container.addMember(luks_member)
 
+                continue
+
+        ##
+        ## Prepare previously allocated member partitions for reallocation.
+        ##
+        for member in members[:]:
+            if isinstance(member, LUKSDevice):
+                member = member.slave
+
+            # max size is set after instantiating the SizeSet below
             member.req_base_size = base_size
             member.req_size = member.req_base_size
             member.req_grow = True
 
-        # set up new members as needed to accommodate the device
+        ##
+        ## Define members on added disks.
+        ##
         new_members = []
         for disk in add_disks:
             if self.encrypted and self.encrypt_members:
@@ -294,12 +317,18 @@ class DeviceFactory(object):
             if container:
                 container.addMember(member)
 
+        ##
+        ## Determine target container size.
+        ##
         if container:
             log.debug("using container %s with %d devices" % (container.name,
                         len(self.storage.devicetree.getChildren(container))))
             container_size = self.container_size_func(container, device)
             log.debug("raw container size reported as %d" % container_size)
 
+        ##
+        ## Set up SizeSet to manage growth of member partitions.
+        ##
         log.debug("adding a %s with size %d" % (self.set_class.__name__,
                                                 container_size))
         size_set = self.set_class(members, container_size)
@@ -310,6 +339,9 @@ class DeviceFactory(object):
 
             member.req_max_size = size_set.size
 
+        ##
+        ## Allocate the member partitions.
+        ##
         try:
             self.allocate_partitions()
         except PartitioningError as e:
