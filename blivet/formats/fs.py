@@ -41,7 +41,7 @@ from parted import fileSystemType
 from ..storage_log import log_method_call
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)

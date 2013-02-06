@@ -1,7 +1,7 @@
 import inspect
 import logging
 
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 log.addHandler(logging.NullHandler())
 
 def function_name_and_depth():
@@ -34,7 +34,7 @@ def log_method_call(d, *args, **kwargs):
             v = "Skipped"
         fmt_args.extend([k, v])
 
-    logging.getLogger("storage").debug(fmt % tuple(fmt_args))
+    logging.getLogger("blivet").debug(fmt % tuple(fmt_args))
 
 def log_method_return(d, retval):
     classname = d.__class__.__name__
@@ -42,5 +42,5 @@ def log_method_return(d, retval):
     spaces = depth * ' '
     fmt = "%s%s.%s returned %s"
     fmt_args = (spaces, classname, methodname, retval)
-    logging.getLogger("storage").debug(fmt % fmt_args)
+    logging.getLogger("blivet").debug(fmt % fmt_args)
 

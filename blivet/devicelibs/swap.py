@@ -31,7 +31,7 @@ import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 def mkswap(device, label=''):
     # We use -f to force since mkswap tends to refuse creation on lvs with

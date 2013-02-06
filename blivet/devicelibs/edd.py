@@ -27,7 +27,7 @@ import os
 import re
 import struct
 
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 re_host_bus = re.compile(r'^PCI\s*(\S*)\s*channel: (\S*)\s*$')
 re_interface_scsi = re.compile(r'^SCSI\s*id: (\S*)\s*lun: (\S*)\s*$')

@@ -30,7 +30,7 @@ import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 def dm_setup(args):
     ret = util.run_program(["dmsetup"] + args)

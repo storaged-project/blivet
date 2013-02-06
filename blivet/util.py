@@ -4,7 +4,7 @@ import subprocess
 import re
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
 
 from threading import Lock

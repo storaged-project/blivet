@@ -7,7 +7,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 def parseMultipathOutput(output):
     """

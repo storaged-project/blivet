@@ -36,7 +36,7 @@ import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 def _getCandidateDisks(storage):
     """ Return a list of disks with space for a default-sized partition. """

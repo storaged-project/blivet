@@ -35,7 +35,7 @@ import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 DEVICE_TYPE_LVM = 0
 DEVICE_TYPE_MD = 1

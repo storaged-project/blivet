@@ -24,7 +24,7 @@ from .udev import udev_settle
 from . import ROOT_PATH
 import logging
 import time
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)

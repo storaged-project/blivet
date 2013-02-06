@@ -29,7 +29,7 @@ from . import ROOT_PATH
 from .udev import udev_trigger
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)

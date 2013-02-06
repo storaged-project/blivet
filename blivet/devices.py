@@ -123,7 +123,7 @@ _ = lambda x: gettext.ldgettext("blivet", x)
 P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 def get_device_majors():
     majors = {}
@@ -434,7 +434,7 @@ class StorageDevice(Device):
         represented by an FS instance. A StorageDevice's create method
         should create a filesystem if one has been specified.
     """
-    _type = "storage"
+    _type = "blivet"
     _devDir = "/dev"
     sysfsBlockDir = "class/block"
     _resizable = False

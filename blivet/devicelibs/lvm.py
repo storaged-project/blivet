@@ -25,7 +25,7 @@ import math
 import re
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 from .. import util
 from .. import arch

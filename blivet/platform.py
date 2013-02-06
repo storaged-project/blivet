@@ -21,7 +21,7 @@
 #
 import os
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 import parted
 

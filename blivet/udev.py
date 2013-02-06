@@ -31,7 +31,7 @@ import pyudev
 global_udev = pyudev.Udev()
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 def udev_enumerate_devices(deviceClass="block"):
     devices = global_udev.enumerate_devices(subsystem=deviceClass)

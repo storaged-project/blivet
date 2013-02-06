@@ -31,7 +31,7 @@ import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
-log = logging.getLogger("storage")
+log = logging.getLogger("blivet")
 
 
 class SwapSpace(DeviceFormat):
