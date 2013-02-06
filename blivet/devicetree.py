@@ -2159,6 +2159,11 @@ class DeviceTree(object):
                     if dm_name:
                         devspec = "/dev/mapper/" + dm_name
 
+                if re.match(r'/dev/md\d+(p\d+)?$', devspec):
+                    md_name = devicelibs.mdraid.name_from_md_node(devspec[5:])
+                    if md_name:
+                        devspec = "/dev/md/" + md_name
+
                 # device path
                 device = self.getDeviceByPath(devspec)
 
