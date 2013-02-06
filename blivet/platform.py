@@ -30,7 +30,7 @@ from .flags import flags
 from .partspec import PartSpec
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 N_ = lambda x: x
 
 class Platform(object):

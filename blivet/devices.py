@@ -119,8 +119,8 @@ from udev import *
 from formats import get_device_format_class, getFormat, DeviceFormat
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
-P_ = lambda x, y, z: gettext.ldngettext("anaconda", x, y, z)
+_ = lambda x: gettext.ldgettext("blivet", x)
+P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
 
 import logging
 log = logging.getLogger("storage")

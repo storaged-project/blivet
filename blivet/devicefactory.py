@@ -32,7 +32,7 @@ from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
 log = logging.getLogger("storage")

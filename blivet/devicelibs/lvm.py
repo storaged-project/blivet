@@ -32,7 +32,7 @@ from .. import arch
 from ..errors import *
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 MAX_LV_SLOTS = 256
 

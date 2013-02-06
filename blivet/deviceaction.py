@@ -32,7 +32,7 @@ from errors import *
 from parted import partitionFlag, PARTITION_LBA
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
 log = logging.getLogger("storage")

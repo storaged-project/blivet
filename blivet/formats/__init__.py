@@ -33,7 +33,7 @@ from ..devicelibs.mdraid import md_node_from_name
 from ..udev import udev_device_get_major, udev_device_get_minor
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
 log = logging.getLogger("storage")

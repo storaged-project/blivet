@@ -32,7 +32,7 @@ import itertools
 log = logging.getLogger("storage")
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 has_libiscsi = True
 try:

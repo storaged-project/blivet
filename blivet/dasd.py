@@ -32,8 +32,8 @@ import logging
 log = logging.getLogger("storage")
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
-P_ = lambda x, y, z: gettext.ldngettext("anaconda", x, y, z)
+_ = lambda x: gettext.ldgettext("blivet", x)
+P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
 
 def getDasdPorts():
     """ Return comma delimited string of valid DASD ports. """

@@ -1,7 +1,7 @@
 # partitioning.py
 # Disk partitioning functions.
 #
-# Copyright (C) 2009  Red Hat, Inc.
+# Copyright (C) 2009, 2010, 2011, 2012, 2013  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
@@ -33,7 +33,7 @@ from devices import PartitionDevice, LUKSDevice, devicePathToName
 from formats import getFormat
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
 log = logging.getLogger("storage")

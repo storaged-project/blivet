@@ -26,7 +26,7 @@ from pycryptsetup import CryptSetup
 from ..errors import *
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 LUKS_METADATA_SIZE = 2.0    # MB
 

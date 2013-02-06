@@ -27,7 +27,7 @@ import time
 log = logging.getLogger("storage")
 
 import gettext
-_ = lambda x: gettext.ldgettext("anaconda", x)
+_ = lambda x: gettext.ldgettext("blivet", x)
 
 _fcoe_module_loaded = False
 
