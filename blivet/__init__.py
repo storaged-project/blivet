@@ -199,6 +199,16 @@ def writeEscrowPackets(storage):
 
     log.debug("escrow: writeEscrowPackets done")
 
+def empty_device(device, devicetree):
+    empty = True
+    if device.partitioned:
+        partitions = devicetree.getChildren(device)
+        empty = all([p.isMagic for p in partitions])
+    else:
+        empty = (device.format.type is None)
+
+    return empty
+
 
 class StorageDiscoveryConfig(object):
     """ Class to encapsulate various detection/initialization parameters. """
@@ -620,16 +630,6 @@ class Blivet(object):
         clearPartDevices = kwargs.get("clearPartDevices",
                                       self.config.clearPartDevices)
 
-        def empty_disk(device):
-            empty = True
-            if device.partitioned:
-                partitions = self.devicetree.getChildren(device)
-                empty = all([p.isMagic for p in partitions])
-            else:
-                empty = (device.format.type is None)
-
-            return empty
-
         for disk in device.disks:
             # this will not include disks with hidden formats like multipath
             # and firmware raid member disks
@@ -649,7 +649,7 @@ class Blivet(object):
             if not self.config.initializeDisks or not device.isDisk:
                 return False
 
-            if not empty_disk(device):
+            if not empty_device(device, self.devicetree):
                 return False
 
         if isinstance(device, PartitionDevice):
@@ -674,7 +674,7 @@ class Blivet(object):
                 # if clearPartType is not CLEARPART_TYPE_ALL but we'll still be
                 # removing every partition from the disk, return True since we
                 # will want to be able to create a new disklabel on this disk
-                if not empty_disk(device):
+                if not empty_device(device, self.devicetree):
                     return False
 
             # Never clear disks with hidden formats
