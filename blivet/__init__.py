@@ -348,7 +348,8 @@ class Blivet(object):
                     dev.disk.setup()
                     dev.disk.format.commitToDisk()
 
-        self.dumpState("final")
+        if flags.installer_mode:
+            self.dumpState("final")
 
     @property
     def nextID(self):
@@ -406,11 +407,10 @@ class Blivet(object):
 
         if flags.installer_mode:
             self.roots = findExistingInstallations(self.devicetree)
+            self.dumpState("initial")
 
         if not flags.installer_mode:
             self.getActiveMounts()
-
-        self.dumpState("initial")
 
         self.updateBootLoaderDiskList()
 
