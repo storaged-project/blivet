@@ -1266,7 +1266,7 @@ class NTFS(FS):
             if self.exists and os.path.exists(self.device) and \
                util.find_program_in_path(self.resizefsProg):
                 minSize = None
-                buf = util.run_program([self.resizefsProg, "-m", self.device])
+                buf = util.capture_output([self.resizefsProg, "-m", self.device])
                 for l in buf.split("\n"):
                     if not l.startswith("Minsize"):
                         continue
