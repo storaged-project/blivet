@@ -11,3 +11,6 @@ po/en@quot.insert-header
 po/en@quot.po
 po/remove-potcdate.sed
 po/stamp-po
+updates.img
+updates/
+

@@ -1,0 +1,219 @@
+#!/usr/bin/python
+#
+# makeupdates - Generate an updates.img containing changes since the last
+#               tag.
+#
+# Copyright (C) 2009-2013  Red Hat, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation; either version 2.1 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Author: David Cantrell <dcantrell@redhat.com>
+
+import getopt
+import os
+import shutil
+import subprocess
+import sys
+
+def getArchiveTag(spec, name="blivet"):
+    """ Get the last tag from the .spec file
+    """
+    f = open(spec)
+    lines = f.readlines()
+    f.close()
+
+    version = "0.0"
+    release = "1"
+    for line in lines:
+        if line.startswith('Version:'):
+            version = line.split()[1]
+        elif line.startswith('Release:'):
+            release = line.split()[1].split('%')[0]
+        else:
+            continue
+
+    return "-".join([name, version, release])
+
+def getArchiveTagOffset(spec, offset, name="blivet"):
+    tag = getArchiveTag(spec, name)
+
+    if not tag.count("-") >= 2:
+        return tag
+    ldash = tag.rfind("-")
+    bldash = tag[:ldash].rfind("-")
+    ver = tag[bldash+1:ldash]
+
+    if not ver.count(".") >= 1:
+        return tag
+    ver = ver[:ver.rfind(".")]
+
+    if not len(ver) > 0:
+        return tag
+    globstr = "refs/tags/" + tag[:bldash+1] + ver + ".*"
+    proc = subprocess.Popen(['git', 'for-each-ref', '--sort=taggerdate',
+                             '--format=%(tag)', globstr],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE).communicate()
+    lines = proc[0].strip("\n").split('\n')
+    lines.reverse()
+
+    try:
+        return lines[offset]
+    except IndexError:
+        return tag
+
+def doGitDiff(tag, args=[]):
+    proc = subprocess.Popen(['git', 'diff', '--name-status', tag] + args,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE).communicate()
+
+    lines = proc[0].split('\n')
+    return lines
+
+def copyUpdatedFiles(tag, updates, cwd):
+    def pruneFile(src, names):
+        lst = []
+
+        for name in names:
+            if name.startswith('Makefile') or name.endswith('.pyc'):
+                lst.append(name)
+
+        return lst
+
+    def install_to_dir(fname, relpath):
+        sys.stdout.write("Including %s\n" % fname)
+        outdir = os.path.join(updates, relpath)
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        shutil.copy2(file, outdir)
+
+    # Updates get overlaid onto the runtime filesystem. Anaconda expects them
+    # to be in /run/install/updates, so put them in
+    # $updatedir/run/install/updates.
+    tmpupdates = updates.rstrip('/')
+    if not tmpupdates.endswith("/run/install/updates"):
+        tmpupdates = os.path.join(tmpupdates, "run/install/updates")
+
+    lines = doGitDiff(tag)
+    for line in lines:
+        fields = line.split()
+
+        if len(fields) < 2:
+            continue
+
+        status = fields[0]
+        file = fields[1]
+
+        if status == "D":
+            continue
+
+        if file.endswith('.spec') or (file.find('Makefile') != -1) or \
+           file.endswith('.c') or file.endswith('.h') or \
+           file.endswith('.sh') or file == 'setup.py':
+            continue
+
+        if file.startswith('blivet/'):
+            # blivet stuff goes into /tmp/updates/[path]
+            dirname = os.path.join(tmpupdates, os.path.dirname(file))
+            install_to_dir(file, dirname)
+        else:
+            sys.stdout.write("Including %s\n" % (file,))
+            install_to_dir(file, tmpupdates)
+
+def addRpms(updates, add_rpms):
+    for rpm in add_rpms:
+        cmd = "cd %s && rpm2cpio %s | cpio -dium" % (updates, rpm)
+        sys.stdout.write(cmd+"\n")
+        os.system(cmd)
+
+def createUpdatesImage(cwd, updates):
+    os.chdir(updates)
+    os.system("find . | cpio -c -o | gzip -9cv > %s/updates.img" % (cwd,))
+    sys.stdout.write("updates.img ready\n")
+
+def usage(cmd):
+    sys.stdout.write("Usage: %s [OPTION]...\n" % (cmd,))
+    sys.stdout.write("Options:\n")
+    sys.stdout.write("    -k, --keep       Do not delete updates subdirectory.\n")
+    sys.stdout.write("    -h, --help       Display this help and exit.\n")
+    sys.stdout.write("    -t, --tag        Make image from TAG to HEAD.\n")
+    sys.stdout.write("    -o, --offset     Make image from (latest_tag - OFFSET) to HEAD.\n")
+    sys.stdout.write("    -a, --add        Add contents of rpm to the update\n")
+
+def main(argv):
+    prog = os.path.basename(sys.argv[0])
+    cwd = os.getcwd()
+    spec = os.path.realpath(cwd + '/python-blivet.spec')
+    updates = cwd + '/updates'
+    keep, compile, help, unknown = False, False, False, False
+    tag = None
+    opts = []
+    offset = 0
+    add_rpms = []
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'a:t:o:kc?',
+                                   ['add=', 'tag=', 'offset=',
+                                    'keep', 'compile', 'help'])
+    except getopt.GetoptError:
+        help = True
+
+    for o, a in opts:
+        if o in ('-k', '--keep'):
+            keep = True
+        elif o in ('-?', '--help'):
+            help = True
+        elif o in ('-t', '--tag'):
+            tag = a
+        elif o in ('-o', '--offset'):
+            offset = int(a)
+        elif o in ('-a', '--add'):
+            add_rpms.append(os.path.abspath(a))
+        else:
+            unknown = True
+
+    if help:
+        usage(prog)
+        sys.exit(0)
+    elif unknown:
+        sys.stderr.write("%s: extra operand `%s'" % (prog, sys.argv[1],))
+        sys.stderr.write("Try `%s --help' for more information." % (prog,))
+        sys.exit(1)
+
+    if not os.path.isfile(spec):
+        sys.stderr.write("You must be at the top level of the blivet source tree.\n")
+        sys.exit(1)
+
+    if not tag:
+        if offset < 1:
+            tag = getArchiveTag(spec)
+        else:
+            tag = getArchiveTagOffset(spec, offset)
+        sys.stdout.write("Using tag: %s\n" % tag)
+
+    if not os.path.isdir(updates):
+        os.makedirs(updates)
+
+    copyUpdatedFiles(tag, updates, cwd)
+
+    if add_rpms:
+        addRpms(updates, add_rpms)
+
+    createUpdatesImage(cwd, updates)
+
+    if not keep:
+        shutil.rmtree(updates)
+
+if __name__ == "__main__":
+    main(sys.argv)
