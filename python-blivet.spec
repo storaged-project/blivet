@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.5
+Version: 0.6
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -74,6 +74,17 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Feb 20 2013 Brian C. Lane <bcl@redhat.com> - 0.6-1
+- parse buffer output from resize (#913141) (bcl)
+- prevent traceback when root device is not defined #rhbz883768 (sbueno+anaconda)
+- Move empty_disk to a top-level function, and rename. (clumens)
+- Add some high-level comments to DeviceFactory.configure_device. (dlehman)
+- Refactor DeviceFactory.set_container_members for clarity. (dlehman)
+- Rename the main blivet logger from "storage" to "blivet". (dlehman)
+- Use the blivet domain for translations. (dlehman)
+- Move DeviceFactory classes and related code into a new file. (dlehman)
+- New version: 0.5 (dlehman)
+
 * Fri Feb 08 2013 David Lehman <dlehman@redhat.com> - 0.5-1
 - Add mountOnly to turnOnFilesystems (bcl)
 - Update lvm scanning to account for new ignored device handling. (dlehman)
