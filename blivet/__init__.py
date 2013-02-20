@@ -1408,15 +1408,15 @@ class Blivet(object):
         except (DeviceError, AttributeError):
             boot = None
 
-        if not root:
+        if root:
+            if root.size < 250:
+                warnings.append(_("Your root partition is less than 250 "
+                                  "megabytes which is usually too small to "
+                                  "install %s.") % (productName,))
+        else:
             errors.append(_("You have not defined a root partition (/), "
                             "which is required for installation of %s "
                             "to continue.") % (productName,))
-
-        if root and root.size < 250:
-            warnings.append(_("Your root partition is less than 250 "
-                              "megabytes which is usually too small to "
-                              "install %s.") % (productName,))
 
         # Prevent users from installing on s390x with (a) no /boot volume, (b) the
         # root volume on LVM, and (c) the root volume not restricted to a single
@@ -1425,13 +1425,12 @@ class Blivet(object):
         # restricted to a single PV.  The backend support is there, but there are
         # no UI hook-ups to drive that functionality, but I do not personally
         # care.  --dcantrell
-        if arch.isS390() and \
-           not self.mountpoints.has_key('/boot') and \
-           root.type == 'lvmlv' and not root.singlePV:
-            errors.append(_("This platform requires /boot on a dedicated "
-                            "partition or logical volume.  If you do not "
-                            "want a /boot volume, you must place / on a "
-                            "dedicated non-LVM partition."))
+        if arch.isS390() and not self.mountpoints.has_key('/boot') and root:
+            if root.type == 'lvmlv' and not root.singlePV:
+                errors.append(_("This platform requires /boot on a dedicated "
+                                "partition or logical volume.  If you do not "
+                                "want a /boot volume, you must place / on a "
+                                "dedicated non-LVM partition."))
 
         # FIXME: put a check here for enough space on the filesystems. maybe?
 
