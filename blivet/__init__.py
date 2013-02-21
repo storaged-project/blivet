@@ -272,6 +272,7 @@ class Blivet(object):
 
         self.__luksDevs = {}
         self.size_sets = []
+        self.setDefaultFSType(get_default_filesystem_type())
 
         self.iscsi = iscsi.iscsi()
         self.fcoe = fcoe.fcoe()
@@ -279,7 +280,6 @@ class Blivet(object):
         self.dasd = dasd.DASD()
 
         self._nextID = 0
-        self.defaultFSType = get_default_filesystem_type()
         self._dumpFile = "/tmp/storage.state"
 
         # these will both be empty until our reset method gets called
@@ -1700,6 +1700,27 @@ class Blivet(object):
         if self.bootloader:
             fstype = self.bootFSTypes[0]
         return fstype
+
+    @property
+    def defaultFSType(self):
+        return self._defaultFSType
+
+    def setDefaultFSType(self, newtype):
+        """ Set the default fstype for this instance.
+
+            Raise ValueError on invalid input.
+        """
+        log.debug("trying to set new default fstype to '%s'" % newtype)
+        fmt = getFormat(newtype)
+        if fmt.type is None:
+            raise ValueError("unrecognized value for new default fs type")
+
+        if (not fmt.mountable or not fmt.formattable or not fmt.supported or
+            not fmt.linuxNative):
+            log.debug("invalid default fstype: %r" % fmt)
+            raise ValueError("new value is not valid as a default fs type")
+
+        self._defaultFSType = newtype
 
     @property
     def mountpoints(self):
