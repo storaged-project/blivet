@@ -27,6 +27,7 @@
 isys = None
 ROOT_PATH = '/'
 shortProductName = ''
+productName = ''
 bootLoaderError = Exception
 
 import os
@@ -83,12 +84,14 @@ def enable_installer_mode():
     global isys
     global ROOT_PATH
     global shortProductName
+    global productName
     global get_bootloader
     global BootLoaderError
 
     from pyanaconda import isys
     from pyanaconda.constants import ROOT_PATH
     from pyanaconda.constants import shortProductName
+    from pyanaconda.constants import productName
     from pyanaconda.bootloader import get_bootloader
     from pyanaconda.bootloader import BootLoaderError
 
