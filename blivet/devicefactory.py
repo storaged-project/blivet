@@ -674,21 +674,27 @@ class PartitionFactory(DeviceFactory):
     def set_device_size(self, container, device=None):
         size = self.size
         if device:
-            if size != device.size:
-                log.info("adjusting device size from %.2f to %.2f"
-                                % (device.size, size))
+            if isinstance(device, LUKSDevice):
+                use_dev = device.slave
+            else:
+                use_dev = device
 
+            if size != use_dev.size:
+                log.info("adjusting device size from %.2f to %.2f"
+                                % (use_dev.size, size))
+
+            # use device here since the leaf format is what we're concerned with
             base_size = max(PartitionFactory.default_size,
                             device.format.minSize)
             size = max(base_size, size)
-            device.req_base_size = base_size
-            device.req_size = base_size
-            device.req_max_size = size
-            device.req_grow = size > base_size
+            use_dev.req_base_size = base_size
+            use_dev.req_size = base_size
+            use_dev.req_max_size = size
+            use_dev.req_grow = size > base_size
 
             # this probably belongs somewhere else but this is our chance to
             # update the disk set
-            device.req_disks = self.disks[:]
+            use_dev.req_disks = self.disks[:]
 
         return size
 
@@ -769,7 +775,12 @@ class LVMFactory(DeviceFactory):
         size = self.size
         free = container.freeSpace
         if device:
-            free += device.size
+            if isinstance(device, LUKSDevice):
+                use_dev = device.slave
+            else:
+                use_dev = device
+
+            free += use_dev.size
 
         if free < size:
             log.info("adjusting device size from %.2f to %.2f so it fits "
@@ -777,11 +788,11 @@ class LVMFactory(DeviceFactory):
             size = free
 
         if device:
-            if size != device.size:
+            if size != use_dev.size:
                 log.info("adjusting device size from %.2f to %.2f"
-                                % (device.size, size))
+                                % (use_dev.size, size))
 
-            device.size = size
+            use_dev.size = size
 
         return size
 
