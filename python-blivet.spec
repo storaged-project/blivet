@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.6
+Version: 0.7
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -74,6 +74,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Feb 21 2013 Brian C. Lane <bcl@redhat.com> - 0.7-1
+- Merge branch 'master' of git+ssh://git.fedorahosted.org/git/blivet (bcl)
+- Bring in productName from pyanaconda in installer mode. (#913559) (dlehman)
+
 * Wed Feb 20 2013 Brian C. Lane <bcl@redhat.com> - 0.6-1
 - parse buffer output from resize (#913141) (bcl)
 - prevent traceback when root device is not defined #rhbz883768 (sbueno+anaconda)
