@@ -240,17 +240,15 @@ def mdexamine(device):
 
     info = {}
     if len(_bvars) > 1 and _bvars[1].startswith("/dev/md"):
-        info["device"] = _bvars[1]
-        _vars = _vars[2:]
-    elif len(_vars) > 1:
-        _vars = _vars[1:]
+        info["DEVICE"] = _bvars[1]
+        _bvars = _bvars[2:]
 
     for var in _vars:
         (name, equals, value) = var.partition("=")
         if not equals:
             continue
 
-        info[name] = value.strip()
+        info[name.upper()] = value.strip()
 
     if "MD_METADATA" not in info:
         for var in _bvars:

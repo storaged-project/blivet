@@ -1132,21 +1132,10 @@ class DeviceTree(object):
         ret = False
         vg_name = vg_device.name
 
-        if not flags.installer_mode:
-            info = devicelibs.lvm.lvs(vg_name)
-            try:
-                lv_names = udev_device_get_lv_names(info)
-                lv_uuids = udev_device_get_lv_uuids(info)
-                lv_sizes = udev_device_get_lv_sizes(info)
-                lv_attr = udev_device_get_lv_attr(info)
-            except KeyError as e:
-                log.warning("invalid data for %s: %s" % (vg_name, e))
-                return
-        else:
-            lv_names = vg_device.lv_names
-            lv_uuids = vg_device.lv_uuids
-            lv_sizes = vg_device.lv_sizes
-            lv_attr = vg_device.lv_attr
+        lv_names = vg_device.lv_names
+        lv_uuids = vg_device.lv_uuids
+        lv_sizes = vg_device.lv_sizes
+        lv_attr = vg_device.lv_attr
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s" % vg_name)
@@ -1295,6 +1284,9 @@ class DeviceTree(object):
                                              exists=True)
             self._addDevice(vg_device)
 
+        if not flags.installer_mode:
+            info.update(lvm.lvs(vg_name))
+
         # Now we add any lv info found in this pv to the vg_device, we
         # do this for all pvs as pvs only contain lv info for lvs which they
         # contain themselves
@@ -1376,10 +1368,10 @@ class DeviceTree(object):
                     break
 
             if not md_metadata:
-                md_metadata = md_info.get("metadata", "0.90")
+                md_metadata = info.get("METADATA", "0.90")
 
             if not md_name:
-                md_path = md_info.get("device", "")
+                md_path = info.get("DEVICE", "")
                 if md_path:
                     md_name = devicePathToName(md_path)
                     if re.match(r'md\d+$', md_name):
