@@ -150,6 +150,18 @@ class DeviceFactory(object):
 
         return size
 
+    def handle_no_size(self, device=None, container=None):
+        """ Set device size so that it grows to the largest size possible. """
+        if self.size is not None:
+            return
+
+        free_info = self.storage.getFreeSpace(disks=self.disks)
+        free = sum(d[0] for d in free_info.values())
+        self.size = int(free.convertTo(spec="mb"))
+
+        if device:
+            self.size += device.size
+
     @property
     def device_size(self):
         """ The total disk space required for this device. """
@@ -450,6 +462,9 @@ class DeviceFactory(object):
             fmt_args["label"] = label
 
         container = self.get_container(device=device, name=container_name)
+
+        # handle special size value of None, which means to grow unbounded
+        self.handle_no_size(device=device, container=container)
 
         # TODO: striping, mirroring, &c
         # TODO: non-partition members (pv-on-md)
@@ -752,6 +767,20 @@ class LVMFactory(DeviceFactory):
     container_list_attr = "vgs"
     encrypt_members = True
     encrypt_leaves = False
+
+    def handle_no_size(self, device=None, container=None):
+        """ Set device size so that it grows to the largest size possible. """
+        if self.size is not None:
+            return
+
+        if container and container.exists:
+            self.size = container.freeSpace
+
+            if device:
+                self.size += device.size
+        else:
+            super(LVMFactory, self).handle_no_size(device=device,
+                                                   container=container)
 
     @property
     def device_size(self):
