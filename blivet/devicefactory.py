@@ -606,7 +606,7 @@ class DeviceFactory(object):
                         self.size = 0
                         self.disks = container.disks
                         try:
-                            self.set_container_members(container, factory)
+                            self.set_container_members(container)
                         except StorageError as e:
                             log.error("failed to revert container: %s" % e)
                             raise ErrorRecoveryFailure("failed to revert container")
