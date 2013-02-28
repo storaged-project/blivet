@@ -494,6 +494,8 @@ class StorageDevice(Device):
 
         self._partedDevice = None
 
+        self.deviceLinks = []
+
         if self.exists and flags.testing and not self._size:
             def read_int_from_sys(path):
                 return int(open(path).readline().strip())

@@ -352,11 +352,13 @@ def udev_device_get_bus(udev_info):
 def udev_device_get_path(info):
     return info["ID_PATH"]
 
+def udev_device_get_symlinks(info):
+    return info.get("symlinks", [])
+
 def udev_device_get_by_path(info):
-    if info.has_key('symlinks'):
-        for link in info['symlinks']:
-            if link.startswith('/dev/disk/by-path/'):
-                return link
+    for link in udev_device_get_symlinks(info):
+        if link.startswith('/dev/disk/by-path/'):
+            return link
 
     return udev_device_get_name(info)
 

@@ -1026,6 +1026,7 @@ class DeviceTree(object):
         if device.format.type:
             log.info("got format: %r" % device.format)
         device.originalFormat = copy.copy(device.format)
+        device.deviceLinks = udev_device_get_symlinks(info)
 
     def handleUdevDiskLabelFormat(self, info, device):
         disklabel_type = info.get("ID_PART_TABLE_TYPE")

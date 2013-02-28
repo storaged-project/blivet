@@ -441,6 +441,7 @@ class ActionCreateFormat(DeviceAction):
             self.device.updateSysfsPath()
             info = udev_get_block_device(self.device.sysfsPath)
             self.device.format.uuid = udev_device_get_uuid(info)
+            self.device.deviceLinks = udev_device_get_symlinks(info)
 
     def cancel(self):
         self.device.format = self.origFormat
