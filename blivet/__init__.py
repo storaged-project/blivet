@@ -1852,24 +1852,19 @@ class Blivet(object):
 
         """
         log_method_call(self, device_type, size, **kwargs)
-        mountpoint = kwargs.get("mountpoint")
-        fstype = kwargs.get("fstype")
-        label = kwargs.get("label")
-        name = kwargs.get("name")
-        container_name = kwargs.get("container_name")
-        device = kwargs.get("device")
 
         # we can't do anything with existing devices
-        if device and device.exists:
-            log.info("factoryDevice refusing to change device %s" % device)
-            return
+        #if device and device.exists:
+        #    log.info("factoryDevice refusing to change device %s" % device)
+        #    return
 
-        if not fstype:
-            fstype = self.getFSType(mountpoint=mountpoint)
-            if fstype == "swap":
-                mountpoint = None
+        if not kwargs.get("fstype"):
+            kwargs["fstype"] = self.getFSType(mountpoint=kwargs.get("mountpoint"))
+            if kwargs["fstype"] == "swap":
+                kwargs["mountpoint"] = None
 
-        if fstype == "swap" and device_type == devicefactory.DEVICE_TYPE_BTRFS:
+        if kwargs["fstype"] == "swap" and \
+           device_type == devicefactory.DEVICE_TYPE_BTRFS:
             device_type = devicefactory.DEVICE_TYPE_PARTITION
 
         factory = devicefactory.get_device_factory(self, device_type, size,
@@ -1879,11 +1874,11 @@ class Blivet(object):
             raise StorageError("no disks specified for new device")
 
         self.size_sets = [] # clear this since there are no growable reqs now
-        factory.configure_device(device=device, container_name=container_name,
-                                 name=name, fstype=fstype,
-                                 mountpoint=mountpoint, label=label)
+        factory.configure()
+        return factory.device
 
     def copy(self):
+        log.debug("starting Blivet copy")
         new = copy.deepcopy(self)
         # go through and re-get partedPartitions from the disks since they
         # don't get deep-copied
@@ -1901,6 +1896,7 @@ class Blivet(object):
             p = partition.disk.format.partedDisk.getPartitionByPath(partition.path)
             partition.partedPartition = p
 
+        log.debug("finished Blivet copy")
         return new
 
     def getActiveMounts(self):

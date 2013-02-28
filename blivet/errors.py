@@ -191,3 +191,7 @@ class UnknownSourceDeviceError(StorageError):
 
 class NoDisksError(StorageError):
     pass
+
+# factories
+class DeviceFactoryError(StorageError):
+    pass
