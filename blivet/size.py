@@ -66,6 +66,7 @@ def _makeSpecs(prefix, abbr):
 
     if abbr:
         specs.append(abbr.lower() + _("b"))
+        specs.append(abbr.lower())
 
     return specs
 
