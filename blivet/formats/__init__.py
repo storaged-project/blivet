@@ -91,6 +91,14 @@ def getFormat(fmt_type, *args, **kwargs):
         className = fmt.__class__.__name__
     except AttributeError:
         className = None
+
+    # this allows us to store the given type for formats we implement as
+    # DeviceFormat.
+    if fmt_type and fmt.type is None:
+        # this should add/set an instance attribute
+        fmt._type = fmt_type
+        fmt._name = None
+
     log.debug("getFormat('%s') returning %s instance" % (fmt_type, className))
     return fmt
 
@@ -137,7 +145,7 @@ def get_device_format_class(fmt_type):
 class DeviceFormat(object):
     """ Generic device format. """
     _type = None
-    _name = "Unknown"
+    _name = _("Unknown")
     _udevTypes = []
     partedFlag = None
     partedSystem = None
