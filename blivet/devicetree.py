@@ -501,6 +501,10 @@ class DeviceTree(object):
         if name.startswith("ram"):
             return True
 
+        # Memory Technology Devices require special tools to manipulate.
+        if name.startswith("mtd"):
+            return True
+
         if name.startswith("loop"):
             # ignore loop devices unless they're backed by a file
             return (not devicelibs.loop.get_backing_file(name))
