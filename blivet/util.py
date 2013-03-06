@@ -1,4 +1,5 @@
 import os
+import shutil
 import selinux
 import subprocess
 import re
@@ -261,6 +262,9 @@ def makedirs(path):
         os.makedirs(path, 0755)
 
 def copy_to_system(source):
+    # do the import now because enable_installer_mode() has finally been called.
+    from . import ROOT_PATH
+
     if not os.access(source, os.R_OK):
         log.info("copy_to_system: source '%s' does not exist." % source)
         return False
