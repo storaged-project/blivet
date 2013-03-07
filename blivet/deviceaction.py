@@ -146,6 +146,7 @@ class DeviceAction(object):
 """
     type = ACTION_TYPE_NONE
     obj = ACTION_OBJECT_NONE
+    typeDesc = ""
     _id = 0
 
     def __init__(self, device):
@@ -199,11 +200,39 @@ class DeviceAction(object):
     def format(self):
         return self.device.format
 
-    def __str__(self):
-        s = "[%d] %s %s" % (self.id, action_strings[self.type],
-                            object_strings[self.obj])
+    @property
+    def typeString(self):
+        """ String indicating if this action is a create, destroy or resize. """
+        return action_strings[self.type]
+
+    @property
+    def objectString(self):
+        """ String indicating if this action's operand is device or format. """
+        return object_strings[self.obj]
+
+    @property
+    def resizeString(self):
+        """ String representing the direction of a resize action. """
+        s = ""
         if self.isResize:
-            s += " (%s)" % resize_strings[self.dir]
+            s = resize_strings[self.dir]
+
+        return s
+
+    @property
+    def objectTypeString(self):
+        """ String representing the type of the operand device or format. """
+        if self.isFormat:
+            s = self.format.name
+        else:
+            s = self.device.type
+
+        return s
+
+    def __str__(self):
+        s = "[%d] %s %s" % (self.id, self.typeString, self.objectString)
+        if self.isResize:
+            s += " (%s)" % self.resizeString
         if self.isFormat:
             s += " %s on" % self.format.desc
         s += " %s %s (id %d)" % (self.device.type, self.device.name,
@@ -230,6 +259,7 @@ class ActionCreateDevice(DeviceAction):
     """ Action representing the creation of a new device. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_DEVICE
+    typeDesc = _("create device")
 
     def __init__(self, device):
         if device.exists:
@@ -276,6 +306,7 @@ class ActionDestroyDevice(DeviceAction):
     """ An action representing the deletion of an existing device. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
+    typeDesc = _("destroy device")
 
     def __init__(self, device):
         # XXX should we insist that device.fs be None?
@@ -347,6 +378,7 @@ class ActionResizeDevice(DeviceAction):
     """ An action representing the resizing of an existing device. """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_DEVICE
+    typeDesc = _("resize device")
 
     def __init__(self, device, newsize):
         if not device.resizable:
@@ -403,6 +435,7 @@ class ActionCreateFormat(DeviceAction):
     """ An action representing creation of a new filesystem. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_FORMAT
+    typeDesc = _("create format")
 
     def __init__(self, device, format=None):
         DeviceAction.__init__(self, device)
@@ -479,6 +512,7 @@ class ActionDestroyFormat(DeviceAction):
     """ An action representing the removal of an existing filesystem. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_FORMAT
+    typeDesc = _("destroy format")
 
     def __init__(self, device):
         DeviceAction.__init__(self, device)
@@ -537,6 +571,7 @@ class ActionResizeFormat(DeviceAction):
     """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_FORMAT
+    typeDesc = _("resize format")
 
     def __init__(self, device, newsize):
         if not device.format.resizable:
