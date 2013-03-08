@@ -158,9 +158,10 @@ class FS(DeviceFormat):
         self._size = kwargs.get("size", 0)
         self._minInstanceSize = None    # min size of this FS instance
         self._mountpoint = None     # the current mountpoint when mounted
-        if self.exists:
-            self._size = self._getExistingSize()
-            foo = self.minSize      # force calculation of minimum size
+
+        if flags.installer_mode:
+            # if you want current/min size you have to call updateSizeInfo
+            self.updateSizeInfo()
 
         self._targetSize = self._size
 
@@ -224,7 +225,31 @@ class FS(DeviceFormat):
     size = property(_getSize, doc="This filesystem's size, accounting "
                                   "for pending changes")
 
-    def _getExistingSize(self):
+    def updateSizeInfo(self):
+        """ Update this filesystem's current and minimum size (for resize). """
+        if not self.exists:
+            return
+
+        info = self._getFSInfo()
+        self._size = self._getExistingSize(info=info)
+        self._getMinSize(info=info)   # force calculation of minimum size
+
+    def _getMinSize(self, info=None):
+        pass
+
+    def _getFSInfo(self):
+        buf = ""
+        if self.infofsProg and self.exists and \
+           util.find_program_in_path(self.infofsProg):
+            argv = self._defaultInfoOptions + [ self.device ]
+            try:
+                buf = util.capture_output([self.infofsProg] + argv)
+            except OSError as e:
+                log.error("failed to gather fs info: %s" % e)
+
+        return buf
+
+    def _getExistingSize(self, info=None):
         """ Determine the size of this filesystem.  Filesystem must
             exist.  Each filesystem varies, but the general procedure
             is to run the filesystem dump or info utility and read
@@ -259,15 +284,13 @@ class FS(DeviceFormat):
         """
         size = self._size
 
-        if self.infofsProg and self.exists and not size and \
-           util.find_program_in_path(self.infofsProg):
+        if self.exists and not size:
+            if info is None:
+                info = self._getFSInfo()
+
             try:
                 values = []
-                argv = self._defaultInfoOptions + [ self.device ]
-
-                buf = util.capture_output([self.infofsProg] + argv)
-
-                for line in buf.splitlines():
+                for line in info.splitlines():
                     found = False
 
                     line = line.strip()
@@ -845,60 +868,60 @@ class Ext2FS(FS):
         if err:
             raise FSError("failed to set UUID for %s: %s" % (self.device, err))
 
+    def _getMinSize(self, info=None):
+        """ Minimum size for this filesystem in MB. """
+        size = self._minSize
+        blockSize = None
+
+        if self.exists and os.path.exists(self.device):
+            if info is None:
+                # get block size
+                info = self._getFSInfo()
+
+            for line in info.splitlines():
+                if line.startswith("Block size:"):
+                    blockSize = int(line.split(" ")[-1])
+
+                if line.startswith("Filesystem state:"):
+                    self.dirty = "not clean" in line
+                    self.errors = "with errors" in line
+
+            if blockSize is None:
+                raise FSError("failed to get block size for %s filesystem "
+                              "on %s" % (self.mountType, self.device))
+
+            # get minimum size according to resize2fs
+            buf = util.capture_output([self.resizefsProg,
+                                       "-P", self.device])
+            for line in buf.splitlines():
+                if "minimum size of the filesystem:" not in line:
+                    continue
+
+                # line will look like:
+                # Estimated minimum size of the filesystem: 1148649
+                #
+                # NOTE: The minimum size reported is in blocks.  Convert
+                # to bytes, then megabytes, and finally round up.
+                (text, sep, minSize) = line.partition(": ")
+                size = long(minSize) * blockSize
+                size = math.ceil(size / 1024.0 / 1024.0)
+                break
+
+            if size is None:
+                log.warning("failed to get minimum size for %s filesystem "
+                            "on %s" % (self.mountType, self.device))
+            else:
+                orig_size = size
+                size = min(size * 1.1, size + 500, self.currentSize)
+                if orig_size < size:
+                    log.debug("padding min size from %d up to %d" % (orig_size, size))
+                else:
+                    log.debug("using current size %d as min size" % size)
+
+        self._minInstanceSize = size
+
     @property
     def minSize(self):
-        """ Minimum size for this filesystem in MB. """
-        if self._minInstanceSize is None:
-            # try once in the beginning to get the minimum size for an
-            # existing filesystem.
-            size = self._minSize
-            blockSize = None
-
-            if self.exists and os.path.exists(self.device):
-                # get block size
-                buf = util.capture_output([self.infofsProg, "-h", self.device])
-                for line in buf.splitlines():
-                    if line.startswith("Block size:"):
-                        blockSize = int(line.split(" ")[-1])
-
-                    if line.startswith("Filesystem state:"):
-                        self.dirty = "not clean" in line
-                        self.errors = "with errors" in line
-
-                if blockSize is None:
-                    raise FSError("failed to get block size for %s filesystem "
-                                  "on %s" % (self.mountType, self.device))
-
-                # get minimum size according to resize2fs
-                buf = util.capture_output([self.resizefsProg,
-                                           "-P", self.device])
-                for line in buf.splitlines():
-                    if "minimum size of the filesystem:" not in line:
-                        continue
-
-                    # line will look like:
-                    # Estimated minimum size of the filesystem: 1148649
-                    #
-                    # NOTE: The minimum size reported is in blocks.  Convert
-                    # to bytes, then megabytes, and finally round up.
-                    (text, sep, minSize) = line.partition(": ")
-                    size = long(minSize) * blockSize
-                    size = math.ceil(size / 1024.0 / 1024.0)
-                    break
-
-                if size is None:
-                    log.warning("failed to get minimum size for %s filesystem "
-                                "on %s" % (self.mountType, self.device))
-                else:
-                    orig_size = size
-                    size = min(size * 1.1, size + 500, self.currentSize)
-                    if orig_size < size:
-                        log.debug("padding min size from %d up to %d" % (orig_size, size))
-                    else:
-                        log.debug("using current size %d as min size" % size)
-
-            self._minInstanceSize = size
-
         return self._minInstanceSize
 
     @property
@@ -1262,38 +1285,37 @@ class NTFS(FS):
             return True
         return False
 
-    @property
+    def _getMinSize(self, info=None):
+        # try to determine the minimum size.
+        size = self._minSize
+        if self.exists and os.path.exists(self.device) and \
+           util.find_program_in_path(self.resizefsProg):
+            minSize = None
+            buf = util.capture_output([self.resizefsProg, "-m", self.device])
+            for l in buf.split("\n"):
+                if not l.startswith("Minsize"):
+                    continue
+                try:
+                    minSize = int(l.split(":")[1].strip())  # MB
+                    minSize *= (mb / mib)                   # MiB
+                except (IndexError, ValueError) as e:
+                    minSize = None
+                    log.warning("Unable to parse output for minimum size on %s: %s" %(self.device, e))
+
+            if minSize is None:
+                log.warning("Unable to discover minimum size of filesystem "
+                            "on %s" %(self.device,))
+            else:
+                size = min(minSize * 1.1, minSize + 500, self.currentSize)
+                if minSize < size:
+                    log.debug("padding min size from %d up to %d" % (minSize, size))
+                else:
+                    log.debug("using current size %d as min size" % size)
+
+        self._minInstanceSize = size
+
     def minSize(self):
         """ The minimum filesystem size in megabytes. """
-        if self._minInstanceSize is None:
-            # we try one time to determine the minimum size.
-            size = self._minSize
-            if self.exists and os.path.exists(self.device) and \
-               util.find_program_in_path(self.resizefsProg):
-                minSize = None
-                buf = util.capture_output([self.resizefsProg, "-m", self.device])
-                for l in buf.split("\n"):
-                    if not l.startswith("Minsize"):
-                        continue
-                    try:
-                        minSize = int(l.split(":")[1].strip())  # MB
-                        minSize *= (mb / mib)                   # MiB
-                    except (IndexError, ValueError) as e:
-                        minSize = None
-                        log.warning("Unable to parse output for minimum size on %s: %s" %(self.device, e))
-
-                if minSize is None:
-                    log.warning("Unable to discover minimum size of filesystem "
-                                "on %s" %(self.device,))
-                else:
-                    size = min(minSize * 1.1, minSize + 500, self.currentSize)
-                    if minSize < size:
-                        log.debug("padding min size from %d up to %d" % (minSize, size))
-                    else:
-                        log.debug("using current size %d as min size" % size)
-
-            self._minInstanceSize = size
-
         return self._minInstanceSize
 
     @property
@@ -1386,7 +1408,7 @@ class NoDevFS(FS):
     def mountType(self):
         return self.device  # this is probably set to the real/specific fstype
 
-    def _getExistingSize(self):
+    def _getExistingSize(self, info=None):
         pass
 
 register_device_format(NoDevFS)
@@ -1426,7 +1448,7 @@ class BindFS(FS):
     def mountable(self):
         return True
 
-    def _getExistingSize(self):
+    def _getExistingSize(self, info=None):
         pass
 
 register_device_format(BindFS)
