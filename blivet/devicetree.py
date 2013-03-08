@@ -1262,6 +1262,10 @@ class DeviceTree(object):
             # no vg name means no vg -- we're done with this pv
             return
 
+        if not vg_name:
+            log.info("lvm pv %s has no vg" % device.name)
+            return
+
         vg_device = self.getDeviceByUuid(vg_uuid)
         if vg_device:
             vg_device._addDevice(device)
