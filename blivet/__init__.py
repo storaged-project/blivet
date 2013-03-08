@@ -61,7 +61,6 @@ from formats.fs import nodev_filesystems
 import devicefactory
 from devicelibs.dm import name_from_dm_node
 from devicelibs.crypto import generateBackupPassphrase
-from devicelibs.mpath import MultipathConfigWriter
 from devicelibs.edd import get_edd_dict
 from udev import udev_trigger
 import iscsi
@@ -2587,19 +2586,12 @@ class FSSet(object):
             open(mdadm_path, "w").write(mdadm_conf)
 
         # /etc/multipath.conf
-        multipath_conf = self.multipathConf()
-        if multipath_conf:
-            multipath_path = os.path.normpath("%s/etc/multipath.conf" %
-                                              ROOT_PATH)
-            conf_contents = multipath_conf.write(self.devicetree.mpathFriendlyNames)
-            f = open(multipath_path, "w")
-            f.write(conf_contents)
-            f.close()
+        if self.devicetree.getDevicesByType("dm-multipath"):
+            util.copy_to_system("/etc/multipath.conf")
+            util.copy_to_system("/etc/multipath/wwids")
+            util.copy_to_system("/etc/multipath/bindings")
         else:
             log.info("not writing out mpath configuration")
-        util.copy_to_system("/etc/multipath/wwids")
-        if self.devicetree.mpathFriendlyNames:
-            util.copy_to_system("/etc/multipath/bindings")
 
     def crypttab(self):
         # if we are upgrading, do we want to update crypttab?
@@ -2651,27 +2643,6 @@ class FSSet(object):
                     break
 
         return conf
-
-    def multipathConf(self):
-        """ Return the contents of multipath.conf. """
-        mpaths = self.devicetree.getDevicesByType("dm-multipath")
-        if not mpaths:
-            return None
-        mpaths.sort(key=lambda d: d.name)
-        config = MultipathConfigWriter()
-        whitelist = []
-        for mpath in mpaths:
-            config.addMultipathDevice(mpath)
-            whitelist.append(mpath.name)
-            whitelist.extend([d.name for d in mpath.parents])
-
-        # blacklist everything we're not using and let the
-        # sysadmin sort it out.
-        for d in self.devicetree.devices:
-            if not d.name in whitelist:
-                config.addBlacklistDevice(d)
-
-        return config
 
     def fstab (self):
         format = "%-23s %-23s %-7s %-15s %d %d\n"

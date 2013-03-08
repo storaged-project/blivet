@@ -3266,14 +3266,13 @@ class MultipathDevice(DMDevice):
     _partitionable = True
     _isDisk = True
 
-    def __init__(self, name, info, format=None, size=None,
+    def __init__(self, name, format=None, size=None, serial=None,
                  parents=None, sysfsPath=''):
         """ Create a MultipathDevice instance.
 
             Arguments:
 
                 name -- the device name (generally a device node's basename)
-                info -- the udev info for this device
 
             Keyword Arguments:
 
@@ -3281,37 +3280,20 @@ class MultipathDevice(DMDevice):
                 size -- the device's size
                 format -- a DeviceFormat instance
                 parents -- a list of the backing devices (Device instances)
+                serial -- the device's serial number
         """
 
-        self._info = info
-        self.setupIdentity()
         DMDevice.__init__(self, name, format=format, size=size,
                           parents=parents, sysfsPath=sysfsPath,
                           exists=True)
 
+        self.identity = serial
         self.config = {
             'wwid' : self.identity,
             'mode' : '0600',
             'uid' : '0',
             'gid' : '0',
         }
-
-    def setupIdentity(self):
-        """ Adds identifying remarks to MultipathDevice object.
-        
-            May be overridden by a sub-class for e.g. RDAC handling.
-        """
-        self._identity = self._info.get("ID_SERIAL_RAW", self._info.get("ID_SERIAL_SHORT"))
-
-    @property
-    def identity(self):
-        """ Get identity set with setupIdentityFromInfo()
-        
-            May be overridden by a sub-class for e.g. RDAC handling.
-        """
-        if not hasattr(self, "_identity"):
-            raise RuntimeError, "setupIdentityFromInfo() has not been called."
-        return self._identity
 
     @property
     def wwid(self):

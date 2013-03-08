@@ -98,7 +98,6 @@ class DeviceTree(object):
         self.ignoredDisks = getattr(conf, "ignoredDisks", [])
         self.iscsi = iscsi
         self.dasd = dasd
-        self.mpathFriendlyNames = getattr(conf, "mpathFriendlyNames", True)
 
         self.diskImages = {}
         images = getattr(conf, "diskImages", {})
@@ -114,9 +113,6 @@ class DeviceTree(object):
         self.protectedDevNames = []
 
         self.unusedRaidMembers = []
-
-        self.__multipaths = {}
-        self.__multipathConfigWriter = devicelibs.mpath.MultipathConfigWriter()
 
         self.__passphrases = []
         if passphrase:
@@ -657,6 +653,50 @@ class DeviceTree(object):
 
         return device
 
+    def addUdevMultiPathDevice(self, info):
+        name = udev_device_get_name(info)
+        log_method_call(self, name=name)
+        uuid = udev_device_get_uuid(info)
+        sysfs_path = udev_device_get_sysfs_path(info)
+        device = None
+
+        slave_devs = []
+
+        # TODO: look for this device by dm-uuid?
+
+        # first, get a list of the slave devs and look them up
+        dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+        slave_names = os.listdir(dir)
+        for slave_name in slave_names:
+            # if it's a dm-X name, resolve it to a map name first
+            if slave_name.startswith("dm-"):
+                dev_name = dm.name_from_dm_node(slave_name)
+            else:
+                dev_name = slave_name.replace("!", "/") # handles cciss
+            slave_dev = self.getDeviceByName(dev_name)
+            path = os.path.normpath("%s/%s" % (dir, slave_name))
+            new_info = udev_get_block_device(os.path.realpath(path)[4:])
+            if not slave_dev:
+                # we haven't scanned the slave yet, so do it now
+                if new_info:
+                    self.addUdevDevice(new_info)
+                    slave_dev = self.getDeviceByName(dev_name)
+                    if slave_dev is None:
+                        # if the current slave is still not in
+                        # the tree, something has gone wrong
+                        log.error("failure scanning device %s: could not add slave %s" % (name, dev_name))
+                        return
+
+            slave_devs.append(slave_dev)
+
+        if slave_devs:
+            serial = info.get("ID_SERIAL_RAW", info.get("ID_SERIAL_SHORT"))
+            device = MultipathDevice(name, parents=slave_devs,
+                                     serial=serial)
+            self._addDevice(device)
+
+        return device
+
     def addUdevMDDevice(self, info):
         name = udev_device_get_md_name(info)
         log_method_call(self, name=name)
@@ -752,19 +792,17 @@ class DeviceTree(object):
         is_sun_magic = (getattr(disk.format, "labelType", None) == "sun" and
                         udev_device_get_minor(info) == 3)
 
-        # Check that the disk has partitions. If it does not, we must have
-        # reinitialized the disklabel.
-        #
-        # Also ignore partitions on devices we do not support partitioning
-        # of, like logical volumes.
-        if ((not getattr(disk.format, "partitions", None) and not is_sun_magic)
-            or not disk.partitionable):
-            # When we got here because the disk does not have a disklabel
-            # format (ie a biosraid member), or because it is not
-            # partitionable we want LVM to ignore this partition too
-            if disk.format.type != "disklabel" or not disk.partitionable:
-                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
+        if not disk.partitionable:
+            # Ignore partitions on devices we do not support partitioning of,
+            # like logical volumes.
+            devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
             log.debug("ignoring partition %s" % name)
+            return
+        elif disk.format.hidden:
+            # there's no need to filter these from lvm since multipath and
+            # dmraid are already active and lvm should know to ignore individual
+            # paths of an active multipath
+            log.debug("ignoring partition %s on %s" % (name, disk.format.type))
             return
 
         try:
@@ -777,6 +815,7 @@ class DeviceTree(object):
             # which gets rejected by parted, in this case we will
             # prompt to re-initialize the disk, so simply skip the
             # faulty partitions.
+            # XXX not sure about this
             log.error("Failed to instantiate PartitionDevice: %s" % e)
             return
 
@@ -880,6 +919,10 @@ class DeviceTree(object):
                           major=udev_device_get_major(info),
                           minor=udev_device_get_minor(info),
                           sysfsPath=sysfs_path, **kwargs)
+
+        if devicelibs.mpath.is_multipath_member(device.path):
+            info["ID_FS_TYPE"] = "multipath_member"
+
         self._addDevice(device)
         return device
 
@@ -969,11 +1012,9 @@ class DeviceTree(object):
         elif udev_device_is_loop(info):
             log.info("%s is a loop device" % name)
             device = self.addUdevLoopDevice(info)
-        elif udev_device_is_multipath_member(info):
-            device = self.addUdevDiskDevice(info)
-        elif udev_device_is_dm(info) and udev_device_is_dm_mpath(info):
+        elif udev_device_is_dm_mpath(info):
             log.info("%s is a multipath device" % name)
-            device = self.addUdevDMDevice(info)
+            device = self.addUdevMultiPathDevice(info)
         elif udev_device_is_dm_lvm(info):
             log.info("%s is an lvm logical volume" % name)
             device = self.addUdevLVDevice(info)
@@ -1409,17 +1450,6 @@ class DeviceTree(object):
             md_array._addDevice(device)
             self._addDevice(md_array)
 
-    def handleMultipathMemberFormat(self, info, device):
-        log_method_call(self, name=device.name, type=device.format.type)
-
-        name = udev_device_get_multipath_name(info)
-        if self.__multipaths.has_key(name):
-            mp = self.__multipaths[name]
-            mp.addParent(device)
-        else:
-            mp = MultipathDevice(name, info, parents=[device])
-            self.__multipaths[name] = mp
-
     def handleUdevDMRaidMemberFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
         name = udev_device_get_name(info)
@@ -1554,9 +1584,7 @@ class DeviceTree(object):
                   "exists": True}
 
         # set up type-specific arguments for the format constructor
-        if format_type == "multipath_member":
-            kwargs["multipath_members"] = self.getDevicesBySerial(serial)
-        elif format_type == "crypto_LUKS":
+        if format_type == "crypto_LUKS":
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
@@ -1622,8 +1650,6 @@ class DeviceTree(object):
             self.handleUdevDMRaidMemberFormat(info, device)
         elif device.format.type == "lvmpv":
             self.handleUdevLVMPVFormat(info, device)
-        elif device.format.type == "multipath_member":
-            self.handleMultipathMemberFormat(info, device)
         elif device.format.type == "btrfs":
             self.handleBTRFSFormat(info, device)
 
@@ -1732,7 +1758,7 @@ class DeviceTree(object):
 
     def backupConfigs(self, restore=False):
         """ Create a backup copies of some storage config files. """
-        configs = ["/etc/mdadm.conf", "/etc/multipath.conf"]
+        configs = ["/etc/mdadm.conf"]
         for cfg in configs:
             if restore:
                 src = cfg + ".anacbak"
@@ -1819,48 +1845,6 @@ class DeviceTree(object):
             break
 
         old_devices = {}
-
-        if os.access("/etc/multipath.conf", os.W_OK) and flags.installer_mode:
-            self.__multipathConfigWriter.writeConfig(self.mpathFriendlyNames)
-            self.topology = devicelibs.mpath.MultipathTopology(udev_get_block_devices())
-            log.info("devices to scan: %s" %
-                     [d['name'] for d in self.topology.devices_iter()])
-            for dev in self.topology.devices_iter():
-                # avoid the problems caused by encountering multipath devices in
-                # this loop by simply skipping all dm devices here
-                if dev['name'].startswith("dm-"):
-                    log.debug("Skipping a device mapper drive (%s) for now" % dev['name'])
-                    continue
-
-                old_devices[dev['name']] = dev
-                self.addUdevDevice(dev)
-
-            # Having found all the disks, we can now find all the multipaths built
-            # upon them.
-            whitelist = []
-            mpaths = self.__multipaths.values()
-            mpaths.sort(key=lambda d: d.name)
-            for mp in mpaths:
-                log.info("adding mpath device %s" % mp.name)
-                mp.setup()
-                mp.updateSysfsPath()
-                mp_info = udev_get_block_device(mp.sysfsPath)
-                if mp_info is None or self.isIgnored(mp_info):
-                    mp.teardown()
-                    continue
-
-                whitelist.append(mp.name)
-                for p in mp.parents:
-                    whitelist.append(p.name)
-                self.__multipathConfigWriter.addMultipathDevice(mp)
-                self._addDevice(mp)
-                self.addUdevDevice(mp_info)
-            for d in self.devices:
-                if not d.name in whitelist:
-                    self.__multipathConfigWriter.addBlacklistDevice(d)
-            self.__multipathConfigWriter.writeConfig(self.mpathFriendlyNames)
-        else:
-            log.info("Skipping multipath detection due to running as non-root.")
 
         # Now, loop and scan for devices that have appeared since the two above
         # blocks or since previous iterations.
