@@ -20,6 +20,8 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+__version__ = '0.7'
+
 ##
 ## Default stub values for installer-specific stuff that gets set up in
 ## enable_installer_mode.
@@ -370,6 +372,7 @@ class Blivet(object):
             information like passphrases, iscsi config, &c
 
         """
+        log.info("resetting Blivet (version %s) instance %s" % (__version__, self))
         # save passphrases for luks devices so we don't have to reprompt
         self.encryptionPassphrase = None
         for device in self.devices:

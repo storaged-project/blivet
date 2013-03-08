@@ -71,6 +71,7 @@ bumpver: po-pull
 	mv $(SPECFILE).new $(SPECFILE) ; rm -f speclog ; \
 	sed -i "s/Version: $(VERSION)/Version: $$NEWVERSION/" $(SPECFILE) ; \
 	sed -i "s/version='$(VERSION)'/version='$$NEWVERSION'/" setup.py ; \
+	sed -i "s/__version__ = '$(VERSION)'/__version__ = '$$NEWVERSION'/" blivet/__init__.py ; \
 	make -C po $(PKGNAME).pot ; \
 	tx push $(TX_PUSH_ARGS)
 
