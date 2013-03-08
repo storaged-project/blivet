@@ -1293,8 +1293,7 @@ class DeviceTree(object):
                                              exists=True)
             self._addDevice(vg_device)
 
-        if not flags.installer_mode:
-            info.update(lvm.lvs(vg_name))
+        info.update(lvm.lvs(vg_name))
 
         # Now we add any lv info found in this pv to the vg_device, we
         # do this for all pvs as pvs only contain lv info for lvs which they
@@ -1561,8 +1560,7 @@ class DeviceTree(object):
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
-            if not flags.installer_mode:
-                info.update(devicelibs.mdraid.mdexamine(device.path))
+            info.update(devicelibs.mdraid.mdexamine(device.path))
 
             # mdraid
             try:
@@ -1572,8 +1570,7 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev_device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            if not flags.installer_mode:
-                info.update(devicelibs.lvm.pvinfo(device.path))
+            info.update(devicelibs.lvm.pvinfo(device.path))
 
             try:
                 kwargs["vgName"] = udev_device_get_vg_name(info)

@@ -110,15 +110,6 @@ def storageInitialize(storage, ksdata, protected):
 
     storage.shutdown()
 
-    # touch /dev/.in_sysinit so that /lib/udev/rules.d/65-md-incremental.rules
-    # does not mess with any mdraid sets
-    open("/dev/.in_sysinit", "w")
-
-    # XXX I don't understand why I have to do this, but this is needed to
-    #     populate the udev db
-    util.run_program(["udevadm", "control", "--property=ANACONDA=1"])
-    udev_trigger(subsystem="block", action="change")
-
     # Before we set up the storage system, we need to know which disks to
     # ignore, etc.  Luckily that's all in the kickstart data.
     storage.config.update(ksdata)
