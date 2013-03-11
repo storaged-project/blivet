@@ -382,7 +382,7 @@ class iscsi(object):
         if logged_in == 0:
             raise IOError, _("Could not log in to any of the discovered nodes")
 
-        self.stabilize(intf)
+        self.stabilize()
 
     def write(self, storage):
         if not self.initiatorSet:
