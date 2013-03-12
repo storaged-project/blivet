@@ -1302,7 +1302,7 @@ class Blivet(object):
         elif swap:
             body = "swap"
 
-        if prefix:
+        if prefix and body:
             body = "_" + body
 
         template = self.safeDeviceName(prefix + body)
