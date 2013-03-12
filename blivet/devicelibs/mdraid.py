@@ -134,6 +134,30 @@ def get_raid_max_spares(raidlevel, nummembers):
 
     raise MDRaidError("invalid raid level %d" % raidlevel)
 
+def get_raid_superblock_size(size, version=None):
+    """ mdadm has different amounts of space reserved for its use depending
+    on the metadata type and size of the array.
+
+    0.9 use 2.0 MB
+    1.0 use 2.0 MB
+    1.1 or 1.2 use the formula lifted from mdadm/super1.c to calculate it
+    based on the array size.
+    """
+    # mdadm 3.2.4 made a major change in the amount of space used for 1.1 and 1.2
+    # in order to reserve space for reshaping. See commit 508a7f16 in the
+    # upstream mdadm repository.
+    headroom = MD_SUPERBLOCK_SIZE
+    if version is None or version in ["default", "1.1", "1.2"]:
+        # MDADM: We try to leave 0.1% at the start for reshape
+        # MDADM: operations, but limit this to 128Meg (0.1% of 10Gig)
+        # MDADM: which is plenty for efficient reshapes
+        # NOTE: In the mdadm code this is in 512b sectors. Converted to use MB
+        headroom = 128
+        while headroom << 10 > size:
+            headroom >>= 1
+    log.info("Using %sMB superBlockSize" % (headroom))
+    return headroom
+
 def get_member_space(size, disks, level=None):
     space = 0   # size of *each* member device
 
@@ -164,7 +188,7 @@ def get_member_space(size, disks, level=None):
         # capacity
         space = size / (disks / 2.0)
 
-    space += MD_SUPERBLOCK_SIZE
+    space += get_raid_superblock_size(size)
 
     return space * disks
 

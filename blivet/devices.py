@@ -2734,30 +2734,8 @@ class MDRaidArrayDevice(StorageDevice):
 
     @property
     def superBlockSize(self):
-        """ mdadm has different amounts of space reserved for its use depending
-        on the metadata type and size of the array.
-
-        0.9 use 2.0 MB
-        1.0 use 2.0 MB
-        1.1 or 1.2 use the formula lifted from mdadm/super1.c to calculate it
-        based on the array size.
-        """
-        # mdadm 3.2.4 made a major change in the amount of space used for 1.1 and 1.2
-        # in order to reserve space for reshaping. See commit 508a7f16 in the
-        # upstream mdadm repository.
-        if self.metadataVersion not in ["default", "1.1", "1.2"]:
-            headroom = 2.0
-        else:
-            array_size = self.rawArraySize
-            # MDADM: We try to leave 0.1% at the start for reshape
-            # MDADM: operations, but limit this to 128Meg (0.1% of 10Gig)
-            # MDADM: which is plenty for efficient reshapes
-            # NOTE: In the mdadm code this is in 512b sectors. Converted to use MB
-            headroom = 128
-            while headroom << 10 > array_size:
-                headroom >>= 1
-        log.info("Using %sMB superBlockSize" % (headroom))
-        return headroom
+        return mdraid.get_raid_superblock_size(self.rawArraySize,
+                                               version=self.metadataVersion)
 
     @property
     def smallestMember(self):
