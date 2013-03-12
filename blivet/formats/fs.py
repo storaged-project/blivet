@@ -396,7 +396,7 @@ class FS(DeviceFormat):
             raise FormatCreateError(e, self.device)
 
         if ret:
-            raise FormatCreateError("format failed: %s" % ret.rc, self.device)
+            raise FormatCreateError("format failed: %s" % ret, self.device)
 
         self.exists = True
         self.notifyKernel()
