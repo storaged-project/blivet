@@ -77,7 +77,7 @@ class Flags(object):
         if "nodmraid" in self.boot_cmdline:
             self.dmraid = False
 
-        if "ibft" in self.boot_cmdline:
+        if self.boot_cmdline.get("ip") == "ibft":
             self.ibft = True
 
         if "noiswmd" in self.boot_cmdline:
