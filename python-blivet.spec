@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.7
+Version: 0.8
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -74,6 +74,31 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Mar 13 2013 David Lehman <dlehman@redhat.com> - 0.8-1
+- Check for "ip=ibft" cmdline option, not for "ibft". (rvykydal)
+- run_program returns an int. (#920584) (dlehman)
+- Fix units for lvs output. (dlehman)
+- Don't pass an intf arg to ISCSI.stabilize. (#920041) (dlehman)
+- Add __version__ to blivet/__init__.py. (dlehman)
+- Only run info prog (eg: dumpe2fs) once per filesystem. (dlehman)
+- Processing of a PV with no VG metadata is easy. (dlehman)
+- Add some convenience properties for displaying DeviceAction info. (dlehman)
+- Ignore MTDs, as we do not have the tools to write to them (#916771). (clumens)
+- Include udev's list of symbolic links in StorageDevice. (#914724) (dlehman)
+- Set a DeviceFormat instance's type attribute to the requested type. (dlehman)
+- Allow size specs that do not include a 'b' or 'B'. (#888851) (dlehman)
+- Fix reference to 'factory' from within DeviceFactory class. (dlehman)
+- Fix problems detecting lvm and md devices. (#914730) (dlehman)
+- Allow passing size=None to device factories for unbounded growth. (dlehman)
+- Provide a way to set the default fstype for a Blivet instance. (#838145) (dlehman)
+- Allow changing the size of encrypted devices via DeviceFactory. (#913169) (dlehman)
+- Don't dump storage state except in installer mode. (dlehman)
+- Fix device resolution for btrfs. (dlehman)
+- Fix device resolution to find named md devices. (dlehman)
+- Account for active mounts in normal mode. (#914898) (dlehman)
+- Add an example script which lists all devices. (dlehman)
+- Add scripts/makeupdates script (bcl)
+
 * Thu Feb 21 2013 Brian C. Lane <bcl@redhat.com> - 0.7-1
 - Merge branch 'master' of git+ssh://git.fedorahosted.org/git/blivet (bcl)
 - Bring in productName from pyanaconda in installer mode. (#913559) (dlehman)
