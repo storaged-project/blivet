@@ -1015,8 +1015,8 @@ class Blivet(object):
                                                                None),
                                          **kwargs.pop("fmt_args", {}))
 
-        if kwargs.has_key("name"):
-            name = kwargs.pop("name")
+        name = kwargs.pop("name", None)
+        if name:
             safe_name = self.safeDeviceName(name)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'"
@@ -1038,8 +1038,8 @@ class Blivet(object):
             if pv not in self.devices:
                 raise ValueError("pv is not in the device tree")
 
-        if kwargs.has_key("name"):
-            name = kwargs.pop("name")
+        name = kwargs.pop("name", None)
+        if name:
             safe_name = self.safeDeviceName(name)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'"
@@ -1066,8 +1066,8 @@ class Blivet(object):
                                          mountpoint=mountpoint,
                                          **kwargs.pop("fmt_args", {}))
 
-        if kwargs.has_key("name"):
-            name = kwargs.pop("name")
+        name = kwargs.pop("name", None)
+        if name:
             # make sure the specified name is sensible
             safe_vg_name = self.safeDeviceName(vg.name)
             full_name = "%s-%s" % (safe_vg_name, name)
