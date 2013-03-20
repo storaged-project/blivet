@@ -2484,6 +2484,11 @@ class LVMLogicalVolumeDevice(DMDevice):
     size = property(StorageDevice._getSize, _setSize)
 
     @property
+    def maxSize(self):
+        """ The maximum size this lv can be. """
+        return min(self.format.maxSize, self.size + self.vg.freeSpace)
+
+    @property
     def vgSpaceUsed(self):
         """ Space occupied by this LV, not including snapshots. """
         return (self.vg.align(self.size, roundup=True) * self.stripes
