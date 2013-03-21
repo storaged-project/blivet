@@ -1314,6 +1314,7 @@ class NTFS(FS):
 
         self._minInstanceSize = size
 
+    @property
     def minSize(self):
         """ The minimum filesystem size in megabytes. """
         return self._minInstanceSize
