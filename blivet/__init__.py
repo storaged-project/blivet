@@ -2156,13 +2156,14 @@ class FSSet(object):
         self._devshm = None
         self._usb = None
         self._selinux = None
+        self._run = None
         self.preserveLines = []     # lines we just ignore and preserve
 
     @property
     def sysfs(self):
         if not self._sysfs:
             self._sysfs = NoDevice(format=getFormat("sysfs",
-                                                    device="sys",
+                                                    device="sysfs",
                                                     mountpoint="/sys"))
         return self._sysfs
 
@@ -2216,6 +2217,17 @@ class FSSet(object):
                                                       device="selinuxfs",
                                                       mountpoint="/sys/fs/selinux"))
         return self._selinux
+
+    @property
+    def run(self):
+        if not self._run:
+            self._run = DirectoryDevice("/run", format=getFormat("bind",
+                                                                 device="/run",
+                                                                 mountpoint="/run",
+                                                                 exists=True),
+                                        exists=True)
+
+        return self._run
 
     @property
     def devices(self):
@@ -2443,7 +2455,7 @@ class FSSet(object):
 
         devices = self.mountpoints.values() + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
-                        self.proc, self.selinux, self.usb])
+                        self.proc, self.selinux, self.usb, self.run])
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", None))
 
         for device in devices:
@@ -2457,7 +2469,7 @@ class FSSet(object):
             if "noauto" in options.split(","):
                 continue
 
-            if device.format.type == "bind" and device != self.dev:
+            if device.format.type == "bind" and device not in [self.dev, self.run]:
                 # set up the DirectoryDevice's parents now that they are
                 # accessible
                 #
@@ -2500,7 +2512,7 @@ class FSSet(object):
         """ unmount filesystems, except swap if swapoff == False """
         devices = self.mountpoints.values() + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
-                        self.proc, self.usb, self.selinux])
+                        self.proc, self.usb, self.selinux, self.run])
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", None))
         devices.reverse()
         for device in devices:
