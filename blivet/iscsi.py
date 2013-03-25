@@ -263,7 +263,7 @@ class iscsi(object):
         self.started = True
 
     def discover(self, ipaddr, port="3260", username=None, password=None,
-                  r_username=None, r_password=None, intf=None):
+                 r_username=None, r_password=None):
         """
         Discover iSCSI nodes on the target available for login.
 
@@ -312,16 +312,13 @@ class iscsi(object):
                 if not logged_in]
 
     def log_into_node(self, node, username=None, password=None,
-                  r_username=None, r_password=None, intf=None):
+                  r_username=None, r_password=None):
         """
         Raises IOError.
         """
         rc = False # assume failure
         msg = ""
 
-        if intf:
-            w = intf.waitWindow(_("Logging in to iSCSI node"),
-                                _("Logging in to iSCSI node %s") % node.name)
         try:
             authinfo = None
             if username or password or r_username or r_password:
@@ -340,20 +337,17 @@ class iscsi(object):
         except (IOError, ValueError) as e:
             msg = str(e)
             log.warning("iSCSI: could not log into %s: %s" % (node.name, msg))
-        if intf:
-            w.pop()
 
         return (rc, msg)
 
     # NOTE: the same credentials are used for discovery and login
     #       (unlike in UI)
     def addTarget(self, ipaddr, port="3260", user=None, pw=None,
-                  user_in=None, pw_in=None, intf=None, target=None, iface=None):
+                  user_in=None, pw_in=None, target=None, iface=None):
         found = 0
         logged_in = 0
 
-        found_nodes = self.discover(ipaddr, port, user, pw, user_in, pw_in,
-                                    intf)
+        found_nodes = self.discover(ipaddr, port, user, pw, user_in, pw_in)
         if found_nodes == None:
             raise IOError, _("No iSCSI nodes discovered")
 
@@ -371,8 +365,7 @@ class iscsi(object):
 
             found = found + 1
 
-            (rc, msg) = self.log_into_node(node, user, pw, user_in, pw_in,
-                                           intf)
+            (rc, msg) = self.log_into_node(node, user, pw, user_in, pw_in)
             if rc:
                 logged_in = logged_in +1
 
