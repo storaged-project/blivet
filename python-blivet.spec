@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.8
+Version: 0.9
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -74,6 +74,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Mar 28 2013 Brian C. Lane <bcl@redhat.com> - 0.9-1
+- NTFS.minSize is supposed to be a property. (#924410) (dlehman)
+- Mount /run during install and fix /sys mount (#922988) (bcl)
+- Fix two excptions triggered by calls to copy_to_system. (hamzy)
+
 * Wed Mar 13 2013 David Lehman <dlehman@redhat.com> - 0.8-1
 - Check for "ip=ibft" cmdline option, not for "ibft". (rvykydal)
 - run_program returns an int. (#920584) (dlehman)
