@@ -3920,6 +3920,12 @@ class BTRFSDevice(StorageDevice):
         raise RuntimeError("cannot directly set size of btrfs volume")
 
     @property
+    def currentSize(self):
+        # at some point we'll want to make this a bit more realistic, but the
+        # btrfs tools don't provide much of this type of information
+        return self.size
+
+    @property
     def status(self):
         return not any([not d.status for d in self.parents])
 
