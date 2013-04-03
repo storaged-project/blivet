@@ -18,8 +18,6 @@ Source0: http://git.fedorahosted.org/cgit/blivet.git/snapshot/%{realname}-%{vers
 %define e2fsver 1.41.0
 %define pythoncryptsetupver 0.1.1
 %define utillinuxver 2.15.1
-%define fcoeutilsver 1.0.12-3.20100323git
-%define iscsiver 6.2.0.870-3
 
 BuildArch: noarch
 BuildRequires: gettext
@@ -39,19 +37,8 @@ Requires: lvm2
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: btrfs-progs
-%ifarch %{ix86} x86_64 ia64
-Requires: dmidecode
-%endif
-%if ! 0%{?rhel}
-Requires: hfsplus-tools
-%endif
 Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
-%ifnarch s390 s390x
-Requires: fcoe-utils >= %{fcoeutilsver}
-%endif
-Requires: iscsi-initiator-utils >= %{iscsiver}
-
 
 %description
 The python-blivet package is a python module for examining and modifying
