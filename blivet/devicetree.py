@@ -1874,7 +1874,7 @@ class DeviceTree(object):
         # hide any subtrees that begin with an ignored disk
         for disk in [d for d in self._devices if d.isDisk]:
             if ((self.ignoredDisks and disk.name in self.ignoredDisks) or
-                (self.exclusiveDisks and disk.name not in self.ignoredDisks)):
+                (self.exclusiveDisks and disk.name not in self.exclusiveDisks)):
                 self.hide(disk)
 
         self.teardownAll()
