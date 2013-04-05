@@ -31,6 +31,17 @@ ROOT_PATH = '/'
 shortProductName = ''
 productName = ''
 bootLoaderError = Exception
+ERROR_RAISE = 0
+
+class ErrorHandler(object):
+    def cb(self, *args, **kwargs):
+        return ERROR_RAISE
+
+errorHandler = ErrorHandler()
+
+##
+## end installer stubs
+##
 
 import os
 import time
@@ -89,6 +100,8 @@ def enable_installer_mode():
     global productName
     global get_bootloader
     global BootLoaderError
+    global errorHandler
+    global ERROR_RAISE
 
     from pyanaconda import isys
     from pyanaconda.constants import ROOT_PATH
@@ -96,6 +109,8 @@ def enable_installer_mode():
     from pyanaconda.constants import productName
     from pyanaconda.bootloader import get_bootloader
     from pyanaconda.bootloader import BootLoaderError
+    from pyanaconda.errors import errorHandler
+    from pyanaconda.errors import ERROR_RAISE
 
     from pyanaconda.anaconda_log import program_log_lock
     util.program_log_lock = program_log_lock
