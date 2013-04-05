@@ -70,7 +70,11 @@ class fcoe(object):
         udev_settle()
 
     def _startEDD(self):
-        rc = util.capture_output(["/usr/libexec/fcoe/fcoe_edd.sh", "-i"])
+        try:
+            rc = util.capture_output(["/usr/libexec/fcoe/fcoe_edd.sh", "-i"])
+        except OSError as e:
+            rc = e.strerror
+
         if not rc.startswith("NIC="):
             log.info("No FCoE EDD info found: %s" % rc.rstrip())
             return
