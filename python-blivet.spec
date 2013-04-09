@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.9
+Version: 0.10
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,24 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Apr 09 2013 David Lehman <dlehman@redhat.com> - 0.10-1
+- Extended partitions containing logical partitions are not leaves. (#949912) (dlehman)
+- Remove devices in reverse order in Blivet.recursiveRemove. (#949912) (dlehman)
+- Rewrite the DeviceFactory classes. (dlehman)
+- Hook up error handling in installer-specific methods. (#948250) (dlehman)
+- Don't traceback if fcoe.startup is called without fcoe utils present. (dlehman)
+- Fix logic error that causes us to ignore disks in exclusiveDisks. (dlehman)
+- Slightly improve currentSize for btrfs volumes. (dlehman)
+- Simplify multipath handling. (dlehman)
+- Don't expect anaconda udev rules to be in use. (dlehman)
+- Drop requires for things only needed for OS installation. (dlehman)
+- New version: 0.9 (bcl)
+- Only install packages for devices and filesystems used by the OS. (dlehman)
+- Fix LVMLogicalVolumeDevice.maxSize. (dlehman)
+- Fix handling of name=None in newLV, newMDArray, newVG. (dlehman)
+- Allow calls to suggestDeviceName with only a prefix argument. (dlehman)
+- Move mdadm superblock size calculation into devicelibs.mdraid. (dlehman)
+
 * Thu Mar 28 2013 Brian C. Lane <bcl@redhat.com> - 0.9-1
 - NTFS.minSize is supposed to be a property. (#924410) (dlehman)
 - Mount /run during install and fix /sys mount (#922988) (bcl)
