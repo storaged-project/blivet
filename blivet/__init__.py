@@ -718,10 +718,14 @@ class Blivet(object):
 
     def recursiveRemove(self, device):
         log.debug("removing %s" % device.name)
-
-        # XXX is there any argument for not removing incomplete devices?
-        #       -- maybe some RAID devices
         devices = self.deviceDeps(device)
+
+        # this isn't strictly necessary, but it makes the action list easier to
+        # read when removing logical partitions because of the automatic
+        # renumbering that happens if you remove them in ascending numerical
+        # order
+        devices.reverse()
+
         while devices:
             log.debug("devices to remove: %s" % ([d.name for d in devices],))
             leaves = [d for d in devices if d.isleaf]
