@@ -1371,6 +1371,15 @@ class PartitionDevice(StorageDevice):
 
         return Device.dependsOn(self, dep)
 
+    @property
+    def isleaf(self):
+        """ True if this device has no children. """
+        no_kids = super(PartitionDevice, self).isleaf
+        extended_has_logical = (self.isExtended and
+                                (self.disk and
+                                 self.disk.format.logicalPartitions))
+        return (no_kids and not extended_has_logical)
+
     def _setFormat(self, format):
         """ Set the Device's format. """
         log_method_call(self, self.name)
