@@ -792,16 +792,18 @@ class DeviceTree(object):
         is_sun_magic = (getattr(disk.format, "labelType", None) == "sun" and
                         udev_device_get_minor(info) == 3)
 
-        if not disk.partitionable:
-            # Ignore partitions on devices we do not support partitioning of,
-            # like logical volumes.
-            devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
-            log.debug("ignoring partition %s" % name)
-            return
-        elif disk.format.hidden:
-            # there's no need to filter these from lvm since multipath and
-            # dmraid are already active and lvm should know to ignore individual
-            # paths of an active multipath
+        if not disk.partitioned:
+            # Ignore partitions on:
+            #  - devices we do not support partitioning of, like logical volumes
+            #  - devices that do not have a usable disklabel
+            #  - devices that contain disklabels made by isohybrid
+            #
+            # there's no need to filter partitions on members of multipaths or
+            # fwraid members from lvm since multipath and dmraid are already
+            # active and lvm should therefore know to ignore them
+            if not disk.format.hidden:
+                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
+
             log.debug("ignoring partition %s on %s" % (name, disk.format.type))
             return
 
