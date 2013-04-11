@@ -3817,8 +3817,11 @@ class DASDDevice(DiskDevice):
         if os.path.isfile(conf):
             f = open(conf)
             # grab the first line that starts with our busID
-            line = [line for line in f.readlines()
-                    if line.startswith(self.busid)][:1]
+            for l in f.readlines():
+                if l.startswith(self.busid):
+                    line = l.rstrip()
+                    break
+
             f.close()
 
         # See if we got a line.  If not, grab our getOpts
