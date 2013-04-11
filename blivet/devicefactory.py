@@ -77,6 +77,8 @@ def get_raid_level(device):
         raid_level = use_dev.dataLevel or "single"
     elif hasattr(use_dev, "volume"):
         raid_level = use_dev.volume.dataLevel or "single"
+    elif hasattr(use_dev, "lvs") and len(use_dev.parents) == 1:
+        raid_level = get_raid_level(use_dev.parents[0])
 
     return raid_level
 
