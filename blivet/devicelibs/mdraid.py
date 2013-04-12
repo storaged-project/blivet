@@ -43,39 +43,7 @@ RAID4 = 4
 RAID1 = 1
 RAID0 = 0
 
-def getRaidLevels():
-    mdstat_descriptors = {
-        RAID10: ("[RAID10]", "[raid10]"),
-        RAID6: ("[RAID6]", "[raid6]"),
-        RAID5: ("[RAID5]", "[raid5]"),
-        RAID4: ("[RAID4]", "[raid4]"),
-        RAID1: ("[RAID1]", "[raid1]"),
-        RAID0: ("[RAID0]", "[raid0]"),
-    }
-    avail = []
-    try:
-        f = open("/proc/mdstat", "r")
-    except IOError:
-        pass
-    else:
-        for l in f.readlines():
-            if not l.startswith("Personalities"):
-                continue
-
-            lst = l.split()
-
-            for level in mdstat_descriptors:
-                for d in mdstat_descriptors[level]:
-                    if d in lst:
-                        avail.append(level)
-                        break
-
-        f.close()
-
-    avail.sort()
-    return avail
-
-raid_levels = getRaidLevels()
+raid_levels = [ RAID0, RAID1, RAID4, RAID5, RAID6, RAID10 ]
 
 raid_descriptors = {RAID10: ("raid10", "RAID10", "10", 10),
                     RAID6: ("raid6", "RAID6", "6", 6),
