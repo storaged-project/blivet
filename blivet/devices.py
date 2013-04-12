@@ -2994,13 +2994,15 @@ class MDRaidArrayDevice(StorageDevice):
             return status
 
         state_file = "/sys/%s/md/array_state" % self.sysfsPath
-        if os.access(state_file, os.R_OK):
+        try:
             state = open(state_file).read().strip()
             if state in ("clean", "active", "active-idle", "readonly", "read-auto"):
                 status = True
             # mdcontainers have state inactive when started (clear if stopped)
             if self.type == "mdcontainer" and state == "inactive":
                 status = True
+        except IOError:
+            status = False
 
         return status
 
