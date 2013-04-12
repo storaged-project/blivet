@@ -28,8 +28,8 @@ __version__ = '0.11'
 ##
 isys = None
 ROOT_PATH = '/'
-shortProductName = ''
-productName = ''
+shortProductName = 'blivet'
+productName = 'blivet'
 bootLoaderError = Exception
 ERROR_RAISE = 0
 
