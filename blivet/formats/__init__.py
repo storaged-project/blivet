@@ -313,7 +313,7 @@ class DeviceFormat(object):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         try:
-            rc = run_program(["wipefs", "-a", self.device])
+            rc = run_program(["wipefs", "-f", "-a", self.device])
         except OSError as e:
             err = str(e)
         else:
