@@ -733,9 +733,6 @@ class DeviceTree(object):
 
         if device is None:
             device = self.getDeviceByUuid(info.get("MD_UUID"))
-            if device:
-                raise DeviceTreeError("MD RAID device %s already in "
-                                      "devicetree as %s" % (name, device.name))
 
         # if we get here, we found all of the slave devices and
         # something must be wrong -- if all of the slaves we in
@@ -743,10 +740,13 @@ class DeviceTree(object):
         if device is None:
             if name is None:
                 name = udev_device_get_name(info)
+                path = "/dev/" + name
+            else:
+                path = "/dev/md/" + name
 
             log.error("failed to scan md array %s" % name)
             try:
-                devicelibs.mdraid.mddeactivate("/dev/" + name)
+                devicelibs.mdraid.mddeactivate(path)
             except MDRaidError:
                 log.error("failed to stop broken md array %s" % name)
 
