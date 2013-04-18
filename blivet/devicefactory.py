@@ -29,6 +29,7 @@ from devicelibs.mdraid import get_raid_min_members
 from devicelibs.mdraid import raidLevelString
 from devicelibs.mdraid import raidLevel
 from devicelibs.lvm import get_pv_space
+from devicelibs.lvm import LVM_PE_SIZE
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
@@ -1181,6 +1182,12 @@ class LVMOnMDFactory(LVMFactory):
         The specified raid level applies to the md layer -- not the lvm layer.
     """
     child_factory_class = MDFactory
+
+    def _get_total_space(self):
+        base = super(LVMOnMDFactory, self)._get_total_space()
+        # add one extent per disk to account for mysterious space requirements
+        base += LVM_PE_SIZE * len(self.disks)
+        return base
 
     def _get_child_factory_kwargs(self):
         kwargs = super(LVMOnMDFactory, self)._get_child_factory_kwargs()
