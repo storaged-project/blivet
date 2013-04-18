@@ -594,13 +594,20 @@ class DeviceFactory(object):
 
     def _set_encryption(self):
         # toggle encryption of the leaf device as needed
+        parent_container = getattr(self.parent_factory, "container", None)
         if isinstance(self.device, LUKSDevice) and not self.encrypted:
             raw_device = self.raw_device
             leaf_format = self.device.format
+            if parent_container:
+                parent_container.removeMember(self.device)
             self.storage.destroyDevice(self.device)
             self.storage.formatDevice(self.raw_device, leaf_format)
             self.device = raw_device
+            if parent_container:
+                parent_container.addMember(self.device)
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
+            if parent_container:
+                parent_container.removeMember(self.device)
             leaf_format = self.device.format
             self.storage.formatDevice(self.device, getFormat("luks"))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
@@ -608,6 +615,8 @@ class DeviceFactory(object):
                                      parents=self.device)
             self.storage.createDevice(luks_device)
             self.device = luks_device
+            if parent_container:
+                parent_container.addMember(self.device)
 
     def _set_name(self):
         if self.device_name is None:
@@ -903,11 +912,11 @@ class PartitionSetFactory(PartitionFactory):
         for member in members[:]:
             member_encrypted = isinstance(member, LUKSDevice)
             if member_encrypted and not self.encrypted:
-                self.storage.destroyDevice(member)
-                members.remove(member)
                 if container:
                     container.removeMember(member)
 
+                self.storage.destroyDevice(member)
+                members.remove(member)
                 self.storage.formatDevice(member.slave,
                                           getFormat(self.fstype))
                 members.append(member.slave)
