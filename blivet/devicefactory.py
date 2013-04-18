@@ -381,11 +381,10 @@ class DeviceFactory(object):
             elif hasattr(device, "volume"):
                 container = device.volume
         elif name:
-            container = self.storage.devicetree.getDeviceByName(name)
-            if container and container not in self.container_list:
-                log.debug("specified container name %s is wrong type (%s)"
-                            % (name, container.type))
-                container = None
+            for c in self.storage.devices:
+                if c.name == name and c in self.container_list:
+                    container = c
+                    break
         else:
             containers = [c for c in self.container_list
                             if allow_existing or not c.exists]
