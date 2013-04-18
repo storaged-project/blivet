@@ -25,6 +25,7 @@ from errors import *
 from devices import LUKSDevice
 from formats import getFormat
 from devicelibs.mdraid import get_member_space
+from devicelibs.mdraid import get_raid_min_members
 from devicelibs.mdraid import raidLevelString
 from devicelibs.mdraid import raidLevel
 from devicelibs.lvm import get_pv_space
@@ -684,6 +685,19 @@ class DeviceFactory(object):
         # configure the PVs.
         if self.child_factory:
             self.child_factory.configure()
+
+        # Make sure that there are enough disks involved for any specified
+        # device or container raid level.
+        for level_attr in ["raid_level", "container_raid_level"]:
+            level = getattr(self, level_attr, None)
+            if level in [None, "single"]:
+                continue
+
+            md_level = raidLevel(level)
+            min_disks = get_raid_min_members(md_level)
+            disks = set(d for m in self._get_member_devices() for d in m.disks)
+            if len(disks) < min_disks:
+                raise DeviceFactoryError("Not enough disks for %s" % level)
 
         # Configure any type-specific container device. The obvious example of
         # this is the LVMFactory, which will configure its VG in this step.
