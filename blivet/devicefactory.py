@@ -266,6 +266,7 @@ class DeviceFactory(object):
                 self.mountpoint = None
 
         self.child_factory = None
+        self.parent_factory = None
 
         # used for error recovery
         self.__devices = []
@@ -641,13 +642,12 @@ class DeviceFactory(object):
         factory = self.child_factory_class(*self._get_child_factory_args(),
                                            **self._get_child_factory_kwargs())
         self.child_factory = factory
+        factory.parent_factory = self
 
-    def configure(self, parent_factory=None):
+    def configure(self):
         """ Configure the factory's device(s).
 
             Keyword arguments:
-
-                parent_factory -- a factory that created/called this factory
 
             An example of the parent_factory is the LVMOnMDFactory creating and
             then using an MDFactory to manage the volume group's single MD PV.
@@ -655,9 +655,9 @@ class DeviceFactory(object):
             Another example is the MDFactory creating and then using a
             PartitionSetFactory to manage the set of member partitions.
         """
-        log_method_call(self, parent_factory=parent_factory)
+        log_method_call(self, parent_factory=self.parent_factory)
 
-        if parent_factory is None:
+        if self.parent_factory is None:
             # only do the backup/restore error handling in the top-level factory
             self._save_devicetree()
 
@@ -665,7 +665,7 @@ class DeviceFactory(object):
             self._configure()
         except Exception as e:
             log.error("failed to configure device factory: %s" % e)
-            if parent_factory is None:
+            if self.parent_factory is None:
                 # only do the backup/restore error handling at the top-level
                 self._revert_devicetree()
 
@@ -674,7 +674,7 @@ class DeviceFactory(object):
 
             raise(e)
 
-    def _configure(self, parent_factory=None):
+    def _configure(self):
         self._set_container()
         self._handle_no_size()
         self._set_up_child_factory()
@@ -683,7 +683,7 @@ class DeviceFactory(object):
         # for type-specific container devices. In the LVM example, this will
         # configure the PVs.
         if self.child_factory:
-            self.child_factory.configure(parent_factory=self)
+            self.child_factory.configure()
 
         # Configure any type-specific container device. The obvious example of
         # this is the LVMFactory, which will configure its VG in this step.
@@ -814,12 +814,12 @@ class PartitionSetFactory(PartitionFactory):
     def devices(self):
         return self._devices
 
-    def configure(self, parent_factory=None):
+    def configure(self):
         """ Configure the factory's device set.
 
             This factory class will always have a parent factory.
         """
-        log_method_call(self, parent_factory=parent_factory)
+        log_method_call(self, parent_factory=self.parent_factory)
 
         # list of disks to add/remove member devices to/from
         add_disks = []
@@ -834,8 +834,8 @@ class PartitionSetFactory(PartitionFactory):
 
         # Grab the starting member list from the parent factory.
         members = self._devices
-        container = parent_factory.container
-        log.debug("parent factory container: %s" % parent_factory.container)
+        container = self.parent_factory.container
+        log.debug("parent factory container: %s" % self.parent_factory.container)
         if container:
             # update our device list from the parent factory's container members
             members = container.parents[:]
@@ -847,7 +847,7 @@ class PartitionSetFactory(PartitionFactory):
         ## Determine the target disk set.
         ##
         # XXX how can we detect/handle failure to use one or more of the disks?
-        if parent_factory.device:
+        if self.parent_factory.device:
             # See if we need to add/remove any disks, but only if we are
             # adjusting a device. When adding a new device to a container we do
             # not want to modify the container's disk set.
@@ -860,7 +860,7 @@ class PartitionSetFactory(PartitionFactory):
             add_disks = self.disks
 
         # drop any new disks that don't have free space
-        min_free = min(500, parent_factory.size)
+        min_free = min(500, self.parent_factory.size)
         add_disks = [d for d in add_disks if d.partitioned and
                                              d.format.free >= min_free]
 
@@ -965,14 +965,14 @@ class PartitionSetFactory(PartitionFactory):
         ##
         ## Determine target container size.
         ##
-        total_space = parent_factory._get_total_space()
+        total_space = self.parent_factory._get_total_space()
 
         ##
         ## Set up SizeSet to manage growth of member partitions.
         ##
         log.debug("adding a %s with size %d"
-                    % (parent_factory.size_set_class.__name__, total_space))
-        size_set = parent_factory.size_set_class(members, total_space)
+                  % (self.parent_factory.size_set_class.__name__, total_space))
+        size_set = self.parent_factory.size_set_class(members, total_space)
         self.storage.size_sets.append(size_set)
         for member in members[:]:
             if isinstance(member, LUKSDevice):
