@@ -209,6 +209,7 @@ class DeviceFactory(object):
     def __init__(self, storage, size, disks, fstype=None, mountpoint=None,
                  label=None, raid_level=None, encrypted=False,
                  container_encrypted=False, container_name=None,
+                 container_raid_level=None,
                  name=None, device=None):
         """ Create a new DeviceFactory instance.
 
@@ -225,6 +226,8 @@ class DeviceFactory(object):
                 label               filesystem label text
 
                 raid_level          raid level string, eg: "raid1"
+                container_raid_level
+
                 encrypted           whether to encrypt (boolean)
                 container_encrypted whether to encrypt the entire container
 
@@ -246,6 +249,8 @@ class DeviceFactory(object):
         self.label = label
 
         self.raid_level = raid_level
+        self.container_raid_level = container_raid_level
+
         self.encrypted = encrypted
         self.container_encrypted = container_encrypted
 
@@ -1155,18 +1160,33 @@ class LVMOnMDFactory(LVMFactory):
     """
     child_factory_class = MDFactory
 
-    def __init__(self, *args, **kwargs):
-        self.md_level = kwargs.pop("raid_level", None) or "raid1"
-        super(LVMOnMDFactory, self).__init__(*args, **kwargs)
-
     def _get_child_factory_kwargs(self):
         kwargs = super(LVMOnMDFactory, self)._get_child_factory_kwargs()
-        kwargs["raid_level"] = self.md_level
-        kwargs["name"] = self.storage.suggestDeviceName(prefix="pv")
-        if self.container:
+        kwargs["raid_level"] = self.container_raid_level
+        if self.container and self.container.parents:
             kwargs["device"] = self.container.parents[0]
-            kwargs["name"] = self.container.parents[0].name
+        else:
+            kwargs["name"] = self.storage.suggestDeviceName(prefix="pv")
+
         return kwargs
+
+    def _configure(self):
+        # If there's already a VG associated with this LV that doesn't have MD
+        # PVs we need to remove the partition PVs.
+        self._set_container()
+        if self.container:
+            for member in self.container.parents[:]:
+                use_dev = member
+                if isinstance(member, LUKSDevice):
+                    use_dev = member.slave
+
+                if use_dev.type != "mdarray":
+                    self.container.removeMember(member)
+                    self.storage.destroyDevice(member)
+                    if member != use_dev:
+                        self.storage.destroyDevice(use_dev)
+
+        super(LVMOnMDFactory, self)._configure()
 
 class BTRFSFactory(DeviceFactory):
     """ BTRFS subvolume """
@@ -1180,8 +1200,8 @@ class BTRFSFactory(DeviceFactory):
             log.info("overriding encryption setting for btrfs factory")
             self.encrypted = False
 
-        self.raid_level = self.raid_level or "single"
-        if self.raid_level == "single":
+        self.container_raid_level = self.container_raid_level or "single"
+        if self.container_raid_level == "single":
             self.size_set_class = TotalSizeSet
         else:
             self.size_set_class = SameSizeSet
@@ -1205,9 +1225,9 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_device_space(self):
         # until we get/need something better
-        if self.raid_level in ("single", "raid0"):
+        if self.container_raid_level in ("single", "raid0"):
             return self.size
-        elif self.raid_level in ("raid1", "raid10"):
+        elif self.container_raid_level in ("raid1", "raid10"):
             return self.size * len(self._get_member_devices())
 
     @property
@@ -1221,7 +1241,7 @@ class BTRFSFactory(DeviceFactory):
         """ Create the container device required by this factory device. """
         parents = self._get_parent_devices()
         self.container = self._get_new_container(name=self.container_name,
-                                                 dataLevel=self.raid_level,
+                                                 dataLevel=self.container_raid_level,
                                                  parents=parents)
         self.storage.createDevice(self.container)
 
@@ -1244,7 +1264,7 @@ class BTRFSFactory(DeviceFactory):
         # make sure the member count is adequate for the new level
 
         # set the new level
-        self.container.dataLevel = self.raid_level
+        self.container.dataLevel = self.container_raid_level
 
     def _get_child_factory_kwargs(self):
         kwargs = super(BTRFSFactory, self)._get_child_factory_kwargs()
@@ -1253,7 +1273,7 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
-        kwargs["dataLevel"] = self.raid_level
-        kwargs["metaDataLevel"] = self.raid_level
+        kwargs["dataLevel"] = self.container_raid_level
+        kwargs["metaDataLevel"] = self.container_raid_level
         kwargs["subvol"] = True
         return self.storage.newBTRFS(*args, **kwargs)
