@@ -676,6 +676,12 @@ def updateExtendedPartitions(storage, disks):
             continue
 
         extendedName = devicePathToName(extended.getDeviceNodeName())
+        device = storage.devicetree.getDeviceByName(extendedName)
+        if device:
+            if not device.exists:
+                # created by us, update partedPartition
+                device.partedPartition = extended
+
         # remove any obsolete extended partitions
         for part in storage.partitions:
             if part.disk == disk and part.isExtended and \
@@ -685,11 +691,7 @@ def updateExtendedPartitions(storage, disks):
                 else:
                     storage.devicetree._removeDevice(part, moddisk=False)
 
-        device = storage.devicetree.getDeviceByName(extendedName)
         if device:
-            if not device.exists:
-                # created by us, update partedPartition
-                device.partedPartition = extended
             continue
 
         # This is a little odd because normally instantiating a partition
