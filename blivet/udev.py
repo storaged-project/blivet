@@ -528,7 +528,7 @@ def udev_device_is_biosraid_member(info):
     return False
 
 def udev_device_get_dm_partition_disk(info):
-    return re.sub(r'\d*$', '', udev_device_get_name(info))
+    return re.sub(r'p?\d*$', '', udev_device_get_name(info))
 
 def udev_device_is_dm_partition(info):
     return (udev_device_is_dm(info) and

@@ -690,7 +690,12 @@ class DeviceTree(object):
             slave_devs.append(slave_dev)
 
         if slave_devs:
-            serial = info.get("ID_SERIAL_RAW", info.get("ID_SERIAL_SHORT"))
+            try:
+                serial = info["DM_UUID"].split("-", 1)[1]
+            except (IndexError, AttributeError):
+                log.error("multipath device %s has no DM_UUID" % name)
+                raise DeviceTreeError("multipath %s has no DM_UUID" % name)
+
             device = MultipathDevice(name, parents=slave_devs,
                                      serial=serial)
             self._addDevice(device)
@@ -1014,7 +1019,8 @@ class DeviceTree(object):
         elif udev_device_is_loop(info):
             log.info("%s is a loop device" % name)
             device = self.addUdevLoopDevice(info)
-        elif udev_device_is_dm_mpath(info):
+        elif udev_device_is_dm_mpath(info) and \
+             not udev_device_is_dm_partition(info):
             log.info("%s is a multipath device" % name)
             device = self.addUdevMultiPathDevice(info)
         elif udev_device_is_dm_lvm(info):
