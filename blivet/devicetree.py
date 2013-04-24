@@ -1903,12 +1903,16 @@ class DeviceTree(object):
             except DeviceError as (msg, name):
                 log.error("setup of %s failed: %s" % (device.name, msg))
 
-    def getDeviceBySysfsPath(self, path, incomplete=False):
+    def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
         if not path:
             return None
 
         found = None
-        for device in self._devices:
+        devices = self._devices
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if not incomplete and not getattr(device, "complete", True):
                 continue
 
@@ -1919,12 +1923,16 @@ class DeviceTree(object):
         log_method_return(self, found)
         return found
 
-    def getDeviceByUuid(self, uuid, incomplete=False):
+    def getDeviceByUuid(self, uuid, incomplete=False, hidden=False):
         if not uuid:
             return None
 
         found = None
-        for device in self._devices:
+        devices = self._devices
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if not incomplete and not getattr(device, "complete", True):
                 continue
 
@@ -1938,9 +1946,13 @@ class DeviceTree(object):
         log_method_return(self, found)
         return found
 
-    def getDevicesBySerial(self, serial, incomplete=False):
-        devices = []
-        for device in self._devices:
+    def getDevicesBySerial(self, serial, incomplete=False, hidden=False):
+        devices = self._devices
+        if hidden:
+            devices += self._hidden
+
+        retval = []
+        for device in devices:
             if not incomplete and not getattr(device, "complete", True):
                 continue
 
@@ -1948,17 +1960,21 @@ class DeviceTree(object):
                 log.warning("device %s has no serial attr" % device.name)
                 continue
             if device.serial == serial:
-                devices.append(device)
+                retval.append(device)
 
-        log_method_return(self, devices)
-        return devices
+        log_method_return(self, retval)
+        return retval
 
-    def getDeviceByLabel(self, label, incomplete=False):
+    def getDeviceByLabel(self, label, incomplete=False, hidden=False):
         if not label:
             return None
 
         found = None
-        for device in self._devices:
+        devices = self._devices
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if not incomplete and not getattr(device, "complete", True):
                 continue
 
@@ -1973,14 +1989,18 @@ class DeviceTree(object):
         log_method_return(self, found)
         return found
 
-    def getDeviceByName(self, name, incomplete=False):
+    def getDeviceByName(self, name, incomplete=False, hidden=False):
         log_method_call(self, name=name)
         if not name:
             log_method_return(self, None)
             return None
 
         found = None
-        for device in self._devices:
+        devices = self._devices
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if not incomplete and not getattr(device, "complete", True):
                 continue
 
@@ -1995,7 +2015,7 @@ class DeviceTree(object):
         log_method_return(self, str(found))
         return found
 
-    def getDeviceByPath(self, path, preferLeaves=True, incomplete=False):
+    def getDeviceByPath(self, path, preferLeaves=True, incomplete=False, hidden=False):
         log_method_call(self, path=path)
         if not path:
             log_method_return(self, None)
@@ -2004,7 +2024,12 @@ class DeviceTree(object):
         found = None
         leaf = None
         other = None
-        for device in self._devices:
+
+        devices = self._devices
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if not incomplete and not getattr(device, "complete", True):
                 continue
 
