@@ -4005,7 +4005,8 @@ class BTRFSVolumeDevice(BTRFSDevice):
                                     exists=self.exists,
                                     label=label,
                                     volUUID=self.uuid,
-                                    device=self.path)
+                                    device=self.path,
+                                    mountopts="subvolid=0")
             self.originalFormat = copy.copy(self.format)
 
     def _setFormat(self, format):
