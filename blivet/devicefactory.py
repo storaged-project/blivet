@@ -418,9 +418,11 @@ class DeviceFactory(object):
 
     def _reconfigure_container(self):
         """ Reconfigure a defined container required by this factory device. """
+        if getattr(self.container, "exists", False):
+            return
+
         self._set_container_members()
         self._set_container_raid_level()
-        self._set_container_name()
 
     def _set_container_members(self):
         if not self.child_factory:
@@ -438,9 +440,6 @@ class DeviceFactory(object):
                 self.container.addMember(member)
 
     def _set_container_raid_level(self):
-        pass
-
-    def _set_container_name(self):
         pass
 
     #
@@ -1092,22 +1091,6 @@ class LVMFactory(DeviceFactory):
     def _get_new_container(self, *args, **kwargs):
         return self.storage.newVG(*args, **kwargs)
 
-    def _set_container_name(self):
-        if self.container_name is None:
-            return
-
-        # TODO: write a StorageDevice.name setter
-        safe_new_name = self.storage.safeDeviceName(self.container_name)
-        if self.container.name != safe_new_name:
-            if safe_new_name in self.storage.names:
-                log.error("not renaming '%s' to in-use name '%s'"
-                            % (self.container._name, safe_new_name))
-                return
-
-            log.debug("renaming container '%s' to '%s'"
-                        % (self.container._name, safe_new_name))
-            self.container._name = safe_new_name
-
     #
     # methods to configure the factory's device
     #
@@ -1273,20 +1256,6 @@ class BTRFSFactory(DeviceFactory):
                                                  dataLevel=self.container_raid_level,
                                                  parents=parents)
         self.storage.createDevice(self.container)
-
-    def _set_container_name(self):
-        if self.container_name is None:
-            return
-
-        # TODO: write a StorageDevice.name setter
-        safe_new_name = self.storage.safeDeviceName(self.container_name)
-        if self.container.name != safe_new_name:
-            # we don't need to check for in-use names since btrfs volumes have
-            # no device node of their own
-            log.debug("renaming container '%s' to '%s'"
-                        % (self.container._name, safe_new_name))
-            self.container._name = safe_new_name
-            self.container.format.label = self.container_name
 
     def _set_container_raid_level(self):
         # TODO: write BTRFSVolumeDevice.setRAIDLevel
