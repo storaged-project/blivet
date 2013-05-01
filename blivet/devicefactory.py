@@ -1306,3 +1306,10 @@ class BTRFSFactory(DeviceFactory):
         kwargs["metaDataLevel"] = self.container_raid_level
         kwargs["subvol"] = True
         return self.storage.newBTRFS(*args, **kwargs)
+
+    def _set_name(self):
+        super(BTRFSFactory, self)._set_name()
+        if self.device_name is None:
+            return
+
+        self.device.format.options = "subvol=" + self.device.name
