@@ -1,7 +1,7 @@
 # devices.py
 # Device classes for anaconda's storage configuration module.
 # 
-# Copyright (C) 2009  Red Hat, Inc.
+# Copyright (C) 2009-2013  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
@@ -2022,6 +2022,9 @@ class LVMVolumeGroupDevice(DMDevice):
         # They still occupy space in the VG.
         self.voriginSnapshots = {}
 
+        # >0 is fixed
+        self.size_policy = self.size
+
     def __repr__(self):
         s = DMDevice.__repr__(self)
         s += ("  free = %(free)s  PE Size = %(peSize)s  PE Count = %(peCount)s\n"
@@ -3988,6 +3991,7 @@ class BTRFSVolumeDevice(BTRFSDevice):
         super(BTRFSVolumeDevice, self).__init__(*args, **kwargs)
 
         self.subvolumes = []
+        self.size_policy = self.size
 
         for parent in self.parents:
             if parent.format.type != "btrfs":

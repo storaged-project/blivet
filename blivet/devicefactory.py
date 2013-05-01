@@ -40,6 +40,10 @@ _ = lambda x: gettext.ldgettext("blivet", x)
 import logging
 log = logging.getLogger("blivet")
 
+# policy value of >0 is a fixed size request
+SIZE_POLICY_MAX = -1
+SIZE_POLICY_AUTO = 0
+
 DEVICE_TYPE_LVM = 0
 DEVICE_TYPE_MD = 1
 DEVICE_TYPE_PARTITION = 2
@@ -211,7 +215,7 @@ class DeviceFactory(object):
     def __init__(self, storage, size, disks, fstype=None, mountpoint=None,
                  label=None, raid_level=None, encrypted=False,
                  container_encrypted=False, container_name=None,
-                 container_raid_level=None,
+                 container_raid_level=None, container_size=SIZE_POLICY_AUTO,
                  name=None, device=None):
         """ Create a new DeviceFactory instance.
 
@@ -228,16 +232,16 @@ class DeviceFactory(object):
                 label               filesystem label text
 
                 raid_level          raid level string, eg: "raid1"
-                container_raid_level
-
                 encrypted           whether to encrypt (boolean)
-                container_encrypted whether to encrypt the entire container
-
-                container_name      name of requested container
                 name                name of requested device
 
                 device              an already-defined but non-existent device
                                     to adjust instead of creating a new device
+
+                container_name      name of requested container
+                container_raid_level
+                container_encrypted whether to encrypt the entire container
+                container_size      requested container size
         """
         self.storage = storage          # a Blivet instance
         self.size = size                # the requested size for this device
@@ -259,6 +263,8 @@ class DeviceFactory(object):
         self.container_name = container_name
         self.device_name = name
 
+        self.container_size = container_size
+
         self.container = None
         self.device = device
 
@@ -278,20 +284,30 @@ class DeviceFactory(object):
     #
     # methods related to device size and disk space requirements
     #
+    def _get_free_disk_space(self):
+        free_info = self.storage.getFreeSpace(disks=self.disks)
+        free = sum(d[0] for d in free_info.values())
+        return int(free.convertTo(spec="mb"))
+
     def _handle_no_size(self):
         """ Set device size so that it grows to the largest size possible. """
         if self.size is not None:
             return
 
-        free_info = self.storage.getFreeSpace(disks=self.disks)
-        free = sum(d[0] for d in free_info.values())
-        self.size = int(free.convertTo(spec="mb"))
+        self.size = self._get_free_disk_space()
 
         if self.device:
             self.size += self.device.size
 
+        if self.container_size > 0:
+            self.size = min(self.container_size, self.size)
+
     def _get_total_space(self):
-        """ Return the total space need for this factory's device/container. """
+        """ Return the total space need for this factory's device/container.
+
+            This is used for the size argument to the child factory constructor
+            and also to construct the size set in PartitionSetFactory.configure.
+        """
         size = self._get_device_space()
         if self.container:
             size += container.size
@@ -648,8 +664,12 @@ class DeviceFactory(object):
         if self.child_factory or not self.child_factory_class:
             return
 
-        factory = self.child_factory_class(*self._get_child_factory_args(),
-                                           **self._get_child_factory_kwargs())
+        args = self._get_child_factory_args()
+        kwargs = self._get_child_factory_kwargs()
+        log.debug("child factory class: %s" % self.child_factory_class)
+        log.debug("child factory args: %s" % args)
+        log.debug("child factory kwargs: %s" % kwargs)
+        factory = self.child_factory_class(*args, **kwargs)
         self.child_factory = factory
         factory.parent_factory = self
 
@@ -713,6 +733,10 @@ class DeviceFactory(object):
             self._reconfigure_container()
         else:
             self._create_container()
+
+        if self.container and hasattr(self.container, "size_policy") and \
+           not self.container.exists:
+            self.container.size_policy = self.container_size
 
         # Configure this factory's leaf device, eg, for LVMFactory: the LV.
         if self.device:
@@ -859,6 +883,10 @@ class PartitionSetFactory(PartitionFactory):
         container = self.parent_factory.container
         log.debug("parent factory container: %s" % self.parent_factory.container)
         if container:
+            if container.exists:
+                log.info("parent factory container exists -- nothing to do")
+                return
+
             # update our device list from the parent factory's container members
             members = container.parents[:]
             self._devices = members
@@ -1021,7 +1049,8 @@ class LVMFactory(DeviceFactory):
         if self.size is not None:
             return
 
-        if self.container and self.container.exists:
+        if self.container and (self.container.exists or
+                               self.container_size > 0):
             self.size = self.container.freeSpace
 
             if self.device:
@@ -1067,17 +1096,38 @@ class LVMFactory(DeviceFactory):
     def _get_total_space(self):
         """ Total disk space requirement for this device and its container. """
         size = 0
-        if self.container:
-            size += sum([p.size for p in self.container.parents])
-            size -= self.container.freeSpace
+        if self.container and self.container.exists:
+            return size
 
-        size += self._get_device_space()
-        if self.device:
-            # The member count here uses the container's current member set
-            # since that's the basis for the current device's disk space usage.
-            size -= get_pv_space(self.device.size,
-                                 len(self.container.parents),
-                                 **self.size_func_kwargs)
+        if self.container_size == 0:
+            # automatic container size management
+            if self.container:
+                size += sum([p.size for p in self.container.parents])
+                size -= self.container.freeSpace
+        elif self.container_size == SIZE_POLICY_MAX:
+            # grow the container as large as possible
+            if self.container:
+                size += sum(p.size for p in self.container.parents)
+                log.debug("size bumped to %d to include container parents" % size)
+
+            size += self._get_free_disk_space()
+            log.debug("size bumped to %d to include free disk space" % size)
+        else:
+            # container_size is a request for a fixed size for the container
+            size += get_pv_space(self.container_size, len(self.disks))
+
+        # this does not apply if a specific container size was requested
+        if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
+            size += self._get_device_space()
+            log.debug("size bumped to %d to include new device space" % size)
+            if self.device and self.container_size == SIZE_POLICY_AUTO:
+                # The member count here uses the container's current member set
+                # since that's the basis for the current device's disk space
+                # usage.
+                size -= get_pv_space(self.device.size,
+                                     len(self.container.parents),
+                                     **self.size_func_kwargs)
+                log.debug("size cut to %d to omit old device space" % size)
 
         return size
 
@@ -1127,11 +1177,11 @@ class MDFactory(DeviceFactory):
     size_set_class = SameSizeSet
 
     def _get_device_space(self):
-        return self._get_total_space()
-
-    def _get_total_space(self):
         return get_member_space(self.size, len(self._get_member_devices()),
                                 level=self.raid_level)
+
+    def _get_total_space(self):
+        return self._get_device_space()
 
     def _set_raid_level(self):
         # TODO: write MDRaidArrayDevice.setRAIDLevel
@@ -1220,18 +1270,26 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_total_space(self):
         """ Return the total space needed for the specified container. """
-        if not self.container:
-            container_size = 0
-        elif self.container.exists:
-            container_size = self.container.size
+        size = 0
+        if self.container and self.container.exists:
+            return size
+
+        if self.container_size == SIZE_POLICY_AUTO:
+            # automatic
+            if self.container and not self.device:
+                # For new subvols the size is in addition to the volume's size.
+                size += sum(s.req_size for s in self.container.subvolumes)
+
+            size += self._get_device_space()
+        elif self.container_size == SIZE_POLICY_MAX:
+            # as large as possible
+            if self.container:
+                size += self.container.size
+
+            size += self._get_free_disk_space()
         else:
-            container_size = sum(s.req_size for s in self.container.subvolumes)
-
-        size = self._get_device_space()
-
-        if not self.device:
-            # For new subvols the size is in addition to the volume's size.
-            size += container_size
+            # fixed-size request
+            size = self.container_size
 
         return size
 
