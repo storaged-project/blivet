@@ -1166,6 +1166,12 @@ class LVMFactory(DeviceFactory):
                             % (self.device._name, safe_new_name))
                 return
 
+            if not safe_new_name.startswith(self.container.name):
+                log.error("device rename failure (%s)" % safe_new_name)
+                return
+
+            # strip off the vg name before setting
+            safe_new_name = safe_new_name[len(self.container.name)+1:]
             log.debug("renaming device '%s' to '%s'"
                         % (self.device._name, safe_new_name))
             self.device._name = safe_new_name
