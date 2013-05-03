@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.11
+Version: 0.12
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,32 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri May 03 2013 David Lehman <dlehman@redhat.com> - 0.12-1
+- Fix a bug in renaming lvm lvs. (dlehman)
+- Add container size policies for unlimited growth and fixed size. (dlehman)
+- Remove device factory methods to change container name. (dlehman)
+- Override any default subvol when mounting main btrfs volume. (#921757) (dlehman)
+- Fix detection of multipath. (#955664) (dlehman)
+- When a btrfs subvol's name is changed, change its subvol argument too. (clumens)
+- Allow returning hidden disks from the getDeviceBy* methods, if asked. (clumens)
+- Fix fipvlan -f argument once more and for good (#836321) (rvykydal)
+- Remove the intf parameters from the iscsi class. (clumens)
+- Don't relly on /proc/mdstat when enumeraing RAID levels. (jsafrane)
+- Set product names in non-installer mode. (jsafrane)
+- Fixed checking status of MD RAID which was just deleted. (jsafrane)
+- Account for the fact that md's metadata usage is unpredictable. (dlehman)
+- Remove members from their containers before destroying them. (dlehman)
+- Make get_container work even if there are duplicate names. (dlehman)
+- LVMFactory with a container_raid_level means use LVMOnMDFactory. (dlehman)
+- Add a check for enough raid members after allocating partitions. (dlehman)
+- Make parent_factory an attribute of the DeviceFactory instance. (dlehman)
+- All container settings use container_ kwargs. (dlehman)
+- Add ability to find raid level of an lvm vg. (dlehman)
+- Always pass -f to wipefs since it lies about in-use devices. (#953329) (dlehman)
+- Fix a bug extended partition management. (#951765) (dlehman)
+- Don't return incomplete devices from getDeviceByFoo methods by default. (dlehman)
+- Don't traceback when degraded md raid arrays are present. (#953184) (dlehman)
+
 * Mon Apr 15 2013 David Lehman <dlehman@redhat.com> - 0.11-1
 - Fix handling of isohybrid media. (#950510) (dlehman)
 - Fix getting dracut setup args from dasd.conf. (#950964) (dlehman)
