@@ -1540,10 +1540,9 @@ class Blivet(object):
 
                 if missing:
                     errors.append(_("Your BIOS-based system needs a special "
-                                    "partition to boot with %s's new "
-                                    "disk label format (GPT). To continue, "
-                                    "please create a 1MB 'BIOS Boot' type "
-                                    "partition.") % productName)
+                                    "partition to boot from a GPT disk label. "
+                                    "To continue, please create a 1MB "
+                                    "'biosboot' type partition."))
 
         if not swaps:
             installed = Size(spec="%s kb" % util.total_memory())
