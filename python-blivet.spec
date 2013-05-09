@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.12
+Version: 0.13
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu May 09 2013 Brian C. Lane <bcl@redhat.com> - 0.13-1
+- Make sure createBitmap is updated when level changes (#960271) (bcl)
+- Update biosboot error message (#960691) (bcl)
+
 * Fri May 03 2013 David Lehman <dlehman@redhat.com> - 0.12-1
 - Fix a bug in renaming lvm lvs. (dlehman)
 - Add container size policies for unlimited growth and fixed size. (dlehman)
