@@ -2699,9 +2699,6 @@ class MDRaidArrayDevice(StorageDevice):
         else:
             self.metadataVersion = metadataVersion
 
-        # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
-        self.createBitmap = self.level != 0
-
         # For container members probe size now, as we cannot determine it
         # when teared down.
         if self.parents and self.parents[0].type == "mdcontainer":
@@ -2719,6 +2716,30 @@ class MDRaidArrayDevice(StorageDevice):
             # really high minors to arrays it has no config entry for
             open("/etc/mdadm.conf", "a").write("ARRAY %s UUID=%s\n"
                                                 % (self.path, self.uuid))
+
+    @property
+    def level(self):
+        """ Return the raid level
+
+            :returns: raid level value
+            :rtype:   int
+        """
+        return self._level
+
+    @level.setter
+    def level(self, value):
+        """ Set the RAID level and enforce restrictions based on it.
+
+            :param value: new raid level
+            :param type:  int
+            :returns:     None
+
+            Sets createBitmap True unless level is 0
+        """
+        self._level = value
+
+        # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
+        self.createBitmap = self._level != 0
 
     @property
     def rawArraySize(self):
