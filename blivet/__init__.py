@@ -24,7 +24,10 @@ __version__ = '0.13'
 
 ##
 ## Default stub values for installer-specific stuff that gets set up in
-## enable_installer_mode.
+## enable_installer_mode.  These constants are only for use inside this file.
+## For use in other blivet files, they must either be passed to the function
+## in question or care must be taken so they are imported only after
+## enable_installer_mode is called.
 ##
 isys = None
 ROOT_PATH = '/'
@@ -1619,10 +1622,10 @@ class Blivet(object):
 
         self.fsset.write()
         self.makeMtab()
-        self.iscsi.write(self)
-        self.fcoe.write()
-        self.zfcp.write()
-        self.dasd.write()
+        self.iscsi.write(ROOT_PATH, self)
+        self.fcoe.write(ROOT_PATH)
+        self.zfcp.write(ROOT_PATH)
+        self.dasd.write(ROOT_PATH)
 
     def turnOnSwap(self, upgrading=None):
         self.fsset.turnOnSwap(rootPath=ROOT_PATH,

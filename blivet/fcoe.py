@@ -21,7 +21,6 @@ import os
 from . import util
 from .udev import udev_settle
 #from pyanaconda import isys
-from . import ROOT_PATH
 import logging
 import time
 log = logging.getLogger("blivet")
@@ -134,7 +133,7 @@ class fcoe(object):
         self._stabilize()
         self.nics.append((nic, dcb, auto_vlan))
 
-    def write(self):
+    def write(self, ROOT_PATH):
         if not self.nics:
             return
 

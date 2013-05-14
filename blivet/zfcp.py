@@ -21,7 +21,6 @@
 
 import string
 import os
-from . import ROOT_PATH
 from udev import udev_settle
 from . import util
 
@@ -410,7 +409,7 @@ class ZFCP:
             except ValueError as e:
                 log.warn(str(e))
 
-    def write(self):
+    def write(self, ROOT_PATH):
         if len(self.fcpdevs) == 0:
             return
         f = open(ROOT_PATH + zfcpconf, "w")

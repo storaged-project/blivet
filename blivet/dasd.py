@@ -25,7 +25,6 @@ from .errors import DasdFormatError
 from .devices import deviceNameToDiskByPath
 from . import util
 from . import arch
-from . import ROOT_PATH
 from .udev import udev_trigger
 
 import logging
@@ -187,7 +186,7 @@ class DASD:
         """ Clear the device list to force re-populate on next access. """
         self._devices = []
 
-    def write(self):
+    def write(self, ROOT_PATH):
         """ Write /etc/dasd.conf to target system for all DASD devices
             configured during installation.
         """
