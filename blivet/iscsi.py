@@ -300,7 +300,7 @@ class iscsi(object):
                                                         port=int(port),
                                                         authinfo=authinfo)
             if found_nodes is None:
-                return None
+                return []
             self.discovered_targets[(ipaddr, port)] = []
             for node in found_nodes:
                 self.discovered_targets[(ipaddr, port)].append([node, False])
