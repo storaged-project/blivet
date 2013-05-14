@@ -192,6 +192,16 @@ def pvremove(device):
     except LVMError as msg:
         raise LVMError("pvremove failed for %s: %s" % (device, msg))
 
+def pvscan(device):
+    args = ["pvscan", "--cache",] + \
+            _getConfigArgs() + \
+            [device]
+
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("pvscan failed for %s: %s" % (device, msg))
+
 def pvinfo(device):
     """
         If the PV was created with '--metadacopies 0', lvm will do some

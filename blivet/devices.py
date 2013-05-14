@@ -1461,11 +1461,32 @@ class PartitionDevice(StorageDevice):
 
         self._bootable = self.getFlag(parted.PARTITION_BOOT)
 
+    def _wipe(self):
+        """ Wipe the partition metadata. """
+        log_method_call(self, self.name, status=self.status)
+
+        start = self.partedPartition.geometry.start
+        part_len = self.partedPartition.geometry.end - start
+        bs = self.partedPartition.geometry.device.sectorSize
+        device = self.partedPartition.geometry.device.path
+
+        # Erase 1MiB or to end of partition
+        count = 1 * 1024 * 1024 / bs
+        count = min(count, part_len)
+
+        cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
+               "seek=%s" % start, "count=%s" % count]
+        try:
+            util.run_program(cmd)
+        except OSError as e:
+            log.error(str(e))
+
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         self.disk.format.addPartition(self.partedPartition)
 
+        self._wipe()
         try:
             self.disk.format.commit()
         except DiskLabelCommitError:

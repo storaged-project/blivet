@@ -109,13 +109,15 @@ class LVMPhysicalVolume(DeviceFormat):
             # lvm has issues with persistence of metadata, so here comes the
             # hammer...
             DeviceFormat.destroy(self, *args, **kwargs)
-
+            lvm.pvscan(self.device)
             lvm.pvcreate(self.device)
         except Exception:
             raise
-        else:
-            self.exists = True
-            self.notifyKernel()
+        finally:
+            lvm.pvscan(self.device)
+
+        self.exists = True
+        self.notifyKernel()
 
     def destroy(self, *args, **kwargs):
         """ Destroy the format. """
@@ -132,6 +134,8 @@ class LVMPhysicalVolume(DeviceFormat):
             lvm.pvremove(self.device)
         except LVMError:
             DeviceFormat.destroy(self, *args, **kwargs)
+        finally:
+            lvm.pvscan(self.device)
 
         self.exists = False
         self.notifyKernel()
