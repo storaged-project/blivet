@@ -129,6 +129,13 @@ def total_memory():
         if line.startswith("MemTotal:"):
             mem = long(line.split()[1])
 
+    # Because /proc/meminfo only gives us the MemTotal (total physical RAM
+    # minus the kernel binary code), we need to round this up. Assuming
+    # every machine has the total RAM MB number divisible by 128. */
+    mem /= 1024
+    mem = (mem / 128 + 1) * 128
+    mem *= 1024
+
     return mem
 
 ##
