@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.13
+Version: 0.14
 Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed May 15 2013 David Lehman <dlehman@redhat.com> - 0.14-1
+- total_memory calculation needs to round up (#962231) (bcl)
+- The dev.node attribute for iscsi devices is not copyable (#962865). (clumens)
+- Wipe partitions before they are created (#950145) (bcl)
+- Pass ROOT_PATH as an argument instead of importing it. (clumens)
+- If no iscsi nodes are discovered, return an empty list instead of None. (clumens)
+
 * Thu May 09 2013 Brian C. Lane <bcl@redhat.com> - 0.13-1
 - Make sure createBitmap is updated when level changes (#960271) (bcl)
 - Update biosboot error message (#960691) (bcl)
