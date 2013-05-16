@@ -1877,10 +1877,6 @@ class Blivet(object):
            device_type == devicefactory.DEVICE_TYPE_BTRFS:
             device_type = devicefactory.DEVICE_TYPE_PARTITION
 
-        if device_type == devicefactory.DEVICE_TYPE_LVM and \
-           kwargs.get("container_raid_level"):
-            device_type = devicefactory.DEVICE_TYPE_LVM_ON_MD
-
         factory = devicefactory.get_device_factory(self, device_type, size,
                                                    **kwargs)
 

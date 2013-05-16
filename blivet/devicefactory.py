@@ -49,7 +49,6 @@ DEVICE_TYPE_MD = 1
 DEVICE_TYPE_PARTITION = 2
 DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
-DEVICE_TYPE_LVM_ON_MD = 5
 
 def get_device_type(device):
     device_types = {"partition": DEVICE_TYPE_PARTITION,
@@ -96,7 +95,6 @@ def get_device_factory(blivet, device_type, size, **kwargs):
                    DEVICE_TYPE_BTRFS: BTRFSFactory,
                    DEVICE_TYPE_PARTITION: PartitionFactory,
                    DEVICE_TYPE_MD: MDFactory,
-                   DEVICE_TYPE_LVM_ON_MD: LVMOnMDFactory,
                    DEVICE_TYPE_DISK: DeviceFactory}
 
     factory_class = class_table[device_type]
@@ -1053,6 +1051,11 @@ class LVMFactory(DeviceFactory):
     child_factory_fstype = "lvmpv"
     size_set_class = TotalSizeSet
 
+    def __init__(self, *args, **kwargs):
+        super(LVMFactory, self).__init__(*args, **kwargs)
+        if self.container_raid_level:
+            self.child_factory_class = MDFactory
+
     #
     # methods related to device size and disk space requirements
     #
@@ -1141,6 +1144,10 @@ class LVMFactory(DeviceFactory):
                                      **self.size_func_kwargs)
                 log.debug("size cut to %d to omit old device space" % size)
 
+        if self.container_raid_level:
+            # add one extent per disk to account for md metadata
+            size += LVM_PE_SIZE * len(self.disks)
+
         return size
 
     #
@@ -1169,6 +1176,14 @@ class LVMFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(LVMFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        if self.container_raid_level:
+            # md pv
+            kwargs["raid_level"] = self.container_raid_level
+            if self.container and self.container.parents:
+                kwargs["device"] = self.container.parents[0]
+            else:
+                kwargs["name"] = self.storage.suggestDeviceName(prefix="pv")
+
         return kwargs
 
     def _get_new_device(self, *args, **kwargs):
@@ -1197,6 +1212,33 @@ class LVMFactory(DeviceFactory):
             log.debug("renaming device '%s' to '%s'"
                         % (self.device._name, safe_new_name))
             self.device._name = safe_new_name
+
+    def _configure(self):
+        self._set_container()
+        if self.container and not self.container.exists:
+            # If there's already a VG associated with this LV that doesn't have
+            # MD PVs we need to remove the partition PVs.
+            # Likewise, if there's already a VG whose PV is an MD we need to
+            # remove it completely before proceeding.
+            for member in self.container.parents[:]:
+                use_dev = member
+                if isinstance(member, LUKSDevice):
+                    use_dev = member.slave
+
+                if ((self.container_raid_level and use_dev.type != "mdarray") or
+                    (not self.container_raid_level and use_dev.type == "mdarray")):
+                    self.container.removeMember(member)
+                    self.storage.destroyDevice(member)
+                    if member != use_dev:
+                        self.storage.destroyDevice(use_dev)
+
+                    # for md pv we also need to remove the md member partitions 
+                    if not self.container_raid_level and \
+                       use_dev.type == "mdarray":
+                        for mdmember in use_dev.parents[:]:
+                            self.storage.destroyDevice(mdmember)
+
+        super(LVMFactory, self)._configure()
 
 class MDFactory(DeviceFactory):
     """ Factory for creating MD RAID devices. """
@@ -1236,47 +1278,6 @@ class MDFactory(DeviceFactory):
 
     def _create_container(self, *args, **kwargs):
         pass
-
-class LVMOnMDFactory(LVMFactory):
-    """ LVM logical volume with single md physical volume.
-
-        The specified raid level applies to the md layer -- not the lvm layer.
-    """
-    child_factory_class = MDFactory
-
-    def _get_total_space(self):
-        base = super(LVMOnMDFactory, self)._get_total_space()
-        # add one extent per disk to account for mysterious space requirements
-        base += LVM_PE_SIZE * len(self.disks)
-        return base
-
-    def _get_child_factory_kwargs(self):
-        kwargs = super(LVMOnMDFactory, self)._get_child_factory_kwargs()
-        kwargs["raid_level"] = self.container_raid_level
-        if self.container and self.container.parents:
-            kwargs["device"] = self.container.parents[0]
-        else:
-            kwargs["name"] = self.storage.suggestDeviceName(prefix="pv")
-
-        return kwargs
-
-    def _configure(self):
-        # If there's already a VG associated with this LV that doesn't have MD
-        # PVs we need to remove the partition PVs.
-        self._set_container()
-        if self.container:
-            for member in self.container.parents[:]:
-                use_dev = member
-                if isinstance(member, LUKSDevice):
-                    use_dev = member.slave
-
-                if use_dev.type != "mdarray":
-                    self.container.removeMember(member)
-                    self.storage.destroyDevice(member)
-                    if member != use_dev:
-                        self.storage.destroyDevice(use_dev)
-
-        super(LVMOnMDFactory, self)._configure()
 
 class BTRFSFactory(DeviceFactory):
     """ BTRFS subvolume """
