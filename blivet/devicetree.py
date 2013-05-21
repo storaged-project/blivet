@@ -1686,6 +1686,9 @@ class DeviceTree(object):
                 devicelibs.lvm.lvm_cc_addFilterRejectRegexp(pv.name)
 
     def hide(self, device):
+        if device in self._hidden:
+            return
+
         for d in self.getChildren(device):
             self.hide(d)
 
