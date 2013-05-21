@@ -1917,7 +1917,7 @@ class DeviceTree(object):
             return None
 
         found = None
-        devices = self._devices
+        devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
@@ -1937,7 +1937,7 @@ class DeviceTree(object):
             return None
 
         found = None
-        devices = self._devices
+        devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
@@ -1956,7 +1956,7 @@ class DeviceTree(object):
         return found
 
     def getDevicesBySerial(self, serial, incomplete=False, hidden=False):
-        devices = self._devices
+        devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
@@ -1979,7 +1979,7 @@ class DeviceTree(object):
             return None
 
         found = None
-        devices = self._devices
+        devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
@@ -2005,7 +2005,7 @@ class DeviceTree(object):
             return None
 
         found = None
-        devices = self._devices
+        devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
@@ -2034,7 +2034,7 @@ class DeviceTree(object):
         leaf = None
         other = None
 
-        devices = self._devices
+        devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
