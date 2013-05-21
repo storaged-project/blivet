@@ -538,7 +538,7 @@ class DeviceTree(object):
         sysfs_path = udev_device_get_sysfs_path(info)
 
         vg_name = udev_device_get_lv_vg_name(info)
-        device = self.getDeviceByName(vg_name)
+        device = self.getDeviceByName(vg_name, hidden=True)
         if device and not isinstance(device, LVMVolumeGroupDevice):
             log.warning("found non-vg device with name %s" % vg_name)
             device = None
