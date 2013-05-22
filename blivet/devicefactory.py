@@ -29,6 +29,7 @@ from devicelibs.mdraid import get_raid_min_members
 from devicelibs.mdraid import raidLevelString
 from devicelibs.mdraid import raidLevel
 from devicelibs.lvm import get_pv_space
+from devicelibs.lvm import get_pool_padding
 from devicelibs.lvm import LVM_PE_SIZE
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
@@ -49,10 +50,12 @@ DEVICE_TYPE_MD = 1
 DEVICE_TYPE_PARTITION = 2
 DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
+DEVICE_TYPE_LVM_THINP = 5
 
 def get_device_type(device):
     device_types = {"partition": DEVICE_TYPE_PARTITION,
                     "lvmlv": DEVICE_TYPE_LVM,
+                    "lvmthinlv": DEVICE_TYPE_LVM_THINP,
                     "btrfs subvolume": DEVICE_TYPE_BTRFS,
                     "btrfs volume": DEVICE_TYPE_BTRFS,
                     "mdarray": DEVICE_TYPE_MD}
@@ -95,6 +98,7 @@ def get_device_factory(blivet, device_type, size, **kwargs):
                    DEVICE_TYPE_BTRFS: BTRFSFactory,
                    DEVICE_TYPE_PARTITION: PartitionFactory,
                    DEVICE_TYPE_MD: MDFactory,
+                   DEVICE_TYPE_LVM_THINP: LVMThinPFactory,
                    DEVICE_TYPE_DISK: DeviceFactory}
 
     factory_class = class_table[device_type]
@@ -444,7 +448,9 @@ class DeviceFactory(object):
 
         # check that the container is still large enough to contain whatever
         # other devices it previously contained
-        self._check_container_size()
+        if self.size > 0:
+            # only do this check if we're not doing post-removal cleanup
+            self._check_container_size()
 
     def _set_container_members(self):
         if not self.child_factory:
@@ -1065,8 +1071,11 @@ class LVMFactory(DeviceFactory):
             return
 
         if self.container and (self.container.exists or
-                               self.container_size > 0):
+                               self.container_size != SIZE_POLICY_AUTO):
             self.size = self.container.freeSpace
+
+            if self.container_size == SIZE_POLICY_MAX:
+                self.size += self._get_free_disk_space()
 
             if self.device:
                 self.size += self.device.size
@@ -1241,6 +1250,251 @@ class LVMFactory(DeviceFactory):
                             self.storage.destroyDevice(mdmember)
 
         super(LVMFactory, self)._configure()
+
+class LVMThinPFactory(LVMFactory):
+    """ Factory for creating LVM using thin provisioning.
+
+        This class will be very similar to LVMFactory except that there are two
+        layers of container: vg and thin pool (lv). We could make a separate
+        factory class for creating and managing the thin pool, but we haven't
+        used a separate factory for any of the other classes' containers.
+
+          pv(s)
+            vg
+              pool
+                thinlv(s)
+
+        This is problematic in that there are two containers in this stack:
+        the vg and thin pool.
+
+        The thin pool does not need to be large enough to contain all of the
+        thin lvs, so that check/adjust piece must be overridden/skipped here.
+
+            XXX We aren't going to allow overcommitting initially, so that'll
+                simplify things somewhat. That means we can manage the thin pool
+                size automatically. We will need to handle overcommit in
+                existing thinp setups in anaconda's UI.
+
+        Because of the argument-passing madness that would ensue from being able
+        to pass specs for two separate containers, the initial version of this
+        class will only support auto-sized pools.
+
+        Also, the initial version will only support one thin pool per vg.
+
+        In summary:
+
+            - one thin pool per vg
+            - pools are auto-sized by anaconda/blivet
+            - thinp setups created by the installer will not overcommit
+
+        Where to manage the pool:
+
+            - the pool will need to be adjusted on device removal, which means
+              pool management must not be hidden in device management routines
+    """
+    def __init__(self, *args, **kwargs):
+        # pool name is for identification -- not renaming
+        self.pool_name = kwargs.pop("pool_name", None)
+        super(LVMThinPFactory, self).__init__(*args, **kwargs)
+
+        self.pool = None
+
+    #
+    # methods related to device size and disk space requirements
+    #
+    def _get_device_size(self):
+        # calculate device size based on space in the pool
+        pool_size = self.pool.size
+        log.debug("pool size is %s" % pool_size)
+        free = pool_size - self.pool.usedSpace
+        if self.device:
+            free += self.raw_device.poolSpaceUsed
+
+        size = self.size
+        if free < size:
+            log.info("adjusting size from %.2f to %.2f so it fits "
+                     "in pool %s" % (size, free, self.pool.name))
+            size = free
+
+        return size
+
+    @property
+    def _pesize(self):
+        """ The extent size of our vg or the default if we have no vg. """
+        return getattr(self.container, "peSize", LVM_PE_SIZE)
+
+    def _get_device_space(self):
+        """ Calculate and return the total disk space needed for the device.
+
+            Our container will still be None if we are going to create it.
+        """
+        space = super(LVMThinPFactory, self)._get_device_space()
+        log.debug("calculated total disk space prior to padding: %s" % space)
+        space += get_pool_padding(space, pesize=self._pesize)
+        log.debug("total disk space needed: %s" % space)
+        return space
+
+    def _get_total_space(self):
+        """ Calculate and return the total disk space needed for the vg.
+
+            Our container will still be None if we are going to create it.
+        """
+        size = super(LVMThinPFactory, self)._get_total_space()
+        # this does not apply if a specific container size was requested
+        if self.container_size in (SIZE_POLICY_AUTO, SIZE_POLICY_MAX):
+            if self.container_size == SIZE_POLICY_AUTO and \
+               self.pool and not self.pool.exists and self.pool.freeSpace > 0:
+                # this is mostly for cleaning up after removing a thin lv
+                size -= self.pool.freeSpace
+                log.debug("size cut to %s to omit pool free space" % size)
+
+                pad = get_pool_padding(self.pool.freeSpace,
+                                       pesize=self._pesize)
+                size -= pad
+                log.debug("size cut to %s to omit pool padding from free "
+                          "space" % size)
+
+            if self.device and self.container_size == SIZE_POLICY_AUTO:
+                # Now we have to reduce the space again by the current device's
+                # portion of the pool padding.
+                # The member count here uses the container's current member set
+                # since that's the basis for the current device's disk space
+                # usage.
+                pad = get_pool_padding(self.device.size,
+                                       pesize=self._pesize)
+                log.debug("old device size: %s ; old pad: %s" % (self.device.size, pad))
+                size -= pad
+                log.debug("size cut to %d to omit old device padding" % size)
+
+        return size
+
+    @property
+    def pool_list(self):
+        return self.storage.thinpools
+
+    def get_pool(self):
+        if not self.container:
+            return None
+
+        # We're looking for a new pool in our vg to use. If there aren't any,
+        # we're using one of the existing pools. Would it be better to always
+        # create a new pool to allocate new devices from? Probably not, since
+        # that would prevent users from setting up custom pools on tty2.
+        pool = None
+        pools = [p for p in self.pool_list if p.vg == self.container]
+        pools.sort(key=lambda p: p.size, reverse=True)    # largest first
+        if pools:
+            new_pools = [p for p in pools if not p.exists]
+            if new_pools:
+                pool = new_pools[0]
+            else:
+                pool = pools[0]
+
+        return pool
+
+    def _get_new_pool(self, *args, **kwargs):
+        kwargs["thin_pool"] = True
+        return super(LVMThinPFactory, self)._get_new_device(*args, **kwargs)
+
+    def _get_pool_size(self):
+        """ Calculate and return the size for the thin pool.
+
+            The vg size has already been set when this method is called. We have
+            to figure out the size of the pool based on the vg's free space and
+            the sizes of the thin lvs.
+
+            Our container has been set by the time this method is called.
+        """
+        if self.pool and self.pool.exists:
+            return self.pool.size
+
+        log.debug("requested size is %s" % self.size)
+        size = self.size    # projected size for the pool (not padded)
+        free = 0            # total space within the vg that is available to us
+        if self.pool:
+            free += self.pool.freeSpace # pools are always auto-sized
+            # pool lv sizes go toward projected pool size and vg free space
+            size += self.pool.usedSpace
+            free += self.pool.usedSpace
+            log.debug("increasing free and size by pool used (%s)" % self.pool.usedSpace)
+            if self.device:
+                log.debug("reducing size by device space (%s)" % self.device.poolSpaceUsed)
+                size -= self.device.poolSpaceUsed   # don't count our device
+
+            # increase vg free space by the size of the current pool's pad
+            pad = get_pool_padding(self.pool.size,
+                                   pesize=self._pesize)
+            log.debug("increasing free by current pool pad size (%s)" % pad)
+            free += pad
+
+        # round to nearest extent. free rounds down, size rounds up.
+        free = self.container.align(free + self.container.freeSpace)
+        size = self.container.align(size, roundup=True)
+
+        pad = get_pool_padding(size, pesize=self._pesize)
+
+        log.debug("size is %s ; pad is %s ; free is %s" % (size, pad, free))
+        if free < (size + pad):
+            pad = int(get_pool_padding(free, pesize=self._pesize, reverse=True))
+            free = self.container.align(free - pad) # round down
+            log.info("adjusting pool size from %.2f to %.2f so it fits "
+                     "in container %s" % (size, free, self.container.name))
+            size = free
+
+        return size
+
+    def _set_pool_size(self):
+        new_size = self._get_pool_size()
+        self.pool.size = new_size
+        self.pool.req_grow = False
+
+    def _reconfigure_pool(self):
+        """ Adjust the pool according to the set of devices it will contain. """
+        self._set_pool_size()
+
+    def _create_pool(self):
+        """ Create a pool large enough to contain the new device. """
+        if self.size == 0:
+            return
+
+        size = self._get_pool_size()
+        self.pool = self._get_new_pool(size=size, parents=[self.container])
+        self.storage.createDevice(self.pool)
+
+    #
+    # methods to configure the factory's container (both vg and pool)
+    #
+    def _set_container(self):
+        super(LVMThinPFactory, self)._set_container()
+        self.pool = self.get_pool()
+        if self.pool:
+            log.debug("pool is %s ; size: %s ; free: %s" % (self.pool.name,
+                                                            self.pool.size,
+                                                            self.pool.freeSpace))
+            for lv in self.pool.lvs:
+                log.debug("  %s size is %s" % (lv.name, lv.size))
+
+    def _reconfigure_container(self):
+        """ Reconfigure a defined container required by this factory device. """
+        super(LVMThinPFactory, self)._reconfigure_container()
+        if self.pool:
+            self._reconfigure_pool()
+        else:
+            self._create_pool()
+
+    def _create_container(self):
+        """ Create the container device required by this factory device. """
+        super(LVMThinPFactory, self)._create_container()
+        self._create_pool()
+
+    #
+    # methods to configure the factory's device
+    #
+    def _get_new_device(self, *args, **kwargs):
+        """ Create and return the factory device as a StorageDevice. """
+        kwargs["parents"] = [self.pool]
+        kwargs["thin_volume"] = True
+        return super(LVMThinPFactory, self)._get_new_device(*args, **kwargs)
 
 class MDFactory(DeviceFactory):
     """ Factory for creating MD RAID devices. """
