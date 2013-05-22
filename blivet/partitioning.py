@@ -31,6 +31,7 @@ from errors import *
 from deviceaction import *
 from devices import PartitionDevice, LUKSDevice, devicePathToName
 from formats import getFormat
+from devicelibs.lvm import get_pool_padding
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
@@ -66,7 +67,7 @@ def _scheduleImplicitPartitions(storage, disks):
     devs = []
 
     # only schedule the partitions if either lvm or btrfs autopart was chosen
-    if storage.autoPartType not in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_BTRFS):
+    if storage.autoPartType == AUTOPART_TYPE_PLAIN:
         return devs
 
     for disk in disks:
@@ -77,7 +78,7 @@ def _scheduleImplicitPartitions(storage, disks):
                         "escrow_cert": storage.autoPartEscrowCert,
                         "add_backup_passphrase": storage.autoPartAddBackupPassphrase}
         else:
-            if storage.autoPartType == AUTOPART_TYPE_LVM:
+            if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
                 fmt_type = "lvmpv"
             else:
                 fmt_type = "btrfs"
@@ -122,8 +123,10 @@ def _schedulePartitions(storage, disks):
     # First pass is for partitions only. We'll do LVs later.
     #
     for request in storage.autoPartitionRequests:
-        if (request.lv and storage.autoPartType == AUTOPART_TYPE_LVM) or \
-           (request.btr and storage.autoPartType == AUTOPART_TYPE_BTRFS):
+        if ((request.lv and
+             storage.autoPartType in (AUTOPART_TYPE_LVM,
+                                      AUTOPART_TYPE_LVM_THINP)) or
+            (request.btr and storage.autoPartType == AUTOPART_TYPE_BTRFS)):
             continue
 
         if request.requiredSpace and request.requiredSpace > free:
@@ -199,7 +202,7 @@ def _scheduleVolumes(storage, devs):
     if not devs:
         return
 
-    if storage.autoPartType == AUTOPART_TYPE_LVM:
+    if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
         new_container = storage.newVG
         new_volume = storage.newLV
         format_name = "lvmpv"
@@ -229,15 +232,23 @@ def _scheduleVolumes(storage, devs):
     # schedule them for creation.
     #
     # Second pass, for LVs only.
+    pool = None
     for request in storage.autoPartitionRequests:
         btr = storage.autoPartType == AUTOPART_TYPE_BTRFS and request.btr
-        lv = storage.autoPartType == AUTOPART_TYPE_LVM and request.lv
+        lv = (storage.autoPartType in (AUTOPART_TYPE_LVM,
+                                       AUTOPART_TYPE_LVM_THINP) and request.lv)
+        thinlv = (storage.autoPartType == AUTOPART_TYPE_LVM_THINP and
+                  request.lv and request.thin)
+        if thinlv and pool is None:
+            # create a single thin pool in the vg
+            pool = storage.newLV(parents=[container], thin_pool=True, grow=True)
+            storage.createDevice(pool)
 
-        if not btr and not lv:
+        if not btr and not lv and not thinlv:
             continue
 
         # required space isn't relevant on btrfs
-        if lv and \
+        if (lv or thinlv) and \
            request.requiredSpace and request.requiredSpace > container.size:
             continue
 
@@ -250,11 +261,17 @@ def _scheduleVolumes(storage, devs):
 
         kwargs = {"mountpoint": request.mountpoint,
                   "fmt_type": request.fstype}
-        if lv:
-            kwargs.update({"parents": [container],
+        if lv or thinlv:
+            if thinlv:
+                parents = [pool]
+            else:
+                parents = [container]
+
+            kwargs.update({"parents": parents,
                            "grow": request.grow,
                            "maxsize": request.maxSize,
                            "size": request.size,
+                           "thin_volume": thinlv,
                            "singlePV": request.singlePV})
         else:
             kwargs.update({"parents": [container],
@@ -1544,6 +1561,27 @@ class VGChunk(Chunk):
         super(VGChunk, self).growRequests()
 
 
+class ThinPoolChunk(VGChunk):
+    """ A free region in an LVM thin pool from which LVs will be allocated """
+    def __init__(self, pool, requests=None):
+        """ Create a ThinPoolChunk instance.
+
+            Arguments:
+
+                pool -- an LVMThinPoolDevice within which this chunk resides
+
+
+            Keyword Arguments:
+
+                requests -- list of Request instances allocated from this chunk
+
+        """
+        self.vg = pool.vg   # only used for align, &c
+        self.path = pool.path
+        usable_extents = (pool.size / pool.vg.peSize)
+        # Skip VGChunk's constructor.
+        super(VGChunk, self).__init__(usable_extents, requests=requests)
+
 def getDiskChunks(disk, partitions, free):
     """ Return a list of Chunk instances representing a disk.
 
@@ -1921,7 +1959,16 @@ def lvCompare(lv1, lv2):
     return ret
 
 def growLVM(storage):
-    """ Grow LVs according to the sizes of the PVs. """
+    """ Grow LVs according to the sizes of the PVs.
+
+        Strategy for growth involving thin pools:
+            - Applies to device factory class as well.
+            - Overcommit is not allowed.
+            - Pool lv's base size includes sizes of thin lvs within it.
+            - Pool is grown along with other non-thin lvs.
+            - Thin lvs within each pool are grown separately using the
+              ThinPoolChunk class.
+    """
     for vg in storage.vgs:
         total_free = vg.freeSpace
         if total_free < 0:
@@ -1935,15 +1982,43 @@ def growLVM(storage):
         log.debug("vg %s: %dMB free ; lvs: %s" % (vg.name, total_free,
                                                   [l.lvname for l in vg.lvs]))
 
-        chunk = VGChunk(vg, requests=[LVRequest(l) for l in vg.lvs])
+        # don't include thin lvs in the vg's growth calculation
+        fatlvs = [lv for lv in vg.lvs if lv not in vg.thinlvs]
+        requests = []
+        for lv in fatlvs:
+            if lv in vg.thinpools:
+                # make sure the pool's base size is at least the sum of its lvs'
+                lv.req_size = max(lv.req_size, lv.usedSpace)
+
+                # add the required padding to the requested pool size
+                lv.req_size += get_pool_padding(lv.req_size, pesize=vg.peSize)
+
+        def apply_chunk_growth(chunk):
+            """ grow the lvs by the amounts the VGChunk calculated """
+            for req in chunk.requests:
+                if not req.device.req_grow:
+                    continue
+
+                size = chunk.lengthToSize(req.base + req.growth)
+
+                # reduce the size of thin pools by the pad size
+                if hasattr(req.device, "lvs"):
+                    size -= get_pool_padding(size, pesize=req.device.vg.peSize,
+                                             reverse=True)
+
+                # Base is pe, which means potentially rounded up by as much as
+                # pesize-1. As a result, you can't just add the growth to the
+                # initial size.
+                req.device.size = size
+
+        # grow regular lvs
+        chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])
         chunk.growRequests()
+        apply_chunk_growth(chunk)
 
-        # now grow the lvs by the amounts we've calculated above
-        for req in chunk.requests:
-            if not req.device.req_grow:
-                continue
-
-            # Base is in pe, which means potentially rounded up by as much as
-            # pesize-1. As a result, you can't just add the growth to the
-            # initial size.
-            req.device.size = chunk.lengthToSize(req.base + req.growth)
+        # now, grow thin lv requests within their respective pools
+        for pool in vg.thinpools:
+            requests = [LVRequest(l) for l in pool.lvs]
+            thin_chunk = ThinPoolChunk(pool, requests)
+            thin_chunk.growRequests()
+            apply_chunk_growth(thin_chunk)
