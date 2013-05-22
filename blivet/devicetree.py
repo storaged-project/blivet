@@ -308,6 +308,8 @@ class DeviceTree(object):
                 if isinstance(device, PartitionDevice) and \
                    device.disk == dev.disk:
                     device.updateName()
+        elif hasattr(dev, "pool"):
+            dev.pool._removeLogVol(dev)
         elif hasattr(dev, "vg"):
             dev.vg._removeLogVol(dev)
         elif hasattr(dev, "volume"):

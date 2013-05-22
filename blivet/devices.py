@@ -2272,7 +2272,10 @@ class LVMVolumeGroupDevice(DMDevice):
 
         # verify we have the space, then add it
         # do not verify for growing vg (because of ks)
-        if not lv.exists and not self.growable and lv.size > self.freeSpace:
+        # FIXME: add a "isthin" property and/or "ispool"?
+        if not lv.exists and not self.growable and \
+           not isinstance(lv, LVMThinLogicalVolumeDevice) and \
+           lv.size > self.freeSpace:
             raise DeviceError("new lv is too large to fit in free space", self.name)
 
         log.debug("Adding %s/%dMB to %s" % (lv.name, lv.size, self.name))
@@ -2422,6 +2425,14 @@ class LVMVolumeGroupDevice(DMDevice):
         return self._lvs[:]     # we don't want folks changing our list
 
     @property
+    def thinpools(self):
+        return [l for l in self._lvs if isinstance(l, LVMThinPoolDevice)]
+
+    @property
+    def thinlvs(self):
+        return [l for l in self._lvs if isinstance(l, LVMThinLogicalVolumeDevice)]
+
+    @property
     def complete(self):
         """Check if the vg has all its pvs in the system
         Return True if complete.
@@ -2480,13 +2491,14 @@ class LVMLogicalVolumeDevice(DMDevice):
                     percent -- percent of VG space to take
 
         """
-        if isinstance(parents, list):
-            if len(parents) != 1:
-                raise ValueError("constructor requires a single LVMVolumeGroupDevice instance")
-            elif not isinstance(parents[0], LVMVolumeGroupDevice):
+        if self.__class__.__name__ == "LVMLogicalVolumeDevice":
+            if isinstance(parents, list):
+                if len(parents) != 1:
+                    raise ValueError("constructor requires a single LVMVolumeGroupDevice instance")
+                elif not isinstance(parents[0], LVMVolumeGroupDevice):
+                    raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
+            elif not isinstance(parents, LVMVolumeGroupDevice):
                 raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
-        elif not isinstance(parents, LVMVolumeGroupDevice):
-            raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
         DMDevice.__init__(self, name, size=size, format=format,
                           sysfsPath=sysfsPath, parents=parents,
                           exists=exists)
@@ -2528,7 +2540,7 @@ class LVMLogicalVolumeDevice(DMDevice):
                 raise SinglePhysicalVolumeError(self.singlePVerr)
 
         # here we go with the circular references
-        self.vg._addLogVol(self)
+        self.parents[0]._addLogVol(self)
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
@@ -2733,6 +2745,154 @@ class LVMLogicalVolumeDevice(DMDevice):
             data.percent = self.req_percent
         elif data.resize:
             data.size = int(self.targetSize)
+
+class LVMThinPoolDevice(LVMLogicalVolumeDevice):
+    """ An LVM Thin Pool """
+    _type = "lvmthinpool"
+    _resizable = False
+
+    def __init__(self, name, parents=None, size=None, uuid=None,
+                 format=None, exists=False, sysfsPath='',
+                 grow=None, maxsize=None, percent=None,
+                 metadatasize=None, chunksize=None):
+        """ Create a LVMLogicalVolumeDevice instance.
+
+            Arguments:
+
+                name -- the device name (generally a device node's basename)
+                parents -- vg (LVMVolumeGroupDevice instance)
+
+            Keyword Arguments:
+
+                size -- the device's size (in MB)
+                uuid -- the device's UUID
+                sysfsPath -- sysfs device path
+                format -- a DeviceFormat instance
+                exists -- indicates whether this is an existing device
+
+                For new (non-existent) LVs only:
+
+                    grow -- whether to grow this LV
+                    maxsize -- maximum size for growable LV (in MB)
+                    percent -- percent of VG space to take
+                    metadatasize -- the size of the metadata LV (in MB)
+                    chunksize -- chunk size for the pool (in MB)
+
+        """
+        if metadatasize is not None and \
+           not lvm.is_valid_thin_pool_metadata_size(metadatasize):
+            raise ValueError("invalid metadatasize value")
+
+        if chunksize is not None and \
+           not lvm.is_valid_thin_pool_chunk_size(chunksize):
+            raise ValueError("invalid chunksize value")
+
+        super(LVMThinPoolDevice, self).__init__(name, parents=parents,
+                                                size=size, uuid=uuid,
+                                                format=format, exists=exists,
+                                                sysfsPath=sysfsPath, grow=grow,
+                                                maxsize=maxsize,
+                                                percent=percent)
+
+        self.metaDataSize = metadatasize
+        self.chunkSize = chunksize
+        self._lvs = []
+
+    def _addLogVol(self, lv):
+        """ Add an LV to this pool. """
+        if lv in self._lvs:
+            raise ValueError("lv is already part of this vg")
+
+        # TODO: add some checking to prevent overcommit for preexisting
+        self.vg._addLogVol(lv)
+        log.debug("Adding %s/%dMB to %s" % (lv.name, lv.size, self.name))
+        self._lvs.append(lv)
+
+    def _removeLogVol(self, lv):
+        """ Remove an LV from this pool. """
+        if lv not in self._lvs:
+            raise ValueError("specified lv is not part of this vg")
+
+        self._lvs.remove(lv)
+        self.vg._removeLogVol(lv)
+
+    @property
+    def lvs(self):
+        """ A list of this pool's LVs """
+        return self._lvs[:]     # we don't want folks changing our list
+
+    @property
+    def vgSpaceUsed(self):
+        space = super(LVMThinPoolDevice, self).vgSpaceUsed
+        space += lvm.get_pool_padding(space, pesize=self.vg.peSize)
+        return space
+
+    @property
+    def usedSpace(self):
+        return sum(l.poolSpaceUsed for l in self.lvs)
+
+    @property
+    def freeSpace(self):
+        return self.size - self.usedSpace
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        # TODO: chunk size, data/metadata split --> profile
+        lvm.thinpoolcreate(self.vg.name, self.lvname, self.size,
+                           metadatasize=self.metaDataSize,
+                           chunksize=self.chunkSize)
+
+    def populateKSData(self, data):
+        super(LVMThinPoolDevice, self).populateKSData(data)
+        data.thin_pool = True
+        data.metadata_size = self.metaDataSize
+        data.chunk_size = self.chunkSize
+
+class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
+    """ An LVM Thin Logical Volume """
+    _type = "lvmthinlv"
+    _resizable = True
+
+    @property
+    def pool(self):
+        return self.parents[0]
+
+    @property
+    def vg(self):
+        return self.pool.vg
+
+    @property
+    def poolSpaceUsed(self):
+        """ The total space used within the thin pool by this volume.
+
+            This should probably align to the greater of vg extent size and
+            pool chunk size. If it ends up causing overcommit in the amount of
+            less than one chunk per thin lv, so be it.
+        """
+        return self.vg.align(self.size, roundup=True)
+
+    @property
+    def vgSpaceUsed(self):
+        return 0    # the pool's size is already accounted for in the vg
+
+    def _setSize(self, size):
+        size = self.vg.align(util.numeric_type(size))
+        self._size = size
+        self.targetSize = size
+
+    size = property(StorageDevice._getSize, _setSize)
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        lvm.thinlvcreate(self.vg.name, self.pool.lvname, self.lvname,
+                         self.size)
+
+    def populateKSData(self, data):
+        super(LVMThinLogicalVolumeDevice, self).populateKSData(data)
+        data.thin_volume = True
+        data.pool_name = self.pool.lvname
 
 class MDRaidArrayDevice(StorageDevice):
     """ An mdraid (Linux RAID) device. """
