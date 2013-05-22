@@ -1153,8 +1153,11 @@ class DeviceTree(object):
                     # this makes device.configured return True
                     device.format.passphrase = 'yabbadabbadoo'
             else:
-                # Try each known passphrase.
-                for passphrase in self.__passphrases:
+                # Try each known passphrase. Include luksDevs values in case a
+                # passphrase has been set for a specific device without a full
+                # reset/populate, in which case the new passphrase would not be
+                # in self.__passphrases.
+                for passphrase in self.__passphrases + self.__luksDevs.values():
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
