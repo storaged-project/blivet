@@ -1292,6 +1292,12 @@ class BTRFSFactory(DeviceFactory):
         else:
             self.size_set_class = SameSizeSet
 
+    def _handle_no_size(self):
+        """ Set device size so that it grows to the largest size possible. """
+        super(BTRFSFactory, self)._handle_no_size()
+        if self.container and self.container.exists:
+            self.size = self.container.size
+
     def _get_total_space(self):
         """ Return the total space needed for the specified container. """
         size = 0
