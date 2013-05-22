@@ -543,6 +543,18 @@ class Blivet(object):
         return lvs
 
     @property
+    def thinlvs(self):
+        thin = self.devicetree.getDevicesByType("lvmthinlv")
+        thin.sort(key=lambda d: d.name)
+        return thin
+
+    @property
+    def thinpools(self):
+        pools = self.devicetree.getDevicesByType("lvmthinpool")
+        pools.sort(key=lambda d: d.name)
+        return pools
+
+    @property
     def pvs(self):
         """ A list of the LVM Physical Volumes in the device tree.
 
@@ -1075,6 +1087,8 @@ class Blivet(object):
 
     def newLV(self, *args, **kwargs):
         """ Return a new LVMLogicalVolumeDevice instance. """
+        thin_volume = kwargs.pop("thin_volume", False)
+        thin_pool = kwargs.pop("thin_pool", False)
         vg = kwargs.get("parents", [None])[0]
         mountpoint = kwargs.pop("mountpoint", None)
         if kwargs.has_key("fmt_type"):
@@ -1098,14 +1112,27 @@ class Blivet(object):
                 swap = True
             else:
                 swap = False
+
+            prefix = ""
+            if thin_pool:
+                prefix = "pool"
+
             name = self.suggestDeviceName(parent=vg,
                                           swap=swap,
-                                          mountpoint=mountpoint)
+                                          mountpoint=mountpoint,
+                                          prefix=prefix)
 
         if "%s-%s" % (vg.name, name) in self.names:
             raise ValueError("name already in use")
 
-        return LVMLogicalVolumeDevice(name, *args, **kwargs)
+        if thin_pool:
+            device_class = LVMThinPoolDevice
+        elif thin_volume:
+            device_class = LVMThinLogicalVolumeDevice
+        else:
+            device_class = LVMLogicalVolumeDevice
+
+        return device_class(name, *args, **kwargs)
 
     def newBTRFS(self, *args, **kwargs):
         """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice. """
