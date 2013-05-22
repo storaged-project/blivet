@@ -432,6 +432,10 @@ class DeviceFactory(object):
         """ Type-specific container device instantiation. """
         pass
 
+    def _check_container_size(self):
+        """ Raise an exception if the container cannot hold its devices. """
+        pass
+
     def _reconfigure_container(self):
         """ Reconfigure a defined container required by this factory device. """
         if getattr(self.container, "exists", False):
@@ -439,6 +443,10 @@ class DeviceFactory(object):
 
         self._set_container_members()
         self._set_container_raid_level()
+
+        # check that the container is still large enough to contain whatever
+        # other devices it previously contained
+        self._check_container_size()
 
     def _set_container_members(self):
         if not self.child_factory:
@@ -1140,6 +1148,16 @@ class LVMFactory(DeviceFactory):
 
     def _get_new_container(self, *args, **kwargs):
         return self.storage.newVG(*args, **kwargs)
+
+    def _check_container_size(self):
+        """ Raise an exception if the container cannot hold its devices. """
+        if not self.container:
+            return
+
+        free_space = self.container.freeSpace + getattr(self.device, "size", 0)
+        if free_space < 0:
+            raise DeviceFactoryError("container changes impossible due to "
+                                     "the devices it already contains")
 
     #
     # methods to configure the factory's device
