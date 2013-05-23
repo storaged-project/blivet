@@ -405,5 +405,8 @@ def getPlatform():
     else:
         raise SystemError, "Could not determine system architecture."
 
-global platform
-platform = getPlatform()
+def reset_platform():
+    global platform
+    platform = getPlatform()
+
+reset_platform()

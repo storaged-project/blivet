@@ -125,6 +125,10 @@ def storageInitialize(storage, ksdata, protected):
     from pyanaconda.flags import flags as anaconda_flags
     flags.update_from_anaconda_flags(anaconda_flags)
 
+    # Platform class setup depends on flags, re-initialize it.
+    import platform
+    platform.reset_platform()
+
     storage.shutdown()
 
     # Before we set up the storage system, we need to know which disks to
