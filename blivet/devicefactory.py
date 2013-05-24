@@ -714,6 +714,9 @@ class DeviceFactory(object):
 
     def _configure(self):
         self._set_container()
+        if self.container and self.container.exists:
+            self.disks = self.container.disks
+
         self._handle_no_size()
         self._set_up_child_factory()
 
