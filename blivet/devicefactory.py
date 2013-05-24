@@ -669,7 +669,8 @@ class DeviceFactory(object):
         return {"fstype": self.child_factory_fstype}
 
     def _set_up_child_factory(self):
-        if self.child_factory or not self.child_factory_class:
+        if self.child_factory or not self.child_factory_class or \
+           self.container and self.container.exists:
             return
 
         args = self._get_child_factory_args()
