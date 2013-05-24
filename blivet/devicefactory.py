@@ -1145,8 +1145,9 @@ class LVMFactory(DeviceFactory):
                 log.debug("size cut to %d to omit old device space" % size)
 
         if self.container_raid_level:
-            # add one extent per disk to account for md metadata
-            size += LVM_PE_SIZE * len(self.disks)
+            # add five extents per disk to account for md metadata
+            # (it was originally one per disk but that wasn't enough for raid5)
+            size += LVM_PE_SIZE * len(self.disks) * 5
 
         return size
 
