@@ -3094,6 +3094,13 @@ class MDRaidArrayDevice(StorageDevice):
                           members=disks,
                           uuid=self.uuid)
 
+    def _postTeardown(self, recursive=False):
+        super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)
+        # mdadm reuses minors indiscriminantly when there is no mdadm.conf, so
+        # we need to clear the sysfs path now so our status method continues to
+        # give valid results
+        self.updateSysfsPath()
+
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
