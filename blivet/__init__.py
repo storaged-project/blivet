@@ -1614,7 +1614,8 @@ class Blivet(object):
         if self.bootloader:
             pkgs.update(self.bootloader.packages)
 
-        for device in self.mountpoints.values() + self.swaps:
+        # install support packages for all devices in the system
+        for device in self.devices:
             # this takes care of device and filesystem packages
             pkgs.update(device.packages)
 
