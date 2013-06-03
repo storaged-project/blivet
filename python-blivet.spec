@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.14
+Version: 0.15
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,19 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jun 03 2013 Brian C. Lane <bcl@redhat.com> - 0.15-1
+- Switch to the LGPLv2+. (dlehman)
+- Clear md arrays' sysfs path after deactivating them. (#954062) (dlehman)
+- Factories with existing containers use the container's disk set. (dlehman)
+- Don't set up a child factory if the container is set and exists. (dlehman)
+- Set a non-zero size for new btrfs subvols in an existing volume. (dlehman)
+- Open as many luks devs as possible with any given passphrase. (#965754) (dlehman)
+- Make sure container changes worked before applying device changes. (#965805) (dlehman)
+- Re-initialize platform in storageInitialize (#962104) (bcl)
+- Make a copy of devicetree._devices before using the append operator. (clumens)
+- Handle incomplete devices becoming complete on device rescan. (clumens)
+- Don't allow a device to be on the hidden list more than once. (clumens)
+
 * Wed May 15 2013 David Lehman <dlehman@redhat.com> - 0.14-1
 - total_memory calculation needs to round up (#962231) (bcl)
 - The dev.node attribute for iscsi devices is not copyable (#962865). (clumens)
