@@ -2,30 +2,20 @@
 - Write and package unit tests
   - esp. Blivet.shouldClear
 - Example programs
+- optimize for large systems (>1000 block devices)
+  - action sorting
+  - clearpart?
+  - audit device setup/teardown policies to reduce unnecessary churn
 - API stability
-- normal (non-install) operating mode
-  - don't try to teardown devices that are in use
 - aynschronous actions
 - event handling
 - snapshot support
 - support for managing container member set
 - API for managing fstab and crypttab
-- modularize newDevice by operation
 - improve interaction with the environment
-  - detect mounts, active swaps, &c
   - disallow partitioning changes to disks with in-use partitions?
-  - stop disabling udev-related activation
   - improve detection of active devices and associated error
     handling
-- figure out how to get fwraid and multipath detected and activated outside of
-  anaconda
-  - REMOVE MULTIPATH CONFIG GENERATION CODE
-  - open a bug against device-mapper-multipath
-    - include our blacklist and notify them that we're going to
-      start using their stock config post-f18 and that any bugs will
-      be reassigned to them
-      - include the default config via lorax and let 62-multipath.rules handle
-        multipath
 - raid level data type
   - constants with string representations for all device types
   - disk space function/method
