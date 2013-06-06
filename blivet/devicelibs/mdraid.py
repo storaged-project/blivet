@@ -74,7 +74,7 @@ def isRaid(raid, raidlevel):
 
 def get_raid_min_members(raidlevel):
     """Return the minimum number of raid members required for raid level"""
-    raid_min_members = {RAID10: 2,
+    raid_min_members = {RAID10: 4,
                         RAID6: 4,
                         RAID5: 3,
                         RAID4: 3,
