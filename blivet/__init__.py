@@ -1959,6 +1959,111 @@ class Blivet(object):
                 device.format.mountpoint = mountpoint   # for future mounts
                 device.format._mountpoint = mountpoint  # active mountpoint
 
+    def updateKSData(self):
+        """ Update ksdata to reflect the settings of this Blivet instance. """
+        if not self.ksdata or not self.mountpoints:
+            return
+
+        # clear out whatever was there before
+        self.ksdata.partition.partitions = []
+        self.ksdata.logvol.lvList = []
+        self.ksdata.raid.raidList = []
+        self.ksdata.volgroup.vgList = []
+        self.ksdata.btrfs.btrfsList = []
+
+        # iscsi?
+        # fcoe?
+        # zfcp?
+        # dmraid?
+
+        # bootloader
+
+        # ignoredisk
+        if self.config.ignoredDisks:
+            self.ksdata.ignoredisk.drives = self.config.ignoredDisks[:]
+        elif self.config.exclusiveDisks:
+            self.ksdata.ignoredisk.onlyuse = self.config.exclusiveDisks[:]
+
+        # autopart
+        self.ksdata.autopart.autopart = self.doAutoPart
+        self.ksdata.autopart.type = self.autoPartType
+        self.ksdata.autopart.encrypted = self.encryptedAutoPart
+
+        # clearpart
+        self.ksdata.clearpart.type = self.config.clearPartType
+        self.ksdata.clearpart.drives = self.config.clearPartDisks[:]
+        self.ksdata.clearpart.devices = self.config.clearPartDevices[:]
+        self.ksdata.clearpart.initAll = self.config.initializeDisks
+        if self.ksdata.clearpart.type == CLEARPART_TYPE_NONE:
+            # Make a list of initialized disks and of removed partitions. If any
+            # partitions were removed from disks that were not completely
+            # cleared we'll have to use CLEARPART_TYPE_LIST and provide a list
+            # of all removed partitions. If no partitions were removed from a
+            # disk that was not cleared/reinitialized we can use
+            # CLEARPART_TYPE_ALL.
+            self.ksdata.clearpart.devices = []
+            self.ksdata.clearpart.drives = []
+            fresh_disks = [d.name for d in self.disks if d.partitioned and
+                                                         not d.format.exists]
+
+            destroy_actions = self.devicetree.findActions(type="destroy",
+                                                          object="device")
+
+            cleared_partitions = []
+            partial = False
+            for action in destroy_actions:
+                if action.device.type == "partition":
+                    if action.device.disk.name not in fresh_disks:
+                        partial = True
+
+                    cleared_partitions.append(action.device.name)
+
+            if not destroy_actions:
+                pass
+            elif partial:
+                # make a list of removed partitions
+                self.ksdata.clearpart.type = CLEARPART_TYPE_LIST
+                self.ksdata.clearpart.devices = cleared_partitions
+            else:
+                # if they didn't partially clear any disks, use the shorthand
+                self.ksdata.clearpart.type = CLEARPART_TYPE_ALL
+                self.ksdata.clearpart.drives = fresh_disks
+
+        if self.doAutoPart:
+            return
+
+        # custom storage
+
+        dataMap = {PartitionDevice: "PartData",
+                   LVMLogicalVolumeDevice: "LogVolData",
+                   LVMVolumeGroupDevice: "VolGroupData",
+                   MDRaidArrayDevice: "RaidData",
+                   BTRFSDevice: "BTRFSData"}
+
+        listMap = {PartitionDevice: "partition",
+                   LVMLogicalVolumeDevice: "logvol",
+                   LVMVolumeGroupDevice: "volgroup",
+                   MDRaidArrayDevice: "raid",
+                   BTRFSDevice: "btrfs"}
+
+        # make a list of ancestors of all used devices
+        devices = list(set(a for d in self.mountpoints.values() + self.swaps
+                                for a in d.ancestors))
+        devices.sort(key=lambda d: len(d.ancestors))
+        for device in devices:
+            class_attr = dataMap.get(device.__class__)
+            list_attr = listMap.get(device.__class__)
+            if not class_attr or not list_attr:
+                log.info("omitting ksdata: %s" % device)
+                continue
+
+            cls = getattr(self.ksdata, class_attr)
+            data = cls()    # all defaults
+
+            device.populateKSData(data)
+
+            parent = getattr(self.ksdata, list_attr)
+            parent.dataList().append(data)
 
 def mountExistingSystem(fsset, rootDevice,
                         allowDirty=None, dirtyCB=None,

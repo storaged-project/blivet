@@ -160,6 +160,7 @@ class DeviceFormat(object):
     _dump = False
     _check = False
     _hidden = False                     # hide devices with this formatting?
+    _ksMountpoint = None
 
     def __init__(self, *args, **kwargs):
         """ Create a DeviceFormat instance.
@@ -438,5 +439,14 @@ class DeviceFormat(object):
             self._majorminor = "%03d%03d" %\
                 (udev_device_get_major(dev), udev_device_get_minor(dev))
         return self._majorminor
+
+    @property
+    def ksMountpoint(self):
+        return (self._ksMountpoint or self.type or "")
+
+    def populateKSData(self, data):
+        data.format = not self.exists
+        data.fstype = self.type
+        data.mountpoint = self.ksMountpoint
 
 collect_device_format_classes()

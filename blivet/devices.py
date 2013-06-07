@@ -986,6 +986,20 @@ class StorageDevice(Device):
             return -1
         return 0
 
+    def populateKSData(self, data):
+        # the common pieces are basically the formatting
+        self.format.populateKSData(data)
+
+        # this is a little bit of a hack for container member devices that
+        # need aliases, but even more of a hack for btrfs since you cannot tell
+        # from inside the BTRFS class whether you're dealing with a member or a
+        # volume/subvolume
+        if self.format.type == "btrfs" and not isinstance(self, BTRFSDevice):
+            data.mountpoint = "btrfs."  # continued below, also for lvm, raid
+
+        if data.mountpoint.endswith("."):
+            data.mountpoint += str(self.id)
+
 class DiskDevice(StorageDevice):
     """ A disk """
     _type = "disk"
@@ -1716,6 +1730,24 @@ class PartitionDevice(StorageDevice):
             return -1
         return 0
 
+    def populateKSData(self, data):
+        super(PartitionDevice, self).populateKSData(data)
+        data.resize = (self.exists and self.targetSize and
+                       self.targetSize != self.currentSize)
+        if not self.exists:
+            data.size = int(self.req_base_size)
+            data.grow = self.req_grow
+            data.maxSizeMB = self.req_max_size
+            ##data.disk = self.disk.name                      # by-id
+            if self.req_disks and len(self.req_disks) == 1:
+                data.disk = self.disk.name
+            data.primOnly = self.req_primary
+        else:
+            data.onPart = self.name                     # by-id
+
+            if data.resize:
+                data.size = int(self.size)
+
 class DMDevice(StorageDevice):
     """ A device-mapper device """
     _type = "dm"
@@ -1970,6 +2002,11 @@ class LUKSDevice(DMCryptDevice):
 
     def dracutSetupArgs(self):
         return set(["rd.luks.uuid=luks-%s" % self.slave.format.uuid])
+
+    def populateKSData(self, data):
+        self.slave.populateKSData(data)
+        data.encrypted = True
+        super(LUKSDevice, self).populateKSData(data)
 
 class LVMVolumeGroupDevice(DMDevice):
     """ An LVM Volume Group
@@ -2393,6 +2430,16 @@ class LVMVolumeGroupDevice(DMDevice):
 
         return len(self.pvs) == self.pvCount or not self.exists
 
+    def populateKSData(self, data):
+        super(LVMVolumeGroupDevice, self).populateKSData(data)
+        data.vgname = self.name
+        data.physvols = ["pv.%d" % p.id for p in self.parents]
+        data.preexist = self.exists
+        if not self.exists:
+            data.pesize = self.peSize * 1024
+
+        # reserved percent/space
+
 
 class LVMLogicalVolumeDevice(DMDevice):
     """ An LVM Logical Volume """
@@ -2665,6 +2712,25 @@ class LVMLogicalVolumeDevice(DMDevice):
                self.req_max_size < self.format.minSize)):
             return -1
         return 0
+
+    def populateKSData(self, data):
+        super(LVMLogicalVolumeDevice, self).populateKSData(data)
+        data.vgname = self.vg.name
+        data.name = self.lvname
+        data.preexist = self.exists
+        data.resize = (self.exists and self.targetSize and
+                       self.targetSize != self.currentSize)
+        if not self.exists:
+            data.grow = self.req_grow
+            if self.req_grow:
+                data.size = int(self.req_size)
+                data.maxSizeMB = self.req_max_size
+            else:
+                data.size = int(self.size)
+
+            data.percent = self.req_percent
+        elif data.resize:
+            data.size = int(self.targetSize)
 
 class MDRaidArrayDevice(StorageDevice):
     """ An mdraid (Linux RAID) device. """
@@ -3216,6 +3282,17 @@ class MDRaidArrayDevice(StorageDevice):
 
     def dracutSetupArgs(self):
         return set(["rd.md.uuid=%s" % self.uuid])
+
+    def populateKSData(self, data):
+        if self.isDisk:
+            return
+
+        super(MDRaidArrayDevice, self).populateKSData(data)
+        data.level = self.level
+        data.spares = self.spares
+        data.members = ["raid.%d" % p.id for p in self.parents]
+        data.preexist = self.exists
+        data.device = self.name
 
 class DMRaidArrayDevice(DMDevice):
     """ A dmraid (device-mapper RAID) device """
@@ -4201,6 +4278,13 @@ class BTRFSVolumeDevice(BTRFSDevice):
             device.setup(orig=True)
             DeviceFormat(device=device.path, exists=True).destroy()
 
+    def populateKSData(self, data):
+        super(BTRFSVolumeDevice, self).populateKSData(data)
+        data.dataLevel = self.dataLevel
+        data.metaDataLevel = self.metaDataLevel
+        data.devices = ["btrfs.%d" % p.id for p in self.parents]
+        data.preexist = self.exists
+
 class BTRFSSubVolumeDevice(BTRFSDevice):
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
@@ -4238,3 +4322,9 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             raise RuntimeError("btrfs subvol destroy requires mounted volume")
         btrfs.delete_subvolume(mountpoint, self.name)
         self.volume._undo_temp_mount()
+
+    def populateKSData(self, data):
+        super(BTRFSSubVolumeDevice, self).populateKSData(data)
+        data.subvol = True
+        data.name = self.name
+        data.preexist = self.exists

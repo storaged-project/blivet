@@ -803,6 +803,17 @@ class FS(DeviceFormat):
     def sync(self, root="/"):
         pass
 
+    def populateKSData(self, data):
+        super(FS, self).populateKSData(data)
+        data.mountpoint = self.mountpoint or "none"
+        data.label = self.label or ""
+        if self.options != "defaults":
+            data.fsopts = self.options
+        else:
+            data.fsopts = ""
+
+        data.fsprofile = self.fsprofile or ""
+
 class Ext2FS(FS):
     """ ext2 filesystem. """
     _type = "ext2"

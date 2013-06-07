@@ -46,6 +46,7 @@ class LVMPhysicalVolume(DeviceFormat):
     _linuxNative = True                 # for clearpart
     _minSize = lvm.LVM_PE_SIZE * 2      # one for metadata and one for data
     _packages = ["lvm2"]                # required packages
+    _ksMountpoint = "pv."
 
     def __init__(self, *args, **kwargs):
         """ Create an LVMPhysicalVolume instance.

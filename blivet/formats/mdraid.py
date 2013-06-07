@@ -46,6 +46,7 @@ class MDRaidMember(DeviceFormat):
     _supported = True                   # is supported
     _linuxNative = True                 # for clearpart
     _packages = ["mdadm"]               # required packages
+    _ksMountpoint = "raid."
     
     def __init__(self, *args, **kwargs):
         """ Create a MDRaidMember instance.
