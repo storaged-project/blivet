@@ -1216,6 +1216,10 @@ class DeviceTree(object):
                 return -1
             elif a[0] in snapshot_chars and b[0] not in snapshot_chars:
                 return 1
+            elif a[0] == 't' and b[0] == 'V':
+                return -1
+            elif a[0] == 'V' and b[0] == 't':
+                return 1
             else:
                 return 0
 
@@ -1225,7 +1229,9 @@ class DeviceTree(object):
         indices.sort(key=lambda i: lv_attr[i], cmp=lv_attr_cmp)
         mirrors = {}
         for index in indices:
+            lv_class = LVMLogicalVolumeDevice
             lv_name = lv_names[index]
+            lv_parents = [vg_device]
             name = "%s-%s" % (vg_name, lv_name)
             if lv_attr[index][0] in 'Ss':
                 log.info("found lvm snapshot volume '%s'" % name)
@@ -1270,16 +1276,25 @@ class DeviceTree(object):
                     mirrors[name] = {"stripes": 0, "log": 0}
 
                 mirrors[name]["log"] = lv_sizes[index]
+            elif lv_attr[index][0] == 't':
+                # thin pool
+                lv_class = LVMThinPoolDevice
+            elif lv_attr[index][0] == 'V':
+                # thin volume
+                pool_name = devicelibs.lvm.thinlvpoolname(vg_name, lv_name)
+                pool_device = self.getDeviceByName("%s-%s" % (vg_name,
+                                                              pool_name))
+                if pool_device is None:
+                    raise DeviceTreeError("failed to look up thin pool")
+                lv_class = LVMThinLogicalVolumeDevice
+                lv_parents = [pool_device]
 
             lv_dev = self.getDeviceByUuid(lv_uuids[index])
             if lv_dev is None:
                 lv_uuid = lv_uuids[index]
                 lv_size = lv_sizes[index]
-                lv_device = LVMLogicalVolumeDevice(lv_name,
-                                                   vg_device,
-                                                   uuid=lv_uuid,
-                                                   size=lv_size,
-                                                   exists=True)
+                lv_device = lv_class(lv_name, parents=lv_parents,
+                                     uuid=lv_uuid, size=lv_size, exists=True)
                 self._addDevice(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
