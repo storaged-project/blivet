@@ -1480,6 +1480,11 @@ class PartitionDevice(StorageDevice):
             util.run_program(cmd)
         except OSError as e:
             log.error(str(e))
+        finally:
+            # If a udev device is created with the watch option, then
+            # a change uevent is synthesized and we need to wait for
+            # things to settle.
+            udev_settle()
 
     def _create(self):
         """ Create the device. """
