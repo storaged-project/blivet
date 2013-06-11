@@ -4,6 +4,8 @@ import selinux
 import subprocess
 import re
 
+from udev import udev_settle
+
 import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
@@ -72,6 +74,7 @@ def mount(device, mountpoint, fstype, options=None):
     return rc
 
 def umount(mountpoint):
+    udev_settle()
     try:
         rc = run_program(["umount", mountpoint])
     except OSError as e:
