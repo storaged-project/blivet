@@ -623,6 +623,8 @@ class FS(DeviceFormat):
 
         rc = util.umount(self._mountpoint)
         if rc:
+            # try and catch whatever is causing the umount problem
+            util.run_program(["lsof", self._mountpoint])
             raise FSError("umount failed")
 
         self._mountpoint = None
