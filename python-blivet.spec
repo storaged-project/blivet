@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.15
+Version: 0.16
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jun 13 2013 Brian C. Lane <bcl@redhat.com> - 0.16-1
+- Install utilities for all devices -- not just those being used. (#964586) (dlehman)
+- Add a method to apply Blivet settings to ksdata. (dlehman)
+- Increase padding for md metadata in lvm factory. (#966795) (dlehman)
+- Move lvm-on-md into LVMFactory. (dlehman)
+- Switch to a minimum of four members for raid10. (#888879) (dlehman)
+- Update the TODO list. (dlehman)
+- Deactivate devices before hiding those on ignored disks. (#965213) (dlehman)
+- Allow udev queue to settle after writing zeros to disk. (#969182) (hamzy)
+- Run lsof when umount fails (bcl)
+- Run udev settle before umount (bcl)
+
 * Mon Jun 03 2013 Brian C. Lane <bcl@redhat.com> - 0.15-1
 - Switch to the LGPLv2+. (dlehman)
 - Clear md arrays' sysfs path after deactivating them. (#954062) (dlehman)
