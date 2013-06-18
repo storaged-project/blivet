@@ -2034,26 +2034,24 @@ class Blivet(object):
             return
 
         # custom storage
-
-        dataMap = {PartitionDevice: "PartData",
-                   LVMLogicalVolumeDevice: "LogVolData",
-                   LVMVolumeGroupDevice: "VolGroupData",
-                   MDRaidArrayDevice: "RaidData",
-                   BTRFSDevice: "BTRFSData"}
-
-        listMap = {PartitionDevice: "partition",
-                   LVMLogicalVolumeDevice: "logvol",
-                   LVMVolumeGroupDevice: "volgroup",
-                   MDRaidArrayDevice: "raid",
-                   BTRFSDevice: "btrfs"}
+        ksMap = {PartitionDevice: ("PartData", "partition"),
+                 LVMLogicalVolumeDevice: ("LogVolData", "logvol"),
+                 LVMVolumeGroupDevice: ("VolGroupData", "volgroup"),
+                 MDRaidArrayDevice: ("RaidData", "raid"),
+                 BTRFSDevice: ("BTRFSData", "btrfs")}
 
         # make a list of ancestors of all used devices
         devices = list(set(a for d in self.mountpoints.values() + self.swaps
                                 for a in d.ancestors))
         devices.sort(key=lambda d: len(d.ancestors))
         for device in devices:
-            class_attr = dataMap.get(device.__class__)
-            list_attr = listMap.get(device.__class__)
+            class_attr = None
+            list_attr = None
+            for cls in ksMap.iterkeys():
+                if isinstance(device, cls):
+                    class_attr, list_attr = ksMap[cls]
+                    break
+
             if not class_attr or not list_attr:
                 log.info("omitting ksdata: %s" % device)
                 continue
