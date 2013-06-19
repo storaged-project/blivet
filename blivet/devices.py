@@ -1737,7 +1737,9 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             data.size = int(self.req_base_size)
             data.grow = self.req_grow
-            data.maxSizeMB = self.req_max_size
+            if self.req_grow:
+                data.maxSizeMB = self.req_max_size
+
             ##data.disk = self.disk.name                      # by-id
             if self.req_disks and len(self.req_disks) == 1:
                 data.disk = self.disk.name
