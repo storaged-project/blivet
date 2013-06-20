@@ -149,6 +149,9 @@ def get_pv_space(size, disks, pesize=LVM_PE_SIZE,
     # XXX default extent size should be something we can ask of lvm
     # TODO: handle striped and mirrored
     # this is adding one extent for the lv's metadata
+    if size == 0:
+        return size
+
     space = clampSize(size, pesize, roundup=True) + \
             pesize
     return space
