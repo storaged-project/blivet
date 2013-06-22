@@ -63,6 +63,7 @@ def getPPCMachine():
     platform = None
 
     # ppc machine hash
+    # Note: This is a substring match!
     ppcType = { 'Mac'      : 'PMac',
                 'Book'     : 'PMac',
                 'CHRP IBM' : 'pSeries',
@@ -133,6 +134,7 @@ def getPPCMacID():
 # @return The powermac generation, or 0 if not powermac.
 def getPPCMacGen():
     # XXX: should NuBus be here?
+    # Note: This is a substring match!
     pmacGen = ['OldWorld', 'NewWorld', 'NuBus']
 
     if not isPPC():
@@ -154,7 +156,7 @@ def getPPCMacGen():
 
     for _type in pmacGen:
       if _type in gen:
-          return type
+          return _type
 
     log.warning("Unknown Power Mac generation: %s" %(gen,))
     return 0
