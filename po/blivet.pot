@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-06-03 16:34-0700\n"
+"POT-Creation-Date: 2013-06-24 14:21-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,16 +149,16 @@ msgstr ""
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:2796
+#: ../blivet/__init__.py:2898
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2801
+#: ../blivet/__init__.py:2903
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2803
+#: ../blivet/__init__.py:2905
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -292,6 +292,10 @@ msgstr ""
 msgid "B"
 msgstr ""
 
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
+msgstr ""
+
 #: ../blivet/partitioning.py:288
 msgid "No usable disks selected"
 msgstr ""
@@ -355,10 +359,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1930
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/zfcp.py:50
@@ -569,33 +569,33 @@ msgstr ""
 msgid "%(type)s filesystem check failure on %(device)s: "
 msgstr ""
 
-#: ../blivet/formats/fs.py:812
+#: ../blivet/formats/fs.py:825
 msgid "File system errors left uncorrected."
 msgstr ""
 
-#: ../blivet/formats/fs.py:813
+#: ../blivet/formats/fs.py:826
 msgid "Operational error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:814
+#: ../blivet/formats/fs.py:827
 msgid "Usage or syntax error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:815
+#: ../blivet/formats/fs.py:828
 msgid "e2fsck cancelled by user request."
 msgstr ""
 
-#: ../blivet/formats/fs.py:816
+#: ../blivet/formats/fs.py:829
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:976
+#: ../blivet/formats/fs.py:989
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:978
+#: ../blivet/formats/fs.py:991
 msgid "Usage error."
 msgstr ""
 

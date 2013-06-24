@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.16
+Version: 0.17
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jun 24 2013 Brian C. Lane <bcl@redhat.com> - 0.17-1
+- Used Python type instead of variable name (#968122) (hamzy)
+- Fix detection of valid EFI system partition during autopart. (dlehman)
+- New version: 0.16 (bcl)
+
 * Thu Jun 13 2013 Brian C. Lane <bcl@redhat.com> - 0.16-1
 - Install utilities for all devices -- not just those being used. (#964586) (dlehman)
 - Add a method to apply Blivet settings to ksdata. (dlehman)
