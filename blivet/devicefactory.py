@@ -1107,6 +1107,7 @@ class LVMFactory(DeviceFactory):
             log.info("adjusting device size from %.2f to %.2f"
                             % (self.raw_device.size, size))
             self.raw_device.size = size
+            self.raw_device.req_grow = False
 
     def _get_total_space(self):
         """ Total disk space requirement for this device and its container. """
