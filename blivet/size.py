@@ -75,7 +75,7 @@ def _parseSpec(spec):
     if not spec:
         raise ValueError("invalid size specification", spec)
 
-    m = re.match(r'([0-9.]+)\s*([A-Za-z]*)$', spec.strip())
+    m = re.match(r'(-?\s*[0-9.]+)\s*([A-Za-z]*)$', spec.strip())
     if not m:
         raise ValueError("invalid size specification", spec)
 
