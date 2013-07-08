@@ -2843,6 +2843,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                            metadatasize=self.metaDataSize,
                            chunksize=self.chunkSize)
 
+    def dracutSetupArgs(self):
+        return set()
+
     def populateKSData(self, data):
         super(LVMThinPoolDevice, self).populateKSData(data)
         data.thin_pool = True
