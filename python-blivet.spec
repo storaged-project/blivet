@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.17
+Version: 0.18
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,19 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jul 09 2013 Brian C. Lane <bcl@redhat.com> - 0.18-1
+- Raise XFS max size limit to 100TB. (sbueno+anaconda)
+- Add a device factory class for thinly-provisioned lvm. (dlehman)
+- Add support for automatic partitioning using lvm thin provisioning. (dlehman)
+- Add convenience methods related to lvm thin provisioning. (dlehman)
+- Add support for detection of lvm thinp setups. (dlehman)
+- Add classes for lvm thin pool and thin volume. (dlehman)
+- Add backend support for lvm thinp operations. (dlehman)
+- Fix return value of get_pv_space for size of 0. (dlehman)
+- Fix ksdata for lvm created in custom spoke based on autopart. (dlehman)
+- Only put max size in ksdata if partition is growable. (dlehman)
+- Allow subclasses to inherit ksdata classes. (dlehman)
+
 * Mon Jun 24 2013 Brian C. Lane <bcl@redhat.com> - 0.17-1
 - Used Python type instead of variable name (#968122) (hamzy)
 - Fix detection of valid EFI system partition during autopart. (dlehman)
