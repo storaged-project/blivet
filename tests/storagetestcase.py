@@ -2,14 +2,9 @@
 
 import unittest
 from mock import Mock
-from mock import TestCase
 
 import parted
 
-import pyanaconda.anaconda_log
-pyanaconda.anaconda_log.init()
-
-import pyanaconda.iutil
 import blivet as blivet
 from blivet.formats import getFormat
 
@@ -25,7 +20,7 @@ from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import FileDevice
 
 
-class StorageTestCase(TestCase):
+class StorageTestCase(unittest.TestCase):
     """ StorageTestCase
 
         This is a base class for storage test cases. It sets up imports of
@@ -36,22 +31,15 @@ class StorageTestCase(TestCase):
 
     """
     def __init__(self, *args, **kwargs):
-        TestCase.__init__(self, *args, **kwargs)
+        super(StorageTestCase, self).__init__(*args, **kwargs)
+        blivet.util.execWithRedirect = Mock()
+        blivet.util.execWithCapture = Mock()
 
-        self.setUpAnaconda()
-
-    def setUpAnaconda(self):
-        pyanaconda.iutil.execWithRedirect = Mock()
-        pyanaconda.iutil.execWithCapture = Mock()
-        pyanaconda.iutil.execWithPulseProgress = Mock()
-        blivet.udev = Mock()
-
-        self.anaconda = Mock()
         self.setUpStorage()
 
     def setUpStorage(self):
         self.setUpDeviceLibs()
-        self.storage = blivet.Blivet(self.anaconda)
+        self.storage = blivet.Blivet()
 
         # device status
         blivet.devices.StorageDevice.status = False
@@ -68,7 +56,6 @@ class StorageTestCase(TestCase):
         # prevent Ext2FS from trying to run resize2fs to get a filesystem's
         # minimum size
         blivet.formats.fs.Ext2FS.minSize = blivet.formats.DeviceFormat.minSize
-        blivet.formats.fs.FS.migratable = blivet.formats.DeviceFormat.migratable
 
     def setUpDeviceLibs(self):
         # devicelibs shouldn't be touching or looking at the host system
@@ -283,5 +270,3 @@ class StorageTestCase(TestCase):
         _device = devicetree.getDeviceByName(device.name)
         self.assertEqual(_device.format.type, None)
         return action
-
-

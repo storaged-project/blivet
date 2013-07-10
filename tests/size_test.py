@@ -23,8 +23,6 @@
 
 import unittest
 
-from pyanaconda import anaconda_log
-anaconda_log.init()
 from blivet.errors import *
 from blivet.size import Size, _prefixes
 
@@ -35,12 +33,16 @@ class SizeTestCase(unittest.TestCase):
 
         self.assertRaises(SizeNotPositiveError, Size, bytes=-1)
 
-        self.assertRaises(SizeNotPositiveError, Size, spec="0")
+        zero = Size(bytes=0)
+        self.assertEqual(zero, 0.0)
+
         self.assertRaises(SizeNotPositiveError, Size, spec="-1 TB")
         self.assertRaises(SizeNotPositiveError, Size, spec="-47kb")
 
         s = Size(bytes=500)
-        self.assertRaises(SizePlacesError, s.humanReadable, places=0)
+        self.assertRaises(SizePlacesError, s.humanReadable, places=-1)
+
+        self.assertEqual(s.humanReadable(places=0), "500 B")
 
     def _prefixTestHelper(self, bytes, factor, prefix, abbr):
         c = bytes * factor
@@ -74,10 +76,10 @@ class SizeTestCase(unittest.TestCase):
 
     def testHumanReadable(self):
         s = Size(bytes=58929971L)
-        self.assertEquals(s.humanReadable(), "58.9 Mb")
+        self.assertEquals(s.humanReadable(), "58.92 MB")
 
         s = Size(bytes=478360371L)
-        self.assertEquals(s.humanReadable(), "0.48 Gb")
+        self.assertEquals(s.humanReadable(), "478.36 MB")
 
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(SizeTestCase)

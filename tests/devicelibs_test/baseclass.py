@@ -63,9 +63,6 @@ class DevicelibsTestCase(unittest.TestCase):
     _LOOP_DEVICES = ["/tmp/test-virtdev0", "/tmp/test-virtdev1"]
 
     def __init__(self, *args, **kwargs):
-        import pyanaconda.anaconda_log
-        pyanaconda.anaconda_log.init()
-
         unittest.TestCase.__init__(self, *args, **kwargs)
         self._loopMap = {}
 

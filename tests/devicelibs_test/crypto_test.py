@@ -1,22 +1,19 @@
 #!/usr/bin/python
 import baseclass
 import unittest
-from mock import acceptance
 
 import tempfile
 import os
 
 class CryptoTestCase(baseclass.DevicelibsTestCase):
 
+    @skipUnless(os.geteuid() == 0, "requires root privileges")
     def testCrypto(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
 
         import blivet.devicelibs.crypto as crypto
 
-
-    @acceptance
-    def testCrypto(self):
         ##
         ## is_luks
         ##

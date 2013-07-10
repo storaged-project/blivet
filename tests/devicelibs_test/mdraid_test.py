@@ -2,18 +2,12 @@
 import baseclass
 import unittest
 import time
-from mock import acceptance
 
 class MDRaidTestCase(baseclass.DevicelibsTestCase):
 
     def testMDRaid(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
-
         import blivet.devicelibs.mdraid as mdraid
 
-    @acceptance
-    def testMDRaid(self):
         ##
         ## getRaidLevels
         ##
@@ -28,7 +22,7 @@ class MDRaidTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(mdraid.get_raid_min_members(mdraid.RAID1), 2)
         self.assertEqual(mdraid.get_raid_min_members(mdraid.RAID5), 3)
         self.assertEqual(mdraid.get_raid_min_members(mdraid.RAID6), 4)
-        self.assertEqual(mdraid.get_raid_min_members(mdraid.RAID10), 2)
+        self.assertEqual(mdraid.get_raid_min_members(mdraid.RAID10), 4)
 
         # fail
         # unsupported raid
@@ -42,11 +36,18 @@ class MDRaidTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID1, 5), 3)
         self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID5, 5), 2)
         self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID6, 5), 1)
-        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID10, 5), 3)
+        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID10, 5), 1)
 
         # fail
         # unsupported raid
         self.assertRaises(ValueError, mdraid.get_raid_max_spares, 8, 5)
+
+    @skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testMDRaidAsRoot(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+
+        import blivet.devicelibs.mdraid as mdraid
 
         ##
         ## mdcreate

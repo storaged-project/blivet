@@ -5,9 +5,6 @@ from mock import Mock
 
 import parted
 
-import pyanaconda.anaconda_log
-pyanaconda.anaconda_log.init()
-
 from blivet.partitioning import getNextPartitionType
 
 # disklabel-type-specific constants

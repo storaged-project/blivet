@@ -17,6 +17,10 @@ check:
 	@echo "*** Running pylint to verify source ***"
 	#PYTHONPATH=. pylint blivet/*.py blivet/*/*.py --rcfile=/dev/null -i y -r n --disable=C,R --disable=W0141,W0142,W0221,W0401,W0403,W0404,W0603,W0611,W0612,W0613,W0614,W0703
 
+test:
+	@echo "*** Running unittests ***"
+	PYTHONPATH=.:tests/ python -m unittest discover -v -s tests/ -p '*_test.py'
+
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
 	$(MAKE) -C po clean

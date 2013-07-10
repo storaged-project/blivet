@@ -1,19 +1,16 @@
 #!/usr/bin/python
 import baseclass
 import unittest
-from mock import acceptance
 
 class LVMTestCase(baseclass.DevicelibsTestCase):
 
+    @skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLVM(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
 
         import storage.devicelibs.lvm as lvm
 
-
-    @acceptance
-    def testLVM(self):
         ##
         ## pvcreate
         ##
@@ -202,22 +199,22 @@ class LVMTestCase(baseclass.DevicelibsTestCase):
         # pv already removed
         self.assertRaises(lvm.LVMError, lvm.pvremove, _LOOP_DEV0)
 
-    #def testGetPossiblePhysicalExtents(self):
+    def testGetPossiblePhysicalExtents(self):
         # pass
         self.assertEqual(lvm.getPossiblePhysicalExtents(4),
                          filter(lambda pe: pe > 4, map(lambda power: 2**power, xrange(3, 25))))
         self.assertEqual(lvm.getPossiblePhysicalExtents(100000),
                          filter(lambda pe: pe > 100000, map(lambda power: 2**power, xrange(3, 25))))
 
-    #def testGetMaxLVSize(self):
+    def testGetMaxLVSize(self):
         # pass
         self.assertEqual(lvm.getMaxLVSize(), 16*1024**2)
 
-    #def testSafeLVMName(self):
+    def testSafeLVMName(self):
         # pass
         self.assertEqual(lvm.safeLvmName("/strange/lv*name5"), "strange_lvname5")
 
-    #def testClampSize(self):
+    def testClampSize(self):
         # pass
         self.assertEqual(lvm.clampSize(10, 4), 8L)
         self.assertEqual(lvm.clampSize(10, 4, True), 12L)
