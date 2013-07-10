@@ -29,8 +29,6 @@
 - add StorageConfigurationError or similar so autopart failures due to the
   sanity check can be handled by offering the option of keeping the layout to
   attempt to fix the problem instead of always resetting
-- explicitly find and deactivate devices built on disks/partitions we're going
-  to clear?
 - resize luks
 - check for read-only before trying to use disks
 
