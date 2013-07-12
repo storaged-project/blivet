@@ -1992,6 +1992,7 @@ class Blivet(object):
             if device is not None:
                 device.format.mountpoint = mountpoint   # for future mounts
                 device.format._mountpoint = mountpoint  # active mountpoint
+                device.format.mountopts = options
 
     def updateKSData(self):
         """ Update ksdata to reflect the settings of this Blivet instance. """
