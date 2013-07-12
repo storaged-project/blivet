@@ -719,10 +719,10 @@ class Blivet(object):
             # linux whole-disk formatting, do not clear it. The exception is
             # the case of an uninitialized disk when we've been asked to
             # initialize disks as needed
-            if clearPartType == CLEARPART_TYPE_LINUX and \
-               not (self.config.initializeDisks and
-                    device.format.type is None) and \
-               not device.partitioned and not device.format.linuxNative:
+            if (clearPartType == CLEARPART_TYPE_LINUX and
+                not ((self.config.initializeDisks and
+                      empty_device(device, self.devicetree)) or
+                     (not device.partitioned and device.format.linuxNative))):
                 return False
 
         # Don't clear devices holding install media.
