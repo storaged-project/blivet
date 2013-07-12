@@ -1945,7 +1945,7 @@ class Blivet(object):
                 (devspec, mountpoint, fstype, options, rest) = line.split(None,
                                                                           4)
             except IndexError:
-                blivet_log.error("failed to parse /proc/mounts line: %s" % line)
+                log.error("failed to parse /proc/mounts line: %s" % line)
                 continue
 
             if fstype == "btrfs":
