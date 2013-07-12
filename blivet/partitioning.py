@@ -342,6 +342,16 @@ def partitionCompare(part1, part2):
     """
     ret = 0
 
+    # start sector overrides all other sorting factors
+    part1_start = part1.req_start_sector
+    part2_start = part2.req_start_sector
+    if part1_start is not None and part2_start is None:
+        return -1
+    elif part1_start is None and part2_start is not None:
+        return 1
+    elif part1_start is not None and part2_start is not None:
+        return cmp(part1_start, part2_start)
+
     if part1.req_base_weight:
         ret -= part1.req_base_weight
 
@@ -445,7 +455,7 @@ def getNextPartitionType(disk, no_primary=None):
 
     return part_type
 
-def getBestFreeSpaceRegion(disk, part_type, req_size,
+def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
                            boot=None, best_free=None, grow=None):
     """ Return the "best" free region on the specified disk.
 
@@ -474,39 +484,28 @@ def getBestFreeSpaceRegion(disk, part_type, req_size,
                     (boolean)
             best_free -- current best free region for this partition
             grow -- indicates whether this is a growable request
+            start -- requested start sector for the partition
 
     """
     log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%dMB "
-              "boot=%s best=%s grow=%s" %
-              (disk.device.path, part_type, req_size, boot, best_free, grow))
+              "boot=%s best=%s grow=%s start=%s" %
+              (disk.device.path, part_type, req_size, boot, best_free, grow,
+               start))
     extended = disk.getExtendedPartition()
 
-    for _range in disk.getFreeSpaceRegions():
+    for free_geom in disk.getFreeSpaceRegions():
+        log.debug("checking %d-%d (%d MB)" % (free_geom.start, free_geom.end,
+                                              free_geom.getSize()))
+        if start is not None and not free_geom.containsSector(start):
+            log.debug("free region does not contain requested start sector")
+            continue
+
         if extended:
-            # find out if there is any overlap between this region and the
-            # extended partition
-            log.debug("looking for intersection between extended (%d-%d) and free (%d-%d)" %
-                    (extended.geometry.start, extended.geometry.end, _range.start, _range.end))
-
-            # parted.Geometry.overlapsWith can handle this
-            try:
-                free_geom = extended.geometry.intersect(_range)
-            except ArithmeticError:
-                # this freespace region does not lie within the extended
-                # partition's geometry
-                free_geom = None
-
-            if (free_geom and part_type == parted.PARTITION_NORMAL) or \
-               (not free_geom and part_type == parted.PARTITION_LOGICAL):
+            in_extended = extended.geometry.contains(free_geom)
+            if ((in_extended and part_type == parted.PARTITION_NORMAL) or
+                (not in_extended and part_type == parted.PARTITION_LOGICAL)):
                 log.debug("free region not suitable for request")
                 continue
-
-            if part_type == parted.PARTITION_NORMAL:
-                # we're allocating a primary and the region is not within
-                # the extended, so we use the original region
-                free_geom = _range
-        else:
-            free_geom = _range
 
         if free_geom.start > disk.maxPartitionStartSector:
             log.debug("free range start sector beyond max for new partitions")
@@ -599,7 +598,7 @@ def removeNewPartitions(disks, partitions):
             log.debug("removing empty extended partition from %s" % disk.name)
             disk.format.partedDisk.removePartition(extended)
 
-def addPartition(disklabel, free, part_type, size):
+def addPartition(disklabel, free, part_type, size, start=None, end=None):
     """ Return new partition after adding it to the specified disk.
 
         Arguments:
@@ -609,38 +608,44 @@ def addPartition(disklabel, free, part_type, size):
             part_type -- partition type (parted.PARTITION_* constant)
             size -- size (in MB) of the new partition
 
-        The new partition will be aligned.
+        The new partition will be aligned unless start/end sectors are provided.
 
         Return value is a parted.Partition instance.
 
     """
-    start = free.start
-    if not disklabel.alignment.isAligned(free, start):
-        start = disklabel.alignment.alignNearest(free, start)
-
-    if disklabel.labelType == "sun" and start == 0:
-        start = disklabel.alignment.alignUp(free, start)
-
-    if part_type == parted.PARTITION_LOGICAL:
-        # make room for logical partition's metadata
-        start += disklabel.alignment.grainSize
-
-    if start != free.start:
-        log.debug("adjusted start sector from %d to %d" % (free.start, start))
-
-    if part_type == parted.PARTITION_EXTENDED:
-        end = free.end
-        length = end - start + 1
+    if start is not None:
+        if end is None:
+            end = start + \
+                  sizeToSectors(size, disklabel.partedDevice.sectorSize) - 1
     else:
-        # size is in MB
-        length = sizeToSectors(size, disklabel.partedDevice.sectorSize)
-        end = start + length - 1
+        start = free.start
 
-    if not disklabel.endAlignment.isAligned(free, end):
-        end = disklabel.endAlignment.alignNearest(free, end)
-        log.debug("adjusted length from %d to %d" % (length, end - start + 1))
-        if start > end:
-            raise PartitioningError(_("unable to allocate aligned partition"))
+        if not disklabel.alignment.isAligned(free, start):
+            start = disklabel.alignment.alignNearest(free, start)
+
+        if disklabel.labelType == "sun" and start == 0:
+            start = disklabel.alignment.alignUp(free, start)
+
+        if part_type == parted.PARTITION_LOGICAL:
+            # make room for logical partition's metadata
+            start += disklabel.alignment.grainSize
+
+        if start != free.start:
+            log.debug("adjusted start sector from %d to %d" % (free.start, start))
+
+        if part_type == parted.PARTITION_EXTENDED:
+            end = free.end
+            length = end - start + 1
+        else:
+            # size is in MB
+            length = sizeToSectors(size, disklabel.partedDevice.sectorSize)
+            end = start + length - 1
+
+        if not disklabel.endAlignment.isAligned(free, end):
+            end = disklabel.endAlignment.alignNearest(free, end)
+            log.debug("adjusted length from %d to %d" % (length, end - start + 1))
+            if start > end:
+                raise PartitioningError(_("unable to allocate aligned partition"))
 
     new_geom = parted.Geometry(device=disklabel.partedDevice,
                                start=start,
@@ -869,11 +874,12 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
         log.debug("allocating partition: %s ; id: %d ; disks: %s ;\n"
                   "boot: %s ; primary: %s ; size: %dMB ; grow: %s ; "
-                  "max_size: %s" % (_part.name, _part.id,
+                  "max_size: %s ; start: %s ; end: %s" % (_part.name, _part.id,
                                     [d.name for d in req_disks],
                                     boot, _part.req_primary,
                                     _part.req_size, _part.req_grow,
-                                    _part.req_max_size))
+                                    _part.req_max_size, _part.req_start_sector,
+                                    _part.req_end_sector))
         free = None
         use_disk = None
         part_type = None
@@ -914,6 +920,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
             best = getBestFreeSpaceRegion(disklabel.partedDisk,
                                           new_part_type,
                                           _part.req_size,
+                                          start=_part.req_start_sector,
                                           best_free=current_free,
                                           boot=boot,
                                           grow=_part.req_grow)
@@ -928,6 +935,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                     best = getBestFreeSpaceRegion(disklabel.partedDisk,
                                                   new_part_type,
                                                   _part.req_size,
+                                                  start=_part.req_start_sector,
                                                   best_free=current_free,
                                                   boot=boot,
                                                   grow=_part.req_grow)
@@ -963,6 +971,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                 _free = getBestFreeSpaceRegion(disklabel.partedDisk,
                                                                _part_type,
                                                                _part.req_size,
+                                                               start=_part.req_start_sector,
                                                                boot=boot,
                                                                grow=_part.req_grow)
                                 if not _free:
@@ -977,7 +986,9 @@ def allocatePartitions(storage, disks, partitions, freespace):
                             temp_part = addPartition(disklabel,
                                                      _free,
                                                      _part_type,
-                                                     _part.req_size)
+                                                     _part.req_size,
+                                                     _part.req_start_sector,
+                                                     _part.req_end_sector)
                             _part.partedPartition = temp_part
                             _part.disk = _disk
                             temp_parts.append(_part)
@@ -1067,13 +1078,15 @@ def allocatePartitions(storage, disks, partitions, freespace):
             free = getBestFreeSpaceRegion(disklabel.partedDisk,
                                           part_type,
                                           _part.req_size,
+                                          start=_part.req_start_sector,
                                           boot=boot,
                                           grow=_part.req_grow)
             if not free:
                 raise PartitioningError(_("not enough free space after "
                                         "creating extended partition"))
 
-        partition = addPartition(disklabel, free, part_type, _part.req_size)
+        partition = addPartition(disklabel, free, part_type, _part.req_size,
+                                 _part.req_start_sector, _part.req_end_sector)
         log.debug("created partition %s of %dMB and added it to %s" %
                 (partition.getDeviceNodeName(), partition.getSize(),
                  disklabel.device))
