@@ -1093,7 +1093,7 @@ class PartitionDevice(StorageDevice):
     defaultSize = 500
 
     def __init__(self, name, format=None,
-                 size=None, grow=False, maxsize=None,
+                 size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfsPath='', parents=None, exists=False,
                  partType=None, primary=False, weight=0):
@@ -1121,9 +1121,14 @@ class PartitionDevice(StorageDevice):
                     grow -- whether or not to grow the partition
                     maxsize -- max size for growable partitions (in MB)
                     size -- the device's size (in MB)
+                    start -- start sector (see note, below)
+                    end -- end sector (see note, below)
                     bootable -- whether the partition is bootable
                     parents -- a list of potential containing disks
                     weight -- an initial sorting weight to assign
+
+            NOTE: If start/end sectors are specified they will not be adjusted
+                  for optimal alignment. It is up to the caller to do that.
         """
         self.req_disks = []
         self.req_partType = None
@@ -1134,6 +1139,8 @@ class PartitionDevice(StorageDevice):
         self.req_base_size = 0
         self.req_max_size = 0
         self.req_base_weight = 0
+        self.req_start_sector = None
+        self.req_end_sector = None
 
         self._bootable = False
 
@@ -1182,8 +1189,12 @@ class PartitionDevice(StorageDevice):
             #     PartitionRequest class and pass one to this constructor
             #     for new partitions.
             if not self._size:
-                # default size for new partition requests
-                self._size = self.defaultSize
+                if start is not None and end is not None:
+                    self._size = 0
+                else:
+                    # default size for new partition requests
+                    self._size = self.defaultSize
+
             self.req_name = name
             self.req_partType = partType
             self.req_primary = primary
@@ -1199,15 +1210,20 @@ class PartitionDevice(StorageDevice):
 
             self.req_base_weight = weight
 
+            self.req_start_sector = start
+            self.req_end_sector = end
+
     def __repr__(self):
         s = StorageDevice.__repr__(self)
         s += ("  grow = %(grow)s  max size = %(maxsize)s  bootable = %(bootable)s\n"
-              "  part type = %(partType)s  primary = %(primary)s\n"
+              "  part type = %(partType)s  primary = %(primary)s"
+              "  start sector = %(start)s  end sector = %(end)s\n"
               "  partedPartition = %(partedPart)s\n"
               "  disk = %(disk)s\n" %
               {"grow": self.req_grow, "maxsize": self.req_max_size,
                "bootable": self.bootable, "partType": self.partType,
                "primary": self.req_primary,
+               "start": self.req_start_sector, "end": self.req_end_sector,
                "partedPart": self.partedPartition, "disk": self.disk})
 
         if self.partedPartition:
