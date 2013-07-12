@@ -250,6 +250,11 @@ class DeviceTree(object):
 
                 self._completed_actions.append(self._actions.pop(0))
 
+        # removal of partitions makes use of originalFormat, so it has to stay
+        # up to date in case of multiple passes through this method
+        for disk in (d for d in self.devices if d.partitioned):
+            disk.originalFormat = copy.deepcopy(disk.format)
+
     def _addDevice(self, newdev):
         """ Add a device to the tree.
 
