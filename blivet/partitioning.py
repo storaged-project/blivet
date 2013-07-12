@@ -29,6 +29,7 @@ from pykickstart.constants import *
 
 from errors import *
 from deviceaction import *
+from flags import flags
 from devices import PartitionDevice, LUKSDevice, devicePathToName
 from formats import getFormat
 from devicelibs.lvm import get_pool_padding
@@ -591,6 +592,9 @@ def removeNewPartitions(disks, partitions):
             part.partedPartition = None
             part.disk = None
 
+    if not flags.installer_mode:
+        return
+
     for disk in disks:
         # remove empty extended so it doesn't interfere
         extended = disk.format.extendedPartition
@@ -916,6 +920,9 @@ def allocatePartitions(storage, disks, partitions, freespace):
                     # we need a primary slot and none are free on this disk
                     log.debug("no primary slots available on %s" % _disk.name)
                     continue
+            elif _part.req_partType is not None and \
+                 new_part_type != _part.req_partType:
+                new_part_type = _part.req_partType
 
             best = getBestFreeSpaceRegion(disklabel.partedDisk,
                                           new_part_type,
@@ -1066,7 +1073,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
         disklabel = _disk.format
 
         # create the extended partition if needed
-        if part_type == parted.PARTITION_EXTENDED:
+        if part_type == parted.PARTITION_EXTENDED and \
+           part_type != _part.req_partType:
             log.debug("creating extended partition")
             addPartition(disklabel, free, part_type, None)
 
