@@ -30,49 +30,29 @@ import os
 
 from .flags import flags
 
+import logging
+log = logging.getLogger("blivet")
+
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
 
-## Get the SPARC machine variety type.
-# @return The SPARC machine type, or 0 if not SPARC.
-def getSparcMachine():
-    if not isSparc():
-        return 0
-
-    machine = None
-
-
-    f = open('/proc/cpuinfo', 'r')
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-        if line.find('type') != -1:
-            machine = line.split(':')[1].strip()
-            return machine
-
-    return None
-
-## Get the PPC machine variety type.
-# @return The PPC machine type, or 0 if not PPC.
 def getPPCMachine():
+    """:return: The PPC machine type, or None if not PPC.
+       :rtype: string"""
     if not isPPC():
-        return 0
-
-    ppcMachine = None
-    machine = None
-    platform = None
+        return None
 
     # ppc machine hash
     # Note: This is a substring match!
     ppcType = { 'Mac'      : 'PMac',
                 'Book'     : 'PMac',
-                'CHRP IBM' : 'pSeries',
+                'CHRP'     : 'pSeries',
+                'CHRP IBM' : 'pSeries', # @TODO the CHRP entry above should match this
                 'Pegasos'  : 'Pegasos',
                 'Efika'    : 'Efika',
                 'iSeries'  : 'iSeries',
                 'pSeries'  : 'pSeries',
                 'PReP'     : 'PReP',
-                'CHRP'     : 'pSeries',
                 'Amiga'    : 'APUS',
                 'Gemini'   : 'Gemini',
                 'Shiner'   : 'ANS',
@@ -85,100 +65,96 @@ def getPPCMachine():
                 'PS3'      : 'PS3',
                 'PowerNV'  : 'pSeries'
                 }
+    machine = None
+    platform = None
 
-    f = open('/proc/cpuinfo', 'r')
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-        if line.find('machine') != -1:
-            machine = line.split(':')[1]
-        elif line.find('platform') != -1:
-            platform = line.split(':')[1]
+    with open('/proc/cpuinfo', 'r') as f:
+        for line in f:
+            if 'machine' in line:
+                machine = line.split(':')[1]
+            elif 'platform' in line:
+                platform = line.split(':')[1]
 
     for part in (machine, platform):
-        if ppcMachine is None and part is not None:
-            for type in ppcType.items():
-                if part.find(type[0]) != -1:
-                    ppcMachine = type[1]
+        if part is None:
+            continue
 
-    if ppcMachine is None:
-        log.warning("Unable to find PowerPC machine type")
-    elif ppcMachine == 0:
-        log.warning("Unknown PowerPC machine type: %s" %(ppcMachine,))
+        for type in ppcType.items():
+            if type[0] in part:
+                return type[1]
 
-    return ppcMachine
+    log.warning("Unknown PowerPC machine type: %s platform: %s" % (machine, platform,))
 
-## Get the powermac machine ID.
-# @return The powermac machine id, or 0 if not PPC.
+    return None
+
 def getPPCMacID():
-    machine = None
-
+    """:return: The powermac machine type, or None if not PPC or a powermac.
+       :rtype: string"""
     if not isPPC():
-        return 0
+        return None
     if getPPCMachine() != "PMac":
-        return 0
+        return None
 
-    f = open('/proc/cpuinfo', 'r')
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-      if line.find('machine') != -1:
-        machine = line.split(':')[1]
-        machine = machine.strip()
-        return machine
+    with open('/proc/cpuinfo', 'r') as f:
+        for line in f:
+            if 'machine' in line:
+                machine = line.split(':')[1]
+                return machine.strip()
 
     log.warning("No Power Mac machine id")
-    return 0
+    return None
 
-## Get the powermac generation.
-# @return The powermac generation, or 0 if not powermac.
 def getPPCMacGen():
+    """:return: The PPC generation, or None if not PPC or a powermac.
+       :rtype: string"""
     # XXX: should NuBus be here?
     # Note: This is a substring match!
     pmacGen = ['OldWorld', 'NewWorld', 'NuBus']
 
     if not isPPC():
-        return 0
+        return None
     if getPPCMachine() != "PMac":
-        return 0
+        return None
 
-    f = open('/proc/cpuinfo', 'r')
-    lines = f.readlines()
-    f.close()
     gen = None
-    for line in lines:
-      if line.find('pmac-generation') != -1:
-        gen = line.split(':')[1]
-        break
+    with open('/proc/cpuinfo', 'r') as f:
+        for line in f:
+            if 'pmac-generation' in line:
+                gen = line.split(':')[1]
+                break
 
     if gen is None:
         log.warning("Unable to find pmac-generation")
+        return None
 
     for _type in pmacGen:
-      if _type in gen:
-          return _type
+        if _type in gen:
+            return _type
 
     log.warning("Unknown Power Mac generation: %s" %(gen,))
-    return 0
+    return None
 
-## Determine if the hardware is an iBook or PowerBook
-# @return 1 if so, 0 otherwise.
 def getPPCMacBook():
+    """:return: True if the hardware is an iBook or PowerBook, False otherwise.
+       :rtype: string"""
     if not isPPC():
-        return 0
+        return False
     if getPPCMachine() != "PMac":
-        return 0
+        return False
 
-    f = open('/proc/cpuinfo', 'r')
-    buf = f.read()
-    f.close()
-    return 'book' in buf.lower()
+    #@TBD - Search for 'book' anywhere in cpuinfo? Shouldn't this be more restrictive?
+    with open('/proc/cpuinfo', 'r') as f:
+        for line in f:
+            if 'book' in line.lower():
+                return True
 
-## Get the ARM processor variety.
-# @return The ARM processor variety type, or 0 if not ARM.
+    return False
+
 def getARMMachine():
+    """:return: The ARM processor variety type, or None if not ARM.
+       :rtype: string"""
     if not isARM():
-        return 0
+        return None
 
     if flags.arm_platform:
         return flags.arm_platform
@@ -186,41 +162,27 @@ def getARMMachine():
     armMachine = os.uname()[2].rpartition('.' )[2]
 
     if armMachine.startswith('arm'):
+        # @TBD - Huh? Don't you want the arm machine name here?
         return None
     else:
         return armMachine
 
-
-cell = None
-## Determine if the hardware is the Cell platform.
-# @return True if so, False otherwise.
 def isCell():
-    global cell
-    if cell is not None:
-        return cell
-
-    cell = False
+    """:return: True if the hardware is the Cell platform, False otherwise.
+       :rtype: boolean"""
     if not isPPC():
-        return cell
+        return False
 
-    f = open('/proc/cpuinfo', 'r')
-    lines = f.readlines()
-    f.close()
+    with open('/proc/cpuinfo', 'r') as f:
+        for line in f:
+            if 'Cell' in line:
+                return True
 
-    for line in lines:
-      if 'Cell' in line:
-          cell = True
+    return False
 
-    return cell
-
-mactel = None
-## Determine if the hardware is an Intel-based Apple Mac.
-# @return True if so, False otherwise.
 def isMactel():
-    global mactel
-    if mactel is not None:
-        return mactel
-
+    """:return: True if the hardware is an Intel-based Apple Mac, False otherwise.
+       :rtype: boolean"""
     if not isX86():
         mactel = False
     elif not os.path.isfile(DMI_CHASSIS_VENDOR):
@@ -230,24 +192,22 @@ def isMactel():
         mactel = ("apple" in buf.lower())
     return mactel
 
-efi = None
-## Determine if the hardware supports EFI.
-# @return True if so, False otherwise.
 def isEfi():
-    global efi
-    if efi is not None:
-        return efi
-
-    efi = False
+    """:return: True if the hardware supports EFI, False otherwise.
+       :rtype: boolean"""
     # XXX need to make sure efivars is loaded...
     if os.path.exists("/sys/firmware/efi"):
-        efi = True
-
-    return efi
+        return True
+    else:
+        return False
 
 # Architecture checking functions
 
 def isX86(bits=None):
+    """:return: True if the hardware supports X86, False otherwise.
+       :rtype: boolean
+       :param bits: The number of bits used to define a memory address.
+       :type bits: int"""
     arch = os.uname()[4]
 
     # x86 platforms include:
@@ -272,6 +232,10 @@ def isX86(bits=None):
     return False
 
 def isPPC(bits=None):
+    """:return: True if the hardware supports PPC, False otherwise.
+       :rtype: boolean
+       :param bits: The number of bits used to define a memory address.
+       :type bits: int"""
     arch = os.uname()[4]
 
     if bits is None:
@@ -287,21 +251,28 @@ def isPPC(bits=None):
     return False
 
 def isS390():
+    """:return: True if the hardware supports PPC, False otherwise.
+       :rtype: boolean"""
     return os.uname()[4].startswith('s390')
 
 def isIA64():
+    """:return: True if the hardware supports IA64, False otherwise.
+       :rtype: boolean"""
     return os.uname()[4] == 'ia64'
 
 def isAlpha():
+    """:return: True if the hardware supports Alpha, False otherwise.
+       :rtype: boolean"""
     return os.uname()[4].startswith('alpha')
 
-def isSparc():
-    return os.uname()[4].startswith('sparc')
-
 def isARM():
+    """:return: True if the hardware supports ARM, False otherwise.
+       :rtype: boolean"""
     return os.uname()[4].startswith('arm')
 
 def getArch():
+    """:return: The hardware architecture
+       :rtype: string"""
     if isX86(bits=32):
         return 'i386'
     elif isX86(bits=64):
@@ -312,8 +283,6 @@ def getArch():
         return 'ppc64'
     elif isAlpha():
         return 'alpha'
-    elif isSparc():
-        return 'sparc'
     elif isARM():
         return 'arm'
     else:
