@@ -1018,6 +1018,14 @@ class DeviceTree(object):
                 # make sure any device we found is an md device
                 device = None
 
+        # newly added device (eg iSCSI) could make this one a multipath member
+        if device and device.isDisk and \
+            devicelibs.mpath.is_multipath_member(device.path) and \
+            device.format and device.format.type != "multipath_member":
+                log.debug("%s newly detected as multipath member, dropping old format" % device.name)
+                info["ID_FS_TYPE"] = "multipath_member"
+                device.format = formats.DeviceFormat()
+
         #
         # The first step is to either look up or create the device
         #
