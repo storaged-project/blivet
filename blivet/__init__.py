@@ -308,6 +308,9 @@ class Blivet(object):
 
     def doIt(self):
         self.devicetree.processActions()
+        if not flags.installer_mode:
+            return
+
         self.doEncryptionPassphraseRetrofits()
 
         # now set the boot partition's flag
