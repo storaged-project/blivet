@@ -304,19 +304,6 @@ class S390(Platform):
 
         return super(S390, self).requiredDiskLabelType(device_type)
 
-class Sparc(Platform):
-    _boot_stage1_format_types = []
-    _boot_stage1_mountpoints = []
-    _boot_stage1_max_end_mb = None
-    _disklabel_types = ["sun"]
-
-    @property
-    def minimumSector(self, disk):
-        (cylinders, heads, sectors) = disk.device.biosGeometry
-        start = long(sectors * heads)
-        start /= long(1024 / disk.device.sectorSize)
-        return start+1
-
 class ARM(Platform):
     _armMachine = None
     _boot_stage1_device_types = ["disk"]
@@ -387,8 +374,6 @@ def getPlatform():
             raise SystemError, "Unsupported PPC machine type: %s" % ppcMachine
     elif arch.isS390():
         return S390()
-    elif arch.isSparc():
-        return Sparc()
     elif arch.isEfi():
         if arch.isMactel():
             return MacEFI()
