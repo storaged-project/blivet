@@ -22,7 +22,6 @@ Source0: http://git.fedorahosted.org/cgit/blivet.git/snapshot/%{realname}-%{vers
 BuildArch: noarch
 BuildRequires: gettext
 BuildRequires: python-setuptools-devel
-BuildRequires: transifex-client
 
 Requires: python
 Requires: pykickstart >= %{pykickstartver}
