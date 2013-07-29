@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18
+Version: 0.18.1
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jul 29 2013 Brian C. Lane <bcl@redhat.com> - 0.18.1-1
+- Branch for rhel7
+- Update Makefile for rhel7 x.y.z release numbering
+
 * Tue Jul 09 2013 Brian C. Lane <bcl@redhat.com> - 0.18-1
 - Raise XFS max size limit to 100TB. (sbueno+anaconda)
 - Add a device factory class for thinly-provisioned lvm. (dlehman)
