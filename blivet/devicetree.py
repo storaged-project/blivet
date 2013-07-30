@@ -426,15 +426,9 @@ class DeviceTree(object):
         """
         dependents = []
 
-        # special handling for extended partitions since the logical
-        # partitions and their deps effectively depend on the extended
-        logicals = []
-        if isinstance(dep, PartitionDevice) and dep.partType and \
-           dep.isExtended:
-            # collect all of the logicals on the same disk
-            for part in self.getDevicesByInstance(PartitionDevice):
-                if part.partType and part.isLogical and part.disk == dep.disk:
-                    logicals.append(part)
+        # don't bother looping looking for dependents if this is a leaf device
+        if dep.isleaf:
+            return dependents
 
         incomplete = [d for d in self._devices
                             if not getattr(d, "complete", True)]
