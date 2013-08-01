@@ -435,11 +435,6 @@ class DeviceTree(object):
         for device in self.devices + incomplete:
             if device.dependsOn(dep):
                 dependents.append(device)
-            else:
-                for logical in logicals:
-                    if device.dependsOn(logical):
-                        dependents.append(device)
-                        break
 
         return dependents
 
