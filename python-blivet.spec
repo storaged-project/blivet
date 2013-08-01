@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18
+Version: 0.19
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,28 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jul 31 2013 Brian C. Lane <bcl@redhat.com> - 0.19-1
+- Don't waste time looking for devices dependent on leaf devices. (dlehman)
+- Add some example code for creation of disk partitions. (dlehman)
+- Don't manipulate partition boot flags except in installer mode. (dlehman)
+- Add an example of DeviceFactory usage. (dlehman)
+- Cosmetic changes for the arch module (vpodzime)
+- No more sparc support (vpodzime)
+- Cleanup arch.py reredux (hamzy)
+- Allow explicit requests for extended partitions. (#891861) (dlehman)
+- Fix disklabel handling for multiple calls to processActions. (dlehman)
+- Add support for explicit start/end sectors in partition requests. (#881025) (dlehman)
+- Store current mount options in getActiveMounts. (#914898) (dlehman)
+- Lack of formatting does not preclude device resize. (dlehman)
+- Handle negative sizes correctly. (dlehman)
+- Fix handling of clearpart type linux in shouldClear. (dlehman)
+- Add some tests for clearpart and related functionality. (dlehman)
+- Update unit tests and add a make target to run them. (dlehman)
+- Don't pass dracut args for lvm thin pools. (dlehman)
+- Update the TODO list. (dlehman)
+- Fix a copy/paste error. (dlehman)
+- Remove transifex-client BuildRequires. (dlehman)
+
 * Tue Jul 09 2013 Brian C. Lane <bcl@redhat.com> - 0.18-1
 - Raise XFS max size limit to 100TB. (sbueno+anaconda)
 - Add a device factory class for thinly-provisioned lvm. (dlehman)
