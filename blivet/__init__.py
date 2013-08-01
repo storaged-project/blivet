@@ -2399,7 +2399,8 @@ class FSSet(object):
         # find device in the tree
         device = self.devicetree.resolveDevice(devspec,
                                                cryptTab=self.cryptTab,
-                                               blkidTab=self.blkidTab)
+                                               blkidTab=self.blkidTab,
+                                               options=options)
 
         if device:
             # fall through to the bottom of this block
