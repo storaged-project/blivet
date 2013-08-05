@@ -357,9 +357,9 @@ def vginfo(vg_name):
 
 def lvs(vg_name):
     args = ["lvs",
-            "--unit", "k", "--nosuffix", "--nameprefixes", "--rows",
+            "-a", "--unit", "k", "--nosuffix", "--nameprefixes", "--rows",
             "--unquoted", "--noheadings",
-            "-olv_name,lv_uuid,lv_size,lv_attr"] + \
+            "-olv_name,lv_uuid,lv_size,lv_attr,segtype"] + \
             _getConfigArgs(read_only_locking=True) + \
             [vg_name]
 

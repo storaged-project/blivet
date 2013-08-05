@@ -1202,6 +1202,7 @@ class DeviceTree(object):
         lv_uuids = vg_device.lv_uuids
         lv_sizes = vg_device.lv_sizes
         lv_attr = vg_device.lv_attr
+        lv_types = vg_device.lv_types
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s" % vg_name)
@@ -1234,7 +1235,7 @@ class DeviceTree(object):
         # the end
         indices = range(len(lv_names))
         indices.sort(key=lambda i: lv_attr[i], cmp=lv_attr_cmp)
-        mirrors = {}
+        raid = {}
         for index in indices:
             lv_class = LVMLogicalVolumeDevice
             lv_name = lv_names[index]
@@ -1269,20 +1270,28 @@ class DeviceTree(object):
                 continue
             elif lv_attr[index][0] in 'Ii':
                 # mirror image
-                lv_name = re.sub(r'_mimage.+', '', lv_name[1:-1])
+                lv_name = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
-                if name not in mirrors:
-                    mirrors[name] = {"stripes": 0, "log": 0}
+                if name not in raid:
+                    raid[name] = {"copies": 0, "log": 0, "meta": 0}
 
-                mirrors[name]["stripes"] += 1
+                raid[name]["copies"] += 1
+                continue
+            elif lv_attr[index][0] == 'e':
+                # raid metadata volume
+                lv_name = re.sub(r'_rmeta.+', '', lv_name[1:-1])
+                name = "%s-%s" % (vg_name, lv_name)
+                raid[name]["meta"] += lv_sizes[index]
+                continue
             elif lv_attr[index][0] == 'l':
                 # log volume
                 lv_name = re.sub(r'_mlog.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
                 if name not in mirrors:
-                    mirrors[name] = {"stripes": 0, "log": 0}
+                    raid[name] = {"stripes": 0, "log": 0, "meta": 0}
 
-                mirrors[name]["log"] = lv_sizes[index]
+                raid[name]["log"] = lv_sizes[index]
+                continue
             elif lv_attr[index][0] == 't':
                 # thin pool
                 lv_class = LVMThinPoolDevice
@@ -1300,8 +1309,10 @@ class DeviceTree(object):
             if lv_dev is None:
                 lv_uuid = lv_uuids[index]
                 lv_size = lv_sizes[index]
+                lv_type = lv_types[index]
                 lv_device = lv_class(lv_name, parents=lv_parents,
-                                     uuid=lv_uuid, size=lv_size, exists=True)
+                                     uuid=lv_uuid, size=lv_size,segType=lv_type,
+                                     exists=True)
                 self._addDevice(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
@@ -1318,13 +1329,15 @@ class DeviceTree(object):
 
                 ret = True
 
-        for name, mirror in mirrors.items():
+        for name, data in raid.items():
             lv_dev = self.getDeviceByName(name)
-            lv_dev.stripes = mirror["stripes"]
-            lv_dev.logSize = mirror["log"]
-            log.debug("set %s stripes to %d, log size to %dMB, total size %dMB"
-                        % (lv_dev.name, lv_dev.stripes, lv_dev.logSize,
-                           lv_dev.vgSpaceUsed))
+            lv_dev.copies = data["copies"]
+            lv_dev.metaDataSize = data["meta"]
+            lv_dev.logSize = data["log"]
+            log.debug("set %s copies to %d, metadata size to %dMB, log size "
+                      "to %dMB, total size %dMB"
+                        % (lv_dev.name, lv_dev.copies, lv_dev.metaDataSize,
+                           lv_dev.logSize, lv_dev.vgSpaceUsed))
 
         return ret
 
@@ -1379,6 +1392,7 @@ class DeviceTree(object):
             lv_uuids = udev_device_get_lv_uuids(info)
             lv_sizes = udev_device_get_lv_sizes(info)
             lv_attr = udev_device_get_lv_attr(info)
+            lv_types = udev_device_get_lv_types(info)
         except KeyError as e:
             log.warning("invalid data for %s: %s" % (device.name, e))
             return
@@ -1392,6 +1406,7 @@ class DeviceTree(object):
             vg_device.lv_uuids.append(lv_uuids[i])
             vg_device.lv_sizes.append(lv_sizes[i])
             vg_device.lv_attr.append(lv_attr[i])
+            vg_device.lv_types.append(lv_types[i])
 
             name = "%s-%s" % (vg_name, lv_names[i])
             if name not in self.names:
