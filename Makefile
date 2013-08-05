@@ -2,7 +2,8 @@ PKGNAME=blivet
 SPECFILE=python-blivet.spec
 VERSION=$(shell awk '/Version:/ { print $$2 }' $(SPECFILE))
 RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g')
-TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
+RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
+VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 TX_PULL_ARGS = -a --disable-overwrite
 TX_PUSH_ARGS = -s
@@ -34,13 +35,20 @@ ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
 
 tag:
-	git tag -a -m "Tag as $(TAG)" -f $(TAG)
-	@echo "Tagged as $(TAG)"
+	@if test $(RELEASE) = "1" ; then \
+	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
+	else \
+	  tags='$(RELEASE_TAG)' ; \
+	fi ; \
+	for tag in $$tags ; do \
+	  git tag -a -s -m "Tag as $$tag" -f $$tag ; \
+	  echo "Tagged as $$tag" ; \
+	done
 
 archive: check tag
 	@rm -f ChangeLog
 	@make ChangeLog
-	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(TAG) > $(PKGNAME)-$(VERSION).tar
+	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) > $(PKGNAME)-$(VERSION).tar
 	mkdir $(PKGNAME)-$(VERSION)
 	cp -r po $(PKGNAME)-$(VERSION)
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
