@@ -1940,6 +1940,16 @@ class Blivet(object):
             p = partition.disk.format.partedDisk.getPartitionByPath(partition.path)
             partition.partedPartition = p
 
+        # make sure the roots reference devices in self.devicetree._devices
+        for root in new.roots:
+            root.swaps = [new.devicetree.getDeviceByID(d.id) for d in root.swaps]
+            for (mountpoint, old_dev) in root.mounts.items():
+                if old_dev is None:
+                    continue
+
+                new_dev = new.devicetree.getDeviceByID(old_dev.id)
+                root.mounts[mountpoint] = new_dev
+
         log.debug("finished Blivet copy")
         return new
 
