@@ -25,8 +25,6 @@ import os
 import logging
 import shutil
 import time
-import hashlib
-import random
 import itertools
 log = logging.getLogger("blivet")
 
@@ -59,20 +57,6 @@ def has_iscsi():
         log.info("ISCSID is %s" % (ISCSID,))
 
     return True
-
-def randomIname():
-    """Generate a random initiator name the same way as iscsi-iname"""
-
-    s = "iqn.1994-05.com.domain:01."
-    m = hashlib.md5()
-    u = os.uname()
-    for i in u:
-        m.update(i)
-    dig = m.hexdigest()
-
-    for i in range(0, 6):
-        s += dig[random.randrange(0, 32)]
-    return s
 
 class iscsi(object):
     """ iSCSI utility class.
@@ -115,7 +99,7 @@ class iscsi(object):
         if self._initiator != "":
             return self._initiator
 
-        return randomIname()
+        return util.capture_output(["iscsi-iname"]).strip()
 
     def _setInitiator(self, val):
         if self.initiatorSet and val != self._initiator:
