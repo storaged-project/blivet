@@ -2222,12 +2222,22 @@ class DeviceTree(object):
                     devspec = os.path.realpath(devspec)
 
                 if devspec.startswith("/dev/dm-"):
-                    dm_name = devicelibs.dm.name_from_dm_node(devspec[5:])
+                    try:
+                        dm_name = devicelibs.dm.name_from_dm_node(devspec[5:])
+                    except StorageError as e:
+                        log.info("failed to resolve %s: %s" % (devspec, e))
+                        dm_name = None
+
                     if dm_name:
                         devspec = "/dev/mapper/" + dm_name
 
                 if re.match(r'/dev/md\d+(p\d+)?$', devspec):
-                    md_name = devicelibs.mdraid.name_from_md_node(devspec[5:])
+                    try:
+                        md_name = devicelibs.mdraid.name_from_md_node(devspec[5:])
+                    except StorageError as e:
+                        log.info("failed to resolve %s: %s" % (devspec, e))
+                        md_name = None
+
                     if md_name:
                         devspec = "/dev/md/" + md_name
 
