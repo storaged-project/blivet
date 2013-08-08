@@ -421,8 +421,13 @@ class Blivet(object):
             self.bootloader.stage1_device = None
             self.bootloader.stage2_device = None
 
+        self.roots = []
         if flags.installer_mode:
-            self.roots = findExistingInstallations(self.devicetree)
+            try:
+                self.roots = findExistingInstallations(self.devicetree)
+            except StorageError as e:
+                log.info("failure detecting existing installations: %s" % e)
+
             self.dumpState("initial")
 
         if not flags.installer_mode:
