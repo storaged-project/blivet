@@ -179,8 +179,13 @@ class DASD:
 
     def addDASD(self, dasd):
         """ Adds a DASDDevice to the internal list of DASDs. """
-        if dasd:
+        if dasd and dasd not in self._devices:
             self._devices.append(dasd)
+
+    def removeDASD(self, dasd):
+        """ Removes a DASDDevice from the internal list of DASDs. """
+        if dasd and dasd in self._devices:
+            self._devices.remove(dasd)
 
     def clear_device_list(self):
         """ Clear the device list to force re-populate on next access. """
@@ -194,7 +199,7 @@ class DASD:
             return
 
         f = open(os.path.realpath(ROOT_PATH + "/etc/dasd.conf"), "w")
-        for dasd in self._devices:
+        for dasd in sorted(self._devices, key=lambda d: d.name):
             fields = [dasd.busid] + dasd.getOpts()
             f.write("%s\n" % (" ".join(fields),))
         f.close()

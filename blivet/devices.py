@@ -4096,11 +4096,7 @@ class DASDDevice(DiskDevice):
     def __init__(self, device, **kwargs):
         self.busid = kwargs.pop('busid')
         self.opts = kwargs.pop('opts')
-        self.dasd = kwargs.pop('dasd')
         DiskDevice.__init__(self, device, **kwargs)
-
-        if self.dasd:
-            self.dasd.addDASD(self)
 
     @property
     def description(self):
