@@ -388,11 +388,12 @@ class Blivet(object):
 
         """
         log.info("resetting Blivet (version %s) instance %s" % (__version__, self))
-        # save passphrases for luks devices so we don't have to reprompt
-        self.encryptionPassphrase = None
-        for device in self.devices:
-            if device.format.type == "luks" and device.format.exists:
-                self.__luksDevs[device.format.uuid] = device.format._LUKS__passphrase
+        if flags.installer_mode:
+            # save passphrases for luks devices so we don't have to reprompt
+            self.encryptionPassphrase = None
+            for device in self.devices:
+                if device.format.type == "luks" and device.format.exists:
+                    self.__luksDevs[device.format.uuid] = device.format._LUKS__passphrase
 
         if self.ksdata:
             self.config.update(self.ksdata)
