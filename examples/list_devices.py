@@ -12,7 +12,7 @@ blivet_log.info(sys.argv[0])
 
 import blivet
 
-storage = blivet.Blivet()   # create an instance of Blivet
-storage.reset()             # detect system storage configuration
+b = blivet.Blivet()   # create an instance of Blivet
+b.reset()             # detect system storage configuration
 
 print_devices(b)
