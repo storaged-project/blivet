@@ -750,9 +750,6 @@ def doPartitioning(storage):
 
     """
     disks = storage.partitioned
-    if storage.config.exclusiveDisks:
-        disks = [d for d in disks if d.name in storage.config.exclusiveDisks]
-
     for disk in disks:
         try:
             disk.setup()

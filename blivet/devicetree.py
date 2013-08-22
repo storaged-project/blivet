@@ -1921,11 +1921,24 @@ class DeviceTree(object):
 
         self.teardownAll()
 
+        def _is_ignored(disk):
+            return ((self.ignoredDisks and disk.name in self.ignoredDisks) or
+                    (self.exclusiveDisks and
+                     disk.name not in self.exclusiveDisks))
+
         # hide any subtrees that begin with an ignored disk
         for disk in [d for d in self._devices if d.isDisk]:
-            if ((self.ignoredDisks and disk.name in self.ignoredDisks) or
-                (self.exclusiveDisks and disk.name not in self.exclusiveDisks)):
-                self.hide(disk)
+            if _is_ignored(disk):
+                ignored = True
+                # If the filter allows all members of a fwraid or mpath, the
+                # fwraid or mpath itself is implicitly allowed as well. I don't
+                # like this very much but we have supported this usage in the
+                # past, so I guess we will support it forever.
+                if disk.parents and all(p.format.hidden for p in disk.parents):
+                    ignored = any(_is_ignored(d) for d in disk.parents)
+
+                if ignored:
+                    self.hide(disk)
 
     def teardownAll(self):
         """ Run teardown methods on all devices. """
