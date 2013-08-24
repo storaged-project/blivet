@@ -70,7 +70,7 @@ local: po-pull
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 
 rpmlog:
-	@git log --pretty="format:- %s (%ae)" $(TAG).. |sed -e 's/@.*)/)/'
+	@git log --pretty="format:- %s (%ae)" $(RELEASE_TAG).. |sed -e 's/@.*)/)/'
 	@echo
 
 bumpver: po-pull
