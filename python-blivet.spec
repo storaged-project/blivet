@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.1
+Version: 0.18.2
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Aug 23 2013 Brian C. Lane <bcl@redhat.com> - 0.18.2-1
+- Use iscsi-iname instead of trying to reimplemnt it in python. (dlehman)
+- Catch exceptions raised while finding old installations. (#981991) (dlehman)
+- Keep the dasd list in sync with the devicetree's device list. (#965694) (dlehman)
+- Don't save luks keys unless installer_mode flag is set. (#996118) (dlehman)
+- transifex-client isn't used for rhel7 (bcl)
+
 * Mon Jul 29 2013 Brian C. Lane <bcl@redhat.com> - 0.18.1-1
 - Branch for rhel7
 - Update Makefile for rhel7 x.y.z release numbering
