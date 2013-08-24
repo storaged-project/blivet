@@ -62,7 +62,16 @@ make DESTDIR=%{buildroot} install
 
 %changelog
 * Fri Aug 23 2013 Brian C. Lane <bcl@redhat.com> - 0.20-1
-
+- Fix typo in examples/list_devices.py (dlehman)
+- Use iscsi-iname instead of trying to reimplemnt it in python. (dlehman)
+- Catch exceptions raised while finding old installations. (#981991) (dlehman)
+- Keep the dasd list in sync with the devicetree's device list. (#965694) (dlehman)
+- Don't save luks keys unless installer_mode flag is set. (#996118) (dlehman)
+- Pass mount options to resolveDevice in _parseOneLine (#950206) (vpodzime)
+- Fix handling of devices in detected installations in Blivet.copy. (dlehman)
+- Clean up detection of lvm raid. (dlehman)
+- Tag the first build of each version without the release. (dlehman)
+- Remove dangling code block from commit 737169b75af1. (dlehman)
 
 * Wed Jul 31 2013 Brian C. Lane <bcl@redhat.com> - 0.19-1
 - Don't waste time looking for devices dependent on leaf devices. (dlehman)
