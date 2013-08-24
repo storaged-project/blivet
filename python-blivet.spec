@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.19
+Version: 0.20
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,9 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Aug 23 2013 Brian C. Lane <bcl@redhat.com> - 0.20-1
+
+
 * Wed Jul 31 2013 Brian C. Lane <bcl@redhat.com> - 0.19-1
 - Don't waste time looking for devices dependent on leaf devices. (dlehman)
 - Add some example code for creation of disk partitions. (dlehman)
