@@ -33,6 +33,7 @@ from ..storage_log import log_method_call
 from ..errors import *
 from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
+from ..flags import flags
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
@@ -200,7 +201,9 @@ class LUKS(DeviceFormat):
         else:
             self.uuid = crypto.luks_uuid(self.device)
             self.exists = True
-            self.mapName = "luks-%s" % self.uuid
+            if flags.installer_mode:
+                self.mapName = "luks-%s" % self.uuid
+
             self.notifyKernel()
 
     def destroy(self, *args, **kwargs):
