@@ -1548,6 +1548,19 @@ class PartitionDevice(StorageDevice):
         StorageDevice._postCreate(self)
         self._currentSize = self.partedPartition.getSize()
 
+    def create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        self._preCreate()
+        try:
+            self._create()
+        except DiskLabelCommitError as e:
+            raise
+        except Exception as e:
+            raise DeviceCreateError(str(e), self.name)
+        else:
+            self._postCreate()
+
     def _computeResize(self, partition):
         log_method_call(self, self.name, status=self.status)
 
