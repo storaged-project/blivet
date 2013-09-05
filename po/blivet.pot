@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-23 17:39-0700\n"
+"POT-Creation-Date: 2013-09-04 17:10-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,16 +149,16 @@ msgstr ""
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:2929
+#: ../blivet/__init__.py:2931
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2934
+#: ../blivet/__init__.py:2936
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2936
+#: ../blivet/__init__.py:2938
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -292,68 +292,68 @@ msgstr ""
 msgid "B"
 msgstr ""
 
-#: ../blivet/partitioning.py:305
+#: ../blivet/partitioning.py:306
 msgid "No usable disks selected"
 msgstr ""
 
-#: ../blivet/partitioning.py:313
+#: ../blivet/partitioning.py:314
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/partitioning.py:643
+#: ../blivet/partitioning.py:652
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:651
+#: ../blivet/partitioning.py:660
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:752
+#: ../blivet/partitioning.py:761
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:806
+#: ../blivet/partitioning.py:815
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(minSize)d MB to %(maxSize)d MB)"
 msgstr ""
 
-#: ../blivet/partitioning.py:811
+#: ../blivet/partitioning.py:820
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(minSize)d MB to %(maxSize)d MB)"
 msgstr ""
 
-#: ../blivet/partitioning.py:1052
+#: ../blivet/partitioning.py:1070
 msgid "not enough free space on disks"
 msgstr ""
 
-#: ../blivet/partitioning.py:1073
+#: ../blivet/partitioning.py:1093
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1245
+#: ../blivet/partitioning.py:1266
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1425
+#: ../blivet/partitioning.py:1446
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1438
+#: ../blivet/partitioning.py:1459
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1518
+#: ../blivet/partitioning.py:1539
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1977
+#: ../blivet/partitioning.py:1998
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -599,7 +599,7 @@ msgstr ""
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/luks.py:48
+#: ../blivet/formats/luks.py:49
 msgid "Encrypted"
 msgstr ""
 

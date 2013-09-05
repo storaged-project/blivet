@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.2
+Version: 0.18.3
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,21 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 04 2013 Brian C. Lane <bcl@redhat.com> - 0.18.3-1
+- Fix rpmlog make target (bcl)
+- Only force luks map names to include UUID during OS installation. (#996457) (dlehman)
+- Allow DiskLabelCommitError to reach the caller. (#1001586) (dlehman)
+- Do not try to align partitions to optimal_io_size. (#989333) (gustavold)
+- Pass mount options to resolveDevice in _parseOneLine (#950206) (vpodzime)
+- Clean up detection of lvm raid. (dlehman)
+- Tag the first build of each version without the release. (dlehman)
+- Allow explicit requests for extended partitions. (#891861) (dlehman)
+- Fix disklabel handling for multiple calls to processActions. (dlehman)
+- Add support for explicit start/end sectors in partition requests. (#881025) (dlehman)
+- Store current mount options in getActiveMounts. (#914898) (dlehman)
+- Lack of formatting does not preclude device resize. (dlehman)
+- Don't pass dracut args for lvm thin pools. (dlehman)
+
 * Fri Aug 23 2013 Brian C. Lane <bcl@redhat.com> - 0.18.2-1
 - Use iscsi-iname instead of trying to reimplemnt it in python. (dlehman)
 - Catch exceptions raised while finding old installations. (#981991) (dlehman)
