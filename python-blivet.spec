@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.20
+Version: 0.21
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Sep 05 2013 Brian C. Lane <bcl@redhat.com> - 0.21-1
+- Only force luks map names to include UUID during OS installation. (#996457) (dlehman)
+- Allow DiskLabelCommitError to reach the caller. (#1001586) (dlehman)
+- Do not try to align partitions to optimal_io_size. (#989333) (gustavold)
+- Fix rpmlog make target (bcl)
+- Add missing changelog lines to spec (bcl)
+
 * Fri Aug 23 2013 Brian C. Lane <bcl@redhat.com> - 0.20-1
 - Fix typo in examples/list_devices.py (dlehman)
 - Use iscsi-iname instead of trying to reimplemnt it in python. (dlehman)
