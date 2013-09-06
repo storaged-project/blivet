@@ -1946,11 +1946,20 @@ class Blivet(object):
         # make sure the roots reference devices in self.devicetree._devices
         for root in new.roots:
             root.swaps = [new.devicetree.getDeviceByID(d.id) for d in root.swaps]
+            # the above will put None in the list if the swap has since been
+            # removed, which is problematic
+            root.swaps = [s for s in root.swaps if s]
+
             for (mountpoint, old_dev) in root.mounts.items():
                 if old_dev is None:
                     continue
 
                 new_dev = new.devicetree.getDeviceByID(old_dev.id)
+                if new_dev is None:
+                    # if the device has been removed don't include this
+                    # mountpoint at all
+                    del root.mounts[mountpoint]
+
                 root.mounts[mountpoint] = new_dev
 
         log.debug("finished Blivet copy")
