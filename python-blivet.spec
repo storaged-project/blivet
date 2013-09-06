@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.21
+Version: 0.22
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Sep 06 2013 David Lehman <dlehman@redhat.com> - 0.22-1
+- Allow implicit inclusion of multipath/fwraid by including all members. (dlehman)
+- If a device has been removed, omit it from the copied root. (#1004572) (dlehman)
+- Thinp metadata and chunk size default to 0 -- not None. (#1004718) (dlehman)
+- Revert "Do not try to align partitions to optimal_io_size. (#989333)" (dlehman)
+
 * Thu Sep 05 2013 Brian C. Lane <bcl@redhat.com> - 0.21-1
 - Only force luks map names to include UUID during OS installation. (#996457) (dlehman)
 - Allow DiskLabelCommitError to reach the caller. (#1001586) (dlehman)
