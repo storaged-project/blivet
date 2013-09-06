@@ -2828,8 +2828,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                 maxsize=maxsize,
                                                 percent=percent)
 
-        self.metaDataSize = metadatasize
-        self.chunkSize = chunksize
+        self.metaDataSize = metadatasize or 0
+        self.chunkSize = chunksize or 0
         self._lvs = []
 
     def _addLogVol(self, lv):
