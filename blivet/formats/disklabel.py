@@ -377,14 +377,22 @@ class DiskLabel(DeviceFormat):
                 disklabel_alignment = parted.Alignment(offset=0, grainSize=1)
 
             try:
+                optimum_device_alignment = self.partedDevice.optimumAlignment
+            except _ped.CreateException:
+                optimum_device_alignment = None
+
+            try:
                 minimum_device_alignment = self.partedDevice.minimumAlignment
             except _ped.CreateException:
                 minimum_device_alignment = None
 
             try:
-                a = minimum_device_alignment.intersect(disklabel_alignment)
+                a = optimum_device_alignment.intersect(disklabel_alignment)
             except (ArithmeticError, AttributeError):
-                a = disklabel_alignment
+                try:
+                    a = minimum_device_alignment.intersect(disklabel_alignment)
+                except (ArithmeticError, AttributeError):
+                    a = disklabel_alignment
 
             self._alignment = a
 
