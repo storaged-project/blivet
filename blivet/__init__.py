@@ -145,7 +145,8 @@ def storageInitialize(storage, ksdata, protected):
 
     storage.reset()
 
-    if protected and not flags.live_install and not storage.protectedDevices:
+    if protected and not flags.live_install and \
+       not any(d.protected for d in storage.devices):
         raise UnknownSourceDeviceError(protected)
 
     # kickstart uses all the disks
@@ -277,7 +278,6 @@ class Blivet(object):
         self.escrowCertificates = {}
         self.autoPartEscrowCert = None
         self.autoPartAddBackupPassphrase = False
-        self.encryptionRetrofit = False
         self.autoPartitionRequests = []
         self.eddDict = {}
 
@@ -307,8 +307,6 @@ class Blivet(object):
         self.devicetree.processActions()
         if not flags.installer_mode:
             return
-
-        self.doEncryptionPassphraseRetrofits()
 
         # now set the boot partition's flag
         if self.bootloader and not self.bootloader.skip_bootloader:
@@ -574,20 +572,6 @@ class Blivet(object):
         pvs.sort(key=lambda d: d.name)
         return pvs
 
-    def unusedPVs(self, vg=None):
-        unused = []
-        for pv in self.pvs:
-            used = False
-            for _vg in self.vgs:
-                if _vg.dependsOn(pv) and _vg != vg:
-                    used = True
-                    break
-                elif _vg == vg:
-                    break
-            if not used:
-                unused.append(pv)
-        return unused
-
     @property
     def mdarrays(self):
         """ A list of the MD arrays in the device tree.
@@ -620,20 +604,6 @@ class Blivet(object):
         members.sort(key=lambda d: d.name)
         return members
 
-    def unusedMDMembers(self, array=None):
-        unused = []
-        for member in self.mdmembers:
-            used = False
-            for _array in self.mdarrays + self.mdcontainers:
-                if _array.dependsOn(member) and _array != array:
-                    used = True
-                    break
-                elif _array == array:
-                    break
-            if not used:
-                unused.append(member)
-        return unused
-
     @property
     def btrfsVolumes(self):
         return sorted(self.devicetree.getDevicesByType("btrfs volume"),
@@ -651,18 +621,6 @@ class Blivet(object):
         swaps = [d for d in devices if d.format.type == "swap"]
         swaps.sort(key=lambda d: d.name)
         return swaps
-
-    @property
-    def protectedDevices(self):
-        devices = self.devicetree.devices
-        protected = [d for d in devices if d.protected]
-        protected.sort(key=lambda d: d.name)
-        return protected
-
-    @property
-    def liveImage(self):
-        """ The OS image used by live installs. """
-        return None
 
     def shouldClear(self, device, **kwargs):
         clearPartType = kwargs.get("clearPartType", self.config.clearPartType)
@@ -909,114 +867,6 @@ class Blivet(object):
     @property
     def names(self):
         return self.devicetree.names
-
-    def exceptionDisks(self):
-        """ Return a list of removable devices to save exceptions to.
-
-            FIXME: This raises the problem that the device tree can be
-                   in a state that does not reflect that actual current
-                   state of the system at any given point.
-
-                   We need a way to provide direct scanning of disks,
-                   partitions, and filesystems without relying on the
-                   larger objects' correctness.
-
-                   Also, we need to find devices that have just been made
-                   available for the purpose of storing the exception
-                   report.
-        """
-        # When a usb is connected from before the start of the installation,
-        # it is not correctly detected.
-        udev_trigger(subsystem="block", action="change")
-        self.reset()
-
-        dests = []
-
-        for disk in self.disks:
-            if not disk.removable and \
-                    disk.format is not None  and \
-                    disk.format.mountable:
-                dests.append([disk.path, disk.name])
-
-        for part in self.partitions:
-            if not part.disk.removable:
-                continue
-
-            elif part.partedPartition.active and \
-                    not part.partedPartition.getFlag(parted.PARTITION_RAID) and \
-                    not part.partedPartition.getFlag(parted.PARTITION_LVM) and \
-                    part.format is not None and part.format.mountable:
-                dests.append([part.path, part.name])
-
-        return dests
-
-    def deviceImmutable(self, device, ignoreProtected=False):
-        """ Return any reason the device cannot be modified/removed.
-
-            Return False if the device can be removed.
-
-            Devices that cannot be removed include:
-
-                - protected partitions
-                - devices that are part of an md array or lvm vg
-                - extended partition containing logical partitions that
-                  meet any of the above criteria
-
-        """
-        if not isinstance(device, Device):
-            raise ValueError("arg1 (%s) must be a Device instance" % device)
-
-        if not ignoreProtected and device.protected and \
-           not getattr(device.format, "inconsistentVG", False):
-            return _("This partition is holding the data for the hard "
-                      "drive install.")
-        elif isinstance(device, PartitionDevice) and device.isProtected:
-            # LDL formatted DASDs always have one partition, you'd have to
-            # reformat the DASD in CDL mode to get rid of it
-            return _("You cannot delete a partition of a LDL formatted "
-                     "DASD.")
-        elif device.format.type == "mdmember":
-            for array in self.mdarrays + self.mdcontainers:
-                if array.dependsOn(device):
-                    if array.minor is not None:
-                        return _("This device is part of the RAID "
-                                 "device %s.") % (array.path,)
-                    else:
-                        return _("This device is part of a RAID device.")
-        elif device.format.type == "lvmpv":
-            if device.format.inconsistentVG:
-                return _("This device is part of an inconsistent LVM "
-                         "Volume Group.")
-            for vg in self.vgs:
-                if vg.dependsOn(device):
-                    if vg.name is not None:
-                        return _("This device is part of the LVM "
-                                 "volume group '%s'.") % (vg.name,)
-                    else:
-                        return _("This device is part of a LVM volume "
-                                 "group.")
-        elif device.format.type == "luks":
-            try:
-                luksdev = self.devicetree.getChildren(device)[0]
-            except IndexError:
-                pass
-            else:
-                return self.deviceImmutable(luksdev)
-        elif isinstance(device, PartitionDevice) and device.isExtended:
-            reasons = {}
-            for dep in self.deviceDeps(device):
-                reason = self.deviceImmutable(dep)
-                if reason:
-                    reasons[dep.path] = reason
-            if reasons:
-                msg =  _("This device is an extended partition which "
-                         "contains logical partitions that cannot be "
-                         "deleted:\n\n")
-                for dev in reasons:
-                    msg += "%s: %s" % (dev, reasons[dev])
-                return msg
-
-        return False
 
     def deviceDeps(self, device):
         return self.devicetree.getDependentDevices(device)
@@ -1293,13 +1143,6 @@ class Blivet(object):
 
         return None
 
-    def extendedPartitionsSupported(self):
-        """ Return whether any disks support extended partitions."""
-        for disk in self.partitioned:
-            if disk.format.partedDisk.supportsFeature(parted.DISK_TYPE_EXTENDED):
-                return True
-        return False
-
     def safeDeviceName(self, name):
         """ Convert a device name to something safe and return that.
 
@@ -1401,27 +1244,6 @@ class Blivet(object):
         self.__luksDevs[device.format.uuid] = passphrase
         self.devicetree._DeviceTree__luksDevs[device.format.uuid] = passphrase
         self.devicetree._DeviceTree__passphrases.append(passphrase)
-
-    def doEncryptionPassphraseRetrofits(self):
-        """ Add the global passphrase to all preexisting LUKS devices.
-
-            This establishes a common passphrase for all encrypted devices
-            in the system so that users only have to enter one passphrase
-            during system boot.
-        """
-        if not self.encryptionRetrofit:
-            return
-
-        for device in self.devices:
-            if device.format.type == "luks" and \
-               device.format._LUKS__passphrase != self.encryptionPassphrase:
-                log.info("adding new passphrase to preexisting encrypted "
-                         "device %s" % device.path)
-                try:
-                    device.format.addPassphrase(self.encryptionPassphrase)
-                except CryptoError:
-                    log.error("failed to add new passphrase to existing "
-                              "device %s" % device.path)
 
     def setupDiskImages(self):
         self.devicetree.setDiskImages(self.config.diskImages)
@@ -1635,15 +1457,6 @@ class Blivet(object):
                 errors.append(e)
 
         return (errors, warnings)
-
-    def isProtected(self, device):
-        """ Return True is the device is protected. """
-        return device.protected
-
-    def checkNoDisks(self):
-        """Check that there are valid disk devices."""
-        if not self.disks:
-            raise NoDisksError()
 
     def dumpState(self, suffix):
         """ Dump the current device list to the storage shelf. """
