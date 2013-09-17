@@ -47,17 +47,23 @@ class LVMPhysicalVolume(DeviceFormat):
     _ksMountpoint = "pv."
 
     def __init__(self, *args, **kwargs):
-        """ Create an LVMPhysicalVolume instance.
+        """
+            :keyword device: path to the block device node
+            :keyword uuid: this PV's uuid (not the VG uuid)
+            :keyword exists: indicates whether this is an existing format
+            :type exists: bool
+            :keyword vgName: the name of the VG this PV belongs to
+            :keyword vgUuid: the UUID of the VG this PV belongs to
+            :keyword peStart: offset of first physical extent
+            :type peStart: float
 
-            Keyword Arguments:
+            .. note::
 
-                device -- path to the underlying device
-                uuid -- this PV's uuid (not the VG uuid)
-                vgName -- the name of the VG this PV belongs to
-                vgUuid -- the UUID of the VG this PV belongs to
-                peStart -- offset of first physical extent
-                exists -- indicates whether this is an existing format
-
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
         """
         log_method_call(self, *args, **kwargs)
         DeviceFormat.__init__(self, *args, **kwargs)
@@ -96,7 +102,18 @@ class LVMPhysicalVolume(DeviceFormat):
         #self.vgUuid = info['vg_uuid']
 
     def create(self, *args, **kwargs):
-        """ Create the format. """
+        """ Write the formatting to the specified block device.
+
+            :keyword device: path to device node
+            :type device: str
+            :raises: FormatCreateError
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
@@ -119,7 +136,11 @@ class LVMPhysicalVolume(DeviceFormat):
         self.notifyKernel()
 
     def destroy(self, *args, **kwargs):
-        """ Destroy the format. """
+        """ Remove the formatting from the associated block device.
+
+            :raises: FormatDestroyError
+            :returns: None.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:

@@ -39,7 +39,17 @@ import logging
 log = logging.getLogger("blivet")
 
 def _getCandidateDisks(storage):
-    """ Return a list of disks with space for a default-sized partition. """
+    """ Return a list of disks to be used for autopart.
+
+        Disks must be partitioned and have a single free region large enough
+        for a default-sized (500MB) partition. They must also be in
+        :attr:`StorageDiscoveryConfig.clearPartDisks` if it is non-empty.
+
+        :param storage: a Blivet instance
+        :type storage: :class:`~.Blivet`
+        :returns: a list of partitioned disks with at least 500MB of free space
+        :rtype: list of :class:`~.devices.StorageDevice`
+    """
     disks = []
     for disk in storage.partitioned:
         if storage.config.clearPartDisks and \
@@ -61,7 +71,18 @@ def _getCandidateDisks(storage):
     return disks
 
 def _scheduleImplicitPartitions(storage, disks):
-    """ Schedule creation of a lvm/btrfs partition on each disk in disks. """
+    """ Schedule creation of a lvm/btrfs member partitions for autopart.
+
+        We create one such partition on each disk. They are not allocated until
+        later (in :func:`doPartitioning`).
+
+        :param storage: a :class:`~.Blivet` instance
+        :type storage: :class:`~.Blivet`
+        :param disks: list of partitioned disks with free space
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :returns: list of newly created (unallocated) partitions
+        :rtype: list of :class:`~.devices.PartitionDevice`
+    """
     # create a separate pv or btrfs partition for each disk with free space
     devs = []
 
@@ -92,7 +113,17 @@ def _scheduleImplicitPartitions(storage, disks):
     return devs
 
 def _schedulePartitions(storage, disks):
-    """ Schedule creation of autopart partitions. """
+    """ Schedule creation of autopart partitions.
+
+        This only schedules the requests for actual partitions.
+
+        :param storage: a :class:`~.Blivet` instance
+        :type storage: :class:`~.Blivet`
+        :param disks: list of partitioned disks with free space
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :returns: None
+        :rtype: None
+    """
     # basis for requests with requiredSpace is the sum of the sizes of the
     # two largest free regions
     all_free = getFreeRegions(disks)
@@ -197,7 +228,23 @@ def _schedulePartitions(storage, disks):
     return
 
 def _scheduleVolumes(storage, devs):
-    """ Schedule creation of autopart lvm/btrfs volumes. """
+    """ Schedule creation of autopart lvm/btrfs volumes.
+
+        Schedules encryption of member devices if requested, schedules creation
+        of the container (:class:`~.devices.LVMVolumeGroupDevice` or
+        :class:`~.devices.BTRFSVolumeDevice`) then schedules creation of the
+        autopart volume requests.
+
+        :param storage: a :class:`~.Blivet` instance
+        :type storage: :class:`~.Blivet`
+        :param devs: list of member partitions
+        :type devs: list of :class:`~.devices.PartitionDevice`
+        :returns: None
+        :rtype: None
+
+        If an appropriate bootloader stage1 device exists on the boot drive, any
+        autopart request to create another one will be skipped/discarded.
+    """
     if not devs:
         return
 
@@ -283,6 +330,24 @@ def _scheduleVolumes(storage, devs):
         storage.createDevice(dev)
 
 def doAutoPartition(storage, data):
+    """ Perform automatic partitioning.
+
+        :param storage: a :class:`~.Blivet` instance
+        :type storage: :class:`~.Blivet`
+        :param data: kickstart data
+        :type data: :class:`pykickstart.BaseHandler`
+
+        :attr:`Blivet.doAutoPart` controls whether this method creates the
+        automatic partitioning layout. :attr:`Blivet.autoPartType` controls
+        which variant of autopart used. It uses one of the pykickstart
+        AUTOPART_TYPE_* constants. The set of eligible disks is defined in
+        :attr:`StorageDiscoveryConfig.clearPartDisks`.
+
+        .. note::
+
+            Clearing of partitions is handled separately, in
+            :meth:`~.Blivet.clearPartitions`.
+    """
     log.debug("doAutoPart: %s" % storage.doAutoPart)
     log.debug("encryptedAutoPart: %s" % storage.encryptedAutoPart)
     log.debug("autoPartType: %s" % storage.autoPartType)
@@ -342,6 +407,13 @@ def partitionCompare(part1, part2):
         < 1 => x < y
           0 => x == y
         > 1 => x > y
+
+        :param part1: the first partition
+        :type part1: :class:`devices.PartitionDevice`
+        :param part2: the other partition
+        :type part2: :class:`devices.PartitionDevice`
+        :return: see above
+        :rtype: int
     """
     ret = 0
 
@@ -401,7 +473,7 @@ def partitionCompare(part1, part2):
     return ret
 
 def getNextPartitionType(disk, no_primary=None):
-    """ Find the type of partition to create next on a disk.
+    """ Return the type of partition to create next on a disk.
 
         Return a parted partition type value representing the type of the
         next partition we will create on this disk.
@@ -413,15 +485,11 @@ def getNextPartitionType(disk, no_primary=None):
         recommend creating a primary partition. This can be overridden
         with the keyword argument no_primary.
 
-        Arguments:
-
-            disk -- a parted.Disk instance representing the disk
-
-        Keyword arguments:
-
-            no_primary -- given a choice between primary and logical
-                          partitions, prefer logical
-
+        :param disk: the disk from which a partition may be allocated
+        :type disk: :class:`parted.Disk`
+        :keyword no_primary: refuse to return :const:`parted.PARTITION_NORMAL`
+        :returns: the chosen partition type
+        :rtype: a parted PARTITION_* constant
     """
     part_type = None
     extended = disk.getExtendedPartition()
@@ -474,20 +542,20 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
         free region with which to compare the best from this disk. The
         overall best region is returned.
 
-        Arguments:
-
-            disk -- the disk (a parted.Disk instance)
-            part_type -- the type of partition we want to allocate
-                         (one of parted's partition type constants)
-            req_size -- the requested size of the partition (in MB)
-
-        Keyword arguments:
-
-            boot -- indicates whether this will be a bootable partition
-                    (boolean)
-            best_free -- current best free region for this partition
-            grow -- indicates whether this is a growable request
-            start -- requested start sector for the partition
+        :param disk: the disk
+        :type disk: :class:`parted.Disk`
+        :param part_type: the type of partition we want to allocate
+        :type part_type: one of parted's PARTITION_* constants
+        :param req_size: the requested size of the partition in MB
+        :type req_size: int or float
+        :keyword start: requested start sector for the partition
+        :type start: int
+        :keyword boot: whether this will be a bootable partition
+        :type boot: bool
+        :keyword best_free: current best free region for this partition
+        :type best_free: :class:`parted.Geometry`
+        :keyword grow: indicates whether this is a growable request
+        :type grow: bool
 
     """
     log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%dMB "
@@ -550,31 +618,38 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
 def sectorsToSize(sectors, sectorSize):
     """ Convert length in sectors to size in MB.
 
-        Arguments:
-
-            sectors     -   sector count
-            sectorSize  -   sector size for the device, in bytes
+        :param sectors: sector count
+        :type sectors: int
+        :param sectorSize: sector size
+        :type sectorSize: int
+        :returns: the size
+        :rtype: float
     """
     return (sectors * sectorSize) / (1024.0 * 1024.0)
 
 def sizeToSectors(size, sectorSize):
     """ Convert size in MB to length in sectors.
 
-        Arguments:
-
-            size        -   size in MB
-            sectorSize  -   sector size for the device, in bytes
+        :param size: size in MB
+        :type size: int or float
+        :param sectorSize: sector size
+        :type sectorSize: int
+        :returns: sector count
+        :rtype: int
     """
     return (size * 1024.0 * 1024.0) / sectorSize
 
 def removeNewPartitions(disks, partitions):
-    """ Remove newly added input partitions from input disks.
+    """ Remove newly added partitions from disks.
 
-        Arguments:
+        Remove all non-existent partitions from the disks in blivet's model.
 
-            disks -- list of StorageDevice instances with DiskLabel format
-            partitions -- list of PartitionDevice instances
-
+        :param: disks: list of partitioned disks
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :param partitions: list of partitions
+        :type partitions: list of :class:`~.devices.PartitionDevice`
+        :returns: None
+        :rtype: NoneType
     """
     log.debug("removing all non-preexisting partitions %s from disk(s) %s"
                 % (["%s(id %d)" % (p.name, p.id) for p in partitions
@@ -605,18 +680,28 @@ def removeNewPartitions(disks, partitions):
             disk.format.partedDisk.removePartition(extended)
 
 def addPartition(disklabel, free, part_type, size, start=None, end=None):
-    """ Return new partition after adding it to the specified disk.
+    """ Add a new partition to a disk.
 
-        Arguments:
+        :param disklabel: the disklabel to add the partition to
+        :type disklabel: :class:`~.formats.DiskLabel`
+        :param free: the free region in which to place the new partition
+        :type free: :class:`parted.Geometry`
+        :param part_type: the partition type
+        :type part_type: a parted.PARTITION_* constant
+        :param size: size of the new partition in MB
+        :type size: int or float
+        :keyword start: starting sector for the partition
+        :type start: int
+        :keyword end: ending sector for the partition
+        :type end: int
+        :raises: :class:`~.errors.PartitioningError`
+        :returns: the newly added partitions
+        :rtype: :class:`parted.Partition`
 
-            disklabel -- disklabel instance to add partition to
-            free -- where to add the partition (parted.Geometry instance)
-            part_type -- partition type (parted.PARTITION_* constant)
-            size -- size (in MB) of the new partition
+        .. note::
 
-        The new partition will be aligned unless start/end sectors are provided.
-
-        Return value is a parted.Partition instance.
+            The new partition will be aligned using the kernel-provided optimal
+            alignment unless a start sector is provided.
 
     """
     if start is not None:
@@ -673,12 +758,10 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
 def getFreeRegions(disks):
     """ Return a list of free regions on the specified disks.
 
-        Arguments:
-
-            disks -- list of parted.Disk instances
-
-        Return value is a list of unaligned parted.Geometry instances.
-
+        :param disks: list of disks
+        :type disks: list of :class:`~.devices.Disks`
+        :returns: list of free regions
+        :rtype: list of :class:`parted.Geometry`
     """
     free = []
     for disk in disks:
@@ -689,6 +772,15 @@ def getFreeRegions(disks):
     return free
 
 def updateExtendedPartitions(storage, disks):
+    """ Reconcile extended partition changes with the DeviceTree.
+
+        :param storage: the Blivet instance
+        :type storage: :class:`~.Blivet`
+        :param disks: list of disks
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :returns: :const:`None`
+        :rtype: NoneType
+    """
     # XXX hack -- if we created any extended partitions we need to add
     #             them to the tree now
     for disk in disks:
@@ -742,14 +834,10 @@ def doPartitioning(storage):
         appropriate parted.Partition instance from their containing
         disk. All req_xxxx attributes must be unchanged.
 
-        Arguments:
-
-            storage - Main anaconda Storage instance
-
-        Keyword/Optional Arguments:
-
-            None
-
+        :param storage: Blivet instance
+        :type storage: :class:`~.Blivet`
+        :raises: :class:`~.errors.PartitioningError`
+        :returns: :const:`None`
     """
     disks = storage.partitioned
     for disk in disks:
@@ -824,16 +912,26 @@ def doPartitioning(storage):
 def allocatePartitions(storage, disks, partitions, freespace):
     """ Allocate partitions based on requested features.
 
+        :param storage: a Blivet instance
+        :type storage: :class:`~.Blivet`
+        :param disks: list of usable disks
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :param partitions: list of partitions
+        :type partitions: list of :class:`~.devices.PartitionDevice`
+        :param freespace: list of free regions on disks
+        :type freespace: list of :class:`parted.Geometry`
+        :raises: :class:`~.errors.PartitioningError`
+        :returns: :const:`None`
+
         Non-existing partitions are sorted according to their requested
         attributes, and then allocated.
 
         The basic approach to sorting is that the more specifically-
         defined a request is, the earlier it will be allocated. See
-        the function partitionCompare for details on the sorting
-        criteria.
+        :func:`partitionCompare` for details of the sorting criteria.
 
-        The PartitionDevice instances will have their name and parents
-        attributes set once they have been allocated.
+        The :class:`~.devices.PartitionDevice` instances will have their name
+        and parents attributes set once they have been allocated.
     """
     log.debug("allocatePartitions: disks=%s ; partitions=%s" %
                 ([d.name for d in disks],
@@ -1114,10 +1212,9 @@ class Request(object):
         partitions.
     """
     def __init__(self, device):
-        """ Create a Request instance.
-
-            Arguments:
-
+        """
+            :param device: the device being requested
+            :type device: :class:`~.devices.StorageDevice`
         """
         self.device = device
         self.growth = 0                     # growth in sectors
@@ -1150,12 +1247,9 @@ class Request(object):
 
 class PartitionRequest(Request):
     def __init__(self, partition):
-        """ Create a PartitionRequest instance.
-
-            Arguments:
-
-                partition -- a PartitionDevice instance
-
+        """
+            :param partition: the partition being requested
+            :type partition: :class:`~.devices.PartitionDevice`
         """
         super(PartitionRequest, self).__init__(partition)
         self.base = partition.partedPartition.geometry.length   # base sectors
@@ -1178,12 +1272,9 @@ class PartitionRequest(Request):
 
 class LVRequest(Request):
     def __init__(self, lv):
-        """ Create a LVRequest instance.
-
-            Arguments:
-
-                lv -- an LVMLogicalVolumeDevice instance
-
+        """
+            :param lv: the logical volume being requested
+            :type lv: :class:`~.devices.LVMLogicalVolumeDevice`
         """
         super(LVRequest, self).__init__(lv)
 
@@ -1207,17 +1298,11 @@ class LVRequest(Request):
 class Chunk(object):
     """ A free region from which devices will be allocated """
     def __init__(self, length, requests=None):
-        """ Create a Chunk instance.
-
-            Arguments:
-
-                length -- the length of the chunk in allocation units
-
-
-            Keyword Arguments:
-
-                requests -- list of Request instances allocated from this chunk
-
+        """
+            :param length: the length of the chunk (units vary with subclass)
+            :type length: int
+            :keyword requests: list of requests to add
+            :type requests: list of :class:`Request`
         """
         if not hasattr(self, "path"):
             self.path = None
@@ -1247,7 +1332,11 @@ class Chunk(object):
         return s
 
     def addRequest(self, req):
-        """ Add a Request to this chunk. """
+        """ Add a request to this chunk.
+
+            :param req: the request to add
+            :type req: :class:`Request`
+        """
         log.debug("adding request %d to chunk %s" % (req.device.id, self))
 
         self.requests.append(req)
@@ -1257,7 +1346,15 @@ class Chunk(object):
             self.base += req.base
 
     def reclaim(self, request, amount):
-        """ Reclaim units from a request and return them to the pool. """
+        """ Reclaim units from a request and return them to the pool.
+
+            :param request: the request to reclaim units from
+            :type request: :class:`Request`
+            :param amount: number of units to reclaim from the request
+            :type amount: int
+            :raises: ValueError
+            :returns: None
+        """
         log.debug("reclaim: %s %d (%d MB)" % (request, amount, self.lengthToSize(amount)))
         if request.growth < amount:
             log.error("tried to reclaim %d from request with %d of growth"
@@ -1305,7 +1402,15 @@ class Chunk(object):
         return size
 
     def trimOverGrownRequest(self, req, base=None):
-        """ Enforce max growth and return extra units to the pool. """
+        """ Enforce max growth and return extra units to the pool.
+
+            :param req: the request to trim
+            :type req: :class:`Request`
+            :keyword base: base unit count to adjust if req is done growing
+            :type base: int
+            :returns: the new base or None if no base was given
+            :rtype: int or None
+        """
         max_growth = self.maxGrowth(req)
         if max_growth and req.growth >= max_growth:
             if req.growth > max_growth:
@@ -1330,7 +1435,19 @@ class Chunk(object):
         pass
 
     def growRequests(self, uniform=False):
-        """ Calculate growth amounts for requests in this chunk. """
+        """ Calculate growth amounts for requests in this chunk.
+
+            :keyword uniform: grow requests uniformly instead of proportionally
+            :type uniform: bool
+
+            The default mode of growth is as follows: given a total number of
+            available units, requests receive an allotment proportional to their
+            base sizes. That means a request with base size 1000 will grow four
+            times as fast as a request with base size 250.
+
+            Under uniform growth, all requests receive an equal portion of the
+            free units.
+        """
         log.debug("Chunk.growRequests: %r" % self)
 
         self.sortRequests()
@@ -1404,17 +1521,11 @@ class Chunk(object):
 class DiskChunk(Chunk):
     """ A free region on disk from which partitions will be allocated """
     def __init__(self, geometry, requests=None):
-        """ Create a Chunk instance.
-
-            Arguments:
-
-                geometry -- parted.Geometry instance describing the free space
-
-
-            Keyword Arguments:
-
-                requests -- list of Request instances allocated from this chunk
-
+        """
+            :param geometry: the free region this chunk represents
+            :type geometry: :class:`parted.Geometry`
+            :keyword requests: list of requests to add initially
+            :type requests: list of :class:`PartitionRequest`
 
             Note: We will limit partition growth based on disklabel
             limitations for partition end sector, so a 10TB disk with an
@@ -1440,7 +1551,11 @@ class DiskChunk(Chunk):
         return s
 
     def addRequest(self, req):
-        """ Add a Request to this chunk. """
+        """ Add a request to this chunk.
+
+            :param req: the request to add
+            :type req: :class:`PartitionRequest`
+        """
         if not isinstance(req, PartitionRequest):
             raise ValueError(_("DiskChunk requests must be of type "
                              "PartitionRequest"))
@@ -1467,6 +1582,11 @@ class DiskChunk(Chunk):
         super(DiskChunk, self).addRequest(req)
 
     def maxGrowth(self, req):
+        """ Return the maximum possible growth for a request.
+
+            :param req: the request
+            :type req: :class:`PartitionRequest`
+        """
         req_end = req.device.partedPartition.geometry.end
         req_start = req.device.partedPartition.geometry.start
 
@@ -1515,17 +1635,11 @@ class DiskChunk(Chunk):
 class VGChunk(Chunk):
     """ A free region in an LVM VG from which LVs will be allocated """
     def __init__(self, vg, requests=None):
-        """ Create a VGChunk instance.
-
-            Arguments:
-
-                vg -- an LVMVolumeGroupDevice within which this chunk resides
-
-
-            Keyword Arguments:
-
-                requests -- list of Request instances allocated from this chunk
-
+        """
+            :param vg: the volume group whose free space this chunk represents
+            :type vg: :class:`~.devices.LVMVolumeGroupDevice`
+            :keyword requests: list of requests to add initially
+            :type requests: list of :class:`LVRequest`
         """
         self.vg = vg
         self.path = vg.path
@@ -1533,7 +1647,11 @@ class VGChunk(Chunk):
         super(VGChunk, self).__init__(usable_extents, requests=requests)
 
     def addRequest(self, req):
-        """ Add a Request to this chunk. """
+        """ Add a request to this chunk.
+
+            :param req: the request to add
+            :type req: :class:`LVRequest`
+        """
         if not isinstance(req, LVRequest):
             raise ValueError(_("VGChunk requests must be of type "
                              "LVRequest"))
@@ -1550,7 +1668,20 @@ class VGChunk(Chunk):
         # sort the partitions by start sector
         self.requests.sort(key=lambda r: r.device, cmp=lvCompare)
 
-    def growRequests(self):
+    def growRequests(self, uniform=False):
+        """ Calculate growth amounts for requests in this chunk.
+
+            :keyword uniform: grow requests uniformly instead of proportionally
+            :type uniform: bool
+
+            The default mode of growth is as follows: given a total number of
+            available units, requests receive an allotment proportional to their
+            base sizes. That means a request with base size 1000 will grow four
+            times as fast as a request with base size 250.
+
+            Under uniform growth, all requests receive an equal portion of the
+            free units.
+        """
         self.sortRequests()
 
         # grow the percentage-based requests
@@ -1578,23 +1709,17 @@ class VGChunk(Chunk):
                 self.base -= req.base
                 req.done = True
 
-        super(VGChunk, self).growRequests()
+        super(VGChunk, self).growRequests(uniform=uniform)
 
 
 class ThinPoolChunk(VGChunk):
     """ A free region in an LVM thin pool from which LVs will be allocated """
     def __init__(self, pool, requests=None):
-        """ Create a ThinPoolChunk instance.
-
-            Arguments:
-
-                pool -- an LVMThinPoolDevice within which this chunk resides
-
-
-            Keyword Arguments:
-
-                requests -- list of Request instances allocated from this chunk
-
+        """
+            :param pool: the thin pool whose free space this chunk represents
+            :type pool: :class:`~.devices.LVMThinPoolDevice`
+            :keyword requests: list of requests to add initially
+            :type requests: list of :class:`LVRequest`
         """
         self.vg = pool.vg   # only used for align, &c
         self.path = pool.path
@@ -1605,14 +1730,16 @@ class ThinPoolChunk(VGChunk):
 def getDiskChunks(disk, partitions, free):
     """ Return a list of Chunk instances representing a disk.
 
-        Arguments:
-
-            disk -- a StorageDevice with a DiskLabel format
-            partitions -- list of PartitionDevice instances
-            free -- list of parted.Geometry instances representing free space
+        :param disk: the disk
+        :type disk: :class:`~.devices.StorageDevice`
+        :param partitions: list of partitions
+        :type partitions: list of :class:`~.devices.PartitionDevice`
+        :param free: list of free regions
+        :type free: list of :class:`parted.Geometry`
+        :returns: list of chunks representing the disk
+        :rtype: list of :class:`DiskChunk`
 
         Partitions and free regions not on the specified disk are ignored.
-
     """
     # list of all new partitions on this disk
     disk_parts = [p for p in partitions if p.disk == disk and not p.exists]
@@ -1641,6 +1768,12 @@ class TotalSizeSet(object):
         size has been achieved.
     """
     def __init__(self, devices, size):
+        """
+            :param devices: the set of devices
+            :type devices: list of :class:`~.devices.PartitionDevice`
+            :param size: the target combined size in MB
+            :type size: int or float
+        """
         self.devices = []
         for device in devices:
             if isinstance(device, LUKSDevice):
@@ -1674,6 +1807,16 @@ class TotalSizeSet(object):
 class SameSizeSet(object):
     """ Set of device requests with a common target size. """
     def __init__(self, devices, size, grow=False, max_size=None):
+        """
+            :param devices: the set of devices
+            :type devices: list of :class:`~.devices.PartitionDevice`
+            :param size: target size for each device/request in MB
+            :type size: int or float
+            :keyword grow: whether the devices can be grown
+            :type grow: bool
+            :keyword max_size: the maximum size for growable devices in MB
+            :type max_size: int or float
+        """
         self.devices = []
         for device in devices:
             if isinstance(device, LUKSDevice):
@@ -1784,11 +1927,15 @@ def growPartitions(disks, partitions, free, size_sets=None):
         the ratio of that partition's base size to the sum of the base sizes
         of all growable partitions allocated from the chunk.
 
-        Arguments:
-
-            disks -- a list of all usable disks (DiskDevice instances)
-            partitions -- a list of all partitions (PartitionDevice instances)
-            free -- a list of all free regions (parted.Geometry instances)
+        :param disks: all usable disks
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :param partitions: all partitions
+        :type partitions: list of :class:`~.devices.PartitionDevice`
+        :param free: all free regions on disks
+        :type free: list of :class:`parted.Geometry`
+        :keyword size_sets: list of size-related partition sets
+        :type size_sets: list of :class:`TotalSizeSet` or :class:`SameSizeSet`
+        :returns: :const:`None`
     """
     log.debug("growPartitions: disks=%s, partitions=%s" %
             ([d.name for d in disks],

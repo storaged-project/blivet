@@ -39,13 +39,15 @@ class BIOSBoot(DeviceFormat):
     _minSize = 0.5                      # minimum size in MB
 
     def __init__(self, *args, **kwargs):
-        """ Create a BIOSBoot instance.
+        """
+            :keyword device: path to the block device node
+            :type device: str
+            :keyword exists: whether the formatting exists
+            :type exists: bool
 
-            Keyword Arguments:
+            .. note::
 
-                device -- path to the underlying device
-                exists -- indicates whether this is an existing format
-
+                The 'device' kwarg is required for existing formats.
         """
         DeviceFormat.__init__(self, *args, **kwargs)
 

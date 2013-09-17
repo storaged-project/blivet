@@ -47,15 +47,16 @@ class MDRaidMember(DeviceFormat):
     _ksMountpoint = "raid."
     
     def __init__(self, *args, **kwargs):
-        """ Create a MDRaidMember instance.
+        """
+            :keyword device: path to block device node
+            :keyword uuid: this member device's uuid
+            :keyword exists: whether this is an existing format
+            :type exists: bool
+            :keyword mdUuid: the uuid of the array this device belongs to
 
-            Keyword Arguments:
+            .. note::
 
-                device -- path to underlying device
-                uuid -- this member device's uuid
-                mdUuid -- the uuid of the array this device belongs to
-                exists -- indicates whether this is an existing format
-
+                The 'device' kwarg is required for existing formats.
         """
         log_method_call(self, *args, **kwargs)
         DeviceFormat.__init__(self, *args, **kwargs)
@@ -91,6 +92,11 @@ class MDRaidMember(DeviceFormat):
             self.raidMinor = info['mdMinor']
 
     def destroy(self, *args, **kwargs):
+        """ Remove the formatting from the associated block device.
+
+            :raises: FormatDestroyError
+            :returns: None.
+        """
         if not self.exists:
             raise MDMemberError("format does not exist")
 

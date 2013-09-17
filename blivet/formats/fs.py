@@ -109,7 +109,7 @@ def fsConfigFromFile(config_file):
     fs_configs[fs_attrs['type']] = fs_attrs
 
 class FS(DeviceFormat):
-    """ Filesystem class. """
+    """ Filesystem base class. """
     _type = "Abstract Filesystem Class"  # fs type name
     _mountType = None                    # like _type but for passing to mount
     _name = None
@@ -129,18 +129,25 @@ class FS(DeviceFormat):
     _fsProfileSpecifier = None           # mkfs option specifying fsprofile
 
     def __init__(self, *args, **kwargs):
-        """ Create a FS instance.
-
-            Keyword Args:
-
-                device -- path to the device containing the filesystem
-                mountpoint -- the filesystem's mountpoint
-                label -- the filesystem label
-                uuid -- the filesystem UUID
-                mountopts -- mount options for the filesystem
-                size -- the filesystem's size in MiB
-                exists -- indicates whether this is an existing filesystem
+        """
+            :keyword device: path to the block device node (required for
+                             existing filesystems)
+            :keyword mountpoint: the filesystem's planned mountpoint
+            :keyword label: the filesystem label
+            :keyword uuid: the filesystem UUID
+            :keyword mountopts: mount options for the filesystem
+            :type mountopts: str
+            :keyword size: the filesystem's size in MiB
+            :keyword exists: indicates whether this is an existing filesystem
+            :type exists: bool
                 
+            .. note::
+
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
         """
         if self.__class__ is FS:
             raise TypeError("FS is an abstract class.")
@@ -247,9 +254,10 @@ class FS(DeviceFormat):
         return buf
 
     def _getExistingSize(self, info=None):
-        """ Determine the size of this filesystem.  Filesystem must
-            exist.  Each filesystem varies, but the general procedure
-            is to run the filesystem dump or info utility and read
+        """ Determine the size of this filesystem.
+
+            Filesystem must exist.  Each filesystem varies, but the general
+            procedure is to run the filesystem dump or info utility and read
             the block size and number of blocks for the filesystem
             and compute megabytes from that.
 
@@ -278,6 +286,11 @@ class FS(DeviceFormat):
             are looking for, the command to run and arguments, or
             something else.  If you catch an exception from this method,
             assume the filesystem cannot be resized.
+
+            :keyword info: filesystem info buffer
+            :type info: str (output of :attr:`infofsProg`)
+            :returns: size of existing fs in MiB.
+            :rtype: float.
         """
         size = self._size
 
@@ -356,14 +369,9 @@ class FS(DeviceFormat):
     def doFormat(self, *args, **kwargs):
         """ Create the filesystem.
 
-            Arguments:
-
-                None
-
-            Keyword Arguments:
-
-                options -- list of options to pass to mkfs
-
+            :keyword options: options to pass to mkfs
+            :type options: list of strings
+            :raises: FormatCreateError, FSError
         """
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
@@ -407,13 +415,10 @@ class FS(DeviceFormat):
         return argv
 
     def doResize(self, *args, **kwargs):
-        """ Resize this filesystem to new size @newsize.
+        """ Resize this filesystem based on this instance's targetSize attr.
 
-            Arguments:
-
-                None
+            :raises: FSResizeError, FSError
         """
-
         if not self.exists:
             raise FSResizeError("filesystem does not exist", self.device)
 
@@ -468,6 +473,10 @@ class FS(DeviceFormat):
         return _("Unknown return code: %d.") % (rc,)
 
     def doCheck(self):
+        """ Run a filesystem check.
+
+            :raises: FSError
+        """
         if not self.exists:
             raise FSError("filesystem has not been created")
 
@@ -509,7 +518,7 @@ class FS(DeviceFormat):
                 self._supported = False
                 return
 
-        # If we successfully loaded a kernel module, for this filesystem, we
+        # If we successfully loaded a kernel module for this filesystem, we
         # also need to update the list of supported filesystems.
         update_kernel_filesystems()
 
@@ -518,7 +527,7 @@ class FS(DeviceFormat):
         ret = False
 
         if self.status:
-            raise RuntimeError("filesystem is already mounted")
+            return True
 
         # create a temp dir
         prefix = "%s.%s" % (os.path.basename(self.device), self.type)
@@ -540,15 +549,11 @@ class FS(DeviceFormat):
     def mount(self, *args, **kwargs):
         """ Mount this filesystem.
 
-            Arguments:
-
-                None
-
-            Keyword Arguments:
-
-                options -- mount options (overrides all other option strings)
-                chroot -- prefix to apply to mountpoint
-                mountpoint -- mountpoint (overrides self.mountpoint)
+            :keyword options: mount options (overrides all other option strings)
+            :type options: str.
+            :keyword chroot: prefix to apply to mountpoint
+            :keyword mountpoint: mountpoint (overrides self.mountpoint)
+            :raises: FSError
         """
         options = kwargs.get("options", "")
         chroot = kwargs.get("chroot", "/")
@@ -634,7 +639,11 @@ class FS(DeviceFormat):
         return argv 
 
     def writeLabel(self, label):
-        """ Create a label for this filesystem. """
+        """ Create a label for this filesystem.
+
+            :param label: the label text
+            :raises: FSError
+        """
         if not self.exists:
             raise FSError("filesystem has not been created")
 
@@ -773,6 +782,18 @@ class FS(DeviceFormat):
     # generically named methods so filesystems and formatted devices
     # like swap and LVM physical volumes can have a common API.
     def create(self, *args, **kwargs):
+        """ Create the filesystem on the specified block device.
+
+            :keyword device: path to device node
+            :type device: str.
+            :raises: FormatCreateError, FSError
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         if self.exists:
             raise FSError("filesystem already exists")
 
@@ -784,7 +805,19 @@ class FS(DeviceFormat):
         """ Mount the filesystem.
 
             The filesystem will be mounted at the directory indicated by
-            self.mountpoint.
+            self.mountpoint unless overridden via the 'mountpoint' kwarg.
+
+            :keyword device: device node path
+            :type device: str.
+            :keyword mountpoint: mountpoint (overrides self.mountpoint)
+            :type mountpoint: str.
+            :raises: FormatSetupError.
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
         """
         return self.mount(**kwargs)
 
@@ -880,7 +913,12 @@ class Ext2FS(FS):
             raise FSError("failed to set UUID for %s: %s" % (self.device, err))
 
     def _getMinSize(self, info=None):
-        """ Minimum size for this filesystem in MB. """
+        """ Set the minimum size for this filesystem in MiB.
+
+            :keyword info: filesystem info buffer
+            :type info: str (output of :attr:`infofsProg`)
+            :rtype: None.
+        """
         size = self._minSize
         blockSize = None
 
@@ -1050,6 +1088,23 @@ class BTRFS(FS):
         pass
 
     def setup(self, *args, **kwargs):
+        """ Mount the filesystem.
+
+            The filesystem will be mounted at the directory indicated by
+            self.mountpoint unless overridden via the 'mountpoint' kwarg.
+
+            :keyword device: device node path
+            :type device: str.
+            :keyword mountpoint: mountpoint (overrides self.mountpoint)
+            :type mountpoint: str.
+            :raises: FormatSetupError.
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
         if not self.mountpoint and "mountpoint" not in kwargs:
@@ -1306,7 +1361,12 @@ class NTFS(FS):
         return False
 
     def _getMinSize(self, info=None):
-        # try to determine the minimum size.
+        """ Set the minimum size for this filesystem in MiB.
+
+            :keyword info: filesystem info buffer
+            :type info: str (output of :attr:`infofsProg`)
+            :rtype: None
+        """
         size = self._minSize
         if self.exists and os.path.exists(self.device) and \
            util.find_program_in_path(self.resizefsProg):

@@ -57,29 +57,43 @@ log = logging.getLogger("blivet")
 class DeviceTree(object):
     """ A quasi-tree that represents the devices in the system.
 
-        The tree contains a list of device instances, which does not
-        necessarily reflect the actual state of the system's devices.
-        DeviceActions are used to perform modifications to the tree,
-        except when initially populating the tree.
+        The tree contains a list of :class:`~.devices.StorageDevice` instances,
+        which does not necessarily reflect the actual state of the system's
+        devices. :class:`~.deviceaction.DeviceAction` is used to perform
+        modifications to the tree, except when initially populating the tree.
 
-        DeviceAction instances are registered, possibly causing the
-        addition or removal of Device instances to/from the tree. The
-        DeviceActions are all reversible up to the time their execute
-        method has been called.
+        :class:`~.deviceaction.DeviceAction` instances are registered, possibly
+        causing the addition or removal of :class:`~.devices.StorageDevice`
+        instances to/from the tree. A :class:`~.deviceaction.DeviceAction`
+        is reversible up to the time its 'execute' method is called.
 
         Only one action of any given type/object pair should exist for
         any given device at any given time.
 
-        DeviceAction instances can only be registered for leaf devices,
-        except for resize actions.
+        :class:`~.deviceaction.DeviceAction` instances can only be registered
+        for leaf devices, except for resize actions.
     """
 
     def __init__(self, conf=None, passphrase=None, luksDict=None,
                  iscsi=None, dasd=None):
+        """
+
+            :keyword conf: storage discovery configuration
+            :type conf: :class:`~.StorageDiscoveryConfig`
+            :keyword passphrase: default LUKS passphrase
+            :keyword luksDict: a dict with UUID keys and passphrase values
+            :type luksDict: dict
+            :keyword iscsi: ISCSI control object
+            :type iscsi: :class:`~.iscsi.iscsi`
+            :keyword dasd: DASD control object
+            :type dasd: :class:`~.dasd.DASD`
+
+        """
         self.reset(conf, passphrase, luksDict, iscsi, dasd)
 
     def reset(self, conf=None, passphrase=None, luksDict=None,
               iscsi=None, dasd=None):
+        """ Reset the instance to its initial state. """
         # internal data members
         self._devices = []
         self._actions = []
@@ -127,7 +141,17 @@ class DeviceTree(object):
         self._cleanup = False
 
     def setDiskImages(self, images):
-        """ Set the disk images and reflect them in exclusiveDisks. """
+        """ Set the disk images and reflect them in exclusiveDisks.
+
+            :param images: dict with image name keys and filename values
+            :type images: dict
+
+            .. note::
+
+                Disk images are automatically exclusive. That means that, in the
+                presence of disk images, any local storage not associated with
+                the disk images is ignored.
+        """
         self.diskImages = images
         # disk image files are automatically exclusive
         self.exclusiveDisks = self.diskImages.keys()
@@ -261,6 +285,9 @@ class DeviceTree(object):
     def _addDevice(self, newdev):
         """ Add a device to the tree.
 
+            :param newdev: the device to add
+            :type newdev: a subclass of :class:`~.devices.StorageDevice`
+
             Raise ValueError if the device's identifier is already
             in the list.
         """
@@ -288,7 +315,16 @@ class DeviceTree(object):
     def _removeDevice(self, dev, force=None, moddisk=True):
         """ Remove a device from the tree.
 
-            Only leaves may be removed.
+            :param dev: the device to remove
+            :type dev: a subclass of :class:`~.devices.StorageDevice`
+            :keyword force: whether to force removal of a non-leaf device
+            :type force: bool
+            :keyword moddisk: update parent disk's format (partitions only)
+            :type moddisk: bool
+
+            .. note::
+
+                Only leaves may be removed.
         """
         if dev not in self._devices:
             raise ValueError("Device '%s' not in tree" % dev.name)
@@ -338,6 +374,9 @@ class DeviceTree(object):
     def registerAction(self, action):
         """ Register an action to be performed at a later time.
 
+            :param action: the action
+            :type action: :class:`~.deviceaction.DeviceAction`
+
             Modifications to the Device instance are handled before we
             get here.
         """
@@ -363,6 +402,9 @@ class DeviceTree(object):
     def cancelAction(self, action):
         """ Cancel a registered action.
 
+            :param action: the action
+            :type action: :class:`~.deviceaction.DeviceAction`
+
             This will unregister the action and do any required
             modifications to the device list.
 
@@ -383,12 +425,21 @@ class DeviceTree(object):
                     devid=None):
         """ Find all actions that match all specified parameters.
 
-            Keyword arguments:
+            A value of None for any of the keyword arguments indicates that any
+            value is acceptable for that field.
 
-                device -- device to match (Device, or None to match any)
-                type -- action type to match (string, or None to match any)
-                object -- operand type to match (string, or None to match any)
-                path -- device path to match (string, or None to match any)
+            :keyword device: device to match
+            :type device: :class:`~.devices.StorageDevice` or None
+            :keyword type: action type to match (eg: "create", "destroy")
+            :type type: str or None
+            :keyword object: operand type to match (eg: "device" or "format")
+            :type object: str or None
+            :keyword path: device path to match
+            :type path: str or None
+            :keyword devid: device id to match
+            :type devid: int or None
+            :returns: a list of matching actions
+            :rtype: list of :class:`~.deviceaction.DeviceAction`
 
         """
         if device is None and type is None and object is None and \
@@ -424,6 +475,9 @@ class DeviceTree(object):
         """ Return a list of devices that depend on dep.
 
             The list includes both direct and indirect dependents.
+
+            :param dep: the device whose dependents we are looking for
+            :type dep: :class:`~.devices.StorageDevice`
         """
         dependents = []
 
@@ -442,14 +496,10 @@ class DeviceTree(object):
     def isIgnored(self, info):
         """ Return True if info is a device we should ignore.
 
-            Arguments:
-
-                info -- a dict representing a udev db entry
-
-            TODO:
-
-                - filtering of SAN/FC devices
-                - filtering by driver?
+            :param info: udevdb device entry
+            :type info: dict
+            :returns: whether the device will be ignored
+            :rtype: bool
 
         """
         sysfs_path = udev_device_get_sysfs_path(info)
@@ -513,12 +563,20 @@ class DeviceTree(object):
         # FIXME: check for virtual devices whose slaves are on the ignore list
 
     def udevDeviceIsDisk(self, info):
-        # We want exclusiveDisks to operate on anything that could be
-        # considered a directly usable disk, ie: fwraid array, mpath, or disk.
-        #
-        # Unfortunately, since so many things are represented as disks by
-        # udev/sysfs, we have to define what is a disk in terms of what is
-        # not a disk.
+        """ Return True if the udev device looks like a disk.
+
+            :param info: udevdb device entry
+            :type info: dict
+            :returns: whether the device is a disk
+            :rtype: bool
+
+            We want exclusiveDisks to operate on anything that could be
+            considered a directly usable disk, ie: fwraid array, mpath, or disk.
+
+            Unfortunately, since so many things are represented as disks by
+            udev/sysfs, we have to define what is a disk in terms of what is
+            not a disk.
+        """
         return (udev_device_is_disk(info) and
                 not (udev_device_is_cdrom(info) or
                      udev_device_is_partition(info) or
@@ -1764,6 +1822,20 @@ class DeviceTree(object):
                 devicelibs.lvm.lvm_cc_addFilterRejectRegexp(pv.name)
 
     def hide(self, device):
+        """ Hide the specified device.
+
+            :param device: the device to hide
+            :type device: :class:`~.devices.StorageDevice`
+
+            If the device is not a leaf device, all devices that depend on it
+            will be hidden leaves-first until the device is a leaf device.
+
+            .. note::
+
+                Hiding a device will cancel any actions scheduled on that device
+                or any device that depends on it.
+
+        """
         if device in self._hidden:
             return
 
@@ -1805,6 +1877,18 @@ class DeviceTree(object):
             self.dasd.removeDASD(device)
 
     def unhide(self, device):
+        """ Restore a device's visibility.
+
+            :param device: the device to restore/unhide
+            :type device: :class:`~.devices.StorageDevice`
+
+            .. note::
+
+                Actions canceled while hiding the device are not rescheduled
+                automatically.
+
+        """
+
         # the hidden list should be in leaves-first order
         for hidden in reversed(self._hidden):
             if hidden == device or hidden.dependsOn(device):
@@ -1900,7 +1984,15 @@ class DeviceTree(object):
         self.backupConfigs(restore=True)
 
     def populate(self, cleanupOnly=False):
-        """ Locate all storage devices. """
+        """ Locate all storage devices.
+
+            Everything should already be active. We just go through and gather
+            details as needed and set up the relations between various devices.
+
+            Devices excluded via disk filtering (or because of disk images) are
+            scanned just the rest, but then they are hidden at the end of this
+            process.
+        """
         self.backupConfigs()
         if cleanupOnly:
             self._cleanup = True
@@ -2017,6 +2109,15 @@ class DeviceTree(object):
                 log.error("setup of %s failed: %s" % (device.name, msg))
 
     def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
+        """ Return a list of devices with a matching sysfs path.
+
+            :param path: the sysfs path to match
+            :type path: str
+            :keyword incomplete: include incomplete devices in results
+            :type incomplete: bool
+            :keyword hidden: include hidden devices in results
+            :type hidden: bool
+        """
         if not path:
             return None
 
@@ -2037,6 +2138,15 @@ class DeviceTree(object):
         return found
 
     def getDeviceByUuid(self, uuid, incomplete=False, hidden=False):
+        """ Return a list of devices with a matching UUID.
+
+            :param uuid: the UUID to match
+            :type uuid: str
+            :keyword incomplete: include incomplete devices in results
+            :type incomplete: bool
+            :keyword hidden: include hidden devices in results
+            :type hidden: bool
+        """
         if not uuid:
             return None
 
@@ -2060,6 +2170,15 @@ class DeviceTree(object):
         return found
 
     def getDevicesBySerial(self, serial, incomplete=False, hidden=False):
+        """ Return a list of devices with a matching serial.
+
+            :param serial: the serial to match
+            :type serial: str
+            :keyword incomplete: include incomplete devices in results
+            :type incomplete: bool
+            :keyword hidden: include hidden devices in results
+            :type hidden: bool
+        """
         devices = self._devices[:]
         if hidden:
             devices += self._hidden
@@ -2079,6 +2198,15 @@ class DeviceTree(object):
         return retval
 
     def getDeviceByLabel(self, label, incomplete=False, hidden=False):
+        """ Return a device with a matching filesystem label.
+
+            :param label: the filesystem label to match
+            :type label: str
+            :keyword incomplete: search incomplete devices
+            :type incomplete: bool
+            :keyword hidden: search hidden devices
+            :type hidden: bool
+        """
         if not label:
             return None
 
@@ -2103,6 +2231,15 @@ class DeviceTree(object):
         return found
 
     def getDeviceByName(self, name, incomplete=False, hidden=False):
+        """ Return a device with a matching name.
+
+            :param name: the name to look for
+            :type name: str
+            :keyword incomplete: search incomplete devices
+            :type incomplete: bool
+            :keyword hidden: search hidden devices
+            :type hidden: bool
+        """
         log_method_call(self, name=name)
         if not name:
             log_method_return(self, None)
@@ -2129,6 +2266,15 @@ class DeviceTree(object):
         return found
 
     def getDeviceByPath(self, path, preferLeaves=True, incomplete=False, hidden=False):
+        """ Return a device with a matching path.
+
+            :param path: the path to match
+            :type path: str
+            :keyword incomplete: include incomplete devices in results
+            :type incomplete: bool
+            :keyword hidden: include hidden devices in results
+            :type hidden: bool
+        """
         log_method_call(self, path=path)
         if not path:
             log_method_return(self, None)
@@ -2166,20 +2312,35 @@ class DeviceTree(object):
         return found
 
     def getDevicesByType(self, device_type):
+        """ Return a list of devices with a matching device type.
+
+            :param device_type: the type to match
+            :type device_type: str
+        """
         # TODO: expand this to catch device format types
         return [d for d in self._devices if d.type == device_type]
 
     def getDevicesByInstance(self, device_class):
+        """ Return a list of devices with a matching device class.
+
+            :param path: the device class to match
+            :type path: class
+        """
         return [d for d in self._devices if isinstance(d, device_class)]
 
     def getDeviceByID(self, id_num):
+        """ Return a device with specified device id.
+
+            :param id_num: the id to look for
+            :type id_num: int
+        """
         for device in self._devices:
             if device.id == id_num:
                 return device
 
     @property
     def devices(self):
-        """ List of device instances """
+        """ List of devices currently in the tree """
         devices = []
         for device in self._devices:
             if not getattr(device, "complete", True):
@@ -2206,7 +2367,7 @@ class DeviceTree(object):
 
     @property
     def uuids(self):
-        """ Dict with uuid keys and Device values. """
+        """ Dict with uuid keys and :class:`~.devices.Device` values. """
         uuids = {}
         for dev in self._devices:
             try:
@@ -2253,6 +2414,23 @@ class DeviceTree(object):
         return [c for c in self._devices if device in c.parents]
 
     def resolveDevice(self, devspec, blkidTab=None, cryptTab=None, options=None):
+        """ Return the device matching the provided device specification.
+
+            The spec can be anything from a device name (eg: 'sda3') to a device
+            node path (eg: '/dev/mapper/fedora-root' or '/dev/dm-2') to
+            something like 'UUID=xyz-tuv-qrs' or 'LABEL=rootfs'.
+
+            :param devspec: a string describing a block device
+            :type devspec: str
+            :keyword blkidTab: blkid info
+            :type blkidTab: :class:`~.BlkidTab`
+            :keyword cryptTab: crypto info
+            :type cryptTab: :class:`~.CryptTab`
+            :keyword options: mount options
+            :type options: str
+            :returns: the device
+            :rtype: :class:`~.devices.StorageDevice` or None
+        """
         # find device in the tree
         device = None
         if devspec.startswith("UUID="):

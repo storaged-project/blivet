@@ -58,15 +58,13 @@ class DMRaidMember(DeviceFormat):
     _hidden = True                      # hide devices with this formatting?
 
     def __init__(self, *args, **kwargs):
-        """ Create a DeviceFormat instance.
-
-            Keyword Arguments:
-
-                device -- path to the underlying device
-                uuid -- this format's UUID
-                exists -- indicates whether this is an existing format
-
-            On initialization this format is like DeviceFormat
+        """
+                :keyword device: path to the underlying device (required)
+                :type device: str
+                :keyword uuid: this format's UUID
+                :type uuid: str
+                :keyword exists: whether this is an existing format
+                :type exists: bool
 
         """
         log_method_call(self, *args, **kwargs)

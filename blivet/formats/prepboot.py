@@ -41,19 +41,36 @@ class PPCPRePBoot(DeviceFormat):
     _minSize = 4                        # minimum size in MB
 
     def __init__(self, *args, **kwargs):
-        """ Create a PRePBoot instance.
+        """
+            :keyword device: path to block device node
+            :keyword exists: whether this is an existing format
+            :type exists: bool
 
-            Keyword Arguments:
+            .. note::
 
-                device -- path to the underlying device
-                exists -- indicates whether this is an existing format
-
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
         """
         DeviceFormat.__init__(self, *args, **kwargs)
 
     def create(self, *args, **kwargs):
+        """ Write the formatting to the specified block device.
+
+            :keyword device: path to device node
+            :type device: str
+            :raises: FormatCreateError
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         if self.exists:
-            raise FSError("PReP Boot format already exists")
+            raise FormatCreateError("PReP Boot format already exists")
 
         DeviceFormat.create(self, *args, **kwargs)
 

@@ -60,26 +60,19 @@ def get_default_filesystem_type():
     raise DeviceFormatError("None of %s is supported by your kernel" % ",".join(default_fstypes))
 
 def getFormat(fmt_type, *args, **kwargs):
-    """ Return a DeviceFormat instance based on fmt_type and args.
+    """ Return an instance of the appropriate DeviceFormat class.
+ 
+        :param fmt_type: The name of the formatting type
+        :type fmt_type: str.
+        :return: the format instance
+        :rtype: :class:`DeviceFormat`
+        :raises: ValueError
+ 
+        .. note::
 
-        Given a device format type and a set of constructor arguments,
-        return a DeviceFormat instance.
-
-        Return None if no suitable format class is found.
-
-        Arguments:
-
-            fmt_type -- the name of the format type (eg: 'ext3', 'swap')
-
-        Keyword Arguments:
-
-            The keyword arguments may vary according to the format type,
-            but here is the common set:
-
-            device -- path to the device on which the format resides
-            uuid -- the UUID of the (preexisting) formatted device
-            exists -- whether or not the format exists on the device
-
+            Any additional arguments will be passed on to the constructor for
+            the format class. See the various :class:`DeviceFormat` subclasses
+            for an exhaustive list of the arguments that can be passed.
     """
     fmt_class = get_device_format_class(fmt_type)
     fmt = None
@@ -103,8 +96,10 @@ def getFormat(fmt_type, *args, **kwargs):
 def collect_device_format_classes():
     """ Pick up all device format classes from this directory.
 
-        Note: Modules must call register_device_format(FormatClass) in
-              order for the format class to be picked up.
+        .. note::
+
+            Modules must call :func:`register_device_format` to make format
+            classes available to :func:`getFormat`.
     """
     dir = os.path.dirname(__file__)
     for module_file in os.listdir(dir):
@@ -120,7 +115,13 @@ def collect_device_format_classes():
                 log.debug(format_exc())
 
 def get_device_format_class(fmt_type):
-    """ Return an appropriate format class based on fmt_type. """
+    """ Return an appropriate format class.
+
+        :param fmt_type: The name of the format type.
+        :type fmt_type: str.
+        :returns: The chosen DeviceFormat class
+        :rtype: class.
+    """
     if not device_formats:
         collect_device_format_classes()
 
@@ -141,7 +142,12 @@ def get_device_format_class(fmt_type):
     return fmt
 
 class DeviceFormat(object):
-    """ Generic device format. """
+    """ Generic device format.
+
+        This represents the absence of recognized formatting. That could mean a
+        device is uninitialized, has had zeros written to it, or contains some
+        valid formatting that this module does not support.
+    """
     _type = None
     _name = N_("Unknown")
     _udevTypes = []
@@ -161,14 +167,21 @@ class DeviceFormat(object):
     _ksMountpoint = None
 
     def __init__(self, *args, **kwargs):
-        """ Create a DeviceFormat instance.
+        """
+            :keyword device: The path to the device node.
+            :type device: str
+            :keyword uuid: the formatting's UUID.
+            :type uuid: str
+            :keyword exists: Whether the formatting exists. (default: False)
+            :raises: ValueError
 
-            Keyword Arguments:
+            .. note::
 
-                device -- path to the underlying device
-                uuid -- this format's UUID
-                exists -- indicates whether this is an existing format
-
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
         """
         self.device = kwargs.get("device")
         self.uuid = kwargs.get("uuid")
@@ -298,6 +311,18 @@ class DeviceFormat(object):
         return self._majorminor
 
     def create(self, *args, **kwargs):
+        """ Write the formatting to the specified block device.
+
+            :keyword device: path to device node
+            :type device: str.
+            :raises: FormatCreateError
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         # allow late specification of device path
@@ -309,6 +334,11 @@ class DeviceFormat(object):
             raise FormatCreateError("invalid device specification", self.device)
 
     def destroy(self, *args, **kwargs):
+        """ Remove the formatting from the associated block device.
+
+            :raises: FormatDestroyError
+            :returns: None.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         try:
@@ -327,6 +357,18 @@ class DeviceFormat(object):
         self.exists = False
 
     def setup(self, *args, **kwargs):
+        """ Activate the formatting.
+
+            :keyword device: device node path
+            :type device: str.
+            :raises: FormatSetupError.
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
@@ -345,6 +387,7 @@ class DeviceFormat(object):
             raise FormatSetupError("invalid device specification")
 
     def teardown(self, *args, **kwargs):
+        """ Deactivate the formatting. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 

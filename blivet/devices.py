@@ -20,79 +20,6 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-
-"""
-    Device classes for use by anaconda.
-
-    This is the hierarchy of device objects that anaconda will use for
-    managing storage devices in the system. These classes will
-    individually make use of external support modules as needed to
-    perform operations specific to the type of device they represent.
-
-    TODO:
-        - see how to do network devices (NetworkManager may help)
-          - perhaps just a wrapper here
-        - document return values of all methods/functions
-        - find out what other kinds of wild and crazy devices we need to
-          represent here (iseries? xen? more mainframe? mac? ps?)
-            - PReP
-              - this is a prime candidate for a PseudoDevice
-            - DASD
-            - ZFCP
-            - XEN
-
-    What specifications do we allow?              new        existing
-        partitions                              
-            usage                                  +            +
-                filesystem, partition type are implicit
-            mountpoint                             +            +
-            size
-                exact                              +            -
-                range                              +            -
-                resize                             -            +
-            format                                 -            +
-            encryption                             +            +
-
-            disk                                                 
-                exact                              +            -
-                set                                +            -
-                    how will we specify this?
-                        partition w/ multiple parents cannot otherwise occur
-            primary                                +            -
-
-        mdraid sets
-            filesystem (*)                         +            +
-            mountpoint                             +            +
-            size?                                                
-            format                                 -            +
-            encryption                             +            +
-
-            level                                  +            ? 
-            device minor                           +            ? 
-            member devices                         +            ? 
-            spares                                 +            ? 
-            name?
-            bitmap? (boolean)                      +            -
-
-        volume groups
-            name                                   +            - 
-            member pvs                             +            +
-            pesize                                 +            ?
-
-        logical volumes
-            filesystem                             +            +
-            mountpoint                             +            +
-            size
-                exact                              +            ?
-            format                                 -            +
-            encryption                             +            +
-
-            name                                   +            ?
-            vgname                                 +            ?
-
-
-"""
-
 import os
 import math
 import copy
@@ -138,6 +65,13 @@ device_majors = get_device_majors()
 
 
 def devicePathToName(devicePath):
+    """ Return a name based on the given path to a device node.
+
+        :param devicePath: the path to a device node
+        :type devicePath: str
+        :returns: the name
+        :rtype: str
+    """
     if devicePath.startswith("/dev/"):
         name = devicePath[5:]
     else:
@@ -153,6 +87,13 @@ def devicePathToName(devicePath):
 
 
 def deviceNameToDiskByPath(deviceName=None):
+    """ Return a /dev/disk/by-path/ symlink path for the given device name.
+
+        :param deviceName: the device name
+        :type deviceName: str
+        :returns: the full path to a /dev/disk/by-path/ symlink, or None
+        :rtype: str or NoneType
+    """
     if not deviceName:
         return ""
 
@@ -208,16 +149,11 @@ class Device(object):
     _services = []
 
     def __init__(self, name, parents=None):
-        """ Create a Device instance.
-
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                parents -- a list of required Device instances
-
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`Device` instances
         """
         self._name = name
         if parents is None:
@@ -276,10 +212,12 @@ class Device(object):
         return d
 
     def removeChild(self):
+        """ Decrement the child counter for this device. """
         log_method_call(self, name=self.name, kids=self.kids)
         self.kids -= 1
 
     def addChild(self):
+        """ Increment the child counter for this device. """
         log_method_call(self, name=self.name, kids=self.kids)
         self.kids += 1
 
@@ -300,18 +238,36 @@ class Device(object):
         raise NotImplementedError("destroy method not defined for Device")
 
     def setupParents(self, orig=False):
-        """ Run setup method of all parent devices. """
+        """ Run setup method of all parent devices.
+
+            :keyword orig: set up original format instead of current format
+            :type orig: bool
+        """
         log_method_call(self, name=self.name, orig=orig, kids=self.kids)
         for parent in self.parents:
             parent.setup(orig=orig)
 
     def teardownParents(self, recursive=None):
-        """ Run teardown method of all parent devices. """
+        """ Run teardown method of all parent devices.
+
+            :keyword recursive: tear down all ancestor devices recursively
+            :type recursive: bool
+        """
         for parent in self.parents:
             parent.teardown(recursive=recursive)
 
     def dependsOn(self, dep):
-        """ Return True if this device depends on dep. """
+        """ Return True if this device depends on dep.
+
+            This device depends on another device if the other device is an
+            ancestor of this device. For example, a PartitionDevice depends on
+            the DiskDevice on which it resides.
+
+            :param dep: the other device
+            :type dep: :class:`Device`
+            :returns: whether this device depends on 'dep'
+            :rtype: bool
+        """
         # XXX does a device depend on itself?
         if dep in self.parents:
             return True
@@ -327,12 +283,7 @@ class Device(object):
 
     @property
     def status(self):
-        """ This device's status.
-
-            For now, this should return a boolean:
-                True    the device is open and ready for use
-                False   the device is not open
-        """
+        """ Is this device currently active and ready for use? """
         return False
 
     @property
@@ -357,6 +308,7 @@ class Device(object):
 
     @property
     def ancestors(self):
+        """ A list of all of this device's ancestors, including itself. """
         l = set([self])
         for p in [d for d in self.parents if d not in l]:
             l.update(set(p.ancestors))
@@ -392,6 +344,7 @@ class Device(object):
 
     @property
     def mediaPresent(self):
+        """ True if this device contains usable media. """
         return True
 
 
@@ -399,9 +352,8 @@ class NetworkStorageDevice(object):
     """ Virtual base class for network backed storage devices """
 
     def __init__(self, host_address=None, nic=None):
-        """ Create a NetworkStorage Device instance. Note this class is only
-            to be used as a baseclass and then only with multiple inheritance.
-            The only correct use is:
+        """ Note this class is only to be used as a baseclass and then only with
+            multiple inheritance. The only correct use is:
             class MyStorageDevice(StorageDevice, NetworkStorageDevice):
 
             The sole purpose of this class is to:
@@ -410,10 +362,10 @@ class NetworkStorageDevice(object):
             2) To be able to get the host address of the host (server) backing
                the storage *or* the NIC through which the storage is connected
 
-            Arguments:
-
-                host_address -- host address of the backing server
-                nic -- nic to which the storage is bound
+            :keyword host_address: host address of the backing server
+            :type host_address: str
+            :keyword nic: NIC to which the block device is bound
+            :type nic: str
         """
         self.host_address = host_address
         self.nic = nic
@@ -426,10 +378,6 @@ class StorageDevice(Device):
         path attribute, although it is not guaranteed to be useful, or
         even present, unless the StorageDevice's setup method has been
         run.
-
-        StorageDevice instances can optionally contain a filesystem,
-        represented by an FS instance. A StorageDevice's create method
-        should create a filesystem if one has been specified.
     """
     _type = "blivet"
     _devDir = "/dev"
@@ -442,25 +390,33 @@ class StorageDevice(Device):
                  size=None, major=None, minor=None,
                  sysfsPath='', parents=None, exists=False, serial=None,
                  vendor="", model="", bus=""):
-        """ Create a StorageDevice instance.
-
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                size -- the device's size (units/format TBD)
-                major -- the device major
-                minor -- the device minor
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                uuid -- universally unique identifier
-                parents -- a list of required Device instances
-                serial -- the ID_SERIAL_SHORT for this device
-                vendor -- the manufacturer of this Device
-                model -- manufacturer's device model string
-                bus -- the interconnect this device uses
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword uuid: universally unique identifier (device -- not fs)
+            :type uuid: str
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword major: the device major
+            :type major: int
+            :keyword minor: the device minor
+            :type minor: int
+            :keyword serial: the ID_SERIAL_SHORT for this device
+            :type serial: str
+            :keyword vendor: the manufacturer of this Device
+            :type vendor: str
+            :keyword model: manufacturer's device model string
+            :type model: str
+            :keyword bus: the interconnect this device uses
+            :type bus: str
 
         """
         # allow specification of individual parents
@@ -1014,7 +970,12 @@ class StorageDevice(Device):
             data.mountpoint += str(self.id)
 
 class DiskDevice(StorageDevice):
-    """ A disk """
+    """ A local/generic disk.
+
+        This is not the only kind of device that is treated as a disk. More
+        useful than checking isinstance(device, DiskDevice) is checking
+        device.isDisk.
+    """
     _type = "disk"
     _partitionable = True
     _isDisk = True
@@ -1023,26 +984,29 @@ class DiskDevice(StorageDevice):
                  size=None, major=None, minor=None, sysfsPath='',
                  parents=None, serial=None, vendor="", model="", bus="",
                  exists=True):
-        """ Create a DiskDevice instance.
-
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                size -- the device's size (units/format TBD)
-                major -- the device major
-                minor -- the device minor
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                parents -- a list of required Device instances
-                removable -- whether or not this is a removable device
-                serial -- the ID_SERIAL_SHORT for this device
-                vendor -- the manufacturer of this Device
-                model -- manufacturer's device model string
-                bus -- the interconnect this device uses
-
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword uuid: universally unique identifier (device -- not fs)
+            :type uuid: str
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword removable: whether or not this is a removable device
+            :type removable: bool
+            :keyword serial: the ID_SERIAL_SHORT for this device
+            :type serial: str
+            :keyword vendor: the manufacturer of this Device
+            :type vendor: str
+            :keyword model: manufacturer's device model string
+            :type model: str
+            :keyword bus: the interconnect this device uses
+            :type bus: str
 
             DiskDevices always exist.
         """
@@ -1109,38 +1073,49 @@ class PartitionDevice(StorageDevice):
                  major=None, minor=None, bootable=None,
                  sysfsPath='', parents=None, exists=False,
                  partType=None, primary=False, weight=0):
-        """ Create a PartitionDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
 
-            Arguments:
+            For existing partitions only:
 
-                name -- the device name (generally a device node's basename)
+            :keyword major: the device major
+            :type major: long
+            :keyword minor: the device minor
+            :type minor: long
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
 
-            Keyword Arguments:
+            For non-existent partitions only:
 
-                exists -- indicates whether this is an existing device
-                format -- the device's format (DeviceFormat instance)
+            :keyword partType: parted type constant, eg:
+                                :const:`parted.PARTITION_NORMAL`
+            :type partType: parted partition type constant
+            :keyword grow: whether or not to grow the partition
+            :type grow: bool
+            :keyword maxsize: max size for growable partitions in MB
+            :type maxsize: int or float
+            :keyword start: start sector (see note, below)
+            :type start: long
+            :keyword end: end sector (see note, below)
+            :type end: long
+            :keyword bootable: whether the partition is bootable
+            :type bootable: bool
+            :keyword weight: an initial sorting weight to assign
+            :type weight: int
 
-                For existing partitions:
+            .. note::
 
-                    parents -- the disk that contains this partition
-                    major -- the device major
-                    minor -- the device minor
-                    sysfsPath -- sysfs device path
-
-                For new partitions:
-
-                    partType -- primary,extended,&c (as parted constant)
-                    grow -- whether or not to grow the partition
-                    maxsize -- max size for growable partitions (in MB)
-                    size -- the device's size (in MB)
-                    start -- start sector (see note, below)
-                    end -- end sector (see note, below)
-                    bootable -- whether the partition is bootable
-                    parents -- a list of potential containing disks
-                    weight -- an initial sorting weight to assign
-
-            NOTE: If start/end sectors are specified they will not be adjusted
-                  for optimal alignment. It is up to the caller to do that.
+                If a start sector is specified the partition will not be
+                adjusted for optimal alignment. That is up to the caller.
         """
         self.req_disks = []
         self.req_partType = None
@@ -1794,21 +1769,23 @@ class DMDevice(StorageDevice):
 
     def __init__(self, name, format=None, size=None, dmUuid=None,
                  target=None, exists=False, parents=None, sysfsPath=''):
-        """ Create a DMDevice instance.
-
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                target -- the device-mapper target type (string)
-                size -- the device's size (units/format TBD)
-                dmUuid -- the device's device-mapper UUID
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                parents -- a list of required Device instances
-                exists -- indicates whether this is an existing device
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword dmUuid: device-mapper UUID
+            :type dmUuid: str
+            :keyword target: device mapper table/target name (eg: "linear")
+            :type target: str
         """
         StorageDevice.__init__(self, name, format=format, size=size,
                                exists=exists,
@@ -1911,20 +1888,21 @@ class DMLinearDevice(DMDevice):
 
     def __init__(self, name, format=None, size=None, dmUuid=None,
                  exists=False, parents=None, sysfsPath=''):
-        """ Create a DMLinearDevice instance.
-
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                size -- the device's size (units/format TBD)
-                dmUuid -- the device's device-mapper UUID
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                parents -- a list of required Device instances
-                exists -- indicates whether this is an existing device
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword dmUuid: device-mapper UUID
+            :type dmUuid: str
         """
         if not parents:
             raise ValueError("DMLinearDevice requires a backing block device")
@@ -1975,19 +1953,19 @@ class DMCryptDevice(DMDevice):
 
     def __init__(self, name, format=None, size=None, uuid=None,
                  exists=False, sysfsPath='', parents=None):
-        """ Create a DMCryptDevice instance.
-
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                size -- the device's size (units/format TBD)
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                parents -- a list of required Device instances
-                exists -- indicates whether this is an existing device
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
         """
         DMDevice.__init__(self, name, format=format, size=size,
                           parents=parents, sysfsPath=sysfsPath,
@@ -2000,20 +1978,21 @@ class LUKSDevice(DMCryptDevice):
 
     def __init__(self, name, format=None, size=None, uuid=None,
                  exists=False, sysfsPath='', parents=None):
-        """ Create a LUKSDevice instance.
-
-            Arguments:
-
-                name -- the device name
-
-            Keyword Arguments:
-
-                size -- the device's size in MB
-                uuid -- the device's UUID
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                parents -- a list of required Device instances
-                exists -- indicates whether this is an existing device
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword uuid: the device UUID
+            :type uuid: str
         """
         DMCryptDevice.__init__(self, name, format=format, size=size,
                                parents=parents, sysfsPath=sysfsPath,
@@ -2059,28 +2038,32 @@ class LVMVolumeGroupDevice(DMDevice):
     def __init__(self, name, parents=None, size=None, free=None,
                  peSize=None, peCount=None, peFree=None, pvCount=None,
                  uuid=None, exists=False, sysfsPath=''):
-        """ Create a LVMVolumeGroupDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword peSize: physical extent size
+            :type peSize: int or float
 
-            Arguments:
+            For existing VG's only:
 
-                name -- the device name (generally a device node's basename)
-                parents -- a list of physical volumes (StorageDevice)
-
-            Keyword Arguments:
-
-                peSize -- physical extent size (in MB)
-                exists -- indicates whether this is an existing device
-                sysfsPath -- sysfs device path
-
-                For existing VG's only:
-
-                    size -- the VG's size (in MB)
-                    free -- amount of free space in the VG
-                    peFree -- number of free extents
-                    peCount -- total number of extents
-                    pvCount -- number of PVs in this VG
-                    uuid -- the VG's UUID
-
+            :keyword size: the VG's size
+            :type size: int or float
+            :keyword free -- amount of free space in the VG
+            :type free: int or float
+            :keyword peFree: number of free extents
+            :type peFree: int
+            :keyword peCount -- total number of extents
+            :type peCount: int
+            :keyword pvCount: number of PVs in this VG
+            :type pvCount: int
+            :keyword uuid: the VG UUID
+            :type uuid: str
         """
         self.pvClass = get_device_format_class("lvmpv")
         if not self.pvClass:
@@ -2510,31 +2493,43 @@ class LVMLogicalVolumeDevice(DMDevice):
                  format=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
                  singlePV=False):
-        """ Create a LVMLogicalVolumeDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword uuid: the device UUID
+            :type uuid: str
 
-            Arguments:
+            For existing LVs only:
 
-                name -- the device name (generally a device node's basename)
-                vgdev -- volume group (LVMVolumeGroupDevice instance)
+            :keyword copies: number of copies in the vg (>1 for mirrored lvs)
+            :type copies: int
+            :keyword logSize: size of log volume (for mirrored lvs)
+            :type logSize: int or float
+            :keyword snapshotSpace: sum of sizes of snapshots of this lv
+            :type snapshotSpace: int or float
+            :keyword singlePV: if true, maps this lv to a single pv
+            :type singlePV: bool
+            :keyword segType: segment type (eg: "linear", "raid1")
+            :type segType: str
 
-            Keyword Arguments:
+            For non-existent LVs only:
 
-                size -- the device's size (in MB)
-                uuid -- the device's UUID
-                copies -- number of copies in the vg (>1 for mirrored lvs)
-                logSize -- size of log volume (for mirrored lvs)
-                snapshotSpace -- sum of sizes of snapshots of this lv
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                exists -- indicates whether this is an existing device
-                singlePV -- if true, maps this lv to a single pv
-                segType -- segment type (eg: "linear", "raid1")
-
-                For new (non-existent) LVs only:
-
-                    grow -- whether to grow this LV
-                    maxsize -- maximum size for growable LV (in MB)
-                    percent -- percent of VG space to take
+            :keyword grow: whether to grow this LV
+            :type grow: bool
+            :keyword maxsize: maximum size for growable LV
+            :type maxsize: int or float
+            :keyword percent -- percent of VG space to take
+            :type percent: int
 
         """
         if self.__class__.__name__ == "LVMLogicalVolumeDevice":
@@ -2802,29 +2797,36 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                  format=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
                  metadatasize=None, chunksize=None, segType=None):
-        """ Create a LVMLogicalVolumeDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword uuid: the device UUID
+            :type uuid: str
+            :keyword segType: segment type
+            :type segType: str
 
-            Arguments:
+            For non-existent pools only:
 
-                name -- the device name (generally a device node's basename)
-                parents -- vg (LVMVolumeGroupDevice instance)
-
-            Keyword Arguments:
-
-                size -- the device's size (in MB)
-                uuid -- the device's UUID
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                exists -- indicates whether this is an existing device
-
-                For new (non-existent) LVs only:
-
-                    grow -- whether to grow this LV
-                    maxsize -- maximum size for growable LV (in MB)
-                    percent -- percent of VG space to take
-                    metadatasize -- the size of the metadata LV (in MB)
-                    chunksize -- chunk size for the pool (in MB)
-
+            :keyword grow: whether to grow this LV
+            :type grow: bool
+            :keyword maxsize: maximum size for growable LV
+            :type maxsize: int or float
+            :keyword percent: percent of VG space to take
+            :type percent: int
+            :keyword metadatasize: the size of the metadata LV
+            :type metadatasize: int or float
+            :keyword chunksize: chunk size for the pool
+            :type chunksize: int or float
         """
         if metadatasize is not None and \
            not lvm.is_valid_thin_pool_metadata_size(metadatasize):
@@ -2955,23 +2957,28 @@ class MDRaidArrayDevice(StorageDevice):
                  memberDevices=None, totalDevices=None,
                  uuid=None, format=None, exists=False, metadataVersion=None,
                  parents=None, sysfsPath=''):
-        """ Create a MDRaidArrayDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword uuid: the device UUID
+            :type uuid: str
 
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                level -- the device's RAID level (a string, eg: '1' or 'raid1')
-                metadataVersion -- the version of the device's md metadata
-                parents -- list of member devices (StorageDevice instances)
-                size -- the device's size (units/format TBD)
-                uuid -- the device's UUID
-                minor -- the device minor
-                sysfsPath -- sysfs device path
-                format -- a DeviceFormat instance
-                exists -- indicates whether this is an existing device
+            :keyword level: the device's RAID level
+            :type level: str (eg: "raid1")
+            :keyword metadataVersion: the version of the device's md metadata
+            :type metadataVersion: str (eg: "0.90")
+            :keyword minor: the device minor (obsolete?)
+            :type minor: int
         """
         StorageDevice.__init__(self, name, format=format, exists=exists,
                                major=major, minor=minor, size=size,
@@ -3488,19 +3495,22 @@ class DMRaidArrayDevice(DMDevice):
 
     def __init__(self, name, raidSet=None, format=None,
                  size=None, parents=None, sysfsPath=''):
-        """ Create a DMRaidArrayDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword raidSet: the RaidSet object from block
+            :type raidSet: :class:`block.RaidSet`
 
-            Arguments:
-
-                name -- the dmraid name also the device node's basename
-
-            Keyword Arguments:
-
-                raidSet -- the RaidSet object from block
-                parents -- a list of the member devices
-                sysfsPath -- sysfs device path
-                size -- the device's size
-                format -- a DeviceFormat instance
+            DMRaidArrayDevices always exist. Blivet cannot create or destroy
+            them.
         """
         if isinstance(parents, list):
             for parent in parents:
@@ -3598,19 +3608,22 @@ class MultipathDevice(DMDevice):
 
     def __init__(self, name, format=None, size=None, serial=None,
                  parents=None, sysfsPath=''):
-        """ Create a MultipathDevice instance.
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfsPath: sysfs device path
+            :type sysfsPath: str
+            :keyword serial: the device's serial number
+            :type serial: str
 
-            Arguments:
-
-                name -- the device name (generally a device node's basename)
-
-            Keyword Arguments:
-
-                sysfsPath -- sysfs device path
-                size -- the device's size
-                format -- a DeviceFormat instance
-                parents -- a list of the backing devices (Device instances)
-                serial -- the device's serial number
+            MultipathDevices always exist. Blivet cannot create or destroy
+            them.
         """
 
         DMDevice.__init__(self, name, format=format, size=size,
@@ -3703,13 +3716,9 @@ class NoDevice(StorageDevice):
     _type = "nodev"
 
     def __init__(self, format=None):
-        """ Create a NoDevice instance.
-
-            Arguments:
-
-            Keyword Arguments:
-
-                format -- a DeviceFormat instance
+        """
+            :keyword format: the device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
         """
         if format:
             name = format.device
@@ -3783,18 +3792,17 @@ class FileDevice(StorageDevice):
 
     def __init__(self, path, format=None, size=None,
                  exists=False, parents=None):
-        """ Create a FileDevice instance.
-
-            Arguments:
-
-                path -- full path to the file
-
-            Keyword Arguments:
-
-                format -- a DeviceFormat instance
-                size -- the file size (units TBD)
-                parents -- a list of required devices (Device instances)
-                exists -- indicates whether this is an existing device
+        """
+            :param path: full path to the file
+            :type path: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
         """
         if not path.startswith("/"):
             raise ValueError("FileDevice requires an absolute path")
@@ -3887,19 +3895,17 @@ class LoopDevice(StorageDevice):
 
     def __init__(self, name=None, format=None, size=None, sysfsPath=None,
                  exists=False, parents=None):
-        """ Create a LoopDevice instance.
-
-            Arguments:
-
-                name -- the device's name
-
-            Keyword Arguments:
-
-                format -- a DeviceFormat instance
-                size -- the device's size in MB
-                parents -- a list of required devices (Device instances)
-                exists -- indicates whether this is an existing device
-
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
 
             Loop devices always exist.
         """
@@ -3972,6 +3978,29 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
     _packages = ["iscsi-initiator-utils", "dracut-network"]
 
     def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword node: ???
+            :type node: str
+            :keyword ibft: use iBFT
+            :type ibft: bool
+            :keyword nic: name of NIC to use
+            :type nic: str
+            :keyword initiator: initiator name
+            :type initiator: str
+            :keyword fw_name: qla4xxx partial offload
+            :keyword fw_address: qla4xxx partial offload
+            :keyword fw_port: qla4xxx partial offload
+        """
         self.node = kwargs.pop("node")
         self.ibft = kwargs.pop("ibft")
         self.nic = kwargs.pop("nic")
@@ -4037,6 +4066,20 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
     _packages = ["fcoe-utils", "dracut-network"]
 
     def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword nic: name of NIC to use
+            :keyword identifier: ???
+        """
         self.nic = kwargs.pop("nic")
         self.identifier = kwargs.pop("identifier")
         DiskDevice.__init__(self, device, **kwargs)
@@ -4116,6 +4159,21 @@ class ZFCPDiskDevice(DiskDevice):
     _type = "zfcp"
 
     def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword hba_id: ???
+            :keyword wwpn: ???
+            :keyword fcp_lun: ???
+        """
         self.hba_id = kwargs.pop("hba_id")
         self.wwpn = kwargs.pop("wwpn")
         self.fcp_lun = kwargs.pop("fcp_lun")
@@ -4144,6 +4202,21 @@ class DASDDevice(DiskDevice):
     _type = "dasd"
 
     def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size in MB
+            :type size: int or float
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword busid: bus ID
+            :keyword opts: options
+            :type opts: dict with option name keys and option value values
+        """
         self.busid = kwargs.pop('busid')
         self.opts = kwargs.pop('opts')
         DiskDevice.__init__(self, device, **kwargs)
@@ -4209,6 +4282,14 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
     _packages = ["dracut-network"]
 
     def __init__(self, device, format=None, parents=None):
+        """
+            :param device: the device name (generally a device node's basename)
+            :type device: str
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+        """
         # we could make host/ip, path, &c but will anything use it?
         StorageDevice.__init__(self, device, format=format, parents=parents)
         NetworkStorageDevice.__init__(self, device.split(":")[0])

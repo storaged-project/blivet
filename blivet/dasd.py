@@ -213,7 +213,4 @@ class DASD:
             self._completedCylinders += 1.0
             callback_data.set(self._completedCylinders / self.totalCylinders)
 
-# Create DASD singleton
-DASD = DASD()
-
 # vim:tw=78:ts=4:et:sw=4

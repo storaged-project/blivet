@@ -41,7 +41,7 @@ log = logging.getLogger("blivet")
 
 
 class LUKS(DeviceFormat):
-    """ A LUKS device. """
+    """ LUKS """
     _type = "luks"
     _name = N_("LUKS")
     _lockedName = N_("Encrypted")
@@ -52,20 +52,32 @@ class LUKS(DeviceFormat):
     _packages = ["cryptsetup"]          # required packages
 
     def __init__(self, *args, **kwargs):
-        """ Create a LUKS instance.
+        """
+            :keyword device: the path to the underlying device
+            :keyword uuid: the LUKS UUID
+            :keyword exists: indicates whether this is an existing format
+            :type exists: bool
+            :keyword name: the name of the mapped device
+            :keyword passphrase: device passphrase
+            :type passphrase: str
+            :keyword key_file: path to a file containing a key
+            :type key_file: str
+            :keyword cipher: cipher mode
+            :type cipher: str
+            :keyword key_size: key size in bits
+            :type key_size: int
+            :keyword escrow_cert: certificate (contents) to use for key escrow
+            :type escrow_cert: str
+            :keyword add_backup_passphrase: generate a backup passphrase?
+            :type add_backup_passphrase: bool.
 
-            Keyword Arguments:
+            .. note::
 
-                device -- the path to the underlying device
-                name -- the name of the mapped device
-                uuid -- this device's UUID
-                passphrase -- device passphrase (string)
-                key_file -- path to a file containing a key (string)
-                cipher -- cipher mode string
-                key_size -- key size in bits
-                exists -- indicates whether this is an existing format
-                escrow_cert -- certificate to use for key escrow
-                add_backup_passphrase -- generate a backup passphrase?
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
         """
         log_method_call(self, *args, **kwargs)
         DeviceFormat.__init__(self, *args, **kwargs)
@@ -154,7 +166,18 @@ class LUKS(DeviceFormat):
         raise NotImplementedError("probe method not defined for LUKS")
 
     def setup(self, *args, **kwargs):
-        """ Open, or set up, the format. """
+        """ Open the encrypted block device.
+
+            :keyword device: device node path
+            :type device: str.
+            :raises: FormatSetupError.
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device, mapName=self.mapName,
                         type=self.type, status=self.status)
         if not self.configured:
@@ -180,7 +203,18 @@ class LUKS(DeviceFormat):
             crypto.luks_close(self.mapName)
 
     def create(self, *args, **kwargs):
-        """ Create the format. """
+        """ Write the formatting to the specified block device.
+
+            :keyword device: path to device node
+            :type device: str.
+            :raises: FormatCreateError
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.hasKey:
@@ -204,7 +238,11 @@ class LUKS(DeviceFormat):
             self.notifyKernel()
 
     def destroy(self, *args, **kwargs):
-        """ Create the format. """
+        """ Remove the formatting from the associated block device.
+
+            :raises: FormatDestroyError
+            :returns: None.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         self.teardown()

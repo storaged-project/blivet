@@ -45,14 +45,13 @@ class DiskLabel(DeviceFormat):
     _supported = False                 # is supported
 
     def __init__(self, *args, **kwargs):
-        """ Create a DiskLabel instance.
-
-            Keyword Arguments:
-
-                labelType -- type of disklabel to create
-                device -- path to the underlying device
-                exists -- indicates whether this is an existing format
-
+        """
+            :keyword device: full path to the block device node
+            :type device: str
+            :keyword labelType: type of disklabel to create
+            :type labelType: str
+            :keyword exists: whether the formatting exists
+            :type exists: bool
         """
         log_method_call(self, *args, **kwargs)
         DeviceFormat.__init__(self, *args, **kwargs)
@@ -231,25 +230,6 @@ class DiskLabel(DeviceFormat):
         """ Device status. """
         return False
 
-    def setup(self, *args, **kwargs):
-        """ Open, or set up, a device. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        if not self.exists:
-            raise DeviceFormatError("format has not been created")
-
-        if self.status:
-            return
-
-        DeviceFormat.setup(self, *args, **kwargs)
-
-    def teardown(self, *args, **kwargs):
-        """ Close, or tear down, a device. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        if not self.exists:
-            raise DeviceFormatError("format has not been created")
-
     def create(self, *args, **kwargs):
         """ Create the device. """
         log_method_call(self, device=self.device,
@@ -305,15 +285,23 @@ class DiskLabel(DeviceFormat):
         else:
             self.updateOrigPartedDisk()
 
-    def addPartition(self, *args, **kwargs):
-        partition = kwargs.get("partition", None)
-        if not partition:
-            partition = args[0]
+    def addPartition(self, partition, constraint=None):
+        """ Add a partition to the disklabel.
+
+            :param partition: partition from which to get geom, type (required)
+            :type partition: parted.Partition.
+            :keyword constraint: constraint to use
+            :type constraint: parted.Constraint.
+
+            .. note::
+
+                This does not add the :class:`parted.Partition` instance you
+                pass in. The geometry and type are taken from that instance and
+                used to create a new :class:`parted.Partition` to add to the
+                disklabel.
+        """
         geometry = partition.geometry
-        constraint = kwargs.get("constraint", None)
-        if not constraint and len(args) > 1:
-            constraint = args[1]
-        elif not constraint:
+        if not constraint:
             constraint = parted.Constraint(exactGeom=geometry)
 
         new_partition = parted.Partition(disk=self.partedDisk,
@@ -323,6 +311,17 @@ class DiskLabel(DeviceFormat):
                                      constraint=constraint)
 
     def removePartition(self, partition):
+        """ Remove a partition from the disklabel.
+
+            :param partition: the partition to remove
+            :type partition: parted.Partition.
+
+            .. note::
+
+                Unlike :meth:`addPartition`, the actual partition instance
+                passed is what will be removed from the disklabel.
+
+        """
         self.partedDisk.removePartition(partition)
 
     @property

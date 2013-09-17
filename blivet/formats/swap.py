@@ -46,16 +46,22 @@ class SwapSpace(DeviceFormat):
     _maxSize = 128 * 1024
 
     def __init__(self, *args, **kwargs):
-        """ Create a SwapSpace instance.
+        """
+            :keyword device: path to the block device node
+            :keyword uuid: this swap space's uuid
+            :keyword exists: whether this is an existing format
+            :type exists: bool
+            :keyword label: this swap space's label
+            :keyword priority: this swap space's priority
+            :type priority: int
 
-            Keyword Arguments:
+            .. note::
 
-                device -- path to the underlying device
-                uuid -- this swap space's uuid
-                label -- this swap space's label
-                priority -- this swap space's priority
-                exists -- indicates whether this is an existing format
-
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the 'device'
+                attribute be set before the :meth:`~.SwapSpace.create` method
+                runs. You can specify the device at the last moment by via the
+                'device' kwarg to the :meth:`~.SwapSpace.create` method.
         """
         log_method_call(self, *args, **kwargs)
         DeviceFormat.__init__(self, *args, **kwargs)
@@ -120,7 +126,18 @@ class SwapSpace(DeviceFormat):
         return self.exists and swap.swapstatus(self.device)
 
     def setup(self, *args, **kwargs):
-        """ Open, or set up, a device. """
+        """ Activate the formatting.
+
+            :keyword device: device node path
+            :type device: str.
+            :raises: FormatSetupError.
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:
@@ -143,17 +160,22 @@ class SwapSpace(DeviceFormat):
             swap.swapoff(self.device)
 
     def create(self, *args, **kwargs):
-        """ Create the device. """
+        """ Write the formatting to the specified block device.
+
+            :keyword device: path to device node
+            :type device: str.
+            :raises: FormatCreateError
+            :returns: None.
+
+            .. :note::
+
+                If a device node path is passed to this method it will overwrite
+                any previously set value of this instance's "device" attribute.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        force = kwargs.get("force")
-        if not force and self.exists:
+        if self.exists:
             raise SwapSpaceError("format already exists")
-
-        if force:
-            self.teardown()
-        elif self.status:
-            raise SwapSpaceError("device exists and is active")
 
         try:
             DeviceFormat.create(self, *args, **kwargs)

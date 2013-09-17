@@ -1,5 +1,4 @@
 # __init__.py
-# Entry point for anaconda's storage configuration module.
 #
 # Copyright (C) 2009, 2010, 2011, 2012, 2013  Red Hat, Inc.
 #
@@ -95,6 +94,7 @@ import logging
 log = logging.getLogger("blivet")
 
 def enable_installer_mode():
+    """ Configure the module for use by anaconda (OS installer). """
     global isys
     global ROOT_PATH
     global shortProductName
@@ -238,13 +238,17 @@ class StorageDiscoveryConfig(object):
         self.initializeDisks = False
         self.protectedDevSpecs = []
         self.diskImages = {}
-        self.mpathFriendlyNames = True
 
         # Whether clearPartitions removes scheduled/non-existent devices and
         # disklabels depends on this flag.
         self.clearNonExistent = False
 
     def update(self, ksdata):
+        """ Update configuration from ksdata source.
+
+            :param ksdata: kickstart data used as data source
+            :type ksdata: :class:`pykickstart.Handler`
+        """
         self.ignoredDisks = ksdata.ignoredisk.ignoredisk[:]
         self.exclusiveDisks = ksdata.ignoredisk.onlyuse[:]
         self.clearPartType = ksdata.clearpart.type
@@ -256,11 +260,9 @@ class StorageDiscoveryConfig(object):
 class Blivet(object):
     """ Top-level class for managing storage configuration. """
     def __init__(self, ksdata=None):
-        """ Create a Blivet instance.
-
-            Keyword Arguments:
-
-                ksdata        -   a pykickstart Handler instance
+        """
+            :keyword ksdata: kickstart data store
+            :type ksdata: :class:`pykickstart.Handler`
         """
         self.ksdata = ksdata
         self._bootloader = None
@@ -303,6 +305,7 @@ class Blivet(object):
         self.services = set()
 
     def doIt(self):
+        """ Commit queued changes to disk. """
         self.devicetree.processActions()
         if not flags.installer_mode:
             return
@@ -365,11 +368,13 @@ class Blivet(object):
 
     @property
     def nextID(self):
+        """ Used for creating unique placeholder names. """
         id = self._nextID
         self._nextID += 1
         return id
 
     def shutdown(self):
+        """ Deactivate all devices (installer_mode only). """
         try:
             self.devicetree.teardownAll()
         except Exception as e:
@@ -378,9 +383,14 @@ class Blivet(object):
     def reset(self, cleanupOnly=False):
         """ Reset storage configuration to reflect actual system state.
 
-            This should rescan from scratch but not clobber user-obtained
-            information like passphrases, iscsi config, &c
+            This will cancel any queued actions and rescan from scratch but not
+            clobber user-obtained information like passphrases, iscsi config, &c
 
+            :keyword cleanupOnly: prepare the tree only to deactivate devices
+            :type cleanupOnly: bool
+
+            See :meth:`devicetree.Devicetree.populate` for more information
+            about the cleanupOnly keyword argument.
         """
         log.info("resetting Blivet (version %s) instance %s" % (__version__, self))
         if flags.installer_mode:
@@ -467,7 +477,7 @@ class Blivet(object):
     def disks(self):
         """ A list of the disks in the device tree.
 
-            Ignored disks are not included, as are disks with no media present.
+            Ignored disks are excluded, as are disks with no media present.
 
             This is based on the current state of the device tree and
             does not necessarily reflect the actual on-disk state of the
@@ -548,12 +558,24 @@ class Blivet(object):
 
     @property
     def thinlvs(self):
+        """ A list of the LVM Thin Logical Volumes in the device tree.
+
+            This is based on the current state of the device tree and
+            does not necessarily reflect the actual on-disk state of the
+            system's disks.
+        """
         thin = self.devicetree.getDevicesByType("lvmthinlv")
         thin.sort(key=lambda d: d.name)
         return thin
 
     @property
     def thinpools(self):
+        """ A list of the LVM Thin Pool Logical Volumes in the device tree.
+
+            This is based on the current state of the device tree and
+            does not necessarily reflect the actual on-disk state of the
+            system's disks.
+        """
         pools = self.devicetree.getDevicesByType("lvmthinpool")
         pools.sort(key=lambda d: d.name)
         return pools
@@ -605,6 +627,12 @@ class Blivet(object):
 
     @property
     def btrfsVolumes(self):
+        """ A list of the BTRFS volumes in the device tree.
+
+            This is based on the current state of the device tree and
+            does not necessarily reflect the actual on-disk state of the
+            system's disks.
+        """
         return sorted(self.devicetree.getDevicesByType("btrfs volume"),
                       key=lambda d: d.name)
 
@@ -622,6 +650,21 @@ class Blivet(object):
         return swaps
 
     def shouldClear(self, device, **kwargs):
+        """ Return True if a clearpart settings say a device should be cleared.
+
+            :param device: the device (required)
+            :type device: :class:`~.devices.StorageDevice`
+            :keyword clearPartType: overrides :attr:`self.config.clearPartType`
+            :type clearPartType: int
+            :keyword clearPartDisks: overrides
+                                     :attr:`self.config.clearPartDisks`
+            :type clearPartDisks: list
+            :keyword clearPartDevices: overrides
+                                       :attr:`self.config.clearPartDevices`
+            :type clearPartDevices: list
+            :returns: whether or not clearPartitions should remove this device
+            :rtype: bool
+        """
         clearPartType = kwargs.get("clearPartType", self.config.clearPartType)
         clearPartDisks = kwargs.get("clearPartDisks",
                                     self.config.clearPartDisks)
@@ -701,6 +744,14 @@ class Blivet(object):
         return True
 
     def recursiveRemove(self, device):
+        """ Remove a device after removing its dependent devices.
+
+            If the device is not a leaf, all of its dependents are removed
+            recursively until it is a leaf device. At that point the device is
+            removed, unless it is a disk. If the device is a disk, its
+            formatting is removed by no attempt is made to actually remove the
+            disk device.
+        """
         log.debug("removing %s" % device.name)
         devices = self.deviceDeps(device)
 
@@ -724,17 +775,7 @@ class Blivet(object):
             self.destroyDevice(device)
 
     def clearPartitions(self):
-        """ Clear partitions and dependent devices from disks.
-
-            Arguments:
-
-                None
-
-            NOTES:
-
-                - Needs some error handling
-
-        """
+        """ Clear partitions and dependent devices from disks. """
         # Sort partitions by descending partition number to minimize confusing
         # things like multiple "destroy sda5" actions due to parted renumbering
         # partitions. This can still happen through the UI but it makes sense to
@@ -768,7 +809,14 @@ class Blivet(object):
         """ (Re)initialize a disk by creating a disklabel on it.
 
             The disk should not contain any partitions except perhaps for a
-            magic partitions on mac and sun disklabels.
+            magic partitions on mac and sun disklabels. If the disk does contain
+            partitions other than the disklabel-type-specific "magic" partitions
+            ValueError will be raised.
+
+            :param disk: the disk to initialize
+            :type disk: :class:`~.devices.StorageDevice`
+            :returns None:
+            :raises: ValueError
         """
         # first, remove magic mac/sun partitions from the parted Disk
         if disk.partitioned:
@@ -822,6 +870,18 @@ class Blivet(object):
             disks and clearPartType allow specifying a set of disks other than
             self.disks and a clearPartType value other than
             self.config.clearPartType.
+
+            :keyword disks: overrides :attr:`disks`
+            :type disks: list
+            :keyword clearPartType: overrides :attr:`self.config.clearPartType`
+            :type clearPartType: int
+            :returns: dict with disk name keys and tuple (disk, fs) free values
+            :rtype: dict
+
+            .. note::
+
+                The free space values are :class:`~.size.Size` instances.
+
         """
         from size import Size
         if disks is None:
@@ -865,13 +925,32 @@ class Blivet(object):
 
     @property
     def names(self):
+        """ A list of all of the known in-use device names. """
         return self.devicetree.names
 
     def deviceDeps(self, device):
+        """ Return a list of the devices that depend on the specified device.
+
+            :param device: the subtree root device
+            :type device: :class:`~.devices.StorageDevice`
+            :returns: list of dependent devices
+            :rtype: list
+        """
         return self.devicetree.getDependentDevices(device)
 
     def newPartition(self, *args, **kwargs):
-        """ Return a new PartitionDevice instance for configuring. """
+        """ Return a new (unallocated) PartitionDevice instance.
+
+            :keyword fmt_type: format type
+            :type fmt_type: str
+            :keyword fmt_args: arguments for format constructor
+            :type fmt_args: dict
+            :keyword mountpoint: mountpoint for format (filesystem)
+            :type mountpoint: str
+
+            All other arguments are passed on to the
+            :class:`~.devices.PartitionDevice` constructor.
+        """
         if kwargs.has_key("fmt_type"):
             kwargs["format"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=kwargs.pop("mountpoint",
@@ -895,7 +974,23 @@ class Blivet(object):
         return PartitionDevice(name, *args, **kwargs)
 
     def newMDArray(self, *args, **kwargs):
-        """ Return a new MDRaidArrayDevice instance for configuring. """
+        """ Return a new MDRaidArrayDevice instance.
+
+            :keyword fmt_type: format type
+            :type fmt_type: str
+            :keyword fmt_args: arguments for format constructor
+            :type fmt_args: dict
+            :keyword mountpoint: mountpoint for format (filesystem)
+            :type mountpoint: str
+            :returns: the new md array device
+            :rtype: :class:`~.devices.MDRaidArrayDevice`
+
+            All other arguments are passed on to the
+            :class:`~.devices.MDRaidArrayDevice` constructor.
+
+            If a name is not specified, one will be generated based on the
+            format type, mountpoint, hostname, and/or product name.
+        """
         if kwargs.has_key("fmt_type"):
             kwargs["format"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=kwargs.pop("mountpoint",
@@ -919,7 +1014,17 @@ class Blivet(object):
         return MDRaidArrayDevice(name, *args, **kwargs)
 
     def newVG(self, *args, **kwargs):
-        """ Return a new LVMVolumeGroupDevice instance. """
+        """ Return a new LVMVolumeGroupDevice instance.
+
+            :returns: the new volume group device
+            :rtype: :class:`~.devices.LVMVolumeGroupDevice`
+
+            All arguments are passed on to the
+            :class:`~.devices.LVMVolumeGroupDevice` constructor.
+
+            If a name is not specified, one will be generated based on the
+            hostname, and/or product name.
+        """
         pvs = kwargs.pop("parents", [])
         for pv in pvs:
             if pv not in self.devices:
@@ -945,7 +1050,32 @@ class Blivet(object):
         return LVMVolumeGroupDevice(name, pvs, *args, **kwargs)
 
     def newLV(self, *args, **kwargs):
-        """ Return a new LVMLogicalVolumeDevice instance. """
+        """ Return a new LVMLogicalVolumeDevice instance.
+
+            :keyword fmt_type: format type
+            :type fmt_type: str
+            :keyword fmt_args: arguments for format constructor
+            :type fmt_args: dict
+            :keyword mountpoint: mountpoint for format (filesystem)
+            :type mountpoint: str
+            :keyword thin_pool: whether to create a thin pool
+            :type thin_pool: bool
+            :keyword thin_volume: whether to create a thin volume
+            :type thin_volume: bool
+            :returns: the new device
+            :rtype: :class:`~.devices.LVMLogicalVolumeDevice`
+
+            All other arguments are passed on to the appropriate
+            :class:`~.devices.LVMLogicalVolumeDevice` constructor.
+
+            If a name is not specified, one will be generated based on the
+            format type and/or mountpoint.
+
+            .. note::
+
+                If you are creating a thin volume, the parents kwarg should
+                contain the pool -- not the vg.
+        """
         thin_volume = kwargs.pop("thin_volume", False)
         thin_pool = kwargs.pop("thin_pool", False)
         vg = kwargs.get("parents", [None])[0]
@@ -998,7 +1128,30 @@ class Blivet(object):
         return device_class(name, *args, **kwargs)
 
     def newBTRFS(self, *args, **kwargs):
-        """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice. """
+        """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice.
+
+            :keyword fmt_args: arguments for format constructor
+            :type fmt_args: dict
+            :keyword mountpoint: mountpoint for format (filesystem)
+            :type mountpoint: str
+            :keyword subvol: whether this is a subvol (as opposed to a volume)
+            :type subvol: bool
+            :returns: the new device
+            :rtype: :class:`~.devices.BTRFSDevice`
+
+            All other arguments are passed on to the appropriate
+            :class:`~.devices.BTRFSDevice` constructor.
+
+            For volumes, the label is the same as the name. If a name/label is
+            not specified, one will be generated based on the hostname and/or
+            product name.
+
+            .. note::
+
+                If you are creating a subvolume, the parents kwarg should
+                contain the volume you want to contain the subvolume.
+
+        """
         log.debug("newBTRFS: args = %s ; kwargs = %s" % (args, kwargs))
         name = kwargs.pop("name", None)
         if args:
@@ -1046,6 +1199,24 @@ class Blivet(object):
         return device
 
     def newBTRFSSubVolume(self, *args, **kwargs):
+        """ Return a new BRFSSubVolumeDevice.
+
+            :keyword fmt_args: arguments for format constructor
+            :type fmt_args: dict
+            :keyword mountpoint: mountpoint for format (filesystem)
+            :type mountpoint: str
+            :returns: the new device
+            :rtype: :class:`~.devices.BTRFSSubVolumeDevice`
+
+            All other arguments are passed on to the
+            :class:`~.devices.BTRFSSubVolumeDevice` constructor.
+
+            .. note::
+
+                Since you are creating a subvolume, the parents kwarg should
+                contain the volume you want to contain the subvolume.
+
+        """
         kwargs["subvol"] = True
         return self.newBTRFS(*args, **kwargs)
 
@@ -1056,15 +1227,21 @@ class Blivet(object):
     def createDevice(self, device):
         """ Schedule creation of a device.
 
-            TODO: We could do some things here like assign the next
-                  available raid minor if one isn't already set.
+            :param device: the device to schedule creation of
+            :type device: :class:`~.devices.StorageDevice`
+            :rtype: None
         """
         self.devicetree.registerAction(ActionCreateDevice(device))
         if device.format.type:
             self.devicetree.registerAction(ActionCreateFormat(device))
 
     def destroyDevice(self, device):
-        """ Schedule destruction of a device. """
+        """ Schedule destruction of a device.
+
+            :param device: the device to schedule destruction of
+            :type device: :class:`~.devices.StorageDevice`
+            :rtype: None
+        """
         if device.format.exists and device.format.type:
             # schedule destruction of any formatting while we're at it
             self.devicetree.registerAction(ActionDestroyFormat(device))
@@ -1073,12 +1250,29 @@ class Blivet(object):
         self.devicetree.registerAction(action)
 
     def formatDevice(self, device, format):
-        """ Schedule formatting of a device. """
+        """ Schedule formatting of a device.
+
+            :param device: the device to create the formatting on
+            :type device: :class:`~.devices.StorageDevice`
+            :param format: the format to create on the device
+            :type format: :class:`~.formats.DeviceFormat`
+            :rtype: None
+
+            A format destroy action will be scheduled first, so it is not
+            necessary to create and schedule an
+            :class:`~.deviceaction.ActionDestroyFormat` prior to calling this
+            method.
+        """
         self.devicetree.registerAction(ActionDestroyFormat(device))
         self.devicetree.registerAction(ActionCreateFormat(device, format))
 
     def resetDevice(self, device):
-        """ Cancel all scheduled actions and reset formatting. """
+        """ Cancel all scheduled actions and reset formatting.
+
+            :param device: the device to reset
+            :type device: :class:`~.devices.StorageDevice`
+            :rtype: None
+        """
         actions = self.devicetree.findActions(device=device)
         for action in reversed(actions):
             self.devicetree.cancelAction(action)
@@ -1087,6 +1281,17 @@ class Blivet(object):
         device.format = copy.copy(device.originalFormat)
 
     def resizeDevice(self, device, new_size):
+        """ Schedule a resize of a device and its formatting, if any.
+
+            :param device: the device to resize
+            :type device: :class:`~.devices.StorageDevice`
+            :param new_size: the new target size for the device
+            :type new_size: :class:`~.size.Size`
+            :rtype: None
+
+            If the device has formatting that is recognized as being resizable
+            an action will be scheduled to resize it as well.
+        """
         classes = []
         if device.resizable:
             classes.append(ActionResizeDevice)
@@ -1162,7 +1367,13 @@ class Blivet(object):
         return tmp
 
     def suggestContainerName(self, hostname=None, prefix=""):
-        """ Return a reasonable, unused device name. """
+        """ Return a reasonable, unused device name.
+
+            :keyword hostname: the system's hostname
+            :keyword prefix: a prefix for the container name
+            :returns: the suggested name
+            :rtype: str
+        """
         if not prefix:
             prefix = shortProductName
 
@@ -1195,7 +1406,19 @@ class Blivet(object):
 
     def suggestDeviceName(self, parent=None, swap=None,
                                   mountpoint=None, prefix=""):
-        """ Return a suitable, unused name for a new logical volume. """
+        """ Return a suitable, unused name for a new device.
+
+            :keyword parent: the parent device
+            :type parent: :class:`~.devices.StorageDevice`
+            :keyword swap: will this be a swap device
+            :type swap: bool
+            :keyword mountpoint: the device's mountpoint
+            :type mountpoint: str
+            :keyword prefix: device name prefix
+            :type prefix: str
+            :returns: the suggested name
+            :rtype: str
+        """
         body = ""
         if mountpoint:
             if mountpoint == "/":
@@ -1250,6 +1473,7 @@ class Blivet(object):
 
     @property
     def fileSystemFreeSpace(self):
+        """ Combined free space in / and /usr as :class:`~.size.Size`. """
         mountpoints = ["/", "/usr"]
         free = 0
         btrfs_volumes = []
@@ -1275,6 +1499,8 @@ class Blivet(object):
 
     def sanityCheck(self):
         """ Run a series of tests to verify the storage configuration.
+
+            This is installer-specific.
 
             This function is called at the end of partitioning so that
             we can make sure you don't have anything silly (like no /,
@@ -1479,6 +1705,7 @@ class Blivet(object):
         return list(pkgs)
 
     def write(self):
+        """ Write out all storage-related configuration files. """
         if not os.path.isdir("%s/etc" % ROOT_PATH):
             os.mkdir("%s/etc" % ROOT_PATH)
 
@@ -1699,26 +1926,14 @@ class Blivet(object):
     def factoryDevice(self, device_type, size, **kwargs):
         """ Schedule creation of a device based on a top-down specification.
 
-            Arguments:
+            :param device_type: device type constant
+            :type device_type: int (:const:`~.devicefactory.DEVICE_TYPE_*`)
+            :param size: requested size
+            :type size: :class:`~.size.Size`
+            :returns: the newly configured device
+            :rtype: :class:`~.devices.StorageDevice`
 
-                device_type         an AUTOPART_TYPE constant (lvm|btrfs|plain)
-                size                device's requested size
-
-            Keyword arguments:
-
-                mountpoint          the device's mountpoint
-                fstype              the device's filesystem type, or swap
-                label               filesystem label
-                disks               the set of disks we can allocate from
-                encrypted           boolean
-
-                raid_level          (btrfs/md/lvm only) RAID level (string)
-
-                name                name for new device
-                container_name      name of requested container
-
-                device              an already-defined but non-existent device
-                                    to adjust instead of creating a new device
+            See :class:`~.devicefactory.DeviceFactory` for possible kwargs.
 
         """
         log_method_call(self, device_type, size, **kwargs)
@@ -2823,7 +3038,16 @@ def findExistingInstallations(devicetree):
     return roots
 
 class Root(object):
+    """ A Root represents an existing OS installation. """
     def __init__(self, mounts=None, swaps=None, name=None):
+        """
+            :keyword mounts: mountpoint dict
+            :type mounts: dict (mountpoint keys and :class:`~.devices.StorageDevice` values)
+            :keyword swaps: swap device list
+            :type swaps: list of :class:`~.devices.StorageDevice`
+            :keyword name: name for this installed OS
+            :type name: str
+        """
         # mountpoint key, StorageDevice value
         if not mounts:
             self.mounts = {}
