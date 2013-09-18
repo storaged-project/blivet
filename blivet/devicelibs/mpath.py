@@ -12,3 +12,18 @@ def flush_mpaths():
 
 def is_multipath_member(path):
     return (util.run_program(["multipath", "-c", path]) == 0)
+
+def set_friendly_names(enabled=True):
+    """ Set the state of friendly names in multipathd.
+
+        NOTE: If you call this you also need to take appropriate steps to make
+              sure the devicetree contains devices with the appropriate names.
+              They will not be updated automatically.
+    """
+    if enabled:
+        val = "y"
+    else:
+        val = "n"
+
+    cmd = ["mpathconf", "--user_friendly_names", val, "--with_multipathd", "y"]
+    return (util.run_program(cmd) == 0)
