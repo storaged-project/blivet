@@ -1867,6 +1867,9 @@ class DeviceTree(object):
         log.info("DeviceTree.populate: ignoredDisks is %s ; exclusiveDisks is %s"
                     % (self.ignoredDisks, self.exclusiveDisks))
 
+        if flags.installer_mode:
+            devicelibs.mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
+
         self.setupDiskImages()
 
         # mark the tree as unpopulated so exception handlers can tell the

@@ -54,6 +54,8 @@ class Flags(object):
 
         self.gpt = False
 
+        self.multipath_friendly_names = True
+
         # whether to include nodev filesystems in the devicetree (only
         # meaningful when flags.installer_mode is False)
         self.include_nodev = False
@@ -98,5 +100,6 @@ class Flags(object):
         self.arm_platform = anaconda_flags.armPlatform
         self.gpt = anaconda_flags.gpt
 
+        self.multipath_friendly_names = anaconda_flags.mpathFriendlyNames
 
 flags = Flags()
