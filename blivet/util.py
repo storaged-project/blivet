@@ -4,8 +4,10 @@ import shutil
 import selinux
 import subprocess
 import re
+from decimal import Decimal
 
 from udev import udev_settle
+from size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -131,19 +133,20 @@ def get_mount_device(mountpoint):
     return mount_device
 
 def total_memory():
-    """ Return the amount of system RAM in kilobytes. """
+    """ Return the amount of system RAM.
+
+        :rtype: :class:`~.size.Size`
+    """
     lines = open("/proc/meminfo").readlines()
     for line in lines:
         if line.startswith("MemTotal:"):
-            mem = long(line.split()[1])
+            mem = Size(en_spec="%s KiB" % line.split()[1])
 
     # Because /proc/meminfo only gives us the MemTotal (total physical RAM
     # minus the kernel binary code), we need to round this up. Assuming
-    # every machine has the total RAM MB number divisible by 128. */
-    mem /= 1024
-    mem = (mem / 128 + 1) * 128
-    mem *= 1024
-
+    # every machine has the total RAM MiB number divisible by 128. */
+    bs = Size(en_spec="128MiB")
+    mem = (mem / bs + 1) * bs
     return mem
 
 ##
@@ -316,9 +319,7 @@ def numeric_type(num):
     """
     if num is None:
         num = 0
-    elif not (isinstance(num, int) or \
-              isinstance(num, long) or \
-              isinstance(num, float)):
+    elif not isinstance(num, (int, long, float, Size, Decimal)):
         raise ValueError("value (%s) must be either a number or None" % num)
 
     return num

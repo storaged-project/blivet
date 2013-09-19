@@ -14,13 +14,14 @@ blivet_log = logging.getLogger("blivet")
 blivet_log.info(sys.argv[0])
 
 import blivet
+from blivet.size import Size
 
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
-disk1_file = create_sparse_file(b, "disk1", 100000)
+disk1_file = create_sparse_file(b, "disk1", Size(en_spec="100GiB"))
 b.config.diskImages["disk1"] = disk1_file
-disk2_file = create_sparse_file(b, "disk2", 100000)
+disk2_file = create_sparse_file(b, "disk2", Size(en_spec="100GiB"))
 b.config.diskImages["disk2"] = disk2_file
 
 b.reset()
@@ -32,20 +33,21 @@ try:
     b.initializeDisk(disk1)
     b.initializeDisk(disk2)
 
-    # new partition on either disk1 or disk2 with base size 10000 MiB and growth
-    # up to a maximum size of 50000 MiB
-    dev = b.newPartition(size=10000, grow=True, maxsize=50000,
-                         parents=[disk1, disk2])
+    # new partition on either disk1 or disk2 with base size 10GiB and growth
+    # up to a maximum size of 50GiB
+    dev = b.newPartition(size=Size(en_spec="10MiB"), maxsize=Size(en_spec="50GiB"),
+                         grow=True, parents=[disk1, disk2])
     b.createDevice(dev)
 
-    # new partition on disk1 with base size 5000 MiB and unbounded growth and an
+    # new partition on disk1 with base size 5GiB and unbounded growth and an
     # ext4 filesystem
-    dev = b.newPartition(fmt_type="ext4", size=5000, grow=True, parents=[disk1])
+    dev = b.newPartition(fmt_type="ext4", size=Size(en_spec="5GiB"), grow=True,
+                         parents=[disk1])
     b.createDevice(dev)
 
-    # new partition on any suitable disk with a fixed size of 2000 MiB formatted
+    # new partition on any suitable disk with a fixed size of 2GiB formatted
     # as swap space
-    dev = b.newPartition(fmt_type="swap", size=2000)
+    dev = b.newPartition(fmt_type="swap", size=Size(en_spec="2GiB"))
     b.createDevice(dev)
 
     # allocate the partitions (decide where and on which disks they'll reside)

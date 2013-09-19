@@ -55,7 +55,7 @@ class LVMPhysicalVolume(DeviceFormat):
             :keyword vgName: the name of the VG this PV belongs to
             :keyword vgUuid: the UUID of the VG this PV belongs to
             :keyword peStart: offset of first physical extent
-            :type peStart: float
+            :type peStart: :class:`~.size.Size`
 
             .. note::
 
@@ -71,7 +71,7 @@ class LVMPhysicalVolume(DeviceFormat):
         self.vgUuid = kwargs.get("vgUuid")
         # liblvm may be able to tell us this at some point, even
         # for not-yet-created devices
-        self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)    # in MB
+        self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)
 
         self.inconsistentVG = False
 

@@ -43,7 +43,7 @@ class PartSpec(object):
                       appleboot, etc.) partitions end up in front of /boot.
                       This value means nothing unless lv and btr are both False.
             requiredSpace -- This value is only taken into account if
-                             lv=True, and specifies the size in MB that the
+                             lv=True, and specifies the size in MiB that the
                              containing VG must be for this PartSpec to even
                              get used.  The VG's size is calculated before any
                              other LVs are created inside it.  If not enough

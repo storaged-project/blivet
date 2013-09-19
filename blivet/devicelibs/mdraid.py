@@ -24,14 +24,15 @@ import os
 
 from .. import util
 from ..errors import *
+from ..size import Size
 from . import raid
 
 import logging
 log = logging.getLogger("blivet")
 
 # these defaults were determined empirically
-MD_SUPERBLOCK_SIZE = 2.0    # MB
-MD_CHUNK_SIZE = 0.5         # MB
+MD_SUPERBLOCK_SIZE = Size(en_spec="2 MiB")
+MD_CHUNK_SIZE = Size(en_spec="512 KiB")
 
 class MDRaidLevels(raid.RAIDLevels):
     @classmethod
@@ -75,8 +76,13 @@ def get_raid_superblock_size(size, version=None):
     """ mdadm has different amounts of space reserved for its use depending
     on the metadata type and size of the array.
 
-    0.9 use 2.0 MB
-    1.0 use 2.0 MB
+    :param size: size of the array
+    :type size: :class:`~.size.Size`
+    :param version: metadata version
+    :type version: str
+
+    0.9 use 2.0 MiB
+    1.0 use 2.0 MiB
     1.1 or 1.2 use the formula lifted from mdadm/super1.c to calculate it
     based on the array size.
     """
@@ -88,11 +94,14 @@ def get_raid_superblock_size(size, version=None):
         # MDADM: We try to leave 0.1% at the start for reshape
         # MDADM: operations, but limit this to 128Meg (0.1% of 10Gig)
         # MDADM: which is plenty for efficient reshapes
-        # NOTE: In the mdadm code this is in 512b sectors. Converted to use MB
-        headroom = 128
-        while headroom << 10 > size:
+        # NOTE: In the mdadm code this is in 512b sectors. Converted to use MiB
+        headroom = int(Size(en_spec="128 MiB"))
+        while headroom << 10 > size and headroom > Size(en_spec="1 MiB"):
             headroom >>= 1
-    log.info("Using %sMB superBlockSize" % (headroom))
+
+        headroom = Size(bytes=headroom)
+
+    log.info("Using %s superBlockSize" % (headroom))
     return headroom
 
 def mdadm(args):

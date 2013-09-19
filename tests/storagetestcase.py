@@ -95,6 +95,7 @@ class StorageTestCase(unittest.TestCase):
             # set up mock parted.Device w/ correct size
             device._partedDevice = Mock()
             device._partedDevice.getSize = Mock(return_value=float(device.size))
+            device._partedDevice.getLength = Mock(return_value=float(device.size))
             device._partedDevice.sectorSize = 512
 
         if isinstance(device, blivet.devices.PartitionDevice):
@@ -112,6 +113,7 @@ class StorageTestCase(unittest.TestCase):
             partedPartition.path = device.path
             partedPartition.getDeviceNodeName = Mock(return_value=device.name)
             partedPartition.getSize = Mock(return_value=float(device.size))
+            partedPartition.getLength = Mock(return_value=float(device.size))
             device._partedPartition = partedPartition
 
         device.exists = exists

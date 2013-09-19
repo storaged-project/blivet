@@ -8,6 +8,7 @@ from blivet import devicefactory
 from blivet import devices
 from blivet.devicelibs import mdraid
 from blivet.devicelibs import raid
+from blivet.size import Size
 
 class MDFactoryTestCase(unittest.TestCase):
     """Note that these tests postdate the code that they test.
@@ -19,11 +20,11 @@ class MDFactoryTestCase(unittest.TestCase):
         self.b = blivet.Blivet()
         self.factory1 = devicefactory.get_device_factory(self.b,
            devicefactory.DEVICE_TYPE_MD,
-           1024)
+           Size(spec="1 GiB"))
 
         self.factory2 = devicefactory.get_device_factory(self.b,
            devicefactory.DEVICE_TYPE_MD,
-           1024,
+           Size(spec="1 GiB"),
            raid_level=0)
 
     def testMDFactory(self):

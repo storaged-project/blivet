@@ -32,6 +32,7 @@ from ..flags import flags
 from ..udev import udev_settle
 from ..i18n import _, N_
 from . import DeviceFormat, register_device_format
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -219,7 +220,7 @@ class DiskLabel(DeviceFormat):
         size = self._size
         if not size:
             try:
-                size = self.partedDevice.getSize(unit="MB")
+                size = Size(bytes=self.partedDevice.getLength(unit="B"))
             except Exception:
                 size = 0
 
@@ -410,8 +411,8 @@ class DiskLabel(DeviceFormat):
             return int(open(path).readline().strip())
 
         try:
-            free = sum([f.getSize()
-                        for f in self.partedDisk.getFreeSpacePartitions()])
+            free = sum(Size(bytes=f.getLength(unit="B"))
+                        for f in self.partedDisk.getFreeSpacePartitions())
         except Exception:
             sys_block_root = "/sys/class/block/"
 
@@ -428,7 +429,7 @@ class DiskLabel(DeviceFormat):
                 partition_length = read_int_from_sys("%s/size" % partition_root)
                 used_sectors += partition_length
 
-            free = ((disk_length - used_sectors) * sector_size) / (1024.0 * 1024.0)
+            free = Size(bytes=((disk_length - used_sectors) * sector_size))
 
         return free
 

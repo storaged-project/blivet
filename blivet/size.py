@@ -174,6 +174,9 @@ class Size(Decimal):
     def __repr__(self):
         return "Size('%s')" % self
 
+    def __deepcopy__(self, memo):
+        return Size(bytes=self.convertTo(en_spec="b"))
+
     def __add__(self, other, context=None):
         return Size(bytes=Decimal.__add__(self, other, context=context))
 
@@ -191,6 +194,9 @@ class Size(Decimal):
 
     def __div__(self, other, context=None):
         return Size(bytes=Decimal.__div__(self, other, context=context))
+
+    def __mod__(self, other, context=None):
+        return Size(bytes=Decimal.__mod__(self, other, context=context))
 
     def _trimEnd(self, val):
         """ Internal method to trim trailing zeros. """
@@ -229,7 +235,7 @@ class Size(Decimal):
         else:
             bytes = _bytes
         if spec in bytes:
-            return Decimal(self)
+            return self
 
         if xlate:
             prefixes = [_(p) for p in _prefixes]

@@ -31,6 +31,7 @@ from devicelibs.lvm import LVM_PE_SIZE
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
+from .size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -155,7 +156,7 @@ class DeviceFactory(object):
             # PVs on each of the specified disks. No free space is maintained in
             # new VGs by default.
             factory = blivet.devicefactory.LVMFactory(_blivet,
-                                                      10000,
+                                                      Size(spec="10000 MB"),
                                                       disks,
                                                       fstype="xfs",
                                                       label="music",
@@ -168,7 +169,7 @@ class DeviceFactory(object):
             # Now add another LV to the "data" VG, adjusting the size of a non-
             # existent "data" VG so that it can contain the new LV.
             factory = blivet.devicefactory.LVMFactory(_blivet,
-                                                      20000,
+                                                      Size(spec="20000 MB"),
                                                       disks,
                                                       fstype="xfs",
                                                       label="videos",
@@ -179,7 +180,7 @@ class DeviceFactory(object):
             # Now change the size of the "music" LV and adjust the size of the
             # "data" VG accordingly.
             factory = blivet.devicefactory.LVMFactory(_blivet,
-                                                      15000,
+                                                      Size(spec="15000 MB"),
                                                       disks,
                                                       device=music_lv)
             factory.configure()
@@ -218,31 +219,46 @@ class DeviceFactory(object):
                  container_encrypted=False, container_name=None,
                  container_raid_level=None, container_size=SIZE_POLICY_AUTO,
                  name=None, device=None):
-        """ Create a new DeviceFactory instance.
+        """
+            :param storage: a Blivet instance
+            :type storage: :class:`~.Blivet`
+            :param size: the desired size for the device
+            :type size: :class:`~.size.Size`
+            :param disks: the set of disks to use
+            :type disks: list of :class:`~.devices.StorageDevice`
 
-            Arguments:
+            :keyword fstype: filesystem type
+            :type fstype: str
+            :keyword mountpoint: filesystem mount point
+            :type mountpoint: str
+            :keyword label: filesystem label text
+            :type label: str
 
-                storage             a Blivet instance
-                size                the desired size for the device
-                disks               the set of disks to use
+            :keyword raid_level: raid level string, eg: "raid1"
+            :type raid_level: str
+            :keyword encrypted: whether to encrypt (boolean)
+            :type encrypted: bool
+            :keyword name: name of requested device
+            :type name: str
 
-            Keyword args:
+            :keyword device: an already-defined but non-existent device to
+                             adjust instead of creating a new device
+            :type device: :class:`~.devices.StorageDevice`
 
-                fstype              filesystem type
-                mountpoint          filesystem mount point
-                label               filesystem label text
+            .. note::
 
-                raid_level          raid level string, eg: "raid1"
-                encrypted           whether to encrypt (boolean)
-                name                name of requested device
+                any device passed must be of the appropriate type for the
+                factory class it is passed to
 
-                device              an already-defined but non-existent device
-                                    to adjust instead of creating a new device
+            :keyword container_name: name of requested container
+            :type container_name: str
+            :keyword container_raid_level: raid level for container
+            :type container_raid_level: str
+            :keyword container_encrypted: whether to encrypt the container
+            :type container_encrypted: bool
+            :keyword container_size: requested container size
+            :type container_size: :class:`~.size.Size`
 
-                container_name      name of requested container
-                container_raid_level
-                container_encrypted whether to encrypt the entire container
-                container_size      requested container size
         """
 
         if encrypted and size:
@@ -292,8 +308,7 @@ class DeviceFactory(object):
     #
     def _get_free_disk_space(self):
         free_info = self.storage.getFreeSpace(disks=self.disks)
-        free = sum(d[0] for d in free_info.values())
-        return int(free.convertTo(en_spec="mb"))
+        return sum(d[0] for d in free_info.values())
 
     def _handle_no_size(self):
         """ Set device size so that it grows to the largest size possible. """
@@ -805,7 +820,7 @@ class PartitionFactory(DeviceFactory):
         if self.encrypted:
             min_format_size += getFormat("luks").minSize
 
-        return max(1, min_format_size)
+        return max(Size(en_spec="1MiB"), min_format_size)
 
     def _get_device_size(self):
         """ Return the factory device size including container limitations. """
@@ -814,7 +829,7 @@ class PartitionFactory(DeviceFactory):
     def _set_device_size(self):
         """ Set the size of a defined factory device. """
         if self.device and self.size != self.raw_device.size:
-            log.info("adjusting device size from %.2f to %.2f"
+            log.info("adjusting device size from %s to %s"
                             % (self.raw_device.size, self.size))
 
             base_size = self._get_base_size()
@@ -943,7 +958,7 @@ class PartitionSetFactory(PartitionFactory):
             add_disks = self.disks
 
         # drop any new disks that don't have free space
-        min_free = min(500, self.parent_factory.size)
+        min_free = min(Size(en_spec="500MiB"), self.parent_factory.size)
         add_disks = [d for d in add_disks if d.partitioned and
                                              d.format.free >= min_free]
 
@@ -1053,7 +1068,7 @@ class PartitionSetFactory(PartitionFactory):
         ##
         ## Set up SizeSet to manage growth of member partitions.
         ##
-        log.debug("adding a %s with size %d"
+        log.debug("adding a %s with size %s"
                   % (self.parent_factory.size_set_class.__name__, total_space))
         size_set = self.parent_factory.size_set_class(members, total_space)
         self.storage.size_sets.append(size_set)
@@ -1109,7 +1124,7 @@ class LVMFactory(DeviceFactory):
             free += self.raw_device.size
 
         if free < size:
-            log.info("adjusting size from %.2f to %.2f so it fits "
+            log.info("adjusting size from %s to %s so it fits "
                      "in container %s" % (size, free, self.container.name))
             size = free
 
@@ -1118,14 +1133,14 @@ class LVMFactory(DeviceFactory):
     def _set_device_size(self):
         size = self._get_device_size()
         if self.device and size != self.raw_device.size:
-            log.info("adjusting device size from %.2f to %.2f"
+            log.info("adjusting device size from %s to %s"
                             % (self.raw_device.size, size))
             self.raw_device.size = size
             self.raw_device.req_grow = False
 
     def _get_total_space(self):
         """ Total disk space requirement for this device and its container. """
-        size = 0
+        size = Size(bytes=0)
         if self.container and self.container.exists:
             return size
 
@@ -1138,10 +1153,10 @@ class LVMFactory(DeviceFactory):
             # grow the container as large as possible
             if self.container:
                 size += sum(p.size for p in self.container.parents)
-                log.debug("size bumped to %d to include container parents" % size)
+                log.debug("size bumped to %s to include container parents" % size)
 
             size += self._get_free_disk_space()
-            log.debug("size bumped to %d to include free disk space" % size)
+            log.debug("size bumped to %s to include free disk space" % size)
         else:
             # container_size is a request for a fixed size for the container
             size += get_pv_space(self.container_size, len(self.disks))
@@ -1149,14 +1164,14 @@ class LVMFactory(DeviceFactory):
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
             size += self._get_device_space()
-            log.debug("size bumped to %d to include new device space" % size)
+            log.debug("size bumped to %s to include new device space" % size)
             if self.device and self.container_size == SIZE_POLICY_AUTO:
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
                 size -= get_pv_space(self.device.size,
                    len(self.container.parents))
-                log.debug("size cut to %d to omit old device space" % size)
+                log.debug("size cut to %s to omit old device space" % size)
 
         if self.container_raid_level:
             # add five extents per disk to account for md metadata
@@ -1323,7 +1338,7 @@ class LVMThinPFactory(LVMFactory):
 
         size = self.size
         if free < size:
-            log.info("adjusting size from %.2f to %.2f so it fits "
+            log.info("adjusting size from %s to %s so it fits "
                      "in pool %s" % (size, free, self.pool.name))
             size = free
 
@@ -1375,7 +1390,7 @@ class LVMThinPFactory(LVMFactory):
                                        pesize=self._pesize)
                 log.debug("old device size: %s ; old pad: %s" % (self.device.size, pad))
                 size -= pad
-                log.debug("size cut to %d to omit old device padding" % size)
+                log.debug("size cut to %s to omit old device padding" % size)
 
         return size
 
@@ -1424,7 +1439,7 @@ class LVMThinPFactory(LVMFactory):
 
         log.debug("requested size is %s" % self.size)
         size = self.size    # projected size for the pool (not padded)
-        free = 0            # total space within the vg that is available to us
+        free = Size(bytes=0)# total space within the vg that is available to us
         if self.pool:
             free += self.pool.freeSpace # pools are always auto-sized
             # pool lv sizes go toward projected pool size and vg free space
@@ -1451,7 +1466,7 @@ class LVMThinPFactory(LVMFactory):
         if free < (size + pad):
             pad = int(get_pool_padding(free, pesize=self._pesize, reverse=True))
             free = self.container.align(free - pad) # round down
-            log.info("adjusting pool size from %.2f to %.2f so it fits "
+            log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s" % (size, free, self.container.name))
             size = free
 
@@ -1579,7 +1594,7 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_total_space(self):
         """ Return the total space needed for the specified container. """
-        size = 0
+        size = Size(bytes=0)
         if self.container and self.container.exists:
             return size
 

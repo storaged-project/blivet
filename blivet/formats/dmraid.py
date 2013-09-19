@@ -53,8 +53,6 @@ class DMRaidMember(DeviceFormat):
     _linuxNative = False                # for clearpart
     _packages = ["dmraid"]              # required packages
     _resizable = False                  # can be resized
-    _maxSize = 0                        # maximum size in MB
-    _minSize = 0                        # minimum size in MB
     _hidden = True                      # hide devices with this formatting?
 
     def __init__(self, *args, **kwargs):

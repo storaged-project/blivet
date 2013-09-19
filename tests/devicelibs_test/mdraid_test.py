@@ -6,6 +6,7 @@ import time
 
 import blivet.devicelibs.mdraid as mdraid
 import blivet.errors as errors
+from blivet.size import Size
 
 class MDRaidTestCase(unittest.TestCase):
 
@@ -25,17 +26,26 @@ class MDRaidTestCase(unittest.TestCase):
         ##
         ## get_raid_superblock_size
         ##
-        self.assertEqual(mdraid.get_raid_superblock_size(256 * 1024), 128)
-        self.assertEqual(mdraid.get_raid_superblock_size(128 * 1024), 128)
-        self.assertEqual(mdraid.get_raid_superblock_size(64 * 1024), 64)
-        self.assertEqual(mdraid.get_raid_superblock_size(63 * 1024), 32)
-        self.assertEqual(mdraid.get_raid_superblock_size(10 * 1024), 8)
-        self.assertEqual(mdraid.get_raid_superblock_size(1024), 1)
-        self.assertEqual(mdraid.get_raid_superblock_size(1023), 0)
-        self.assertEqual(mdraid.get_raid_superblock_size(512), 0)
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="256 GiB")),
+                         Size(spec="128 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="128 GiB")),
+                         Size(spec="128 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="64 GiB")),
+                         Size(spec="64 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="63 GiB")),
+                         Size(spec="32 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="10 GiB")),
+                         Size(spec="8 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="1 GiB")),
+                         Size(spec="1 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="1023 MiB")),
+                         Size(spec="1 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="512 MiB")),
+                         Size(spec="1 MiB"))
 
-        self.assertEqual(mdraid.get_raid_superblock_size(257, "version"),
-           mdraid.MD_SUPERBLOCK_SIZE)
+        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="257 MiB"),
+                                                         version="version"),
+                         mdraid.MD_SUPERBLOCK_SIZE)
 
 
 class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):

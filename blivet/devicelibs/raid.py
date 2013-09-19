@@ -24,6 +24,7 @@
 import abc
 
 from ..errors import RaidError
+from ..size import Size
 
 def div_up(a,b):
     """Rounds up integer division.  For example, div_up(3, 2) is 2.
@@ -111,11 +112,10 @@ class RAIDLevel(object):
         """The required size for each member of the array for
            storing only data.
 
-           :param int size: size of data to be stored
+           :param size: size of data to be stored
+           :type size: :class:`~.size.Size`
            :param int member_count: number of members in this array
-           :rtype: int
-
-           The return value has the same units as the size parameter.
+           :rtype: :class:`~.size.Size`
 
            Raises a RaidError if member_count is fewer than the minimum
            number of members required for this array or if size is less
@@ -136,17 +136,15 @@ class RAIDLevel(object):
         """Return the raw arraysize.
 
            :param int member_count: the number of members in the array
-           :param int smallest_member_size: the size of the smallest
+           :param smallest_member_size: the size of the smallest
              member of this array
-           :rtype: int
-
-           The return value has the same units as the smallest_member_size
-           parameter.
+           :type smallest_member_size: :class:`~.size.Size`
+           :returns: the array size, not including metadata or chunk size
+           :rtype: :class:`~.size.Size`
 
            Raises a RaidError if member_count is fewer than the minimum
            number of members required for this array or if size is less
            than 0.
-
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -325,7 +323,8 @@ class RAID0(RAIDLevel):
         return div_up(size, member_count)
 
     def _get_raw_array_size(self, member_count, smallest_member_size):
-        return member_count * smallest_member_size
+        # smallest_member_size dictates the return type
+        return smallest_member_size * member_count
 
     def _get_size(self, size, chunk_size):
         return size - size % chunk_size
@@ -371,7 +370,8 @@ class RAID4(RAIDLevel):
         return div_up(size, member_count - 1)
 
     def _get_raw_array_size(self, member_count, smallest_member_size):
-        return (member_count - 1) * smallest_member_size
+        # smallest_member_size dictates the return type
+        return smallest_member_size * (member_count - 1)
 
     def _get_size(self, size, chunk_size):
         return size - size % chunk_size
@@ -394,7 +394,8 @@ class RAID5(RAIDLevel):
         return div_up(size, (member_count - 1))
 
     def _get_raw_array_size(self, member_count, smallest_member_size):
-        return (member_count - 1) * smallest_member_size
+        # smallest_member_size dictates the return type
+        return smallest_member_size * (member_count - 1)
 
     def _get_size(self, size, chunk_size):
         return size - size % chunk_size
@@ -417,7 +418,8 @@ class RAID6(RAIDLevel):
         return div_up(size, member_count - 2)
 
     def _get_raw_array_size(self, member_count, smallest_member_size):
-        return (member_count - 2) * smallest_member_size
+        # smallest_member_size dictates the return type
+        return smallest_member_size * (member_count - 2)
 
     def _get_size(self, size, chunk_size):
         return size - size % chunk_size
@@ -440,7 +442,8 @@ class RAID10(RAIDLevel):
         return div_up(size, (member_count // 2))
 
     def _get_raw_array_size(self, member_count, smallest_member_size):
-        return (member_count // 2) * smallest_member_size
+        # smallest_member_size dictates the return type
+        return smallest_member_size * (member_count // 2)
 
     def _get_size(self, size, chunk_size):
         return size

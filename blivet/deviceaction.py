@@ -21,8 +21,6 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import math
-
 from udev import *
 import util
 
@@ -379,7 +377,7 @@ class ActionResizeDevice(DeviceAction):
         if not device.resizable:
             raise ValueError("device is not resizable")
 
-        if long(math.floor(device.currentSize)) == newsize:
+        if device.currentSize == newsize:
             raise ValueError("new size same as old size")
 
         if newsize < device.minSize:
@@ -389,7 +387,7 @@ class ActionResizeDevice(DeviceAction):
             raise ValueError("new size is too large")
 
         DeviceAction.__init__(self, device)
-        if newsize > long(math.floor(device.currentSize)):
+        if newsize > device.currentSize:
             self.dir = RESIZE_GROW
         else:
             self.dir = RESIZE_SHRINK
@@ -586,11 +584,11 @@ class ActionResizeFormat(DeviceAction):
         if not device.format.resizable:
             raise ValueError("format is not resizable")
 
-        if long(math.floor(device.format.currentSize)) == newsize:
+        if device.format.currentSize == newsize:
             raise ValueError("new size same as old size")
 
         DeviceAction.__init__(self, device)
-        if newsize > long(math.floor(device.format.currentSize)):
+        if newsize > device.format.currentSize:
             self.dir = RESIZE_GROW
         else:
             self.dir = RESIZE_SHRINK

@@ -21,6 +21,7 @@
 #
 
 from ..errors import *
+from ..size import Size
 from .. import platform
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
@@ -37,8 +38,8 @@ class PPCPRePBoot(DeviceFormat):
     partedFlag = PARTITION_PREP
     _formattable = True                 # can be formatted
     _linuxNative = True                 # for clearpart
-    _maxSize = 10                       # maximum size in MB
-    _minSize = 4                        # minimum size in MB
+    _maxSize = Size(en_spec="10 MiB")
+    _minSize = Size(en_spec="4 MiB")
 
     def __init__(self, *args, **kwargs):
         """

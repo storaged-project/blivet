@@ -128,6 +128,7 @@ Scheduling a Series of Actions
 Start out as before::
 
     import blivet
+    from blivet.size import Size
     b = blivet.Blivet()
     b.reset()
     sda3 = b.devicetree.getDeviceByName("sda3")
@@ -136,9 +137,9 @@ Now we're going to wipe the existing formatting from sda3::
 
     b.destroyFormat(sda3)
 
-Now let's assume sda3 is larger than 10GB and resize it to that size::
+Now let's assume sda3 is larger than 10GiB and resize it to that size::
 
-    b.resizeDevice(sda3, 10000) # size is in MB
+    b.resizeDevice(sda3, Size(spec="10 GiB"))
 
 And then let's create a new ext4 filesystem there::
 
@@ -168,18 +169,19 @@ occupy. Blivet offers some powerful means for deciding for you where to place
 the partitions, but it also allows you to specify an exact start and end
 sector on a specific disk if that's how you want to do it. Here's an example
 of letting Blivet handle the details of creating a partition of minimum size
-10GB on either sdb or sdc that is also growable to a maximum size of 20GB::
+10GiB on either sdb or sdc that is also growable to a maximum size of 20GiB::
 
     sdb = b.devicetree.getDeviceByName("sdb")
     sdc = b.devicetree.getDeviceByName("sdc")
-    new_part = b.newPartition(size=10000, grow=True, maxsize=20000,
+    new_part = b.newPartition(size=Size(spec="10GiB"), grow=True,
+                              maxsize=Size(spec="20GiB"),
                               parents=[sdb, sdc])
     b.createDevice(new_part)
     blivet.partitioning.doPartitioning(b)
 
 Now you could see where it ended up::
 
-    print("partition %s of size %dMiB on disk %s" % (new_part.name,
+    print("partition %s of size %s on disk %s" % (new_part.name,
                                                      new_part.size,
                                                      new_part.disk.name))
 

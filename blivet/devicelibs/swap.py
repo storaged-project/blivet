@@ -22,16 +22,18 @@
 
 import resource
 import os
+from decimal import Decimal
 
 from ..errors import *
 from .. import util
 from . import dm
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
 
 # maximum ratio of swap size to disk size (10 %)
-MAX_SWAP_DISK_RATIO = 0.1
+MAX_SWAP_DISK_RATIO = Decimal('0.1')
 
 def mkswap(device, label=None):
     # We use -f to force since mkswap tends to refuse creation on lvs with
@@ -130,42 +132,47 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
 
     """
 
-    mem = util.total_memory()/1024
+    mem = util.total_memory()
     mem = ((mem/16)+1)*16
     if not quiet:
-        log.info("Detected %sM of memory", mem)
+        log.info("Detected %s of memory", mem)
+
+    two_GiB = Size(en_spec="2GiB")
+    four_GiB = Size(en_spec="4GiB")
+    eight_GiB = Size(en_spec="8GiB")
+    sixtyfour_GiB = Size(en_spec="64 GiB")
 
     #chart suggested in the discussion with other teams
-    if mem < 2048:
+    if mem < two_GiB:
         swap = 2 * mem
 
-    elif 2048 <= mem < 8192:
+    elif two_GiB <= mem < eight_GiB:
         swap = mem
 
-    elif 8192 <= mem < 65536:
+    elif eight_GiB <= mem < sixtyfour_GiB:
         swap = mem / 2
 
     else:
-        swap = 4096
+        swap = four_GiB
 
     if hibernation:
-        if mem <= 65536:
+        if mem <= sixtyfour_GiB:
             swap = mem + swap
         else:
-            log.info("Ignoring --hibernation option on systems with 64 GB of RAM or more")
+            log.info("Ignoring --hibernation option on systems with %s of RAM or more", sixtyfour_GiB)
 
     if disk_space is not None and not hibernation:
-        max_swap = int(disk_space * MAX_SWAP_DISK_RATIO)
+        max_swap = disk_space * MAX_SWAP_DISK_RATIO
         if swap > max_swap:
-            log.info("Suggested swap size (%(swap)d M) exceeds %(percent)d %% of "
-                     "disk space, using %(percent)d %% of disk space (%(size)d M) "
+            log.info("Suggested swap size (%(swap)s) exceeds %(percent)d %% of "
+                     "disk space, using %(percent)d %% of disk space (%(size)s) "
                      "instead." % {"percent": MAX_SWAP_DISK_RATIO*100,
                                    "swap": swap,
                                    "size": max_swap})
             swap = max_swap
 
     if not quiet:
-        log.info("Swap attempt of %sM", swap)
+        log.info("Swap attempt of %s", swap)
 
     return swap
 

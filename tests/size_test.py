@@ -71,10 +71,10 @@ class SizeTestCase(unittest.TestCase):
 
     def testHumanReadable(self):
         s = Size(bytes=58929971L)
-        self.assertEquals(s.humanReadable(), "58.92 MB")
+        self.assertEquals(s.humanReadable(), "56.19 MiB")
 
         s = Size(bytes=478360371L)
-        self.assertEquals(s.humanReadable(), "478.36 MB")
+        self.assertEquals(s.humanReadable(), "456.19 MiB")
 
     def testNegative(self):
         s = Size(spec="-500MiB")

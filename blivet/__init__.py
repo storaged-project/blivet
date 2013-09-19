@@ -883,7 +883,6 @@ class Blivet(object):
                 The free space values are :class:`~.size.Size` instances.
 
         """
-        from size import Size
         if disks is None:
             disks = self.disks
 
@@ -895,11 +894,11 @@ class Blivet(object):
             should_clear = self.shouldClear(disk, clearPartType=clearPartType,
                                             clearPartDisks=[disk.name])
             if should_clear:
-                free[disk.name] = (Size(en_spec="%f mb" % disk.size), 0)
+                free[disk.name] = (disk.size, Size(bytes=0))
                 continue
 
-            disk_free = 0
-            fs_free = 0
+            disk_free = Size(bytes=0)
+            fs_free = Size(bytes=0)
             if disk.partitioned:
                 disk_free = disk.format.free
                 for partition in [p for p in self.partitions if p.disk == disk]:
@@ -918,8 +917,7 @@ class Blivet(object):
             elif disk.format.type is None:
                 disk_free = disk.size
 
-            free[disk.name] = (Size(en_spec="%f mb" % disk_free),
-                               Size(en_spec="%f mb" % fs_free))
+            free[disk.name] = (disk_free, fs_free)
 
         return free
 
@@ -1565,12 +1563,12 @@ class Blivet(object):
             problem = filesystems[mount].checkSize()
             if problem < 0:
                 errors.append(_("Your %(mount)s partition is too small for %(format)s formatting "
-                                "(allowable size is %(minSize)d MB to %(maxSize)d MB)")
+                                "(allowable size is %(minSize)s to %(maxSize)s)")
                               % {"mount": mount, "format": device.format.name,
                                  "minSize": device.minSize, "maxSize": device.maxSize})
             elif problem > 0:
                 errors.append(_("Your %(mount)s partition is too large for %(format)s formatting "
-                                "(allowable size is %(minSize)d MB to %(maxSize)d MB)")
+                                "(allowable size is %(minSize)s to %(maxSize)s)")
                               % {"mount":mount, "format": device.format.name,
                                  "minSize": device.minSize, "maxSize": device.maxSize})
 
@@ -1640,19 +1638,19 @@ class Blivet(object):
                 if missing:
                     errors.append(_("Your BIOS-based system needs a special "
                                     "partition to boot from a GPT disk label. "
-                                    "To continue, please create a 1MB "
+                                    "To continue, please create a 1MiB "
                                     "'biosboot' type partition."))
 
         if not swaps:
-            installed = Size(en_spec="%s kb" % util.total_memory())
-            required = Size(en_spec="%s kb" % isys.EARLY_SWAP_RAM)
+            installed = util.total_memory()
+            required = Size(en_spec="%s KiB" % isys.EARLY_SWAP_RAM)
 
             if installed < required:
                 errors.append(_("You have not specified a swap partition.  "
-                                "%(requiredMem)s MB of memory is required to continue installation "
-                                "without a swap partition, but you only have %(installedMem)s MB.")
-                              % {"requiredMem": int(required.convertTo(en_spec="MB")),
-                                 "installedMem": int(installed.convertTo(en_spec="MB"))})
+                                "%(requiredMem)s of memory is required to continue installation "
+                                "without a swap partition, but you only have %(installedMem)s.")
+                              % {"requiredMem": required,
+                                 "installedMem": installed})
             else:
                 warnings.append(_("You have not specified a swap partition.  "
                                   "Although not strictly required in all cases, "

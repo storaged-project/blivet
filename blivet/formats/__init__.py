@@ -33,6 +33,7 @@ from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
 from ..udev import udev_device_get_major, udev_device_get_minor
 from ..i18n import _, N_
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -155,8 +156,8 @@ class DeviceFormat(ObjectID):
     _packages = []                      # required packages
     _services = []                      # required services
     _resizable = False                  # can be resized
-    _maxSize = 0                        # maximum size in MB
-    _minSize = 0                        # minimum size in MB
+    _maxSize = Size(bytes=0)            # maximum size
+    _minSize = Size(bytes=0)            # minimum size
     _dump = False
     _check = False
     _hidden = False                     # hide devices with this formatting?
@@ -501,12 +502,12 @@ class DeviceFormat(ObjectID):
 
     @property
     def maxSize(self):
-        """ Maximum size (in MB) for this format type. """
+        """ Maximum size for this format type. """
         return self._maxSize
 
     @property
     def minSize(self):
-        """ Minimum size (in MB) for this format type. """
+        """ Minimum size for this format type. """
         return self._minSize
 
     @property

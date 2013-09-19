@@ -23,6 +23,7 @@
 from parted import PARTITION_BIOS_GRUB
 
 from ..errors import *
+from ..size import Size
 from .. import platform
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
@@ -35,8 +36,8 @@ class BIOSBoot(DeviceFormat):
     partedFlag = PARTITION_BIOS_GRUB
     _formattable = True                 # can be formatted
     _linuxNative = True                 # for clearpart
-    _maxSize = 2                        # maximum size in MB
-    _minSize = 0.5                      # minimum size in MB
+    _maxSize = Size(en_spec="2 MiB")
+    _minSize = Size(en_spec="512 KiB")
 
     def __init__(self, *args, **kwargs):
         """

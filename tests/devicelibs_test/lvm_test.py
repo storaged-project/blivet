@@ -4,20 +4,23 @@ import os
 import unittest
 
 import blivet.devicelibs.lvm as lvm
+from blivet.size import Size
 
 class LVMTestCase(unittest.TestCase):
 
     def testGetPossiblePhysicalExtents(self):
         # pass
-        self.assertEqual(lvm.getPossiblePhysicalExtents(4),
-                         filter(lambda pe: pe > 4, map(lambda power: 2**power, xrange(3, 25))))
-        self.assertEqual(lvm.getPossiblePhysicalExtents(100000),
-                         filter(lambda pe: pe > 100000, map(lambda power: 2**power, xrange(3, 25))))
+        self.assertEqual(lvm.getPossiblePhysicalExtents(),
+                         map(lambda power: Size(spec="%d KiB" % 2**power),
+                             xrange(0, 25)))
 
     def testClampSize(self):
         # pass
-        self.assertEqual(lvm.clampSize(10, 4), 8L)
-        self.assertEqual(lvm.clampSize(10, 4, True), 12L)
+        self.assertEqual(lvm.clampSize(Size(spec="10 MiB"), Size(spec="4 MiB")),
+                         Size(spec="8 MiB"))
+        self.assertEqual(lvm.clampSize(Size(spec="10 MiB"), Size(spec="4 MiB"),
+ True),
+                         Size(spec="12 MiB"))
 
     #def testVGUsedSpace(self):
         # TODO

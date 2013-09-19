@@ -23,10 +23,12 @@
 import os
 import math
 import re
+from decimal import Decimal
 
 import logging
 log = logging.getLogger("blivet")
 
+from ..size import Size
 from .. import util
 from .. import arch
 from ..errors import *
@@ -35,14 +37,14 @@ from ..i18n import _
 MAX_LV_SLOTS = 256
 
 # some of lvm's defaults that we have no way to ask it for
-LVM_PE_START = 1.0      # MB
-LVM_PE_SIZE = 4.0       # MB
+LVM_PE_START = Size(en_spec="1 MiB")
+LVM_PE_SIZE = Size(en_spec="4 MiB")
 
 # thinp constants
-LVM_THINP_MIN_METADATA_SIZE = 2             # 2 MiB
-LVM_THINP_MAX_METADATA_SIZE = 16384         # 16 GiB
-LVM_THINP_MIN_CHUNK_SIZE = 0.0625           # 64 KiB
-LVM_THINP_MAX_CHUNK_SIZE = 1024             # 1 GiB
+LVM_THINP_MIN_METADATA_SIZE = Size(en_spec="2 MiB")
+LVM_THINP_MAX_METADATA_SIZE = Size(en_spec="16 GiB")
+LVM_THINP_MIN_CHUNK_SIZE = Size(en_spec="64 KiB")
+LVM_THINP_MAX_CHUNK_SIZE = Size(en_spec="1 GiB")
 
 def has_lvm():
     if util.find_program_in_path("lvm"):
@@ -116,36 +118,39 @@ def blacklistVG(name):
     global lvm_vg_blacklist
     lvm_vg_blacklist.append(name)
 
-def getPossiblePhysicalExtents(floor=0):
-    """Returns a list of integers representing the possible values for
-       the physical extent of a volume group.  Value is in KB.
+def getPossiblePhysicalExtents():
+    """ Returns a list of possible values for physical extent of a volume group.
 
-       floor - size (in KB) of smallest PE we care about.
+        :returns: list of possible extent sizes (:class:`~.size.Size`)
+        :rtype: list
     """
 
     possiblePE = []
-    curpe = 8
-    while curpe <= 16384*1024:
-	if curpe >= floor:
-	    possiblePE.append(curpe)
+    curpe = Size(en_spec="1 KiB")
+    while curpe <= Size(en_spec="16 GiB"):
+	possiblePE.append(curpe)
 	curpe = curpe * 2
 
     return possiblePE
 
 def getMaxLVSize():
-    """ Return the maximum size (in MB) of a logical volume. """
+    """ Return the maximum size of a logical volume. """
     if arch.getArch() in ("x86_64", "ppc64", "alpha", "ia64", "s390"): #64bit architectures
-        return (8*1024*1024*1024*1024) #Max is 8EiB (very large number..)
+        return Size(en_spec="8 EiB")
     else:
-        return (16*1024*1024) #Max is 16TiB
+        return Size(en_spec="16 TiB")
 
 def clampSize(size, pesize, roundup=None):
-    if roundup:
-        round = math.ceil
-    else:
-        round = math.floor
+    delta = size % pesize
+    if not delta:
+        return size
 
-    return long(round(float(size)/float(pesize)) * pesize)
+    if roundup:
+        clamped = size + (pesize - delta)
+    else:
+        clamped = size - delta
+
+    return clamped
 
 def get_pv_space(size, disks, pesize=LVM_PE_SIZE):
     """ Given specs for an LV, return total PV space required. """
@@ -155,8 +160,7 @@ def get_pv_space(size, disks, pesize=LVM_PE_SIZE):
     if size == 0:
         return size
 
-    space = clampSize(size, pesize, roundup=True) + \
-            pesize
+    space = clampSize(size, pesize, roundup=True) + pesize
     return space
 
 def get_pool_padding(size, pesize=LVM_PE_SIZE, reverse=False):
@@ -166,9 +170,9 @@ def get_pool_padding(size, pesize=LVM_PE_SIZE, reverse=False):
         should calculate how much of the total is the pad
     """
     if not reverse:
-        multiplier = 0.2
+        multiplier = Decimal('0.2')
     else:
-        multiplier = 1.0 / 6
+        multiplier = Decimal('1.0') / Decimal('6')
 
     pad = min(clampSize(size * multiplier, pesize, roundup=True),
               clampSize(LVM_THINP_MAX_METADATA_SIZE, pesize, roundup=True))
@@ -176,15 +180,26 @@ def get_pool_padding(size, pesize=LVM_PE_SIZE, reverse=False):
     return pad
 
 def is_valid_thin_pool_metadata_size(size):
-    """ Return True if size (in MiB) is a valid thin pool metadata vol size. """
+    """ Return True if size is a valid thin pool metadata vol size.
+
+        :param size: metadata vol size to validate
+        :type size: :class:`~.size.Size`
+        :returns: whether the size is valid
+        :rtype: bool
+    """
     return (LVM_THINP_MIN_METADATA_SIZE <= size <= LVM_THINP_MAX_METADATA_SIZE)
 
 # To support discard, chunk size must be a power of two. Otherwise it must be a
 # multiple of 64 KiB.
 def is_valid_thin_pool_chunk_size(size, discard=False):
-    """ Return True if size (in MiB) is a valid thin pool chunk size.
+    """ Return True if size is a valid thin pool chunk size.
 
-        discard (boolean) indicates whether discard support is required
+        :param size: chunk size to validate
+        :type size: :class:`~.size.Size`
+        :keyword discard: whether discard support is required (default: False)
+        :type discard: bool
+        :returns: whether the size is valid
+        :rtype: bool
     """
     if not LVM_THINP_MIN_CHUNK_SIZE <= size <= LVM_THINP_MAX_CHUNK_SIZE:
         return False
@@ -214,7 +229,7 @@ def pvcreate(device):
 
 def pvresize(device, size):
     args = ["pvresize"] + \
-            ["--setphysicalvolumesize", ("%dm" % size)] + \
+            ["--setphysicalvolumesize", ("%dm" % size.convertTo(en_spec="mib"))] + \
             _getConfigArgs() + \
             [device]
 
@@ -279,7 +294,7 @@ def pvinfo(device):
 def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
     if pe_size:
-        argv.extend(["-s", "%dm" % pe_size])
+        argv.extend(["-s", "%dm" % pe_size.convertTo(en_spec="mib")])
     argv.extend(_getConfigArgs())
     argv.append(vg_name)
     argv.extend(pv_list)
@@ -393,7 +408,7 @@ def lvorigin(vg_name, lv_name):
 
 def lvcreate(vg_name, lv_name, size, pvs=[]):
     args = ["lvcreate"] + \
-            ["-L", "%dm" % size] + \
+            ["-L", "%dm" % size.convertTo(en_spec="mib")] + \
             ["-n", lv_name] + \
             _getConfigArgs() + \
             [vg_name] + pvs
@@ -415,7 +430,7 @@ def lvremove(vg_name, lv_name):
 
 def lvresize(vg_name, lv_name, size):
     args = ["lvresize"] + \
-            ["--force", "-L", "%dm" % size] + \
+            ["--force", "-L", "%dm" % size.convertTo(en_spec="mib")] + \
             _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
@@ -447,15 +462,15 @@ def lvdeactivate(vg_name, lv_name):
 
 def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, lv_name),
-            "--size", "%dm" % size]
+            "--size", "%dm" % size.convertTo(en_spec="mib")]
 
     if metadatasize:
         # default unit is MiB
-        args += ["--poolmetadatasize", "%d" % metadatasize]
+        args += ["--poolmetadatasize", "%d" % metadatasize.convertTo(en_spec="mib")]
 
     if chunksize:
         # default unit is KiB
-        args += ["--chunksize", "%d" % (chunksize * 1024,)]
+        args += ["--chunksize", "%d" % chunksize.convertTo(en_spec="kib")]
 
     args += _getConfigArgs()
 

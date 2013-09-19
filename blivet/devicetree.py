@@ -49,6 +49,7 @@ from storage_log import log_method_call, log_method_return
 import parted
 import _ped
 from i18n import _
+from size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -1324,7 +1325,7 @@ class DeviceTree(object):
                                         "found" % (name, origin_device_name))
                             return
 
-                log.debug("adding %dMB to %s snapshot total"
+                log.debug("adding %s to %s snapshot total"
                             % (lv_sizes[index], origin.name))
                 origin.snapshotSpace += lv_size
                 return
@@ -1401,7 +1402,7 @@ class DeviceTree(object):
         lv_real_names = [n.replace("[", "").replace("]", "") for n in lv_names]
         raid = dict([("%s-%s" % (vg_device.name,
                                  n.replace("[", "").replace("]", "")),
-                      {"copies": 0, "log": 0, "meta": 0})
+                      {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
                      for n in lv_names])
         lv_data = zip(lv_names, lv_uuids, lv_attrs, lv_sizes, lv_types)
         for i in range(len(lv_data)):
@@ -1416,8 +1417,8 @@ class DeviceTree(object):
             lv_dev.copies = data["copies"] or 1
             lv_dev.metaDataSize = data["meta"]
             lv_dev.logSize = data["log"]
-            log.debug("set %s copies to %d, metadata size to %dMB, log size "
-                      "to %dMB, total size %dMB"
+            log.debug("set %s copies to %d, metadata size to %s, log size "
+                      "to %s, total size %s"
                         % (lv_dev.name, lv_dev.copies, lv_dev.metaDataSize,
                            lv_dev.logSize, lv_dev.vgSpaceUsed))
 

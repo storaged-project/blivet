@@ -33,6 +33,7 @@ from flags import flags
 from devices import PartitionDevice, LUKSDevice, devicePathToName
 from formats import getFormat
 from devicelibs.lvm import get_pool_padding
+from size import Size
 from i18n import _
 
 import logging
@@ -42,12 +43,12 @@ def _getCandidateDisks(storage):
     """ Return a list of disks to be used for autopart.
 
         Disks must be partitioned and have a single free region large enough
-        for a default-sized (500MB) partition. They must also be in
+        for a default-sized (500MiB) partition. They must also be in
         :attr:`StorageDiscoveryConfig.clearPartDisks` if it is non-empty.
 
         :param storage: a Blivet instance
         :type storage: :class:`~.Blivet`
-        :returns: a list of partitioned disks with at least 500MB of free space
+        :returns: a list of partitioned disks with at least 500MiB of free space
         :rtype: list of :class:`~.devices.StorageDevice`
     """
     disks = []
@@ -62,7 +63,7 @@ def _getCandidateDisks(storage):
                 part = part.nextPartition()
                 continue
 
-            if part.getSize(unit="MB") > PartitionDevice.defaultSize:
+            if Size(bytes=part.getLength(unit="B")) > PartitionDevice.defaultSize:
                 disks.append(disk)
                 break
 
@@ -130,13 +131,13 @@ def _schedulePartitions(storage, disks):
     all_free.sort(key=lambda f: f.length, reverse=True)
     if not all_free:
         # this should never happen since we've already filtered the disks
-        # to those with at least 500MB free
+        # to those with at least 500MiB free
         log.error("no free space on disks %s" % ([d.name for d in disks],))
         return
 
-    free = all_free[0].getSize()
+    free = Size(bytes=all_free[0].getLength(unit="B"))
     if len(all_free) > 1:
-        free += all_free[1].getSize()
+        free += int(all_free[1].getLength(unit="B"))
 
     # The boot disk must be set at this point. See if any platform-specific
     # stage1 device we might allocate already exists on the boot disk.
@@ -546,8 +547,8 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
         :type disk: :class:`parted.Disk`
         :param part_type: the type of partition we want to allocate
         :type part_type: one of parted's PARTITION_* constants
-        :param req_size: the requested size of the partition in MB
-        :type req_size: int or float
+        :param req_size: the requested size of the partition in MiB
+        :type req_size: :class:`~.size.Size`
         :keyword start: requested start sector for the partition
         :type start: int
         :keyword boot: whether this will be a bootable partition
@@ -558,15 +559,15 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
         :type grow: bool
 
     """
-    log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%dMB "
+    log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%s "
               "boot=%s best=%s grow=%s start=%s" %
               (disk.device.path, part_type, req_size, boot, best_free, grow,
                start))
     extended = disk.getExtendedPartition()
 
     for free_geom in disk.getFreeSpaceRegions():
-        log.debug("checking %d-%d (%d MB)" % (free_geom.start, free_geom.end,
-                                              free_geom.getSize()))
+        log.debug("checking %d-%d (%s)" % (free_geom.start, free_geom.end,
+                                           Size(bytes=free_geom.getLength(unit="B"))))
         if start is not None and not free_geom.containsSector(start):
             log.debug("free region does not contain requested start sector")
             continue
@@ -583,17 +584,18 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
             continue
 
         if boot:
-            free_start_mb = sectorsToSize(free_geom.start,
-                                          disk.device.sectorSize)
-            req_end_mb = free_start_mb + req_size
-            if req_end_mb > 2*1024*1024:
-                log.debug("free range position would place boot req above 2TB")
+            max_boot = Size(en_spec="2 TiB")
+            free_start = Size(bytes=(free_geom.start * disk.device.sectorSize))
+            req_end = free_start + req_size
+            if req_end > max_boot:
+                log.debug("free range position would place boot req above %s",
+                            max_boot)
                 continue
 
-        log.debug("current free range is %d-%d (%dMB)" % (free_geom.start,
-                                                          free_geom.end,
-                                                          free_geom.getSize()))
-        free_size = free_geom.getSize()
+        log.debug("current free range is %d-%d (%s)" % (free_geom.start,
+                                                        free_geom.end,
+                                                        Size(bytes=free_geom.getLength(unit="B"))))
+        free_size = Size(bytes=free_geom.getLength(unit="B"))
 
         # For boot partitions, we want the first suitable region we find.
         # For growable or extended partitions, we want the largest possible
@@ -616,28 +618,29 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
     return best_free
 
 def sectorsToSize(sectors, sectorSize):
-    """ Convert length in sectors to size in MB.
+    """ Convert length in sectors to size.
 
         :param sectors: sector count
         :type sectors: int
         :param sectorSize: sector size
-        :type sectorSize: int
+        :type sectorSize: :class:`~.size.Size`
         :returns: the size
-        :rtype: float
+        :rtype: :class:`~.size.Size`
     """
-    return (sectors * sectorSize) / (1024.0 * 1024.0)
+    return Size(bytes=(sectors * sectorSize))
 
 def sizeToSectors(size, sectorSize):
-    """ Convert size in MB to length in sectors.
+    """ Convert size to length in sectors.
 
-        :param size: size in MB
-        :type size: int or float
-        :param sectorSize: sector size
-        :type sectorSize: int
+        :param size: size
+        :type size: :class:`~.size.Size`
+        :param sectorSize: sector size in bytes
+        :type sectorSize: :class:`~.size.Size`
         :returns: sector count
         :rtype: int
     """
-    return (size * 1024.0 * 1024.0) / sectorSize
+    sectors = int(size / sectorSize)
+    return sectors
 
 def removeNewPartitions(disks, partitions):
     """ Remove newly added partitions from disks.
@@ -688,8 +691,8 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
         :type free: :class:`parted.Geometry`
         :param part_type: the partition type
         :type part_type: a parted.PARTITION_* constant
-        :param size: size of the new partition in MB
-        :type size: int or float
+        :param size: size of the new partition
+        :type size: :class:`~.size.Size`
         :keyword start: starting sector for the partition
         :type start: int
         :keyword end: ending sector for the partition
@@ -704,10 +707,10 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
             alignment unless a start sector is provided.
 
     """
+    sectorSize = Size(bytes=disklabel.partedDevice.sectorSize)
     if start is not None:
         if end is None:
-            end = start + \
-                  sizeToSectors(size, disklabel.partedDevice.sectorSize) - 1
+            end = start + sizeToSectors(size, sectorSize) - 1
     else:
         start = free.start
 
@@ -728,8 +731,7 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
             end = free.end
             length = end - start + 1
         else:
-            # size is in MB
-            length = sizeToSectors(size, disklabel.partedDevice.sectorSize)
+            length = sizeToSectors(size, sectorSize)
             end = start + length - 1
 
         if not disklabel.endAlignment.isAligned(free, end):
@@ -877,7 +879,7 @@ def doPartitioning(storage):
     else:
         # Mark all growable requests as no longer growable.
         for partition in storage.partitions:
-            log.debug("fixing size of %s at %.2f" % (partition, partition.size))
+            log.debug("fixing size of %s" % partition)
             partition.req_grow = False
             partition.req_base_size = partition.size
             partition.req_size = partition.size
@@ -900,12 +902,12 @@ def doPartitioning(storage):
             problem = part.checkSize()
             if problem < 0:
                 raise PartitioningError(_("partition is too small for %(format)s formatting "
-                                        "(allowable size is %(minSize)d MB to %(maxSize)d MB)")
+                                        "(allowable size is %(minSize)s to %(maxSize)s)")
                                         % {"format": part.format.name, "minSize": part.format.minSize,
                                             "maxSize": part.format.maxSize})
             elif problem > 0:
                 raise PartitioningError(_("partition is too large for %(format)s formatting "
-                                        "(allowable size is %(minSize)d MB to %(maxSize)d MB)")
+                                        "(allowable size is %(minSize)s to %(maxSize)s)")
                                         % {"format": part.format.name, "minSize": part.format.minSize,
                                             "maxSize": part.format.maxSize})
 
@@ -974,7 +976,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
         boot = _part.req_base_weight > 1000
 
         log.debug("allocating partition: %s ; id: %d ; disks: %s ;\n"
-                  "boot: %s ; primary: %s ; size: %dMB ; grow: %s ; "
+                  "boot: %s ; primary: %s ; size: %s ; grow: %s ; "
                   "max_size: %s ; start: %s ; end: %s" % (_part.name, _part.id,
                                     [d.name for d in req_disks],
                                     boot, _part.req_primary,
@@ -984,11 +986,11 @@ def allocatePartitions(storage, disks, partitions, freespace):
         free = None
         use_disk = None
         part_type = None
-        growth = 0
+        growth = 0  # in sectors
         # loop through disks
         for _disk in req_disks:
             disklabel = disklabels[_disk.path]
-            sectorSize = disklabel.partedDevice.sectorSize
+            sectorSize = Size(bytes=disklabel.partedDevice.sectorSize)
             best = None
             current_free = free
 
@@ -1101,16 +1103,16 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                temp_parts, freespace)
 
                         # grow all growable requests
-                        disk_growth = 0
-                        disk_sector_size = disklabels[disk_path].partedDevice.sectorSize
+                        disk_growth = 0 # in sectors
+                        disk_sector_size = Size(bytes=disklabels[disk_path].partedDevice.sectorSize)
                         for chunk in chunks:
                             chunk.growRequests()
                             # record the growth for this layout
                             new_growth += chunk.growth
                             disk_growth += chunk.growth
                             for req in chunk.requests:
-                                log.debug("request %d (%s) growth: %d (%dMB) "
-                                          "size: %dMB" %
+                                log.debug("request %d (%s) growth: %d (%s) "
+                                          "size: %s" %
                                           (req.device.id,
                                            req.device.name,
                                            req.growth,
@@ -1118,7 +1120,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                          disk_sector_size),
                                            sectorsToSize(req.growth + req.base,
                                                          disk_sector_size)))
-                        log.debug("disk %s growth: %d (%dMB)" %
+                        log.debug("disk %s growth: %d (%s)" %
                                         (disk_path, disk_growth,
                                          sectorsToSize(disk_growth,
                                                        disk_sector_size)))
@@ -1149,9 +1151,9 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                 % (_disk.name, new_part_type))
                     part_type = new_part_type
                     use_disk = _disk
-                    log.debug("new free: %d-%d / %dMB" % (best.start,
-                                                          best.end,
-                                                          best.getSize()))
+                    log.debug("new free: %d-%d / %s" % (best.start,
+                                                        best.end,
+                                                        Size(bytes=best.getLength(unit="B"))))
                     log.debug("new free allows for %d sectors of growth" %
                                 growth)
                     free = best
@@ -1192,8 +1194,9 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
         partition = addPartition(disklabel, free, part_type, _part.req_size,
                                  _part.req_start_sector, _part.req_end_sector)
-        log.debug("created partition %s of %dMB and added it to %s" %
-                (partition.getDeviceNodeName(), partition.getSize(),
+        log.debug("created partition %s of %s and added it to %s" %
+                (partition.getDeviceNodeName(),
+                 Size(bytes=partition.getLength(unit="B")),
                  disklabel.device))
 
         # this one sets the name
@@ -1254,7 +1257,7 @@ class PartitionRequest(Request):
         super(PartitionRequest, self).__init__(partition)
         self.base = partition.partedPartition.geometry.length   # base sectors
 
-        sector_size = partition.partedPartition.disk.device.sectorSize
+        sector_size = Size(bytes=partition.partedPartition.disk.device.sectorSize)
 
         if partition.req_grow:
             limits = filter(lambda l: l > 0,
@@ -1280,10 +1283,10 @@ class LVRequest(Request):
 
         # Round up to nearest pe. For growable requests this will mean that
         # first growth is to fill the remainder of any unused extent.
-        self.base = lv.vg.align(lv.req_size, roundup=True) / lv.vg.peSize # pe
+        self.base = int(lv.vg.align(lv.req_size, roundup=True) / lv.vg.peSize)
 
         if lv.req_grow:
-            limits = [l / lv.vg.peSize for l in
+            limits = [int(l / lv.vg.peSize) for l in
                         [lv.vg.align(lv.req_max_size),
                          lv.vg.align(lv.format.maxSize)] if l > 0]
 
@@ -1319,7 +1322,7 @@ class Chunk(object):
 
     def __repr__(self):
         s = ("%(type)s instance --\n"
-             "device = %(device)s  length = %(length)d  size = %(size)d\n"
+             "device = %(device)s  length = %(length)d  size = %(size)s\n"
              "remaining = %(rem)d  pool = %(pool)d" %
              {"type": self.__class__.__name__, "device": self.path,
               "length": self.length, "size": self.lengthToSize(self.length),
@@ -1355,7 +1358,7 @@ class Chunk(object):
             :raises: ValueError
             :returns: None
         """
-        log.debug("reclaim: %s %d (%d MB)" % (request, amount, self.lengthToSize(amount)))
+        log.debug("reclaim: %s %d (%s)" % (request, amount, self.lengthToSize(amount)))
         if request.growth < amount:
             log.error("tried to reclaim %d from request with %d of growth"
                         % (amount, request.growth))
@@ -1416,7 +1419,7 @@ class Chunk(object):
             if req.growth > max_growth:
                 # we've grown beyond the maximum. put some back.
                 extra = req.growth - max_growth
-                log.debug("taking back %d (%dMB) from %d (%s)" %
+                log.debug("taking back %d (%s) from %d (%s)" %
                             (extra, self.lengthToSize(extra),
                              req.device.id, req.device.name))
                 self.pool += extra
@@ -1463,9 +1466,9 @@ class Chunk(object):
             last_pool = self.pool    # to keep from getting stuck
             self.base = new_base
             if uniform:
-                growth = last_pool / self.remaining
+                growth = int(last_pool / self.remaining)
 
-            log.debug("%d requests and %d (%dMB) left in chunk" %
+            log.debug("%d requests and %s (%s) left in chunk" %
                         (self.remaining, self.pool, self.lengthToSize(self.pool)))
             for p in self.requests:
                 if p.done or p in self.skip_list:
@@ -1480,13 +1483,13 @@ class Chunk(object):
 
                 p.growth += growth
                 self.pool -= growth
-                log.debug("adding %d (%dMB) to %d (%s)" %
+                log.debug("adding %s (%s) to %d (%s)" %
                             (growth, self.lengthToSize(growth),
                              p.device.id, p.device.name))
 
                 new_base = self.trimOverGrownRequest(p, base=new_base)
-                log.debug("new grow amount for request %d (%s) is %d "
-                          "units, or %dMB" %
+                log.debug("new grow amount for request %d (%s) is %s "
+                          "units, or %s" %
                             (p.device.id, p.device.name, p.growth,
                              self.lengthToSize(p.growth)))
 
@@ -1500,13 +1503,13 @@ class Chunk(object):
                 growth = self.pool
                 p.growth += growth
                 self.pool = 0
-                log.debug("adding %d (%dMB) to %d (%s)" %
+                log.debug("adding %s (%s) to %d (%s)" %
                             (growth, self.lengthToSize(growth),
                              p.device.id, p.device.name))
 
                 self.trimOverGrownRequest(p)
-                log.debug("new grow amount for request %d (%s) is %d "
-                          "units, or %dMB" %
+                log.debug("new grow amount for request %d (%s) is %s "
+                          "units, or %s" %
                             (p.device.id, p.device.name, p.growth,
                              self.lengthToSize(p.growth)))
 
@@ -1533,14 +1536,14 @@ class DiskChunk(Chunk):
 
         """
         self.geometry = geometry            # parted.Geometry
-        self.sectorSize = self.geometry.device.sectorSize
+        self.sectorSize = Size(bytes=self.geometry.device.sectorSize)
         self.path = self.geometry.device.path
         super(DiskChunk, self).__init__(self.geometry.length, requests=requests)
 
     def __repr__(self):
         s = super(DiskChunk, self).__str__()
         s += (" start = %(start)d  end = %(end)d\n"
-              "sectorSize = %(sectorSize)d\n" %
+              "sectorSize = %(sectorSize)s\n" %
               {"start": self.geometry.start, "end": self.geometry.end,
                "sectorSize": self.sectorSize})
         return s
@@ -1612,7 +1615,8 @@ class DiskChunk(Chunk):
 
         # 2TB limit on bootable partitions, regardless of disklabel
         if req.device.req_bootable:
-            limits.append(sizeToSectors(2*1024*1024, self.sectorSize) - req_end)
+            max_boot = sizeToSectors(Size(en_spec="2 TiB"), self.sectorSize)
+            limits.append(max_boot - req_end)
 
         # request-specific maximum (see Request.__init__, above, for details)
         if req.max_growth:
@@ -1643,7 +1647,7 @@ class VGChunk(Chunk):
         """
         self.vg = vg
         self.path = vg.path
-        usable_extents = vg.extents - (vg.reservedSpace / vg.peSize)
+        usable_extents = vg.extents - int(vg.align(vg.reservedSpace, roundup=True) / vg.peSize)
         super(VGChunk, self).__init__(usable_extents, requests=requests)
 
     def addRequest(self, req):
@@ -1659,10 +1663,10 @@ class VGChunk(Chunk):
         super(VGChunk, self).addRequest(req)
 
     def lengthToSize(self, length):
-        return length * self.vg.peSize
+        return self.vg.peSize * length
 
     def sizeToLength(self, size):
-        return size / self.vg.peSize
+        return int(size / self.vg.peSize)
 
     def sortRequests(self):
         # sort the partitions by start sector
@@ -1693,13 +1697,13 @@ class VGChunk(Chunk):
             growth = int(req.device.req_percent * 0.01 * self.length)# truncate
             req.growth += growth
             self.pool -= growth
-            log.debug("adding %d (%dMB) to %d (%s)" %
+            log.debug("adding %d (%s) to %d (%s)" %
                         (growth, self.lengthToSize(growth),
                          req.device.id, req.device.name))
 
             new_base = self.trimOverGrownRequest(req)
             log.debug("new grow amount for request %d (%s) is %d "
-                      "units, or %dMB" %
+                      "units, or %s" %
                         (req.device.id, req.device.name, req.growth,
                          self.lengthToSize(req.growth)))
 
@@ -1771,8 +1775,8 @@ class TotalSizeSet(object):
         """
             :param devices: the set of devices
             :type devices: list of :class:`~.devices.PartitionDevice`
-            :param size: the target combined size in MB
-            :type size: int or float
+            :param size: the target combined size
+            :type size: :class:`~.size.Size`
         """
         self.devices = []
         for device in devices:
@@ -1810,12 +1814,12 @@ class SameSizeSet(object):
         """
             :param devices: the set of devices
             :type devices: list of :class:`~.devices.PartitionDevice`
-            :param size: target size for each device/request in MB
-            :type size: int or float
+            :param size: target size for each device/request
+            :type size: :class:`~.size.Size`
             :keyword grow: whether the devices can be grown
             :type grow: bool
-            :keyword max_size: the maximum size for growable devices in MB
-            :type max_size: int or float
+            :keyword max_size: the maximum size for growable devices
+            :type max_size: :class:`~.size.Size`
         """
         self.devices = []
         for device in devices:
@@ -1955,8 +1959,6 @@ def growPartitions(disks, partitions, free, size_sets=None):
     #
     chunks = []
     for disk in disks:
-        sector_size = disk.format.partedDevice.sectorSize
-
         # list of free space regions on this disk prior to partition allocation
         disk_free = [f for f in free if f.device.path == disk.path]
         if not disk_free:
@@ -2146,7 +2148,7 @@ def growLVM(storage):
             log.debug("vg %s has no free space" % vg.name)
             continue
 
-        log.debug("vg %s: %dMB free ; lvs: %s" % (vg.name, total_free,
+        log.debug("vg %s: %s free ; lvs: %s" % (vg.name, total_free,
                                                   [l.lvname for l in vg.lvs]))
 
         # don't include thin lvs in the vg's growth calculation

@@ -26,6 +26,7 @@ from ..errors import *
 from ..util import numeric_type
 from ..devicelibs import swap
 from . import DeviceFormat, register_device_format
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -43,7 +44,7 @@ class SwapSpace(DeviceFormat):
     _linuxNative = True                # for clearpart
 
     #see rhbz#744129 for details
-    _maxSize = 128 * 1024
+    _maxSize = Size(en_spec="128 GiB")
 
     def __init__(self, *args, **kwargs):
         """

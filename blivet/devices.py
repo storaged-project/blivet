@@ -21,10 +21,10 @@
 #
 
 import os
-import math
 import copy
 import pprint
 import tempfile
+from decimal import Decimal
 
 # device backend modules
 from devicelibs import mdraid
@@ -44,6 +44,7 @@ from flags import flags
 from storage_log import log_method_call
 from udev import *
 from formats import get_device_format_class, getFormat, DeviceFormat
+from size import Size
 from i18n import P_
 
 import logging
@@ -389,8 +390,8 @@ class StorageDevice(Device):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -452,13 +453,13 @@ class StorageDevice(Device):
                 sector_size = read_int_from_sys("%s/queue/logical_block_size"
                                                 % device_root)
                 size = read_int_from_sys("%s/size" % device_root)
-                self._size = (size * sector_size) / (1024.0 * 1024.0)
+                self._size = Size(bytes=(size * sector_size))
 
     def __str__(self):
         exist = "existing"
         if not self.exists:
             exist = "non-existent"
-        s = "%s %dMB %s" % (exist, self.size, super(StorageDevice, self).__str__())
+        s = "%s %s %s" % (exist, self.size, super(StorageDevice, self).__str__())
         if self.format.type:
             s += " with %s" % self.format
 
@@ -546,6 +547,9 @@ class StorageDevice(Device):
         return self._targetSize
 
     def _setTargetSize(self, newsize):
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must of type Size")
+
         if newsize > self.maxSize:
             log.error("requested size %s is larger than maximum %s",
                       newsize, self.maxSize)
@@ -798,7 +802,7 @@ class StorageDevice(Device):
                 _format.setup()
 
     def _getSize(self):
-        """ Get the device's size in MB, accounting for pending changes. """
+        """ Get the device's size, accounting for pending changes. """
         if self.exists and not self.mediaPresent:
             return 0
 
@@ -813,14 +817,17 @@ class StorageDevice(Device):
 
     def _setSize(self, newsize):
         """ Set the device's size to a new value. """
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must of type Size")
+
         if newsize > self.maxSize:
-            raise DeviceError("device cannot be larger than %s MB" %
+            raise DeviceError("device cannot be larger than %s" %
                               (self.maxSize,), self.name)
         self._size = newsize
 
     size = property(lambda x: x._getSize(),
                     lambda x, y: x._setSize(y),
-                    doc="The device's size in MB, accounting for pending changes")
+                    doc="The device's size, accounting for pending changes")
 
     @property
     def currentSize(self):
@@ -832,7 +839,7 @@ class StorageDevice(Device):
         """
         size = 0
         if self.exists and self.partedDevice:
-            size = self.partedDevice.getSize()
+            size = Size(bytes=self.partedDevice.getLength(unit="B"))
         elif self.exists:
             size = self._size
         return size
@@ -981,8 +988,8 @@ class DiskDevice(StorageDevice):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -1027,7 +1034,7 @@ class DiskDevice(StorageDevice):
         # Some drivers (cpqarray <blegh>) make block device nodes for
         # controllers with no disks attached and then report a 0 size,
         # treat this as no media present
-        return self.partedDevice.getSize() != 0
+        return self.partedDevice.getLength(unit="B") != 0
 
     @property
     def description(self):
@@ -1035,9 +1042,8 @@ class DiskDevice(StorageDevice):
 
     @property
     def size(self):
-        """ The disk's size in MB """
+        """ The disk's size """
         return super(DiskDevice, self).size
-    #size = property(StorageDevice._getSize)
 
     def _preDestroy(self):
         """ Destroy the device. """
@@ -1060,7 +1066,7 @@ class PartitionDevice(StorageDevice):
     """
     _type = "partition"
     _resizable = True
-    defaultSize = 500
+    defaultSize = Size(en_spec="500MiB")
 
     def __init__(self, name, format=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
@@ -1072,8 +1078,8 @@ class PartitionDevice(StorageDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class::class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -1095,8 +1101,8 @@ class PartitionDevice(StorageDevice):
             :type partType: parted partition type constant
             :keyword grow: whether or not to grow the partition
             :type grow: bool
-            :keyword maxsize: max size for growable partitions in MB
-            :type maxsize: int or float
+            :keyword maxsize: max size for growable partitions
+            :type maxsize: :class:`~.size.Size`
             :keyword start: start sector (see note, below)
             :type start: long
             :keyword end: end sector (see note, below)
@@ -1234,6 +1240,9 @@ class PartitionDevice(StorageDevice):
         return d
 
     def _setTargetSize(self, newsize):
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must of type Size")
+
         if newsize != self.currentSize:
             # change this partition's geometry in-memory so that other
             # partitioning operations can complete (e.g., autopart)
@@ -1464,8 +1473,7 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             return
 
-        # this is in MB
-        self._size = self.partedPartition.getSize()
+        self._size = Size(bytes=self.partedPartition.getLength(unit="B"))
         self._currentSize = self._size
         self.targetSize = self._size
 
@@ -1483,7 +1491,7 @@ class PartitionDevice(StorageDevice):
         device = self.partedPartition.geometry.device.path
 
         # Erase 1MiB or to end of partition
-        count = 1 * 1024 * 1024 / bs
+        count = Size(en_spec="1 MiB") / bs
         count = min(count, part_len)
 
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
@@ -1527,7 +1535,7 @@ class PartitionDevice(StorageDevice):
             DeviceFormat(device=self.path, exists=True).destroy()
 
         StorageDevice._postCreate(self)
-        self._currentSize = self.partedPartition.getSize()
+        self._currentSize = Size(bytes=self.partedPartition.getLength(unit="B"))
 
     def create(self):
         """ Create the device. """
@@ -1548,7 +1556,7 @@ class PartitionDevice(StorageDevice):
         # compute new size for partition
         currentGeom = partition.geometry
         currentDev = currentGeom.device
-        newLen = long(self.targetSize * 1024 * 1024) / currentDev.sectorSize
+        newLen = int(self.targetSize) / currentDev.sectorSize
         newGeometry = parted.Geometry(device=currentDev,
                                       start=currentGeom.start,
                                       length=newLen)
@@ -1576,7 +1584,7 @@ class PartitionDevice(StorageDevice):
                                         end=geometry.end)
 
         self.disk.format.commit()
-        self._currentSize = partition.getSize()
+        self._currentSize = Size(bytes=partition.getLength(unit="B"))
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -1625,8 +1633,7 @@ class PartitionDevice(StorageDevice):
         """ Get the device's size. """
         size = self._size
         if self.partedPartition:
-            # this defaults to MB
-            size = self.partedPartition.getSize()
+            size = Size(bytes=self.partedPartition.getLength(unit="B"))
         return size
 
     def _setSize(self, newsize):
@@ -1634,19 +1641,21 @@ class PartitionDevice(StorageDevice):
 
             Arguments:
 
-                newsize -- the new size (in MB)
+                newsize -- the new size
 
         """
         log_method_call(self, self.name,
                         status=self.status, size=self._size, newsize=newsize)
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must of type Size")
+
         if not self.exists:
             raise DeviceError("device does not exist", self.name)
 
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
 
-        # this defaults to MB
-        maxAvailableSize = self.partedPartition.getMaxAvailableSize()
+        maxAvailableSize = Size(bytes=self.partedPartition.getMaxAvailableSize(unit="B"))
 
         if newsize > maxAvailableSize:
             raise ValueError("new size is greater than available space")
@@ -1655,7 +1664,7 @@ class PartitionDevice(StorageDevice):
         geometry = self.partedPartition.geometry
         physicalSectorSize = geometry.device.physicalSectorSize
 
-        new_length = (newsize * (1024 * 1024)) / physicalSectorSize
+        new_length = int(newsize) / physicalSectorSize
         geometry.length = new_length
 
     def _getDisk(self):
@@ -1700,7 +1709,7 @@ class PartitionDevice(StorageDevice):
             pass
         else:
             if partition.type == parted.PARTITION_FREESPACE:
-                maxPartSize = self.size + math.floor(partition.getSize())
+                maxPartSize = self.size + partition.getLength(unit="B")
 
         return min(self.format.maxSize, maxPartSize)
 
@@ -1744,7 +1753,7 @@ class PartitionDevice(StorageDevice):
             data.size = int(self.req_base_size)
             data.grow = self.req_grow
             if self.req_grow:
-                data.maxSizeMB = self.req_max_size
+                data.maxSizeMB = int(self.req_max_size.convertTo(en_spec="mib"))
 
             ##data.disk = self.disk.name                      # by-id
             if self.req_disks and len(self.req_disks) == 1:
@@ -1768,8 +1777,8 @@ class DMDevice(StorageDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -1887,8 +1896,8 @@ class DMLinearDevice(DMDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -1952,8 +1961,8 @@ class DMCryptDevice(DMDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -1978,7 +1987,7 @@ class LUKSDevice(DMCryptDevice):
             :keyword exists: does this device exist?
             :type exists: bool
             :keyword size: the device's size
-            :type size: int or float
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -1995,9 +2004,9 @@ class LUKSDevice(DMCryptDevice):
     @property
     def size(self):
         if not self.exists or not self.partedDevice:
-            size = float(self.slave.size) - crypto.LUKS_METADATA_SIZE
+            size = self.slave.size - crypto.LUKS_METADATA_SIZE
         else:
-            size = self.partedDevice.getSize()
+            size = Size(self.partedDevice.getLength(unit="B"))
         return size
 
     def _postCreate(self):
@@ -2042,14 +2051,14 @@ class LVMVolumeGroupDevice(DMDevice):
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword peSize: physical extent size
-            :type peSize: int or float
+            :type peSize: :class:`~.size.Size`
 
             For existing VG's only:
 
             :keyword size: the VG's size
-            :type size: int or float
+            :type size: :class:`~.size.Size`
             :keyword free -- amount of free space in the VG
-            :type free: int or float
+            :type free: :class:`~.size.Size`
             :keyword peFree: number of free extents
             :type peFree: int
             :keyword peCount -- total number of extents
@@ -2086,7 +2095,7 @@ class LVMVolumeGroupDevice(DMDevice):
         self.lv_types = []
         self.hasDuplicate = False
         self.reserved_percent = 0
-        self.reserved_space = 0
+        self.reserved_space = Size(bytes=0)
 
         # this will have to be covered by the 20% pad for non-existent pools
         self.poolMetaData = 0
@@ -2096,7 +2105,7 @@ class LVMVolumeGroupDevice(DMDevice):
 
         # TODO: validate peSize if given
         if not self.peSize:
-            self.peSize = lvm.LVM_PE_SIZE  # MB
+            self.peSize = lvm.LVM_PE_SIZE
 
         if not self.exists:
             self.pvCount = len(self.parents)
@@ -2296,7 +2305,7 @@ class LVMVolumeGroupDevice(DMDevice):
            lv.size > self.freeSpace:
             raise DeviceError("new lv is too large to fit in free space", self.name)
 
-        log.debug("Adding %s/%dMB to %s" % (lv.name, lv.size, self.name))
+        log.debug("Adding %s/%s to %s" % (lv.name, lv.size, self.name))
         self._lvs.append(lv)
 
     def _removeLogVol(self, lv):
@@ -2374,10 +2383,10 @@ class LVMVolumeGroupDevice(DMDevice):
 
     @property
     def reservedSpace(self):
-        """ Reserved space in this VG, in MB """
-        reserved = 0
+        """ Reserved space in this VG """
+        reserved = Size(0)
         if self.reserved_percent > 0:
-            reserved = self.reserved_percent * 0.01 * self.size
+            reserved = self.reserved_percent * Decimal('0.01') * self.size
         elif self.reserved_space > 0:
             reserved = self.reserved_space
 
@@ -2400,41 +2409,33 @@ class LVMVolumeGroupDevice(DMDevice):
         """ Number of extents in this VG """
         # TODO: just ask lvm if isModified returns False
 
-        return self.size / self.peSize
+        return int(self.size / self.peSize)
 
     @property
     def freeSpace(self):
-        """ The amount of free space in this VG (in MB). """
+        """ The amount of free space in this VG. """
         # TODO: just ask lvm if isModified returns False
 
         # total the sizes of any LVs
-        log.debug("%s size is %dMB" % (self.name, self.size))
+        log.debug("%s size is %s" % (self.name, self.size))
         used = sum(lv.vgSpaceUsed for lv in self.lvs) + self.snapshotSpace
         used += self.reservedSpace
         used += self.poolMetaData
         free = self.size - used
-        log.debug("vg %s has %dMB free" % (self.name, free))
+        log.debug("vg %s has %s free" % (self.name, free))
         return free
 
     @property
     def freeExtents(self):
         """ The number of free extents in this VG. """
         # TODO: just ask lvm if isModified returns False
-        return self.freeSpace / self.peSize
+        return int(self.freeSpace / self.peSize)
 
     def align(self, size, roundup=None):
         """ Align a size to a multiple of physical extent size. """
         size = util.numeric_type(size)
 
-        if roundup:
-            round = math.ceil
-        else:
-            round = math.floor
-
-        # we want Kbytes as a float for our math
-        size *= 1024.0
-        pesize = self.peSize * 1024.0
-        return long((round(size / pesize) * pesize) / 1024)
+        return lvm.clampSize(size, self.peSize, roundup=roundup)
 
     @property
     def pvs(self):
@@ -2471,7 +2472,7 @@ class LVMVolumeGroupDevice(DMDevice):
         data.physvols = ["pv.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         if not self.exists:
-            data.pesize = self.peSize * 1024
+            data.pesize = self.peSize.convertTo(en_spec="KiB")
 
         # reserved percent/space
 
@@ -2492,8 +2493,8 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -2508,9 +2509,9 @@ class LVMLogicalVolumeDevice(DMDevice):
             :keyword copies: number of copies in the vg (>1 for mirrored lvs)
             :type copies: int
             :keyword logSize: size of log volume (for mirrored lvs)
-            :type logSize: int or float
+            :type logSize: :class:`~.size.Size`
             :keyword snapshotSpace: sum of sizes of snapshots of this lv
-            :type snapshotSpace: int or float
+            :type snapshotSpace: :class:`~.size.Size`
             :keyword singlePV: if true, maps this lv to a single pv
             :type singlePV: bool
             :keyword segType: segment type (eg: "linear", "raid1")
@@ -2521,7 +2522,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             :keyword grow: whether to grow this LV
             :type grow: bool
             :keyword maxsize: maximum size for growable LV
-            :type maxsize: int or float
+            :type maxsize: :class:`~.size.Size`
             :keyword percent -- percent of VG space to take
             :type percent: int
 
@@ -2541,7 +2542,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         self.singlePVerr = ("%(mountpoint)s is restricted to a single "
                             "physical volume on this platform.  No physical "
                             "volumes available in volume group %(vgname)s "
-                            "with %(size)d MB of available space." %
+                            "with %(size)s of available space." %
                            {'mountpoint': getattr(self.format, "mountpoint",
                                                   "A proposed logical volume"),
                             'vgname': self.vg.name,
@@ -2584,8 +2585,8 @@ class LVMLogicalVolumeDevice(DMDevice):
         s += ("  VG device = %(vgdev)r\n"
               "  segment type = %(type)s percent = %(percent)s\n"
               "  mirror copies = %(copies)d"
-              "  snapshot total =  %(snapshots)dMB\n"
-              "  VG space used = %(vgspace)dMB" %
+              "  snapshot total =  %(snapshots)s\n"
+              "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
                "copies": self.copies, "type": self.segType,
                "snapshots": self.snapshotSpace, "vgspace": self.vgSpaceUsed })
@@ -2608,13 +2609,16 @@ class LVMLogicalVolumeDevice(DMDevice):
         return self.copies > 1
 
     def _setSize(self, size):
-        size = self.vg.align(util.numeric_type(size))
-        log.debug("trying to set lv %s size to %dMB" % (self.name, size))
+        if not isinstance(size, Size):
+            raise ValueError("new size must of type Size")
+
+        size = self.vg.align(size)
+        log.debug("trying to set lv %s size to %s" % (self.name, size))
         if size <= self.vg.freeSpace + self.vgSpaceUsed:
             self._size = size
             self.targetSize = size
         else:
-            log.debug("failed to set size: %dMB short" % (size - (self.vg.freeSpace + self.vgSpaceUsed),))
+            log.debug("failed to set size: %s short" % (size - (self.vg.freeSpace + self.vgSpaceUsed),))
             raise ValueError("not enough free space in volume group")
 
     size = property(StorageDevice._getSize, _setSize)
@@ -2774,7 +2778,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             data.grow = self.req_grow
             if self.req_grow:
                 data.size = int(self.req_size)
-                data.maxSizeMB = self.req_max_size
+                data.maxSizeMB = self.req_max_size.convertTo(en_spec="mib")
             else:
                 data.size = int(self.size)
 
@@ -2796,8 +2800,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -2814,13 +2818,13 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             :keyword grow: whether to grow this LV
             :type grow: bool
             :keyword maxsize: maximum size for growable LV
-            :type maxsize: int or float
+            :type maxsize: :class:`~.size.Size`
             :keyword percent: percent of VG space to take
             :type percent: int
             :keyword metadatasize: the size of the metadata LV
-            :type metadatasize: int or float
+            :type metadatasize: :class:`~.size.Size`
             :keyword chunksize: chunk size for the pool
-            :type chunksize: int or float
+            :type chunksize: :class:`~.size.Size`
         """
         if metadatasize is not None and \
            not lvm.is_valid_thin_pool_metadata_size(metadatasize):
@@ -2849,7 +2853,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
         # TODO: add some checking to prevent overcommit for preexisting
         self.vg._addLogVol(lv)
-        log.debug("Adding %s/%dMB to %s" % (lv.name, lv.size, self.name))
+        log.debug("Adding %s/%s to %s" % (lv.name, lv.size, self.name))
         self._lvs.append(lv)
 
     def _removeLogVol(self, lv):
@@ -2924,6 +2928,10 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         return 0    # the pool's size is already accounted for in the vg
 
     def _setSize(self, size):
+        if not isinstance(size, Size):
+            raise ValueError("new size must of type Size")
+
+        size = self.vg.align(size)
         size = self.vg.align(util.numeric_type(size))
         self._size = size
         self.targetSize = size
@@ -2956,8 +2964,8 @@ class MDRaidArrayDevice(StorageDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -2995,7 +3003,7 @@ class MDRaidArrayDevice(StorageDevice):
         self._totalDevices = util.numeric_type(totalDevices)
         self.memberDevices = util.numeric_type(memberDevices)
 
-        self.chunkSize = 512.0 / 1024.0         # chunk size in MB
+        self.chunkSize = mdraid.MD_CHUNK_SIZE
 
         if not self.exists and not isinstance(metadataVersion, str):
             self.metadataVersion = "default"
@@ -3052,7 +3060,7 @@ class MDRaidArrayDevice(StorageDevice):
         This is used to calculate the superBlockSize for v1.1 and v1.2
         metadata.
 
-        Returns the raw size in MB
+        Returns the raw size
 
         Raises an MDRaidError if this operation is not meaningful for the
         raid level.
@@ -3103,7 +3111,7 @@ class MDRaidArrayDevice(StorageDevice):
                 size = 0
             log.debug("non-existent RAID %s size == %s" % (self.level, size))
         else:
-            size = self.partedDevice.getSize()
+            size = Size(bytes=self.partedDevice.getLength(unit="B"))
             log.debug("existing RAID %s size == %s" % (self.level, size))
 
         return size
@@ -3492,8 +3500,8 @@ class DMRaidArrayDevice(DMDevice):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -3605,8 +3613,8 @@ class MultipathDevice(DMDevice):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -3791,8 +3799,8 @@ class FileDevice(StorageDevice):
             :type path: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -3847,9 +3855,18 @@ class FileDevice(StorageDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
-        buf = "\0" * 1024 * 1024
-        for n in range(self.size):
-            os.write(fd, buf)
+        # all this fuss is so we write the zeros 1MiB at a time
+        zero = "\0"
+        MiB = Size(en_spec="1 MiB")
+        count = int(self.size.convertTo(en_spec="MiB"))
+        rem = self.size % MiB
+        for n in range(count):
+            os.write(fd, zero * MiB)
+
+        if rem:
+            # write out however many more zeros it takes to hit our size target
+            os.write(fd, zero * rem)
+
         os.close(fd)
 
     def _destroy(self):
@@ -3866,7 +3883,7 @@ class SparseFileDevice(FileDevice):
         """Create a sparse file."""
         log_method_call(self, self.name, status=self.status)
         fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
-        os.ftruncate(fd, 1024*1024*self.size)
+        os.ftruncate(fd, self.size)
         os.close(fd)
 
 
@@ -3894,8 +3911,8 @@ class LoopDevice(StorageDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -3977,8 +3994,8 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -4065,8 +4082,8 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -4158,8 +4175,8 @@ class ZFCPDiskDevice(DiskDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
@@ -4201,8 +4218,8 @@ class DASDDevice(DiskDevice):
             :type name: str
             :keyword exists: does this device exist?
             :type exists: bool
-            :keyword size: the device's size in MB
-            :type size: int or float
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
