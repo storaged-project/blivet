@@ -1701,9 +1701,11 @@ class DeviceTree(object):
 
         udev_settle()
         info = udev_get_device(device.sysfsPath)
-        self.handleUdevDeviceFormat(info, device)
-        if device.format.type:
-            log.info("got format: %s" % device.format)
+
+        if info:
+            self.handleUdevDeviceFormat(info, device)
+            if device.format.type:
+                log.info("got format: %s" % device.format)
 
     def _handleInconsistencies(self):
         for vg in [d for d in self.devices if d.type == "lvmvg"]:
