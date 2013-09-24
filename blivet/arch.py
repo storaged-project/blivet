@@ -275,13 +275,13 @@ def isPPC(bits=None):
     arch = os.uname()[4]
 
     if bits is None:
-        if arch == 'ppc' or arch == 'ppc64':
+        if arch in ('ppc', 'ppc64', 'ppc64le'):
             return True
     elif bits == 32:
-        if arch == 'ppc':
+        if arch in ('ppc'):
             return True
     elif bits == 64:
-        if arch == 'ppc64':
+        if arch in ('ppc64', 'ppc64le'):
             return True
 
     return False
