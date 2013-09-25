@@ -3768,6 +3768,33 @@ class NoDevice(StorageDevice):
         self._preDestroy()
 
 
+class TmpFSDevice(NoDevice):
+    """ A nodev device for a tmpfs filesystem. """
+    _type = "tmpfs"
+
+    def __init__(self, *args, **kwargs):
+        """Create a tmpfs device"""
+        format = kwargs.get('format')
+        NoDevice.__init__(self, format)
+        # the tmpfs device does not exist until mounted
+        self.exists = False
+        self._size = kwargs["size"]
+        self._targetSize = self._size
+
+    @property
+    def size(self):
+        if self._size is not None:
+            return self._size
+        elif self.format:
+            return self.format.size
+        else:
+            return 0
+
+    @property
+    def fstabSpec(self):
+        return self._type
+
+
 class FileDevice(StorageDevice):
     """ A file on a filesystem.
 
