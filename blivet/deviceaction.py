@@ -473,8 +473,14 @@ class ActionCreateFormat(DeviceAction):
             udev_settle()
             self.device.updateSysfsPath()
             info = udev_get_block_device(self.device.sysfsPath)
-            self.device.format.uuid = udev_device_get_uuid(info)
-            self.device.deviceLinks = udev_device_get_symlinks(info)
+            # only do this if the format has a device known to udev
+            # (the format might not have a normal device at all)
+            if info:
+                self.device.format.uuid = udev_device_get_uuid(info)
+                self.device.deviceLinks = udev_device_get_symlinks(info)
+            elif self.device.format.type != "tmpfs":
+                # udev lookup failing is a serious issue for anything other than tmpfs
+                log.error("udev lookup failed for device: %s" % self.device)
 
     def cancel(self):
         self.device.format = self.origFormat
