@@ -1198,6 +1198,10 @@ class Blivet(object):
         kwargs["subvol"] = True
         return self.newBTRFS(*args, **kwargs)
 
+    def newTmpFS(self, *args, **kwargs):
+        """ Return a new TmpFSDevice. """
+        return TmpFSDevice(*args, **kwargs)
+
     def createDevice(self, device):
         """ Schedule creation of a device.
 

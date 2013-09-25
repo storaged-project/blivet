@@ -21,11 +21,7 @@
 #                    David Cantrell <dcantrell@redhat.com>
 #
 
-""" Filesystem classes for use by anaconda.
-
-    TODO:
-        - bug 472127: allow creation of tmpfs filesystems (/tmp, /var/tmp, &c)
-"""
+""" Filesystem classes. """
 import math
 import os
 import sys
@@ -39,6 +35,7 @@ from .. import platform
 from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_method_call
+from .. import arch
 
 import logging
 log = logging.getLogger("blivet")
@@ -54,6 +51,8 @@ except OSError:
 # these are for converting to/from SI for ntfsresize
 mb = 1000 * 1000.0
 mib = 1024 * 1024.0
+gib = 1024 * 1024 * 1024.0
+
 
 fs_configs = {}
 
@@ -429,7 +428,8 @@ class FS(DeviceFormat):
         if not self.resizefsProg:
             return
 
-        if not os.path.exists(self.device):
+        # tmpfs mounts don't need an existing device node
+        if not self.device == "tmpfs" and not os.path.exists(self.device):
             raise FSResizeError("device does not exist", self.device)
 
         self.doCheck()
@@ -1419,7 +1419,7 @@ class NoDevFS(FS):
     def __init__(self, *args, **kwargs):
         FS.__init__(self, *args, **kwargs)
         self.exists = True
-        self.device = self.type
+        self.device = self._type
 
     def _setDevice(self, devspec):
         self._device = devspec
@@ -1464,6 +1464,162 @@ register_device_format(SysFS)
 
 class TmpFS(NoDevFS):
     _type = "tmpfs"
+    _supported = True
+    _resizable = True
+    # remounting can be used to change
+    # the size of a live tmpfs mount
+    _resizefs = "mount"
+    # as tmpfs is part of the Linux kernel,
+    # it is Linux-native
+    _linuxNative = True
+    # empty tmpfs has zero overhead
+    _minInstanceSize = 0
+    # tmpfs really does not occupy any space by itself
+    _minSize = 0
+    # in a sense, I guess tmpfs is formattable
+    # in the regard that the format is automatically created
+    # once mounted
+    _formattable = True
+
+    def __init__(self, *args, **kwargs):
+        NoDevFS.__init__(self, *args, **kwargs)
+        self.exists = True
+        self._device = "tmpfs"
+
+        # according to the following Kernel ML thread:
+        # http://www.gossamer-threads.com/lists/linux/kernel/875278
+        # maximum tmpfs mount size is 16TB on 32 bit systems
+        # and 16EB on 64 bit systems
+        bits = arch.bits()
+        if bits == 32:
+            self._maxSize = 16 * 1024 * 1024
+        elif bits == 64:
+            self._maxSize = 16 * 1024 * 1024 * 1024 * 1024
+        # if the architecture is other than 32 or 64 bit or unknown
+        # just use the default maxsize, which is 0, this disables
+        # resizing but other operations such as mounting should work fine
+
+        # check if fixed filesystem size has been specified,
+        # if no size is specified, tmpfs will by default
+        # be limited to half of the system RAM
+        # (sizes of all tmpfs mounts are independent)
+        fsoptions = kwargs.get("mountopts")
+        system_ram = util.total_memory() / 1024  # kB to MB
+        self._size_option = ""
+        if fsoptions:
+            # some mount options were specified, replace the default value
+            self._options = fsoptions
+        if self._size:
+            # absolute size for the tmpfs mount has been specified
+            self._size_option = "size=%dm" % self._size
+        else:
+            # if no size option is specified, the tmpfs mount size will be 50%
+            # of system RAM by default
+            self._size = system_ram*0.5
+
+    def create(self, *args, **kwargs):
+        """ A filesystem is created automatically once tmpfs is mounted. """
+        pass
+
+    def destroy(self, *args, **kwargs):
+        """ The device and its filesystem are automatically destroyed once the
+        mountpoint is unmounted.
+        """
+        pass
+
+    @property
+    def mountable(self):
+        return True
+
+    def _getOptions(self):
+        # if the size option string is defined,
+        # append it to options
+        # (we need to separate the size option string
+        # from the other options, as the size might change
+        # when the filesystem is resized;
+        # replacing the size option in the otherwise free-form
+        # options string would get messy fast)
+        opts = ",".join([o for o in [self._options, self._size_option] if o])
+        return opts or "defaults"
+
+    def _setOptions(self, options):
+        self._options = options
+
+    # override the options property
+    # so that the size and other options
+    # are correctly added to fstab
+    options = property(_getOptions, _setOptions)
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def minSize(self):
+        """ The minimum filesystem size in megabytes. """
+        return self._minInstanceSize
+
+    @property
+    def free(self):
+        free_space = 0
+        if self._mountpoint:
+            # If self._mountpoint is defined, it means this tmpfs mount
+            # has been mounted and there is a path we can use as a handle to
+            # look-up the free space on the filesystem.
+            # When running with changeroot, such as during installation,
+            # self._mountpoint is set to the full changeroot path once mounted,
+            # so even with changeroot, statvfs should still work fine.
+            st = os.statvfs(self._mountpoint)
+            free_space = st.f_bavail * st.f_frsize/1024/1024  # blocks to MB
+        else:
+            # Free might be called even if the tmpfs mount has not been
+            # mounted yet, in this case just return the size set for the mount.
+            # Once mounted, the tmpfs mount will be empty
+            # and therefore free space will correspond to its size.
+            free_space = self._size
+        return free_space
+
+    def _getDevice(self):
+        """ All the tmpfs mounts use the same "tmpfs" device. """
+        return self._type
+
+    def _setDevice(self, value):
+        # the DeviceFormat parent class does a
+        # self.device = kwargs["device"]
+        # assignment, so we need a setter for the
+        # device property, but as the device is always the
+        # same, nothing actually needs to be set
+        pass
+
+    device = property(_getDevice, _setDevice)
+
+    @property
+    def resizeArgs(self):
+        # a live tmpfs mount can be resized by remounting it with
+        # the mount command
+
+        # add the remount flag, size and any options
+        remount_options = 'remount,size=%dm' % self.targetSize
+        # if any mount options are defined, append them
+        if self._options:
+            remount_options = "%s,%s" % (remount_options, self._options)
+        return ['-o', remount_options, self._type, self._mountpoint]
+
+    def doResize(self):
+        # we need to override doResize, because the
+        # self._size_option string needs to be updated in case
+        # the tmpfs mount is successfully resized, using the new
+        # self._size value
+        original_size = self._size
+        FS.doResize(self)
+        # after a successful resize, self._size
+        # is set to be equal to self.targetSize,
+        # so it can be used to check if resize took place
+        if original_size != self._size:
+            # update the size option string
+            # -> please note that resizing always sets the
+            # size of this tmpfs mount to an absolute value
+            self._size_option = "size=%dm" % self._size
 
 register_device_format(TmpFS)
 
