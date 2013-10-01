@@ -647,8 +647,11 @@ class DeviceFactory(object):
                 parent_container.addMember(self.device)
 
     def _set_name(self):
-        if self.device_name is None:
-            return
+        if not self.device_name:
+            self.device_name = self.storage.suggestDeviceName(
+                                                  parent=self.container,
+                                                  swap=(self.fstype == "swap"),
+                                                  mountpoint=self.mountpoint)
 
         # TODO: write a StorageDevice.name setter
         safe_new_name = self.storage.safeDeviceName(self.device_name)
@@ -1204,8 +1207,11 @@ class LVMFactory(DeviceFactory):
         return self.storage.newLV(*args, **kwargs)
 
     def _set_name(self):
-        if self.device_name is None:
-            return
+        if not self.device_name:
+            self.device_name = self.storage.suggestDeviceName(
+                                                  parent=self.container,
+                                                  swap=(self.fstype == "swap"),
+                                                  mountpoint=self.mountpoint)
 
         # TODO: write a StorageDevice.name setter
         lvname = "%s-%s" % (self.container.name, self.device_name)
@@ -1629,7 +1635,4 @@ class BTRFSFactory(DeviceFactory):
 
     def _set_name(self):
         super(BTRFSFactory, self)._set_name()
-        if self.device_name is None:
-            return
-
         self.device.format.options = "subvol=" + self.device.name
