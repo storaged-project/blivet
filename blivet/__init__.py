@@ -417,9 +417,7 @@ class Blivet(object):
         if self.bootloader:
             # clear out bootloader attributes that refer to devices that are
             # no longer in the tree
-            self.bootloader.stage1_disk = None
-            self.bootloader.stage1_device = None
-            self.bootloader.stage2_device = None
+            self.bootloader.reset()
 
         self.roots = []
         if flags.installer_mode:
@@ -1714,6 +1712,8 @@ class Blivet(object):
             log.info("user specified that bootloader install be skipped")
             return
 
+        # Need to make sure bootDrive has been setup from the latest information
+        self.ksdata.bootloader.execute(self, self.ksdata, None)
         self.bootloader.stage1_disk = self.devicetree.resolveDevice(self.ksdata.bootloader.bootDrive)
         self.bootloader.stage2_device = self.bootDevice
         self.bootloader.set_stage1_device(self.devices)
