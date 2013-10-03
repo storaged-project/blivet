@@ -2120,6 +2120,40 @@ class Blivet(object):
             parent = getattr(self.ksdata, list_attr)
             parent.dataList().append(data)
 
+    def addFstabSwap(self, device):
+        """
+        Add swap device to the list of swaps that should appear in the fstab.
+
+        :param device: swap device that should be added to the list
+        :type device: blivet.devices.StorageDevice instance holding a swap format
+
+        """
+
+        self.fsset.addFstabSwap(device)
+
+    def removeFstabSwap(self, device):
+        """
+        Remove swap device from the list of swaps that should appear in the fstab.
+
+        :param device: swap device that should be removed from the list
+        :type device: blivet.devices.StorageDevice instance holding a swap format
+
+        """
+
+        self.fsset.removeFstabSwap(device)
+
+    def setFstabSwaps(self, devices):
+        """
+        Set swap devices that should appear in the fstab.
+
+        :param devices: iterable providing devices that should appear in the fstab
+        :type devices: iterable providing blivet.devices.StorageDevice instances holding
+                       a swap format
+
+        """
+
+        self.fsset.setFstabSwaps(devices)
+
 def mountExistingSystem(fsset, rootDevice,
                         allowDirty=None, dirtyCB=None,
                         readOnly=None):
@@ -2328,6 +2362,7 @@ class FSSet(object):
         self._usb = None
         self._selinux = None
         self._run = None
+        self._fstab_swaps = set()
         self.preserveLines = []     # lines we just ignore and preserve
 
     @property
@@ -2840,7 +2875,14 @@ class FSSet(object):
 
         devices = sorted(self.mountpoints.values(),
                          key=lambda d: d.format.mountpoint)
-        devices += self.swapDevices
+
+        # filter swaps only in installer mode
+        if flags.installer_mode:
+            devices += [dev for dev in self.swapDevices
+                        if dev in self._fstab_swaps]
+        else:
+            devices += self.swapDevices
+
         netdevs = self.devicetree.getDevicesByInstance(NetworkStorageDevice)
         for device in devices:
             # why the hell do we put swap in the fstab, anyway?
@@ -2889,6 +2931,43 @@ class FSSet(object):
             fstab += line
 
         return fstab
+
+    def addFstabSwap(self, device):
+        """
+        Add swap device to the list of swaps that should appear in the fstab.
+
+        :param device: swap device that should be added to the list
+        :type device: blivet.devices.StorageDevice instance holding a swap format
+
+        """
+
+        self._fstab_swaps.add(device)
+
+    def removeFstabSwap(self, device):
+        """
+        Remove swap device from the list of swaps that should appear in the fstab.
+
+        :param device: swap device that should be removed from the list
+        :type device: blivet.devices.StorageDevice instance holding a swap format
+
+        """
+
+        try:
+            self._fstab_swaps.remove(device)
+        except KeyError:
+            pass
+
+    def setFstabSwaps(self, devices):
+        """
+        Set swap devices that should appear in the fstab.
+
+        :param devices: iterable providing devices that should appear in the fstab
+        :type devices: iterable providing blivet.devices.StorageDevice instances holding
+                       a swap format
+
+        """
+
+        self._fstab_swaps = set(devices)
 
 def getReleaseString():
     relName = None

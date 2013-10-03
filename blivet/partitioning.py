@@ -325,6 +325,10 @@ def doAutoPartition(storage, data):
 
     storage.setUpBootLoader()
 
+    # only newly added swaps should appear in the fstab
+    new_swaps = (dev for dev in storage.swaps if not dev.format.exists)
+    storage.setFstabSwaps(new_swaps)
+
     # now do a full check of the requests
     (errors, warnings) = storage.sanityCheck()
     for error in errors:
