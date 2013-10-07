@@ -2104,6 +2104,9 @@ class LVMVolumeGroupDevice(DMDevice):
         self.reserved_percent = 0
         self.reserved_space = 0
 
+        # this will have to be covered by the 20% pad for non-existent pools
+        self.poolMetaData = 0
+
         # circular references, here I come
         self._lvs = []
 
@@ -2319,6 +2322,9 @@ class LVMVolumeGroupDevice(DMDevice):
 
         self._lvs.remove(lv)
 
+        if self.poolMetaData and not self.thinpools:
+            self.poolMetaData = 0
+
     def _addPV(self, pv):
         """ Add a PV to this VG. """
         if pv in self.pvs:
@@ -2421,6 +2427,7 @@ class LVMVolumeGroupDevice(DMDevice):
         log.debug("%s size is %dMB" % (self.name, self.size))
         used = sum(lv.vgSpaceUsed for lv in self.lvs) + self.snapshotSpace
         used += self.reservedSpace
+        used += self.poolMetaData
         free = self.size - used
         log.debug("vg %s has %dMB free" % (self.name, free))
         return free
@@ -2788,7 +2795,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     def __init__(self, name, parents=None, size=None, uuid=None,
                  format=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
-                 metadatasize=None, chunksize=None):
+                 metadatasize=None, chunksize=None, segType=None):
         """ Create a LVMLogicalVolumeDevice instance.
 
             Arguments:
@@ -2826,7 +2833,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                 format=format, exists=exists,
                                                 sysfsPath=sysfsPath, grow=grow,
                                                 maxsize=maxsize,
-                                                percent=percent)
+                                                percent=percent,
+                                                segType=segType)
 
         self.metaDataSize = metadatasize or 0
         self.chunkSize = chunksize or 0
