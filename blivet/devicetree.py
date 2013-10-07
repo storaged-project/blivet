@@ -1191,26 +1191,22 @@ class DeviceTree(object):
                         % device.format.mapName)
 
     def handleVgLvs(self, vg_device):
-        """ Handle setup of the LV's in the vg_device
-            return True if an LV was setup
-            return False if there was an error, or no more LV's to setup
-        """
-        ret = False
+        """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
 
         lv_names = vg_device.lv_names
         lv_uuids = vg_device.lv_uuids
         lv_sizes = vg_device.lv_sizes
-        lv_attr = vg_device.lv_attr
+        lv_attrs = vg_device.lv_attr
         lv_types = vg_device.lv_types
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s" % vg_name)
-            return False
+            return
 
         if not lv_names:
             log.debug("no LVs listed for VG %s" % vg_name)
-            return False
+            return
 
         def lv_attr_cmp(a, b):
             """ Sort so that mirror images come first and snapshots last. """
@@ -1231,85 +1227,96 @@ class DeviceTree(object):
             else:
                 return 0
 
-        # make a list of indices with mirror volumes up front and snapshots at
-        # the end
-        indices = range(len(lv_names))
-        indices.sort(key=lambda i: lv_attr[i], cmp=lv_attr_cmp)
-        raid = {}
-        for index in indices:
+        def addLV(lv_name, lv_uuid, lv_attr, lv_size, lv_type):
             lv_class = LVMLogicalVolumeDevice
-            lv_name = lv_names[index]
             lv_parents = [vg_device]
             name = "%s-%s" % (vg_name, lv_name)
-            if lv_attr[index][0] in 'Ss':
+
+            if self.getDeviceByName(name):
+                # some lvs may have been added on demand below
+                log.debug("already added %s" % name)
+                return
+
+            if lv_attr[0] in 'Ss':
                 log.info("found lvm snapshot volume '%s'" % name)
                 origin_name = devicelibs.lvm.lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin"
                                 % (vg_name, lv_name))
-                    continue
+                    return
 
-                origin = self.getDeviceByName("%s-%s" % (vg_name,
-                                                         origin_name))
+                origin_device_name = "%s-%s" % (vg_name, origin_name)
+                origin = self.getDeviceByName(origin_device_name)
                 if not origin:
                     if origin_name.endswith("_vorigin]"):
                         log.info("snapshot volume '%s' has vorigin" % name)
-                        vg_device.voriginSnapshots[lv_name] = lv_sizes[index]
+                        vg_device.voriginSnapshots[lv_name] = lv_size
+                        return
                     else:
-                        log.warning("snapshot lv '%s' origin lv '%s-%s' "
-                                    "not found" % (name,
-                                                   vg_name, origin_name))
-                    continue
+                        oidx = lv_names.index(origin_name)
+                        if oidx:
+                            addLV(*lv_data[oidx])
+                            origin = self.getDeviceByName(origin_device_name)
+
+                        if origin is None:
+                            log.warning("snapshot lv '%s' origin lv '%s' not "
+                                        "found" % (name, origin_device_name))
+                            return
 
                 log.debug("adding %dMB to %s snapshot total"
                             % (lv_sizes[index], origin.name))
-                origin.snapshotSpace += lv_sizes[index]
-                continue
-            elif lv_attr[index][0] == 'v':
+                origin.snapshotSpace += lv_size
+                return
+            elif lv_attr[0] == 'v':
                 # skip vorigins
-                continue
-            elif lv_attr[index][0] in 'Ii':
+                return
+            elif lv_attr[0] in 'Ii':
                 # mirror image
-                lv_name = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
-                name = "%s-%s" % (vg_name, lv_name)
-                if name not in raid:
-                    raid[name] = {"copies": 0, "log": 0, "meta": 0}
-
+                rname = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
+                name = "%s-%s" % (vg_name, rname)
                 raid[name]["copies"] += 1
-                continue
-            elif lv_attr[index][0] == 'e':
+                return
+            elif lv_attr[0] == 'e':
+                if lv_name.endswith("_pmspare]"):
+                    # spare metadata area for any thin pool that needs repair
+                    vg_device.poolMetaData += lv_size
+                    return
+
                 # raid metadata volume
                 lv_name = re.sub(r'_rmeta.+', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
-                raid[name]["meta"] += lv_sizes[index]
-                continue
-            elif lv_attr[index][0] == 'l':
+                raid[name]["meta"] += lv_size
+                return
+            elif lv_attr[0] == 'l':
                 # log volume
-                lv_name = re.sub(r'_mlog.*', '', lv_name[1:-1])
-                name = "%s-%s" % (vg_name, lv_name)
-                if name not in mirrors:
-                    raid[name] = {"stripes": 0, "log": 0, "meta": 0}
-
-                raid[name]["log"] = lv_sizes[index]
-                continue
-            elif lv_attr[index][0] == 't':
+                rname = re.sub(r'_mlog.*', '', lv_name[1:-1])
+                name = "%s-%s" % (vg_name, rname)
+                raid[name]["log"] = lv_size
+                return
+            elif lv_attr[0] == 't':
                 # thin pool
                 lv_class = LVMThinPoolDevice
-            elif lv_attr[index][0] == 'V':
+            elif lv_attr[0] == 'V':
                 # thin volume
                 pool_name = devicelibs.lvm.thinlvpoolname(vg_name, lv_name)
-                pool_device = self.getDeviceByName("%s-%s" % (vg_name,
-                                                              pool_name))
+                pool_device_name = "%s-%s" % (vg_name, pool_name)
+                pool_device = self.getDeviceByName(pool_device_name)
+                if pool_device is None:
+                    pidx = lv_names.index(pool_name)
+                    if pidx:
+                        addLV(*lv_data[pidx])
+                        pool_device = self.getDeviceByName(pool_device_name)
+
                 if pool_device is None:
                     raise DeviceTreeError("failed to look up thin pool")
+
                 lv_class = LVMThinLogicalVolumeDevice
                 lv_parents = [pool_device]
+            elif lv_attr[0] not in '-mMrR':
+                return
 
-            lv_dev = self.getDeviceByUuid(lv_uuids[index])
+            lv_dev = self.getDeviceByUuid(lv_uuid)
             if lv_dev is None:
-                lv_uuid = lv_uuids[index]
-                lv_size = lv_sizes[index]
-                lv_type = lv_types[index]
                 lv_device = lv_class(lv_name, parents=lv_parents,
                                      uuid=lv_uuid, size=lv_size,segType=lv_type,
                                      exists=True)
@@ -1322,15 +1329,30 @@ class DeviceTree(object):
                     lv_info = udev_get_block_device(lv_device.sysfsPath)
                     if not lv_info:
                         log.error("failed to get udev data for lv %s" % lv_device.name)
-                        continue
+                        return
 
                     # do format handling now
                     self.addUdevDevice(lv_info)
 
-                ret = True
+        # make a list of indices with mirror volumes up front and snapshots at
+        # the end
+        indices = range(len(lv_names))
+        indices.sort(key=lambda i: lv_attrs[i], cmp=lv_attr_cmp)
+        lv_real_names = [n.replace("[", "").replace("]", "") for n in lv_names]
+        raid = dict([("%s-%s" % (vg_device.name,
+                                 n.replace("[", "").replace("]", "")),
+                      {"copies": 0, "log": 0, "meta": 0})
+                     for n in lv_names])
+        lv_data = zip(lv_names, lv_uuids, lv_attrs, lv_sizes, lv_types)
+        for i in range(len(lv_data)):
+            addLV(*lv_data[i])
 
         for name, data in raid.items():
             lv_dev = self.getDeviceByName(name)
+            if not lv_dev:
+                # hidden lv, eg: pool00_tdata
+                continue
+
             lv_dev.copies = data["copies"]
             lv_dev.metaDataSize = data["meta"]
             lv_dev.logSize = data["log"]
@@ -1338,8 +1360,6 @@ class DeviceTree(object):
                       "to %dMB, total size %dMB"
                         % (lv_dev.name, lv_dev.copies, lv_dev.metaDataSize,
                            lv_dev.logSize, lv_dev.vgSpaceUsed))
-
-        return ret
 
     def handleUdevLVMPVFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
