@@ -36,6 +36,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
                                     stdin=stdin,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
+                                    close_fds=True,
                                     preexec_fn=chroot, cwd=root, env=env)
 
             out = proc.communicate()[0]
