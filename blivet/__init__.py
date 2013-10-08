@@ -53,6 +53,7 @@ import errno
 import sys
 import statvfs
 import copy
+import tempfile
 
 try:
     import nss.nss
@@ -168,12 +169,7 @@ def turnOnFilesystems(storage, mountOnly=False):
         try:
             storage.doIt()
         except FSResizeError as e:
-            if os.path.exists("/tmp/resize.out"):
-                details = open("/tmp/resize.out", "r").read()
-            else:
-                details = e.args[1]
-
-            if errorHandler.cb(e, e.args[0], details=details) == ERROR_RAISE:
+            if errorHandler.cb(e, e.args[0], details=e.args[1]) == ERROR_RAISE:
                 raise
         except Exception as e:
             raise
@@ -294,7 +290,7 @@ class Blivet(object):
         self.dasd = dasd.DASD()
 
         self._nextID = 0
-        self._dumpFile = "/tmp/storage.state"
+        self._dumpFile = "%s/storage.state" % tempfile.gettempdir()
 
         # these will both be empty until our reset method gets called
         self.devicetree = DeviceTree(conf=self.config,
