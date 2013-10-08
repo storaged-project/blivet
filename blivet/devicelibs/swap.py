@@ -33,6 +33,9 @@ _ = lambda x: gettext.ldgettext("blivet", x)
 import logging
 log = logging.getLogger("blivet")
 
+# maximum ratio of swap size to disk size (10 %)
+MAX_SWAP_DISK_RATIO = 0.1
+
 def mkswap(device, label=''):
     # We use -f to force since mkswap tends to refuse creation on lvs with
     # a message about erasing bootbits sectors on whole disks. Bah.
@@ -116,13 +119,17 @@ def swapstatus(device):
 
     return status
 
-def swapSuggestion(quiet=False, hibernation=False):
+def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
     """
     Suggest the size of the swap partition that will be created.
 
-    @param quiet: log size information
-    @param hibernation: calculate swap size big enough for hibernation
-    @return: calculated swap size
+    :param quiet: whether to log size information or not
+    :type quiet: bool
+    :param hibernation: calculate swap size big enough for hibernation
+    :type hibernation: bool
+    :param disk_space: how much disk space is available
+    :type disk_space: int
+    :return: calculated swap size
 
     """
 
@@ -149,6 +156,16 @@ def swapSuggestion(quiet=False, hibernation=False):
             swap = mem + swap
         else:
             log.info("Ignoring --hibernation option on systems with 64 GB of RAM or more")
+
+    if disk_space is not None:
+        max_swap = int(disk_space * MAX_SWAP_DISK_RATIO)
+        if swap > max_swap:
+            log.info("Suggested swap size (%(swap)d M) exceeds %(percent)d %% of "
+                     "disk space, using %(percent)d %% of disk space (%(size)d M) "
+                     "instead." % {"percent": MAX_SWAP_DISK_RATIO*100,
+                                   "swap": swap,
+                                   "size": max_swap})
+            swap = max_swap
 
     if not quiet:
         log.info("Swap attempt of %sM", swap)
