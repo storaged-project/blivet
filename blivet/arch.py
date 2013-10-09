@@ -25,8 +25,16 @@
 #            Dennis Gilmore <dgilmore@ausil.us>
 #            David Marlin <dmarlin@redhat.com>
 #
+# The absolute_import is needed so that we can
+# import the "platform" module from the Python
+# standard library but not the local blivet module
+# that is also called "platform".
+from __future__ import absolute_import
 
 import os
+
+import logging
+log = logging.getLogger("blivet")
 
 from .flags import flags
 
@@ -331,3 +339,26 @@ def getArch():
         return 'arm'
     else:
         return os.uname()[4]
+
+def bits():
+    """ Return an integer representing the length
+        of the "word" used by the current architecture
+        -> it is usually either 32 or 64
+
+        :return: number of bits for the current architecture
+        or None if the number could not be determined
+        :rtype: integer or None
+    """
+    try:
+        import platform
+        bits = platform.architecture()[0]
+        # the string is in the format:
+        # "<number>bit"
+        # so we remove the bit suffix and convert the
+        # number to an integer
+        bits = bits.strip("bit")
+        bits = int(bits)
+        return bits
+    except Exception as e:
+        log.error("architecture word size detection failed: %s" % e)
+        return None
