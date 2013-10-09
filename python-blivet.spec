@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.22
+Version: 0.23
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 09 2013 Brian C. Lane <bcl@redhat.com> - 0.23-1
+- Make sure bootloader is setup after autopart (#1015277) (bcl)
+- Let setUpBootLoader raise BootloaderError (#1015277) (bcl)
+- Limit the maximum swap size to 10 % of disk space (if given) (vpodzime)
+- support ppc64le architecture (hamzy)
+- Don't call handleUdevDeviceFormat without udev device (#1009809) (dshea)
+
 * Fri Sep 06 2013 David Lehman <dlehman@redhat.com> - 0.22-1
 - Allow implicit inclusion of multipath/fwraid by including all members. (dlehman)
 - If a device has been removed, omit it from the copied root. (#1004572) (dlehman)
