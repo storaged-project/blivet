@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.5
+Version: 0.18.6
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Oct 14 2013 Brian C. Lane <bcl@redhat.com> - 0.18.6-1
+- Do not limit swap size to 10 % of disk space for hibernation (vpodzime)
+- Limit the maximum swap size to 10 % of disk space (if given) (vpodzime)
+
 * Wed Oct 09 2013 Brian C. Lane <bcl@redhat.com> - 0.18.5-1
 - Make sure bootloader is setup after autopart (#1015277) (bcl)
 - Let setUpBootLoader raise BootloaderError (#1015277) (bcl)
