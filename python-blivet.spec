@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.6
+Version: 0.18.7
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Oct 17 2013 Brian C. Lane <bcl@redhat.com> - 0.18.7-1
+- Handle anaconda's cmdline option to disable mpath friendly names. (#977815) (dlehman)
+- Close file descriptors other than stdin,stdout,stderr on exec. (#1020013) (dlehman)
+- Don't use hardcoded /tmp paths. (#1004404) (dlehman)
+- Fix detection of lvm thinp setups. (#1016842) (dlehman)
+- Generate a name if necessary when reconfiguring a factory device. (#1009941) (dlehman)
+
 * Mon Oct 14 2013 Brian C. Lane <bcl@redhat.com> - 0.18.6-1
 - Do not limit swap size to 10 % of disk space for hibernation (vpodzime)
 - Limit the maximum swap size to 10 % of disk space (if given) (vpodzime)
