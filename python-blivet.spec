@@ -63,14 +63,21 @@ make DESTDIR=%{buildroot} install
 %changelog
 * Thu Oct 17 2013 Brian C. Lane <bcl@redhat.com> - 0.18.7-1
 - Handle anaconda's cmdline option to disable mpath friendly names. (#977815) (dlehman)
+  Related: rhbz#977815
 - Close file descriptors other than stdin,stdout,stderr on exec. (#1020013) (dlehman)
+  Resolves: rhbz#1020013
 - Don't use hardcoded /tmp paths. (#1004404) (dlehman)
+  Resolves: rhbz#1004404
 - Fix detection of lvm thinp setups. (#1016842) (dlehman)
+  Resolves: rhbz#1016842
 - Generate a name if necessary when reconfiguring a factory device. (#1009941) (dlehman)
+  Resolves: rhbz#1009941
 
 * Mon Oct 14 2013 Brian C. Lane <bcl@redhat.com> - 0.18.6-1
 - Do not limit swap size to 10 % of disk space for hibernation (vpodzime)
+Related: rhbz#1016673
 - Limit the maximum swap size to 10 % of disk space (if given) (vpodzime)
+Related: rhbz#1016673
 
 * Wed Oct 09 2013 Brian C. Lane <bcl@redhat.com> - 0.18.5-1
 - Make sure bootloader is setup after autopart (#1015277) (bcl)
