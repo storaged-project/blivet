@@ -162,6 +162,14 @@ def getPPCMacBook():
 
     return False
 
+def isAARCH64():
+    """
+    :return: True if the hardware supports Aarch64, False otherwise.
+    :rtype: boolean
+
+    """
+    return os.uname()[4] == 'aarch64'
+
 def getARMMachine():
     """
     :return: The ARM processor variety type, or None if not ARM.
@@ -325,6 +333,8 @@ def getArch():
         return 'ppc'
     elif isPPC(bits=64):
         return 'ppc64'
+    elif arch.isAARCH64():
+        return 'aarch64'
     elif isAlpha():
         return 'alpha'
     elif isARM():

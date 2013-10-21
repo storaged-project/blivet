@@ -381,6 +381,8 @@ def getPlatform():
             return EFI()
     elif arch.isX86():
         return X86()
+    elif arch.isAARCH64():
+        return EFI()
     elif arch.isARM():
         armMachine = arch.getARMMachine()
         if armMachine == "omap":
