@@ -1028,7 +1028,6 @@ class BTRFS(FS):
     _type = "btrfs"
     _mkfs = "mkfs.btrfs"
     _modules = ["btrfs"]
-    _resizefs = "btrfsctl"
     _formattable = True
     _linuxNative = True
     _maxLabelChars = 256
