@@ -53,9 +53,14 @@ DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
 
 def get_device_type(device):
+    # the only time we should ever get a thin pool here is when we're removing
+    # an empty pool after removing the last thin lv, so the only thing we'll be
+    # doing with the factory is adjusting the vg to account for the pool's
+    # removal
     device_types = {"partition": DEVICE_TYPE_PARTITION,
                     "lvmlv": DEVICE_TYPE_LVM,
                     "lvmthinlv": DEVICE_TYPE_LVM_THINP,
+                    "lvmthinpool": DEVICE_TYPE_LVM,
                     "btrfs subvolume": DEVICE_TYPE_BTRFS,
                     "btrfs volume": DEVICE_TYPE_BTRFS,
                     "mdarray": DEVICE_TYPE_MD}
