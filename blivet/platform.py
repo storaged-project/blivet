@@ -283,9 +283,11 @@ class S390(Platform):
     _disklabel_types = ["msdos", "dasd"]
     _boot_stage1_device_types = ["disk", "partition"]
     _boot_dasd_description = N_("DASD")
+    _boot_mbr_description = N_("Master Boot Record")
     _boot_zfcp_description = N_("zFCP")
     _boot_descriptions = {"dasd": _boot_dasd_description,
                           "zfcp": _boot_zfcp_description,
+                          "disk": _boot_mbr_description,
                           "partition": Platform._boot_partition_description}
 
     def __init__(self):
