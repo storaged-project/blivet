@@ -1929,11 +1929,13 @@ class Blivet(object):
         new = copy.deepcopy(self)
         # go through and re-get partedPartitions from the disks since they
         # don't get deep-copied
-        for partition in new.partitions:
+        hidden_partitions = [d for d in new.devicetree._hidden
+                                if isinstance(d, PartitionDevice)]
+        for partition in new.partitions + hidden_partitions:
             if not partition._partedPartition:
                 continue
 
-            # don't ask me why, but we have to update the refs in req_disks
+            # update the refs in req_disks as well
             req_disks = []
             for disk in partition.req_disks:
                 req_disks.append(new.devicetree.getDeviceByID(disk.id))
