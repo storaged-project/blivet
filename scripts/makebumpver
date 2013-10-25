@@ -1,0 +1,478 @@
+#!/usr/bin/python
+#
+# makebumpver - Increment version number and add in RPM spec file changelog
+#               block.  Ensures rhel*-branch commits reference RHEL bugs.
+#
+# Copyright (C) 2009-2013  Red Hat, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation; either version 2.1 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Author: David Cantrell <dcantrell@redhat.com>
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger("bugzilla")
+log.setLevel(logging.INFO)
+
+import bugzilla
+import datetime
+import getopt
+import getpass
+import os
+import re
+import subprocess
+import sys
+import textwrap
+
+class MakeBumpVer:
+    def __init__(self, *args, **kwargs):
+        log.debug("%s", kwargs)
+        self.bzserver = 'bugzilla.redhat.com'
+        self.bzurl = "https://%s/xmlrpc.cgi" % self.bzserver
+        self.username = None
+        self.password = None
+        self.bz = None
+
+        authfile = os.path.realpath(os.getenv('HOME') + '/.rhbzauth')
+        if os.path.isfile(authfile):
+            f = open(authfile, 'r')
+            lines = map(lambda x: x.strip(), f.readlines())
+            f.close()
+
+            for line in lines:
+                if line.startswith('RHBZ_USER='):
+                    self.username = line[10:].strip('"\'')
+                elif line.startswith('RHBZ_PASSWORD='):
+                    self.password = line[14:].strip('"\'')
+
+        self.gituser = self._gitConfig('user.name')
+        self.gitemail = self._gitConfig('user.email')
+
+        self.name = kwargs.get('name')
+        self.fixedin_name = kwargs.get('fixedin', self.name)
+        self.version = kwargs.get('version')
+        self.release = kwargs.get('release')
+        self.ignore = kwargs.get('ignore')
+
+        self.bugmap = {}
+        bugmap = kwargs.get('bugmap')
+        if bugmap and bugmap != '':
+            maps = bugmap.split(',')
+            for mapping in maps:
+                bugs = mapping.split('=')
+                if len(bugs) == 2:
+                    self.bugmap[bugs[0]] = bugs[1]
+
+        self.configure = kwargs.get('configure')
+        self.spec = kwargs.get('spec')
+        self.version_files = kwargs.get('version_files')
+
+    def _gitConfig(self, field):
+        proc = subprocess.Popen(['git', 'config', field],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE).communicate()
+        return proc[0].strip('\n')
+
+    def _incrementVersion(self):
+        fields = self.version.split('.')
+        fields[-1] = str(int(fields[-1]) + 1)
+        new = ".".join(fields)
+        return new
+
+    def _isRHEL(self):
+        proc = subprocess.Popen(['git', 'branch'],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE).communicate()
+        lines = filter(lambda x: x.startswith('*'),
+                       proc[0].strip('\n').split('\n'))
+
+        if lines == [] or len(lines) > 1:
+            return False
+
+        fields = lines[0].split(' ')
+
+        if len(fields) == 2 and fields[1].startswith('rhel'):
+            return True
+        else:
+            return False
+
+    def _getCommitDetail(self, commit, field):
+        proc = subprocess.Popen(['git', 'log', '-1',
+                                 "--pretty=format:%s" % field, commit],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE).communicate()
+
+        ret = proc[0].strip('\n').split('\n')
+
+        if len(ret) == 1 and ret[0].find('@') != -1:
+            ret = ret[0].split('@')[0]
+        elif len(ret) == 1:
+            ret = ret[0]
+        else:
+            ret = filter(lambda x: x != '', ret)
+
+        return ret
+
+    def _queryBug(self, bug):
+        if not self.bz:
+            sys.stdout.write("Connecting to %s...\n" % self.bzserver)
+
+            if not self.username:
+                sys.stdout.write('Username: ')
+                self.username = sys.stdin.readline()
+                self.username = self.username.strip()
+
+            if not self.password:
+                self.password = getpass.getpass()
+
+            bzclass = bugzilla.getBugzillaClassForURL(self.bzurl)
+            self.bz = bzclass(url=self.bzurl)
+            print
+
+        if not self.bz.logged_in:
+            rc = self.bz.login(self.username, self.password)
+            log.debug("login rc = %s", rc)
+
+        bugs = self.bz.query({'bug_id': bug})
+        log.debug("bugs = %s", bugs)
+
+        if len(bugs) != 1:
+            return None
+        else:
+            return bugs[0]
+
+    def _isRHELBug(self, bug, commit, summary):
+        bzentry = self._queryBug(bug)
+
+        if not bzentry:
+            print "*** Bugzilla query for %s failed.\n" % bug
+            return False
+
+        if bzentry.product.startswith('Red Hat Enterprise Linux'):
+            return True
+        else:
+            print "*** Bug %s is not a RHEL bug." % bug
+            print "***     Commit: %s" % commit
+            print "***     %s\n" % summary
+            return False
+
+    def _isRHELBugInCorrectState(self, bug, commit, summary):
+        bzentry = self._queryBug(bug)
+
+        if not bzentry:
+            print "*** Bugzilla query for %s failed.\n" % bug
+            return False
+
+        if bzentry.bug_status in ['MODIFIED', 'ON_QA']:
+            return True
+        else:
+            print "*** Bug %s is not in MODIFIED or ON_QA." % bug
+            print "***     Commit: %s" % commit
+            print "***     %s\n" % summary
+            return False
+
+    def _isRHELBugFixedInVersion(self, bug, commit, summary, fixedIn):
+        bzentry = self._queryBug(bug)
+
+        if not bzentry:
+            print "*** Bugzilla query for %s failed.\n" % bug
+            return False
+
+        if bzentry.fixed_in == fixedIn:
+            return True
+        else:
+            print "*** Bug %s does not have correct Fixed In Version." % bug
+            print "***     Found:     %s" % bzentry.fixed_in
+            print "***     Expected:  %s" % fixedIn
+            print "***     Commit:    %s" % commit
+            print "***     %s\n" % summary
+            return False
+
+    def _rpmLog(self, fixedIn):
+        git_range = "%s-%s-%s.." % (self.name, self.version, self.release)
+        proc = subprocess.Popen(['git', 'log', '--pretty=oneline', git_range],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE).communicate()
+        lines = filter(lambda x: x.find('l10n: ') != 41 and \
+                                 x.find('Merge commit') != 41 and \
+                                 x.find('Merge branch') != 41,
+                       proc[0].strip('\n').split('\n'))
+
+        if self.ignore and self.ignore != '':
+            for commit in self.ignore.split(','):
+                lines = filter(lambda x: not x.startswith(commit), lines)
+
+        rpm_log = []
+        bad = False
+        rhel = self._isRHEL()
+
+        for line in lines:
+            if not line:
+                continue
+            fields = line.split(' ')
+            commit = fields[0]
+
+            summary = self._getCommitDetail(commit, "%s")
+            body = self._getCommitDetail(commit, "%b")
+            if type(body) is not list:
+                body = [body]
+            author = self._getCommitDetail(commit, "%aE")
+
+            if rhel:
+                rhbz = set()
+
+                # look for a bug in the summary line, validate if found
+                m = re.search(r"\(#\d+(\,.*)*\)", summary)
+                if m:
+                    fullbug = summary[m.start():m.end()]
+                    bugstr = summary[m.start()+2:m.end()-1]
+
+                    bug = ''
+                    for c in bugstr:
+                        if c.isdigit():
+                            bug += c
+                        else:
+                            break
+
+                    if len(bugstr) > len(bug):
+                        tmp = bugstr[len(bug):]
+
+                        for c in tmp:
+                            if not c.isalpha():
+                                tmp = tmp[1:]
+                            else:
+                                break
+
+                        if len(tmp) > 0:
+                            author = tmp
+
+                    ckbug = self.bugmap.get(bug, bug)
+                    valid = self._isRHELBug(ckbug, commit, summary)
+
+                    if valid:
+                        summary = summary.replace(fullbug, "(%s)" % author)
+                        rhbz.add("Resolves: rhbz#%s" % ckbug)
+
+                        if not self._isRHELBugInCorrectState(ckbug, commit,
+                                                             summary):
+                            bad = True
+
+                        if not self._isRHELBugFixedInVersion(ckbug, commit,
+                                                             summary, fixedIn):
+                            bad = True
+                    else:
+                        bad = True
+                else:
+                    summary = summary.strip()
+                    summary += " (%s)" % author
+
+                for bodyline in body:
+                    m = re.match(r"^(Resolves|Related|Conflicts):\ +rhbz#\d+.*$",
+                                 bodyline)
+                    if not m:
+                        continue
+
+                    actionre = re.search("(Resolves|Related|Conflicts)",
+                                         bodyline)
+                    bugre = re.search(r"\d+", bodyline)
+                    if actionre and bugre:
+                        action = actionre.group()
+                        bug = bugre.group()
+                        ckbug = self.bugmap.get(bug, bug)
+                        valid = self._isRHELBug(ckbug, commit, summary)
+
+                        if valid:
+                            rhbz.add("%s: rhbz#%s" % (action, ckbug))
+                        else:
+                            bad = True
+
+                        if valid and action == 'Resolves' and \
+                           (not self._isRHELBugInCorrectState(ckbug, commit,
+                                                              summary) or \
+                            not self._isRHELBugFixedInVersion(ckbug, commit,
+                                                              summary,
+                                                              fixedIn)):
+                            bad = True
+
+                if len(rhbz) == 0:
+                    print "*** No bugs referenced in commit %s\n" % commit
+                    bad = True
+
+                rpm_log.append((summary.strip(), list(rhbz)))
+            else:
+                rpm_log.append(("%s (%s)" % (summary.strip(), author), None))
+
+        if bad:
+            sys.exit(1)
+
+        return rpm_log
+
+    def _replaceString(self, lines, search, replace):
+        """ find first occurrence of search and replace it with replace
+        """
+        for i, l in enumerate(lines):
+            if l.find(search) > -1:
+                break
+        else:
+            print "!!! Failed to replace '%s' with '%s'" % (search, replace)
+            sys.exit(1)
+
+        lines[i] = re.sub(search, replace, lines[i])
+
+    def _writeNewSpec(self, newVersion, rpmlog):
+        f = open(self.spec, 'r')
+        l = f.readlines()
+        f.close()
+
+        self._replaceString(l, "Version: %s\n" % (self.version),
+                               "Version: %s\n" % (newVersion))
+
+        i = l.index('%changelog\n')
+        top = l[:i]
+        bottom = l[i+1:]
+
+        f = open(self.spec, 'w')
+        f.writelines(top)
+
+        f.write("%changelog\n")
+        today = datetime.date.today()
+        stamp = today.strftime("%a %b %d %Y")
+        f.write("* %s %s <%s> - %s-%s\n" % (stamp, self.gituser, self.gitemail,
+                                            newVersion, self.release))
+
+        for msg, rhbz in rpmlog:
+            msg = re.sub('(?<!%)%%(?!%)|(?<!%%)%(?!%%)', '%%', msg)
+            sublines = textwrap.wrap(msg, 77)
+            f.write("- %s\n" % sublines[0])
+
+            if len(sublines) > 1:
+                for subline in sublines[1:]:
+                    f.write("  %s\n" % subline)
+
+            if rhbz:
+                for entry in rhbz:
+                    f.write("  %s\n" % entry)
+
+        f.write("\n")
+        f.writelines(bottom)
+        f.close()
+
+    def _writeNewVersionFile(self, filename, template, newVersion):
+        """ Replace a version string in a file, using template to match
+            string to replace and to create new string.
+        """
+        f = open(filename, 'r')
+        l = f.readlines()
+        f.close()
+
+        self._replaceString(l, template % self.version,
+                               template % newVersion)
+
+        f = open(filename, 'w')
+        f.writelines(l)
+        f.close()
+
+    def run(self):
+        newVersion = self._incrementVersion()
+        fixedIn = "%s-%s-%s" % (self.fixedin_name, newVersion, self.release)
+        rpmlog = self._rpmLog(fixedIn)
+
+        self._writeNewSpec(newVersion, rpmlog)
+        for filename, template in self.version_files:
+            self._writeNewVersionFile(filename, template, newVersion)
+
+def usage(cmd):
+    sys.stdout.write("Usage: %s [OPTION]...\n" % (cmd,))
+    sys.stdout.write("Options:\n")
+    sys.stdout.write("    -n, --name       Package name.\n")
+    sys.stdout.write("    -v, --version    Current package version number.\n")
+    sys.stdout.write("    -r, --release    Package release number.\n")
+    sys.stdout.write("    -i, --ignore     Comma separated list of git commits to ignore.\n")
+    sys.stdout.write("    -m, --map        Comma separated list of FEDORA_BZ=RHEL_BZ mappings.\n")
+    sys.stdout.write("    -d, --debug      Turn on debug logging to stdout\n")
+    sys.stdout.write("\nThe -i switch is intended for use with utility commits that we do not need to\n")
+    sys.stdout.write("reference in the spec file changelog.  The -m switch is used to map a Fedora\n")
+    sys.stdout.write("BZ number to a RHEL BZ number for the spec file changelog.  Use -m if you have\n")
+    sys.stdout.write("a commit that needs to reference a RHEL bug and have cloned the bug, but the\n")
+    sys.stdout.write("original commit was already pushed to the central repo.\n")
+
+def main(argv):
+    prog = os.path.basename(sys.argv[0])
+    cwd = os.getcwd()
+    spec = os.path.realpath(cwd + '/python-blivet.spec')
+    name, version, release = None, None, None
+    ignore, bugmap = None, None
+    show_help, unknown = False, False
+    opts = []
+
+    try:
+        opts, _args = getopt.getopt(sys.argv[1:], 'n:v:r:i:m:d?',
+                                   ['name=', 'version=', 'release=',
+                                    'ignore=', 'map=', 'debug', 'help'])
+    except getopt.GetoptError:
+        show_help = True
+
+    for o, a in opts:
+        if o in ('-n', '--name'):
+            name = a
+        elif o in ('-v', '--version'):
+            version = a
+        elif o in ('-r', '--release'):
+            release = a
+        elif o in ('-i', '--ignore'):
+            ignore = a
+        elif o in ('-m', '--map'):
+            bugmap = a
+        elif o in ('-d', '--debug'):
+            log.setLevel(logging.DEBUG)
+        elif o in ('-?', '--help'):
+            show_help = True
+        else:
+            unknown = True
+
+    if show_help:
+        usage(prog)
+        sys.exit(0)
+    elif unknown:
+        sys.stderr.write("%s: extra operand `%s'" % (prog, sys.argv[1],))
+        sys.stderr.write("Try `%s --help' for more information." % (prog,))
+        sys.exit(1)
+
+    if not name:
+        sys.stderr.write("Missing required -n/--name option\n")
+        sys.exit(1)
+
+    if not version:
+        sys.stderr.write("Missing required -v/--version option\n")
+        sys.exit(1)
+
+    if not release:
+        sys.stderr.write("Missing required -r/--release option\n")
+        sys.exit(1)
+
+    if not os.path.isfile(spec):
+        sys.stderr.write("You must be at the top level of the blivet source tree.\n")
+        sys.exit(1)
+
+    # Files to replace version strings in
+    version_files = [(os.path.realpath(cwd+"/setup.py"), "version='%s'"),
+                     (os.path.realpath(cwd+"/blivet/__init__.py"), "__version__ = '%s'")]
+
+    mbv = MakeBumpVer(name=name, version=version, release=release,
+                      ignore=ignore, bugmap=bugmap, spec=spec,
+                      version_files=version_files, fixedin="python-"+name)
+    mbv.run()
+
+if __name__ == "__main__":
+    main(sys.argv)

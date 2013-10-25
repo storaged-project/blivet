@@ -70,16 +70,17 @@ rpmlog:
 	@echo
 
 bumpver: po-pull
-	@NEWSUBVER=$$((`echo $(VERSION) |cut -d . -f 3` + 1)) ; \
-	NEWVERSION=`echo $(VERSION).$$NEWSUBVER |cut -d . -f 1,2,4` ; \
-	DATELINE="* `date "+%a %b %d %Y"` `git config user.name` <`git config user.email`> - $$NEWVERSION-1"  ; \
-	cl=`grep -n %changelog $(SPECFILE) |cut -d : -f 1` ; \
-	tail --lines=+$$(($$cl + 1)) $(SPECFILE) > speclog ; \
-	(head -n $$cl $(SPECFILE) ; echo "$$DATELINE" ; make --quiet rpmlog 2>/dev/null ; echo ""; cat speclog) > $(SPECFILE).new ; \
-	mv $(SPECFILE).new $(SPECFILE) ; rm -f speclog ; \
-	sed -i "s/Version: $(VERSION)/Version: $$NEWVERSION/" $(SPECFILE) ; \
-	sed -i "s/version='$(VERSION)'/version='$$NEWVERSION'/" setup.py ; \
-	sed -i "s/__version__ = '$(VERSION)'/__version__ = '$$NEWVERSION'/" blivet/__init__.py ; \
+	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RELEASE)" ; \
+	if [ ! -z "$(IGNORE)" ]; then \
+		opts="$${opts} -i $(IGNORE)" ; \
+	fi ; \
+	if [ ! -z "$(MAP)" ]; then \
+		opts="$${opts} -m $(MAP)" ; \
+	fi ; \
+	if [ ! -z "$(BZDEBUG)" ]; then \
+		opts="$${opts} -d" ; \
+	fi ; \
+	( scripts/makebumpver $${opts} ) || exit 1 ; \
 	make -C po $(PKGNAME).pot ; \
 	tx push $(TX_PUSH_ARGS)
 
