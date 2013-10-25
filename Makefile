@@ -81,6 +81,9 @@ bumpver: po-pull
 	if [ ! -z "$(MAP)" ]; then \
 		opts="$${opts} -m $(MAP)" ; \
 	fi ; \
+	if [ ! -z "$(SKIP_ACKS)" ]; then \
+		opts="$${opts} -s" ; \
+	fi ; \
 	if [ ! -z "$(BZDEBUG)" ]; then \
 		opts="$${opts} -d" ; \
 	fi ; \
