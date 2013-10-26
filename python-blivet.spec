@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.7
+Version: 0.18.8
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Oct 25 2013 Brian C. Lane <bcl@redhat.com> - 0.18.8-1
+- Remove requirement for btrfsctl which no longer exists. (dlehman)
+  Resolves: rhbz#1023192
+- Allow for adjustment of factory vg after removal of thin pool. (dlehman)
+  Resolves: rhbz#1023186
+- Add boot description for "disk" devices on s390. (sbueno+anaconda)
+  Resolves: rhbz#867777
+  Resolves: rhbz#960143
+  Resolves: rhbz#903237
+
 * Thu Oct 17 2013 Brian C. Lane <bcl@redhat.com> - 0.18.7-1
 - Handle anaconda's cmdline option to disable mpath friendly names. (#977815) (dlehman)
   Related: rhbz#977815

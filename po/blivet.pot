@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-17 13:54-0700\n"
+"POT-Creation-Date: 2013-10-25 18:03-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -292,10 +292,6 @@ msgstr ""
 msgid "B"
 msgstr ""
 
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
-msgstr ""
-
 #: ../blivet/partitioning.py:306
 msgid "No usable disks selected"
 msgstr ""
@@ -359,6 +355,10 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1995
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/zfcp.py:50
@@ -489,7 +489,8 @@ msgstr ""
 msgid "First sector of boot partition"
 msgstr ""
 
-#: ../blivet/platform.py:155 ../blivet/platform.py:323
+#: ../blivet/platform.py:155 ../blivet/platform.py:286
+#: ../blivet/platform.py:325
 msgid "Master Boot Record"
 msgstr ""
 
@@ -513,11 +514,11 @@ msgstr ""
 msgid "DASD"
 msgstr ""
 
-#: ../blivet/platform.py:286
+#: ../blivet/platform.py:287
 msgid "zFCP"
 msgstr ""
 
-#: ../blivet/platform.py:348
+#: ../blivet/platform.py:350
 msgid "U-Boot Partition"
 msgstr ""
 
