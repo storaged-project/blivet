@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.24
+Version: 0.25
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Oct 25 2013 Brian C. Lane <bcl@redhat.com> - 0.25-1
+- Remove requirement for btrfsctl which no longer exists. (#1012504) (dlehman)
+- Allow for adjustment of factory vg after removal of thin pool. (#1021890) (dlehman)
+- Add boot description for "disk" devices on s390. (#867777, #903237, #960143) (sbueno+anaconda)
+- Add initial spport for aarch64 as we only plan to support UEFI this should be enough (dennis)
+
 * Wed Oct 16 2013 David Lehman <dlehman@redhat.com> - 0.24-1
 - Close file descriptors other than stdin,stdout,stderr on exec. (#1016467) (dlehman)
 - Don't use hardcoded /tmp paths. (#1004404) (dlehman)
