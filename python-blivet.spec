@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.23.1
+Version: 0.23.2
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Oct 25 2013 Brian C. Lane <bcl@redhat.com> - 0.23.2-1
+- Remove requirement for btrfsctl which no longer exists. (#1023192) (dlehman)
+- Allow for adjustment of factory vg after removal of thin pool. (#1023186) (dlehman)
+- Close file descriptors other than stdin,stdout,stderr on exec. (#1020111) (dlehman)
+- Update transifex config for new f20-branch. (dlehman)
+
 * Wed Oct 16 2013 David Lehman <dlehman@redhat.com> - 0.23.1-1
 - Update bumpver for f20 x.y.z (bcl)
 - Fix detection of lvm thinp setups. (#1013800) (dlehman)
