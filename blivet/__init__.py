@@ -322,44 +322,45 @@ class Blivet(object):
                 bootDevs = [boot]
 
             for dev in bootDevs:
-                if hasattr(dev, "bootable"):
-                    # Dos labels can only have one partition marked as active
-                    # and unmarking ie the windows partition is not a good idea
-                    skip = False
-                    if dev.disk.format.partedDisk.type == "msdos":
-                        for p in dev.disk.format.partedDisk.partitions:
-                            if p.type == parted.PARTITION_NORMAL and \
-                               p.getFlag(parted.PARTITION_BOOT):
-                                skip = True
-                                break
+                if not hasattr(dev, "bootable"):
+                    log.info("Skipping %s, not bootable", dev)
+                    continue
 
-                    # GPT labeled disks should only have bootable set on the
-                    # EFI system partition (parted sets the EFI System GUID on
-                    # GPT partitions with the boot flag)
-                    if dev.disk.format.labelType == "gpt" and \
-                       dev.format.type != "efi":
-                           skip = True
+                # Dos labels can only have one partition marked as active
+                # and unmarking ie the windows partition is not a good idea
+                skip = False
+                if dev.disk.format.partedDisk.type == "msdos":
+                    for p in dev.disk.format.partedDisk.partitions:
+                        if p.type == parted.PARTITION_NORMAL and \
+                           p.getFlag(parted.PARTITION_BOOT):
+                            skip = True
+                            break
 
-                    if skip:
-                         log.info("not setting boot flag on %s" % dev.name)
-                         continue
-                    # hfs+ partitions on gpt can't be marked bootable via
-                    # parted
-                    if dev.disk.format.partedDisk.type == "gpt" and \
-                            dev.format.type == "hfs+":
-                        log.info("not setting boot flag on hfs+ partition"
-                                 " %s" % dev.name)
-                        continue
-                    log.info("setting boot flag on %s" % dev.name)
+                # GPT labeled disks should only have bootable set on the
+                # EFI system partition (parted sets the EFI System GUID on
+                # GPT partitions with the boot flag)
+                if dev.disk.format.labelType == "gpt" and \
+                   dev.format.type not in ["efi", "hfs+"]:
+                       skip = True
+
+                if skip:
+                     log.info("Skipping %s", dev.name)
+                     continue
+
+                # hfs+ partitions on gpt can't be marked bootable via parted
+                if dev.disk.format.partedDisk.type != "gpt" or \
+                        dev.format.type != "hfs+":
+                    log.info("setting boot flag on %s", dev.name)
                     dev.bootable = True
 
-                    # Set the boot partition's name on disk labels that support it
-                    if dev.partedPartition.disk.supportsFeature(parted.DISK_TYPE_PARTITION_NAME):
-                        ped_partition = dev.partedPartition.getPedPartition()
-                        ped_partition.set_name(dev.format.name)
+                # Set the boot partition's name on disk labels that support it
+                if dev.partedPartition.disk.supportsFeature(parted.DISK_TYPE_PARTITION_NAME):
+                    ped_partition = dev.partedPartition.getPedPartition()
+                    ped_partition.set_name(dev.format.name)
+                    log.info("Setting label on %s to '%s'", dev, dev.format.name)
 
-                    dev.disk.setup()
-                    dev.disk.format.commitToDisk()
+                dev.disk.setup()
+                dev.disk.format.commitToDisk()
 
         if flags.installer_mode:
             self.dumpState("final")
