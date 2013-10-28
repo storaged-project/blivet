@@ -1677,6 +1677,12 @@ class DeviceTree(object):
                 efi = formats.getFormat("efi")
                 if efi.minSize <= device.size <= efi.maxSize:
                     args[0] = "efi"
+        elif format_type == "hfsplus":
+            if isinstance(device, PartitionDevice):
+                macefi = formats.getFormat("macefi")
+                if macefi.minSize <= device.size <= macefi.maxSize and \
+                   device.partedPartition.name == macefi.name:
+                    args[0] = "macefi"
         elif format_type == "hfs":
             # apple bootstrap magic
             if isinstance(device, PartitionDevice) and device.bootable:

@@ -344,7 +344,7 @@ class Blivet(object):
                 # EFI system partition (parted sets the EFI System GUID on
                 # GPT partitions with the boot flag)
                 if dev.disk.format.labelType == "gpt" and \
-                   dev.format.type not in ["efi", "hfs+"]:
+                   dev.format.type not in ["efi", "macefi"]:
                        skip = True
 
                 if skip:
@@ -353,7 +353,7 @@ class Blivet(object):
 
                 # hfs+ partitions on gpt can't be marked bootable via parted
                 if dev.disk.format.partedDisk.type != "gpt" or \
-                        dev.format.type != "hfs+":
+                        dev.format.type not in ["hfs+", "macefi"]:
                     log.info("setting boot flag on %s", dev.name)
                     dev.bootable = True
 
@@ -1868,7 +1868,7 @@ class Blivet(object):
             fstype = self.defaultBootFSType
         elif mountpoint == "/boot/efi":
             if arch.isMactel():
-                fstype = "hfs+"
+                fstype = "macefi"
             else:
                 fstype = "efi"
 
