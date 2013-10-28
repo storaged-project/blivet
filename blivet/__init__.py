@@ -1094,6 +1094,10 @@ class Blivet(object):
         thin_volume = kwargs.pop("thin_volume", False)
         thin_pool = kwargs.pop("thin_pool", False)
         vg = kwargs.get("parents", [None])[0]
+        if thin_volume and vg:
+            # kwargs["parents"] will contain the pool device, so...
+            vg = vg.vg
+
         mountpoint = kwargs.pop("mountpoint", None)
         if kwargs.has_key("fmt_type"):
             kwargs["format"] = getFormat(kwargs.pop("fmt_type"),
