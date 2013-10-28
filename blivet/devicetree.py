@@ -1593,6 +1593,7 @@ class DeviceTree(object):
                 if vol_path in [sv.name for sv in btrfs_dev.subvolumes]:
                     continue
                 fmt = getFormat("btrfs", device=btrfs_dev.path, exists=True,
+                                volUUID=btrfs_dev.format.volUUID,
                                 mountopts="subvol=%s" % vol_path)
                 subvol = BTRFSSubVolumeDevice(vol_path,
                                               vol_id=vol_id,

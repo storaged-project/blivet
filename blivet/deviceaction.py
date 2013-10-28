@@ -476,7 +476,9 @@ class ActionCreateFormat(DeviceAction):
             # only do this if the format has a device known to udev
             # (the format might not have a normal device at all)
             if info:
-                self.device.format.uuid = udev_device_get_uuid(info)
+                if self.device.format.type != "btrfs":
+                    self.device.format.uuid = udev_device_get_uuid(info)
+
                 self.device.deviceLinks = udev_device_get_symlinks(info)
             elif self.device.format.type != "tmpfs":
                 # udev lookup failing is a serious issue for anything other than tmpfs

@@ -4348,6 +4348,13 @@ class BTRFSDevice(StorageDevice):
     def path(self):
         return self.parents[0].path
 
+    @property
+    def fstabSpec(self):
+        if self.format.volUUID:
+            spec = "UUID=%s" % self.format.volUUID
+        else:
+            spec = super(BTRFSDevice, self).fstabSpec
+        return spec
 
 class BTRFSVolumeDevice(BTRFSDevice):
     _type = "btrfs volume"
@@ -4509,6 +4516,14 @@ class BTRFSVolumeDevice(BTRFSDevice):
                             data=self.dataLevel,
                             metadata=self.metaDataLevel)
 
+    def _postCreate(self):
+        super(BTRFSVolumeDevice, self)._postCreate()
+        info = udev_get_block_device(self.sysfsPath)
+        if not info:
+            log.error("failed to get updated udev info for new btrfs volume")
+        else:
+            self.format.volUUID = udev_device_get_uuid(info)
+
     def _destroy(self):
         log_method_call(self, self.name, status=self.status)
         for device in self.parents:
@@ -4550,6 +4565,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
         btrfs.create_subvolume(mountpoint, self.name)
         self.volume._undo_temp_mount()
+
+    def _postCreate(self):
+        super(BTRFSSubVolumeDevice, self)._postCreate()
+        self.format.volUUID = self.volume.format.volUUID
 
     def _destroy(self):
         log_method_call(self, self.name, status=self.status)
