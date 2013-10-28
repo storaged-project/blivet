@@ -211,14 +211,14 @@ class EFI(Platform):
             return 0
 
 class MacEFI(EFI):
-    _boot_stage1_format_types = ["hfs+"]
+    _boot_stage1_format_types = ["macefi"]
     _boot_efi_description = N_("Apple EFI Boot Partition")
-    _non_linux_format_types = ["hfs+"]
+    _non_linux_format_types = ["macefi"]
     _packages = ["mactel-boot"]
 
     def setDefaultPartitioning(self):
         ret = Platform.setDefaultPartitioning(self)
-        ret.append(PartSpec(mountpoint="/boot/efi", fstype="hfs+", size=20,
+        ret.append(PartSpec(mountpoint="/boot/efi", fstype="macefi", size=20,
                             maxSize=200,
                             grow=True, weight=self.weight(mountpoint="/boot/efi")))
         return ret

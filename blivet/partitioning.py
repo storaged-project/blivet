@@ -133,14 +133,14 @@ def _schedulePartitions(storage, disks):
         if request.requiredSpace and request.requiredSpace > free:
             continue
 
-        elif request.fstype in ("prepboot", "efi", "hfs+") and \
+        elif request.fstype in ("prepboot", "efi", "macefi", "hfs+") and \
              (storage.bootloader.skip_bootloader or stage1_device):
             # there should never be a need for more than one of these
             # partitions, so skip them.
             log.info("skipping unneeded stage1 %s request" % request.fstype)
             log.debug(request)
 
-            if request.fstype == "efi" and stage1_device:
+            if request.fstype in ["efi", "macefi"] and stage1_device:
                 # Set the mountpoint for the existing EFI boot partition
                 stage1_device.format.mountpoint = "/boot/efi"
 

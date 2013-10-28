@@ -1272,6 +1272,20 @@ class HFSPlus(FS):
 register_device_format(HFSPlus)
 
 
+class MacEFIFS(HFSPlus):
+    _type = "macefi"
+    _name = "Linux HFS+ ESP"
+    _udevTypes = []
+    _minSize = 50
+
+    @property
+    def supported(self):
+        return (isinstance(platform.platform, platform.MacEFI) and
+                self.utilsAvailable)
+
+register_device_format(MacEFIFS)
+
+
 class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
