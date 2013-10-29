@@ -443,8 +443,10 @@ class Blivet(object):
                 used_devices.extend(device.ancestors)
 
         for new in [d for d in self.devicetree.leaves if not d.format.exists]:
-            if new in self.swaps or getattr(new.format, "mountpoint", None):
-                used_devices.extend(new.ancestors)
+            if new.format.mountable and not new.format.mountpoint:
+                continue
+
+            used_devices.extend(new.ancestors)
 
         for device in self.partitions:
             if getattr(device, "isLogical", False):
