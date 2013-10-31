@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.25
+Version: 0.26
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 30 2013 Brian C. Lane <bcl@redhat.com> - 0.26-1
+- Add macefi format type (#1010495) (bcl)
+- Allow hfs+ boot devices to have their name set (#1010495) (bcl)
+- Update parted partitions on hidden disks when copying a Blivet. (#1023556)
+  (dlehman)
+- Add ack flag checking to makebumpver (bcl)
+- Add makebumpver script (bcl)
+
 * Fri Oct 25 2013 Brian C. Lane <bcl@redhat.com> - 0.25-1
 - Remove requirement for btrfsctl which no longer exists. (#1012504) (dlehman)
 - Allow for adjustment of factory vg after removal of thin pool. (#1021890) (dlehman)
