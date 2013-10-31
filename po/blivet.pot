@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-25 18:03-0700\n"
+"POT-Creation-Date: 2013-10-30 16:59-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,16 +149,16 @@ msgstr ""
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:2946
+#: ../blivet/__init__.py:2948
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2951
+#: ../blivet/__init__.py:2953
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2953
+#: ../blivet/__init__.py:2955
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""

@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.8
+Version: 0.18.9
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 30 2013 Brian C. Lane <bcl@redhat.com> - 0.18.9-1
+- Update parted partitions on hidden disks when copying a Blivet. (dlehman)
+  Resolves: rhbz#1023583
+
 * Fri Oct 25 2013 Brian C. Lane <bcl@redhat.com> - 0.18.8-1
 - Remove requirement for btrfsctl which no longer exists. (dlehman)
   Resolves: rhbz#1023192
