@@ -524,6 +524,8 @@ class DeviceFactory(object):
         # this gets us a size value that takes into account the actual size of
         # the container
         size = self._get_device_size()
+        if size <= 0:
+            raise DeviceFactoryError("not enough free space for new device")
 
         parents = self._get_parent_devices()
 
@@ -1389,13 +1391,16 @@ class LVMThinPFactory(LVMFactory):
         if not self.container:
             return None
 
+        if self.device:
+            return self.device.pool
+
         # We're looking for a new pool in our vg to use. If there aren't any,
         # we're using one of the existing pools. Would it be better to always
         # create a new pool to allocate new devices from? Probably not, since
         # that would prevent users from setting up custom pools on tty2.
         pool = None
         pools = [p for p in self.pool_list if p.vg == self.container]
-        pools.sort(key=lambda p: p.size, reverse=True)    # largest first
+        pools.sort(key=lambda p: p.freeSpace, reverse=True)
         if pools:
             new_pools = [p for p in pools if not p.exists]
             if new_pools:
@@ -1471,6 +1476,9 @@ class LVMThinPFactory(LVMFactory):
             return
 
         size = self._get_pool_size()
+        if size == 0:
+            raise DeviceFactoryError("not enough free space for thin pool")
+
         self.pool = self._get_new_pool(size=size, parents=[self.container])
         self.storage.createDevice(self.pool)
 
