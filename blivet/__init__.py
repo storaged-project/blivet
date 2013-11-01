@@ -812,20 +812,21 @@ class Blivet(object):
         """
         # first, remove magic mac/sun partitions from the parted Disk
         if disk.partitioned:
-            magic_partitions = {"mac": 1, "sun": 3}
-            if disk.format.labelType in magic_partitions:
-                number = magic_partitions[disk.format.labelType]
+            magic = disk.format.magicPartitionNumber
+            expected = 0
+            if magic:
+                expected = 1
                 # remove the magic partition
-                for part in disk.format.partitions:
-                    if part.disk == disk and part.partedPartition.number == number:
+                for part in self.devicetree.getChildren(disk):
+                    if part.partedPartition.number == magic:
                         log.debug("removing %s" % part.name)
                         # We can't schedule the magic partition for removal
                         # because parted will not allow us to remove it from the
                         # disk. Still, we need it out of the devicetree.
                         self.devicetree._removeDevice(part, moddisk=False)
 
-        if disk.partitioned and disk.format.partitions:
-            raise ValueError("cannot initialize a disk that has partitions")
+            if len(disk.format.partitions) > expected:
+                raise ValueError("cannot initialize a disk that has partitions")
 
         # remove existing formatting from the disk
         destroy_action = ActionDestroyFormat(disk)
