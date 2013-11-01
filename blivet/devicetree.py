@@ -1279,7 +1279,6 @@ class DeviceTree(object):
             elif lv_attr[0] == 'e':
                 if lv_name.endswith("_pmspare]"):
                     # spare metadata area for any thin pool that needs repair
-                    vg_device.poolMetaData += lv_size
                     return
 
                 # raid metadata volume
@@ -1353,7 +1352,7 @@ class DeviceTree(object):
                 # hidden lv, eg: pool00_tdata
                 continue
 
-            lv_dev.copies = data["copies"]
+            lv_dev.copies = data["copies"] or 1
             lv_dev.metaDataSize = data["meta"]
             lv_dev.logSize = data["log"]
             log.debug("set %s copies to %d, metadata size to %dMB, log size "
