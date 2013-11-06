@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.23.3
+Version: 0.23.4
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Nov 06 2013 David Lehman <dlehman@redhat.com> - 0.23.4-1
+- Fix detection of lvm setups. (#1026466) (dlehman)
+- Fix name checking for new thin lvs. (#1024076) (dlehman)
+
 * Wed Oct 30 2013 Brian C. Lane <bcl@redhat.com> - 0.23.3-1
 - Add macefi format type (#1010495) (bcl)
 - Allow hfs+ boot devices to have their name set (#1010495) (bcl)
