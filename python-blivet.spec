@@ -29,7 +29,7 @@ Requires: util-linux >= %{utillinuxver}
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
 Requires: device-mapper >= %{dmver}
-Requires: cryptsetup-luks
+Requires: cryptsetup
 Requires: python-cryptsetup >= %{pythoncryptsetupver}
 Requires: mdadm
 Requires: lvm2

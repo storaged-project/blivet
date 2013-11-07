@@ -51,7 +51,7 @@ class LUKS(DeviceFormat):
     _formattable = True                 # can be formatted
     _supported = False                  # is supported
     _linuxNative = True                 # for clearpart
-    _packages = ["cryptsetup-luks"]     # required packages
+    _packages = ["cryptsetup"]          # required packages
 
     def __init__(self, *args, **kwargs):
         """ Create a LUKS instance.

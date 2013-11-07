@@ -1989,7 +1989,7 @@ class DMCryptDevice(DMDevice):
 class LUKSDevice(DMCryptDevice):
     """ A mapped LUKS device. """
     _type = "luks/dm-crypt"
-    _packages = ["cryptsetup-luks"]
+    _packages = ["cryptsetup"]
 
     def __init__(self, name, format=None, size=None, uuid=None,
                  exists=False, sysfsPath='', parents=None):
