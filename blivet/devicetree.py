@@ -1772,10 +1772,14 @@ class DeviceTree(object):
 
         # we're intentionally not modifying self.names here
         self._devices.remove(device)
-        self._hidden.append(device)
-        lvm.lvm_cc_addFilterRejectRegexp(device.name)
         for parent in device.parents:
             parent.removeChild()
+
+        if not device.exists:
+            return
+
+        self._hidden.append(device)
+        lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
         if isinstance(device, DASDDevice):
             self.dasd.removeDASD(device)
