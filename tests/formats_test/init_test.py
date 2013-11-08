@@ -14,8 +14,8 @@ class FormatsTestCase(unittest.TestCase):
         ## get_device_format_class
         ##
         format_pairs = {
-           None : formats.DeviceFormat,
-           "bogus" : formats.DeviceFormat,
+           None : None,
+           "bogus" : None,
            "biosboot" : formats.biosboot.BIOSBoot,
            "BIOS Boot" : formats.biosboot.BIOSBoot,
            "nodev" : formats.fs.NoDevFS
@@ -28,7 +28,8 @@ class FormatsTestCase(unittest.TestCase):
            format_values)
 
         for name in format_names:
-            self.assertIs(formats.getFormat(name).__class__, format_pairs[name])
+            self.assertIs(formats.getFormat(name).__class__,
+               formats.DeviceFormat if format_pairs[name] is None else format_pairs[name])
 
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(FormatsTestCase)

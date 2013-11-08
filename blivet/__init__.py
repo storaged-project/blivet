@@ -2490,8 +2490,9 @@ class FSSet(object):
         else:
             # nodev filesystem -- preserve or drop completely?
             format = getFormat(fstype)
+            fmt_class = get_device_format_class("nodev")
             if devspec == "none" or \
-               isinstance(format, get_device_format_class("nodev")):
+               (fmt_class and isinstance(format, fmt_class)):
                 device = NoDevice(format=format)
 
         if device is None:

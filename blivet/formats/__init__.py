@@ -75,13 +75,9 @@ def getFormat(fmt_type, *args, **kwargs):
             for an exhaustive list of the arguments that can be passed.
     """
     fmt_class = get_device_format_class(fmt_type)
-    fmt = None
-    if fmt_class:
-        fmt = fmt_class(*args, **kwargs)
-    try:
-        className = fmt.__class__.__name__
-    except AttributeError:
-        className = None
+    if not fmt_class:
+        fmt_class = DeviceFormat
+    fmt = fmt_class(*args, **kwargs)
 
     # this allows us to store the given type for formats we implement as
     # DeviceFormat.
@@ -90,7 +86,8 @@ def getFormat(fmt_type, *args, **kwargs):
         # this should add/set an instance attribute
         fmt._name = fmt_type
 
-    log.debug("getFormat('%s') returning %s instance" % (fmt_type, className))
+    log.debug("getFormat('%s') returning %s instance" % (fmt_type,
+       fmt.__class__.__name__))
     return fmt
 
 def collect_device_format_classes():
@@ -121,6 +118,8 @@ def get_device_format_class(fmt_type):
         :type fmt_type: str.
         :returns: The chosen DeviceFormat class
         :rtype: class.
+
+        Returns None if no class is found for fmt_type.
     """
     if not device_formats:
         collect_device_format_classes()
@@ -134,10 +133,6 @@ def get_device_format_class(fmt_type):
             elif fmt_type in fmt_class._udevTypes:
                 fmt = fmt_class
                 break
-
-    # default to no formatting, AKA "Unknown"
-    if not fmt:
-        fmt = DeviceFormat
 
     return fmt
 
