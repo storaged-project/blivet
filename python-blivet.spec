@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.9
+Version: 0.18.10
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Nov 11 2013 Brian C. Lane <bcl@redhat.com> - 0.18.10-1
+- Add tmpfs support (mkolman)
+  Related: rhbz#918621
+- Add support for returning machine word length (mkolman)
+  Related: rhbz#918621
+
 * Wed Oct 30 2013 Brian C. Lane <bcl@redhat.com> - 0.18.9-1
 - Update parted partitions on hidden disks when copying a Blivet. (dlehman)
   Resolves: rhbz#1023583
