@@ -599,6 +599,11 @@ class StorageDevice(Device):
         return self._targetSize
 
     def _setTargetSize(self, newsize):
+        if newsize > self.maxSize:
+            log.error("requested size %s is larger than maximum %s",
+                      newsize, self.maxSize)
+            raise ValueError("size is larger than the maximum for this device")
+
         self._targetSize = newsize
 
     targetSize = property(lambda s: s._getTargetSize(),
@@ -1257,7 +1262,7 @@ class PartitionDevice(StorageDevice):
         if newsize != self.currentSize:
             # change this partition's geometry in-memory so that other
             # partitioning operations can complete (e.g., autopart)
-            self._targetSize = newsize
+            super(PartitionDevice, self)._setTargetSize(newsize)
             disk = self.disk.format.partedDisk
 
             # resize the partition's geometry in memory
