@@ -2737,7 +2737,8 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def resize(self):
         log_method_call(self, self.name, status=self.status)
-        self._preDestroy()
+        if not self.exists:
+            raise DeviceError("device has not been created", self.name)
 
         # Setup VG parents (in case they are dmraid partitions for example)
         self.vg.setupParents(orig=True)
