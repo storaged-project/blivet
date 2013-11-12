@@ -1171,6 +1171,7 @@ class DeviceTree(object):
                                                      e))
                 device.removeChild()
             else:
+                luks_device.updateSysfsPath()
                 self._addDevice(luks_device)
         else:
             log.warning("luks device %s already in the tree"
