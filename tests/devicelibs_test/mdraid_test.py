@@ -1,18 +1,15 @@
 #!/usr/bin/python
 import baseclass
+import os
 import unittest
 import time
 
-class MDRaidTestCase(baseclass.DevicelibsTestCase):
+import blivet.devicelibs.mdraid as mdraid
+import blivet.errors as errors
+
+class MDRaidTestCase(unittest.TestCase):
 
     def testMDRaid(self):
-        import blivet.devicelibs.mdraid as mdraid
-
-        ##
-        ## getRaidLevels
-        ##
-        # pass
-        self.assertEqual(mdraid.getRaidLevels(), mdraid.getRaidLevels())
 
         ##
         ## get_raid_min_members
@@ -26,7 +23,7 @@ class MDRaidTestCase(baseclass.DevicelibsTestCase):
 
         # fail
         # unsupported raid
-        self.assertRaises(ValueError, mdraid.get_raid_min_members, 8)
+        self.assertRaises(errors.MDRaidError, mdraid.get_raid_min_members, 8)
 
         ##
         ## get_raid_max_spares
@@ -40,14 +37,15 @@ class MDRaidTestCase(baseclass.DevicelibsTestCase):
 
         # fail
         # unsupported raid
-        self.assertRaises(ValueError, mdraid.get_raid_max_spares, 8, 5)
+        self.assertRaises(errors.MDRaidError, mdraid.get_raid_max_spares, 8, 5)
 
-    @skipUnless(os.geteuid() == 0, "requires root privileges")
+
+class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testMDRaidAsRoot(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
-
-        import blivet.devicelibs.mdraid as mdraid
 
         ##
         ## mdcreate
@@ -108,7 +106,9 @@ class MDRaidTestCase(baseclass.DevicelibsTestCase):
 
 
 def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(MDRaidTestCase)
+    suite1 = unittest.TestLoader().loadTestsFromTestCase(MDRaidTestCase)
+    suite2 = unittest.TestLoader().loadTestsFromTestCase(MDRaidAsRootTestCase)
+    return unittest.TestSuite([suite1, suite2])
 
 
 if __name__ == "__main__":

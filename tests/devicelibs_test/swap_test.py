@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import baseclass
+import os
 import unittest
 
 class SwapTestCase(baseclass.DevicelibsTestCase):
 
-    @skipUnless(os.geteuid() == 0, "requires root privileges")
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testSwap(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
