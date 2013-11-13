@@ -1610,14 +1610,29 @@ class DeviceTree(object):
             for subvol_dict in btrfs_dev.listSubVolumes():
                 vol_id = subvol_dict["id"]
                 vol_path = subvol_dict["path"]
+                parent_id = subvol_dict["parent"]
                 if vol_path in [sv.name for sv in btrfs_dev.subvolumes]:
                     continue
+
+                # look up the parent subvol
+                parent = None
+                subvols = [btrfs_dev] + btrfs_dev.subvolumes
+                for sv in subvols:
+                    if sv.vol_id == parent_id:
+                        parent = sv
+                        break
+
+                if parent is None:
+                    log.error("failed to find parent (%d) for subvol %s"
+                              % (parent_id, vol_path))
+                    raise DeviceTreeError("could not find parent for subvol")
+
                 fmt = getFormat("btrfs", device=btrfs_dev.path, exists=True,
                                 mountopts="subvol=%s" % vol_path)
                 subvol = BTRFSSubVolumeDevice(vol_path,
                                               vol_id=vol_id,
                                               format=fmt,
-                                              parents=[btrfs_dev],
+                                              parents=[parent],
                                               exists=True)
                 self._addDevice(subvol)
 

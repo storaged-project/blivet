@@ -32,6 +32,9 @@ _ = lambda x: gettext.ldgettext("blivet", x)
 import logging
 log = logging.getLogger("blivet")
 
+# this is the volume id btrfs always assigns to the top-level volume/tree
+MAIN_VOLUME_ID = 5
+
 def btrfs(args, capture=False):
     if capture:
         exec_func = util.capture_output
@@ -98,15 +101,19 @@ def create_snapshot(source, dest):
 def scan_device(path):
     return btrfs(["device", "scan", path])
 
+_SUBVOL_REGEX_STR = r'ID (\d+) gen \d+ parent (\d+) top level \d+ path (.+)\n'
+_SUBVOL_REGEX = re.compile(_SUBVOL_REGEX_STR)
+
 # get a list of subvolumes from a mounted btrfs filesystem
 def list_subvolumes(mountpoint):
     if not os.path.ismount(mountpoint):
         raise ValueError("volume not mounted")
 
-    args = ["subvol", "list", mountpoint]
+    args = ["subvol", "list", "-p", mountpoint]
     buf = btrfs(args, capture=True)
     vols = []
-    for group in re.findall(r'ID (\d+) gen \d+ top level \d+ path (.+)\n', buf):
-        vols.append({"id": int(group[0]), "path": group[1]})
+    for group in _SUBVOL_REGEX.findall(buf):
+        vols.append({"id": int(group[0]), "parent": int(group[1]),
+                     "path": group[2]})
 
     return vols

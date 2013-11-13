@@ -404,6 +404,8 @@ class DeviceFactory(object):
                 container = device.vg
             elif hasattr(device, "volume"):
                 container = device.volume
+            elif hasattr(device, "subvolumes"):
+                container = device
         elif name:
             for c in self.storage.devices:
                 if c.name == name and c in self.container_list:
@@ -1649,3 +1651,12 @@ class BTRFSFactory(DeviceFactory):
     def _set_name(self):
         super(BTRFSFactory, self)._set_name()
         self.device.format.options = "subvol=" + self.device.name
+
+    def _reconfigure_device(self):
+        if self.device == self.container:
+            # This is a btrfs volume -- the only thing not handled already is
+            # updating the mountpoint.
+            self.device.format.mountpoint = self.mountpoint
+            return
+
+        super(BTRFSFactory, self)._reconfigure_device()
