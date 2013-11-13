@@ -124,6 +124,9 @@ class UnknownSwapError(SwapError):
 class MDRaidError(StorageError):
     pass
 
+class RaidError(StorageError):
+    pass
+
 class DMError(StorageError):
     pass
 
