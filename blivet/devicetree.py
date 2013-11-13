@@ -2362,6 +2362,9 @@ class DeviceTree(object):
             elif "subvolid=" in options:
                 attr = "vol_id"
                 val = util.get_option_value("subvolid", options)
+            elif device.defaultSubVolume:
+                # default subvolume
+                device = device.defaultSubVolume
 
             if attr and val:
                 for subvol in device.subvolumes:

@@ -114,3 +114,17 @@ def list_subvolumes(mountpoint):
                      "path": group[2]})
 
     return vols
+
+def get_default_subvolume(mountpoint):
+    if not os.path.ismount(mountpoint):
+        raise ValueError("volume not mounted")
+
+    args = ["subvol", "get-default", mountpoint]
+    buf = btrfs(args, capture=True)
+    m = re.match(r'ID (\d+) .*', buf)
+    try:
+        default = int(m.groups()[0])
+    except IndexError:
+        raise BTRFSError("failed to get default subvolume from %s" % mountpoint)
+
+    return default
