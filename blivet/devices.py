@@ -4355,6 +4355,7 @@ class BTRFSDevice(StorageDevice):
 
 class BTRFSVolumeDevice(BTRFSDevice):
     _type = "btrfs volume"
+    vol_id = btrfs.MAIN_VOLUME_ID
 
     def __init__(self, *args, **kwargs):
         self.dataLevel = kwargs.pop("dataLevel", None)
@@ -4382,7 +4383,7 @@ class BTRFSVolumeDevice(BTRFSDevice):
                                     label=label,
                                     volUUID=self.uuid,
                                     device=self.path,
-                                    mountopts="subvolid=0")
+                                    mountopts="subvolid=%d" % self.vol_id)
             self.originalFormat = copy.copy(self.format)
 
     def _setFormat(self, format):
@@ -4546,7 +4547,16 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     @property
     def volume(self):
-        return self.parents[0]
+        parent = self.parents[0]
+        vol = None
+        while True:
+            if not isinstance(parent, BTRFSSubVolumeDevice):
+                vol = parent
+                break
+
+            parent = parent.parents[0]
+
+        return vol
 
     def setupParents(self, orig=False):
         """ Run setup method of all parent devices. """
