@@ -265,14 +265,15 @@ def md_node_from_name(name):
 def name_from_md_node(node):
     md_dir = "/dev/md"
     name = None
-    # It's sad, but it's what we've got.
-    for link in os.listdir(md_dir):
-        full_path = "%s/%s" % (md_dir, link)
-        md_name = os.path.basename(os.readlink(full_path))
-        log.debug("link: %s -> %s" % (link, os.readlink(full_path)))
-        if md_name == node:
-            name = link
-            break
+    if os.path.isdir(md_dir):
+        # It's sad, but it's what we've got.
+        for link in os.listdir(md_dir):
+            full_path = "%s/%s" % (md_dir, link)
+            md_name = os.path.basename(os.readlink(full_path))
+            log.debug("link: %s -> %s" % (link, os.readlink(full_path)))
+            if md_name == node:
+                name = link
+                break
 
     if not name:
         raise MDRaidError("name_from_md_node(%s) failed" % node)
