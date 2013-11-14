@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.10
+Version: 0.18.11
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Nov 14 2013 David Lehman <dlehman@redhat.com> - 0.18.11-1
+- Fix detection of lvm setups. (dlehman)
+  Resolves: rhbz#1026468
+
 * Mon Nov 11 2013 Brian C. Lane <bcl@redhat.com> - 0.18.10-1
 - Add tmpfs support (mkolman)
   Related: rhbz#918621
