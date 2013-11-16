@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.23.4
+Version: 0.23.5
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Nov 15 2013 Brian C. Lane <bcl@redhat.com> - 0.23.5-1
+- Preparation for lv resize is a subset of that for lv destroy. (#1027682) (dlehman)
+- Devices with non-existent formatting are resizable. (#1027714) (dlehman)
+- Do not hide non-existent devices. (#1027846) (dlehman)
+- Change XFS maximum to 16EB (#1016035) (bcl)
+- Add tmpfs support (#918621) (mkolman)
+- Add support for returning machine word length (mkolman)
+
 * Wed Nov 06 2013 David Lehman <dlehman@redhat.com> - 0.23.4-1
 - Fix detection of lvm setups. (#1026466) (dlehman)
 - Fix name checking for new thin lvs. (#1024076) (dlehman)
