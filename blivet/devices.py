@@ -2975,11 +2975,13 @@ class MDRaidArrayDevice(StorageDevice):
                                major=major, minor=minor, size=size,
                                parents=parents, sysfsPath=sysfsPath)
 
-        self.level = level
         if level == "container":
             self._type = "mdcontainer"
+            self.level = "container"
         elif level is not None:
             self.level = mdraid.raidLevel(level)
+        else:
+            self.level = None
 
         # For new arrays check if we have enough members
         if (not exists and parents and
@@ -2993,7 +2995,7 @@ class MDRaidArrayDevice(StorageDevice):
 
         self.uuid = uuid
         self._totalDevices = util.numeric_type(totalDevices)
-        self._memberDevices = util.numeric_type(memberDevices)
+        self.memberDevices = util.numeric_type(memberDevices)
 
         self.chunkSize = 512.0 / 1024.0         # chunk size in MB
 
@@ -3025,7 +3027,7 @@ class MDRaidArrayDevice(StorageDevice):
         """ Return the raid level
 
             :returns: raid level value
-            :rtype:   int
+            :rtype:   an int representing a raid level, "container", or None
         """
         return self._level
 
@@ -3034,11 +3036,15 @@ class MDRaidArrayDevice(StorageDevice):
         """ Set the RAID level and enforce restrictions based on it.
 
             :param value: new raid level
-            :param type:  int
+            :param type:  a valid raid level int, "container", or None
             :returns:     None
 
             Sets createBitmap True unless level is 0
         """
+        if not value in mdraid.raid_levels and \
+           value != "container" and value is not None:
+            raise mdraid.MDRaidError("invalid raid level %s" % str(value))
+
         self._level = value
 
         # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
@@ -3054,7 +3060,13 @@ class MDRaidArrayDevice(StorageDevice):
 
         Returns the raw size in MB
         """
-        smallestMemberSize = self.smallestMember.size
+        smallestMember = self.smallestMember
+        if smallestMember is None:
+            log.debug("device has no members, size is 0")
+            smallestMemberSize = 0
+        else:
+            smallestMemberSize = smallestMember.size
+
         if self.level == mdraid.RAID0:
             size = self.memberDevices * smallestMemberSize
         elif self.level == mdraid.RAID1:
@@ -3066,10 +3078,11 @@ class MDRaidArrayDevice(StorageDevice):
         elif self.level == mdraid.RAID6:
             size = (self.memberDevices - 2) * smallestMemberSize
         elif self.level == mdraid.RAID10:
-            size = (self.memberDevices / 2.0) * smallestMemberSize
+            size = (self.memberDevices / 2) * smallestMemberSize
         else:
             size = smallestMemberSize
             log.error("unknown RAID level %s" % (self.level))
+
         log.debug("raw RAID %s size == %s" % (self.level, size))
         return size
 
@@ -3080,11 +3093,10 @@ class MDRaidArrayDevice(StorageDevice):
 
     @property
     def smallestMember(self):
-        try:
-            smallest = sorted(self.devices, key=lambda d: d.size)[0]
-        except IndexError:
-            smallest = None
-        return smallest
+        if not self.devices:
+            return None
+        else:
+            return min(self.devices, key=lambda d: d.size)
 
     @property
     def size(self):
@@ -3114,7 +3126,7 @@ class MDRaidArrayDevice(StorageDevice):
                 size = (self.memberDevices - 2) * smallestMemberSize
                 size -= size % self.chunkSize
             elif self.level == mdraid.RAID10:
-                size = (self.memberDevices / 2.0) * smallestMemberSize
+                size = (self.memberDevices / 2) * smallestMemberSize
                 size -= size % self.chunkSize
             log.debug("non-existent RAID %s size == %s" % (self.level, size))
         else:
@@ -3129,6 +3141,8 @@ class MDRaidArrayDevice(StorageDevice):
             levelstr = "stripe"
         elif self.level == mdraid.RAID1:
             levelstr = "mirror"
+        elif self.level is None:
+            levelstr = "unknown level"
         else:
             levelstr = "raid%s" % self.level
 
@@ -3177,10 +3191,10 @@ class MDRaidArrayDevice(StorageDevice):
     @property
     def totalDevices(self):
         """ Total number of devices in the array, including spares. """
-        count = len(self.parents)
         if not self.exists:
-            count = self._totalDevices
-        return count
+            return self._totalDevices
+        else:
+            return len(self.parents)
 
     def _getMemberDevices(self):
         return self._memberDevices
@@ -3464,6 +3478,7 @@ class MDRaidArrayDevice(StorageDevice):
             elif self.level == mdraid.RAID0:
                 formatArgs = ['-R',
                               'stride=%d' % (self.memberDevices * 16)]
+        return formatArgs
 
     @property
     def mediaPresent(self):

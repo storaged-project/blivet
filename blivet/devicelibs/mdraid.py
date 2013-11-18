@@ -82,7 +82,7 @@ def get_raid_min_members(raidlevel):
         if isRaid(raid, raidlevel):
             return min_members
 
-    raise MDRaidError("invalid raid level %d" % raidlevel)
+    raise MDRaidError("invalid raid level %s" % raidlevel)
 
 def get_raid_max_spares(raidlevel, nummembers):
     """Return the maximum number of raid spares for raidlevel."""
