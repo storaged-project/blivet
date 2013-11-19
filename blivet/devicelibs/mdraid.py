@@ -151,7 +151,7 @@ def get_member_space(size, disks, level=None):
     elif level == RAID10:
         # you need the sum of the member sizes to equal twice your desired
         # capacity
-        space = size / (disks / 2.0)
+        space = size / (disks / 2)
 
     space += get_raid_superblock_size(size)
 

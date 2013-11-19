@@ -23,7 +23,9 @@ class MDRaidTestCase(unittest.TestCase):
 
         # fail
         # unsupported raid
-        self.assertRaises(errors.MDRaidError, mdraid.get_raid_min_members, 8)
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "invalid raid level",
+           mdraid.get_raid_min_members, 8)
 
         ##
         ## get_raid_max_spares
@@ -37,8 +39,80 @@ class MDRaidTestCase(unittest.TestCase):
 
         # fail
         # unsupported raid
-        self.assertRaises(errors.MDRaidError, mdraid.get_raid_max_spares, 8, 5)
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "invalid raid level",
+           mdraid.get_raid_max_spares, 8, 5)
 
+        ##
+        ## get_raid_superblock_size
+        ##
+        self.assertEqual(mdraid.get_raid_superblock_size(256 * 1024), 128)
+        self.assertEqual(mdraid.get_raid_superblock_size(128 * 1024), 128)
+        self.assertEqual(mdraid.get_raid_superblock_size(64 * 1024), 64)
+        self.assertEqual(mdraid.get_raid_superblock_size(63 * 1024), 32)
+        self.assertEqual(mdraid.get_raid_superblock_size(10 * 1024), 8)
+        self.assertEqual(mdraid.get_raid_superblock_size(1024), 1)
+        self.assertEqual(mdraid.get_raid_superblock_size(1023), 0)
+        self.assertEqual(mdraid.get_raid_superblock_size(512), 0)
+
+        self.assertEqual(mdraid.get_raid_superblock_size(257, "version"),
+           mdraid.MD_SUPERBLOCK_SIZE)
+
+        ##
+        ## get_member_space
+        ##
+        self.assertEqual(mdraid.get_member_space(1024, 2, 0), 513 * 2)
+        self.assertEqual(mdraid.get_member_space(1024, 2, 1), 1025 * 2)
+        self.assertEqual(mdraid.get_member_space(1024, 3, 4), 513 * 3)
+        self.assertEqual(mdraid.get_member_space(1024, 3, 5), 513 * 3)
+        self.assertEqual(mdraid.get_member_space(1024, 4, 6), 513 * 4)
+        self.assertEqual(mdraid.get_member_space(1024, 5, 10), 513 * 5)
+
+        # fail
+        # unsupported raid
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "invalid raid level",
+           mdraid.get_member_space, 1024, 0)
+
+        # fail
+        # not enough disks
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "requires at least",
+           mdraid.get_member_space, 1024, 0, 0)
+
+        ##
+        ## isRaid
+        ##
+        self.assertTrue(mdraid.isRaid(0, "RAID0"))
+        self.assertFalse(mdraid.isRaid(6, "RAID0"))
+
+        # fail
+        # invalid raid
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "invalid raid level",
+           mdraid.isRaid, 7, "RAID")
+
+        ##
+        ## raidLevel
+        ##
+        self.assertEqual(mdraid.raidLevel("RAID0"), 0)
+
+        # fail
+        # invalid raid
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "invalid raid level",
+           mdraid.raidLevel, "RAID")
+
+        ##
+        ## raidLevelString
+        ##
+        self.assertEqual(mdraid.raidLevelString(0), "raid0")
+
+        # fail
+        # invalid constant
+        self.assertRaisesRegexp(errors.MDRaidError,
+           "invalid raid level constant",
+          mdraid.raidLevelString, -1)
 
 class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
 
