@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.26
+Version: 0.27
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,28 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Nov 19 2013 David Lehman <dlehman@redhat.com> - 0.27-1
+- Specify btrfs volumes by UUID in /etc/fstab. (dlehman)
+- Catch any exception raised by findExistingInstallations. (#980267) (dlehman)
+- Prevent md_node_from_name from raising OSError. (#980267) (dlehman)
+- Tidy up tests in devicelibs_test directory. (amulhern)
+- Preparation for lv resize is a subset of that for lv destroy. (#1027682)
+  (dlehman)
+- Make sure new values of targetSize are within bounds. (dlehman)
+- Devices with non-existent formatting are resizable. (#1027714) (dlehman)
+- Do not hide non-existent devices. (#1027846) (dlehman)
+- Change XFS maximum to 16EB (#1016035) (bcl)
+- Add tmpfs support (#918621) (mkolman)
+- Add support for returning machine word length (mkolman)
+- Require cryptsetup instead of cryptsetup-luks (#969597) (amulhern)
+- Fix initialization of disks containing sun or mac disklabels. (dlehman)
+- Newly formatted devices are used unless mountpoint is empty. (#966078)
+  (dlehman)
+- Fix detection of lvm setups. (#1026466) (dlehman)
+- Fix handling of overcommitted thin pools in thinp factory. (#1024144)
+  (dlehman)
+- Fix name checking for new thin lvs. (#1024076) (dlehman)
+
 * Wed Oct 30 2013 Brian C. Lane <bcl@redhat.com> - 0.26-1
 - Add macefi format type (#1010495) (bcl)
 - Allow hfs+ boot devices to have their name set (#1010495) (bcl)
