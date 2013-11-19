@@ -20,10 +20,8 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import os
-
-from .. import util
 from ..errors import *
+from . import raid
 
 import logging
 log = logging.getLogger("blivet")
@@ -32,72 +30,96 @@ log = logging.getLogger("blivet")
 MD_SUPERBLOCK_SIZE = 2.0    # MB
 MD_CHUNK_SIZE = 0.5         # MB
 
+class MDRaidLevels(raid.RAIDLevels):
+    @classmethod
+    def isRaidLevel(cls, level):
+        """Every mdraid level must define min_members."""
+        try:
+            min_members = level.min_members
+            return super(MDRaidLevels, cls).isRaidLevel(level) and min_members > 0
+        except AttributeError:
+            return False
+
+_RAID_levels = MDRaidLevels()
+
 # raidlevels constants
-RAID10 = 10
-RAID6 = 6
-RAID5 = 5
-RAID4 = 4
-RAID1 = 1
-RAID0 = 0
+RAID10 = _RAID_levels.raidLevel(10).number
+RAID6 = _RAID_levels.raidLevel(6).number
+RAID5 = _RAID_levels.raidLevel(5).number
+RAID4 = _RAID_levels.raidLevel(4).number
+RAID1 = _RAID_levels.raidLevel(1).number
+RAID0 = _RAID_levels.raidLevel(0).number
 
 raid_levels = [ RAID0, RAID1, RAID4, RAID5, RAID6, RAID10 ]
 
-raid_descriptors = {RAID10: ("raid10", "RAID10", "10", 10),
-                    RAID6: ("raid6", "RAID6", "6", 6),
-                    RAID5: ("raid5", "RAID5", "5", 5),
-                    RAID4: ("raid4", "RAID4", "4", 4),
-                    RAID1: ("raid1", "mirror", "RAID1", "1", 1),
-                    RAID0: ("raid0", "stripe", "RAID0", "0", 0)}
+class Container(object):
+    name = "container"
+    names = [name]
+    nick = None
+    min_members = 1
+    def get_recommended_stride(self, member_devices):
+        return None
+    def get_size(self, member_count, smallest_member_size, chunk_size):
+        raise MDRaidError("get_size is not defined for level container.")
+    def get_raw_array_size(self, member_count, smallest_member_size):
+        raise MDRaidError("get_raw_array_size is not defined for level container.")
+    def __str__(self):
+        return self.name
+
+Container = Container()
+_RAID_levels.addRaidLevel(Container)
+
+def getRaidLevel(descriptor):
+    """Return an object for this raid level descriptor.
+       Raises an MDRaidError if the descriptor is not valid.
+    """
+    try:
+        return _RAID_levels.raidLevel(descriptor)
+    except RaidError as e:
+        raise MDRaidError(e.message)
 
 def raidLevel(descriptor):
-    for level in raid_levels:
-        if isRaid(level, descriptor):
-            return level
-    else:
-        raise MDRaidError("invalid raid level descriptor %s" % descriptor)
+    """Return an integer code corresponding to this raid level descriptor.
+       Raises an MDRaidError if the descriptor is not valid or does not
+       have a corresponding numeric code.
+    """
+    try:
+        return _RAID_levels.raidLevel(descriptor).number
+    except RaidError as e:
+        raise MDRaidError(e.message)
+    except ValueError:
+        raise MDRaidError(e.message)
 
-def raidLevelString(level):
-    if level in raid_descriptors.keys():
-        return raid_descriptors[level][0]
-    else:
-        raise MDRaidError("invalid raid level constant %s" % level)
+def raidLevelString(descriptor, use_nick=False):
+    """Returns the canonical name for the descriptor. Raises an
+       MDRaidError if there is no corresponding level for the descriptor.
 
-def isRaid(raid, raidlevel):
-    """Return whether raidlevel is a valid descriptor of raid"""
-    if raid in raid_descriptors:
-        return raidlevel in raid_descriptors[raid]
-    else:
-        raise MDRaidError("invalid raid level %d" % raid)
+       Return the nickname if use_nick is True.
+    """
+    try:
+        return _RAID_levels.raidLevelString(descriptor, use_nick)
+    except RaidError as e:
+        raise MDRaidError(e.message)
 
-def get_raid_min_members(raidlevel):
-    """Return the minimum number of raid members required for raid level"""
-    raid_min_members = {RAID10: 4,
-                        RAID6: 4,
-                        RAID5: 3,
-                        RAID4: 3,
-                        RAID1: 2,
-                        RAID0: 2}
+def get_raid_min_members(descriptor):
+    """Return the minimum number of raid members required for this raid
+       level descriptor. Raises an MDRaidError if the descriptor is
+       invalid.
+    """
+    try:
+        return _RAID_levels.raidLevel(descriptor).min_members
+    except RaidError as e:
+        raise MDRaidError(e.message)
 
-    for raid, min_members in raid_min_members.items():
-        if isRaid(raid, raidlevel):
-            return min_members
-
-    raise MDRaidError("invalid raid level %s" % raidlevel)
-
-def get_raid_max_spares(raidlevel, nummembers):
-    """Return the maximum number of raid spares for raidlevel."""
-    raid_max_spares = {RAID10: lambda: max(0, nummembers - get_raid_min_members(RAID10)),
-                       RAID6: lambda: max(0, nummembers - get_raid_min_members(RAID6)),
-                       RAID5: lambda: max(0, nummembers - get_raid_min_members(RAID5)),
-                       RAID4: lambda: max(0, nummembers - get_raid_min_members(RAID4)),
-                       RAID1: lambda: max(0, nummembers - get_raid_min_members(RAID1)),
-                       RAID0: lambda: 0}
-
-    for raid, max_spares_func in raid_max_spares.items():
-        if isRaid(raid, raidlevel):
-            return max_spares_func()
-
-    raise MDRaidError("invalid raid level %d" % raidlevel)
+def get_raid_max_spares(descriptor, nummembers):
+    """Return the maximum number of raid spares for the descriptor,
+       given nummembers members in the array. Raises an MDRaidError
+       if the descriptor is invalid.
+    """
+    try:
+        return _RAID_levels.raidLevel(descriptor).get_max_spares(nummembers)
+    except RaidError as e:
+        raise MDRaidError(e.message)
 
 def get_raid_superblock_size(size, version=None):
     """ mdadm has different amounts of space reserved for its use depending
@@ -124,37 +146,26 @@ def get_raid_superblock_size(size, version=None):
     return headroom
 
 def get_member_space(size, disks, level=None):
-    space = 0   # size of *each* member device
+    """Return the total mB required to store size data.
+       The steps are:
+         * Find the size required for each member
+         * Add to that the superblock size
+         * multiply that by the number of disks to get the required total size.
+       :param size: amount of data
+       :type size: natural number
 
-    if isinstance(level, str):
-        level = raidLevel(level)
+       :param disks: number of disks
+       :type disks: natural number
 
-    min_members = get_raid_min_members(level)
-    if disks < min_members:
-        raise MDRaidError("raid%d requires at least %d disks"
-                         % (level, min_members))
-
-    if level == RAID0:
-        # you need the sum of the member sizes to equal your desired capacity
-        space = size / disks
-    elif level == RAID1:
-        # you need each member's size to equal your desired capacity
-        space = size
-    elif level in (RAID4, RAID5):
-        # you need the sum of all but one members' sizes to equal your desired
-        # capacity
-        space = size / (disks - 1)
-    elif level == RAID6:
-        # you need the sum of all but two members' sizes to equal your desired
-        # capacity
-        space = size / (disks - 2)
-    elif level == RAID10:
-        # you need the sum of the member sizes to equal twice your desired
-        # capacity
-        space = size / (disks / 2)
-
-    space += get_raid_superblock_size(size)
-
+       Raises and MDRaidError if there is no level correspondign to level
+       or if the number of disks is less than the minimum number required
+       for the raid level.
+    """
+    try:
+        space = _RAID_levels.raidLevel(level).get_base_member_size(size, disks) + \
+           get_raid_superblock_size(size)
+    except RaidError as e:
+        raise MDRaidError(e.message)
     return space * disks
 
 def mdadm(args):

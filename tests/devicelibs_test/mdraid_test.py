@@ -12,6 +12,17 @@ class MDRaidTestCase(unittest.TestCase):
     def testMDRaid(self):
 
         ##
+        ## getRaidLevel
+        ##
+        self.assertEqual(mdraid.getRaidLevel("container").name, "container")
+        self.assertEqual(mdraid.getRaidLevel("stripe").name, "raid0")
+        self.assertEqual(mdraid.getRaidLevel("mirror").name, "raid1")
+        self.assertEqual(mdraid.getRaidLevel("4").name, "raid4")
+        self.assertEqual(mdraid.getRaidLevel(5).name, "raid5")
+        self.assertEqual(mdraid.getRaidLevel("RAID6").name, "raid6")
+        self.assertEqual(mdraid.getRaidLevel("raid10").name, "raid10")
+
+        ##
         ## get_raid_min_members
         ##
         # pass
@@ -81,18 +92,6 @@ class MDRaidTestCase(unittest.TestCase):
            mdraid.get_member_space, 1024, 0, 0)
 
         ##
-        ## isRaid
-        ##
-        self.assertTrue(mdraid.isRaid(0, "RAID0"))
-        self.assertFalse(mdraid.isRaid(6, "RAID0"))
-
-        # fail
-        # invalid raid
-        self.assertRaisesRegexp(errors.MDRaidError,
-           "invalid raid level",
-           mdraid.isRaid, 7, "RAID")
-
-        ##
         ## raidLevel
         ##
         self.assertEqual(mdraid.raidLevel("RAID0"), 0)
@@ -107,12 +106,15 @@ class MDRaidTestCase(unittest.TestCase):
         ## raidLevelString
         ##
         self.assertEqual(mdraid.raidLevelString(0), "raid0")
+        self.assertEqual(mdraid.raidLevelString(0, True), "stripe")
+        self.assertEqual(mdraid.raidLevelString(1, True), "mirror")
+        self.assertEqual(mdraid.raidLevelString(6, True), "raid6")
 
         # fail
         # invalid constant
         self.assertRaisesRegexp(errors.MDRaidError,
-           "invalid raid level constant",
-          mdraid.raidLevelString, -1)
+           "invalid raid level",
+           mdraid.raidLevelString, -1)
 
 class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
 
