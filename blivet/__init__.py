@@ -800,6 +800,7 @@ class Blivet(object):
                 continue
 
             log.debug("clearpart: initializing %s" % disk.name)
+            self.recursiveRemove(disk)
             self.initializeDisk(disk)
 
         self.updateBootLoaderDiskList()
