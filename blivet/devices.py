@@ -2977,11 +2977,7 @@ class MDRaidArrayDevice(StorageDevice):
 
         if level == "container":
             self._type = "mdcontainer"
-            self.level = "container"
-        elif level is not None:
-            self.level = mdraid.raidLevel(level)
-        else:
-            self.level = None
+        self.level = level
 
         # For new arrays check if we have enough members
         if (not exists and parents and
@@ -3027,7 +3023,7 @@ class MDRaidArrayDevice(StorageDevice):
         """ Return the raid level
 
             :returns: raid level value
-            :rtype:   an int representing a raid level, "container", or None
+            :rtype:   an int representing a raid level or "container"
         """
         return self._level
 
@@ -3036,16 +3032,15 @@ class MDRaidArrayDevice(StorageDevice):
         """ Set the RAID level and enforce restrictions based on it.
 
             :param value: new raid level
-            :param type:  a valid raid level int, "container", or None
+            :param type:  a valid raid level int or "container"
             :returns:     None
 
             Sets createBitmap True unless level is 0
         """
-        if not value in mdraid.raid_levels and \
-           value != "container" and value is not None:
-            raise mdraid.MDRaidError("invalid raid level %s" % str(value))
-
-        self._level = value
+        if value != "container":
+            self._level = mdraid.raidLevel(value)
+        else:
+            self._level = value
 
         # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
         self.createBitmap = self._level != 0
@@ -3141,8 +3136,6 @@ class MDRaidArrayDevice(StorageDevice):
             levelstr = "stripe"
         elif self.level == mdraid.RAID1:
             levelstr = "mirror"
-        elif self.level is None:
-            levelstr = "unknown level"
         else:
             levelstr = "raid%s" % self.level
 

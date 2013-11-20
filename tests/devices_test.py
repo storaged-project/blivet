@@ -71,7 +71,6 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                 v(getattr(device, k), k)
 
     def setUp(self):
-        self.dev0 = MDRaidArrayDevice("dev0")
 
         self.dev1 = MDRaidArrayDevice("dev1", level="container")
         self.dev2 = MDRaidArrayDevice("dev2", level="raid0")
@@ -81,13 +80,13 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         self.dev6 = MDRaidArrayDevice("dev6", level="raid6")
         self.dev7 = MDRaidArrayDevice("dev7", level="raid10")
 
-        self.dev8 = MDRaidArrayDevice("dev8", exists=True)
+        self.dev8 = MDRaidArrayDevice("dev8", level=1, exists=True)
         self.dev9 = MDRaidArrayDevice(
            "dev9",
            level="raid0",
            parents=[
               MDRaidArrayDevice("parent", level="container"),
-              MDRaidArrayDevice("other")])
+              MDRaidArrayDevice("other", level=0)])
 
         self.dev10 = MDRaidArrayDevice(
            "dev10",
@@ -99,7 +98,7 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
            level=1,
            parents=[
               MDRaidArrayDevice("parent", level="container"),
-              MDRaidArrayDevice("other")],
+              MDRaidArrayDevice("other", level="raid0")],
            size=32)
 
         self.dev12 = MDRaidArrayDevice(
@@ -182,8 +181,6 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
            For some combinations of arguments the initializer will throw
            an exception.
         """
-        self.stateCheck(self.dev0)
-
 
         ##
         ## level tests
@@ -216,7 +213,9 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         ## existing device tests
         ##
         self.stateCheck(self.dev8,
+                        description = lambda x, m: self.assertEqual(x, "MDRAID set (mirror)", m),
                         exists=self.assertTrue,
+                        level=lambda x, m: self.assertEqual(x, 1, m),
                         metadataVersion=self.assertIsNone)
 
 
@@ -342,6 +341,11 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         self.assertRaisesRegexp(mdraid.MDRaidError,
                                 "invalid raid level",
                                 MDRaidArrayDevice,
+                                "dev")
+
+        self.assertRaisesRegexp(mdraid.MDRaidError,
+                                "invalid raid level",
+                                MDRaidArrayDevice,
                                 "dev",
                                 level="raid2")
 
@@ -368,6 +372,7 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                                 "memberDevices cannot be greater than totalDevices",
                                 MDRaidArrayDevice,
                                 "dev",
+                                level=0,
                                 memberDevices=2)
 
 
@@ -375,6 +380,9 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         """Test for method calls on initialized MDRaidDevices."""
         with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid raid level" ):
             self.dev7.level = "junk"
+
+        with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid raid level" ):
+            self.dev7.level = None
 
 
 def suite():
