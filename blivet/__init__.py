@@ -86,12 +86,10 @@ import arch
 from flags import flags
 from platform import platform as _platform
 from size import Size
+from i18n import _
 
 import shelve
 import contextlib
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
 
 import logging
 log = logging.getLogger("blivet")

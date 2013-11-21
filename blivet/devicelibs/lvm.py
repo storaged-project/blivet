@@ -30,9 +30,7 @@ log = logging.getLogger("blivet")
 from .. import util
 from .. import arch
 from ..errors import *
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from ..i18n import _
 
 MAX_LV_SLOTS = 256
 

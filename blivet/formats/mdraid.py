@@ -29,9 +29,6 @@ from ..devicelibs import mdraid
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 import logging
 log = logging.getLogger("blivet")
 

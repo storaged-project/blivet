@@ -26,13 +26,10 @@ from .devices import deviceNameToDiskByPath
 from . import util
 from . import arch
 from .udev import udev_trigger
+from .i18n import P_
 
 import logging
 log = logging.getLogger("blivet")
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
 
 def getDasdPorts():
     """ Return comma delimited string of valid DASD ports. """

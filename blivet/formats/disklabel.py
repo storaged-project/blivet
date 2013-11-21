@@ -32,9 +32,6 @@ from ..flags import flags
 from ..udev import udev_settle
 from . import DeviceFormat, register_device_format
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 import logging
 log = logging.getLogger("blivet")
 

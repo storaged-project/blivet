@@ -27,9 +27,6 @@ from ..errors import *
 from .. import util
 from . import dm
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 import logging
 log = logging.getLogger("blivet")
 

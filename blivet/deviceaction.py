@@ -30,9 +30,7 @@ from devices import LVMLogicalVolumeDevice
 from formats import getFormat
 from errors import *
 from parted import partitionFlag, PARTITION_LBA
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from i18n import _
 
 import logging
 log = logging.getLogger("blivet")

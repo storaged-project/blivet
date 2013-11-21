@@ -21,15 +21,13 @@
 from udev import udev_settle
 from . import util
 from .flags import flags
+from .i18n import _
 import os
 import logging
 import shutil
 import time
 import itertools
 log = logging.getLogger("blivet")
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
 
 has_libiscsi = True
 try:
