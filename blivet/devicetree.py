@@ -48,9 +48,6 @@ from storage_log import log_method_call, log_method_return
 import parted
 import _ped
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 import logging
 log = logging.getLogger("blivet")
 

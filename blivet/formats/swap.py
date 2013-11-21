@@ -27,9 +27,6 @@ from ..util import numeric_type
 from ..devicelibs import swap
 from . import DeviceFormat, register_device_format
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 import logging
 log = logging.getLogger("blivet")
 

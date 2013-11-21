@@ -32,8 +32,7 @@ from errors import *
 from parted import partitionFlag, PARTITION_LBA
 from flags import flags
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from i18n import _
 
 import logging
 log = logging.getLogger("blivet")

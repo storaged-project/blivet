@@ -23,10 +23,8 @@ from .udev import udev_settle
 #from pyanaconda import isys
 import logging
 import time
+from .i18n import _
 log = logging.getLogger("blivet")
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
 
 _fcoe_module_loaded = False
 

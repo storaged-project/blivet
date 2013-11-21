@@ -23,9 +23,7 @@ import string
 import os
 from udev import udev_settle
 from . import util
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from .i18n import _
 
 import logging
 log = logging.getLogger("blivet")

@@ -36,12 +36,10 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_method_call
 from .. import arch
+from ..i18n import _
 
 import logging
 log = logging.getLogger("blivet")
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
 
 # these are for converting to/from SI for ntfsresize
 mb = 1000 * 1000.0

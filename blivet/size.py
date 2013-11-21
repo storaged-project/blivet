@@ -28,11 +28,7 @@ from decimal import Decimal
 from decimal import InvalidOperation
 
 from errors import *
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
-N_ = lambda x: x
+from i18n import _, P_, N_
 
 # Container for size unit prefix information
 _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])

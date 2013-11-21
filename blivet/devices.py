@@ -119,9 +119,7 @@ from udev import *
 from formats import get_device_format_class, getFormat, DeviceFormat
 from size import Size
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
+from i18n import P_
 
 import logging
 log = logging.getLogger("blivet")
