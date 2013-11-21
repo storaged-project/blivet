@@ -75,7 +75,11 @@ def _parseSpec(spec):
     if not spec:
         raise ValueError("invalid size specification", spec)
 
-    m = re.match(r'(-?\s*[0-9.]+)\s*([A-Za-z]*)$', spec.strip())
+    # This regex isn't ideal, since \w matches both letters and digits,
+    # but python doesn't provide a means to match only Unicode letters.
+    # Probably the worst that will come of it is that bad specs will fail
+    # more confusingly.
+    m = re.match(r'(-?\s*[0-9.]+)\s*(\w*)$', spec.decode("utf-8").strip(), flags=re.UNICODE)
     if not m:
         raise ValueError("invalid size specification", spec)
 
