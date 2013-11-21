@@ -28,7 +28,7 @@ import parted
 from . import arch
 from .flags import flags
 from .partspec import PartSpec
-from .i18n import N_
+from .i18n import _, N_
 
 class Platform(object):
     """Platform
@@ -89,7 +89,7 @@ class Platform(object):
              "raid_levels": self._boot_stage1_raid_levels,
              "raid_metadata": self._boot_stage1_raid_metadata,
              "raid_member_types": self._boot_stage1_raid_member_types,
-             "descriptions": self._boot_descriptions}
+             "descriptions": {k: _(v) for k, v in self._boot_descriptions.items()}}
         return d
 
     def requiredDiskLabelType(self, device_type):

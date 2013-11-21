@@ -25,32 +25,32 @@ from decimal import Decimal
 from decimal import InvalidOperation
 
 from errors import *
-from i18n import _, P_
+from i18n import _, P_, N_
 
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_decimalPrefix = [(1000, _("kilo"), _("k")),
-                  (1000**2, _("mega"), _("M")),
-                  (1000**3, _("giga"), _("G")),
-                  (1000**4, _("tera"), _("T")),
-                  (1000**5, _("peta"), _("P")),
-                  (1000**6, _("exa"), _("E")),
-                  (1000**7, _("zetta"), _("Z")),
-                  (1000**8, _("yotta"), _("Y"))]
+_decimalPrefix = [(1000, N_("kilo"), N_("k")),
+                  (1000**2, N_("mega"), N_("M")),
+                  (1000**3, N_("giga"), N_("G")),
+                  (1000**4, N_("tera"), N_("T")),
+                  (1000**5, N_("peta"), N_("P")),
+                  (1000**6, N_("exa"), N_("E")),
+                  (1000**7, N_("zetta"), N_("Z")),
+                  (1000**8, N_("yotta"), N_("Y"))]
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_binaryPrefix = [(1024, _("kibi"), _("Ki")),
-                 (1024**2, _("mebi"), _("Mi")),
-                 (1024**3, _("gibi"), _("Gi")),
-                 (1024**4, _("tebi"), None),
-                 (1024**5, _("pebi"), None),
-                 (1024**6, _("ebi"), None),
-                 (1024**7, _("zebi"), None),
-                 (1024**8, _("yobi"), None)]
+_binaryPrefix = [(1024, N_("kibi"), N_("Ki")),
+                 (1024**2, N_("mebi"), N_("Mi")),
+                 (1024**3, N_("gibi"), N_("Gi")),
+                 (1024**4, N_("tebi"), None),
+                 (1024**5, N_("pebi"), None),
+                 (1024**6, N_("ebi"), None),
+                 (1024**7, N_("zebi"), None),
+                 (1024**8, N_("yobi"), None)]
 
-_bytes = [_('b'), _('byte'), _('bytes')]
+_bytes = [N_('b'), N_('byte'), N_('bytes')]
 _prefixes = _decimalPrefix + _binaryPrefix
 
 def _makeSpecs(prefix, abbr):
@@ -89,10 +89,12 @@ def _parseSpec(spec):
         raise SizeNotPositiveError("spec= param must be >=0")
 
     specifier = m.groups()[1].lower()
-    if specifier in _bytes or not specifier:
+    bytes_xlated = [_(b) for b in _bytes]
+    if not specifier or specifier in bytes_xlated:
         return size
 
-    for factor, prefix, abbr in _prefixes:
+    prefixes_xlated = [_(p) for p in _prefixes]
+    for factor, prefix, abbr in prefixes_xlated:
         check = _makeSpecs(prefix, abbr)
 
         if specifier in check:
@@ -183,10 +185,12 @@ class Size(Decimal):
         """
         spec = spec.lower()
 
-        if spec in _bytes:
+        bytes_xlated = [_(b) for b in _bytes]
+        if spec in bytes_xlated:
             return self
 
-        for factor, prefix, abbr in _prefixes:
+        prefixes_xlated = [_(p) for p in _prefixes]
+        for factor, prefix, abbr in prefixes_xlated:
             check = _makeSpecs(prefix, abbr)
 
             if spec in check:
@@ -208,9 +212,10 @@ class Size(Decimal):
         check = self._trimEnd("%d" % self)
 
         if Decimal(check) < 1000:
-            return "%s B" % check
+            return "%s %s" % (check, _("B"))
 
-        for factor, prefix, abbr in _prefixes:
+        prefixes_xlated = [_(p) for p in _prefixes]
+        for factor, prefix, abbr in prefixes_xlated:
             newcheck = super(Size, self).__div__(Decimal(factor))
 
             if newcheck < 1000:

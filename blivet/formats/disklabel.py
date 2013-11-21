@@ -30,6 +30,7 @@ from ..errors import *
 from .. import arch
 from ..flags import flags
 from ..udev import udev_settle
+from ..i18n import _
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -212,7 +213,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def name(self):
-        return "%s (%s)" % (self._name, self.labelType.upper())
+        return "%s (%s)" % (_(self._name), self.labelType.upper())
 
     @property
     def size(self):

@@ -30,7 +30,7 @@ from devices import LVMLogicalVolumeDevice
 from formats import getFormat
 from errors import *
 from parted import partitionFlag, PARTITION_LBA
-from i18n import _
+from i18n import _, N_
 
 import logging
 log = logging.getLogger("blivet")
@@ -144,7 +144,7 @@ class DeviceAction(object):
 """
     type = ACTION_TYPE_NONE
     obj = ACTION_OBJECT_NONE
-    typeDesc = ""
+    typeDescStr = ""
     _id = 0
 
     def __init__(self, device):
@@ -227,6 +227,10 @@ class DeviceAction(object):
 
         return s
 
+    @property
+    def typeDesc(self):
+        return _(self.typeDescStr)
+
     def __str__(self):
         s = "[%d] %s %s" % (self.id, self.typeString, self.objectString)
         if self.isResize:
@@ -257,7 +261,7 @@ class ActionCreateDevice(DeviceAction):
     """ Action representing the creation of a new device. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_DEVICE
-    typeDesc = _("create device")
+    typeDescStr = N_("create device")
 
     def __init__(self, device):
         if device.exists:
@@ -304,7 +308,7 @@ class ActionDestroyDevice(DeviceAction):
     """ An action representing the deletion of an existing device. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
-    typeDesc = _("destroy device")
+    typeDescStr = N_("destroy device")
 
     def __init__(self, device):
         # XXX should we insist that device.fs be None?
@@ -376,7 +380,7 @@ class ActionResizeDevice(DeviceAction):
     """ An action representing the resizing of an existing device. """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_DEVICE
-    typeDesc = _("resize device")
+    typeDescStr = N_("resize device")
 
     def __init__(self, device, newsize):
         if not device.resizable:
@@ -433,7 +437,7 @@ class ActionCreateFormat(DeviceAction):
     """ An action representing creation of a new filesystem. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_FORMAT
-    typeDesc = _("create format")
+    typeDescStr = N_("create format")
 
     def __init__(self, device, format=None):
         DeviceAction.__init__(self, device)
@@ -518,7 +522,7 @@ class ActionDestroyFormat(DeviceAction):
     """ An action representing the removal of an existing filesystem. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_FORMAT
-    typeDesc = _("destroy format")
+    typeDescStr = N_("destroy format")
 
     def __init__(self, device):
         DeviceAction.__init__(self, device)
@@ -577,7 +581,7 @@ class ActionResizeFormat(DeviceAction):
     """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_FORMAT
-    typeDesc = _("resize format")
+    typeDescStr = N_("resize format")
 
     def __init__(self, device, newsize):
         if not device.format.resizable:
