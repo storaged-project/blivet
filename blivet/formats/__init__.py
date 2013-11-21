@@ -31,7 +31,7 @@ from ..errors import *
 from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
 from ..udev import udev_device_get_major, udev_device_get_minor
-from ..i18n import _
+from ..i18n import _, N_
 
 import logging
 log = logging.getLogger("blivet")
@@ -143,7 +143,7 @@ def get_device_format_class(fmt_type):
 class DeviceFormat(object):
     """ Generic device format. """
     _type = None
-    _name = _("Unknown")
+    _name = N_("Unknown")
     _udevTypes = []
     partedFlag = None
     partedSystem = None
@@ -238,7 +238,7 @@ class DeviceFormat(object):
     @property
     def name(self):
         if self._name:
-            name = self._name
+            name = _(self._name)
         else:
             name = self.type
         return name

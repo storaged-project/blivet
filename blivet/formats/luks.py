@@ -34,7 +34,7 @@ from ..errors import *
 from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
-from ..i18n import _
+from ..i18n import _, N_
 
 import logging
 log = logging.getLogger("blivet")
@@ -44,7 +44,7 @@ class LUKS(DeviceFormat):
     """ A LUKS device. """
     _type = "luks"
     _name = "LUKS"
-    _lockedName = _("Encrypted")
+    _lockedName = N_("Encrypted")
     _udevTypes = ["crypto_LUKS"]
     _formattable = True                 # can be formatted
     _supported = False                  # is supported
@@ -117,12 +117,11 @@ class LUKS(DeviceFormat):
 
     @property
     def name(self):
-        name = self._name
         # for existing locked devices, show "Encrypted" instead of LUKS
         if self.hasKey or not self.exists:
-            name = self._name
+            name = _(self._name)
         else:
-            name = "%s (%s)" % (self._lockedName, self._name)
+            name = "%s (%s)" % (_(self._lockedName), _(self._name))
         return name
 
     def _setPassphrase(self, passphrase):

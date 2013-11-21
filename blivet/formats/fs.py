@@ -36,7 +36,7 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_method_call
 from .. import arch
-from ..i18n import _
+from ..i18n import _, N_
 
 import logging
 log = logging.getLogger("blivet")
@@ -820,11 +820,11 @@ class Ext2FS(FS):
     _resizefs = "resize2fs"
     _labelfs = "e2label"
     _fsck = "e2fsck"
-    _fsckErrors = {4: _("File system errors left uncorrected."),
-                   8: _("Operational error."),
-                   16: _("Usage or syntax error."),
-                   32: _("e2fsck cancelled by user request."),
-                   128: _("Shared library error.")}
+    _fsckErrors = {4: N_("File system errors left uncorrected."),
+                   8: N_("Operational error."),
+                   16: N_("Usage or syntax error."),
+                   32: N_("e2fsck cancelled by user request."),
+                   128: N_("Shared library error.")}
     _packages = ["e2fsprogs"]
     _formattable = True
     _supported = True
@@ -859,7 +859,7 @@ class Ext2FS(FS):
 
         for errorCode in self._fsckErrors.keys():
             if rc & errorCode:
-                msg += "\n" + self._fsckErrors[errorCode]
+                msg += "\n" + _(self._fsckErrors[errorCode])
 
         return msg.strip()
 
@@ -984,9 +984,9 @@ class FATFS(FS):
     _modules = ["vfat"]
     _labelfs = "dosfslabel"
     _fsck = "dosfsck"
-    _fsckErrors = {1: _("Recoverable errors have been detected or dosfsck has "
+    _fsckErrors = {1: N_("Recoverable errors have been detected or dosfsck has "
                         "discovered an internal inconsistency."),
-                   2: _("Usage error.")}
+                   2: N_("Usage error.")}
     _supported = True
     _formattable = True
     _maxSize = 1024 * 1024
@@ -1001,7 +1001,7 @@ class FATFS(FS):
         return False
 
     def _fsckErrorMessage(self, rc):
-        return self._fsckErrors[rc]
+        return _(self._fsckErrors[rc])
 
 register_device_format(FATFS)
 
