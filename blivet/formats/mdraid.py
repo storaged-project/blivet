@@ -28,6 +28,7 @@ from ..errors import *
 from ..devicelibs import mdraid
 from . import DeviceFormat, register_device_format
 from ..flags import flags
+from ..i18n import N_
 
 import logging
 log = logging.getLogger("blivet")
@@ -36,7 +37,7 @@ log = logging.getLogger("blivet")
 class MDRaidMember(DeviceFormat):
     """ An mdraid member disk. """
     _type = "mdmember"
-    _name = "software RAID"
+    _name = N_("software RAID")
     _udevTypes = ["linux_raid_member"]
     partedFlag = PARTITION_RAID
     _formattable = True                 # can be formatted

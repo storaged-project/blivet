@@ -26,6 +26,7 @@ from ..storage_log import log_method_call
 from parted import PARTITION_LVM
 from ..errors import *
 from ..devicelibs import lvm
+from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -35,7 +36,7 @@ log = logging.getLogger("blivet")
 class LVMPhysicalVolume(DeviceFormat):
     """ An LVM physical volume. """
     _type = "lvmpv"
-    _name = "physical volume (LVM)"
+    _name = N_("physical volume (LVM)")
     _udevTypes = ["LVM2_member"]
     partedFlag = PARTITION_LVM
     _formattable = True                 # can be formatted

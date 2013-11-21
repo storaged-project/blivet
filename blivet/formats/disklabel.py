@@ -30,7 +30,7 @@ from ..errors import *
 from .. import arch
 from ..flags import flags
 from ..udev import udev_settle
-from ..i18n import _
+from ..i18n import _, N_
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -40,7 +40,7 @@ log = logging.getLogger("blivet")
 class DiskLabel(DeviceFormat):
     """ Disklabel """
     _type = "disklabel"
-    _name = "partition table"
+    _name = N_("partition table")
     _formattable = True                # can be formatted
     _supported = False                 # is supported
 

@@ -26,6 +26,7 @@
 
 from ..storage_log import log_method_call
 from ..errors import *
+from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -34,7 +35,7 @@ log = logging.getLogger("blivet")
 class MultipathMember(DeviceFormat):
     """ A multipath member disk. """
     _type = "multipath_member"
-    _name = "multipath member device"
+    _name = N_("multipath member device")
     _udev_types = ["multipath_member"]
     _formattable = False                # can be formatted
     _supported = True                   # is supported

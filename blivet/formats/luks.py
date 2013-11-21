@@ -43,7 +43,7 @@ log = logging.getLogger("blivet")
 class LUKS(DeviceFormat):
     """ A LUKS device. """
     _type = "luks"
-    _name = "LUKS"
+    _name = N_("LUKS")
     _lockedName = N_("Encrypted")
     _udevTypes = ["crypto_LUKS"]
     _formattable = True                 # can be formatted

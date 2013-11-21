@@ -24,12 +24,13 @@ from parted import PARTITION_BIOS_GRUB
 
 from ..errors import *
 from .. import platform
+from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
 class BIOSBoot(DeviceFormat):
     """ BIOS boot partition for GPT disklabels. """
     _type = "biosboot"
-    _name = "BIOS Boot"
+    _name = N_("BIOS Boot")
     _udevTypes = []
     partedFlag = PARTITION_BIOS_GRUB
     _formattable = True                 # can be formatted

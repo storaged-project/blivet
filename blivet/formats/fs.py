@@ -1010,7 +1010,7 @@ class EFIFS(FATFS):
     _type = "efi"
     _mountType = "vfat"
     _modules = ["vfat"]
-    _name = "EFI System Partition"
+    _name = N_("EFI System Partition")
     _minSize = 50
 
     @property
@@ -1241,7 +1241,7 @@ register_device_format(HFS)
 class AppleBootstrapFS(HFS):
     _type = "appleboot"
     _mountType = "hfs"
-    _name = "Apple Bootstrap"
+    _name = N_("Apple Bootstrap")
     _minSize = 800.00 / 1024.00
     _maxSize = 1
 
@@ -1272,7 +1272,7 @@ register_device_format(HFSPlus)
 
 class MacEFIFS(HFSPlus):
     _type = "macefi"
-    _name = "Linux HFS+ ESP"
+    _name = N_("Linux HFS+ ESP")
     _udevTypes = []
     _minSize = 50
 

@@ -22,6 +22,7 @@
 
 from ..errors import *
 from .. import platform
+from ..i18n import N_
 from . import DeviceFormat, register_device_format
 from parted import PARTITION_PREP
 import os
@@ -31,7 +32,7 @@ log = logging.getLogger("blivet")
 class PPCPRePBoot(DeviceFormat):
     """ Generic device format. """
     _type = "prepboot"
-    _name = "PPC PReP Boot"
+    _name = N_("PPC PReP Boot")
     _udevTypes = []
     partedFlag = PARTITION_PREP
     _formattable = True                 # can be formatted

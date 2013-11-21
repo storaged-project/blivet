@@ -23,6 +23,7 @@
 from ..storage_log import log_method_call
 from ..flags import flags
 from ..errors import *
+from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -32,7 +33,7 @@ log = logging.getLogger("blivet")
 class DMRaidMember(DeviceFormat):
     """ A dmraid member disk. """
     _type = "dmraidmember"
-    _name = "dm-raid member device"
+    _name = N_("dm-raid member device")
     # XXX This looks like trouble.
     #
     #     Maybe a better approach is a RaidMember format with subclass
