@@ -25,9 +25,6 @@ from pycryptsetup import CryptSetup
 
 from ..errors import *
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 LUKS_METADATA_SIZE = 2.0    # MB
 
 # Keep the character set size a power of two to make sure all characters are

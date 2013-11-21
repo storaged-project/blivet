@@ -28,9 +28,6 @@ from ..errors import *
 from ..devicelibs import lvm
 from . import DeviceFormat, register_device_format
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-
 import logging
 log = logging.getLogger("blivet")
 

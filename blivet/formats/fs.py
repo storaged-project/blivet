@@ -36,12 +36,10 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_method_call
 from .. import arch
+from ..i18n import _
 
 import logging
 log = logging.getLogger("blivet")
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
 
 try:
     lost_and_found_context = selinux.matchpathcon("/lost+found", 0)[1]

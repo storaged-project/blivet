@@ -28,10 +28,7 @@ import parted
 from . import arch
 from .flags import flags
 from .partspec import PartSpec
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-N_ = lambda x: x
+from .i18n import N_
 
 class Platform(object):
     """Platform

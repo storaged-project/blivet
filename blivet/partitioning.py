@@ -33,9 +33,7 @@ from flags import flags
 from devices import PartitionDevice, LUKSDevice, devicePathToName
 from formats import getFormat
 from devicelibs.lvm import get_pool_padding
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from i18n import _
 
 import logging
 log = logging.getLogger("blivet")

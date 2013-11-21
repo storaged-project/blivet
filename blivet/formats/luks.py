@@ -34,9 +34,7 @@ from ..errors import *
 from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from ..i18n import _
 
 import logging
 log = logging.getLogger("blivet")

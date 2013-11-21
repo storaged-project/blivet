@@ -31,9 +31,7 @@ from ..errors import *
 from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
 from ..udev import udev_device_get_major, udev_device_get_minor
-
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
+from ..i18n import _
 
 import logging
 log = logging.getLogger("blivet")
