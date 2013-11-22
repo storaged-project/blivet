@@ -874,7 +874,7 @@ class Blivet(object):
             should_clear = self.shouldClear(disk, clearPartType=clearPartType,
                                             clearPartDisks=[disk.name])
             if should_clear:
-                free[disk.name] = (Size(spec="%f mb" % disk.size), 0)
+                free[disk.name] = (Size(en_spec="%f mb" % disk.size), 0)
                 continue
 
             disk_free = 0
@@ -897,8 +897,8 @@ class Blivet(object):
             elif disk.format.type is None:
                 disk_free = disk.size
 
-            free[disk.name] = (Size(spec="%f mb" % disk_free),
-                               Size(spec="%f mb" % fs_free))
+            free[disk.name] = (Size(en_spec="%f mb" % disk_free),
+                               Size(en_spec="%f mb" % fs_free))
 
         return free
 
@@ -1593,15 +1593,15 @@ class Blivet(object):
                                     "'biosboot' type partition."))
 
         if not swaps:
-            installed = Size(spec="%s kb" % util.total_memory())
-            required = Size(spec="%s kb" % isys.EARLY_SWAP_RAM)
+            installed = Size(en_spec="%s kb" % util.total_memory())
+            required = Size(en_spec="%s kb" % isys.EARLY_SWAP_RAM)
 
             if installed < required:
                 errors.append(_("You have not specified a swap partition.  "
                                 "%(requiredMem)s MB of memory is required to continue installation "
                                 "without a swap partition, but you only have %(installedMem)s MB.")
-                              % {"requiredMem": int(required.convertTo(spec="MB")),
-                                 "installedMem": int(installed.convertTo(spec="MB"))})
+                              % {"requiredMem": int(required.convertTo(en_spec="MB")),
+                                 "installedMem": int(installed.convertTo(en_spec="MB"))})
             else:
                 warnings.append(_("You have not specified a swap partition.  "
                                   "Although not strictly required in all cases, "

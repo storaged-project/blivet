@@ -29,15 +29,15 @@ from blivet.size import Size, _prefixes
 class SizeTestCase(unittest.TestCase):
     def testExceptions(self):
         self.assertRaises(SizeParamsError, Size)
-        self.assertRaises(SizeParamsError, Size, bytes=500, spec="45GB")
+        self.assertRaises(SizeParamsError, Size, bytes=500, en_spec="45GB")
 
         self.assertRaises(SizeNotPositiveError, Size, bytes=-1)
 
         zero = Size(bytes=0)
         self.assertEqual(zero, 0.0)
 
-        self.assertRaises(SizeNotPositiveError, Size, spec="-1 TB")
-        self.assertRaises(SizeNotPositiveError, Size, spec="-47kb")
+        self.assertRaises(SizeNotPositiveError, Size, en_spec="-1 TB")
+        self.assertRaises(SizeNotPositiveError, Size, en_spec="-47kb")
 
         s = Size(bytes=500)
         self.assertRaises(SizePlacesError, s.humanReadable, places=-1)
@@ -52,15 +52,15 @@ class SizeTestCase(unittest.TestCase):
 
         if prefix:
             u = "%sbytes" % prefix
-            s = Size(spec="%ld %s" % (bytes, u))
+            s = Size(en_spec="%ld %s" % (bytes, u))
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(spec=u), bytes)
+            self.assertEquals(s.convertTo(en_spec=u), bytes)
 
         if abbr:
             u = "%sb" % abbr
-            s = Size(spec="%ld %s" % (bytes, u))
+            s = Size(en_spec="%ld %s" % (bytes, u))
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(spec=u), bytes)
+            self.assertEquals(s.convertTo(en_spec=u), bytes)
 
         if not prefix and not abbr:
             s = Size(spec="%ld" % bytes)
