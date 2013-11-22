@@ -53,21 +53,28 @@ _binaryPrefix = [(1024, N_("kibi"), N_("Ki")),
 _bytes = [N_('b'), N_('byte'), N_('bytes')]
 _prefixes = _decimalPrefix + _binaryPrefix
 
-def _makeSpecs(prefix, abbr):
+def _makeSpecs(prefix, abbr, xlate):
     """ Internal method used to generate a list of specifiers. """
     specs = []
 
     if prefix:
-        specs.append(prefix.lower() + _("byte"))
-        specs.append(prefix.lower() + _("bytes"))
+        if xlate:
+            specs.append(prefix.lower() + _("byte"))
+            specs.append(prefix.lower() + _("bytes"))
+        else:
+            specs.append(prefix.lower() + "byte")
+            specs.append(prefix.lower() + "bytes")
 
     if abbr:
-        specs.append(abbr.lower() + _("b"))
+        if xlate:
+            specs.append(abbr.lower() + _("b"))
+        else:
+            specs.append(abbr.lower() + "b")
         specs.append(abbr.lower())
 
     return specs
 
-def _parseSpec(spec):
+def _parseSpec(spec, xlate):
     """ Parse string representation of size. """
     if not spec:
         raise ValueError("invalid size specification", spec)
@@ -89,13 +96,19 @@ def _parseSpec(spec):
         raise SizeNotPositiveError("spec= param must be >=0")
 
     specifier = m.groups()[1].lower()
-    bytes_xlated = [_(b) for b in _bytes]
-    if not specifier or specifier in bytes_xlated:
+    if xlate:
+        bytes = [_(b) for b in _bytes]
+    else:
+        bytes = _bytes
+    if not specifier or specifier in bytes:
         return size
 
-    prefixes_xlated = [_(p) for p in _prefixes]
-    for factor, prefix, abbr in prefixes_xlated:
-        check = _makeSpecs(prefix, abbr)
+    if xlate:
+        prefixes = [_(p) for p in _prefixes]
+    else:
+        prefixes = _prefixes
+    for factor, prefix, abbr in prefixes:
+        check = _makeSpecs(prefix, abbr, xlate)
 
         if specifier in check:
             return size * factor
@@ -110,26 +123,34 @@ class Size(Decimal):
         decimal places.
     """
 
-    def __new__(cls, bytes=None,  spec=None):
-        """ Initialize a new Size object.  Must pass either bytes or spec,
-            but not both.  The bytes parameter is a numerical value for
-            the size this object represents, in bytes.  The spec parameter
-            is a string specification of the size using any of the size
+    def __new__(cls, bytes=None, spec=None, en_spec=None):
+        """ Initialize a new Size object.  Must pass only one of bytes, spec,
+            or en_spec.  The bytes parameter is a numerical value for the size
+            this object represents, in bytes.  The spec and en_spec parameters
+            are string specifications of the size using any of the size
             specifiers in the _decimalPrefix or _binaryPrefix lists combined
-            with a 'b' or 'B'.  For example, to specify 640 kilobytes, you
-            could pass any of these parameter:
+            with the abbreviation for "byte" in the current locale ('b' or 'B'
+            in English).  For example, to specify 640 kilobytes, you could pass
+            any of these parameter:
 
-                spec="640kb"
-                spec="640 kb"
-                spec="640KB"
-                spec="640 KB"
-                spec="640 kilobytes"
+                en_spec="640kb"
+                en_spec="640 kb"
+                en_spec="640KB"
+                en_spec="640 KB"
+                en_spec="640 kilobytes"
 
-            If you want to use spec to pass a bytes value, you can use the
-            letter 'b' or 'B' or simply leave the specifier off and bytes
-            will be assumed.
+            en_spec strings are in English, while spec strings are in the
+            language for the current locale. So Size objects initialized with
+            constant strings should use something like Size(en_spec="3000 MB"),
+            while Size objects created from user input should use 
+            Size(spec=input).
+
+            If you want to use spec or en_spec to pass a bytes value, you can
+            use the localized version of the letter 'b' or 'B' or simply leave
+            the specifier off and bytes will be assumed.
         """
-        if bytes and spec:
+        if (bytes and (spec or en_spec)) or (spec and (bytes or en_spec)) or \
+                (en_spec and (bytes or spec)):
             raise SizeParamsError("only specify one parameter")
 
         if bytes is not None:
@@ -138,9 +159,11 @@ class Size(Decimal):
             else:
                 raise SizeNotPositiveError("bytes= param must be >=0")
         elif spec:
-            self = Decimal.__new__(cls, value=_parseSpec(spec))
+            self = Decimal.__new__(cls, value=_parseSpec(spec, True))
+        elif en_spec:
+            self = Decimal.__new__(cls, value=_parseSpec(en_spec, False))
         else:
-            raise SizeParamsError("missing bytes= or spec=")
+            raise SizeParamsError("missing bytes=, spec=, or en_spec=")
 
         return self
 
@@ -176,22 +199,43 @@ class Size(Decimal):
 
         return val
 
-    def convertTo(self, spec="b"):
+    def convertTo(self, spec=None, en_spec=None):
         """ Return the size in the units indicated by the specifier.  The
             specifier can be prefixes from the _decimalPrefix and
-            _binaryPrefix lists combined with 'b' or 'B' for abbreviations)
-            or 'bytes' (for prefixes like kilo or mega).  The size is
-            returned as a Decimal.
+            _binaryPrefix lists combined with the localized version of 'b' or
+            'B' for abbreviations) or 'bytes' (for prefixes like kilo or mega).
+            The size is returned as a Decimal.
+
+            en_spec strings are treated as English, while spec strings are in
+            language for the current locale.
         """
+        if spec and en_spec:
+            raise SizeParamsError("only specify one of spec= or en_spec=")
+
+        if not (spec or en_spec):
+            en_spec = "b"
+
+        if spec:
+            xlate = True
+        else:
+            spec = en_spec
+            xlate = False
+
         spec = spec.lower()
 
-        bytes_xlated = [_(b) for b in _bytes]
-        if spec in bytes_xlated:
+        if xlate:
+            bytes = [_(b) for b in _bytes]
+        else:
+            bytes = _bytes
+        if spec in bytes:
             return self
 
-        prefixes_xlated = [_(p) for p in _prefixes]
-        for factor, prefix, abbr in prefixes_xlated:
-            check = _makeSpecs(prefix, abbr)
+        if xlate:
+            prefixes = [_(p) for p in _prefixes]
+        else:
+            prefixes = _prefixes
+        for factor, prefix, abbr in _prefixes:
+            check = _makeSpecs(prefix, abbr, xlate)
 
             if spec in check:
                 return Decimal(self / Decimal(factor))

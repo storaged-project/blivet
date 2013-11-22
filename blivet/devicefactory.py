@@ -291,7 +291,7 @@ class DeviceFactory(object):
     def _get_free_disk_space(self):
         free_info = self.storage.getFreeSpace(disks=self.disks)
         free = sum(d[0] for d in free_info.values())
-        return int(free.convertTo(spec="mb"))
+        return int(free.convertTo(en_spec="mb"))
 
     def _handle_no_size(self):
         """ Set device size so that it grows to the largest size possible. """
