@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.27
+Version: 0.28
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,19 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Nov 25 2013 David Lehman <dlehman@redhat.com> - 0.28-1
+- Clear whole-disk formatting before initializing disks. (#1032380) (dlehman)
+- Simplify calculation of vol size when adding a btrfs subvol. (#1033356)
+  (dlehman)
+- Handle passing a btrfs volume as device to BTRFSFactory. (dlehman)
+- Add support for detecting btrfs default subvolume. (dlehman)
+- Handle nested btrfs subvolumes correctly. (#1016959) (dlehman)
+- Mark all format names as translatable (dshea)
+- Add parameters for untranslated Size specs. (dshea)
+- Fix usage of _ vs N_ (dshea)
+- Added a i18n module for gettext functions. (dshea)
+- Allow non-ASCII characters in the size spec (dshea)
+
 * Tue Nov 19 2013 David Lehman <dlehman@redhat.com> - 0.27-1
 - Specify btrfs volumes by UUID in /etc/fstab. (dlehman)
 - Catch any exception raised by findExistingInstallations. (#980267) (dlehman)
