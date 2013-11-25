@@ -39,22 +39,6 @@ class MDRaidTestCase(unittest.TestCase):
            mdraid.get_raid_min_members, 8)
 
         ##
-        ## get_raid_max_spares
-        ##
-        # pass
-        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID0, 5), 0)
-        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID1, 5), 3)
-        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID5, 5), 2)
-        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID6, 5), 1)
-        self.assertEqual(mdraid.get_raid_max_spares(mdraid.RAID10, 5), 1)
-
-        # fail
-        # unsupported raid
-        self.assertRaisesRegexp(errors.MDRaidError,
-           "invalid raid level",
-           mdraid.get_raid_max_spares, 8, 5)
-
-        ##
         ## get_raid_superblock_size
         ##
         self.assertEqual(mdraid.get_raid_superblock_size(256 * 1024), 128)

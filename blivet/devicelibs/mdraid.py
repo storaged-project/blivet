@@ -111,16 +111,6 @@ def get_raid_min_members(descriptor):
     except RaidError as e:
         raise MDRaidError(e.message)
 
-def get_raid_max_spares(descriptor, nummembers):
-    """Return the maximum number of raid spares for the descriptor,
-       given nummembers members in the array. Raises an MDRaidError
-       if the descriptor is invalid.
-    """
-    try:
-        return _RAID_levels.raidLevel(descriptor).get_max_spares(nummembers)
-    except RaidError as e:
-        raise MDRaidError(e.message)
-
 def get_raid_superblock_size(size, version=None):
     """ mdadm has different amounts of space reserved for its use depending
     on the metadata type and size of the array.
