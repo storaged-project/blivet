@@ -34,7 +34,7 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         state_functions = {
            "createBitmap" : lambda x,m: self.assertTrue(x, m),
            "currentSize" : lambda x, m: self.assertEqual(x, 0, m),
-           "description" : lambda x, m: self.assertEqual(x, "MDRAID set (unknown level)", m),
+           "description" : self.assertIsNotNone,
            "devices" : lambda x, m: self.assertEqual(x, [], m),
            "exists" : self.assertFalse,
            "format" : self.assertIsNotNone,
@@ -84,9 +84,11 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         self.dev9 = MDRaidArrayDevice(
            "dev9",
            level="raid0",
+           memberDevices=2,
            parents=[
               MDRaidArrayDevice("parent", level="container"),
-              MDRaidArrayDevice("other", level=0)])
+              MDRaidArrayDevice("other", level=0)],
+           totalDevices=2)
 
         self.dev10 = MDRaidArrayDevice(
            "dev10",
@@ -96,10 +98,12 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         self.dev11 = MDRaidArrayDevice(
            "dev11",
            level=1,
+           memberDevices=2,
            parents=[
               MDRaidArrayDevice("parent", level="container"),
               MDRaidArrayDevice("other", level="raid0")],
-           size=32)
+           size=32,
+           totalDevices=2)
 
         self.dev12 = MDRaidArrayDevice(
            "dev12",
@@ -186,36 +190,28 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         ## level tests
         ##
         self.stateCheck(self.dev1,
-                        description=lambda x, m: self.assertEqual(x, "BIOS RAID container", m),
-                        level=lambda x, m: self.assertEqual(x, "container", m),
+                        level=lambda x, m: self.assertEqual(x.name, "container", m),
                         type=lambda x, m: self.assertEqual(x, "mdcontainer", m))
         self.stateCheck(self.dev2,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (stripe)", m),
                         createBitmap=self.assertFalse,
-                        level=lambda x, m: self.assertEqual(x, 0, m))
+                        level=lambda x, m: self.assertEqual(x.number, 0, m))
         self.stateCheck(self.dev3,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (mirror)", m),
-                        level=lambda x, m: self.assertEqual(x, 1, m))
+                        level=lambda x, m: self.assertEqual(x.number, 1, m))
         self.stateCheck(self.dev4,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid4)", m),
-                        level=lambda x, m: self.assertEqual(x, 4, m))
+                        level=lambda x, m: self.assertEqual(x.number, 4, m))
         self.stateCheck(self.dev5,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid5)", m),
-                        level=lambda x, m: self.assertEqual(x, 5, m))
+                        level=lambda x, m: self.assertEqual(x.number, 5, m))
         self.stateCheck(self.dev6,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid6)", m),
-                        level=lambda x, m: self.assertEqual(x, 6, m))
+                        level=lambda x, m: self.assertEqual(x.number, 6, m))
         self.stateCheck(self.dev7,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid10)", m),
-                        level=lambda x, m: self.assertEqual(x, 10, m))
+                        level=lambda x, m: self.assertEqual(x.number, 10, m))
 
         ##
         ## existing device tests
         ##
         self.stateCheck(self.dev8,
-                        description = lambda x, m: self.assertEqual(x, "MDRAID set (mirror)", m),
                         exists=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x, 1, m),
+                        level=lambda x, m: self.assertEqual(x.number, 1, m),
                         metadataVersion=self.assertIsNone)
 
 
@@ -224,14 +220,15 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         ##
         self.stateCheck(self.dev9,
                         createBitmap=self.assertFalse,
-                        description=lambda x, m: self.assertEqual(x, "BIOS RAID set (stripe)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x, 0, m),
+                        level=lambda x, m: self.assertEqual(x.number, 0, m),
                         mediaPresent=self.assertTrue,
+                        memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
                         smallestMember=self.assertIsNotNone,
+                        totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
         ##
@@ -239,28 +236,27 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
         ##
         self.stateCheck(self.dev10,
                         createBitmap=self.assertFalse,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (stripe)", m),
-                        level=lambda x, m: self.assertEqual(x, 0, m))
+                        level=lambda x, m: self.assertEqual(x.number, 0, m))
 
         self.stateCheck(self.dev11,
-                        description=lambda x, m: self.assertEqual(x, "BIOS RAID set (mirror)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x, 1, m),
+                        level=lambda x, m: self.assertEqual(x.number, 1, m),
                         mediaPresent=self.assertTrue,
+                        memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
                         smallestMember=self.assertIsNotNone,
+                        totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type=lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
         ##
         ## rawArraySize tests
         ##
         self.stateCheck(self.dev12,
-                        description=lambda x, m: self.assertEqual(x, "BIOS RAID set (mirror)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x, 1, m),
+                        level=lambda x, m: self.assertEqual(x.number, 1, m),
                         mediaPresent=self.assertTrue,
                         memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
@@ -272,9 +268,8 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
 
         self.stateCheck(self.dev13,
                         createBitmap=self.assertFalse,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (stripe)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        level=lambda x, m: self.assertEqual(x, 0, m),
+                        level=lambda x, m: self.assertEqual(x.number, 0, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         rawArraySize=lambda x, m: self.assertEqual(x, 6, m),
@@ -283,9 +278,8 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev14,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid4)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x, 4, m),
+                        level=lambda x, m: self.assertEqual(x.number, 4, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         rawArraySize=lambda x, m: self.assertEqual(x, 4, m),
@@ -294,9 +288,8 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev15,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid5)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x, 5, m),
+                        level=lambda x, m: self.assertEqual(x.number, 5, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         rawArraySize=lambda x, m: self.assertEqual(x, 4, m),
@@ -305,9 +298,8 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev16,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid6)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x, 6, m),
+                        level=lambda x, m: self.assertEqual(x.number, 6, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         rawArraySize=lambda x, m: self.assertEqual(x, 4, m),
@@ -316,9 +308,8 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
         self.stateCheck(self.dev17,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid10)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x, 10, m),
+                        level=lambda x, m: self.assertEqual(x.number, 10, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         rawArraySize=lambda x, m: self.assertEqual(x, 4, m),
@@ -327,9 +318,8 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
         self.stateCheck(self.dev18,
-                        description=lambda x, m: self.assertEqual(x, "MDRAID set (raid10)", m),
                         devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x, 10, m),
+                        level=lambda x, m: self.assertEqual(x.number, 10, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         rawArraySize=lambda x, m: self.assertEqual(x, 4, m),
@@ -356,7 +346,7 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
                                 parents=[Device("parent")])
 
         self.assertRaisesRegexp(DeviceError,
-                                "A RAID0 set requires at least 2 members",
+                                "set requires at least 2 members",
                                 MDRaidArrayDevice,
                                 "dev",
                                 level="raid0",
