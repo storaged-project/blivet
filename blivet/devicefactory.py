@@ -24,10 +24,7 @@ from storage_log import log_method_call
 from errors import *
 from devices import LUKSDevice
 from formats import getFormat
-from devicelibs.mdraid import get_member_space
-from devicelibs.mdraid import get_raid_min_members
-from devicelibs.mdraid import raidLevelString
-from devicelibs.mdraid import raidLevel
+from devicelibs import mdraid
 from devicelibs.lvm import get_pv_space
 from devicelibs.lvm import get_pool_padding
 from devicelibs.lvm import LVM_PE_SIZE
@@ -82,7 +79,7 @@ def get_raid_level(device):
     # TODO: lvm and perhaps pulling raid level from md pvs
     raid_level = None
     if hasattr(use_dev, "level"):
-        raid_level = raidLevelString(use_dev.level)
+        raid_level = use_dev.level.name
     elif hasattr(use_dev, "dataLevel"):
         raid_level = use_dev.dataLevel or "single"
     elif hasattr(use_dev, "volume"):
@@ -746,8 +743,7 @@ class DeviceFactory(object):
             if level in [None, "single"]:
                 continue
 
-            md_level = raidLevel(level)
-            min_disks = get_raid_min_members(md_level)
+            min_disks = mdraid.getRaidLevel(level).min_members
             disks = set(d for m in self._get_member_devices() for d in m.disks)
             if len(disks) < min_disks:
                 raise DeviceFactoryError("Not enough disks for %s" % level)
@@ -1093,20 +1089,8 @@ class LVMFactory(DeviceFactory):
         else:
             super(LVMFactory, self)._handle_no_size()
 
-    @property
-    def size_func_kwargs(self):
-        kwargs = {}
-        if self.raid_level in ("raid1", "raid10"):
-            kwargs["mirrored"] = True
-        if self.raid_level in ("raid0", "raid10"):
-            kwargs["striped"] = True
-
-        return kwargs
-
     def _get_device_space(self):
-        return get_pv_space(self.size,
-                            len(self._get_member_devices()),
-                            **self.size_func_kwargs)
+        return get_pv_space(self.size, len(self._get_member_devices()))
 
     def _get_device_size(self):
         size = self.size
@@ -1161,8 +1145,7 @@ class LVMFactory(DeviceFactory):
                 # since that's the basis for the current device's disk space
                 # usage.
                 size -= get_pv_space(self.device.size,
-                                     len(self.container.parents),
-                                     **self.size_func_kwargs)
+                   len(self.container.parents))
                 log.debug("size cut to %d to omit old device space" % size)
 
         if self.container_raid_level:
@@ -1523,18 +1506,18 @@ class MDFactory(DeviceFactory):
     size_set_class = SameSizeSet
 
     def _get_device_space(self):
-        return get_member_space(self.size, len(self._get_member_devices()),
-                                level=self.raid_level)
+        size_per_member = mdraid.getRaidLevel(self.raid_level).get_base_member_size(
+           self.size,
+           len(self._get_member_devices()))
+        size_per_member += mdraid.get_raid_superblock_size(self.size)
+        return size_per_member * self._get_member_devices()
 
     def _get_total_space(self):
         return self._get_device_space()
 
     def _set_raid_level(self):
-        # TODO: write MDRaidArrayDevice.setRAIDLevel
-        # make sure the member count is adequate for the new level
-
         # set the new level
-        self.device.level = raidLevel(self.raid_level)
+        self.device.level = mdraid.getRaidLevel(self.raid_level)
 
         # adjust the bitmap setting
 

@@ -54,28 +54,6 @@ class MDRaidTestCase(unittest.TestCase):
            mdraid.MD_SUPERBLOCK_SIZE)
 
         ##
-        ## get_member_space
-        ##
-        self.assertEqual(mdraid.get_member_space(1024, 2, 0), 513 * 2)
-        self.assertEqual(mdraid.get_member_space(1024, 2, 1), 1025 * 2)
-        self.assertEqual(mdraid.get_member_space(1024, 3, 4), 513 * 3)
-        self.assertEqual(mdraid.get_member_space(1024, 3, 5), 513 * 3)
-        self.assertEqual(mdraid.get_member_space(1024, 4, 6), 513 * 4)
-        self.assertEqual(mdraid.get_member_space(1024, 5, 10), 513 * 5)
-
-        # fail
-        # unsupported raid
-        self.assertRaisesRegexp(errors.MDRaidError,
-           "invalid raid level",
-           mdraid.get_member_space, 1024, 0)
-
-        # fail
-        # not enough disks
-        self.assertRaisesRegexp(errors.MDRaidError,
-           "requires at least",
-           mdraid.get_member_space, 1024, 0, 0)
-
-        ##
         ## raidLevel
         ##
         self.assertEqual(mdraid.raidLevel("RAID0"), 0)

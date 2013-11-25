@@ -133,29 +133,6 @@ def get_raid_superblock_size(size, version=None):
     log.info("Using %sMB superBlockSize" % (headroom))
     return headroom
 
-def get_member_space(size, disks, level=None):
-    """Return the total mB required to store size data.
-       The steps are:
-         * Find the size required for each member
-         * Add to that the superblock size
-         * multiply that by the number of disks to get the required total size.
-       :param size: amount of data
-       :type size: natural number
-
-       :param disks: number of disks
-       :type disks: natural number
-
-       Raises and MDRaidError if there is no level correspondign to level
-       or if the number of disks is less than the minimum number required
-       for the raid level.
-    """
-    try:
-        space = _RAID_levels.raidLevel(level).get_base_member_size(size, disks) + \
-           get_raid_superblock_size(size)
-    except RaidError as e:
-        raise MDRaidError(e.message)
-    return space * disks
-
 def mdadm(args):
     ret = util.run_program(["mdadm"] + args)
     if ret:

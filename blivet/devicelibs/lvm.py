@@ -147,8 +147,7 @@ def clampSize(size, pesize, roundup=None):
 
     return long(round(float(size)/float(pesize)) * pesize)
 
-def get_pv_space(size, disks, pesize=LVM_PE_SIZE,
-                 striped=False, mirrored=False):
+def get_pv_space(size, disks, pesize=LVM_PE_SIZE):
     """ Given specs for an LV, return total PV space required. """
     # XXX default extent size should be something we can ask of lvm
     # TODO: handle striped and mirrored

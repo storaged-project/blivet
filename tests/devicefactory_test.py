@@ -7,6 +7,7 @@ import blivet
 from blivet import devicefactory
 from blivet import devices
 from blivet.devicelibs import mdraid
+from blivet.devicelibs import raid
 
 class MDFactoryTestCase(unittest.TestCase):
     """Note that these tests postdate the code that they test.
@@ -43,7 +44,7 @@ class MDFactoryTestCase(unittest.TestCase):
            self.factory1._get_new_device,
            parents=[])
 
-        self.assertRaisesRegexp(mdraid.MDRaidError,
+        self.assertRaisesRegexp(raid.RaidError,
            "requires at least",
            self.factory2._get_device_space)
 
