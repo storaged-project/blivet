@@ -374,10 +374,8 @@ class DeviceTree(object):
         elif action.isDestroy and action.isDevice:
             # add the device back into the tree
             self._addDevice(action.device)
-        elif action.isFormat and \
-             (action.isCreate or action.isResize):
-            action.cancel()
 
+        action.cancel()
         self._actions.remove(action)
 
     def findActions(self, device=None, type=None, object=None, path=None,
