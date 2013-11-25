@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.23.5
+Version: 0.23.6
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Nov 25 2013 David Lehman <dlehman@redhat.com> - 0.23.6-1
+- Fix handling of overcommitted thin pools in thinp factory. (#1024144) (dlehman)
+- Clear whole-disk formatting before initializing disks. (#1032380) (dlehman)
+- Handle passing a btrfs volume as device to BTRFSFactory. (dlehman)
+- Handle nested btrfs subvolumes correctly. (#1016959) (dlehman)
+- Add parameters for untranslated Size specs. (dshea)
+- Fix usage of _ vs N_ (dshea)
+- Added a i18n module for gettext functions. (dshea)
+- Allow non-ASCII characters in the size spec (dshea)
+
 * Fri Nov 15 2013 Brian C. Lane <bcl@redhat.com> - 0.23.5-1
 - Preparation for lv resize is a subset of that for lv destroy. (#1027682) (dlehman)
 - Devices with non-existent formatting are resizable. (#1027714) (dlehman)
