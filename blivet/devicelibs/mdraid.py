@@ -42,14 +42,6 @@ class MDRaidLevels(raid.RAIDLevels):
 
 _RAID_levels = MDRaidLevels()
 
-# raidlevels constants
-RAID10 = _RAID_levels.raidLevel(10).number
-RAID6 = _RAID_levels.raidLevel(6).number
-RAID5 = _RAID_levels.raidLevel(5).number
-RAID4 = _RAID_levels.raidLevel(4).number
-RAID1 = _RAID_levels.raidLevel(1).number
-RAID0 = _RAID_levels.raidLevel(0).number
-
 class Container(object):
     name = "container"
     names = [name]

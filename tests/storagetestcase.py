@@ -83,15 +83,6 @@ class StorageTestCase(unittest.TestCase):
 	blivet.devicelibs.crypto.luks_add_key = Mock()
 	blivet.devicelibs.crypto.luks_remove_key = Mock()
 
-        # this list would normally be obtained by parsing /proc/mdstat
-	blivet.devicelibs.mdraid.raid_levels = \
-					[blivet.devicelibs.mdraid.RAID10,
-					 blivet.devicelibs.mdraid.RAID0,
-					 blivet.devicelibs.mdraid.RAID1,
-					 blivet.devicelibs.mdraid.RAID4,
-					 blivet.devicelibs.mdraid.RAID5,
-					 blivet.devicelibs.mdraid.RAID6]
-
     def newDevice(*args, **kwargs):
         """ Return a new Device instance suitable for testing. """
         args = args[1:] # drop self arg
