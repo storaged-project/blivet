@@ -232,16 +232,6 @@ class RAIDLevels(object):
                 return level
         raise RaidError("invalid raid level descriptor %s" % descriptor)
 
-    def raidLevelString(self, descriptor, use_nick=False):
-        """Returns the canonical name for the descriptor. Raises an
-           MDRaidError if there is no corresponding level for the descriptor.
-
-           Return the nickname if use_nick is True.
-        """
-        level = self.raidLevel(descriptor)
-        nick = level.nick
-        return nick if nick and use_nick else level.name
-
     def addRaidLevel(self, level):
         """Adds level to the list of levels if it is not already there.
            Raises a RaidError if it is not a valid level.

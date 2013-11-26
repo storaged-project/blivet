@@ -64,20 +64,6 @@ class MDRaidTestCase(unittest.TestCase):
            "invalid raid level",
            mdraid.raidLevel, "RAID")
 
-        ##
-        ## raidLevelString
-        ##
-        self.assertEqual(mdraid.raidLevelString(0), "raid0")
-        self.assertEqual(mdraid.raidLevelString(0, True), "stripe")
-        self.assertEqual(mdraid.raidLevelString(1, True), "mirror")
-        self.assertEqual(mdraid.raidLevelString(6, True), "raid6")
-
-        # fail
-        # invalid constant
-        self.assertRaisesRegexp(errors.MDRaidError,
-           "invalid raid level",
-           mdraid.raidLevelString, -1)
-
 class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")

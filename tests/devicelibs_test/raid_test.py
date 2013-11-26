@@ -92,17 +92,6 @@ class RaidTestCase(unittest.TestCase):
 
         self.assertRaises(errors.RaidError, raid.RAID10.get_recommended_stride, 1)
 
-        ##
-        ## raidLevelString
-        ##
-        self.assertEqual(self.levels.raidLevelString(0), "raid0")
-        self.assertEqual(self.levels.raidLevelString(0, True), "stripe")
-        self.assertEqual(self.levels.raidLevelString(1, True), "mirror")
-        self.assertEqual(self.levels.raidLevelString(6, True), "raid6")
-
-        self.assertRaisesRegexp(errors.RaidError,
-                                "invalid raid level",
-                                self.levels.raidLevelString, 27)
 
         ##
         ## names

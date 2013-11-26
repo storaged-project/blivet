@@ -88,17 +88,6 @@ def raidLevel(descriptor):
     except ValueError:
         raise MDRaidError(e.message)
 
-def raidLevelString(descriptor, use_nick=False):
-    """Returns the canonical name for the descriptor. Raises an
-       MDRaidError if there is no corresponding level for the descriptor.
-
-       Return the nickname if use_nick is True.
-    """
-    try:
-        return _RAID_levels.raidLevelString(descriptor, use_nick)
-    except RaidError as e:
-        raise MDRaidError(e.message)
-
 def get_raid_min_members(descriptor):
     """Return the minimum number of raid members required for this raid
        level descriptor. Raises an MDRaidError if the descriptor is
