@@ -41,10 +41,7 @@ from contextlib import contextmanager
 def progress_report_stub(message):
     yield
 
-try:
-    from pyanaconda.progress import progress_report
-except ImportError:
-    progress_report = progress_report_stub
+progress_report = progress_report_stub
 
 # The values are just hints as to the ordering.
 # Eg: fsmod and devmod ordering depends on the mod (shrink -v- grow)

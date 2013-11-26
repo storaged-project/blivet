@@ -119,6 +119,9 @@ def enable_installer_mode():
 
     flags.installer_mode = True
 
+    from pyanaconda.progress import progress_report
+    deviceaction.progress_report = progress_report
+
 def storageInitialize(storage, ksdata, protected):
     """ Perform installer-specific storage initialization. """
     from pyanaconda.flags import flags as anaconda_flags
