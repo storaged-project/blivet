@@ -76,28 +76,6 @@ def getRaidLevel(descriptor):
     except RaidError as e:
         raise MDRaidError(e.message)
 
-def raidLevel(descriptor):
-    """Return an integer code corresponding to this raid level descriptor.
-       Raises an MDRaidError if the descriptor is not valid or does not
-       have a corresponding numeric code.
-    """
-    try:
-        return _RAID_levels.raidLevel(descriptor).number
-    except RaidError as e:
-        raise MDRaidError(e.message)
-    except ValueError:
-        raise MDRaidError(e.message)
-
-def get_raid_min_members(descriptor):
-    """Return the minimum number of raid members required for this raid
-       level descriptor. Raises an MDRaidError if the descriptor is
-       invalid.
-    """
-    try:
-        return _RAID_levels.raidLevel(descriptor).min_members
-    except RaidError as e:
-        raise MDRaidError(e.message)
-
 def get_raid_superblock_size(size, version=None):
     """ mdadm has different amounts of space reserved for its use depending
     on the metadata type and size of the array.
