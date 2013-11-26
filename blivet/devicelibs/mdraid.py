@@ -50,8 +50,6 @@ RAID4 = _RAID_levels.raidLevel(4).number
 RAID1 = _RAID_levels.raidLevel(1).number
 RAID0 = _RAID_levels.raidLevel(0).number
 
-raid_levels = [ RAID0, RAID1, RAID4, RAID5, RAID6, RAID10 ]
-
 class Container(object):
     name = "container"
     names = [name]
