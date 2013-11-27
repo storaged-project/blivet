@@ -78,8 +78,8 @@ def getFormat(fmt_type, *args, **kwargs):
 
             device -- path to the device on which the format resides
             uuid -- the UUID of the (preexisting) formatted device
-            exists -- whether or not the format exists on the device            
-            
+            exists -- whether or not the format exists on the device
+
     """
     fmt_class = get_device_format_class(fmt_type)
     fmt = None
@@ -93,9 +93,9 @@ def getFormat(fmt_type, *args, **kwargs):
     # this allows us to store the given type for formats we implement as
     # DeviceFormat.
     if fmt_type and fmt.type is None:
+        # unknown type, but we can set the name of the format
         # this should add/set an instance attribute
-        fmt._type = fmt_type
-        fmt._name = None
+        fmt._name = fmt_type
 
     log.debug("getFormat('%s') returning %s instance" % (fmt_type, className))
     return fmt
