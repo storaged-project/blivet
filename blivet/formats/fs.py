@@ -1030,8 +1030,6 @@ class BTRFS(FS):
     _linuxNative = True
     _maxLabelChars = 256
     _supported = True
-    _dump = True
-    _check = True
     _packages = ["btrfs-progs"]
     _minSize = 256
     _maxSize = 16 * 1024 * 1024
@@ -1191,8 +1189,6 @@ class XFS(FS):
     _formattable = True
     _linuxNative = True
     _supported = True
-    _dump = True
-    _check = True
     _packages = ["xfsprogs"]
     _infofs = "xfs_db"
     _defaultInfoOptions = ["-c", "\"sb 0\"", "-c", "\"p dblocks\"",
