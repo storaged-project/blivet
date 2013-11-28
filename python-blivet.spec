@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.28
+Version: 0.29
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,24 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Nov 27 2013 Brian C. Lane <bcl@redhat.com> - 0.29-1
+- btrfs and xfs do not support fsck or dump at boot time (#862871) (bcl)
+- Removed raid level constants from mdraid.py. (amulhern)
+- Remove raidLevel and get_raid_min_members for mdraid.py. (amulhern)
+- Remove raidLevelString in raid and mdraid. (amulhern)
+- In devicefactory.py change mdraid procedures call to raid method calls.
+  (amulhern)
+- Removed mdraid.raid_levels (amulhern)
+- Removed mdraid.get_raid_max_spares. (amulhern)
+- Change MDRaidArrayDevice to use raid package. (amulhern)
+- Changed devicelibs.mdraid to make use of devicelibs.raid. (amulhern)
+- Implement a RAID class hierarchy. (amulhern)
+- A few small tests for MDFactory class. (amulhern)
+- Add some additional unit tests in mdraid_tests.py. (amulhern)
+- Make MDRaidArrayDevice initializer not except raid level of None. (amulhern)
+- Add some basic unit tests for MDRaidArrayDevice. (amulhern)
+- Move pyanaconda import into blivet.enable_installer_mode. (amulhern)
+
 * Mon Nov 25 2013 David Lehman <dlehman@redhat.com> - 0.28-1
 - Clear whole-disk formatting before initializing disks. (#1032380) (dlehman)
 - Simplify calculation of vol size when adding a btrfs subvol. (#1033356)

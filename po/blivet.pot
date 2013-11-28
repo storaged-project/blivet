@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-25 15:06-0600\n"
+"POT-Creation-Date: 2013-11-27 16:41-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,106 +17,106 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:967
+#: ../blivet/__init__.py:970
 msgid "This partition is holding the data for the hard drive install."
 msgstr ""
 
 #. LDL formatted DASDs always have one partition, you'd have to
 #. reformat the DASD in CDL mode to get rid of it
-#: ../blivet/__init__.py:972
+#: ../blivet/__init__.py:975
 msgid "You cannot delete a partition of a LDL formatted DASD."
 msgstr ""
 
-#: ../blivet/__init__.py:978
+#: ../blivet/__init__.py:981
 #, python-format
 msgid "This device is part of the RAID device %s."
 msgstr ""
 
-#: ../blivet/__init__.py:981
+#: ../blivet/__init__.py:984
 msgid "This device is part of a RAID device."
 msgstr ""
 
-#: ../blivet/__init__.py:984
+#: ../blivet/__init__.py:987
 msgid "This device is part of an inconsistent LVM Volume Group."
 msgstr ""
 
-#: ../blivet/__init__.py:989
+#: ../blivet/__init__.py:992
 #, python-format
 msgid "This device is part of the LVM volume group '%s'."
 msgstr ""
 
-#: ../blivet/__init__.py:992
+#: ../blivet/__init__.py:995
 msgid "This device is part of a LVM volume group."
 msgstr ""
 
-#: ../blivet/__init__.py:1008
+#: ../blivet/__init__.py:1011
 msgid ""
 "This device is an extended partition which contains logical partitions that "
 "cannot be deleted:\n"
 "\n"
 msgstr ""
 
-#: ../blivet/__init__.py:1288
+#: ../blivet/__init__.py:1291
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:1480
+#: ../blivet/__init__.py:1483
 #, python-format
 msgid ""
 "Your root partition is less than 250 megabytes which is usually too small to "
 "install %s."
 msgstr ""
 
-#: ../blivet/__init__.py:1484
+#: ../blivet/__init__.py:1487
 #, python-format
 msgid ""
 "You have not defined a root partition (/), which is required for "
 "installation of %s to continue."
 msgstr ""
 
-#: ../blivet/__init__.py:1497
+#: ../blivet/__init__.py:1500
 msgid ""
 "This platform requires /boot on a dedicated partition or logical volume.  If "
 "you do not want a /boot volume, you must place / on a dedicated non-LVM "
 "partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1506
+#: ../blivet/__init__.py:1509
 #, python-format
 msgid ""
 "Your %(mount)s partition is less than %(size)s megabytes which is lower than "
 "recommended for a normal %(productName)s install."
 msgstr ""
 
-#: ../blivet/__init__.py:1516
+#: ../blivet/__init__.py:1519
 #, python-format
 msgid ""
 "Your %(mount)s partition is too small for %(format)s formatting (allowable "
 "size is %(minSize)d MB to %(maxSize)d MB)"
 msgstr ""
 
-#: ../blivet/__init__.py:1521
+#: ../blivet/__init__.py:1524
 #, python-format
 msgid ""
 "Your %(mount)s partition is too large for %(format)s formatting (allowable "
 "size is %(minSize)d MB to %(maxSize)d MB)"
 msgstr ""
 
-#: ../blivet/__init__.py:1560
+#: ../blivet/__init__.py:1563
 msgid "you have not created a bootloader stage1 target device"
 msgstr ""
 
-#: ../blivet/__init__.py:1569
+#: ../blivet/__init__.py:1572
 msgid "You have not created a bootable partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1590
+#: ../blivet/__init__.py:1593
 msgid ""
 "Your BIOS-based system needs a special partition to boot from a GPT disk "
 "label. To continue, please create a 1MB 'biosboot' type partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1600
+#: ../blivet/__init__.py:1603
 #, python-format
 msgid ""
 "You have not specified a swap partition.  %(requiredMem)s MB of memory is "
@@ -124,13 +124,13 @@ msgid ""
 "have %(installedMem)s MB."
 msgstr ""
 
-#: ../blivet/__init__.py:1606
+#: ../blivet/__init__.py:1609
 msgid ""
 "You have not specified a swap partition.  Although not strictly required in "
 "all cases, it will significantly improve performance for most installations."
 msgstr ""
 
-#: ../blivet/__init__.py:1612
+#: ../blivet/__init__.py:1615
 msgid ""
 "At least one of your swap devices does not have a UUID, which is common in "
 "swap space created using older versions of mkswap. These devices will be "
@@ -138,78 +138,29 @@ msgid ""
 "paths can change under a variety of circumstances. "
 msgstr ""
 
-#: ../blivet/__init__.py:1622
+#: ../blivet/__init__.py:1625
 #, python-format
 msgid ""
 "This mount point is invalid.  The %s directory must be on the / file system."
 msgstr ""
 
-#: ../blivet/__init__.py:1626
+#: ../blivet/__init__.py:1629
 #, python-format
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:3041
+#: ../blivet/__init__.py:3044
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3046
+#: ../blivet/__init__.py:3049
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3048
+#: ../blivet/__init__.py:3051
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/fcoe.py:106
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/platform.py:51
-msgid "bootloader device"
-msgstr ""
-
-#: ../blivet/platform.py:52
-msgid "RAID Device"
-msgstr ""
-
-#: ../blivet/platform.py:53
-msgid "First sector of boot partition"
-msgstr ""
-
-#: ../blivet/platform.py:152 ../blivet/platform.py:283
-#: ../blivet/platform.py:309
-msgid "Master Boot Record"
-msgstr ""
-
-#: ../blivet/platform.py:186 ../blivet/formats/fs.py:1013
-msgid "EFI System Partition"
-msgstr ""
-
-#: ../blivet/platform.py:212
-msgid "Apple EFI Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:234
-msgid "PReP Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:255
-msgid "Apple Bootstrap Partition"
-msgstr ""
-
-#: ../blivet/platform.py:282
-msgid "DASD"
-msgstr ""
-
-#: ../blivet/platform.py:284
-msgid "zFCP"
-msgstr ""
-
-#: ../blivet/platform.py:334
-msgid "U-Boot Partition"
 msgstr ""
 
 #: ../blivet/partitioning.py:304
@@ -275,6 +226,55 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1997
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:106
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/platform.py:51
+msgid "bootloader device"
+msgstr ""
+
+#: ../blivet/platform.py:52
+msgid "RAID Device"
+msgstr ""
+
+#: ../blivet/platform.py:53
+msgid "First sector of boot partition"
+msgstr ""
+
+#: ../blivet/platform.py:152 ../blivet/platform.py:283
+#: ../blivet/platform.py:309
+msgid "Master Boot Record"
+msgstr ""
+
+#: ../blivet/platform.py:186 ../blivet/formats/fs.py:1013
+msgid "EFI System Partition"
+msgstr ""
+
+#: ../blivet/platform.py:212
+msgid "Apple EFI Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:234
+msgid "PReP Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:255
+msgid "Apple Bootstrap Partition"
+msgstr ""
+
+#: ../blivet/platform.py:282
+msgid "DASD"
+msgstr ""
+
+#: ../blivet/platform.py:284
+msgid "zFCP"
+msgstr ""
+
+#: ../blivet/platform.py:334
+msgid "U-Boot Partition"
 msgstr ""
 
 #: ../blivet/zfcp.py:48
@@ -522,36 +522,36 @@ msgstr ""
 msgid "B"
 msgstr ""
 
-#: ../blivet/deviceaction.py:264
+#: ../blivet/deviceaction.py:261
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:311
+#: ../blivet/deviceaction.py:308
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:383
+#: ../blivet/deviceaction.py:380
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:440
+#: ../blivet/deviceaction.py:437
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:453
+#: ../blivet/deviceaction.py:450
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:525
+#: ../blivet/deviceaction.py:522
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:584
+#: ../blivet/deviceaction.py:581
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:602
+#: ../blivet/deviceaction.py:599
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
@@ -620,11 +620,11 @@ msgstr ""
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1244
+#: ../blivet/formats/fs.py:1240
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1275
+#: ../blivet/formats/fs.py:1271
 msgid "Linux HFS+ ESP"
 msgstr ""
 
@@ -648,7 +648,7 @@ msgstr ""
 msgid "physical volume (LVM)"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:352
+#: ../blivet/devicelibs/lvm.py:351
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""
