@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-25 15:35-0600\n"
+"POT-Creation-Date: 2013-11-27 16:50-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -163,54 +163,6 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/fcoe.py:106
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/platform.py:51
-msgid "bootloader device"
-msgstr ""
-
-#: ../blivet/platform.py:52
-msgid "RAID Device"
-msgstr ""
-
-#: ../blivet/platform.py:53
-msgid "First sector of boot partition"
-msgstr ""
-
-#: ../blivet/platform.py:152 ../blivet/platform.py:307
-msgid "Master Boot Record"
-msgstr ""
-
-#: ../blivet/platform.py:186
-msgid "EFI System Partition"
-msgstr ""
-
-#: ../blivet/platform.py:212
-msgid "Apple EFI Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:234
-msgid "PReP Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:255
-msgid "Apple Bootstrap Partition"
-msgstr ""
-
-#: ../blivet/platform.py:282
-msgid "DASD"
-msgstr ""
-
-#: ../blivet/platform.py:283
-msgid "zFCP"
-msgstr ""
-
-#: ../blivet/platform.py:332
-msgid "U-Boot Partition"
-msgstr ""
-
 #: ../blivet/partitioning.py:304
 msgid "No usable disks selected"
 msgstr ""
@@ -274,6 +226,54 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1997
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:106
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/platform.py:51
+msgid "bootloader device"
+msgstr ""
+
+#: ../blivet/platform.py:52
+msgid "RAID Device"
+msgstr ""
+
+#: ../blivet/platform.py:53
+msgid "First sector of boot partition"
+msgstr ""
+
+#: ../blivet/platform.py:152 ../blivet/platform.py:307
+msgid "Master Boot Record"
+msgstr ""
+
+#: ../blivet/platform.py:186
+msgid "EFI System Partition"
+msgstr ""
+
+#: ../blivet/platform.py:212
+msgid "Apple EFI Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:234
+msgid "PReP Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:255
+msgid "Apple Bootstrap Partition"
+msgstr ""
+
+#: ../blivet/platform.py:282
+msgid "DASD"
+msgstr ""
+
+#: ../blivet/platform.py:283
+msgid "zFCP"
+msgstr ""
+
+#: ../blivet/platform.py:332
+msgid "U-Boot Partition"
 msgstr ""
 
 #: ../blivet/zfcp.py:48

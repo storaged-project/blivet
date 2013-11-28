@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.23.6
+Version: 0.23.7
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,9 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Nov 27 2013 Brian C. Lane <bcl@redhat.com> - 0.23.7-1
+- btrfs and xfs do not support fsck or dump at boot time (#862871) (bcl)
+
 * Mon Nov 25 2013 David Lehman <dlehman@redhat.com> - 0.23.6-1
 - Fix handling of overcommitted thin pools in thinp factory. (#1024144) (dlehman)
 - Clear whole-disk formatting before initializing disks. (#1032380) (dlehman)
