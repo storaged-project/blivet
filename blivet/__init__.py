@@ -1778,12 +1778,12 @@ class Blivet(object):
         log.debug("trying to set new default fstype to '%s'" % newtype)
         fmt = getFormat(newtype)
         if fmt.type is None:
-            raise ValueError("unrecognized value for new default fs type")
+            raise ValueError("unrecognized value %s for new default fs type" % newtype)
 
         if (not fmt.mountable or not fmt.formattable or not fmt.supported or
             not fmt.linuxNative):
             log.debug("invalid default fstype: %r" % fmt)
-            raise ValueError("new value is not valid as a default fs type")
+            raise ValueError("new value %s is not valid as a default fs type" % fmt)
 
         self._defaultFSType = newtype
 
