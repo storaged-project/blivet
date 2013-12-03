@@ -852,7 +852,7 @@ class StorageDevice(Device):
             self._size = self.currentSize
 
         size = self._size
-        if self.exists and self.resizable and self.targetSize != size:
+        if self.exists and self.resizable:
             size = self.targetSize
 
         return size
