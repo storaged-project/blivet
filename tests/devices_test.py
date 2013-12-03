@@ -64,17 +64,22 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "isDisk" : self.assertFalse,
            "level" : self.assertIsNone,
            "major" : lambda x, m: self.assertEqual(x, 0, m),
+           "maxSize" : lambda x, m: self.assertEqual(x, 0, m),
            "mediaPresent" : self.assertFalse,
            "metadataVersion" : lambda x, m: self.assertEqual(x, "default", m),
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
            "parents" : lambda x, m: self.assertEqual(x, [], m),
+           "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
            "partitionable" : self.assertFalse,
            "rawArraySize" : lambda x, m: self.assertEqual(x, 0, m),
+           "resizable" : self.assertFalse,
            "size" : lambda x, m: self.assertEqual(x, 0, m),
            "smallestMember" : lambda x, m: self.assertIsNone(x, m),
            "spares" : lambda x, m: self.assertEqual(x, 0, m),
+           "status" : self.assertFalse,
            "superBlockSize" : lambda x, m: self.assertEqual(x, 0, m),
            "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
+           "targetSize" : lambda x, m: self.assertEqual(x, 0, m),
            "uuid" : self.assertIsNone,
            "memberDevices" : lambda x, m: self.assertEqual(x, 0, m),
            "totalDevices" : lambda x, m: self.assertEqual(x, 0, m),
@@ -244,7 +249,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         self.stateCheck(self.dev10,
                         createBitmap=self.assertFalse,
-                        level=lambda x, m: self.assertEqual(x.number, 0, m))
+                        level=lambda x, m: self.assertEqual(x.number, 0, m),
+                        targetSize=lambda x, m: self.assertEqual(x, 32, m))
 
         self.stateCheck(self.dev11,
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
@@ -255,6 +261,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
                         smallestMember=self.assertIsNotNone,
+                        targetSize=lambda x, m: self.assertEqual(x, 32, m),
                         totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type=lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
@@ -271,6 +278,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         partitionable=self.assertTrue,
                         rawArraySize=lambda x, m: self.assertEqual(x, 2, m),
                         smallestMember=self.assertIsNotNone,
+                        targetSize=lambda x, m: self.assertEqual(x, 32, m),
                         totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
@@ -283,6 +291,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         rawArraySize=lambda x, m: self.assertEqual(x, 6, m),
                         size=lambda x, m: self.assertEqual(x, 6, m),
                         smallestMember=self.assertIsNotNone,
+                        targetSize=lambda x, m: self.assertEqual(x, 32, m),
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev14,
