@@ -12,26 +12,47 @@ from blivet.devices import Device
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import mdraid
 
-class MDRaidArrayDeviceTestCase(unittest.TestCase):
-    """Note that these tests postdate the code that they test.
-       Therefore, they capture the behavior of the code as it is now,
-       not necessarily its intended or correct behavior. See the initial
-       commit message for this file for further details.
+class DeviceStateTestCase(unittest.TestCase):
+    """A class which implements a simple method of checking the state
+       of a device object.
     """
 
+    def setUp(self):
+        self._state_functions = []
+
     def stateCheck(self, device, **kwargs):
-        """Checks the current state of an mdraid device by means of its
+        """Checks the current state of a device by means of its
            fields or properties.
 
            Every kwarg should be a key which is a field or property
-           of an MDRaidArrayDevice and a value which is a function of
+           of a Device and a value which is a function of
            two parameters and should call the appropriate assert* functions.
            These values override those in the state_functions dict.
 
            If the value is None, then the test starts the debugger instead.
         """
         self.longMessage = True
-        state_functions = {
+        for k,v in self._state_functions.items():
+            if kwargs.has_key(k):
+                key = kwargs[k]
+                if key is None:
+                    import pdb
+                    pdb.set_trace()
+                    getattr(device, k)
+                else:
+                    kwargs[k](getattr(device, k), k)
+            else:
+                v(getattr(device, k), k)
+
+class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
+    """Note that these tests postdate the code that they test.
+       Therefore, they capture the behavior of the code as it is now,
+       not necessarily its intended or correct behavior. See the initial
+       commit message for this file for further details.
+    """
+
+    def setUp(self):
+        self._state_functions = {
            "createBitmap" : lambda x,m: self.assertTrue(x, m),
            "currentSize" : lambda x, m: self.assertEqual(x, 0, m),
            "description" : self.assertIsNotNone,
@@ -58,19 +79,6 @@ class MDRaidArrayDeviceTestCase(unittest.TestCase):
            "memberDevices" : lambda x, m: self.assertEqual(x, 0, m),
            "totalDevices" : lambda x, m: self.assertEqual(x, 0, m),
            "type" : lambda x, m: self.assertEqual(x, "mdarray", m) }
-        for k,v in state_functions.items():
-            if kwargs.has_key(k):
-                key = kwargs[k]
-                if key is None:
-                    import pdb
-                    pdb.set_trace()
-                    getattr(device, k)
-                else:
-                    kwargs[k](getattr(device, k), k)
-            else:
-                v(getattr(device, k), k)
-
-    def setUp(self):
 
         self.dev1 = MDRaidArrayDevice("dev1", level="container")
         self.dev2 = MDRaidArrayDevice("dev2", level="raid0")
