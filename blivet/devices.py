@@ -4246,6 +4246,9 @@ class BTRFSDevice(StorageDevice):
         if not args or not args[0]:
             args = ("btrfs.%d" % Device._id,)
 
+        if kwargs.get("parents") is None:
+            raise ValueError("BTRFSDevice must have at least one parent")
+
         self.req_size = kwargs.pop("size", None)
         super(BTRFSDevice, self).__init__(*args, **kwargs)
 
