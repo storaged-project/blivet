@@ -9,8 +9,14 @@ import blivet
 from blivet.errors import DeviceError
 
 from blivet.devices import Device
+from blivet.devices import BTRFSDevice
+from blivet.devices import BTRFSSubVolumeDevice
+from blivet.devices import BTRFSVolumeDevice
 from blivet.devices import MDRaidArrayDevice
+from blivet.devices import OpticalDevice
+from blivet.devices import StorageDevice
 from blivet.devices import mdraid
+from blivet.devicelibs import btrfs
 
 class DeviceStateTestCase(unittest.TestCase):
     """A class which implements a simple method of checking the state
@@ -391,6 +397,101 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid raid level" ):
             self.dev7.level = None
 
+class BTRFSDeviceTestCase(DeviceStateTestCase):
+    """Note that these tests postdate the code that they test.
+       Therefore, they capture the behavior of the code as it is now,
+       not necessarily its intended or correct behavior. See the initial
+       commit message for this file for further details.
+    """
+
+    def setUp(self):
+        self._state_functions = {
+           "currentSize" : lambda x, m: self.assertEqual(x, 0, m),
+           "exists" : self.assertFalse,
+           "format" : self.assertIsNotNone,
+           "formatArgs" : lambda x, m: self.assertEqual(x, [], m),
+           "fstabSpec" : self.assertIsNotNone,
+           "isDisk" : self.assertFalse,
+           "major" : lambda x, m: self.assertEqual(x, 0, m),
+           "maxSize" : lambda x, m: self.assertEqual(x, 0, m),
+           "mediaPresent" : self.assertTrue,
+           "minor" : lambda x, m: self.assertEqual(x, 0, m),
+           "parents" : lambda x, m: self.assertEqual(x, [], m),
+           "partitionable" : self.assertFalse,
+           "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
+           "resizable" : lambda x, m: self.assertFalse,
+           "size" : lambda x, m: self.assertEqual(x, 0, m),
+           "status" : self.assertFalse,
+           "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
+           "targetSize" : lambda x, m: self.assertEqual(x, 0, m),
+           "type" : lambda x, m: self.assertEqual(x, "btrfs", m),
+           "uuid" : self.assertIsNone,
+           "vol_id" : lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m)}
+
+        self.dev1 = BTRFSVolumeDevice("dev1",
+           parents=[OpticalDevice("deva",
+              format=blivet.formats.getFormat("btrfs"))])
+
+        self.dev2 = BTRFSSubVolumeDevice("dev2", parents=[self.dev1])
+
+        dev = StorageDevice("deva",
+           format=blivet.formats.getFormat("btrfs"),
+           size=32)
+        self.dev3 = BTRFSVolumeDevice("dev3",
+           parents=[dev],
+           exists=True)
+
+    def testBTRFSDeviceInit(self, *args, **kwargs):
+        """Tests the state of a BTRFSDevice after initialization.
+           For some combinations of arguments the initializer will throw
+           an exception.
+        """
+
+        self.stateCheck(self.dev1,
+           parents=lambda x, m: self.assertEqual(len(x), 1, m),
+           type=lambda x, m: self.assertEqual(x, "btrfs volume", m))
+
+        self.stateCheck(self.dev3,
+           currentSize=lambda x, m: self.assertEqual(x, 32, m),
+           exists=self.assertTrue,
+           maxSize=lambda x, m: self.assertEqual(x, 32, m),
+           parents=lambda x, m: self.assertEqual(len(x), 1, m),
+           size=lambda x, m: self.assertEqual(x, 32, m),
+           type=lambda x, m: self.assertEqual(x, "btrfs volume", m))
+
+        self.assertRaisesRegexp(ValueError,
+           "BTRFSDevice.*must have at least one parent",
+           BTRFSVolumeDevice,
+           "dev")
+
+        self.assertRaisesRegexp(ValueError,
+           "member device.*is not BTRFS",
+           BTRFSVolumeDevice,
+           "dev", parents=[OpticalDevice("deva")])
+
+        parents=[OpticalDevice("deva",
+           format=blivet.formats.getFormat("btrfs"))]
+        self.assertRaisesRegexp(DeviceError,
+           "btrfs subvolume.*must be a BTRFSDevice",
+           BTRFSSubVolumeDevice,
+           "dev1", parents=parents)
+
+    def testBTRFSDeviceMethods(self, *args, **kwargs):
+        """Test for method calls on initialized BTRFS Devices."""
+        # volumes do not have ancestor volumes
+        with self.assertRaises(AttributeError):
+            self.dev1.volume
+
+        # subvolumes do not have default subvolumes
+        with self.assertRaises(AttributeError):
+            self.dev2.defaultSubVolume
+
+        self.assertIsNotNone(self.dev2.volume)
+
+        # size
+        with self.assertRaisesRegexp(RuntimeError,
+           "cannot directly set size of btrfs volume"):
+            self.dev1.size = 32
 
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(MDRaidArrayDeviceTestCase)
