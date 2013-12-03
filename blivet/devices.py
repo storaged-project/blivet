@@ -4549,6 +4549,13 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     @property
     def volume(self):
+        """Return the first ancestor that is not a BTRFSSubVolumeDevice.
+
+           Note: Assumes that each ancestor in traversal has only one parent.
+
+           Raises a DeviceError if the ancestor found is not a
+           BTRFSVolumeDevice.
+        """
         parent = self.parents[0]
         vol = None
         while True:
@@ -4558,6 +4565,8 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
             parent = parent.parents[0]
 
+        if not isinstance(vol, BTRFSVolumeDevice):
+            raise DeviceError("%s %s's first non subvolume ancestor must be a btrfs volume" % (self.type, self.name))
         return vol
 
     def setupParents(self, orig=False):
