@@ -4543,7 +4543,14 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     def __init__(self, *args, **kwargs):
         self.vol_id = kwargs.pop("vol_id", None)
+
         super(BTRFSSubVolumeDevice, self).__init__(*args, **kwargs)
+
+        if len(self.parents) != 1:
+            raise DeviceError("%s %s must have exactly one parent." % (self.type, self.name))
+
+        if not isinstance(self.parents[0], BTRFSDevice):
+            raise DeviceError("%s %s's unique parent must be a BTRFSDevice." % (self.type, self.name))
 
         self.volume._addSubVolume(self)
 
