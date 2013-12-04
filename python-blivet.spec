@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.29
+Version: 0.30
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Dec 04 2013 Brian C. Lane <bcl@redhat.com> - 0.30-1
+- Always run action's cancel method as part of cancelAction. (dlehman)
+- Show Invalid Disk Label for damaged GPT (#1020974) (bcl)
+- Make error message in setDefaultFSType more informative (#1019766) (amulhern)
+- Set sysfsPath of LUKSDevice when adding to device tree (#1019638) (jsafrane)
+- Use given format type as format's name instead of type (vpodzime)
+
 * Wed Nov 27 2013 Brian C. Lane <bcl@redhat.com> - 0.29-1
 - btrfs and xfs do not support fsck or dump at boot time (#862871) (bcl)
 - Removed raid level constants from mdraid.py. (amulhern)
