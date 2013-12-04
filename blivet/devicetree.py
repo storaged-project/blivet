@@ -47,6 +47,7 @@ from flags import flags
 from storage_log import log_method_call, log_method_return
 import parted
 import _ped
+from i18n import _
 
 import logging
 log = logging.getLogger("blivet")
@@ -226,6 +227,10 @@ class DeviceTree(object):
         self.sortActions()
         for action in self._actions:
             log.debug("action: %s" % action)
+
+            # Remove lvm filters for devices we are operating on
+            for device in (d for d in self._devices if d.dependsOn(action.device)):
+                lvm.lvm_cc_removeFilterRejectRegexp(device.name)
 
         for action in self._actions[:]:
             log.info("executing action: %s" % action)
@@ -1119,9 +1124,11 @@ class DeviceTree(object):
                                device=device.path,
                                labelType=labelType,
                                exists=True)
-        except InvalidDiskLabelError:
+        except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s" % device.name)
-            return
+            if disklabel_type == "gpt":
+                log.debug(e)
+                device.format = getFormat(_("Invalid Disk Label"))
         else:
             device.format = format
 

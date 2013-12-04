@@ -150,7 +150,7 @@ class DiskLabel(DeviceFormat):
                     self._partedDisk = parted.Disk(device=self.partedDevice)
                 except (_ped.DiskLabelException, _ped.IOException,
                         NotImplementedError) as e:
-                    raise InvalidDiskLabelError()
+                    raise InvalidDiskLabelError(e)
 
                 if self._partedDisk.type == "loop":
                     # When the device has no partition table but it has a FS,
@@ -444,4 +444,3 @@ class DiskLabel(DeviceFormat):
             return 0
 
 register_device_format(DiskLabel)
-
