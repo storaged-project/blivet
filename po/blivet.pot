@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-27 16:50-0800\n"
+"POT-Creation-Date: 2013-12-04 15:56-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -226,6 +226,10 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1997
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/devicetree.py:1129
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/fcoe.py:106
