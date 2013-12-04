@@ -4361,6 +4361,8 @@ class BTRFSVolumeDevice(BTRFSDevice):
                                     mountopts="subvolid=%d" % self.vol_id)
             self.originalFormat = copy.copy(self.format)
 
+        self._defaultSubVolumeID = None
+
     def _setFormat(self, format):
         """ Set the Device's format. """
         super(BTRFSVolumeDevice, self)._setFormat(format)
@@ -4491,19 +4493,19 @@ class BTRFSVolumeDevice(BTRFSDevice):
         except BTRFSError as e:
             log.debug("failed to get default subvolume id: %s" % e)
 
-        self.defaultSubVolumeID = subvolid
+        self._defaultSubVolumeID = subvolid
 
     @property
     def defaultSubVolume(self):
         default = None
-        if self.defaultSubVolumeID is None:
+        if self._defaultSubVolumeID is None:
             return None
 
-        if self.defaultSubVolumeID == self.vol_id:
+        if self._defaultSubVolumeID == self.vol_id:
             return self
 
         for sv in self.subvolumes:
-            if sv.vol_id == self.defaultSubVolumeID:
+            if sv.vol_id == self._defaultSubVolumeID:
                 default = sv
                 break
 
