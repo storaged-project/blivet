@@ -21,6 +21,8 @@
 #            Anne Mulhern <amulhern@redhat.com>
 #
 
+import abc
+
 from ..errors import RaidError
 
 def div_up(a,b):
@@ -29,45 +31,44 @@ def div_up(a,b):
 
 class RAIDLevel(object):
 
+    __metaclass__ = abc.ABCMeta
+
     """An abstract class which is the parent of classes which represent a
        RAID level. A better word would be classification, since 'level'
        implies an ordering, but level is the canonical word.
 
-       The fields of the class are:
-         _level --- A string containing the number that designates this level
-         _min_members --- The minimum number of members required for this
+       The abstract properties of the class are:
+         level --- A string containing the number that designates this level
+         min_members --- The minimum number of members required for this
            level to be sensibly used.
-         _nick --- A single nickname for this level, may be None
+         nick --- A single nickname for this level, may be None
 
         All methods in this class fall into these categories:
         1) May not be overrridden in any subclass.
-        2) Are private methods that must be overridden in every subclass.
+        2) Are private abstract methods.
         3) Are special Python methods, e.g., __str__
 
         Note that each subclass in this file is instantiated immediately after
-        it is defined, effectively yielding a singleton object of the class.
+        it is defined and using the same name, effectively yielding a
+        singleton object of the class.
     """
 
-    # FIELDS
-    _level = None
-    _min_members = None
-    _nick = None
-
-    # PROPERTIES
-    level = property(lambda s: s._level,
+    # ABSTRACT PROPERTIES
+    level = abc.abstractproperty(lambda s: None,
        doc="A code representing the level")
 
-    min_members = property(lambda s: s._min_members,
+    min_members = abc.abstractproperty(lambda s: None,
        doc="The minimum number of members required for this level")
 
-    number = property(lambda s : int(s._level),
+    nick = abc.abstractproperty(lambda s : None,
+       doc="A nickname for this level")
+
+    # PROPERTIES
+    number = property(lambda s : int(s.level),
        doc="A numeric code for this level")
 
     name = property(lambda s : "raid" + s.level,
        doc="The canonical name for this level")
-
-    nick = property(lambda s : s._nick,
-       doc="A nickname for this level")
 
     alt_synth_names = property(lambda s : ["RAID" + s.level, s.level, s.number],
        doc="names that can be synthesized from level but are not name")
@@ -85,6 +86,7 @@ class RAIDLevel(object):
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
         return self._get_max_spares(member_count)
 
+    @abc.abstractmethod
     def _get_max_spares(self, member_count):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
@@ -104,6 +106,7 @@ class RAIDLevel(object):
             raise RaidError("size is a negative number")
         return self._get_base_member_size(size, member_count)
 
+    @abc.abstractmethod
     def _get_base_member_size(self, size, member_count):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
@@ -122,6 +125,7 @@ class RAIDLevel(object):
             raise RaidError("size is a negative number")
         return self._get_raw_array_size(member_count, smallest_member_size)
 
+    @abc.abstractmethod
     def _get_raw_array_size(self, member_count, smallest_member_size):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
@@ -130,6 +134,7 @@ class RAIDLevel(object):
         size = self.get_raw_array_size(member_count, smallest_member_size)
         return self._get_size(size, chunk_size)
 
+    @abc.abstractmethod
     def _get_size(self, size, chunk_size):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
@@ -142,6 +147,7 @@ class RAIDLevel(object):
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
         return self._get_recommended_stride(member_count)
 
+    @abc.abstractmethod
     def _get_recommended_stride(member_count):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
@@ -242,9 +248,10 @@ class RAIDLevels(object):
             self._raid_levels.append(level)
 
 class RAID0(RAIDLevel):
-    _level = "0"
-    _min_members = 2
-    _nick = "stripe"
+
+    level = property(lambda s: "0")
+    min_members = property(lambda s: 2)
+    nick = property(lambda s: "stripe")
 
     def _get_max_spares(self, member_count):
         return 0
@@ -265,9 +272,9 @@ RAID0 = RAID0()
 RAIDLevels.addRAIDLevelToStandardLevels(RAID0)
 
 class RAID1(RAIDLevel):
-    _level = "1"
-    _min_members = 2
-    _nick = "mirror"
+    level = property(lambda s: "1")
+    min_members = property(lambda s: 2)
+    nick = property(lambda s: "mirror")
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -288,9 +295,9 @@ RAID1 = RAID1()
 RAIDLevels.addRAIDLevelToStandardLevels(RAID1)
 
 class RAID4(RAIDLevel):
-    _level = "4"
-    _min_members = 3
-    _nick = None
+    level = property(lambda s: "4")
+    min_members = property(lambda s: 3)
+    nick = property(lambda s: None)
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -311,9 +318,9 @@ RAID4 = RAID4()
 RAIDLevels.addRAIDLevelToStandardLevels(RAID4)
 
 class RAID5(RAIDLevel):
-    _level = "5"
-    _min_members = 3
-    _nick = None
+    level = property(lambda s: "5")
+    min_members = property(lambda s: 3)
+    nick = property(lambda s: None)
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -334,9 +341,9 @@ RAID5 = RAID5()
 RAIDLevels.addRAIDLevelToStandardLevels(RAID5)
 
 class RAID6(RAIDLevel):
-    _level = "6"
-    _min_members = 4
-    _nick = None
+    level = property(lambda s: "6")
+    min_members = property(lambda s: 4)
+    nick = property(lambda s: None)
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -357,9 +364,9 @@ RAID6 = RAID6()
 RAIDLevels.addRAIDLevelToStandardLevels(RAID6)
 
 class RAID10(RAIDLevel):
-    _level = "10"
-    _min_members = 4
-    _nick = None
+    level = property(lambda s: "10")
+    min_members = property(lambda s: 4)
+    nick = property(lambda s: None)
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
