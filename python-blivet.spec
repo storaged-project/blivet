@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.30
+Version: 0.31
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Dec 05 2013 Brian C. Lane <bcl@redhat.com> - 0.31-1
+- Make RAIDLevel an abstract class using abc. (amulhern)
+- Restore a util import that was removed in a recent commit. (amulhern)
+
 * Wed Dec 04 2013 Brian C. Lane <bcl@redhat.com> - 0.30-1
 - Always run action's cancel method as part of cancelAction. (dlehman)
 - Show Invalid Disk Label for damaged GPT (#1020974) (bcl)
