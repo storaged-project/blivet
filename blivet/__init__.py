@@ -726,7 +726,8 @@ class Blivet(object):
                 return False
 
         # Don't clear devices holding install media.
-        if device.protected:
+        descendants = self.devicetree.getDependentDevices(device)
+        if device.protected or any(d.protected for d in descendants):
             return False
 
         if clearPartType == CLEARPART_TYPE_LIST and \
