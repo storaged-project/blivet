@@ -874,7 +874,12 @@ class StorageDevice(Device):
 
     @property
     def currentSize(self):
-        """ The device's actual size. """
+        """ The device's actual size, generally the size discovered by using
+            system tools. May use a cached value if the information is
+            currently unavailable.
+
+            If the device does not exist, then the actual size is 0.
+        """
         size = 0
         if self.exists and self.partedDevice:
             size = self.partedDevice.getSize()
@@ -1732,7 +1737,6 @@ class PartitionDevice(StorageDevice):
 
     @property
     def currentSize(self):
-        """ The device's actual size. """
         if self.exists:
             return self._currentSize
         else:
@@ -4276,8 +4280,6 @@ class BTRFSDevice(StorageDevice):
 
     @property
     def currentSize(self):
-        # at some point we'll want to make this a bit more realistic, but the
-        # btrfs tools don't provide much of this type of information
         return self.size
 
     @property

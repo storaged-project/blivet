@@ -438,8 +438,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            format=blivet.formats.getFormat("btrfs"),
            size=32)
         self.dev3 = BTRFSVolumeDevice("dev3",
-           parents=[dev],
-           exists=True)
+           parents=[dev])
 
     def testBTRFSDeviceInit(self, *args, **kwargs):
         """Tests the state of a BTRFSDevice after initialization.
@@ -453,7 +452,6 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         self.stateCheck(self.dev3,
            currentSize=lambda x, m: self.assertEqual(x, 32, m),
-           exists=self.assertTrue,
            maxSize=lambda x, m: self.assertEqual(x, 32, m),
            parents=lambda x, m: self.assertEqual(len(x), 1, m),
            size=lambda x, m: self.assertEqual(x, 32, m),
