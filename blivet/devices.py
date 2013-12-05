@@ -684,9 +684,13 @@ class StorageDevice(Device):
         return spec
 
     def resize(self):
-        """ Resize the device.
+        """ Resize a device to self.targetSize.
 
-            New size should already be set.
+            This method should only be invoked via the
+            ActionResizeDevice.execute method. All the pre-conditions
+            enforced by ActionResizeDevice.__init__ are assumed to hold.
+
+            Returns nothing.
         """
         raise NotImplementedError("resize method not defined for StorageDevice")
 
@@ -1582,27 +1586,23 @@ class PartitionDevice(StorageDevice):
         return (constraint, newGeometry)
 
     def resize(self):
-        """ Resize the device.
-
-            self.targetSize must be set to the new size.
-        """
         log_method_call(self, self.name, status=self.status)
         self._preDestroy()
-        if self.targetSize != self.currentSize:
-            # partedDisk has been restored to _origPartedDisk, so
-            # recalculate resize geometry because we may have new
-            # partitions on the disk, which could change constraints
-            partedDisk = self.disk.format.partedDisk
-            partition = partedDisk.getPartitionByPath(self.path)
-            (constraint, geometry) = self._computeResize(partition)
 
-            partedDisk.setPartitionGeometry(partition=partition,
-                                            constraint=constraint,
-                                            start=geometry.start,
-                                            end=geometry.end)
+        # partedDisk has been restored to _origPartedDisk, so
+        # recalculate resize geometry because we may have new
+        # partitions on the disk, which could change constraints
+        partedDisk = self.disk.format.partedDisk
+        partition = partedDisk.getPartitionByPath(self.path)
+        (constraint, geometry) = self._computeResize(partition)
 
-            self.disk.format.commit()
-            self._currentSize = partition.getSize()
+        partedDisk.setPartitionGeometry(partition=partition,
+                                        constraint=constraint,
+                                        start=geometry.start,
+                                        end=geometry.end)
+
+        self.disk.format.commit()
+        self._currentSize = partition.getSize()
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -2734,8 +2734,6 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def resize(self):
         log_method_call(self, self.name, status=self.status)
-        if not self.exists:
-            raise DeviceError("device has not been created", self.name)
 
         # Setup VG parents (in case they are dmraid partitions for example)
         self.vg.setupParents(orig=True)
