@@ -386,6 +386,12 @@ class ActionResizeDevice(DeviceAction):
         if long(math.floor(device.currentSize)) == newsize:
             raise ValueError("new size same as old size")
 
+        if newsize < device.minSize:
+            raise ValueError("new size is too small")
+
+        if newsize > device.maxSize:
+            raise ValueError("new size is too large")
+
         DeviceAction.__init__(self, device)
         if newsize > long(math.floor(device.currentSize)):
             self.dir = RESIZE_GROW
