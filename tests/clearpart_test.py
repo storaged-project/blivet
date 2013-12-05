@@ -131,6 +131,14 @@ class ClearPartTestCase(unittest.TestCase):
                          msg="type linux should clear disks with empty "
                              "partition tables when initlabel is set")
 
+        sda1.protected = True
+        self.assertFalse(b.shouldClear(sda1),
+                         msg="protected devices should never be cleared")
+        self.assertFalse(b.shouldClear(sda),
+                         msg="disks containing protected devices should never "
+                             "be cleared")
+        sda1.protected = False
+
         #
         # clearpart type all
         #
@@ -159,6 +167,14 @@ class ClearPartTestCase(unittest.TestCase):
                         msg="type all should initialize all disks")
         self.assertTrue(b.shouldClear(sdd),
                         msg="type all should initialize all disks")
+
+        sda1.protected = True
+        self.assertFalse(b.shouldClear(sda1),
+                         msg="protected devices should never be cleared")
+        self.assertFalse(b.shouldClear(sda),
+                         msg="disks containing protected devices should never "
+                             "be cleared")
+        sda1.protected = False
 
         #
         # clearpart type list
