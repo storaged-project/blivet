@@ -46,7 +46,13 @@ def btrfs(args, capture=False):
     return ret
 
 def create_volume(devices, label=None, data=None, metadata=None):
-    """ For now, data and metadata must be strings mkfs.btrfs understands. """
+    """Create a btrfs filesystem on the list of devices specified by devices.
+
+       Optional arguments label, data, metadata corresponds to flags
+       accepted by mkfs.btrfs.
+
+       For now, data and metadata must be strings mkfs.btrfs understands.
+    """
     if not devices:
         raise ValueError("no devices specified")
     elif any([not os.path.exists(d) for d in devices]):
