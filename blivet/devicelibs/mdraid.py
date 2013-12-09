@@ -134,14 +134,20 @@ def mdadd(device):
     except MDRaidError as msg:
         raise MDRaidError("mdadd failed for %s: %s" % (device, msg))
 
-def mdactivate(device, members=[], super_minor=None, uuid=None):
-    if super_minor is None and not uuid:
-        raise MDRaidError("mdactivate requires either a uuid or a super-minor")
-    
-    if uuid:
-        identifier = "--uuid=%s" % uuid
-    else:
-        identifier = ""
+def mdactivate(device, members=[], uuid=None):
+    """Assemble devices given by members into a single device.
+
+       Use uuid value to identify devices in members to include in device.
+
+       :param device: the device to be assembled
+       :param type: str
+       :param members: the component devices
+       :param type: list of str
+    """
+    if not uuid:
+        raise MDRaidError("mdactivate requires a uuid")
+
+    identifier = "--uuid=%s" % uuid
 
     args = ["--assemble", device, identifier, "--run"]
     args += members
