@@ -128,3 +128,23 @@ def get_default_subvolume(mountpoint):
         raise BTRFSError("failed to get default subvolume from %s" % mountpoint)
 
     return default
+
+_DEVICE_REGEX_STR = r'devid[ \t]+(\d+)[ \t]+size[ \t]+(\S+)[ \t]+used[ \t]+(\S+)[ \t]+path[ \t]+(\S+)\n'
+_DEVICE_REGEX = re.compile(_DEVICE_REGEX_STR)
+
+def list_devices(device):
+    """List the devices in the filesystem in which this device participates. """
+    args = ["filesystem", "show", device]
+    buf = btrfs(args, capture=True)
+    return [{"id" : g[0], "size" : g[1], "used" : g[2], "path" : g[3] } for g in _DEVICE_REGEX.findall(buf)]
+
+_HEADER_REGEX_STR = r'Label: (?P<label>\S+)[ \t]+uuid: (?P<uuid>\S+)\s+Total devices (?P<num_devices>\d+)[ \t]+FS bytes used (?P<fs_bytes_used>\S+)\n'
+_HEADER_REGEX = re.compile(_HEADER_REGEX_STR)
+
+def summarize_filesystem(device):
+    """Summarize some general information about the filesystem in which this
+       device participates.
+    """
+    args = ["filesystem", "show", device]
+    buf = btrfs(args, capture=True)
+    return _HEADER_REGEX.search(buf).groupdict()
