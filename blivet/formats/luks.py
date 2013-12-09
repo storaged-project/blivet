@@ -247,23 +247,6 @@ class LUKS(DeviceFormat):
                           key_file=self._key_file,
                           new_passphrase=passphrase)
 
-    def removeKeyFromFile(self, keyfile):
-        """ Remove a key contained in a file.
-
-            Remove key contained in the specified key file from the LUKS
-            header.
-        """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status, file=keyfile)
-        if not self.exists:
-            raise LUKSError("format has not been created")
-
-        crypto.luks_remove_key(self.device,
-                             passphrase=self.__passphrase,
-                             key_file=self._key_file,
-                             del_key_file=keyfile)
-
-
     def removePassphrase(self, passphrase):
         """ Remove the specified passphrase from the LUKS header. """
         log_method_call(self, device=self.device,
