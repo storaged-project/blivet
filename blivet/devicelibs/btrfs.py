@@ -98,12 +98,6 @@ def delete_subvolume(mountpoint, name):
     args = ["subvol", "delete", path]
     return btrfs(args)
 
-def create_snapshot(source, dest):
-    pass
-
-def scan_device(path):
-    return btrfs(["device", "scan", path])
-
 _SUBVOL_REGEX_STR = r'ID (\d+) gen \d+ parent (\d+) top level \d+ path (.+)\n'
 _SUBVOL_REGEX = re.compile(_SUBVOL_REGEX_STR)
 
