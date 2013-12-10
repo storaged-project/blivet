@@ -1173,6 +1173,10 @@ class LVMFactory(DeviceFactory):
             # (it was originally one per disk but that wasn't enough for raid5)
             size += LVM_PE_SIZE * len(self.disks) * 5
 
+        if self.container_encrypted:
+            # Add space for LUKS metadata, each parent will be encrypted
+            size += LVM_PE_SIZE * len(self.disks)
+
         return size
 
     #
