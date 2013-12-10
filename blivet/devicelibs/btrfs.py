@@ -83,6 +83,7 @@ def create_volume(devices, label=None, data=None, metadata=None):
 # remove device
 
 def create_subvolume(mountpoint, name):
+    """Create a subvolume named name below mountpoint mountpoint."""
     if not os.path.ismount(mountpoint):
         raise ValueError("volume not mounted")
 
