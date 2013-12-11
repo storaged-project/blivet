@@ -247,6 +247,11 @@ class DeviceFactory(object):
                 container_encrypted whether to encrypt the entire container
                 container_size      requested container size
         """
+
+        if encrypted and size:
+            # encrypted, bump size up with LUKS metadata size
+            size += getFormat("luks").minSize
+
         self.storage = storage          # a Blivet instance
         self.size = size                # the requested size for this device
         self.disks = disks              # the set of disks to allocate from
@@ -798,6 +803,11 @@ class PartitionFactory(DeviceFactory):
             # instantiate one of them
             self.__fmt = getattr(self, "__fmt", getFormat(self.fstype))
             min_format_size = self.__fmt.minSize
+
+        # min_format_size may be None here, make sure it is a number
+        min_format_size = min_format_size or 0
+        if self.encrypted:
+            min_format_size += getFormat("luks").minSize
 
         return max(1, min_format_size)
 

@@ -50,6 +50,7 @@ class LUKS(DeviceFormat):
     _supported = False                  # is supported
     _linuxNative = True                 # for clearpart
     _packages = ["cryptsetup-luks"]     # required packages
+    _minSize = crypto.LUKS_METADATA_SIZE
 
     def __init__(self, *args, **kwargs):
         """ Create a LUKS instance.
