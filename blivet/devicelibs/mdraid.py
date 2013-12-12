@@ -20,6 +20,8 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import os
+
 from .. import util
 from ..errors import *
 from . import raid
