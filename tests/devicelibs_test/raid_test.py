@@ -63,6 +63,8 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID5.get_base_member_size(4,4), 2)
         self.assertEqual(raid.RAID6.get_base_member_size(4,4), 2)
         self.assertEqual(raid.RAID10.get_base_member_size(4,4), 2)
+        self.assertEqual(raid.RAID10.get_base_member_size(4,5), 2)
+        self.assertEqual(raid.RAID10.get_base_member_size(5,5), 3)
 
         self.assertRaises(errors.RaidError, raid.RAID10.get_base_member_size,
                           4, 3)
@@ -78,6 +80,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID5.get_raw_array_size(4, 2), 6)
         self.assertEqual(raid.RAID6.get_raw_array_size(4, 2), 4)
         self.assertEqual(raid.RAID10.get_raw_array_size(4, 2), 4)
+        self.assertEqual(raid.RAID10.get_raw_array_size(5, 2), 4)
 
         ##
         ## get_recommended_stride

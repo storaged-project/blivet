@@ -99,6 +99,8 @@ class RAIDLevel(object):
 
            :param member_count: number of members in this array
            :param member_count: int
+
+           The return value has the same units as the size parameter.
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -113,11 +115,15 @@ class RAIDLevel(object):
 
     def get_raw_array_size(self, member_count, smallest_member_size):
         """Calculate the raw arraysize, i.e., the number of MB available.
+
            :param member_count: the number of members in the array
            :param type: int
            :param smallest_member_size: the size (MB) of the smallest
              member of this array
            :param type: int
+
+           The return value has the same units as the smallest_member_size
+           parameter.
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -372,10 +378,10 @@ class RAID10(RAIDLevel):
         return member_count - self.min_members
 
     def _get_base_member_size(self, size, member_count):
-        return div_up(size, (member_count / 2))
+        return div_up(size, (member_count // 2))
 
     def _get_raw_array_size(self, member_count, smallest_member_size):
-        return (member_count / 2) * smallest_member_size
+        return (member_count // 2) * smallest_member_size
 
     def _get_size(self, size, chunk_size):
         return size
