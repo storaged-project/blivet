@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.31
+Version: 0.32
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,30 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Dec 12 2013 Brian C. Lane <bcl@redhat.com> - 0.32-1
+- Work on devicelibs.btrfs methods that require that the device be mounted.
+  (amulhern)
+- Remove some methods from devicelibs.btrfs. (amulhern)
+- Add a comment to btrfs.create_volume. (amulhern)
+- Add a file to run btrfs tests. (amulhern)
+- Remove format.luks.LUKS.removeKeyFromFile. (amulhern)
+- Changes to devicelibs.mdraid.mdactivate. (amulhern)
+- Restore an import removed in a previous commit. (amulhern)
+- Add a PE for LUKS metadata (#1038969) (bcl)
+- Adjust currentSize methods slightly. (amulhern)
+- Put additional constraints on the ActionResizeDevice initializer. (amulhern)
+- Remove redundant checks in existing resize() methods. (amulhern)
+- Add some baseline unit tests for BTRFS devices. (amulhern)
+- Robustify use of defaultSubVolumeID field. (amulhern)
+- Check that a BTRFS subvolume has exactly one parent in constructor.
+  (amulhern)
+- BTRFSSubVolume.volume checks the class of its return value. (amulhern)
+- Raise ValueError in BTRFS constructor if no parents specified. (amulhern)
+- Add tests for a couple of additional properties for MDRaidArrayDevice.
+  (amulhern)
+- Factor state testing behavior into a separate class. (amulhern)
+- Remove redundant condition in if statement. (amulhern)
+
 * Thu Dec 05 2013 Brian C. Lane <bcl@redhat.com> - 0.31-1
 - Make RAIDLevel an abstract class using abc. (amulhern)
 - Restore a util import that was removed in a recent commit. (amulhern)
