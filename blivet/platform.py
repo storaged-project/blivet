@@ -220,6 +220,9 @@ class MacEFI(EFI):
                             grow=True, weight=self.weight(mountpoint="/boot/efi")))
         return ret
 
+class Aarch64EFI(EFI):
+    _non_linux_format_types = ["vfat", "ntfs"]
+
 class PPC(Platform):
     _ppcMachine = arch.getPPCMachine()
     _boot_stage1_device_types = ["partition"]
@@ -376,12 +379,12 @@ def getPlatform():
     elif arch.isEfi():
         if arch.isMactel():
             return MacEFI()
+        elif arch.isAARCH64():
+            return Aarch64EFI()
         else:
             return EFI()
     elif arch.isX86():
         return X86()
-    elif arch.isAARCH64():
-        return EFI()
     elif arch.isARM():
         armMachine = arch.getARMMachine()
         if armMachine == "omap":

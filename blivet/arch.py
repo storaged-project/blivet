@@ -341,7 +341,7 @@ def getArch():
         return 'ppc'
     elif isPPC(bits=64):
         return 'ppc64'
-    elif arch.isAARCH64():
+    elif isAARCH64():
         return 'aarch64'
     elif isAlpha():
         return 'alpha'
