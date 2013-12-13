@@ -267,10 +267,13 @@ class Size(Decimal):
                 break
 
         if places is not None:
-            fmt = "%%.%df" % places
-            retval = fmt % newcheck
+            newcheck_str = str(newcheck)
+            retval = newcheck_str
+            if "." in newcheck_str:
+                dot_idx = newcheck_str.index(".")
+                retval = newcheck_str[:dot_idx+places+1]
         else:
-            retval = self._trimEnd("%f" % newcheck)
+            retval = self._trimEnd(str(newcheck))
 
         if max_places is not None:
             (whole, point, fraction) = retval.partition(".")
