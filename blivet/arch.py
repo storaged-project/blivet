@@ -306,6 +306,9 @@ def isAlpha():
 def isSparc():
     return os.uname()[4].startswith('sparc')
 
+def isAARCH64():
+    return os.uname()[4] == 'aarch64'
+
 def isARM():
     return os.uname()[4].startswith('arm')
 
@@ -322,6 +325,8 @@ def getArch():
         return 'alpha'
     elif isSparc():
         return 'sparc'
+    elif isAARCH64():
+        return 'aarch64'
     elif isARM():
         return 'arm'
     else:
