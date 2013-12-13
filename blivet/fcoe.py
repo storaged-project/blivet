@@ -102,6 +102,10 @@ class fcoe(object):
         self.lldpadStarted = True
 
     def addSan(self, nic, dcb=False, auto_vlan=True):
+        """Activates FCoE SANs attached to interface specified by nic.
+
+           Returns error message, or empty string if succeeded.
+        """
         if not has_fcoe():
             raise IOError, _("FCoE not available")
 
@@ -110,26 +114,34 @@ class fcoe(object):
 
         util.run_program(["ip", "link", "set", nic, "up"])
 
+        rc = 0
+        error_msg = ""
         if dcb:
             self._startLldpad()
             util.run_program(["dcbtool", "sc", nic, "dcb", "on"])
             util.run_program(["dcbtool", "sc", nic, "app:fcoe",
                                                 "e:1", "a:1", "w:1"])
-            util.run_program(["fipvlan", "-c", "-s", "-f",
+            rc, out = util.run_program_and_capture_output(["fipvlan", "-c", "-s", "-f",
                                                "-fcoe", nic])
         else:
             if auto_vlan:
                 # certain network configrations require the VLAN layer module:
                 util.run_program(["modprobe", "8021q"])
-                util.run_program(["fipvlan", '-c', '-s', '-f',
+                rc, out = util.run_program_and_capture_output(["fipvlan", '-c', '-s', '-f',
                                                    "-fcoe",  nic])
             else:
                 f = open("/sys/module/libfcoe/parameters/create", "w")
                 f.write(nic)
                 f.close()
 
-        self._stabilize()
-        self.nics.append((nic, dcb, auto_vlan))
+        if rc == 0:
+            self._stabilize()
+            self.nics.append((nic, dcb, auto_vlan))
+        else:
+            log.debug("Activating FCoE SAN failed: %s %s" % (rc, out))
+            error_msg = out
+
+        return error_msg
 
     def write(self, ROOT_PATH):
         if not self.nics:

@@ -58,6 +58,9 @@ def run_program(*args, **kwargs):
 def capture_output(*args, **kwargs):
     return _run_program(*args, **kwargs)[1]
 
+def run_program_and_capture_output(*args, **kwargs):
+    return _run_program(*args, **kwargs)
+
 def mount(device, mountpoint, fstype, options=None):
     if options is None:
         options = "defaults"
