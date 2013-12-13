@@ -44,11 +44,11 @@ _decimalPrefix = [(1000, N_("kilo"), N_("k")),
 _binaryPrefix = [(1024, N_("kibi"), N_("Ki")),
                  (1024**2, N_("mebi"), N_("Mi")),
                  (1024**3, N_("gibi"), N_("Gi")),
-                 (1024**4, N_("tebi"), None),
-                 (1024**5, N_("pebi"), None),
-                 (1024**6, N_("ebi"), None),
-                 (1024**7, N_("zebi"), None),
-                 (1024**8, N_("yobi"), None)]
+                 (1024**4, N_("tebi"), N_("Ti")),
+                 (1024**5, N_("pebi"), N_("Pi")),
+                 (1024**6, N_("exbi"), N_("Ei")),
+                 (1024**7, N_("zebi"), N_("Zi")),
+                 (1024**8, N_("yobi"), N_("Yi"))]
 
 _bytes = [N_('b'), N_('byte'), N_('bytes')]
 _prefixes = _decimalPrefix + _binaryPrefix
