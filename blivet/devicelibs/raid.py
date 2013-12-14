@@ -26,32 +26,43 @@ import abc
 from ..errors import RaidError
 
 def div_up(a,b):
-    """Rounds up integer division."""
-    return (a + (b - 1))/b
+    """Rounds up integer division.  For example, div_up(3, 2) is 2.
+
+       :param int a: the dividend
+       :param int b: the divisor
+    """
+    return (a + (b - 1))//b
 
 class RAIDLevel(object):
-
-    __metaclass__ = abc.ABCMeta
 
     """An abstract class which is the parent of classes which represent a
        RAID level. A better word would be classification, since 'level'
        implies an ordering, but level is the canonical word.
 
        The abstract properties of the class are:
-         level --- A string containing the number that designates this level
-         min_members --- The minimum number of members required for this
+
+       - level: A string containing the number that designates this level
+
+       - min_members: The minimum number of members required for this
            level to be sensibly used.
-         nick --- A single nickname for this level, may be None
+
+       - nick: A single nickname for this level, may be None
 
         All methods in this class fall into these categories:
+
         1) May not be overrridden in any subclass.
+
         2) Are private abstract methods.
+
         3) Are special Python methods, e.g., __str__
+
 
         Note that each subclass in this file is instantiated immediately after
         it is defined and using the same name, effectively yielding a
         singleton object of the class.
     """
+
+    __metaclass__ = abc.ABCMeta
 
     # ABSTRACT PROPERTIES
     level = abc.abstractproperty(lambda s: None,
@@ -79,8 +90,13 @@ class RAIDLevel(object):
 
     # METHODS
     def get_max_spares(self, member_count):
-        """Return the maximum number of spares for this level given
-           member_count participating members.
+        """The maximum number of spares for this level.
+
+           :param int member_count: the number of members belonging to the array
+           :rtype: int
+
+           Raiess a RaidError if member_count is fewer than the minimum
+           number of members required for this level.
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -92,15 +108,18 @@ class RAIDLevel(object):
         raise NotImplementedError()
 
     def get_base_member_size(self, size, member_count):
-        """Return the required size for each member of the array for
+        """The required size for each member of the array for
            storing only data.
-           :param size: size of data to be stored
-           :type size: natural number
 
-           :param member_count: number of members in this array
-           :param member_count: int
+           :param int size: size of data to be stored
+           :param int member_count: number of members in this array
+           :rtype: int
 
            The return value has the same units as the size parameter.
+
+           Raises a RaidError if member_count is fewer than the minimum
+           number of members required for this array or if size is less
+           than 0.
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -114,16 +133,20 @@ class RAIDLevel(object):
         raise NotImplementedError()
 
     def get_raw_array_size(self, member_count, smallest_member_size):
-        """Calculate the raw arraysize, i.e., the number of MB available.
+        """Return the raw arraysize.
 
-           :param member_count: the number of members in the array
-           :param type: int
-           :param smallest_member_size: the size (MB) of the smallest
+           :param int member_count: the number of members in the array
+           :param int smallest_member_size: the size of the smallest
              member of this array
-           :param type: int
+           :rtype: int
 
            The return value has the same units as the smallest_member_size
            parameter.
+
+           Raises a RaidError if member_count is fewer than the minimum
+           number of members required for this array or if size is less
+           than 0.
+
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -137,6 +160,13 @@ class RAIDLevel(object):
         raise NotImplementedError()
 
     def get_size(self, member_count, smallest_member_size, chunk_size):
+        """
+           :param int member_count: the number of members in the array
+           :param int smallest_member_size: the size of the smallest
+             member of this array
+           :param int chunk_size: the smallest size this array allows
+           :rtype: int
+        """
         size = self.get_raw_array_size(member_count, smallest_member_size)
         return self._get_size(size, chunk_size)
 
@@ -146,8 +176,15 @@ class RAIDLevel(object):
         raise NotImplementedError()
 
     def get_recommended_stride(self, member_count):
-        """Get a recommended stride size in blocks. Returns None if there
-           is no recommended size.
+        """Return a recommended stride size in blocks.
+
+           Returns None if there is no recommended size.
+
+           :param int member_count: the number of members in the array
+           :rtype: int or None
+
+           Raises a RaidError if member_count is fewer than the
+           minimum number of members required for this level
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
@@ -171,6 +208,10 @@ class RAIDLevels(object):
 
     def __init__(self, levels=True):
         """Add the specified standard levels to the levels in this object.
+
+           :param levels: the standard levels to be added to this object
+           :type levels: bool or a list of valid RAID level descriptors
+
            If levels is True, add all standard levels. Else, levels
            must be a list of valid level descriptors of standard levels.
            Duplicate descriptors are ignored.
@@ -186,7 +227,7 @@ class RAIDLevels(object):
                 for level in levels:
                     matches = [l for l in self.standard_levels if level in l.names]
                     if len(matches) != 1:
-                        raise RaidError("invalid standard raid level descriptor %s" % level)
+                        raise RaidError("invalid standard RAID level descriptor %s" % level)
                     else:
                         self.addRaidLevel(matches[0])
             except TypeError:
@@ -196,18 +237,20 @@ class RAIDLevels(object):
     _standard_levels = []
 
     standard_levels = property(lambda s: s._standard_levels,
-       doc="any standard raid level classes defined in this package.")
+       doc="any standard RAID level classes defined in this package.")
 
     @classmethod
     def isRaidLevel(cls, level):
         """Return False if level does not satisfy minimum requirements for
-           a RAID level.
+           a RAID level, otherwise return True.
+
+           :param object level: an object representing a RAID level
 
            There must be at least one element in the names list, or the level
            will be impossible to look up by any string.
 
-           The name must be defined; it should be one of the elements in the
-           names list.
+           The name property must be defined; it should be one of the
+           elements in the names list.
 
            All RAID objects in standard_levels are guaranteed to pass these
            minimum requirements.
@@ -227,8 +270,15 @@ class RAIDLevels(object):
 
     @classmethod
     def addRAIDLevelToStandardLevels(cls, level):
-        """Adds this raid level to the internal list of standard raid levels
+        """Adds this RAID level to the internal list of standard RAID levels
            defined in this package.
+
+           :param level: an object representing a RAID level
+           :type level: object
+
+           Raises a RaidError if level is not a valid RAID level.
+
+           Does not allow duplicate level objects.
         """
         if not cls.isRaidLevel(level):
             raise RaidError('level is not a valid RAID level')
@@ -236,17 +286,26 @@ class RAIDLevels(object):
             cls._standard_levels.append(level)
 
     def raidLevel(self, descriptor):
-        """Return raid object corresponding to descriptor. Raises RaidError
-           if no raid object can be found for this descriptor.
+        """Return RAID object corresponding to descriptor.
+
+           :param object descriptor: a RAID level descriptor
+
+           Raises a RaidError if no RAID object can be found for this
+           descriptor.
         """
         for level in self._raid_levels:
             if descriptor in level.names:
                 return level
-        raise RaidError("invalid raid level descriptor %s" % descriptor)
+        raise RaidError("invalid RAID level descriptor %s" % descriptor)
 
     def addRaidLevel(self, level):
         """Adds level to the list of levels if it is not already there.
-           Raises a RaidError if it is not a valid level.
+
+           :param object level: an object representing a RAID level
+
+           Raises a RaidError if level is not valid.
+
+           Does not allow duplicate level objects.
         """
         if not self.isRaidLevel(level):
             raise RaidError("level is not a valid RAID level")

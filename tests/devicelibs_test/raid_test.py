@@ -109,15 +109,15 @@ class RaidTestCase(unittest.TestCase):
         ## __init__
         ##
         self.assertRaisesRegexp(errors.RaidError,
-                                "invalid raid level",
+                                "invalid RAID level",
                                 self.levels_none.raidLevel, 10)
 
         self.assertRaisesRegexp(errors.RaidError,
-                                "invalid raid level",
+                                "invalid RAID level",
                                 self.levels_some.raidLevel, 10)
 
         self.assertRaisesRegexp(errors.RaidError,
-                                "invalid standard raid level descriptor",
+                                "invalid standard RAID level descriptor",
                                 raid.RAIDLevels, ["raid3.1415"])
 
 def suite():

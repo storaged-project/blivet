@@ -28,11 +28,11 @@ class MDFactoryTestCase(unittest.TestCase):
 
     def testMDFactory(self):
         self.assertRaisesRegexp(mdraid.MDRaidError,
-           "invalid raid level",
+           "invalid RAID level",
            self.factory1._get_device_space)
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
-           "invalid raid level",
+           "invalid RAID level",
            self.factory1._set_raid_level)
 
         self.assertEqual(self.factory1.container_list, [])
@@ -40,7 +40,7 @@ class MDFactoryTestCase(unittest.TestCase):
         self.assertIsNone(self.factory1.get_container())
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
-           "invalid raid level",
+           "invalid RAID level",
            self.factory1._get_new_device,
            parents=[])
 

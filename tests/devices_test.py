@@ -352,18 +352,18 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 5, m))
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
-                                "invalid raid level",
+                                "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev")
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
-                                "invalid raid level",
+                                "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev",
                                 level="raid2")
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
-                                "invalid raid level",
+                                "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev",
                                 parents=[Device("parent")])
@@ -376,7 +376,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 parents=[Device("parent")])
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
-                                "invalid raid level descriptor junk",
+                                "invalid RAID level descriptor junk",
                                 MDRaidArrayDevice,
                                 "dev",
                                 level="junk")
@@ -391,10 +391,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def testMDRaidArrayDeviceMethods(self, *args, **kwargs):
         """Test for method calls on initialized MDRaidDevices."""
-        with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid raid level" ):
+        with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid RAID level" ):
             self.dev7.level = "junk"
 
-        with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid raid level" ):
+        with self.assertRaisesRegexp(mdraid.MDRaidError, "invalid RAID level" ):
             self.dev7.level = None
 
 class BTRFSDeviceTestCase(DeviceStateTestCase):
