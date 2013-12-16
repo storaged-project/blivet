@@ -31,13 +31,8 @@ class SizeTestCase(unittest.TestCase):
         self.assertRaises(SizeParamsError, Size)
         self.assertRaises(SizeParamsError, Size, bytes=500, en_spec="45GB")
 
-        self.assertRaises(SizeNotPositiveError, Size, bytes=-1)
-
         zero = Size(bytes=0)
         self.assertEqual(zero, 0.0)
-
-        self.assertRaises(SizeNotPositiveError, Size, en_spec="-1 TB")
-        self.assertRaises(SizeNotPositiveError, Size, en_spec="-47kb")
 
         s = Size(bytes=500)
         self.assertRaises(SizePlacesError, s.humanReadable, places=-1)
@@ -80,6 +75,11 @@ class SizeTestCase(unittest.TestCase):
 
         s = Size(bytes=478360371L)
         self.assertEquals(s.humanReadable(), "478.36 MB")
+
+    def testNegative(self):
+        s = Size(spec="-500MiB")
+        self.assertEquals(s.humanReadable(), "-500 MiB")
+        self.assertEquals(s.convertTo(spec="b"), -524288000)
 
     def testPartialBytes(self):
         s = Size(bytes=1024.6)

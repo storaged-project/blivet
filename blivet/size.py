@@ -93,9 +93,6 @@ def _parseSpec(spec, xlate):
     except InvalidOperation:
         raise ValueError("invalid size specification", spec)
 
-    if size < 0:
-        raise SizeNotPositiveError("spec= param must be >=0")
-
     specifier = m.groups()[1].lower()
     if xlate:
         bytes = [_(b) for b in _bytes]
@@ -155,10 +152,10 @@ class Size(Decimal):
             raise SizeParamsError("only specify one parameter")
 
         if bytes is not None:
-            if type(bytes).__name__ in ["int", "long", "float", 'Decimal'] and bytes >= 0:
+            if type(bytes).__name__ in ["int", "long", "float", 'Decimal']:
                 value = Decimal(bytes)
             else:
-                raise SizeNotPositiveError("bytes= param must be >=0")
+                raise ValueError("invalid value for bytes param")
         elif spec:
             value = _parseSpec(spec, True)
         elif en_spec:
@@ -259,14 +256,14 @@ class Size(Decimal):
 
         check = self._trimEnd("%d" % self)
 
-        if Decimal(check) < 1000:
+        if abs(Decimal(check)) < 1000:
             return "%s %s" % (check, _("B"))
 
         prefixes_xlated = [_(p) for p in _prefixes]
         for factor, prefix, abbr in prefixes_xlated:
             newcheck = super(Size, self).__div__(Decimal(factor))
 
-            if newcheck < 1000:
+            if abs(newcheck) < 1000:
                 # nice value, use this factor, prefix and abbr
                 break
 
