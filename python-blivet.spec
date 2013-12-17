@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.11
+Version: 0.18.12
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Dec 16 2013 Brian C. Lane <bcl@redhat.com> - 0.18.12-1
+- Change XFS maximum to 16EB (bcl)
+  Resolves: rhbz#1016035
+- fcoe: give error message in case of fail when adding device (rvykydal)
+  Related: rhbz#903122
+  Resolves: rhbz#903122
+- fcoe: adapt bnx2fc detection to changed sysfs path structure (rvykydal)
+  Related: rhbz#903122
+  Resolves: rhbz#903122
+- Update format of iscsi device becoming multipath member (rvykydal)
+  Resolves: rhbz#1039086
+
 * Thu Nov 14 2013 David Lehman <dlehman@redhat.com> - 0.18.11-1
 - Fix detection of lvm setups. (dlehman)
   Resolves: rhbz#1026468
