@@ -28,6 +28,7 @@ import sys
 import tempfile
 import selinux
 
+from . import fslabel
 from ..errors import *
 from . import DeviceFormat, register_device_format
 from .. import util
@@ -118,13 +119,12 @@ class FS(DeviceFormat):
     _mkfs = ""                           # mkfs utility
     _modules = []                        # kernel modules required for support
     _resizefs = ""                       # resize utility
-    _labelfs = ""                        # labeling utility
+    _labelfs = None                      # labeling utility
     _fsck = ""                           # fs check utility
     _fsckErrors = {}                     # fs check command error codes & msgs
     _infofs = ""                         # fs info utility
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
-    _defaultLabelOptions = []
     _defaultCheckOptions = []
     _defaultInfoOptions = []
     _existingSizeFields = []
@@ -191,6 +191,41 @@ class FS(DeviceFormat):
                   "label": self.label, "targetSize": self.targetSize,
                   "mountable": self.mountable})
         return d
+
+    def _setLabel(self, label):
+        """Sets the label for this filesystem.
+
+           :param label: the label for this filesystem
+           :type label: str or None
+
+           Raises a FSError if this label is unacceptably formatted for this
+           filesystem.
+
+           Note that some filesystems do not possess a label, so this method
+           always accept the value None for label.
+
+           This method is not intended to be overridden.
+        """
+        if label is None:
+            self._label = None
+        elif label == "":
+            raise FSError("Empty filesystem label not permitted.")
+        elif self._labelfs == None or self._labelfs.labelFormatOK(label):
+            self._label = label
+        else:
+            raise FSError("Filesystem label '%s' is incorrectly formatted for %s." % (label, self._labelfs.name))
+
+    def _getLabel(self):
+        """The label for this filesystem.
+
+           :return: the label for this filesystsm
+           :rtype: str
+
+           This method is not intended to be overridden.
+        """
+        return self._label
+
+    label = property(_getLabel, _setLabel, doc="this filesystem's label")
 
     def _setTargetSize(self, newsize):
         """ Set a target size for this filesystem. """
@@ -400,8 +435,8 @@ class FS(DeviceFormat):
         self.exists = True
         self.notifyKernel()
 
-        if self.label:
-            self.writeLabel(self.label)
+        if self._labelfs:
+            self.writeLabel()
 
     @property
     def resizeArgs(self):
@@ -629,29 +664,59 @@ class FS(DeviceFormat):
 
         self._mountpoint = None
 
-    def _getLabelArgs(self, label):
-        argv = []
-        argv.extend(self.defaultLabelOptions)
-        argv.extend([self.device, label])
-        return argv 
+    def readLabel(self):
+        """Read this filesystem's label.
 
-    def writeLabel(self, label):
-        """ Create a label for this filesystem. """
+           :return: the filesystem's label
+           :rtype: str
+
+           Raises a FSError if the label can not be read.
+
+           Returns None if there is no label.
+        """
         if not self.exists:
             raise FSError("filesystem has not been created")
-
-        if not self.labelfsProg:
-            return
 
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        argv = self._getLabelArgs(label)
-        rc = util.run_program([self.labelfsProg] + argv)
+        if not self._labelfs or not self._labelfs.reads:
+            raise FSError("no application to read label for filesystem %s" % self.type)
+
+        (rc, out) = util.run_program_and_capture_output(self._labelfs.readLabelCommand(self))
+        if rc:
+            raise FSError("read label failed")
+
+        label = out.strip()
+
+        if label == "":
+            return None
+        else:
+            return self._labelfs.extractLabel(label)
+
+    def writeLabel(self):
+        """Create a label on this filesystem.
+
+            Does nothing if self.label is None.
+
+            Raises a FSError if the label can not be set.
+        """
+        if not self.label:
+            return
+
+        if not self.exists:
+            raise FSError("filesystem has not been created")
+
+        if not self._labelfs:
+            raise FSError("no application to set label for filesystem %s" % self.type)
+
+        if not os.path.exists(self.device):
+            raise FSError("device does not exist")
+
+        rc = util.run_program(self._labelfs.setLabelCommand(self))
         if rc:
             raise FSError("label failed")
 
-        self.label = label
         self.notifyKernel()
 
     def _getRandomUUID(self):
@@ -682,8 +747,14 @@ class FS(DeviceFormat):
 
     @property
     def labelfsProg(self):
-        """ Program used to manage labels for this filesystem type. """
-        return self._labelfs
+        """ Program used to manage labels for this filesystem type.
+
+            May be None if no such program exists.
+        """
+        if self._labelfs:
+            return self._labelfs.name
+        else:
+            return None
 
     @property
     def infofsProg(self):
@@ -739,12 +810,6 @@ class FS(DeviceFormat):
         """ Default options passed to mount for this filesystem type. """
         # return a copy to prevent modification
         return self._defaultMountOptions[:]
-
-    @property
-    def defaultLabelOptions(self):
-        """ Default options passed to labeler for this filesystem type. """
-        # return a copy to prevent modification
-        return self._defaultLabelOptions[:]
 
     @property
     def defaultCheckOptions(self):
@@ -820,7 +885,7 @@ class Ext2FS(FS):
     _mkfs = "mke2fs"
     _modules = ["ext2"]
     _resizefs = "resize2fs"
-    _labelfs = "e2label"
+    _labelfs = fslabel.E2Label()
     _fsck = "e2fsck"
     _fsckErrors = {4: _("File system errors left uncorrected."),
                    8: _("Operational error."),
@@ -984,7 +1049,7 @@ class FATFS(FS):
     _type = "vfat"
     _mkfs = "mkdosfs"
     _modules = ["vfat"]
-    _labelfs = "dosfslabel"
+    _labelfs = fslabel.DosFsLabel()
     _fsck = "dosfsck"
     _fsckErrors = {1: _("Recoverable errors have been detected or dosfsck has "
                         "discovered an internal inconsistency."),
@@ -1114,9 +1179,8 @@ class JFS(FS):
     _type = "jfs"
     _mkfs = "mkfs.jfs"
     _modules = ["jfs"]
-    _labelfs = "jfs_tune"
+    _labelfs = fslabel.JFSTune()
     _defaultFormatOptions = ["-q"]
-    _defaultLabelOptions = ["-L"]
     _maxLabelChars = 16
     _maxSize = 8 * 1024 * 1024
     _formattable = True
@@ -1146,10 +1210,9 @@ class ReiserFS(FS):
     _type = "reiserfs"
     _mkfs = "mkreiserfs"
     _resizefs = "resize_reiserfs"
-    _labelfs = "reiserfstune"
+    _labelfs = fslabel.ReiserFSTune()
     _modules = ["reiserfs"]
     _defaultFormatOptions = ["-f", "-f"]
-    _defaultLabelOptions = ["-l"]
     _maxLabelChars = 16
     _maxSize = 16 * 1024 * 1024
     _formattable = True
@@ -1185,9 +1248,8 @@ class XFS(FS):
     _type = "xfs"
     _mkfs = "mkfs.xfs"
     _modules = ["xfs"]
-    _labelfs = "xfs_admin"
+    _labelfs = fslabel.XFSAdmin()
     _defaultFormatOptions = ["-f"]
-    _defaultLabelOptions = ["-L"]
     _maxLabelChars = 16
     _maxSize = 16 * 1024 * 1024 * 1024 * 1024
     _formattable = True
@@ -1201,12 +1263,6 @@ class XFS(FS):
                            "-c", "\"p blocksize\""]
     _existingSizeFields = ["dblocks =", "blocksize ="]
     partedSystem = fileSystemType["xfs"]
-
-    def _getLabelArgs(self, label):
-        argv = []
-        argv.extend(self.defaultLabelOptions)
-        argv.extend([label, self.device])
-        return argv
 
     def sync(self, root='/'):
         """ Ensure that data we've written is at least in the journal.
