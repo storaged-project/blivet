@@ -1,6 +1,8 @@
 #!/usr/bin/python
+import os
 import unittest
 
+from devicelibs_test import baseclass
 from blivet.formats import device_formats
 import blivet.formats.fs as fs
 
@@ -90,6 +92,75 @@ class MethodsTestCase(unittest.TestCase):
         omit_classes = [ fs.ReiserFS ] + lflag_classes + noflag_classes
         for k, v in [(k, v) for k, v in self.fs.items() if not any(isinstance(v, c) for c in omit_classes)]:
             self.assertIsNone(v.labelfsProg)
+
+class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
+    """Tests for labeling a filesystem and reading its label.
+
+       For some filesystems, there is an application for writing the label
+       but the same application does not read the label. For those, it
+       is only possible to check if the write operation completed succesfully.
+    """
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingXFS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.XFS(device=_LOOP_DEV0)
+        self.assertIsNone(an_fs.create())
+
+        an_fs.label = "temeraire"
+        self.assertIsNone(an_fs.writeLabel())
+        self.assertEqual(an_fs.readLabel(), an_fs.label)
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingFATFS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.FATFS(device=_LOOP_DEV0)
+        self.assertIsNone(an_fs.create())
+
+        an_fs.label = "an fs"
+        self.assertIsNone(an_fs.writeLabel())
+        self.assertEqual(an_fs.readLabel(), an_fs.label)
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingExt2FS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.Ext2FS(device=_LOOP_DEV0)
+        self.assertIsNone(an_fs.create())
+
+        an_fs.label = "an fs"
+        self.assertIsNone(an_fs.writeLabel())
+        self.assertEqual(an_fs.readLabel(), an_fs.label)
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingJFS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.JFS(device=_LOOP_DEV0)
+        self.assertIsNone(an_fs.create())
+
+        an_fs.label = "an fs"
+        self.assertIsNone(an_fs.writeLabel())
+
+        self.assertRaisesRegexp(fs.FSError,
+           "no application to read label",
+           an_fs.readLabel)
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingReiserFS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.ReiserFS(device=_LOOP_DEV0)
+        self.assertIsNone(an_fs.create())
+
+        an_fs.label = "an fs"
+        self.assertIsNone(an_fs.writeLabel())
+
+        self.assertRaisesRegexp(fs.FSError,
+           "no application to read label",
+           an_fs.readLabel)
 
 def suite():
     suite1 = unittest.TestLoader().loadTestsFromTestCase(InitializationTestCase)
