@@ -23,6 +23,7 @@ import re
 
 from decimal import Decimal
 from decimal import InvalidOperation
+from decimal import ROUND_DOWN
 
 from errors import *
 from i18n import _, P_, N_
@@ -155,16 +156,19 @@ class Size(Decimal):
 
         if bytes is not None:
             if type(bytes).__name__ in ["int", "long", "float", 'Decimal'] and bytes >= 0:
-                self = Decimal.__new__(cls, value=bytes)
+                value = Decimal(bytes)
             else:
                 raise SizeNotPositiveError("bytes= param must be >=0")
         elif spec:
-            self = Decimal.__new__(cls, value=_parseSpec(spec, True))
+            value = _parseSpec(spec, True)
         elif en_spec:
-            self = Decimal.__new__(cls, value=_parseSpec(en_spec, False))
+            value = _parseSpec(en_spec, False)
         else:
             raise SizeParamsError("missing bytes=, spec=, or en_spec=")
 
+        # drop any partial byte
+        value = value.to_integral_value(rounding=ROUND_DOWN)
+        self = Decimal.__new__(cls, value=value)
         return self
 
     def __str__(self, context=None):

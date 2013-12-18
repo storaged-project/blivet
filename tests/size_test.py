@@ -81,6 +81,12 @@ class SizeTestCase(unittest.TestCase):
         s = Size(bytes=478360371L)
         self.assertEquals(s.humanReadable(), "478.36 MB")
 
+    def testPartialBytes(self):
+        s = Size(bytes=1024.6)
+        self.assertEquals(Size(bytes=1024.6), Size(bytes=1024))
+        self.assertEquals(Size(spec="%s KiB" % (1/1025.0,)), Size(bytes=0))
+        self.assertEquals(Size(spec="%s KiB" % (1/1023.0,)), Size(bytes=1))
+
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(SizeTestCase)
 
