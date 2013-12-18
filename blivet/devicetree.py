@@ -1070,9 +1070,11 @@ class DeviceTree(object):
         if device and device.isDisk and \
             devicelibs.mpath.is_multipath_member(device.path) and \
             device.format and device.format.type != "multipath_member":
-                log.debug("%s newly detected as multipath member, dropping old format" % device.name)
+                log.debug("%s newly detected as multipath member, dropping old format and removing kids" % device.name)
                 info["ID_FS_TYPE"] = "multipath_member"
                 device.format = formats.DeviceFormat()
+                for d in self.getChildren(device):
+                    self._removeDevice(d, moddisk=False)
 
         #
         # The first step is to either look up or create the device
