@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-16 16:09-0800\n"
+"POT-Creation-Date: 2013-12-17 17:22-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -489,8 +489,8 @@ msgstr ""
 msgid "First sector of boot partition"
 msgstr ""
 
-#: ../blivet/platform.py:155 ../blivet/platform.py:286
-#: ../blivet/platform.py:325
+#: ../blivet/platform.py:155 ../blivet/platform.py:289
+#: ../blivet/platform.py:328
 msgid "Master Boot Record"
 msgstr ""
 
@@ -502,23 +502,23 @@ msgstr ""
 msgid "Apple EFI Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:237
+#: ../blivet/platform.py:240
 msgid "PReP Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:258
+#: ../blivet/platform.py:261
 msgid "Apple Bootstrap Partition"
 msgstr ""
 
-#: ../blivet/platform.py:285
+#: ../blivet/platform.py:288
 msgid "DASD"
 msgstr ""
 
-#: ../blivet/platform.py:287
+#: ../blivet/platform.py:290
 msgid "zFCP"
 msgstr ""
 
-#: ../blivet/platform.py:350
+#: ../blivet/platform.py:353
 msgid "U-Boot Partition"
 msgstr ""
 

@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.12
+Version: 0.18.13
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,15 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Dec 17 2013 Brian C. Lane <bcl@redhat.com> - 0.18.13-1
+- Add initial 64-bit ARM (aarch64) support (dmarlin)
+  Resolves: rhbz#1034435
+- Make error message in setDefaultFSType more informative (amulhern)
+  Resolves: rhbz#1019766
+  Related: rhbz#1019766
+- Set sysfsPath of LUKSDevice when adding to device tree (jsafrane)
+  Resolves: rhbz#1019638
+
 * Mon Dec 16 2013 Brian C. Lane <bcl@redhat.com> - 0.18.12-1
 - Change XFS maximum to 16EB (bcl)
   Resolves: rhbz#1016035
