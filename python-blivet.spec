@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.32
+Version: 0.33
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,19 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Dec 17 2013 Brian C. Lane <bcl@redhat.com> - 0.33-1
+- Add initial 64-bit ARM (aarch64) support (#1034435) (dmarlin)
+- Convert to sphinx docstrings. (dlehman)
+- Add some documentation. (dlehman)
+- Move getActiveMounts from Blivet into DeviceTree. (dlehman)
+- Add an example of creating lvs using growable requests. (dlehman)
+- Remove a whole bunch of unused stuff from Blivet. (dlehman)
+- Remove usage of float in Size.humanReadable. (dlehman)
+- Add missing abbreviations for binary size units. (dlehman)
+- Fix shouldClear for devices with protected descendants. (#902417) (dlehman)
+- Use // division so that it continues to be floor division in Python 3.
+  (amulhern)
+
 * Thu Dec 12 2013 Brian C. Lane <bcl@redhat.com> - 0.32-1
 - Work on devicelibs.btrfs methods that require that the device be mounted.
   (amulhern)
