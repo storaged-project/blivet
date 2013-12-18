@@ -50,8 +50,8 @@ _binaryPrefix = [(1024, N_("kibi"), N_("Ki")),
                  (1024**7, N_("zebi"), N_("Zi")),
                  (1024**8, N_("yobi"), N_("Yi"))]
 
-_bytes = [N_('b'), N_('byte'), N_('bytes')]
-_prefixes = _decimalPrefix + _binaryPrefix
+_bytes = [N_('B'), N_('b'), N_('byte'), N_('bytes')]
+_prefixes = _binaryPrefix + _decimalPrefix
 
 def _makeSpecs(prefix, abbr, xlate):
     """ Internal method used to generate a list of specifiers. """
