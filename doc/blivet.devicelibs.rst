@@ -65,6 +65,14 @@ devicelibs Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`raid` Module
+------------------
+
+.. automodule:: blivet.devicelibs.raid
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`swap` Module
 ------------------
 
@@ -72,4 +80,3 @@ devicelibs Package
     :members:
     :undoc-members:
     :show-inheritance:
-
