@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.33
+Version: 0.34
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,19 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Dec 19 2013 Brian C. Lane <bcl@redhat.com> - 0.34-1
+- Forget existing partitions of device becoming a multipath member (#1043444)
+  (rvykydal)
+- Include blivet.devicelibs.raid in the generated documentation. (amulhern)
+- Upgrade the comments in raid.py to be compatible with sphinx. (amulhern)
+- Make space for LUKS metadata if creating encrypted device (#1038847)
+  (vpodzime)
+- fcoe: give error message in case of fail when adding device (#903122)
+  (rvykydal)
+- fcoe: adapt bnx2fc detection to changed sysfs path structure (#903122)
+  (rvykydal)
+- Update format of iscsi device becoming multipath member (#1039086) (rvykydal)
+
 * Tue Dec 17 2013 Brian C. Lane <bcl@redhat.com> - 0.33-1
 - Add initial 64-bit ARM (aarch64) support (#1034435) (dmarlin)
 - Convert to sphinx docstrings. (dlehman)
