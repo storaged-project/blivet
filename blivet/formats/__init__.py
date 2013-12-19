@@ -251,7 +251,7 @@ class DeviceFormat(object):
     @property
     def name(self):
         if self._name:
-            name = _(self._name)
+            name = self._name
         else:
             name = self.type
         return name
