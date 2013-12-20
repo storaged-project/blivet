@@ -69,46 +69,6 @@ def update_kernel_filesystems():
 
 update_kernel_filesystems()
 
-def fsConfigFromFile(config_file):
-    """ Generate a set of attribute name/value pairs with which a
-        filesystem type can be defined.
-
-        The following config file would define a filesystem identical to
-        the static Ext3FS class definition:
-
-            type = ext3
-            mkfs = "mke2fs"
-            resizefs = "resize2fs"
-            labelfs = "e2label"
-            fsck = "e2fsck"
-            packages = ["e2fsprogs"]
-            formattable = True
-            supported = True
-            resizable = True
-            linuxNative = True
-            maxSize = 8 * 1024 * 1024
-            minSize = 0
-            defaultFormatOptions = "-t ext3"
-            defaultMountOptions = "defaults"
-
-    """
-    # XXX NOTUSED
-    lines = open(config_file).readlines()
-    fs_attrs = {}
-    for line in lines:
-        (key, value) = [t.strip() for t in line.split("=")]
-        if not hasattr(FS, "_" + key):
-            print "invalid key: %s" % key
-            continue
-
-        fs_attrs[key] = value
-
-    if not fs_attrs.has_key("type"):
-        raise ValueError, _("filesystem configuration missing a type")
-
-    # XXX what's the policy about multiple configs for a given type?
-    fs_configs[fs_attrs['type']] = fs_attrs
-
 class FS(DeviceFormat):
     """ Filesystem base class. """
     _type = "Abstract Filesystem Class"  # fs type name
