@@ -33,7 +33,7 @@ class MDFactoryTestCase(unittest.TestCase):
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
            "invalid RAID level",
-           self.factory1._set_raid_level)
+           self.factory1._configure)
 
         self.assertEqual(self.factory1.container_list, [])
 

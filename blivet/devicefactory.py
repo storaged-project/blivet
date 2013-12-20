@@ -1520,18 +1520,19 @@ class MDFactory(DeviceFactory):
     size_set_class = SameSizeSet
 
     def _get_device_space(self):
+        member_count = len(self._get_member_devices())
         size_per_member = mdraid.getRaidLevel(self.raid_level).get_base_member_size(
            self.size,
-           len(self._get_member_devices()))
+           member_count)
         size_per_member += mdraid.get_raid_superblock_size(self.size)
-        return size_per_member * self._get_member_devices()
+        return size_per_member * member_count
 
     def _get_total_space(self):
         return self._get_device_space()
 
     def _set_raid_level(self):
         # set the new level
-        self.device.level = mdraid.getRaidLevel(self.raid_level)
+        self.device.level = self.raid_level
 
         # adjust the bitmap setting
 

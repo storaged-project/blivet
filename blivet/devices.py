@@ -3134,7 +3134,7 @@ class MDRaidArrayDevice(StorageDevice):
     @property
     def dict(self):
         d = super(MDRaidArrayDevice, self).dict
-        d.update({"level": self.level,
+        d.update({"level": str(self.level),
                   "spares": self.spares, "memberDevices": self.memberDevices,
                   "totalDevices": self.totalDevices,
                   "metadataVersion": self.metadataVersion})
@@ -3169,7 +3169,7 @@ class MDRaidArrayDevice(StorageDevice):
         if not isinstance(number, int):
             raise ValueError("memberDevices is an integer")
 
-        if number > self.totalDevices:
+        if not self.exists and number > self.totalDevices:
             raise ValueError("memberDevices cannot be greater than totalDevices")
         self._memberDevices = number
 
