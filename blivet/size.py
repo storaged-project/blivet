@@ -232,7 +232,7 @@ class Size(Decimal):
         else:
             bytes = _bytes
         if spec in bytes:
-            return self
+            return Decimal(self)
 
         if xlate:
             prefixes = [_(p) for p in _prefixes]
