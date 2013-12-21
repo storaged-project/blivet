@@ -226,6 +226,11 @@ class DeviceFormat(ObjectID):
              "resizable": self.resizable}
         return d
 
+    @classmethod
+    def labeling(cls):
+        """Returns False by default since most formats are non-labeling."""
+        return False
+
     def _setOptions(self, options):
         self._options = options
 

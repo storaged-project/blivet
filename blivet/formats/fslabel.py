@@ -1,5 +1,5 @@
 # fslabel.py
-# Filesystem labelling classes for anaconda's storage configuration module.
+# Filesystem labeling classes for anaconda's storage configuration module.
 #
 # Copyright (C) 2009  Red Hat, Inc.
 #
@@ -56,7 +56,7 @@ class FSLabelApp(object):
     @abc.abstractmethod
     def labelFormatOK(self, label):
         """Returns True if this label is correctly formatted for this
-           filesystem labelling application, otherwise False.
+           filesystem labeling application, otherwise False.
 
            :param str label: the label for this filesystem
            :rtype: bool

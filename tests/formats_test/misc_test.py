@@ -66,7 +66,7 @@ class MethodsTestCase(unittest.TestCase):
     def setUp(self):
         self.fs = {}
         for k, v  in device_formats.items():
-            if issubclass(v, fs.FS) and not issubclass(v, fs.NFS):
+            if issubclass(v, fs.FS) and v.labeling():
                 self.fs[k] = v(device="/dev", label="myfs")
 
 
@@ -88,10 +88,11 @@ class MethodsTestCase(unittest.TestCase):
         for k, v in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in noflag_classes)]:
             self.assertEqual(v._labelfs.setLabelCommand(v), [v._labelfs.name, "/dev", "myfs"], msg=k)
 
-        # all of the remaining should have no labelfsProg
-        omit_classes = [ fs.ReiserFS ] + lflag_classes + noflag_classes
-        for k, v in [(k, v) for k, v in self.fs.items() if not any(isinstance(v, c) for c in omit_classes)]:
-            self.assertIsNone(v.labelfsProg)
+        # all of the remaining are non-labeling so will accept any label
+        label = "Houston, we have a problem!"
+        for k, v in device_formats.items():
+            if issubclass(v, fs.FS) and not v.labeling() and not issubclass(v, fs.NFS):
+                self.assertEqual(v(device="/dev", label=label).label, label)
 
 class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
     """Tests for labeling a filesystem and reading its label.
