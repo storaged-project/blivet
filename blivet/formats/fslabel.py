@@ -45,6 +45,14 @@ class FSLabelApp(object):
         """
         raise NotImplementedError
 
+    @abc.abstractproperty
+    def unsetsLabel(self):
+        """Returns True if this app can write an empty label.
+
+           :rtype: bool
+        """
+        raise NotImplementedError
+
     @abc.abstractmethod
     def labelFormatOK(self, label):
         """Returns True if this label is correctly formatted for this
@@ -124,8 +132,15 @@ class E2Label(FSLabelApp):
     def reads(self):
         return True
 
+    @property
+    def unsetsLabel(self):
+        return True
+
     def _writeLabelArgs(self, fs):
-        return [fs.device, fs.label]
+        if fs.label:
+            return [fs.device, fs.label]
+        else:
+            return [fs.device, ""]
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -145,8 +160,15 @@ class DosFsLabel(FSLabelApp):
     def reads(self):
         return True
 
+    @property
+    def unsetsLabel(self):
+        return True
+
     def _writeLabelArgs(self, fs):
-        return [fs.device, fs.label]
+        if fs.label:
+            return [fs.device, fs.label]
+        else:
+            return [fs.device, ""]
 
     def labelFormatOK(self, label):
         return len(label) < 12
@@ -166,8 +188,15 @@ class JFSTune(FSLabelApp):
     def reads(self):
         return False
 
+    @property
+    def unsetsLabel(self):
+        return True
+
     def _writeLabelArgs(self, fs):
-        return ["-L", fs.label, fs.device]
+        if fs.label:
+            return ["-L", fs.label, fs.device]
+        else:
+            return ["-L", "", fs.device]
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -187,8 +216,15 @@ class ReiserFSTune(FSLabelApp):
     def reads(self):
         return False
 
+    @property
+    def unsetsLabel(self):
+        return True
+
     def _writeLabelArgs(self, fs):
-        return ["-l", fs.label, fs.device]
+        if fs.label:
+            return ["-l", fs.label, fs.device]
+        else:
+            return ["-l", "", fs.device]
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -208,8 +244,15 @@ class XFSAdmin(FSLabelApp):
     def reads(self):
         return True
 
+    @property
+    def unsetsLabel(self):
+        return False
+
     def _writeLabelArgs(self, fs):
-        return ["-L", fs.label, fs.device]
+        if fs.label:
+            return ["-L", fs.label, fs.device]
+        else:
+            raise ValueError("%s cannot set an empty label." % self.name)
 
     def labelFormatOK(self, label):
         return ' ' not in label and len(label) < 13

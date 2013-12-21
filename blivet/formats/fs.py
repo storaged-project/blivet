@@ -395,7 +395,7 @@ class FS(DeviceFormat):
         self.exists = True
         self.notifyKernel()
 
-        if self._labelfs:
+        if self.label and self._labelfs:
             self.writeLabel()
 
     @property
@@ -657,18 +657,20 @@ class FS(DeviceFormat):
     def writeLabel(self):
         """Create a label on this filesystem.
 
-            Does nothing if self.label is None.
+            If self.label is None,
+            1) write an empty label to the filesystem, OR
+            2) raise an FSError if the application can not write an empty label
 
             Raises a FSError if the label can not be set.
         """
-        if not self.label:
-            return
-
         if not self.exists:
             raise FSError("filesystem has not been created")
 
         if not self._labelfs:
             raise FSError("no application to set label for filesystem %s" % self.type)
+
+        if not self.label and not self._labelfs.unsetsLabel:
+            raise FSError("application %s can not unset a filesystem label." % self._labelfs.name)
 
         if not os.path.exists(self.device):
             raise FSError("device does not exist")

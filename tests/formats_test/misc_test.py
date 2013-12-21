@@ -112,6 +112,12 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertIsNone(an_fs.writeLabel())
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
+        an_fs.label = None
+        self.assertRaisesRegexp(fs.FSError,
+            "can not unset a filesystem label",
+            an_fs.writeLabel)
+        self.assertEqual(an_fs.readLabel(), "temeraire")
+
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingFATFS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
@@ -123,6 +129,11 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertIsNone(an_fs.writeLabel())
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
+        an_fs.label = None
+        self.assertIsNone(an_fs.writeLabel())
+        self.assertEqual(an_fs.readLabel(), an_fs.label)
+
+
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingExt2FS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
@@ -133,6 +144,11 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         an_fs.label = "an fs"
         self.assertIsNone(an_fs.writeLabel())
         self.assertEqual(an_fs.readLabel(), an_fs.label)
+
+        an_fs.label = None
+        self.assertIsNone(an_fs.writeLabel())
+        self.assertEqual(an_fs.readLabel(), an_fs.label)
+
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingJFS(self):
@@ -148,6 +164,10 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
            "no application to read label",
            an_fs.readLabel)
 
+        an_fs.label = None
+        self.assertIsNone(an_fs.writeLabel())
+
+
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingReiserFS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
@@ -161,6 +181,9 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertRaisesRegexp(fs.FSError,
            "no application to read label",
            an_fs.readLabel)
+
+        an_fs.label = None
+        self.assertIsNone(an_fs.writeLabel())
 
 def suite():
     suite1 = unittest.TestLoader().loadTestsFromTestCase(InitializationTestCase)
