@@ -78,6 +78,11 @@ class SwapSpace(DeviceFormat):
         d.update({"priority": self.priority, "label": self.label})
         return d
 
+    @classmethod
+    def labeling(cls):
+        """Returns True as mkswap can write a label to the swap space."""
+        return True
+
     def _setPriority(self, priority):
         if priority is None:
             self._priority = None

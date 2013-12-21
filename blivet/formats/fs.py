@@ -152,17 +152,36 @@ class FS(DeviceFormat):
                   "mountable": self.mountable})
         return d
 
+    @classmethod
+    def labeling(cls):
+        """Returns True if this filesystem uses labels, otherwise False.
+
+           :rtype: bool
+        """
+        return cls._labelfs is not None
+
     def _setLabel(self, label):
         """Sets the label for this filesystem.
 
            :param label: the label for this filesystem
            :type label: str or None
 
-           Raises a FSError if this label is unacceptably formatted for this
-           filesystem.
-
            Note that some filesystems do not possess a label, so this method
            always accept the value None for label.
+
+           Note also that some filesystems, even though they do not have a
+           labeling application may be already labeled, so we allow to set
+           the label of a filesystem even if a labeling application does not
+           exist. This can happen with the install media, for example, where
+           the filesystem on the CD has a label, but there is no labeling
+           application for the Iso9660FS format.
+
+           However, if a labeling application does exist, we require that
+           the label have the correct format for that application.
+
+           It is unlikely, but may be possible, that a filesystem may have
+           a label that the accepted labeling application will not accept.
+           In this case, this method will raise a FSError.
 
            This method is not intended to be overridden.
         """
