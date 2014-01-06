@@ -4081,8 +4081,10 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         else:
             dcbOpt = "nodcb"
 
-        return set(["fcoe=edd:%s" % dcbOpt])
-
+        if nic in fcoe().added_nics:
+            return set(["fcoe=%s:%s" % (nic, dcbOpt)])
+        else:
+            return set(["fcoe=edd:%s" % dcbOpt])
 
 class OpticalDevice(StorageDevice):
     """ An optical drive, eg: cdrom, dvd+r, &c.
