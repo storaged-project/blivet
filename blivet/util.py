@@ -1,3 +1,4 @@
+import itertools
 import os
 import shutil
 import selinux
@@ -333,3 +334,20 @@ def insert_colons(a_string):
         return insert_colons(a_string[:-2]) + ':' + suffix
     else:
         return suffix
+
+class ObjectID(object):
+    """This class is meant to be extended by other classes which require
+       an ID which is preserved when an object copy is made.
+       The value returned by the builtin function id() is not adequate:
+       that value represents object identity so it is not in general
+       preserved when the object is copied.
+
+       The name of the identifier property is object_id, its type is int.
+
+       The constructor always sets object_id to a new value which is unique
+       for the object type.
+    """
+    _newid_gen = itertools.count().next
+
+    def __init__(self):
+        self.object_id = self._newid_gen()
