@@ -27,9 +27,14 @@ class FormatsTestCase(unittest.TestCase):
            [formats.get_device_format_class(x) for x in format_names],
            format_values)
 
+        ## A DeviceFormat object is returned if lookup by name fails
         for name in format_names:
             self.assertIs(formats.getFormat(name).__class__,
                formats.DeviceFormat if format_pairs[name] is None else format_pairs[name])
+        ## Consecutively constructed DeviceFormat object have consecutive ids
+        names = [key for key in format_pairs.keys() if format_pairs[key] is not None]
+        ids = [formats.getFormat(name).object_id for name in names]
+        self.assertEqual(ids, range(ids[0], ids[0] + len(ids)))
 
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(FormatsTestCase)
