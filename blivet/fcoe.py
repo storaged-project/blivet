@@ -56,6 +56,7 @@ class fcoe(object):
         self.started = False
         self.lldpadStarted = False
         self.nics = []
+        self.added_nics = []
 
     # So that users can write fcoe() to get the singleton instance
     def __call__(self):
