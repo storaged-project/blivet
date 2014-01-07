@@ -107,7 +107,7 @@ def deviceNameToDiskByPath(deviceName=None):
         return ret
     raise DeviceNotFoundError(deviceName)
 
-class Device(object):
+class Device(util.ObjectID):
     """ A generic device.
 
         Device instances know which devices they depend upon (parents
@@ -141,9 +141,6 @@ class Device(object):
 
     """
 
-    # This is a counter for generating unique ids for Devices.
-    _id = 0
-
     _type = "device"
     _packages = []
     _services = []
@@ -155,6 +152,7 @@ class Device(object):
             :keyword parents: a list of parent devices
             :type parents: list of :class:`Device` instances
         """
+        util.ObjectID.__init__(self)
         self._name = name
         if parents is None:
             parents = []
@@ -162,10 +160,6 @@ class Device(object):
             raise ValueError("parents must be a list of Device instances")
         self.parents = parents
         self.kids = 0
-
-        # Set this instance's id and increment the counter.
-        self.id = Device._id
-        Device._id += 1
 
         for parent in self.parents:
             parent.addChild()

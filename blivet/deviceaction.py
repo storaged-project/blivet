@@ -21,8 +21,10 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-from udev import *
 import math
+
+from udev import *
+import util
 
 from devices import StorageDevice
 from devices import PartitionDevice
@@ -95,7 +97,7 @@ def resize_type_from_string(type_string):
         if v.lower() == type_string.lower():
             return k
 
-class DeviceAction(object):
+class DeviceAction(util.ObjectID):
     """ An action that will be carried out in the future on a Device.
 
         These classes represent actions to be performed on devices or
@@ -142,18 +144,12 @@ class DeviceAction(object):
     type = ACTION_TYPE_NONE
     obj = ACTION_OBJECT_NONE
     typeDescStr = ""
-    _id = 0
 
     def __init__(self, device):
+        util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
         self.device = device
-
-        # Establish a unique id for each action instance. Making shallow or
-        # deep copyies of DeviceAction instances will require __copy__ and
-        # __deepcopy__ methods to handle incrementing the id in the copy
-        self.id = DeviceAction._id
-        DeviceAction._id += 1
 
     def execute(self):
         """ perform the action """
