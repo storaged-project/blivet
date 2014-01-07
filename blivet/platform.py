@@ -233,7 +233,7 @@ class PPC(Platform):
 
 class IPSeriesPPC(PPC):
     _boot_stage1_format_types = ["prepboot"]
-    _boot_stage1_max_end_mb = 10
+    _boot_stage1_max_end_mb = 4096
     _boot_prep_description = N_("PReP Boot Partition")
     _boot_descriptions = {"partition": _boot_prep_description}
     _disklabel_types = ["msdos"]
