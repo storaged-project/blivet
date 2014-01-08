@@ -26,7 +26,6 @@ from ..udev import udev_get_device
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
-from ..util import ObjectID
 from ..storage_log import log_method_call
 from ..errors import *
 from ..devicelibs.dm import dm_node_from_name
@@ -87,8 +86,8 @@ def getFormat(fmt_type, *args, **kwargs):
         # this should add/set an instance attribute
         fmt._name = fmt_type
 
-    log.debug("getFormat('%s') returning %s instance with object id %d" %
-       (fmt_type, fmt.__class__.__name__, fmt.object_id))
+    log.debug("getFormat('%s') returning %s instance" % (fmt_type,
+       fmt.__class__.__name__))
     return fmt
 
 def collect_device_format_classes():
@@ -137,7 +136,7 @@ def get_device_format_class(fmt_type):
 
     return fmt
 
-class DeviceFormat(ObjectID):
+class DeviceFormat(object):
     """ Generic device format.
 
         This represents the absence of recognized formatting. That could mean a
@@ -179,7 +178,6 @@ class DeviceFormat(ObjectID):
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
         """
-        ObjectID.__init__(self)
         self.device = kwargs.get("device")
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists")
@@ -191,13 +189,12 @@ class DeviceFormat(ObjectID):
         #    self.exists = True
 
     def __repr__(self):
-        s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
+        s = ("%(classname)s instance (%(id)s) --\n"
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
              "  device = %(device)s  uuid = %(uuid)s  exists = %(exists)s\n"
              "  options = %(options)s  supported = %(supported)s"
              "  formattable = %(format)s  resizable = %(resize)s\n" %
              {"classname": self.__class__.__name__, "id": "%#x" % id(self),
-              "object_id": self.object_id,
               "type": self.type, "name": self.name, "status": self.status,
               "device": self.device, "uuid": self.uuid, "exists": self.exists,
               "options": self.options, "supported": self.supported,
