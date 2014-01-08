@@ -43,7 +43,7 @@ class Flags(object):
         self.selinux = selinux.is_selinux_enabled()
         self.multipath = True
         self.dmraid = True
-        self.ibft = False
+        self.ibft = True
         self.noiswmd = False
 
         self.gfs2 = True
@@ -78,9 +78,6 @@ class Flags(object):
 
         if "nodmraid" in self.boot_cmdline:
             self.dmraid = False
-
-        if self.boot_cmdline.get("ip") == "ibft":
-            self.ibft = True
 
         if "noiswmd" in self.boot_cmdline:
             self.noiswmd = True
