@@ -33,7 +33,7 @@ log = logging.getLogger("blivet")
 # maximum ratio of swap size to disk size (10 %)
 MAX_SWAP_DISK_RATIO = 0.1
 
-def mkswap(device, label=''):
+def mkswap(device, label=None):
     # We use -f to force since mkswap tends to refuse creation on lvs with
     # a message about erasing bootbits sectors on whole disks. Bah.
     argv = ["-f"]
