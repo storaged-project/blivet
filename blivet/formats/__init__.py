@@ -231,6 +231,20 @@ class DeviceFormat(ObjectID):
         """Returns False by default since most formats are non-labeling."""
         return False
 
+    @classmethod
+    def labelFormatOK(cls, label):
+        """Checks whether the format of the label is OK for whatever
+           application is used by blivet to write a label for this format.
+           If there is no application that blivet uses to write a label,
+           then no format is acceptable, so must return False.
+
+           :param str label: The label to be checked
+
+           :rtype: bool
+           :return: True if the format of the label is OK, otherwise False
+        """
+        return cls.labeling()
+
     def _setOptions(self, options):
         self._options = options
 
