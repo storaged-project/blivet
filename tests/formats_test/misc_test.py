@@ -13,50 +13,28 @@ class InitializationTestCase(unittest.TestCase):
         """Initialize some filesystems with valid and invalid labels."""
 
         # Ext2FS has a maximum length of 16
-        self.assertRaisesRegexp(fs.FSError,
-           "Filesystem label.*incorrectly formatted",
-           fs.Ext2FS,
-           device="/dev", label="root___filesystem")
-
-        self.assertIsNotNone(fs.Ext2FS(label="root__filesystem"))
+        self.assertFalse(fs.Ext2FS.labelFormatOK("root___filesystem"))
+        self.assertTrue(fs.Ext2FS.labelFormatOK("root__filesystem"))
 
         # FATFS has a maximum length of 11
-        self.assertRaisesRegexp(fs.FSError,
-           "Filesystem label.*incorrectly formatted",
-           fs.FATFS,
-           device="/dev", label="rtfilesystem")
-
-        self.assertIsNotNone(fs.FATFS(label="rfilesystem"))
+        self.assertFalse(fs.FATFS.labelFormatOK("rtfilesystem"))
+        self.assertTrue(fs.FATFS.labelFormatOK("rfilesystem"))
 
         # JFS has a maximum length of 16
-        self.assertRaisesRegexp(fs.FSError,
-           "Filesystem label.*incorrectly formatted",
-           fs.JFS,
-           device="/dev", label="root___filesystem")
-
-        self.assertIsNotNone(fs.JFS(label="root__filesystem"))
+        self.assertFalse(fs.JFS.labelFormatOK("root___filesystem"))
+        self.assertTrue(fs.JFS.labelFormatOK("root__filesystem"))
 
         # ReiserFS has a maximum length of 16
-        self.assertRaisesRegexp(fs.FSError,
-           "Filesystem label.*incorrectly formatted",
-           fs.ReiserFS,
-           device="/dev", label="root___filesystem")
-
-        self.assertIsNotNone(fs.ReiserFS(label="root__filesystem"))
+        self.assertFalse(fs.ReiserFS.labelFormatOK("root___filesystem"))
+        self.assertTrue(fs.ReiserFS.labelFormatOK("root__filesystem"))
 
         #XFS has a maximum length 12 and does not allow spaces
-        self.assertRaisesRegexp(fs.FSError,
-           "Filesystem label.*incorrectly formatted",
-           fs.XFS,
-           device="/dev", label="root filesyst")
-        self.assertRaisesRegexp(fs.FSError,
-           "Filesystem label.*incorrectly formatted",
-           fs.XFS,
-           device="/dev", label="root file")
+        self.assertFalse(fs.XFS.labelFormatOK("root_filesyst"))
+        self.assertFalse(fs.XFS.labelFormatOK("root file"))
+        self.assertTrue(fs.XFS.labelFormatOK("root_filesys"))
 
-        self.assertIsNotNone(fs.XFS(label="root_filesys"))
-
-        # all devices are permitted to have a label of None
+        # all devices are permitted to be passed a label argument of None
+        # some will ignore it completely
         for k, v  in device_formats.items():
             self.assertIsNotNone(v(label=None))
 

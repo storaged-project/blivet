@@ -83,6 +83,11 @@ class SwapSpace(DeviceFormat):
         """Returns True as mkswap can write a label to the swap space."""
         return True
 
+    @classmethod
+    def labelFormatOK(cls, label):
+        """Returns True since no known restrictions on the label."""
+        return True
+
     def _setPriority(self, priority):
         if priority is None:
             self._priority = None

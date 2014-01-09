@@ -160,11 +160,17 @@ class FS(DeviceFormat):
         """
         return cls._labelfs is not None
 
+    @classmethod
+    def labelFormatOK(cls, label):
+        return cls._labelfs is not None and cls._labelfs.labelFormatOK(label)
+
     def _setLabel(self, label):
         """Sets the label for this filesystem.
 
            :param label: the label for this filesystem
            :type label: str or None
+
+           Raises an FSError if the label is "".
 
            Note that some filesystems do not possess a label, so this method
            always accept the value None for label.
@@ -176,12 +182,10 @@ class FS(DeviceFormat):
            the filesystem on the CD has a label, but there is no labeling
            application for the Iso9660FS format.
 
-           However, if a labeling application does exist, we require that
-           the label have the correct format for that application.
-
-           It is unlikely, but may be possible, that a filesystem may have
-           a label that the accepted labeling application will not accept.
-           In this case, this method will raise a FSError.
+           If a labeling application does exist, the label is not
+           required to have the correct format for that application.
+           The allowable format for the label may be more permissive than
+           the format allowed by the labeling application.
 
            This method is not intended to be overridden.
         """
@@ -189,10 +193,8 @@ class FS(DeviceFormat):
             self._label = None
         elif label == "":
             raise FSError("Empty filesystem label not permitted.")
-        elif self._labelfs == None or self._labelfs.labelFormatOK(label):
-            self._label = label
         else:
-            raise FSError("Filesystem label '%s' is incorrectly formatted for %s." % (label, self._labelfs.name))
+            self._label = label
 
     def _getLabel(self):
         """The label for this filesystem.
