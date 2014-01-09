@@ -245,6 +245,44 @@ class DeviceFormat(ObjectID):
         """
         return cls.labeling()
 
+    def _setLabel(self, label):
+        """Sets the label for this format.
+
+           :param label: the label for this format
+           :type label: str or None
+
+           Note that some filesystems do not possess a label, so this method
+           always accept the value None for label as well as the empty string
+           which is considered to mean None.
+
+           Note also that some filesystems, even though they do not have a
+           labeling application may be already labeled, so we allow to set
+           the label of a filesystem even if a labeling application does not
+           exist. This can happen with the install media, for example, where
+           the filesystem on the CD has a label, but there is no labeling
+           application for the Iso9660FS format.
+
+           If a labeling application does exist, the label is not
+           required to have the correct format for that application.
+           The allowable format for the label may be more permissive than
+           the format allowed by the labeling application.
+
+           This method is not intended to be overridden.
+        """
+        if not label:
+            self._label = None
+        else:
+            self._label = label
+
+    def _getLabel(self):
+        """The label for this filesystem.
+
+           :return: the label for this filesystsm
+           :rtype: str
+
+           This method is not intended to be overridden.
+        """
+        return self._label
     def _setOptions(self, options):
         self._options = options
 

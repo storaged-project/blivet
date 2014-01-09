@@ -91,6 +91,9 @@ class SwapSpace(DeviceFormat):
         """Returns True since no known restrictions on the label."""
         return True
 
+    label = property(lambda s: s._getLabel(), lambda s,l: s._setLabel(l),
+       doc="the label for this swap space")
+
     def _setPriority(self, priority):
         if priority is None:
             self._priority = None
