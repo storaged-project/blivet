@@ -5,6 +5,7 @@ import unittest
 from devicelibs_test import baseclass
 from blivet.formats import device_formats
 import blivet.formats.fs as fs
+import blivet.formats.swap as swap
 
 class InitializationTestCase(unittest.TestCase):
     """Test FS object initialization."""
@@ -163,6 +164,14 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
 
         an_fs.label = None
         self.assertIsNone(an_fs.writeLabel())
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingSwapSpace(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = swap.SwapSpace(device=_LOOP_DEV0)
+        an_fs.label = "mkswap is really pretty permissive about labels"
+        self.assertIsNone(an_fs.create())
 
 def suite():
     suite1 = unittest.TestLoader().loadTestsFromTestCase(InitializationTestCase)
