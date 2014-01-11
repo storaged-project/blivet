@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.13
+Version: 0.18.14
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,36 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 10 2014 Brian C. Lane <bcl@redhat.com> - 0.18.14-1
+- Move label setter and getter into DeviceFormat class (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Add a test for labeling swap devices (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Default to None to mean none, rather than empty string (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Add a labelFormatOK method to the DeviceFormat's interface (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Indicate whether the filesystem can label (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Restore ability to write an empty label where possible (amulhern)
+  Resolves: rhbz#1038590
+- More tests to check writing and reading labels (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Remove fsConfigFromFile (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Changes to the handling of filesystem labeling (amulhern)
+  Resolves: rhbz#1038590
+- Forget existing partitions of device becoming a multipath member (rvykydal)
+  Resolves: rhbz#1043444
+  Related: rhbz#1043444
+
 * Tue Dec 17 2013 Brian C. Lane <bcl@redhat.com> - 0.18.13-1
 - Add initial 64-bit ARM (aarch64) support (dmarlin)
   Resolves: rhbz#1034435
