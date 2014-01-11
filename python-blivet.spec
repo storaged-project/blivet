@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.34
+Version: 0.35
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,41 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 10 2014 Brian C. Lane <bcl@redhat.com> - 0.35-1
+- Convert everything to use Size. (dlehman)
+- Allow negative sizes. (dlehman)
+- Fix return value of Size.convertTo with a spec of bytes. (dlehman)
+- Discard partial bytes in Size constructor. (dlehman)
+- Prefer binary prefixes since everything is really based on them. (dlehman)
+- Fix a few minor problems introduced by recent raid level changes. (dlehman)
+- Move label setter and getter into DeviceFormat class (#1038590) (amulhern)
+- Add a test for labeling swap devices (#1038590) (amulhern)
+- Default to None to mean none, rather than empty string (#1038590) (amulhern)
+- Add a labelFormatOK method to the DeviceFormat's interface (#1038590)
+  (amulhern)
+- Indicate whether the filesystem can label (#1038590) (amulhern)
+- Restore ability to write an empty label where possible (#1038590) (amulhern)
+- More tests to check writing and reading labels (#1038590) (amulhern)
+- Remove fsConfigFromFile (#1038590) (amulhern)
+- Changes to the handling of filesystem labeling (#1038590) (amulhern)
+- Add some simple tests for file formats. (amulhern)
+- Give DeviceFormat objects an id (#1043763) (amulhern)
+- Refactor to use ObjectID class (#1043763) (amulhern)
+- Make a class that creates a unique-per-class id for objects (#1043763)
+  (amulhern)
+- Revert "Make a class that creates a unique-per-class id for objects
+  (#1043763)" (amulhern)
+- Revert "Give DeviceFormat objects an object_id (#1043763)" (amulhern)
+- Make the maximum end sector for PReP boot more benevolent (#1029893)
+  (vpodzime)
+- Give DeviceFormat objects an object_id (#1043763) (amulhern)
+- Make a class that creates a unique-per-class id for objects (#1043763)
+  (amulhern)
+- Make get_device_format_class return None if class not found (#1043763)
+  (amulhern)
+- A few simple unit tests for some formats methods (#1043763) (amulhern)
+- Don't translate format names (dshea)
+
 * Thu Dec 19 2013 Brian C. Lane <bcl@redhat.com> - 0.34-1
 - Forget existing partitions of device becoming a multipath member (#1043444)
   (rvykydal)
