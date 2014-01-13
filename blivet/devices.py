@@ -1243,7 +1243,7 @@ class PartitionDevice(StorageDevice):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if newsize != self.currentSize:
+        if newsize != self.size:
             # change this partition's geometry in-memory so that other
             # partitioning operations can complete (e.g., autopart)
             super(PartitionDevice, self)._setTargetSize(newsize)
