@@ -98,6 +98,11 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
             an_fs.writeLabel)
         self.assertEqual(an_fs.readLabel(), "temeraire")
 
+        an_fs.label = "root___filesystem"
+        self.assertRaisesRegexp(fs.FSError,
+           "bad label format",
+           an_fs.writeLabel)
+
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingFATFS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
@@ -113,6 +118,10 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertIsNone(an_fs.writeLabel())
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
+        an_fs.label = "root___filesystem"
+        self.assertRaisesRegexp(fs.FSError,
+           "bad label format",
+           an_fs.writeLabel)
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingExt2FS(self):
@@ -129,6 +138,10 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertIsNone(an_fs.writeLabel())
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
+        an_fs.label = "root___filesystem"
+        self.assertRaisesRegexp(fs.FSError,
+           "bad label format",
+           an_fs.writeLabel)
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingJFS(self):
@@ -147,6 +160,10 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         an_fs.label = None
         self.assertIsNone(an_fs.writeLabel())
 
+        an_fs.label = "root___filesystem"
+        self.assertRaisesRegexp(fs.FSError,
+           "bad label format",
+           an_fs.writeLabel)
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingReiserFS(self):
@@ -164,6 +181,11 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
 
         an_fs.label = None
         self.assertIsNone(an_fs.writeLabel())
+
+        an_fs.label = "root___filesystem"
+        self.assertRaisesRegexp(fs.FSError,
+           "bad label format",
+           an_fs.writeLabel)
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingSwapSpace(self):
