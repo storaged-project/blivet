@@ -329,15 +329,25 @@ class FS(DeviceFormat):
         return free
 
     def _getFormatOptions(self, options=None):
+        """Get a list of format options to be used when creating the
+           filesystem.
+
+           :param options: any special options
+           :type options: list of str or None
+        """
         argv = []
         if options and isinstance(options, list):
             argv.extend(options)
         argv.extend(self.defaultFormatOptions)
         if self._fsProfileSpecifier and self.fsprofile:
             argv.extend([self._fsProfileSpecifier, self.fsprofile])
+        if self.labelFormatOK(self.label):
+            argv.extend(self._labelfs.labelingArgs(self.label))
+        else:
+            log.warning("Could not create label (%s) on filesystem %s", self.label, self.type)
         argv.append(self.device)
         return argv
-    
+
     def doFormat(self, *args, **kwargs):
         """ Create the filesystem.
 
@@ -375,8 +385,6 @@ class FS(DeviceFormat):
         self.exists = True
         self.notifyKernel()
 
-        if self.label and self._labelfs:
-            self.writeLabel()
 
     @property
     def resizeArgs(self):
