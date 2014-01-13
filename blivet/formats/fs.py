@@ -842,7 +842,6 @@ class Ext2FS(FS):
     _linuxNative = True
     _maxSize = 8 * 1024 * 1024
     _minSize = 0
-    _defaultFormatOptions = []
     _defaultMountOptions = ["defaults"]
     _defaultCheckOptions = ["-f", "-p", "-C", "0"]
     _dump = True
