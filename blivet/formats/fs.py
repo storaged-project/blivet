@@ -627,7 +627,11 @@ class FS(DeviceFormat):
         if label == "":
             return None
         else:
-            return self._labelfs.extractLabel(label)
+            label = self._labelfs.extractLabel(label)
+            if label == "":
+                return None
+            else:
+                return label
 
     def writeLabel(self):
         """ Create a label for this filesystem.
