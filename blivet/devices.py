@@ -1254,7 +1254,7 @@ class PartitionDevice(StorageDevice):
         return d
 
     def _setTargetSize(self, newsize):
-        if newsize != self.currentSize:
+        if newsize != self.size:
             # change this partition's geometry in-memory so that other
             # partitioning operations can complete (e.g., autopart)
             self._targetSize = newsize
