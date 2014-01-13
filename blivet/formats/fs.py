@@ -653,9 +653,6 @@ class FS(DeviceFormat):
         if self.label and not self.labelFormatOK(self.label):
             raise FSError("bad label format for labelling application %s" % self._labelfs.name)
 
-        if not self.label and not self._labelfs.unsetsLabel:
-            raise FSError("application %s can not unset a filesystem label." % self._labelfs.name)
-
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
