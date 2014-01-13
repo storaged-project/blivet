@@ -50,6 +50,29 @@ class FSLabeling(object):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def labelingArgs(self, label):
+        """Returns the arguments for writing the label during filesystem
+           creation. These arguments are intended to be passed to the
+           appropriate mkfs application.
+
+           :param label: the label to use
+           :type label: str or None
+           :return: the arguments
+           :rtype: list of str
+        """
+        raise NotImplementedError
+
+    @abc.abstractproperty
+    def defaultLabel(self):
+        """Returns the default label for this filesystem, which will be used
+           if no label is specified.
+
+           :return: the default label
+           :rtype: str or None
+        """
+        raise NotImplementedError
+
 class Ext2FSLabeling(FSLabeling):
 
     @property
@@ -58,6 +81,13 @@ class Ext2FSLabeling(FSLabeling):
 
     def labelFormatOK(self, label):
         return len(label) < 17
+
+    def labelingArgs(self, label):
+        return ["-L", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return None
 
 class FATFSLabeling(FSLabeling):
 
@@ -68,6 +98,13 @@ class FATFSLabeling(FSLabeling):
     def labelFormatOK(self, label):
         return len(label) < 12
 
+    def labelingArgs(self, label):
+        return ["-n", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return "NO NAME"
+
 class JFSLabeling(FSLabeling):
 
     @property
@@ -76,6 +113,13 @@ class JFSLabeling(FSLabeling):
 
     def labelFormatOK(self, label):
         return len(label) < 17
+
+    def labelingArgs(self, label):
+        return ["-L", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return None
 
 class ReiserFSLabeling(FSLabeling):
 
@@ -86,6 +130,13 @@ class ReiserFSLabeling(FSLabeling):
     def labelFormatOK(self, label):
         return len(label) < 17
 
+    def labelingArgs(self, label):
+        return ["-l", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return None
+
 class XFSLabeling(FSLabeling):
 
     @property
@@ -94,3 +145,10 @@ class XFSLabeling(FSLabeling):
 
     def labelFormatOK(self, label):
         return ' ' not in label and len(label) < 13
+
+    def labelingArgs(self, label):
+        return ["-L", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return None
