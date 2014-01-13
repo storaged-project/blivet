@@ -93,10 +93,8 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
         an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
-            "can not unset a filesystem label",
-            an_fs.writeLabel)
-        self.assertEqual(an_fs.readLabel(), "temeraire")
+        self.assertIsNone(an_fs.writeLabel())
+        self.assertEqual(an_fs.readLabel(), an_fs.label)
 
         an_fs.label = "root___filesystem"
         self.assertRaisesRegexp(fs.FSError,
