@@ -356,9 +356,6 @@ class FS(DeviceFormat):
         if not self.mkfsProg:
             return
 
-        if self.exists:
-            return
-
         if not os.path.exists(self.device):
             raise FormatCreateError("device does not exist", self.device)
 
