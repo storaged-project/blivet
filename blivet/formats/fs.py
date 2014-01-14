@@ -1070,16 +1070,6 @@ class BTRFS(FS):
 
         return self.mount(*args, **kwargs)
 
-    def _getFormatOptions(self, options=None):
-        argv = []
-        if options and isinstance(options, list):
-            argv.extend(options)
-        argv.extend(self.defaultFormatOptions)
-        if self.label:
-            argv.extend(["-L", self.label])
-        argv.append(self.device)
-        return argv
-
     @property
     def resizeArgs(self):
         argv = ["-r", "%dm" % (self.targetSize,), self.device]
