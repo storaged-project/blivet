@@ -171,7 +171,14 @@ class FS(DeviceFormat):
 
     @classmethod
     def labelFormatOK(cls, label):
-        return cls._labelfs is not None and cls._labelfs.labelFormatOK(label)
+        """Return True if the label has an acceptable format for this
+           filesystem. None, which represents accepting the default for this
+           device, is always acceptable.
+
+           :param label: A possible label
+           :type label: str or None
+        """
+        return label is None or (cls._labelfs is not None and cls._labelfs.labelFormatOK(label))
 
     label = property(lambda s: s._getLabel(), lambda s,l: s._setLabel(l),
        doc="this filesystem's label")
@@ -342,7 +349,7 @@ class FS(DeviceFormat):
         argv.extend(self.defaultFormatOptions)
         if self._fsProfileSpecifier and self.fsprofile:
             argv.extend([self._fsProfileSpecifier, self.fsprofile])
-        if self.labelFormatOK(self.label):
+        if self.label is not None and self.labelFormatOK(self.label):
             argv.extend(self._labelfs.labelingArgs(self.label))
         else:
             log.warning("Could not create label (%s) on filesystem %s", self.label, self.type)
@@ -644,30 +651,28 @@ class FS(DeviceFormat):
         label = out.strip()
 
         if label == "":
-            return None
+            return ""
         else:
-            label = self._labelfs.labelApp.extractLabel(label)
-            if label == "":
-                return None
-            else:
-                return label
+            return self._labelfs.labelApp.extractLabel(label)
 
     def writeLabel(self):
         """Create a label on this filesystem.
 
-            If self.label is None,
-            1) write an empty label to the filesystem, OR
-            2) raise an FSError if the application can not write an empty label
+            If self.label is None, this means accept the default, so raise
+            an FSError in this case.
 
             Raises a FSError if the label can not be set.
         """
+        if self.label is None:
+            raise FSError("makes no sense to write a label when accepting default label")
+
         if not self.exists:
             raise FSError("filesystem has not been created")
 
         if not self._labelfs or not self._labelfs.labelApp:
             raise FSError("no application to set label for filesystem %s" % self.type)
 
-        if self.label and not self.labelFormatOK(self.label):
+        if not self.labelFormatOK(self.label):
             raise FSError("bad label format for labelling application %s" % self._labelfs.labelApp.name)
 
         if not os.path.exists(self.device):
