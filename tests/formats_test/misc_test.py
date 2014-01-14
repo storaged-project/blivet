@@ -40,6 +40,10 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.HFS.labelFormatOK(""))
         self.assertTrue(fs.HFS.labelFormatOK("".join(["n" for x in range(27)])))
 
+        # NTFS has a maximum length of 128
+        self.assertFalse(fs.NTFS.labelFormatOK("".join(["n" for x in range(129)])))
+        self.assertTrue(fs.NTFS.labelFormatOK("".join(["n" for x in range(128)])))
+
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
         for k, v  in device_formats.items():

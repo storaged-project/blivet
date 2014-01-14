@@ -211,3 +211,26 @@ class XFSAdmin(FSLabelApp):
 
     def _labelstrRegex(self):
         return r'label = "(?P<label>.*)"'
+
+class NTFSLabel(FSLabelApp):
+    """Application used by NTFS."""
+
+    @property
+    def name(self):
+        return "ntfslabel"
+
+    @property
+    def reads(self):
+        return True
+
+    def _writeLabelArgs(self, fs):
+        if fs.label:
+            return [fs.device, fs.label]
+        else:
+            return [fs.device, ""]
+
+    def _readLabelArgs(sefl, fs):
+        return [fs.device]
+
+    def _labelstrRegex(self):
+        return r'label = "(?P<label>.*)"'

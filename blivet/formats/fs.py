@@ -1339,7 +1339,9 @@ register_device_format(MacEFIFS)
 class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
+    _mkfs = "mkntfs"
     _resizefs = "ntfsresize"
+    _labelfs = fslabeling.NTFSLabeling()
     _fsck = "ntfsresize"
     _resizable = True
     _minSize = Size(en_spec="1 MiB")
