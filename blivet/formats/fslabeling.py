@@ -152,3 +152,19 @@ class XFSLabeling(FSLabeling):
     @property
     def defaultLabel(self):
         return None
+
+class HFSLabeling(FSLabeling):
+
+    @property
+    def labelApp(self):
+        return None
+
+    def labelFormatOK(self, label):
+        return ':' not in label and len(label) < 28 and len(label) > 0
+
+    def labelingArgs(self, label):
+        return ["-l", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return "Untitled"

@@ -1283,6 +1283,7 @@ class HFS(FS):
     _type = "hfs"
     _mkfs = "hformat"
     _modules = ["hfs"]
+    _labelfs = fslabeling.HFSLabeling()
     _formattable = True
     partedSystem = fileSystemType["hfs"]
 

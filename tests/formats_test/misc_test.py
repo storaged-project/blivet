@@ -34,6 +34,12 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.XFS.labelFormatOK("root file"))
         self.assertTrue(fs.XFS.labelFormatOK("root_filesys"))
 
+        #HFS has a maximum length of 27, minimum length of 1, and does not allow colons
+        self.assertFalse(fs.HFS.labelFormatOK("".join(["n" for x in range(28)])))
+        self.assertFalse(fs.HFS.labelFormatOK("root:file"))
+        self.assertFalse(fs.HFS.labelFormatOK(""))
+        self.assertTrue(fs.HFS.labelFormatOK("".join(["n" for x in range(27)])))
+
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
         for k, v  in device_formats.items():
@@ -237,6 +243,36 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertRaisesRegexp(fs.FSError,
            "bad label format",
            an_fs.writeLabel)
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testLabelingHFS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.HFS(device=_LOOP_DEV0, label="root___filesystem")
+        self.assertIsNone(an_fs.create())
+
+        self.assertRaisesRegexp(fs.FSError,
+           "no application to read label",
+           an_fs.readLabel)
+
+        an_fs.label = "an fs"
+        self.assertRaisesRegexp(fs.FSError,
+           "no application to set label for filesystem",
+           an_fs.writeLabel)
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testCreatingHFS(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.HFS(device=_LOOP_DEV0, label="start")
+        self.assertIsNone(an_fs.create())
+
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def testCreatingHFSNone(self):
+        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+
+        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label=None)
+        self.assertIsNone(an_fs.create())
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLabelingSwapSpace(self):
