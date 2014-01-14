@@ -46,16 +46,6 @@ class FSLabelApp(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def labelFormatOK(self, label):
-        """Returns True if this label is correctly formatted for this
-           filesystem labeling application, otherwise False.
-
-           :param str label: the label for this filesystem
-           :rtype: bool
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def _writeLabelArgs(self, fs):
         """Returns a list of the arguments for writing a label.
 
@@ -130,9 +120,6 @@ class E2Label(FSLabelApp):
         else:
             return [fs.device, ""]
 
-    def labelFormatOK(self, label):
-        return len(label) < 17
-
     def _readLabelArgs(self, fs):
         return [fs.device]
 
@@ -153,9 +140,6 @@ class DosFsLabel(FSLabelApp):
             return [fs.device, fs.label]
         else:
             return [fs.device, ""]
-
-    def labelFormatOK(self, label):
-        return len(label) < 12
 
     def _readLabelArgs(sefl, fs):
         return [fs.device]
@@ -178,9 +162,6 @@ class JFSTune(FSLabelApp):
         else:
             return ["-L", "", fs.device]
 
-    def labelFormatOK(self, label):
-        return len(label) < 17
-
     def _readLabelArgs(sefl, fs):
         raise NotImplementedError
 
@@ -202,9 +183,6 @@ class ReiserFSTune(FSLabelApp):
         else:
             return ["-l", "", fs.device]
 
-    def labelFormatOK(self, label):
-        return len(label) < 17
-
     def _readLabelArgs(self, fs):
         raise NotImplementedError
 
@@ -225,9 +203,6 @@ class XFSAdmin(FSLabelApp):
             return ["-L", fs.label, fs.device]
         else:
             return ["-L", "--", fs.device]
-
-    def labelFormatOK(self, label):
-        return ' ' not in label and len(label) < 13
 
     def _readLabelArgs(sefl, fs):
         return ["-l", fs.device]
