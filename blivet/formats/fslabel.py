@@ -22,6 +22,8 @@
 import abc
 import re
 
+from .. import errors
+
 class FSLabelApp(object):
     """An abstract class that represents actions associated with a
        filesystem's labeling application.
@@ -85,7 +87,7 @@ class FSLabelApp(object):
            Raises an FSError if this application can not read the label.
         """
         if not self.reads:
-            raise FSError("Application %s can not read the filesystem label." % self.name)
+            raise errors.FSError("Application %s can not read the filesystem label." % self.name)
         return [self.name] + self._readLabelArgs(fs)
 
     def extractLabel(self, labelstr):
@@ -99,10 +101,10 @@ class FSLabelApp(object):
            Raises an FSError if the label can not be extracted.
         """
         if not self.reads:
-            raise FSError("Unknown format for application %s" % self.name)
+            raise errors.FSError("Unknown format for application %s" % self.name)
         match = re.match(self._labelstrRegex(), labelstr)
         if match is None:
-            raise FSError("Unknown format for application %s" % self.name)
+            raise errors.FSError("Unknown format for application %s" % self.name)
         return match.group('label')
 
 class E2Label(FSLabelApp):
