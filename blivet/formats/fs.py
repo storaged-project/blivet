@@ -28,7 +28,7 @@ import sys
 import tempfile
 import selinux
 
-from . import fslabel
+from . import fslabeling
 from ..errors import *
 from . import DeviceFormat, register_device_format
 from .. import util
@@ -79,7 +79,7 @@ class FS(DeviceFormat):
     _mkfs = ""                           # mkfs utility
     _modules = []                        # kernel modules required for support
     _resizefs = ""                       # resize utility
-    _labelfs = None                      # labeling utility
+    _labelfs = None                      # labeling functionality
     _fsck = ""                           # fs check utility
     _fsckErrors = {}                     # fs check command error codes & msgs
     _infofs = ""                         # fs info utility
@@ -617,10 +617,10 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        if not self._labelfs or not self._labelfs.reads:
+        if not self._labelfs or not self._labelfs.labelApp or not self._labelfs.labelApp.reads:
             raise FSError("no application to read label for filesystem %s" % self.type)
 
-        (rc, out) = util.run_program_and_capture_output(self._labelfs.readLabelCommand(self))
+        (rc, out) = util.run_program_and_capture_output(self._labelfs.labelApp.readLabelCommand(self))
         if rc:
             raise FSError("read label failed")
 
@@ -629,7 +629,7 @@ class FS(DeviceFormat):
         if label == "":
             return None
         else:
-            label = self._labelfs.extractLabel(label)
+            label = self._labelfs.labelApp.extractLabel(label)
             if label == "":
                 return None
             else:
@@ -647,16 +647,16 @@ class FS(DeviceFormat):
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        if not self._labelfs:
+        if not self._labelfs or not self._labelfs.labelApp:
             raise FSError("no application to set label for filesystem %s" % self.type)
 
         if self.label and not self.labelFormatOK(self.label):
-            raise FSError("bad label format for labelling application %s" % self._labelfs.name)
+            raise FSError("bad label format for labelling application %s" % self._labelfs.labelApp.name)
 
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        rc = util.run_program(self._labelfs.setLabelCommand(self))
+        rc = util.run_program(self._labelfs.labelApp.setLabelCommand(self))
         if rc:
             raise FSError("label failed")
 
@@ -694,8 +694,8 @@ class FS(DeviceFormat):
 
             May be None if no such program exists.
         """
-        if self._labelfs:
-            return self._labelfs.name
+        if self._labelfs and self._labelfs.labelApp:
+            return self._labelfs.labelApp.name
         else:
             return None
 
@@ -828,7 +828,7 @@ class Ext2FS(FS):
     _mkfs = "mke2fs"
     _modules = ["ext2"]
     _resizefs = "resize2fs"
-    _labelfs = fslabel.E2Label()
+    _labelfs = fslabeling.Ext2FSLabeling()
     _fsck = "e2fsck"
     _fsckErrors = {4: _("File system errors left uncorrected."),
                    8: _("Operational error."),
@@ -991,7 +991,7 @@ class FATFS(FS):
     _type = "vfat"
     _mkfs = "mkdosfs"
     _modules = ["vfat"]
-    _labelfs = fslabel.DosFsLabel()
+    _labelfs = fslabeling.FATFSLabeling()
     _fsck = "dosfsck"
     _fsckErrors = {1: _("Recoverable errors have been detected or dosfsck has "
                         "discovered an internal inconsistency."),
@@ -1121,7 +1121,7 @@ class JFS(FS):
     _type = "jfs"
     _mkfs = "mkfs.jfs"
     _modules = ["jfs"]
-    _labelfs = fslabel.JFSTune()
+    _labelfs = fslabeling.JFSLabeling()
     _defaultFormatOptions = ["-q"]
     _maxLabelChars = 16
     _maxSize = 8 * 1024 * 1024
@@ -1152,7 +1152,7 @@ class ReiserFS(FS):
     _type = "reiserfs"
     _mkfs = "mkreiserfs"
     _resizefs = "resize_reiserfs"
-    _labelfs = fslabel.ReiserFSTune()
+    _labelfs = fslabeling.ReiserFSLabeling()
     _modules = ["reiserfs"]
     _defaultFormatOptions = ["-f", "-f"]
     _maxLabelChars = 16
@@ -1190,7 +1190,7 @@ class XFS(FS):
     _type = "xfs"
     _mkfs = "mkfs.xfs"
     _modules = ["xfs"]
-    _labelfs = fslabel.XFSAdmin()
+    _labelfs = fslabeling.XFSLabeling()
     _defaultFormatOptions = ["-f"]
     _maxLabelChars = 16
     _maxSize = 16 * 1024 * 1024 * 1024 * 1024
