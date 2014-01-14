@@ -56,8 +56,7 @@ class FSLabeling(object):
            creation. These arguments are intended to be passed to the
            appropriate mkfs application.
 
-           :param label: the label to use
-           :type label: str or None
+           :param str label: the label to use
            :return: the arguments
            :rtype: list of str
         """
@@ -69,7 +68,7 @@ class FSLabeling(object):
            if no label is specified.
 
            :return: the default label
-           :rtype: str or None
+           :rtype: str
         """
         raise NotImplementedError
 
@@ -83,11 +82,11 @@ class Ext2FSLabeling(FSLabeling):
         return len(label) < 17
 
     def labelingArgs(self, label):
-        return ["-L", label if label else ""]
+        return ["-L", label]
 
     @property
     def defaultLabel(self):
-        return None
+        return ""
 
 class FATFSLabeling(FSLabeling):
 
@@ -99,7 +98,7 @@ class FATFSLabeling(FSLabeling):
         return len(label) < 12
 
     def labelingArgs(self, label):
-        return ["-n", label if label else ""]
+        return ["-n", label]
 
     @property
     def defaultLabel(self):
@@ -115,11 +114,11 @@ class JFSLabeling(FSLabeling):
         return len(label) < 17
 
     def labelingArgs(self, label):
-        return ["-L", label if label else ""]
+        return ["-L", label]
 
     @property
     def defaultLabel(self):
-        return None
+        return ""
 
 class ReiserFSLabeling(FSLabeling):
 
@@ -131,11 +130,11 @@ class ReiserFSLabeling(FSLabeling):
         return len(label) < 17
 
     def labelingArgs(self, label):
-        return ["-l", label if label else ""]
+        return ["-l", label]
 
     @property
     def defaultLabel(self):
-        return None
+        return ""
 
 class XFSLabeling(FSLabeling):
 
@@ -147,11 +146,11 @@ class XFSLabeling(FSLabeling):
         return ' ' not in label and len(label) < 13
 
     def labelingArgs(self, label):
-        return ["-L", label if label else ""]
+        return ["-L", label]
 
     @property
     def defaultLabel(self):
-        return None
+        return ""
 
 class HFSLabeling(FSLabeling):
 
@@ -163,7 +162,7 @@ class HFSLabeling(FSLabeling):
         return ':' not in label and len(label) < 28 and len(label) > 0
 
     def labelingArgs(self, label):
-        return ["-l", label if label else ""]
+        return ["-l", label]
 
     @property
     def defaultLabel(self):
@@ -179,8 +178,8 @@ class NTFSLabeling(FSLabeling):
         return len(label) < 129
 
     def labelingArgs(self, label):
-        return ["-L", label if label else ""]
+        return ["-L", label]
 
     @property
     def defaultLabel(self):
-        return None
+        return ""

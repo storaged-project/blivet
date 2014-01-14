@@ -252,11 +252,14 @@ class DeviceFormat(ObjectID):
            :param label: the label for this format
            :type label: str or None
 
-           Note that some filesystems do not possess a label, so this method
-           always accept the value None for label as well as the empty string
-           which is considered to mean None.
+           None means no label specified, or in other words, accept the default
+           label that the filesystem app may set. Once the device exists the
+           label should not be None, as the device must then have some label
+           even if just the empty label.
 
-           Note also that some filesystems, even though they do not have a
+           "" means the empty label, i.e., no label.
+
+           Some filesystems, even though they do not have a
            labeling application may be already labeled, so we allow to set
            the label of a filesystem even if a labeling application does not
            exist. This can happen with the install media, for example, where
@@ -270,20 +273,18 @@ class DeviceFormat(ObjectID):
 
            This method is not intended to be overridden.
         """
-        if not label:
-            self._label = None
-        else:
-            self._label = label
+        self._label = label
 
     def _getLabel(self):
         """The label for this filesystem.
 
-           :return: the label for this filesystsm
+           :return: the label for this device
            :rtype: str
 
            This method is not intended to be overridden.
         """
         return self._label
+
     def _setOptions(self, options):
         self._options = options
 

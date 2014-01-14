@@ -55,6 +55,8 @@ class FSLabelApp(object):
 
            :return: the arguments
            :rtype: list of str
+
+           It can be assumed in this function that fs.label is a str.
         """
         raise NotImplementedError
 
@@ -64,7 +66,11 @@ class FSLabelApp(object):
            :param FS fs: a filesystem object
            :return: the command
            :rtype: list of str
+
+           Raises an exception if fs.label is None.
         """
+        if fs.label is None:
+            raise fs.FSError("makes no sense to write a label when accepting default label")
         return [self.name] + self._writeLabelArgs(fs)
 
     @abc.abstractmethod
@@ -117,10 +123,7 @@ class E2Label(FSLabelApp):
         return True
 
     def _writeLabelArgs(self, fs):
-        if fs.label:
-            return [fs.device, fs.label]
-        else:
-            return [fs.device, ""]
+        return [fs.device, fs.label]
 
     def _readLabelArgs(self, fs):
         return [fs.device]
@@ -138,10 +141,7 @@ class DosFsLabel(FSLabelApp):
         return True
 
     def _writeLabelArgs(self, fs):
-        if fs.label:
-            return [fs.device, fs.label]
-        else:
-            return [fs.device, ""]
+        return [fs.device, fs.label]
 
     def _readLabelArgs(sefl, fs):
         return [fs.device]
@@ -159,10 +159,7 @@ class JFSTune(FSLabelApp):
         return False
 
     def _writeLabelArgs(self, fs):
-        if fs.label:
-            return ["-L", fs.label, fs.device]
-        else:
-            return ["-L", "", fs.device]
+        return ["-L", fs.label, fs.device]
 
     def _readLabelArgs(sefl, fs):
         raise NotImplementedError
@@ -180,10 +177,7 @@ class ReiserFSTune(FSLabelApp):
         return False
 
     def _writeLabelArgs(self, fs):
-        if fs.label:
-            return ["-l", fs.label, fs.device]
-        else:
-            return ["-l", "", fs.device]
+        return ["-l", fs.label, fs.device]
 
     def _readLabelArgs(self, fs):
         raise NotImplementedError
@@ -201,10 +195,7 @@ class XFSAdmin(FSLabelApp):
         return True
 
     def _writeLabelArgs(self, fs):
-        if fs.label:
-            return ["-L", fs.label, fs.device]
-        else:
-            return ["-L", "--", fs.device]
+        return ["-L", fs.label if fs.label != "" else "--", fs.device]
 
     def _readLabelArgs(sefl, fs):
         return ["-l", fs.device]
@@ -224,10 +215,7 @@ class NTFSLabel(FSLabelApp):
         return True
 
     def _writeLabelArgs(self, fs):
-        if fs.label:
-            return [fs.device, fs.label]
-        else:
-            return [fs.device, ""]
+        return [fs.device, fs.label]
 
     def _readLabelArgs(sefl, fs):
         return [fs.device]

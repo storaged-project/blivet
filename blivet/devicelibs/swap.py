@@ -39,7 +39,7 @@ def mkswap(device, label=None):
     # We use -f to force since mkswap tends to refuse creation on lvs with
     # a message about erasing bootbits sectors on whole disks. Bah.
     argv = ["-f"]
-    if label:
+    if label is not None:
         argv.extend(["-L", label])
     argv.append(device)
 
