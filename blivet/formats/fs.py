@@ -1281,7 +1281,9 @@ register_device_format(HFSPlus)
 class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
+    _mkfs = "mkntfs"
     _resizefs = "ntfsresize"
+    _labelfs = fslabeling.NTFSLabeling()
     _fsck = "ntfsresize"
     _resizable = True
     _minSize = 1

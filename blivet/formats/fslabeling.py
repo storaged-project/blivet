@@ -168,3 +168,19 @@ class HFSLabeling(FSLabeling):
     @property
     def defaultLabel(self):
         return "Untitled"
+
+class NTFSLabeling(FSLabeling):
+
+    @property
+    def labelApp(self):
+        return fslabel.NTFSLabel()
+
+    def labelFormatOK(self, label):
+        return len(label) < 129
+
+    def labelingArgs(self, label):
+        return ["-L", label if label else ""]
+
+    @property
+    def defaultLabel(self):
+        return None
