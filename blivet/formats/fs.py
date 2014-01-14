@@ -161,6 +161,15 @@ class FS(DeviceFormat):
         return cls._labelfs is not None
 
     @classmethod
+    def relabels(cls):
+        """Returns True if it is possible to relabel this filesystem
+           after creation, otherwise False.
+
+           :rtype: bool
+        """
+        return cls._labelfs is not None and cls._labelfs.labelApp is not None
+
+    @classmethod
     def labelFormatOK(cls, label):
         return cls._labelfs is not None and cls._labelfs.labelFormatOK(label)
 
