@@ -4338,7 +4338,7 @@ class BTRFSDevice(StorageDevice):
     def __init__(self, *args, **kwargs):
         """ Passing None or no name means auto-generate one like btrfs.%d """
         if not args or not args[0]:
-            args = ("btrfs.%d" % Device._id,)
+            args = ("btrfs.%d" % Device.id,)
 
         if kwargs.get("parents") is None:
             raise ValueError("BTRFSDevice must have at least one parent")
