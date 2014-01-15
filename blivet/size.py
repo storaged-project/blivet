@@ -152,7 +152,7 @@ class Size(Decimal):
             raise SizeParamsError("only specify one parameter")
 
         if bytes is not None:
-            if type(bytes).__name__ in ["int", "long", "float", 'Decimal']:
+            if isinstance(bytes, (int, long, float, Decimal)):
                 value = Decimal(bytes)
             else:
                 raise ValueError("invalid value for bytes param")
