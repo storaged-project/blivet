@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.14
+Version: 0.18.15
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,25 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jan 14 2014 Brian C. Lane <bcl@redhat.com> - 0.18.15-1
+- Allow resetting partition size to current on-disk size. (dlehman)
+  Related: rhbz#918454
+  Related: rhbz#1029630
+- Fix shouldClear for devices with protected descendants. (dlehman)
+  Resolves: rhbz#902417
+- Handle nested btrfs subvolumes correctly. (dlehman)
+  Related: rhbz#1026210
+- Devices with non-existent formatting are resizable. (dlehman)
+  Resolves: rhbz#1029633
+- Always run action's cancel method as part of cancelAction. (dlehman)
+  Related: rhbz#1029630
+- Do not hide non-existent devices. (dlehman)
+  Resolves: rhbz#1029628
+- Fix handling of overcommitted thin pools in thinp factory. (dlehman)
+  Resolves: rhbz#1027376
+- Fix name checking for new thin lvs. (dlehman)
+  Resolves: rhbz#1027375
+
 * Fri Jan 10 2014 Brian C. Lane <bcl@redhat.com> - 0.18.14-1
 - Move label setter and getter into DeviceFormat class (amulhern)
   Related: rhbz#1038590
