@@ -3925,7 +3925,7 @@ class LoopDevice(StorageDevice):
 
         if not name:
             # set up a temporary name until we've activated the loop device
-            name = "tmploop%d" % Device._id
+            name = "tmploop%d" % Device.id
 
         StorageDevice.__init__(self, name, format=format, size=size,
                                exists=True, parents=parents)
