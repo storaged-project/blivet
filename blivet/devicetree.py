@@ -1135,6 +1135,15 @@ class DeviceTree(object):
                 for parent in device.parents:
                     parent.protected = True
 
+        # If we just added a multipath or fwraid disk that is in exclusiveDisks
+        # we have to make sure all of its members are in the list too.
+        mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
+        if device.isDisk and isinstance(device, mdclasses):
+            if device.name in self.exclusiveDisks:
+                for parent in device.parents:
+                    if parent.name not in self.exclusiveDisks:
+                        self.exclusiveDisks.append(parent.name)
+
         # Don't try to do format handling on drives without media or
         # if we didn't end up with a device somehow.
         if not device or not device.mediaPresent:
