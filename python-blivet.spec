@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.15
+Version: 0.18.16
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jan 16 2014 Brian C. Lane <bcl@redhat.com> - 0.18.16-1
+- iscsi: in installer automatically log into firmware iscsi targets (rvykydal)
+  Resolves: rhbz#1034291
+
 * Tue Jan 14 2014 Brian C. Lane <bcl@redhat.com> - 0.18.15-1
 - Allow resetting partition size to current on-disk size. (dlehman)
   Related: rhbz#918454
