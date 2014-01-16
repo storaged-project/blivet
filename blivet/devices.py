@@ -1709,7 +1709,7 @@ class PartitionDevice(StorageDevice):
             pass
         else:
             if partition.type == parted.PARTITION_FREESPACE:
-                maxPartSize = self.size + partition.getLength(unit="B")
+                maxPartSize = self.size + Size(bytes=partition.getLength(unit="B"))
 
         return min(self.format.maxSize, maxPartSize)
 

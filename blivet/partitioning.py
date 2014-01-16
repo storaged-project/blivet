@@ -137,7 +137,7 @@ def _schedulePartitions(storage, disks):
 
     free = Size(bytes=all_free[0].getLength(unit="B"))
     if len(all_free) > 1:
-        free += int(all_free[1].getLength(unit="B"))
+        free += Size(bytes=all_free[1].getLength(unit="B"))
 
     # The boot disk must be set at this point. See if any platform-specific
     # stage1 device we might allocate already exists on the boot disk.
