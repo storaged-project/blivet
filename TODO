@@ -1,7 +1,7 @@
-- Write and package docs
-- Write and package unit tests
-  - esp. Blivet.shouldClear
-- Example programs
+- Port to python3
+- More docs
+- More unit tests
+- More xample programs
 - optimize for large systems (>1000 block devices)
   - action sorting
   - clearpart?
@@ -16,10 +16,6 @@
   - disallow partitioning changes to disks with in-use partitions?
   - improve detection of active devices and associated error
     handling
-- raid level data type
-  - constants with string representations for all device types
-  - disk space function/method
-    - optional chunk size, member metadata size, &c
 - improve clarity of exceptions raised
 - btrfs
   - raid10 needs four disks
