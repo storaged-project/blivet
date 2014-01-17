@@ -344,12 +344,14 @@ class FS(DeviceFormat):
 
         return free
 
-    def _getFormatOptions(self, options=None):
+    def _getFormatOptions(self, options=None, do_labeling=False):
         """Get a list of format options to be used when creating the
            filesystem.
 
            :param options: any special options
            :type options: list of str or None
+           :param bool do_labeling: True if labeling during filesystem creation,
+             otherwise False
         """
         argv = []
         if options and isinstance(options, list):
@@ -357,7 +359,7 @@ class FS(DeviceFormat):
         argv.extend(self.defaultFormatOptions)
         if self._fsProfileSpecifier and self.fsprofile:
             argv.extend([self._fsProfileSpecifier, self.fsprofile])
-        if self.label is not None and self.labelFormatOK(self.label):
+        if do_labeling and self.label is not None and self.labelFormatOK(self.label):
             argv.extend(self._labelfs.labelingArgs(self.label))
         else:
             log.warning("Could not create label (%s) on filesystem %s", self.label, self.type)
@@ -388,7 +390,8 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FormatCreateError("device does not exist", self.device)
 
-        argv = self._getFormatOptions(options=options)
+        argv = self._getFormatOptions(options=options,
+           do_labeling=not self.relabels())
 
         try:
             ret = util.run_program([self.mkfsProg] + argv)
@@ -401,6 +404,11 @@ class FS(DeviceFormat):
         self.exists = True
         self.notifyKernel()
 
+        if self.label is not None or not self.relabels():
+            try:
+                self.writeLabel()
+            except FSError as e:
+                log.warning("Failed to write label (%s) for filesystem %s: %s", self.label, self.type, e)
 
     @property
     def resizeArgs(self):
