@@ -171,11 +171,9 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
     def testCreatingFATFS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
 
-        # for some reason mkdosfs capitalizes the flag when it sets it,
-        # while dosfslabel does not
         an_fs = fs.FATFS(device=_LOOP_DEV0, label="start")
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "START")
+        self.assertEqual(an_fs.readLabel(), "start")
 
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testCreatingFATFSNone(self):
