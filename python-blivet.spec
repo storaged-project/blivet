@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.35
+Version: 0.36
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,17 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 17 2014 Brian C. Lane <bcl@redhat.com> - 0.36-1
+- Update the TODO list. (dlehman)
+- Multipath, fwraid members need not be in exclusiveDisks. (#1032919) (dlehman)
+- Convert parted getLength values to Size (dshea)
+- Last of the Device._id -> Device.id (bcl)
+- iscsi: in installer automatically log into firmware iscsi targets (#1034291)
+  (rvykydal)
+- Use isinstance for testing numeric types (vpodzime)
+- Device._id -> Device.id (clumens)
+- Allow resetting partition size to current on-disk size. (#1040352) (dlehman)
+
 * Fri Jan 10 2014 Brian C. Lane <bcl@redhat.com> - 0.35-1
 - Convert everything to use Size. (dlehman)
 - Allow negative sizes. (dlehman)
