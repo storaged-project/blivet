@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.16
+Version: 0.18.17
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 17 2014 Brian C. Lane <bcl@redhat.com> - 0.18.17-1
+- Simplify calculation of vol size when adding a btrfs subvol. (dlehman)
+  Resolves: rhbz#1052439
+- Preparation for lv resize is a subset of that for lv destroy. (dlehman)
+  Resolves: rhbz#1029634
+
 * Thu Jan 16 2014 Brian C. Lane <bcl@redhat.com> - 0.18.16-1
 - iscsi: in installer automatically log into firmware iscsi targets (rvykydal)
   Resolves: rhbz#1034291
