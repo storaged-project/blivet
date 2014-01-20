@@ -87,6 +87,50 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(Size(spec="%s KiB" % (1/1025.0,)), Size(bytes=0))
         self.assertEquals(Size(spec="%s KiB" % (1/1023.0,)), Size(bytes=1))
 
+    def testTranslated(self):
+        import locale
+        import os
+        from blivet.i18n import _
+        import gettext
+
+        saved_lang = os.environ.get('LANG', None)
+
+        # es_ES uses latin-characters but a comma as the radix separator
+        # kk_KZ uses non-latin characters and is case-sensitive
+        # te_IN uses a lot of non-letter modifier characters
+        # fa_IR uses non-ascii digits, or would if python supported that, but
+        #       you know, just in case
+        test_langs = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
+
+        s = Size(spec="56.19 MiB")
+        for lang in test_langs:
+            os.environ['LANG'] = lang
+            locale.setlocale(locale.LC_ALL, '')
+
+            # Check English parsing
+            self.assertEquals(s, Size(spec="56.19 MiB"))
+
+            # Check native parsing
+            self.assertEquals(s, Size(spec="56.19 %s%s" % (_("Mi"), _("B"))))
+
+            # Check native parsing, all lowercase
+            self.assertEquals(s, Size(spec=("56.19 %s%s" % (_("Mi"), _("B"))).lower()))
+
+            # Check native parsing, all uppercase
+            self.assertEquals(s, Size(spec=("56.19 %s%s" % (_("Mi"), _("B"))).upper()))
+
+            # If the radix separator is not a period, repeat the tests with the
+            # native separator
+            radix = locale.nl_langinfo(locale.RADIXCHAR)
+            if radix != '.':
+                self.assertEquals(s, Size(spec="56%s19 MiB" % radix))
+                self.assertEquals(s, Size(spec="56%s19 %s%s" % (radix, _("Mi"), _("B"))))
+                self.assertEquals(s, Size(spec=("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
+                self.assertEquals(s, Size(spec=("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
+
+        os.environ['LANG'] = saved_lang
+        locale.setlocale(locale.LC_ALL, '')
+
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(SizeTestCase)
 

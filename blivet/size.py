@@ -20,6 +20,8 @@
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
 import re
+import string
+import locale
 from collections import namedtuple
 
 from decimal import Decimal
@@ -58,17 +60,39 @@ _binaryPrefix = [_Prefix(1024, N_("kibi"), N_("Ki")),
 _bytes = [N_('B'), N_('b'), N_('byte'), N_('bytes')]
 _prefixes = _binaryPrefix + _decimalPrefix
 
-def _makeSpecs(prefix, abbr):
+# Translated versions of the byte and prefix arrays
+# All strings are decoded as utf-8 so that locale-specific upper/lower functions work
+def _xlated_bytes():
+    return [_(b).decode("utf-8") for b in _bytes]
+
+def _xlated_prefixes():
+    return [_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
+            for p in _prefixes]
+
+_ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)
+def _lowerASCII(s):
+    """Convert a string to lowercase using only ASCII character definitions."""
+    return string.translate(s, _ASCIIlower_table)
+
+def _makeSpecs(prefix, abbr, xlate):
     """ Internal method used to generate a list of specifiers. """
     specs = []
 
     if prefix:
-        specs.append(prefix.lower() + _("byte"))
-        specs.append(prefix.lower() + _("bytes"))
+        if xlate:
+            specs.append(prefix.lower() + _("byte").decode("utf-8"))
+            specs.append(prefix.lower() + _("bytes").decode("utf-8"))
+        else:
+            specs.append(_lowerASCII(prefix) + "byte")
+            specs.append(_lowerASCII(prefix) + "bytes")
 
     if abbr:
-        specs.append(abbr.lower() + _("b"))
-        specs.append(abbr.lower())
+        if xlate:
+            specs.append(abbr.lower() + _("b").decode("utf-8"))
+            specs.append(abbr.lower())
+        else:
+            specs.append(_lowerASCII(abbr) + "b")
+            specs.append(_lowerASCII(abbr))
 
     return specs
 
@@ -77,11 +101,15 @@ def _parseSpec(spec):
     if not spec:
         raise ValueError("invalid size specification", spec)
 
-    # This regex isn't ideal, since \w matches both letters and digits,
-    # but python doesn't provide a means to match only Unicode letters.
-    # Probably the worst that will come of it is that bad specs will fail
-    # more confusingly.
-    m = re.match(r'(-?\s*[0-9.]+)\s*(\w*)$', spec.decode("utf-8").strip(), flags=re.UNICODE)
+    # Replace the localized radix character with a .
+    radix = locale.nl_langinfo(locale.RADIXCHAR)
+    if radix != '.':
+        spec = spec.replace(radix, '.')
+
+    # Match the string using only digit/space/not-space, since the
+    # string might be non-English and contain non-letter characters
+    # that Python doesn't understand as parts of words.
+    m = re.match(r'(-?\s*[0-9.]+)\s*([^\s]*)$', spec.strip())
     if not m:
         raise ValueError("invalid size specification", spec)
 
@@ -90,14 +118,45 @@ def _parseSpec(spec):
     except InvalidOperation:
         raise ValueError("invalid size specification", spec)
 
-    specifier = m.groups()[1].lower()
-    bytes_xlated = [_(b) for b in _bytes]
-    if not specifier or specifier in bytes_xlated:
+    # Only attempt to parse as English if all characters are ASCII
+    try:
+        specifier = m.groups()[1]
+
+        # This will raise UnicodeDecodeError if specifier contains non-ascii
+        # characters
+        specifier = specifier.decode("ascii")
+
+        # Convert back to a str type to match the _bytes and _prefixes arrays
+        specifier = str(specifier)
+
+        # Use the ASCII-only lowercase mapping
+        specifier = _lowerASCII(specifier)
+    except UnicodeDecodeError:
+        pass
+    else:
+        if specifier in _bytes or not specifier:
+            return size
+
+        for factor, prefix, abbr in _prefixes:
+            check = _makeSpecs(prefix, abbr, False)
+
+            if specifier in check:
+                return size * factor
+
+    specifier = m.groups()[1]
+
+    # No English match found, try localized size specs. Accept any utf-8
+    # character and leave the result as a unicode object.
+    specifier = specifier.decode("utf-8")
+    
+    # Use the locale-specific lowercasing
+    specifier = specifier.lower()
+
+    if specifier in _xlated_bytes():
         return size
 
-    prefixes_xlated = [_(p) for p in _prefixes]
-    for factor, prefix, abbr in prefixes_xlated:
-        check = _makeSpecs(prefix, abbr)
+    for factor, prefix, abbr in _xlated_prefixes():
+        check  = _makeSpecs(prefix, abbr, True)
 
         if specifier in check:
             return size * factor
@@ -196,13 +255,11 @@ class Size(Decimal):
         """
         spec = spec.lower()
 
-        bytes_xlated = [_(b) for b in _bytes]
-        if spec in bytes_xlated:
+        if spec in _bytes:
             return self
 
-        prefixes_xlated = [_(p) for p in _prefixes]
-        for factor, prefix, abbr in prefixes_xlated:
-            check = _makeSpecs(prefix, abbr)
+        for factor, prefix, abbr in _prefixes:
+            check = _makeSpecs(prefix, abbr, False)
 
             if spec in check:
                 return Decimal(self / Decimal(factor))
@@ -225,14 +282,15 @@ class Size(Decimal):
         if abs(Decimal(check)) < 1000:
             return "%s %s" % (check, _("B"))
 
-        prefixes_xlated = [_(p) for p in _prefixes]
-        for factor, prefix, abbr in prefixes_xlated:
+        for factor, prefix, abbr in _xlated_prefixes():
             newcheck = super(Size, self).__div__(Decimal(factor))
 
             if abs(newcheck) < 1000:
                 # nice value, use this factor, prefix and abbr
                 break
 
+        # Format the value with '.' as the decimal separator
+        # If necessary, substitute with a localized separator before returning
         if places is not None:
             newcheck_str = str(newcheck)
             retval = newcheck_str
@@ -248,9 +306,13 @@ class Size(Decimal):
                 if max_places == 0:
                     retval = whole
                 else:
-                    retval = "%s.%s" % (whole, fraction[:max_places])
+                    retval = "%s%s%s" % (whole, point, fraction[:max_places])
+
+        radix = locale.nl_langinfo(locale.RADIXCHAR)
+        if radix != '.':
+            retval = retval.replace('.', radix)
 
         if abbr:
-            return retval + " " + abbr + _("B")
+            return retval + " " + abbr + _("B").decode("utf-8")
         else:
-            return retval + " " + prefix + P_("byte", "bytes", newcheck)
+            return retval + " " + prefix + P_("byte", "bytes", newcheck).decode("utf-8")
