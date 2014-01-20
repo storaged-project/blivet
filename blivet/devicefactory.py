@@ -820,7 +820,7 @@ class PartitionFactory(DeviceFactory):
         if self.encrypted:
             min_format_size += getFormat("luks").minSize
 
-        return max(Size(en_spec="1MiB"), min_format_size)
+        return max(Size(spec="1MiB"), min_format_size)
 
     def _get_device_size(self):
         """ Return the factory device size including container limitations. """
@@ -958,7 +958,7 @@ class PartitionSetFactory(PartitionFactory):
             add_disks = self.disks
 
         # drop any new disks that don't have free space
-        min_free = min(Size(en_spec="500MiB"), self.parent_factory.size)
+        min_free = min(Size(spec="500MiB"), self.parent_factory.size)
         add_disks = [d for d in add_disks if d.partitioned and
                                              d.format.free >= min_free]
 

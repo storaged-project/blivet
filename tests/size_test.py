@@ -29,7 +29,7 @@ from blivet.size import Size, _prefixes
 class SizeTestCase(unittest.TestCase):
     def testExceptions(self):
         self.assertRaises(SizeParamsError, Size)
-        self.assertRaises(SizeParamsError, Size, bytes=500, en_spec="45GB")
+        self.assertRaises(SizeParamsError, Size, bytes=500, spec="45GB")
 
         zero = Size(bytes=0)
         self.assertEqual(zero, 0.0)
@@ -47,15 +47,15 @@ class SizeTestCase(unittest.TestCase):
 
         if prefix:
             u = "%sbytes" % prefix
-            s = Size(en_spec="%ld %s" % (bytes, u))
+            s = Size(spec="%ld %s" % (bytes, u))
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(en_spec=u), bytes)
+            self.assertEquals(s.convertTo(spec=u), bytes)
 
         if abbr:
             u = "%sb" % abbr
-            s = Size(en_spec="%ld %s" % (bytes, u))
+            s = Size(spec="%ld %s" % (bytes, u))
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(en_spec=u), bytes)
+            self.assertEquals(s.convertTo(spec=u), bytes)
 
         if not prefix and not abbr:
             s = Size(spec="%ld" % bytes)

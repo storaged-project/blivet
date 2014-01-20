@@ -137,10 +137,10 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
     if not quiet:
         log.info("Detected %s of memory", mem)
 
-    two_GiB = Size(en_spec="2GiB")
-    four_GiB = Size(en_spec="4GiB")
-    eight_GiB = Size(en_spec="8GiB")
-    sixtyfour_GiB = Size(en_spec="64 GiB")
+    two_GiB = Size(spec="2GiB")
+    four_GiB = Size(spec="4GiB")
+    eight_GiB = Size(spec="8GiB")
+    sixtyfour_GiB = Size(spec="64 GiB")
 
     #chart suggested in the discussion with other teams
     if mem < two_GiB:

@@ -38,8 +38,8 @@ class PPCPRePBoot(DeviceFormat):
     partedFlag = PARTITION_PREP
     _formattable = True                 # can be formatted
     _linuxNative = True                 # for clearpart
-    _maxSize = Size(en_spec="10 MiB")
-    _minSize = Size(en_spec="4 MiB")
+    _maxSize = Size(spec="10 MiB")
+    _minSize = Size(spec="4 MiB")
 
     def __init__(self, *args, **kwargs):
         """

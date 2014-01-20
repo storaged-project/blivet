@@ -399,15 +399,15 @@ def udev_device_get_vg_uuid(info):
 def udev_device_get_vg_size(info):
     # lvm's decmial precision is not configurable, so we tell it to use
     # KB.
-    return Size(en_spec="%s KiB" % info['LVM2_VG_SIZE'])
+    return Size(spec="%s KiB" % info['LVM2_VG_SIZE'])
 
 def udev_device_get_vg_free(info):
     # lvm's decmial precision is not configurable, so we tell it to use
     # KB.
-    return Size(en_spec="%s KiB" % info['LVM2_VG_FREE'])
+    return Size(spec="%s KiB" % info['LVM2_VG_FREE'])
 
 def udev_device_get_vg_extent_size(info):
-    return Size(en_spec="%s KiB" % info['LVM2_VG_EXTENT_SIZE'])
+    return Size(spec="%s KiB" % info['LVM2_VG_EXTENT_SIZE'])
 
 def udev_device_get_vg_extent_count(info):
     return int(info['LVM2_VG_EXTENT_COUNT'])
@@ -419,7 +419,7 @@ def udev_device_get_vg_pv_count(info):
     return int(info['LVM2_PV_COUNT'])
 
 def udev_device_get_pv_pe_start(info):
-    return Size(en_spec="%s KiB" % info['LVM2_PE_START'])
+    return Size(spec="%s KiB" % info['LVM2_PE_START'])
 
 def udev_device_get_lv_names(info):
     names = info['LVM2_LV_NAME']
@@ -444,7 +444,7 @@ def udev_device_get_lv_sizes(info):
     elif not isinstance(sizes, list):
         sizes = [sizes]
 
-    return [Size(en_spec="%s KiB" % s) for s in sizes]
+    return [Size(spec="%s KiB" % s) for s in sizes]
 
 def udev_device_get_lv_attr(info):
     attr = info['LVM2_LV_ATTR']

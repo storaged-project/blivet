@@ -1066,7 +1066,7 @@ class PartitionDevice(StorageDevice):
     """
     _type = "partition"
     _resizable = True
-    defaultSize = Size(en_spec="500MiB")
+    defaultSize = Size(spec="500MiB")
 
     def __init__(self, name, format=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
@@ -1491,7 +1491,7 @@ class PartitionDevice(StorageDevice):
         device = self.partedPartition.geometry.device.path
 
         # Erase 1MiB or to end of partition
-        count = Size(en_spec="1 MiB") / bs
+        count = Size(spec="1 MiB") / bs
         count = min(count, part_len)
 
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
@@ -1753,7 +1753,7 @@ class PartitionDevice(StorageDevice):
             data.size = int(self.req_base_size)
             data.grow = self.req_grow
             if self.req_grow:
-                data.maxSizeMB = int(self.req_max_size.convertTo(en_spec="mib"))
+                data.maxSizeMB = int(self.req_max_size.convertTo(spec="mib"))
 
             ##data.disk = self.disk.name                      # by-id
             if self.req_disks and len(self.req_disks) == 1:
@@ -2472,7 +2472,7 @@ class LVMVolumeGroupDevice(DMDevice):
         data.physvols = ["pv.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         if not self.exists:
-            data.pesize = self.peSize.convertTo(en_spec="KiB")
+            data.pesize = self.peSize.convertTo(spec="KiB")
 
         # reserved percent/space
 
@@ -2778,7 +2778,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             data.grow = self.req_grow
             if self.req_grow:
                 data.size = int(self.req_size)
-                data.maxSizeMB = self.req_max_size.convertTo(en_spec="mib")
+                data.maxSizeMB = self.req_max_size.convertTo(spec="mib")
             else:
                 data.size = int(self.size)
 
@@ -3857,8 +3857,8 @@ class FileDevice(StorageDevice):
         fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
         # all this fuss is so we write the zeros 1MiB at a time
         zero = "\0"
-        MiB = Size(en_spec="1 MiB")
-        count = int(self.size.convertTo(en_spec="MiB"))
+        MiB = Size(spec="1 MiB")
+        count = int(self.size.convertTo(spec="MiB"))
         rem = self.size % MiB
         for n in range(count):
             os.write(fd, zero * MiB)

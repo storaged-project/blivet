@@ -895,7 +895,7 @@ class Ext2FS(FS):
     _supported = True
     _resizable = True
     _linuxNative = True
-    _maxSize = Size(en_spec="8 TiB")
+    _maxSize = Size(spec="8 TiB")
     _minSize = Size(bytes=0)
     _defaultMountOptions = ["defaults"]
     _defaultCheckOptions = ["-f", "-p", "-C", "0"]
@@ -1028,7 +1028,7 @@ class Ext3FS(Ext2FS):
     # smaller than the default of 4096 bytes and therefore to make liars of us
     # with regard to this maximum filesystem size, but if they're doing such
     # things they should know the implications of their chosen block size.
-    _maxSize = Size(en_spec="16 TiB")
+    _maxSize = Size(spec="16 TiB")
 
     @property
     def needsFSCheck(self):
@@ -1059,7 +1059,7 @@ class FATFS(FS):
                    2: N_("Usage error.")}
     _supported = True
     _formattable = True
-    _maxSize = Size(en_spec="1 TiB")
+    _maxSize = Size(spec="1 TiB")
     _packages = [ "dosfstools" ]
     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
     # FIXME this should be fat32 in some cases
@@ -1081,7 +1081,7 @@ class EFIFS(FATFS):
     _mountType = "vfat"
     _modules = ["vfat"]
     _name = N_("EFI System Partition")
-    _minSize = Size(en_spec="50 MiB")
+    _minSize = Size(spec="50 MiB")
 
     @property
     def supported(self):
@@ -1101,8 +1101,8 @@ class BTRFS(FS):
     _maxLabelChars = 256
     _supported = True
     _packages = ["btrfs-progs"]
-    _minSize = Size(en_spec="256 MiB")
-    _maxSize = Size(en_spec="16 TiB")
+    _minSize = Size(spec="256 MiB")
+    _maxSize = Size(spec="16 TiB")
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # partedSystem = fileSystemType["btrfs"]
@@ -1148,7 +1148,7 @@ class BTRFS(FS):
 
     @property
     def resizeArgs(self):
-        argv = ["-r", "%dm" % (self.targetSize.convertTo(en_spec="MiB"),), self.device]
+        argv = ["-r", "%dm" % (self.targetSize.convertTo(spec="MiB"),), self.device]
         return argv
 
 register_device_format(BTRFS)
@@ -1190,7 +1190,7 @@ class JFS(FS):
     _labelfs = fslabeling.JFSLabeling()
     _defaultFormatOptions = ["-q"]
     _maxLabelChars = 16
-    _maxSize = Size(en_spec="8 TiB")
+    _maxSize = Size(spec="8 TiB")
     _formattable = True
     _linuxNative = True
     _supported = False
@@ -1222,7 +1222,7 @@ class ReiserFS(FS):
     _modules = ["reiserfs"]
     _defaultFormatOptions = ["-f", "-f"]
     _maxLabelChars = 16
-    _maxSize = Size(en_spec="16 TiB")
+    _maxSize = Size(spec="16 TiB")
     _formattable = True
     _linuxNative = True
     _supported = False
@@ -1245,7 +1245,7 @@ class ReiserFS(FS):
 
     @property
     def resizeArgs(self):
-        argv = ["-s", "%dM" % (self.targetSize.convertTo(en_spec="MiB"),), self.device]
+        argv = ["-s", "%dM" % (self.targetSize.convertTo(spec="MiB"),), self.device]
         return argv
 
 register_device_format(ReiserFS)
@@ -1259,7 +1259,7 @@ class XFS(FS):
     _labelfs = fslabeling.XFSLabeling()
     _defaultFormatOptions = ["-f"]
     _maxLabelChars = 16
-    _maxSize = Size(en_spec="16 EiB")
+    _maxSize = Size(spec="16 EiB")
     _formattable = True
     _linuxNative = True
     _supported = True
@@ -1307,8 +1307,8 @@ class AppleBootstrapFS(HFS):
     _type = "appleboot"
     _mountType = "hfs"
     _name = N_("Apple Bootstrap")
-    _minSize = Size(en_spec="768 KiB")
-    _maxSize = Size(en_spec="1 MiB")
+    _minSize = Size(spec="768 KiB")
+    _maxSize = Size(spec="1 MiB")
 
     @property
     def supported(self):
@@ -1327,8 +1327,8 @@ class HFSPlus(FS):
     _packages = ["hfsplus-tools"]
     _formattable = True
     _mountType = "hfsplus"
-    _minSize = Size(en_spec="1 MiB")
-    _maxSize = Size(en_spec="2 TiB")
+    _minSize = Size(spec="1 MiB")
+    _maxSize = Size(spec="2 TiB")
     _check = True
     partedSystem = fileSystemType["hfs+"]
 
@@ -1357,8 +1357,8 @@ class NTFS(FS):
     _labelfs = fslabeling.NTFSLabeling()
     _fsck = "ntfsresize"
     _resizable = True
-    _minSize = Size(en_spec="1 MiB")
-    _maxSize = Size(en_spec="16 TiB")
+    _minSize = Size(spec="1 MiB")
+    _maxSize = Size(spec="16 TiB")
     _defaultMountOptions = ["defaults", "ro"]
     _defaultCheckOptions = ["-c"]
     _packages = ["ntfsprogs"]
@@ -1393,7 +1393,7 @@ class NTFS(FS):
                     continue
                 try:
                     # ntfsresize uses SI unit prefixes
-                    minSize = Size(en_spec="%d mb" % l.split(":")[1].strip())
+                    minSize = Size(spec="%d mb" % l.split(":")[1].strip())
                 except (IndexError, ValueError) as e:
                     minSize = None
                     log.warning("Unable to parse output for minimum size on %s: %s" %(self.device, e))
@@ -1420,7 +1420,7 @@ class NTFS(FS):
         # You must supply at least two '-f' options to ntfsresize or
         # the proceed question will be presented to you.
         # ntfsresize uses SI unit prefixes
-        argv = ["-ff", "-s", "%dM" % self.targetSize.convertTo(en_spec="mb"),
+        argv = ["-ff", "-s", "%dM" % self.targetSize.convertTo(spec="mb"),
                 self.device]
         return argv
 
@@ -1558,9 +1558,9 @@ class TmpFS(NoDevFS):
         # and 16EB on 64 bit systems
         bits = arch.bits()
         if bits == 32:
-            self._maxSize = Size(en_spec="16TiB")
+            self._maxSize = Size(spec="16TiB")
         elif bits == 64:
-            self._maxSize = Size(en_spec="16EiB")
+            self._maxSize = Size(spec="16EiB")
         # if the architecture is other than 32 or 64 bit or unknown
         # just use the default maxsize, which is 0, this disables
         # resizing but other operations such as mounting should work fine
@@ -1576,7 +1576,7 @@ class TmpFS(NoDevFS):
             self._options = fsoptions
         if self._size:
             # absolute size for the tmpfs mount has been specified
-            self._size_option = "size=%dm" % self._size.convertTo(en_spec="MiB")
+            self._size_option = "size=%dm" % self._size.convertTo(spec="MiB")
         else:
             # if no size option is specified, the tmpfs mount size will be 50%
             # of system RAM by default
@@ -1664,7 +1664,7 @@ class TmpFS(NoDevFS):
         # the mount command
 
         # add the remount flag, size and any options
-        remount_options = 'remount,size=%dm' % self.targetSize.convertTo(en_spec="MiB")
+        remount_options = 'remount,size=%dm' % self.targetSize.convertTo(spec="MiB")
         # if any mount options are defined, append them
         if self._options:
             remount_options = "%s,%s" % (remount_options, self._options)
@@ -1684,7 +1684,7 @@ class TmpFS(NoDevFS):
             # update the size option string
             # -> please note that resizing always sets the
             # size of this tmpfs mount to an absolute value
-            self._size_option = "size=%dm" % self._size.convertTo(en_spec="MiB")
+            self._size_option = "size=%dm" % self._size.convertTo(spec="MiB")
 
 register_device_format(TmpFS)
 

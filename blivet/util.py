@@ -140,12 +140,12 @@ def total_memory():
     lines = open("/proc/meminfo").readlines()
     for line in lines:
         if line.startswith("MemTotal:"):
-            mem = Size(en_spec="%s KiB" % line.split()[1])
+            mem = Size(spec="%s KiB" % line.split()[1])
 
     # Because /proc/meminfo only gives us the MemTotal (total physical RAM
     # minus the kernel binary code), we need to round this up. Assuming
     # every machine has the total RAM MiB number divisible by 128. */
-    bs = Size(en_spec="128MiB")
+    bs = Size(spec="128MiB")
     mem = (mem / bs + 1) * bs
     return mem
 

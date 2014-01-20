@@ -135,7 +135,7 @@ class Platform(object):
 
     def setDefaultPartitioning(self):
         """Return the default platform-specific partitioning information."""
-        return [PartSpec(mountpoint="/boot", size=Size(en_spec="500MiB"),
+        return [PartSpec(mountpoint="/boot", size=Size(spec="500MiB"),
                          weight=self.weight(mountpoint="/boot"))]
 
     def weight(self, fstype=None, mountpoint=None):
@@ -166,7 +166,7 @@ class X86(Platform):
     def setDefaultPartitioning(self):
         """Return the default platform-specific partitioning information."""
         ret = Platform.setDefaultPartitioning(self)
-        ret.append(PartSpec(fstype="biosboot", size=Size(en_spec="1MiB"),
+        ret.append(PartSpec(fstype="biosboot", size=Size(spec="1MiB"),
                             weight=self.weight(fstype="biosboot")))
         return ret
 
@@ -195,7 +195,7 @@ class EFI(Platform):
     def setDefaultPartitioning(self):
         ret = Platform.setDefaultPartitioning(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="efi",
-                            size=Size(en_spec="20MiB"), maxSize=Size(en_spec="200MiB"),
+                            size=Size(spec="20MiB"), maxSize=Size(spec="200MiB"),
                             grow=True, weight=self.weight(fstype="efi")))
         return ret
 
@@ -217,7 +217,7 @@ class MacEFI(EFI):
     def setDefaultPartitioning(self):
         ret = Platform.setDefaultPartitioning(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="macefi",
-                            size=Size(en_spec="20MiB"), maxSize=Size(en_spec="200MiB"),
+                            size=Size(spec="20MiB"), maxSize=Size(spec="200MiB"),
                             grow=True, weight=self.weight(mountpoint="/boot/efi")))
         return ret
 
@@ -234,14 +234,14 @@ class PPC(Platform):
 
 class IPSeriesPPC(PPC):
     _boot_stage1_format_types = ["prepboot"]
-    _boot_stage1_max_end = Size(en_spec="4 GiB")
+    _boot_stage1_max_end = Size(spec="4 GiB")
     _boot_prep_description = N_("PReP Boot Partition")
     _boot_descriptions = {"partition": _boot_prep_description}
     _disklabel_types = ["msdos"]
 
     def setDefaultPartitioning(self):
         ret = PPC.setDefaultPartitioning(self)
-        ret.append(PartSpec(fstype="prepboot", size=Size(en_spec="4MiB"),
+        ret.append(PartSpec(fstype="prepboot", size=Size(spec="4MiB"),
                             weight=self.weight(fstype="prepboot")))
         return ret
 
@@ -263,7 +263,7 @@ class NewWorldPPC(PPC):
 
     def setDefaultPartitioning(self):
         ret = Platform.setDefaultPartitioning(self)
-        ret.append(PartSpec(fstype="appleboot", size=Size(en_spec="1MiB"),
+        ret.append(PartSpec(fstype="appleboot", size=Size(spec="1MiB"),
                             weight=self.weight(fstype="appleboot")))
         return ret
 
@@ -296,7 +296,7 @@ class S390(Platform):
 
     def setDefaultPartitioning(self):
         """Return the default platform-specific partitioning information."""
-        return [PartSpec(mountpoint="/boot", size=Size(en_spec="500MiB"),
+        return [PartSpec(mountpoint="/boot", size=Size(spec="500MiB"),
                          weight=self.weight(mountpoint="/boot"), lv=True,
                          singlePV=True)]
 
@@ -341,11 +341,11 @@ class omapARM(ARM):
     def setDefaultPartitioning(self):
         """Return the ARM-OMAP platform-specific partitioning information."""
         ret = [PartSpec(mountpoint="/boot/uboot", fstype="vfat",
-                        size=Size(en_spec="20MiB"), maxSize=Size(en_spec="200MiB"),
+                        size=Size(spec="20MiB"), maxSize=Size(spec="200MiB"),
                         grow=True,
                         weight=self.weight(fstype="vfat", mountpoint="/boot/uboot"))]
         ret.append(PartSpec(mountpoint="/", fstype="ext4",
-                            size=Size(en_spec="2GiB"), maxSize=Size(en_spec="3GiB"),
+                            size=Size(spec="2GiB"), maxSize=Size(spec="3GiB"),
                             weight=self.weight(mountpoint="/")))
         return ret
 

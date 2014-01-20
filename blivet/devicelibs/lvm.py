@@ -37,14 +37,14 @@ from ..i18n import _
 MAX_LV_SLOTS = 256
 
 # some of lvm's defaults that we have no way to ask it for
-LVM_PE_START = Size(en_spec="1 MiB")
-LVM_PE_SIZE = Size(en_spec="4 MiB")
+LVM_PE_START = Size(spec="1 MiB")
+LVM_PE_SIZE = Size(spec="4 MiB")
 
 # thinp constants
-LVM_THINP_MIN_METADATA_SIZE = Size(en_spec="2 MiB")
-LVM_THINP_MAX_METADATA_SIZE = Size(en_spec="16 GiB")
-LVM_THINP_MIN_CHUNK_SIZE = Size(en_spec="64 KiB")
-LVM_THINP_MAX_CHUNK_SIZE = Size(en_spec="1 GiB")
+LVM_THINP_MIN_METADATA_SIZE = Size(spec="2 MiB")
+LVM_THINP_MAX_METADATA_SIZE = Size(spec="16 GiB")
+LVM_THINP_MIN_CHUNK_SIZE = Size(spec="64 KiB")
+LVM_THINP_MAX_CHUNK_SIZE = Size(spec="1 GiB")
 
 def has_lvm():
     if util.find_program_in_path("lvm"):
@@ -126,8 +126,8 @@ def getPossiblePhysicalExtents():
     """
 
     possiblePE = []
-    curpe = Size(en_spec="1 KiB")
-    while curpe <= Size(en_spec="16 GiB"):
+    curpe = Size(spec="1 KiB")
+    while curpe <= Size(spec="16 GiB"):
 	possiblePE.append(curpe)
 	curpe = curpe * 2
 
@@ -136,9 +136,9 @@ def getPossiblePhysicalExtents():
 def getMaxLVSize():
     """ Return the maximum size of a logical volume. """
     if arch.getArch() in ("x86_64", "ppc64", "alpha", "ia64", "s390"): #64bit architectures
-        return Size(en_spec="8 EiB")
+        return Size(spec="8 EiB")
     else:
-        return Size(en_spec="16 TiB")
+        return Size(spec="16 TiB")
 
 def clampSize(size, pesize, roundup=None):
     delta = size % pesize
@@ -229,7 +229,7 @@ def pvcreate(device):
 
 def pvresize(device, size):
     args = ["pvresize"] + \
-            ["--setphysicalvolumesize", ("%dm" % size.convertTo(en_spec="mib"))] + \
+            ["--setphysicalvolumesize", ("%dm" % size.convertTo(spec="mib"))] + \
             _getConfigArgs() + \
             [device]
 
@@ -294,7 +294,7 @@ def pvinfo(device):
 def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
     if pe_size:
-        argv.extend(["-s", "%dm" % pe_size.convertTo(en_spec="mib")])
+        argv.extend(["-s", "%dm" % pe_size.convertTo(spec="mib")])
     argv.extend(_getConfigArgs())
     argv.append(vg_name)
     argv.extend(pv_list)
@@ -408,7 +408,7 @@ def lvorigin(vg_name, lv_name):
 
 def lvcreate(vg_name, lv_name, size, pvs=[]):
     args = ["lvcreate"] + \
-            ["-L", "%dm" % size.convertTo(en_spec="mib")] + \
+            ["-L", "%dm" % size.convertTo(spec="mib")] + \
             ["-n", lv_name] + \
             _getConfigArgs() + \
             [vg_name] + pvs
@@ -430,7 +430,7 @@ def lvremove(vg_name, lv_name):
 
 def lvresize(vg_name, lv_name, size):
     args = ["lvresize"] + \
-            ["--force", "-L", "%dm" % size.convertTo(en_spec="mib")] + \
+            ["--force", "-L", "%dm" % size.convertTo(spec="mib")] + \
             _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
@@ -462,15 +462,15 @@ def lvdeactivate(vg_name, lv_name):
 
 def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, lv_name),
-            "--size", "%dm" % size.convertTo(en_spec="mib")]
+            "--size", "%dm" % size.convertTo(spec="mib")]
 
     if metadatasize:
         # default unit is MiB
-        args += ["--poolmetadatasize", "%d" % metadatasize.convertTo(en_spec="mib")]
+        args += ["--poolmetadatasize", "%d" % metadatasize.convertTo(spec="mib")]
 
     if chunksize:
         # default unit is KiB
-        args += ["--chunksize", "%d" % chunksize.convertTo(en_spec="kib")]
+        args += ["--chunksize", "%d" % chunksize.convertTo(spec="kib")]
 
     args += _getConfigArgs()
 

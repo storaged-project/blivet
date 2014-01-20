@@ -19,9 +19,9 @@ from blivet.size import Size
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
-disk1_file = create_sparse_file(b, "disk1", Size(en_spec="100GiB"))
+disk1_file = create_sparse_file(b, "disk1", Size(spec="100GiB"))
 b.config.diskImages["disk1"] = disk1_file
-disk2_file = create_sparse_file(b, "disk2", Size(en_spec="100GiB"))
+disk2_file = create_sparse_file(b, "disk2", Size(spec="100GiB"))
 b.config.diskImages["disk2"] = disk2_file
 
 b.reset()
@@ -35,19 +35,19 @@ try:
 
     # new partition on either disk1 or disk2 with base size 10GiB and growth
     # up to a maximum size of 50GiB
-    dev = b.newPartition(size=Size(en_spec="10MiB"), maxsize=Size(en_spec="50GiB"),
+    dev = b.newPartition(size=Size(spec="10MiB"), maxsize=Size(spec="50GiB"),
                          grow=True, parents=[disk1, disk2])
     b.createDevice(dev)
 
     # new partition on disk1 with base size 5GiB and unbounded growth and an
     # ext4 filesystem
-    dev = b.newPartition(fmt_type="ext4", size=Size(en_spec="5GiB"), grow=True,
+    dev = b.newPartition(fmt_type="ext4", size=Size(spec="5GiB"), grow=True,
                          parents=[disk1])
     b.createDevice(dev)
 
     # new partition on any suitable disk with a fixed size of 2GiB formatted
     # as swap space
-    dev = b.newPartition(fmt_type="swap", size=Size(en_spec="2GiB"))
+    dev = b.newPartition(fmt_type="swap", size=Size(spec="2GiB"))
     b.createDevice(dev)
 
     # allocate the partitions (decide where and on which disks they'll reside)

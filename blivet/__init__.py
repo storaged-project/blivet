@@ -1643,7 +1643,7 @@ class Blivet(object):
 
         if not swaps:
             installed = util.total_memory()
-            required = Size(en_spec="%s KiB" % isys.EARLY_SWAP_RAM)
+            required = Size(spec="%s KiB" % isys.EARLY_SWAP_RAM)
 
             if installed < required:
                 errors.append(_("You have not specified a swap partition.  "

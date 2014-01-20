@@ -36,8 +36,8 @@ class BIOSBoot(DeviceFormat):
     partedFlag = PARTITION_BIOS_GRUB
     _formattable = True                 # can be formatted
     _linuxNative = True                 # for clearpart
-    _maxSize = Size(en_spec="2 MiB")
-    _minSize = Size(en_spec="512 KiB")
+    _maxSize = Size(spec="2 MiB")
+    _minSize = Size(spec="512 KiB")
 
     def __init__(self, *args, **kwargs):
         """

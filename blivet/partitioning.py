@@ -584,7 +584,7 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
             continue
 
         if boot:
-            max_boot = Size(en_spec="2 TiB")
+            max_boot = Size(spec="2 TiB")
             free_start = Size(bytes=(free_geom.start * disk.device.sectorSize))
             req_end = free_start + req_size
             if req_end > max_boot:
@@ -1615,7 +1615,7 @@ class DiskChunk(Chunk):
 
         # 2TB limit on bootable partitions, regardless of disklabel
         if req.device.req_bootable:
-            max_boot = sizeToSectors(Size(en_spec="2 TiB"), self.sectorSize)
+            max_boot = sizeToSectors(Size(spec="2 TiB"), self.sectorSize)
             limits.append(max_boot - req_end)
 
         # request-specific maximum (see Request.__init__, above, for details)
