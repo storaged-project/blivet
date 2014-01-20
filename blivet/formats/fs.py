@@ -26,7 +26,6 @@ import math
 import os
 import sys
 import tempfile
-import selinux
 
 from . import fslabeling
 from ..errors import *
@@ -43,11 +42,6 @@ log = logging.getLogger("blivet")
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
-
-try:
-    lost_and_found_context = selinux.matchpathcon("/lost+found", 0)[1]
-except OSError:
-    lost_and_found_context = None
 
 # these are for converting to/from SI for ntfsresize
 mb = 1000 * 1000.0
@@ -602,10 +596,11 @@ class FS(DeviceFormat):
 
         if flags.selinux and "ro" not in options.split(","):
             ret = util.reset_file_context(mountpoint, chroot)
-            log.info("set SELinux context for newly mounted filesystem "
-                     "root at %s to %s" %(mountpoint, ret))
-            util.set_file_context("%s/lost+found" % mountpoint,
-                               lost_and_found_context, chroot)
+            log.info("set SELinux context for newly mounted filesystem root at %s to %s", mountpoint, ret)
+            lost_and_found_context = util.match_path_context("/lost+found")
+            lost_and_found_path = os.path.join(mountpoint, "lost+found")
+            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
+            log.info("set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
         self._mountpoint = chrootedMountpoint
 
