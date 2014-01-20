@@ -1138,7 +1138,7 @@ class DeviceTree(object):
         # If we just added a multipath or fwraid disk that is in exclusiveDisks
         # we have to make sure all of its members are in the list too.
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
-        if device.isDisk and isinstance(device, mdclasses):
+        if device and device.isDisk and isinstance(device, mdclasses):
             if device.name in self.exclusiveDisks:
                 for parent in device.parents:
                     if parent.name not in self.exclusiveDisks:
