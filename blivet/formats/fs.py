@@ -582,10 +582,6 @@ class FS(DeviceFormat):
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
         util.makedirs(chrootedMountpoint)
-        if flags.selinux:
-            ret = util.reset_file_context(mountpoint, chroot)
-            log.info("set SELinux context for mountpoint %s to %s" \
-                     % (mountpoint, ret))
 
         # passed in options override default options
         if not options or not isinstance(options, str):
