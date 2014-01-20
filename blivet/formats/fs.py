@@ -594,7 +594,7 @@ class FS(DeviceFormat):
         if rc:
             raise FSError("mount failed: %s" % rc)
 
-        if flags.selinux and "ro" not in options.split(","):
+        if flags.selinux and "ro" not in options.split(",") and flags.installer_mode:
             ret = util.reset_file_context(mountpoint, chroot)
             log.info("set SELinux context for newly mounted filesystem root at %s to %s", mountpoint, ret)
             lost_and_found_context = util.match_path_context("/lost+found")
