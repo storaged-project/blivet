@@ -20,6 +20,7 @@
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
 import re
+from collections import namedtuple
 
 from decimal import Decimal
 from decimal import InvalidOperation
@@ -29,31 +30,35 @@ from errors import *
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
+N_ = lambda x: x
+
+# Container for size unit prefix information
+_Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_decimalPrefix = [(1000, _("kilo"), _("k")),
-                  (1000**2, _("mega"), _("M")),
-                  (1000**3, _("giga"), _("G")),
-                  (1000**4, _("tera"), _("T")),
-                  (1000**5, _("peta"), _("P")),
-                  (1000**6, _("exa"), _("E")),
-                  (1000**7, _("zetta"), _("Z")),
-                  (1000**8, _("yotta"), _("Y"))]
+_decimalPrefix = [_Prefix(1000, N_("kilo"), N_("k")),
+                  _Prefix(1000**2, N_("mega"), N_("M")),
+                  _Prefix(1000**3, N_("giga"), N_("G")),
+                  _Prefix(1000**4, N_("tera"), N_("T")),
+                  _Prefix(1000**5, N_("peta"), N_("P")),
+                  _Prefix(1000**6, N_("exa"), N_("E")),
+                  _Prefix(1000**7, N_("zetta"), N_("Z")),
+                  _Prefix(1000**8, N_("yotta"), N_("Y"))]
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_binaryPrefix = [(1024, _("kibi"), _("Ki")),
-                 (1024**2, _("mebi"), _("Mi")),
-                 (1024**3, _("gibi"), _("Gi")),
-                 (1024**4, _("tebi"), None),
-                 (1024**5, _("pebi"), None),
-                 (1024**6, _("ebi"), None),
-                 (1024**7, _("zebi"), None),
-                 (1024**8, _("yobi"), None)]
+_binaryPrefix = [_Prefix(1024, N_("kibi"), N_("Ki")),
+                 _Prefix(1024**2, N_("mebi"), N_("Mi")),
+                 _Prefix(1024**3, N_("gibi"), N_("Gi")),
+                 _Prefix(1024**4, N_("tebi"), None),
+                 _Prefix(1024**5, N_("pebi"), None),
+                 _Prefix(1024**6, N_("ebi"), None),
+                 _Prefix(1024**7, N_("zebi"), None),
+                 _Prefix(1024**8, N_("yobi"), None)]
 
-_bytes = [_('b'), _('byte'), _('bytes')]
+_bytes = [N_('b'), N_('byte'), N_('bytes')]
 _prefixes = _decimalPrefix + _binaryPrefix
 
 def _makeSpecs(prefix, abbr):
