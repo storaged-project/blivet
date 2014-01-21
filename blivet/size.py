@@ -20,6 +20,7 @@
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
 import re
+from collections import namedtuple
 
 from decimal import Decimal
 from decimal import InvalidOperation
@@ -28,28 +29,31 @@ from decimal import ROUND_DOWN
 from errors import *
 from i18n import _, P_, N_
 
+# Container for size unit prefix information
+_Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
+
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_decimalPrefix = [(1000, N_("kilo"), N_("k")),
-                  (1000**2, N_("mega"), N_("M")),
-                  (1000**3, N_("giga"), N_("G")),
-                  (1000**4, N_("tera"), N_("T")),
-                  (1000**5, N_("peta"), N_("P")),
-                  (1000**6, N_("exa"), N_("E")),
-                  (1000**7, N_("zetta"), N_("Z")),
-                  (1000**8, N_("yotta"), N_("Y"))]
+_decimalPrefix = [_Prefix(1000, N_("kilo"), N_("k")),
+                  _Prefix(1000**2, N_("mega"), N_("M")),
+                  _Prefix(1000**3, N_("giga"), N_("G")),
+                  _Prefix(1000**4, N_("tera"), N_("T")),
+                  _Prefix(1000**5, N_("peta"), N_("P")),
+                  _Prefix(1000**6, N_("exa"), N_("E")),
+                  _Prefix(1000**7, N_("zetta"), N_("Z")),
+                  _Prefix(1000**8, N_("yotta"), N_("Y"))]
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_binaryPrefix = [(1024, N_("kibi"), N_("Ki")),
-                 (1024**2, N_("mebi"), N_("Mi")),
-                 (1024**3, N_("gibi"), N_("Gi")),
-                 (1024**4, N_("tebi"), N_("Ti")),
-                 (1024**5, N_("pebi"), N_("Pi")),
-                 (1024**6, N_("exbi"), N_("Ei")),
-                 (1024**7, N_("zebi"), N_("Zi")),
-                 (1024**8, N_("yobi"), N_("Yi"))]
+_binaryPrefix = [_Prefix(1024, N_("kibi"), N_("Ki")),
+                 _Prefix(1024**2, N_("mebi"), N_("Mi")),
+                 _Prefix(1024**3, N_("gibi"), N_("Gi")),
+                 _Prefix(1024**4, N_("tebi"), N_("Ti")),
+                 _Prefix(1024**5, N_("pebi"), N_("Pi")),
+                 _Prefix(1024**6, N_("exbi"), N_("Ei")),
+                 _Prefix(1024**7, N_("zebi"), N_("Zi")),
+                 _Prefix(1024**8, N_("yobi"), N_("Yi"))]
 
 _bytes = [N_('B'), N_('b'), N_('byte'), N_('bytes')]
 _prefixes = _binaryPrefix + _decimalPrefix
