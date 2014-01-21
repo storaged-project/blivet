@@ -3925,7 +3925,7 @@ class LoopDevice(StorageDevice):
 
         if not name:
             # set up a temporary name until we've activated the loop device
-            name = "tmploop%d" % Device.id
+            name = "tmploop%d" % self.id
 
         StorageDevice.__init__(self, name, format=format, size=size,
                                exists=True, parents=parents)
@@ -4338,7 +4338,7 @@ class BTRFSDevice(StorageDevice):
     def __init__(self, *args, **kwargs):
         """ Passing None or no name means auto-generate one like btrfs.%d """
         if not args or not args[0]:
-            args = ("btrfs.%d" % Device.id,)
+            args = ("btrfs.%d" % self.id,)
 
         if kwargs.get("parents") is None:
             raise ValueError("BTRFSDevice must have at least one parent")

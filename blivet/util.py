@@ -345,10 +345,13 @@ class ObjectID(object):
 
        The name of the identifier property is id, its type is int.
 
-       The constructor always sets object_id to a new value which is unique
-       for the object type.
+       The id is set during creation of the class instance to a new value
+       which is unique for the object type. Subclasses can use self.id during
+       __init__.
     """
     _newid_gen = itertools.count().next
 
-    def __init__(self):
+    def __new__(cls, *args, **kwargs):
+        self = super(ObjectID, cls).__new__(cls, *args, **kwargs)
         self.id = self._newid_gen()
+        return self
