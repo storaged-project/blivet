@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.17
+Version: 0.18.18
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,55 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jan 20 2014 Brian C. Lane <bcl@redhat.com> - 0.18.18-1
+- Fall back on relabeling app where available (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Change the meaning of label field values (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Enable labeling on NTFS filesystem (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Enable labeling on HFS filesystem (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Add a method that indicates ability to relabel (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Use filesystem creation app to set filesystem label (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Import errors so FSError name is resolved (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Remove BTRFS._getFormatOptions (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Make an additional class for labeling abstractions (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Fix copyright date (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Remove redundant _defaultFormatOptions field (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Remove code about unsetting a label (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Return None if the filesystem has no label (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Removed redundant check for existance of filesystem (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Have writeLabel throw a more informative exception (amulhern)
+  Related: rhbz#1038590
+  Resolves: rhbz#1038590
+- Clear whole-disk formatting before initializing disks. (dlehman)
+  Resolves: rhbz#1052442
+
 * Fri Jan 17 2014 Brian C. Lane <bcl@redhat.com> - 0.18.17-1
 - Simplify calculation of vol size when adding a btrfs subvol. (dlehman)
   Resolves: rhbz#1052439
