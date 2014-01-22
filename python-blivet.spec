@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.18
+Version: 0.18.19
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,31 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jan 22 2014 Brian C. Lane <bcl@redhat.com> - 0.18.19-1
+- Only do SELinux context resets if in installer mode (amulhern)
+  Related: rhbz#1038146
+  Resolves: rhbz#1038146
+- Look up SELinux context for lost+found where it is needed (amulhern)
+  Resolves: rhbz#1038146
+- Don't reset the SELinux context before the filesystem is mounted (amulhern)
+  Related: rhbz#1038146
+  Resolves: rhbz#1038146
+- Test setting selinux context on lost+found (amulhern)
+  Related: rhbz#1038146
+  Resolves: rhbz#1038146
+- fcoe: add fcoe=<NIC>:<EDB> to boot options for nics added manually (rvykydal)
+  Related: rhbz#1040215
+- Only retrieve the unit specifier once (dshea)
+  Related: rhbz#1039485
+- Accept both English and localized sizes in Size specs. (dshea)
+  Related: rhbz#1039485
+- Use a namedtuple to store information on unit prefixes (dshea)
+  Related: rhbz#1039485
+- Catch any exception raised by findExistingInstallations. (dlehman)
+  Resolves: rhbz#1052454
+- Multipath, fwraid members need not be in exclusiveDisks. (dlehman)
+  Resolves: rhbz#1032919
+
 * Mon Jan 20 2014 Brian C. Lane <bcl@redhat.com> - 0.18.18-1
 - Fall back on relabeling app where available (amulhern)
   Related: rhbz#1038590

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-20 17:13-0800\n"
+"POT-Creation-Date: 2014-01-22 08:25-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -166,129 +166,129 @@ msgstr ""
 #. Decimal prefixes for different size increments, along with the name
 #. and accepted abbreviation for the prefix.  These prefixes are all
 #. for 'bytes'.
-#: ../blivet/size.py:36
+#: ../blivet/size.py:43
 msgid "kilo"
 msgstr ""
 
-#: ../blivet/size.py:36
+#: ../blivet/size.py:43
 msgid "k"
 msgstr ""
 
-#: ../blivet/size.py:37
+#: ../blivet/size.py:44
 msgid "mega"
 msgstr ""
 
-#: ../blivet/size.py:37
+#: ../blivet/size.py:44
 msgid "M"
 msgstr ""
 
-#: ../blivet/size.py:38
+#: ../blivet/size.py:45
 msgid "giga"
 msgstr ""
 
-#: ../blivet/size.py:38
+#: ../blivet/size.py:45
 msgid "G"
 msgstr ""
 
-#: ../blivet/size.py:39
+#: ../blivet/size.py:46
 msgid "tera"
 msgstr ""
 
-#: ../blivet/size.py:39
+#: ../blivet/size.py:46
 msgid "T"
 msgstr ""
 
-#: ../blivet/size.py:40
+#: ../blivet/size.py:47
 msgid "peta"
 msgstr ""
 
-#: ../blivet/size.py:40
+#: ../blivet/size.py:47
 msgid "P"
 msgstr ""
 
-#: ../blivet/size.py:41
+#: ../blivet/size.py:48
 msgid "exa"
 msgstr ""
 
-#: ../blivet/size.py:41
+#: ../blivet/size.py:48
 msgid "E"
 msgstr ""
 
-#: ../blivet/size.py:42
+#: ../blivet/size.py:49
 msgid "zetta"
 msgstr ""
 
-#: ../blivet/size.py:42
+#: ../blivet/size.py:49
 msgid "Z"
 msgstr ""
 
-#: ../blivet/size.py:43
+#: ../blivet/size.py:50
 msgid "yotta"
 msgstr ""
 
-#: ../blivet/size.py:43
+#: ../blivet/size.py:50
 msgid "Y"
 msgstr ""
 
 #. Binary prefixes for the different size increments.  Same structure
 #. as the above list.
-#: ../blivet/size.py:47
+#: ../blivet/size.py:54
 msgid "kibi"
 msgstr ""
 
-#: ../blivet/size.py:47
+#: ../blivet/size.py:54
 msgid "Ki"
 msgstr ""
 
-#: ../blivet/size.py:48
+#: ../blivet/size.py:55
 msgid "mebi"
 msgstr ""
 
-#: ../blivet/size.py:48
+#: ../blivet/size.py:55
 msgid "Mi"
 msgstr ""
 
-#: ../blivet/size.py:49
+#: ../blivet/size.py:56
 msgid "gibi"
 msgstr ""
 
-#: ../blivet/size.py:49
+#: ../blivet/size.py:56
 msgid "Gi"
 msgstr ""
 
-#: ../blivet/size.py:50
+#: ../blivet/size.py:57
 msgid "tebi"
 msgstr ""
 
-#: ../blivet/size.py:51
+#: ../blivet/size.py:58
 msgid "pebi"
 msgstr ""
 
-#: ../blivet/size.py:52
+#: ../blivet/size.py:59
 msgid "ebi"
 msgstr ""
 
-#: ../blivet/size.py:53
+#: ../blivet/size.py:60
 msgid "zebi"
 msgstr ""
 
-#: ../blivet/size.py:54
+#: ../blivet/size.py:61
 msgid "yobi"
 msgstr ""
 
-#: ../blivet/size.py:56 ../blivet/size.py:68
+#: ../blivet/size.py:63 ../blivet/size.py:104
 msgid "b"
 msgstr ""
 
-#: ../blivet/size.py:56 ../blivet/size.py:64
+#: ../blivet/size.py:63 ../blivet/size.py:96
 msgid "byte"
 msgstr ""
 
-#: ../blivet/size.py:56 ../blivet/size.py:65
+#: ../blivet/size.py:63 ../blivet/size.py:97
 msgid "bytes"
 msgstr ""
 
-#: ../blivet/size.py:234
+#: ../blivet/size.py:318
 msgid "B"
 msgstr ""
 
@@ -357,7 +357,7 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:112
+#: ../blivet/fcoe.py:113
 msgid "FCoE not available"
 msgstr ""
 
@@ -556,43 +556,43 @@ msgstr ""
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/formats/fs.py:474
+#: ../blivet/formats/fs.py:468
 #, python-format
 msgid "Unknown return code: %d."
 msgstr ""
 
-#: ../blivet/formats/fs.py:492
+#: ../blivet/formats/fs.py:486
 #, python-format
 msgid "%(type)s filesystem check failure on %(device)s: "
 msgstr ""
 
-#: ../blivet/formats/fs.py:863
+#: ../blivet/formats/fs.py:854
 msgid "File system errors left uncorrected."
 msgstr ""
 
-#: ../blivet/formats/fs.py:864
+#: ../blivet/formats/fs.py:855
 msgid "Operational error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:865
+#: ../blivet/formats/fs.py:856
 msgid "Usage or syntax error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:866
+#: ../blivet/formats/fs.py:857
 msgid "e2fsck cancelled by user request."
 msgstr ""
 
-#: ../blivet/formats/fs.py:867
+#: ../blivet/formats/fs.py:858
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1026
+#: ../blivet/formats/fs.py:1017
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1028
+#: ../blivet/formats/fs.py:1019
 msgid "Usage error."
 msgstr ""
 
