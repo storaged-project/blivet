@@ -118,47 +118,45 @@ def _parseSpec(spec):
     except InvalidOperation:
         raise ValueError("invalid size specification", spec)
 
+    specifier = m.groups()[1]
+
     # Only attempt to parse as English if all characters are ASCII
     try:
-        specifier = m.groups()[1]
-
         # This will raise UnicodeDecodeError if specifier contains non-ascii
         # characters
-        specifier = specifier.decode("ascii")
+        spec_ascii = specifier.decode("ascii")
 
         # Convert back to a str type to match the _bytes and _prefixes arrays
-        specifier = str(specifier)
+        spec_ascii = str(spec_ascii)
 
         # Use the ASCII-only lowercase mapping
-        specifier = _lowerASCII(specifier)
+        spec_ascii = _lowerASCII(spec_ascii)
     except UnicodeDecodeError:
         pass
     else:
-        if specifier in _bytes or not specifier:
+        if spec_ascii in _bytes or not spec_ascii:
             return size
 
         for factor, prefix, abbr in _prefixes:
             check = _makeSpecs(prefix, abbr, False)
 
-            if specifier in check:
+            if spec_ascii in check:
                 return size * factor
-
-    specifier = m.groups()[1]
 
     # No English match found, try localized size specs. Accept any utf-8
     # character and leave the result as a unicode object.
-    specifier = specifier.decode("utf-8")
+    spec_local = specifier.decode("utf-8")
     
     # Use the locale-specific lowercasing
-    specifier = specifier.lower()
+    spec_local = spec_local.lower()
 
-    if specifier in _xlated_bytes():
+    if spec_local in _xlated_bytes():
         return size
 
     for factor, prefix, abbr in _xlated_prefixes():
         check  = _makeSpecs(prefix, abbr, True)
 
-        if specifier in check:
+        if spec_local in check:
             return size * factor
 
     raise ValueError("invalid size specification", spec)
