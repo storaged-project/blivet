@@ -410,6 +410,7 @@ def lvcreate(vg_name, lv_name, size, pvs=[]):
     args = ["lvcreate"] + \
             ["-L", "%dm" % size.convertTo(spec="mib")] + \
             ["-n", lv_name] + \
+            ["-y"] + \
             _getConfigArgs() + \
             [vg_name] + pvs
 
