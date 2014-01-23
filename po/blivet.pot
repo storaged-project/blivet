@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-17 16:40-0800\n"
+"POT-Creation-Date: 2014-01-22 17:36-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,149 +20,149 @@ msgstr ""
 #. Decimal prefixes for different size increments, along with the name
 #. and accepted abbreviation for the prefix.  These prefixes are all
 #. for 'bytes'.
-#: ../blivet/size.py:34
+#: ../blivet/size.py:40
 msgid "kilo"
 msgstr ""
 
-#: ../blivet/size.py:34
+#: ../blivet/size.py:40
 msgid "k"
 msgstr ""
 
-#: ../blivet/size.py:35
+#: ../blivet/size.py:41
 msgid "mega"
 msgstr ""
 
-#: ../blivet/size.py:35
+#: ../blivet/size.py:41
 msgid "M"
 msgstr ""
 
-#: ../blivet/size.py:36
+#: ../blivet/size.py:42
 msgid "giga"
 msgstr ""
 
-#: ../blivet/size.py:36
+#: ../blivet/size.py:42
 msgid "G"
 msgstr ""
 
-#: ../blivet/size.py:37
+#: ../blivet/size.py:43
 msgid "tera"
 msgstr ""
 
-#: ../blivet/size.py:37
+#: ../blivet/size.py:43
 msgid "T"
 msgstr ""
 
-#: ../blivet/size.py:38
+#: ../blivet/size.py:44
 msgid "peta"
 msgstr ""
 
-#: ../blivet/size.py:38
+#: ../blivet/size.py:44
 msgid "P"
 msgstr ""
 
-#: ../blivet/size.py:39
+#: ../blivet/size.py:45
 msgid "exa"
 msgstr ""
 
-#: ../blivet/size.py:39
+#: ../blivet/size.py:45
 msgid "E"
 msgstr ""
 
-#: ../blivet/size.py:40
+#: ../blivet/size.py:46
 msgid "zetta"
 msgstr ""
 
-#: ../blivet/size.py:40
+#: ../blivet/size.py:46
 msgid "Z"
 msgstr ""
 
-#: ../blivet/size.py:41
+#: ../blivet/size.py:47
 msgid "yotta"
 msgstr ""
 
-#: ../blivet/size.py:41
+#: ../blivet/size.py:47
 msgid "Y"
 msgstr ""
 
 #. Binary prefixes for the different size increments.  Same structure
 #. as the above list.
-#: ../blivet/size.py:45
+#: ../blivet/size.py:51
 msgid "kibi"
 msgstr ""
 
-#: ../blivet/size.py:45
+#: ../blivet/size.py:51
 msgid "Ki"
 msgstr ""
 
-#: ../blivet/size.py:46
+#: ../blivet/size.py:52
 msgid "mebi"
 msgstr ""
 
-#: ../blivet/size.py:46
+#: ../blivet/size.py:52
 msgid "Mi"
 msgstr ""
 
-#: ../blivet/size.py:47
+#: ../blivet/size.py:53
 msgid "gibi"
 msgstr ""
 
-#: ../blivet/size.py:47
+#: ../blivet/size.py:53
 msgid "Gi"
 msgstr ""
 
-#: ../blivet/size.py:48
+#: ../blivet/size.py:54
 msgid "tebi"
 msgstr ""
 
-#: ../blivet/size.py:48
+#: ../blivet/size.py:54
 msgid "Ti"
 msgstr ""
 
-#: ../blivet/size.py:49
+#: ../blivet/size.py:55
 msgid "pebi"
 msgstr ""
 
-#: ../blivet/size.py:49
+#: ../blivet/size.py:55
 msgid "Pi"
 msgstr ""
 
-#: ../blivet/size.py:50
+#: ../blivet/size.py:56
 msgid "exbi"
 msgstr ""
 
-#: ../blivet/size.py:50
+#: ../blivet/size.py:56
 msgid "Ei"
 msgstr ""
 
-#: ../blivet/size.py:51
+#: ../blivet/size.py:57
 msgid "zebi"
 msgstr ""
 
-#: ../blivet/size.py:51
+#: ../blivet/size.py:57
 msgid "Zi"
 msgstr ""
 
-#: ../blivet/size.py:52
+#: ../blivet/size.py:58
 msgid "yobi"
 msgstr ""
 
-#: ../blivet/size.py:52
+#: ../blivet/size.py:58
 msgid "Yi"
 msgstr ""
 
-#: ../blivet/size.py:54 ../blivet/size.py:266 ../blivet/size.py:294
+#: ../blivet/size.py:60 ../blivet/size.py:281 ../blivet/size.py:314
 msgid "B"
 msgstr ""
 
-#: ../blivet/size.py:54 ../blivet/size.py:71
+#: ../blivet/size.py:60 ../blivet/size.py:91
 msgid "b"
 msgstr ""
 
-#: ../blivet/size.py:54 ../blivet/size.py:63
+#: ../blivet/size.py:60 ../blivet/size.py:83
 msgid "byte"
 msgstr ""
 
-#: ../blivet/size.py:54 ../blivet/size.py:64
+#: ../blivet/size.py:60 ../blivet/size.py:84
 msgid "bytes"
 msgstr ""
 
@@ -363,7 +363,7 @@ msgstr ""
 msgid "Master Boot Record"
 msgstr ""
 
-#: ../blivet/platform.py:187 ../blivet/formats/fs.py:1053
+#: ../blivet/platform.py:187 ../blivet/formats/fs.py:1074
 msgid "EFI System Partition"
 msgstr ""
 
@@ -541,51 +541,51 @@ msgstr ""
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/formats/fs.py:445
+#: ../blivet/formats/fs.py:468
 #, python-format
 msgid "Unknown return code: %d."
 msgstr ""
 
-#: ../blivet/formats/fs.py:467
+#: ../blivet/formats/fs.py:490
 #, python-format
 msgid "%(type)s filesystem check failure on %(device)s: "
 msgstr ""
 
-#: ../blivet/formats/fs.py:857
+#: ../blivet/formats/fs.py:879
 msgid "File system errors left uncorrected."
 msgstr ""
 
-#: ../blivet/formats/fs.py:858
+#: ../blivet/formats/fs.py:880
 msgid "Operational error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:859
+#: ../blivet/formats/fs.py:881
 msgid "Usage or syntax error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:860
+#: ../blivet/formats/fs.py:882
 msgid "e2fsck cancelled by user request."
 msgstr ""
 
-#: ../blivet/formats/fs.py:861
+#: ../blivet/formats/fs.py:883
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1027
+#: ../blivet/formats/fs.py:1048
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1029
+#: ../blivet/formats/fs.py:1050
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1288
+#: ../blivet/formats/fs.py:1300
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1319
+#: ../blivet/formats/fs.py:1331
 msgid "Linux HFS+ ESP"
 msgstr ""
 
@@ -595,10 +595,6 @@ msgstr ""
 
 #: ../blivet/formats/dmraid.py:36
 msgid "dm-raid member device"
-msgstr ""
-
-#: ../blivet/formats/mdraid.py:40
-msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:34
@@ -627,6 +623,10 @@ msgstr ""
 
 #: ../blivet/formats/lvmpv.py:39
 msgid "physical volume (LVM)"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:40
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/devicelibs/lvm.py:366

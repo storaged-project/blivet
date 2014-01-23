@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.36
+Version: 0.37
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,35 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jan 22 2014 Brian C. Lane <bcl@redhat.com> - 0.37-1
+- Only do SELinux context resets if in installer mode (#1038146) (amulhern)
+- Look up SELinux context for lost+found where it is needed (#1038146)
+  (amulhern)
+- Don't reset the SELinux context before the filesystem is mounted (#1038146)
+  (amulhern)
+- Test setting selinux context on lost+found (#1038146) (amulhern)
+- Only retrieve the unit specifier once (dshea)
+- Fix the Device.id usage. (dshea)
+- Accept both English and localized sizes in Size specs. (dshea)
+- Use a namedtuple to store information on unit prefixes (dshea)
+- Remove en_spec Size parameters. (dshea)
+- Fix potential traceback in devicetree.populate. (#1055523) (dlehman)
+- Fall back on relabeling app where available (#1038590) (amulhern)
+- Change the meaning of label field values (#1038590) (amulhern)
+- Enable labeling on NTFS filesystem (#1038590) (amulhern)
+- Enable labeling on HFS filesystem (#1038590) (amulhern)
+- Add a method that indicates ability to relabel (#1038590) (amulhern)
+- Use filesystem creation app to set filesystem label (#1038590) (amulhern)
+- Import errors so FSError name is resolved (#1038590) (amulhern)
+- Remove BTRFS._getFormatOptions (#1038590) (amulhern)
+- Make an additional class for labeling abstractions (#1038590) (amulhern)
+- Fix copyright date (#1038590) (amulhern)
+- Remove redundant _defaultFormatOptions field (#1038590) (amulhern)
+- Remove code about unsetting a label (#1038590) (amulhern)
+- Return None if the filesystem has no label (#1038590) (amulhern)
+- Removed redundant check for existance of filesystem (#1038590) (amulhern)
+- Have writeLabel throw a more informative exception (#1038590) (amulhern)
+
 * Fri Jan 17 2014 Brian C. Lane <bcl@redhat.com> - 0.36-1
 - Update the TODO list. (dlehman)
 - Multipath, fwraid members need not be in exclusiveDisks. (#1032919) (dlehman)
