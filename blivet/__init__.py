@@ -1495,6 +1495,22 @@ class Blivet(object):
 
         return free
 
+    def _verifyLUKSDevicesHaveKey(self):
+        """Verify that all non-existant LUKS devices have some way of obtaining
+           a key.
+
+           Note: LUKS device creation will fail without a key.
+
+           :rtype: generator of str
+           :returns: a generator of error messages, may yield no error messages
+
+        """
+        for dev in (d for d in self.devices if \
+           d.format.type == "luks" and \
+           not d.format.exists and \
+           not d.format.hasKey):
+            yield _("LUKS device %s has no encryption key") % (dev.name,)
+
     def sanityCheck(self):
         """ Run a series of tests to verify the storage configuration.
 
@@ -1678,6 +1694,8 @@ class Blivet(object):
             e = self.mustFormat(self.rootDevice)
             if e:
                 errors.append(e)
+
+        errors += self._verifyLUKSDevicesHaveKey()
 
         return (errors, warnings)
 
