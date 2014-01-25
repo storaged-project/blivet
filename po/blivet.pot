@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-22 17:36-0800\n"
+"POT-Creation-Date: 2014-01-24 16:52-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -174,63 +174,68 @@ msgstr ""
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:1529
+#: ../blivet/__init__.py:1512
+#, python-format
+msgid "LUKS device %s has no encryption key"
+msgstr ""
+
+#: ../blivet/__init__.py:1545
 #, python-format
 msgid ""
 "Your root partition is less than 250 megabytes which is usually too small to "
 "install %s."
 msgstr ""
 
-#: ../blivet/__init__.py:1533
+#: ../blivet/__init__.py:1549
 #, python-format
 msgid ""
 "You have not defined a root partition (/), which is required for "
 "installation of %s to continue."
 msgstr ""
 
-#: ../blivet/__init__.py:1546
+#: ../blivet/__init__.py:1562
 msgid ""
 "This platform requires /boot on a dedicated partition or logical volume.  If "
 "you do not want a /boot volume, you must place / on a dedicated non-LVM "
 "partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1555
+#: ../blivet/__init__.py:1571
 #, python-format
 msgid ""
 "Your %(mount)s partition is less than %(size)s megabytes which is lower than "
 "recommended for a normal %(productName)s install."
 msgstr ""
 
-#: ../blivet/__init__.py:1565
+#: ../blivet/__init__.py:1581
 #, python-format
 msgid ""
 "Your %(mount)s partition is too small for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1570
+#: ../blivet/__init__.py:1586
 #, python-format
 msgid ""
 "Your %(mount)s partition is too large for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1609
+#: ../blivet/__init__.py:1625
 msgid "you have not created a bootloader stage1 target device"
 msgstr ""
 
-#: ../blivet/__init__.py:1618
+#: ../blivet/__init__.py:1634
 msgid "You have not created a bootable partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1639
+#: ../blivet/__init__.py:1655
 msgid ""
 "Your BIOS-based system needs a special partition to boot from a GPT disk "
 "label. To continue, please create a 1MiB 'biosboot' type partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1649
+#: ../blivet/__init__.py:1665
 #, python-format
 msgid ""
 "You have not specified a swap partition.  %(requiredMem)s of memory is "
@@ -238,13 +243,13 @@ msgid ""
 "have %(installedMem)s."
 msgstr ""
 
-#: ../blivet/__init__.py:1655
+#: ../blivet/__init__.py:1671
 msgid ""
 "You have not specified a swap partition.  Although not strictly required in "
 "all cases, it will significantly improve performance for most installations."
 msgstr ""
 
-#: ../blivet/__init__.py:1661
+#: ../blivet/__init__.py:1677
 msgid ""
 "At least one of your swap devices does not have a UUID, which is common in "
 "swap space created using older versions of mkswap. These devices will be "
@@ -252,27 +257,27 @@ msgid ""
 "paths can change under a variety of circumstances. "
 msgstr ""
 
-#: ../blivet/__init__.py:1671
+#: ../blivet/__init__.py:1687
 #, python-format
 msgid ""
 "This mount point is invalid.  The %s directory must be on the / file system."
 msgstr ""
 
-#: ../blivet/__init__.py:1675
+#: ../blivet/__init__.py:1691
 #, python-format
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:3020
+#: ../blivet/__init__.py:3038
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3025
+#: ../blivet/__init__.py:3043
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3027
+#: ../blivet/__init__.py:3045
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""

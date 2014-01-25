@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.37
+Version: 0.38
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -61,6 +61,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 24 2014 Brian C. Lane <bcl@redhat.com> - 0.38-1
+- Some simple tests for _verifyLUKSDevicesHaveKey (#1023442) (amulhern)
+- Verify that LUKS devices have some encryption key (#1023442) (amulhern)
+
 * Wed Jan 22 2014 Brian C. Lane <bcl@redhat.com> - 0.37-1
 - Only do SELinux context resets if in installer mode (#1038146) (amulhern)
 - Look up SELinux context for lost+found where it is needed (#1038146)
