@@ -18,6 +18,7 @@ Source0: http://git.fedorahosted.org/cgit/blivet.git/snapshot/%{realname}-%{vers
 %define e2fsver 1.41.0
 %define pythoncryptsetupver 0.1.1
 %define utillinuxver 2.15.1
+%define lvm2ver 2.02.99
 
 BuildArch: noarch
 BuildRequires: gettext
@@ -32,7 +33,7 @@ Requires: device-mapper >= %{dmver}
 Requires: cryptsetup
 Requires: python-cryptsetup >= %{pythoncryptsetupver}
 Requires: mdadm
-Requires: lvm2
+Requires: lvm2 >= %{lvm2ver}
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: btrfs-progs
