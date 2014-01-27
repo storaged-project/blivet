@@ -201,11 +201,15 @@ def writeEscrowPackets(storage):
     nss.nss.nss_init_nodb() # Does nothing if NSS is already initialized
 
     backupPassphrase = generateBackupPassphrase()
+
     try:
+        escrowDir = ROOT_PATH + "/root"
+        log.debug("escrow: writing escrow packets to %s", escrowDir)
+        util.makedirs(escrowDir)
         for device in escrowDevices:
             log.debug("escrow: device %s: %s" %
                       (repr(device.path), repr(device.format.type)))
-            device.format.escrow(ROOT_PATH + "/root",
+            device.format.escrow(escrowDir,
                                  backupPassphrase)
 
     except (IOError, RuntimeError) as e:
