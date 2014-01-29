@@ -3448,6 +3448,7 @@ class MDRaidArrayDevice(StorageDevice):
                         spares,
                         metadataVer=self.metadataVersion,
                         bitmap=self.createBitmap)
+        udev_settle()
 
     @property
     def formatArgs(self):
