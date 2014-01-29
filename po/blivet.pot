@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-24 16:52-0800\n"
+"POT-Creation-Date: 2014-01-28 16:57-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -170,72 +170,78 @@ msgstr ""
 msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/__init__.py:1344
+#: ../blivet/__init__.py:1348
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:1512
+#: ../blivet/__init__.py:1516
 #, python-format
 msgid "LUKS device %s has no encryption key"
 msgstr ""
 
-#: ../blivet/__init__.py:1545
+#: ../blivet/__init__.py:1549
 #, python-format
 msgid ""
 "Your root partition is less than 250 megabytes which is usually too small to "
 "install %s."
 msgstr ""
 
-#: ../blivet/__init__.py:1549
+#: ../blivet/__init__.py:1553
 #, python-format
 msgid ""
 "You have not defined a root partition (/), which is required for "
 "installation of %s to continue."
 msgstr ""
 
-#: ../blivet/__init__.py:1562
+#: ../blivet/__init__.py:1566
 msgid ""
 "This platform requires /boot on a dedicated partition or logical volume.  If "
 "you do not want a /boot volume, you must place / on a dedicated non-LVM "
 "partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1571
+#: ../blivet/__init__.py:1575
 #, python-format
 msgid ""
 "Your %(mount)s partition is less than %(size)s megabytes which is lower than "
 "recommended for a normal %(productName)s install."
 msgstr ""
 
-#: ../blivet/__init__.py:1581
+#: ../blivet/__init__.py:1585
 #, python-format
 msgid ""
 "Your %(mount)s partition is too small for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1586
+#: ../blivet/__init__.py:1590
 #, python-format
 msgid ""
 "Your %(mount)s partition is too large for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1625
+#: ../blivet/__init__.py:1629
 msgid "you have not created a bootloader stage1 target device"
 msgstr ""
 
-#: ../blivet/__init__.py:1634
+#: ../blivet/__init__.py:1632
+msgid ""
+"For a UEFI installation, your layout must include an EFI system partition "
+"mounted at /boot/efi"
+msgstr ""
+
+#: ../blivet/__init__.py:1642
 msgid "You have not created a bootable partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1655
+#: ../blivet/__init__.py:1663
 msgid ""
 "Your BIOS-based system needs a special partition to boot from a GPT disk "
 "label. To continue, please create a 1MiB 'biosboot' type partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1665
+#: ../blivet/__init__.py:1673
 #, python-format
 msgid ""
 "You have not specified a swap partition.  %(requiredMem)s of memory is "
@@ -243,13 +249,13 @@ msgid ""
 "have %(installedMem)s."
 msgstr ""
 
-#: ../blivet/__init__.py:1671
+#: ../blivet/__init__.py:1679
 msgid ""
 "You have not specified a swap partition.  Although not strictly required in "
 "all cases, it will significantly improve performance for most installations."
 msgstr ""
 
-#: ../blivet/__init__.py:1677
+#: ../blivet/__init__.py:1685
 msgid ""
 "At least one of your swap devices does not have a UUID, which is common in "
 "swap space created using older versions of mkswap. These devices will be "
@@ -257,27 +263,27 @@ msgid ""
 "paths can change under a variety of circumstances. "
 msgstr ""
 
-#: ../blivet/__init__.py:1687
+#: ../blivet/__init__.py:1695
 #, python-format
 msgid ""
 "This mount point is invalid.  The %s directory must be on the / file system."
 msgstr ""
 
-#: ../blivet/__init__.py:1691
+#: ../blivet/__init__.py:1699
 #, python-format
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:3038
+#: ../blivet/__init__.py:3046
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3043
+#: ../blivet/__init__.py:3051
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3045
+#: ../blivet/__init__.py:3053
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
