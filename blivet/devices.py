@@ -3820,7 +3820,7 @@ class FileDevice(StorageDevice):
                 parents -- a list of required devices (Device instances)
                 exists -- indicates whether this is an existing device
         """
-        if not path.startswith("/"):
+        if not os.path.isabs(path):
             raise ValueError("FileDevice requires an absolute path")
 
         StorageDevice.__init__(self, path, format=format, size=size,
