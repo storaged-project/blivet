@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.20
+Version: 0.18.21
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jan 28 2014 Brian C. Lane <bcl@redhat.com> - 0.18.21-1
+- escrow: make sure the output directory exists (wwoods)
+  Resolves: rhbz#1026653
+
 * Mon Jan 27 2014 David Lehman <dlehman@redhat.com> - 0.18.20-1
 - Tell lvcreate not to ask us any questions and do its job. (dlehman)
   Resolves: rhbz#1057066
