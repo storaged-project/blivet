@@ -3963,6 +3963,11 @@ class LoopDevice(StorageDevice):
     def size(self):
         return self.slave.size
 
+    def _preSetup(self, orig=False):
+        if not os.path.exists(self.slave.path):
+            raise DeviceError("specified file (%s) does not exist" % self.slave.path)
+        return StorageDevice._preSetup(self, orig=orig)
+
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
