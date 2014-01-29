@@ -3806,7 +3806,7 @@ class FileDevice(StorageDevice):
             :keyword format: this device's formatting
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
         """
-        if not path.startswith("/"):
+        if not os.path.isabs(path):
             raise ValueError("FileDevice requires an absolute path")
 
         StorageDevice.__init__(self, path, format=format, size=size,
