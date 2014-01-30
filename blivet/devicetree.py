@@ -332,6 +332,17 @@ class DeviceTree(object):
             #   Do we care about garbage collection? At all?
             parent.removeChild()
 
+    def _removeChildrenFromTree(self, device):
+        devs_to_remove = self.getDependentDevices(device)
+        while devs_to_remove:
+            leaves = [d for d in devs_to_remove if d.isleaf]
+            for leaf in leaves:
+                self._removeDevice(leaf, moddisk=False)
+                devs_to_remove.remove(leaf)
+            if len(devs_to_remove) == 1 and devs_to_remove[0].isExtended:
+                self._removeDevice(devs_to_remove[0], force=True, moddisk=False)
+                break
+
     def registerAction(self, action):
         """ Register an action to be performed at a later time.
 
@@ -1023,9 +1034,9 @@ class DeviceTree(object):
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids" % device.name)
+                # remove children from tree so that we don't stumble upon them later
+                self._removeChildrenFromTree(device)
                 device.format = formats.DeviceFormat()
-                for d in self.getChildren(device):
-                    self._removeDevice(d, moddisk=False)
 
         #
         # The first step is to either look up or create the device
