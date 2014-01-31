@@ -1961,11 +1961,8 @@ class Blivet(object):
                 continue
 
             # update the refs in req_disks as well
-            req_disks = []
-            for disk in partition.req_disks:
-                req_disks.append(new.devicetree.getDeviceByID(disk.id))
-
-            partition.req_disks = req_disks
+            req_disks = (new.devicetree.getDeviceByID(disk.id) for disk in partition.req_disks)
+            partition.req_disks = [disk for disk in req_disks if disk is not None]
 
             p = partition.disk.format.partedDisk.getPartitionByPath(partition.path)
             partition.partedPartition = p
