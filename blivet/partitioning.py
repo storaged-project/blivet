@@ -1064,7 +1064,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                 break
 
         if free is None:
-            raise PartitioningError(_("not enough free space on disks"))
+            raise PartitioningError(_("unable to allocate a large enough partition"))
 
         _disk = use_disk
         disklabel = _disk.format
