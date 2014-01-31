@@ -1637,7 +1637,7 @@ class Blivet(object):
                 warnings.extend(self.bootloader.warnings)
 
             stage2 = self.bootloader.stage2_device
-            if not stage2:
+            if stage1 and not stage2:
                 errors.append(_("You have not created a bootable partition."))
             else:
                 self.bootloader.is_valid_stage2_device(stage2)
