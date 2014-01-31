@@ -50,6 +50,7 @@ class Platform(object):
     _boot_stage1_raid_metadata = []
     _boot_stage1_raid_member_types = []
     _boot_stage1_description = N_("bootloader device")
+    _boot_stage1_missing_error = ""
     _boot_raid_description = N_("RAID Device")
     _boot_partition_description = N_("First sector of boot partition")
     _boot_descriptions = {}
@@ -148,6 +149,12 @@ class Platform(object):
         else:
             return 0
 
+    @property
+    def stage1MissingError(self):
+        """A platform-specific error message to be shown if stage1 target
+           selection fails."""
+        return self._boot_stage1_missing_error
+
 class X86(Platform):
     _boot_stage1_device_types = ["disk"]
     _boot_mbr_description = N_("Master Boot Record")
@@ -155,10 +162,11 @@ class X86(Platform):
                           "partition": Platform._boot_partition_description,
                           "mdarray": Platform._boot_raid_description}
 
-
     _disklabel_types = ["msdos", "gpt"]
     # XXX hpfs, if reported by blkid/udev, will end up with a type of None
     _non_linux_format_types = ["vfat", "ntfs", "hpfs"]
+    _boot_stage1_missing_error = N_("You must include at least one MBR- or "
+                                    "GPT-formatted disk as an install target.")    
 
     def __init__(self):
         super(X86, self).__init__()
@@ -191,6 +199,9 @@ class EFI(Platform):
     _disklabel_types = ["gpt"]
     # XXX hpfs, if reported by blkid/udev, will end up with a type of None
     _non_linux_format_types = ["vfat", "ntfs", "hpfs"]
+    _boot_stage1_missing_error = N_("For a UEFI installation, you must include "
+                                    "an EFI System Partition on a GPT-formatted "
+                                    "disk, mounted at /boot/efi.")
 
     def setDefaultPartitioning(self):
         ret = Platform.setDefaultPartitioning(self)
@@ -238,6 +249,9 @@ class IPSeriesPPC(PPC):
     _boot_prep_description = N_("PReP Boot Partition")
     _boot_descriptions = {"partition": _boot_prep_description}
     _disklabel_types = ["msdos"]
+    _boot_stage1_missing_error = N_("You must include a PReP Boot Partition "
+                                    "within the first 4GiB of an MBR-formatted "
+                                    "disk.")
 
     def setDefaultPartitioning(self):
         ret = PPC.setDefaultPartitioning(self)
@@ -260,6 +274,9 @@ class NewWorldPPC(PPC):
     _boot_descriptions = {"partition": _boot_apple_description}
     _disklabel_types = ["mac"]
     _non_linux_format_types = ["hfs", "hfs+"]
+    _boot_stage1_missing_error = N_("You must include an Apple Bootstrap "
+                                    "Partition on an Apple Partition Map-"
+                                    "formatted disk.")
 
     def setDefaultPartitioning(self):
         ret = Platform.setDefaultPartitioning(self)
@@ -290,6 +307,8 @@ class S390(Platform):
                           "zfcp": _boot_zfcp_description,
                           "disk": _boot_mbr_description,
                           "partition": Platform._boot_partition_description}
+    _boot_stage1_missing_error = N_("You must include at least one MBR- or "
+                                    "DASD-formatted disk as an install target.")
 
     def __init__(self):
         Platform.__init__(self)
@@ -315,6 +334,8 @@ class ARM(Platform):
                           "partition": Platform._boot_partition_description}
 
     _disklabel_types = ["msdos"]
+    _boot_stage1_missing_error = N_("You must include at least one MBR-formatted "
+                                    "disk as an install target.")
 
     @property
     def armMachine(self):
@@ -337,6 +358,8 @@ class omapARM(ARM):
     _boot_stage1_mountpoints = ["/boot/uboot"]
     _boot_uboot_description = N_("U-Boot Partition")
     _boot_descriptions = {"partition": _boot_uboot_description}
+    _boot_stage1_missing_error = N_("You must include a U-Boot Partition on a "
+                                    "FAT-formatted disk, mounted at /boot/uboot.")
 
     def setDefaultPartitioning(self):
         """Return the ARM-OMAP platform-specific partitioning information."""

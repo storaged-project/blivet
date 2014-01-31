@@ -1626,12 +1626,11 @@ class Blivet(object):
         if self.bootloader and not self.bootloader.skip_bootloader:
             stage1 = self.bootloader.stage1_device
             if not stage1:
-                errors.append(_("you have not created a bootloader stage1 "
-                                "target device"))
-                if arch.isEfi():
-                    errors.append(_("For a UEFI installation, your layout must "
-                                    "include an EFI system partition mounted at "
-                                    "/boot/efi"))
+                errors.append(_("No valid bootloader target device found. "
+                                "See below for details."))
+                pe = _platform.stage1MissingError
+                if pe:
+                    errors.append(_(pe))
             else:
                 self.bootloader.is_valid_stage1_device(stage1)
                 errors.extend(self.bootloader.errors)
