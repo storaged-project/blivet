@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.21
+Version: 0.18.22
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 31 2014 Brian C. Lane <bcl@redhat.com> - 0.18.22-1
+- Check that file that loop device is going to use exists (amulhern)
+  Resolves: rhbz#982164
+  Related: rhbz#982164
+- Use os.path.isabs to check whether path name is absolute (amulhern)
+  Resolves: rhbz#994488
+  Related: rhbz#994488
+
 * Tue Jan 28 2014 Brian C. Lane <bcl@redhat.com> - 0.18.21-1
 - escrow: make sure the output directory exists (wwoods)
   Resolves: rhbz#1026653
