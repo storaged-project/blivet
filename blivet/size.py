@@ -207,7 +207,8 @@ class Size(Decimal):
         return self
 
     def __str__(self, context=None):
-        return self.humanReadable()
+        # Convert the result of humanReadable from unicode to str
+        return self.humanReadable().encode('utf-8')
 
     def __repr__(self):
         return "Size('%s')" % self
