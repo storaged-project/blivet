@@ -1384,7 +1384,7 @@ class NTFS(FS):
                     continue
                 try:
                     # ntfsresize uses SI unit prefixes
-                    minSize = Size(spec="%d mb" % l.split(":")[1].strip())
+                    minSize = Size(spec="%d mb" % int(l.split(":")[1].strip()))
                 except (IndexError, ValueError) as e:
                     minSize = None
                     log.warning("Unable to parse output for minimum size on %s: %s" %(self.device, e))
