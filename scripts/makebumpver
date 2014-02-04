@@ -327,10 +327,11 @@ class MakeBumpVer:
                         if valid:
                             rhbz.add("%s: rhbz#%s" % (action, ckbug))
 
-                            # Remove the summary bug's action if it is for the same bug
-                            summary_str = "Resolves: rhbz#%s" % summary_bug
-                            if summary_bug and ckbug == summary_bug and summary_str in rhbz:
-                                rhbz.remove(summary_str)
+                            # Remove the summary bug's Resolves action if it is for the same bug
+                            if action != 'Resolves':
+                                summary_str = "Resolves: rhbz#%s" % summary_bug
+                                if summary_bug and ckbug == summary_bug and summary_str in rhbz:
+                                    rhbz.remove(summary_str)
                         else:
                             bad = True
 
