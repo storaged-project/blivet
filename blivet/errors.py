@@ -28,9 +28,6 @@ class StorageError(Exception):
 class NoDisksError(StorageError):
     pass
 
-class ErrorRecoveryFailure(StorageError):
-    pass
-
 # Device
 class DeviceError(StorageError):
     pass
