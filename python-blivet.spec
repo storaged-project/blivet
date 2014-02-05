@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.39
+Version: 0.40
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,28 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Feb 04 2014 Brian C. Lane <bcl@redhat.com> - 0.40-1
+- makebumpver: Only remove from list if action is not Resolves (bcl)
+- Update bumpver to allow Related bugs (bcl)
+- Remove all dependent devices of san device becoming multipath (#1058939)
+  (rvykydal)
+- When repopulating multipath members mark them as multipath (#1056024)
+  (rvykydal)
+- fcoe: parse yet another sysfs structure for bnx2fc devices (#903122)
+  (rvykydal)
+- fcoe: add fcoe=<NIC>:<EDB> to boot options for nics added manually (#1040215)
+  (rvykydal)
+- Convert the ntfs minsize to an int (#1060031) (dshea)
+- Convert the string representation of Size to a str type. (#1060382) (dshea)
+- don't display stage2 missing error as well if the real problem is stage1
+  (awilliam)
+- Provide a mechanism for platform-specific error messages for stage1 failure
+  (awilliam)
+- Don't add None value to req_disks (#981316) (amulhern)
+- Make error message more informative (#1022497) (amulhern)
+- Check that file that loop device is going to use exists (#982164) (amulhern)
+- Use os.path.isabs to check whether path name is absolute (#994488) (amulhern)
+
 * Tue Jan 28 2014 Brian C. Lane <bcl@redhat.com> - 0.39-1
 - escrow: make sure the output directory exists (#1026653) (wwoods)
 - provide a more useful error message if user fails to create an ESP (awilliam)
