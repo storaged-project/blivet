@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.22
+Version: 0.18.23
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Feb 04 2014 Brian C. Lane <bcl@redhat.com> - 0.18.23-1
+- Remove all dependent devices of san device becoming multipath (rvykydal)
+  Resolves: rhbz#1058939
+- When repopulating multipath members mark them as multipath (rvykydal)
+  Resolves: rhbz#1056024
+- Don't add None value to req_disks (amulhern)
+  Resolves: rhbz#981316
+- Make error message more informative (amulhern)
+  Resolves: rhbz#1022497
+- fcoe: parse yet another sysfs structure for bnx2fc devices (rvykydal)
+  Related: rhbz#903122
+
 * Fri Jan 31 2014 Brian C. Lane <bcl@redhat.com> - 0.18.22-1
 - Check that file that loop device is going to use exists (amulhern)
   Resolves: rhbz#982164

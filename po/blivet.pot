@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-31 18:31-0800\n"
+"POT-Creation-Date: 2014-02-04 17:42-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,16 +154,16 @@ msgstr ""
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:2980
+#: ../blivet/__init__.py:2977
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2985
+#: ../blivet/__init__.py:2982
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2987
+#: ../blivet/__init__.py:2984
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -333,7 +333,7 @@ msgid ""
 msgstr ""
 
 #: ../blivet/partitioning.py:1067
-msgid "not enough free space on disks"
+msgid "unable to allocate a large enough partition"
 msgstr ""
 
 #: ../blivet/partitioning.py:1090
