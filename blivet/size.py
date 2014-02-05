@@ -279,7 +279,7 @@ class Size(Decimal):
         check = self._trimEnd("%d" % self)
 
         if abs(Decimal(check)) < 1000:
-            return "%s %s" % (check, _("B"))
+            return "%s %s" % (check, _("B").decode("utf-8"))
 
         for factor, prefix, abbr in _xlated_prefixes():
             newcheck = super(Size, self).__div__(Decimal(factor))
