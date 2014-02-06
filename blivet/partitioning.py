@@ -285,6 +285,8 @@ def _scheduleVolumes(storage, devs):
         storage.createDevice(dev)
 
 def doAutoPartition(storage, data):
+    """Calculates a partition scheme.
+    """
     log.debug("doAutoPart: %s" % storage.doAutoPart)
     log.debug("encryptedAutoPart: %s" % storage.encryptedAutoPart)
     log.debug("autoPartType: %s" % storage.autoPartType)
@@ -325,14 +327,25 @@ def doAutoPartition(storage, data):
 
     storage.setUpBootLoader()
 
-    # now do a full check of the requests
-    (errors, warnings) = storage.sanityCheck()
+def sanityCheck(storage):
+    """Do a sanity check in a partitioning context.
+
+       :param storage: an instance of the Blivet class
+
+       Logs all SanityErrors and SanityWarnings, SanityErrors first.
+
+       Raises a partitioning error on SanityErrors.
+    """
+    exns = storage.sanityCheck()
+    errors = [exc for exc in exns if isinstance(exc, SanityError)]
+    warnings = [exc for exc in exns if isinstance(exc, SanityWarning)]
     for error in errors:
-        log.error(error)
+        log.error(error.message)
     for warning in warnings:
-        log.warning(warning)
+        log.warning(warning.message)
+
     if errors:
-        raise PartitioningError("\n".join(errors))
+        raise PartitioningError("\n".join(error.message for error in errors))
 
 def partitionCompare(part1, part2):
     """ More specifically defined partitions come first.
