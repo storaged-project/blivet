@@ -1513,7 +1513,7 @@ class Blivet(object):
            d.format.type == "luks" and \
            not d.format.exists and \
            not d.format.hasKey):
-            yield _("LUKS device %s has no encryption key") % (dev.name,)
+            yield LUKSDeviceWithoutKeyError(_("LUKS device %s has no encryption key") % (dev.name,))
 
     def sanityCheck(self):
         """ Run a series of tests to verify the storage configuration.
@@ -1522,14 +1522,15 @@ class Blivet(object):
 
             This function is called at the end of partitioning so that
             we can make sure you don't have anything silly (like no /,
-            a really small /, etc).  Returns (errors, warnings) where
-            each is a list of strings.
+            a really small /, etc).
+
+            :rtype: a list of SanityExceptions
+            :return: a list of accumulated errors and warnings
         """
-        warnings = []
-        errors = []
+        exns = []
 
         if not flags.installer_mode:
-            return (errors, warnings)
+            return exns
 
         checkSizes = [('/usr', 250), ('/tmp', 50), ('/var', 384),
                       ('/home', 100), ('/boot', 75)]
@@ -1546,13 +1547,15 @@ class Blivet(object):
 
         if root:
             if root.size < 250:
-                warnings.append(_("Your root partition is less than 250 "
+                exns.append(
+                   SanityWarning(_("Your root partition is less than 250 "
                                   "megabytes which is usually too small to "
-                                  "install %s.") % (productName,))
+                                  "install %s.") % (productName,)))
         else:
-            errors.append(_("You have not defined a root partition (/), "
+            exns.append(
+               SanityError(_("You have not defined a root partition (/), "
                             "which is required for installation of %s "
-                            "to continue.") % (productName,))
+                            "to continue.") % (productName,)))
 
         # Prevent users from installing on s390x with (a) no /boot volume, (b) the
         # root volume on LVM, and (c) the root volume not restricted to a single
@@ -1563,88 +1566,62 @@ class Blivet(object):
         # care.  --dcantrell
         if arch.isS390() and not self.mountpoints.has_key('/boot') and root:
             if root.type == 'lvmlv' and not root.singlePV:
-                errors.append(_("This platform requires /boot on a dedicated "
+                exns.append(
+                   SanityError(_("This platform requires /boot on a dedicated "
                                 "partition or logical volume.  If you do not "
                                 "want a /boot volume, you must place / on a "
-                                "dedicated non-LVM partition."))
+                                "dedicated non-LVM partition.")))
 
         # FIXME: put a check here for enough space on the filesystems. maybe?
 
         for (mount, size) in checkSizes:
             if mount in filesystems and filesystems[mount].size < size:
-                warnings.append(_("Your %(mount)s partition is less than "
+                exns.append(
+                   SanityWarning(_("Your %(mount)s partition is less than "
                                   "%(size)s megabytes which is lower than "
                                   "recommended for a normal %(productName)s "
                                   "install.")
                                 % {'mount': mount, 'size': size,
-                                   'productName': productName})
+                                   'productName': productName}))
 
         for (mount, device) in filesystems.items():
             problem = filesystems[mount].checkSize()
             if problem < 0:
-                errors.append(_("Your %(mount)s partition is too small for %(format)s formatting "
+                exns.append(
+                   SanityError(_("Your %(mount)s partition is too small for %(format)s formatting "
                                 "(allowable size is %(minSize)s to %(maxSize)s)")
                               % {"mount": mount, "format": device.format.name,
-                                 "minSize": device.minSize, "maxSize": device.maxSize})
+                                 "minSize": device.minSize, "maxSize": device.maxSize}))
             elif problem > 0:
-                errors.append(_("Your %(mount)s partition is too large for %(format)s formatting "
+                exns.append(
+                   SanityError(_("Your %(mount)s partition is too large for %(format)s formatting "
                                 "(allowable size is %(minSize)s to %(maxSize)s)")
                               % {"mount":mount, "format": device.format.name,
-                                 "minSize": device.minSize, "maxSize": device.maxSize})
-
-        # FIXME: this does not work, but probably should
-        """
-        usb_disks = []
-        firewire_disks = []
-        #for disk in self.disks:
-            if isys.driveUsesModule(disk.name, ["usb-storage", "ub"]):
-                usb_disks.append(disk)
-            elif isys.driveUsesModule(disk.name, ["sbp2", "firewire-sbp2"]):
-                firewire_disks.append(disk)
-
-        uses_usb = False
-        uses_firewire = False
-        for device in filesystems.values():
-            for disk in usb_disks:
-                if device.dependsOn(disk):
-                    uses_usb = True
-                    break
-
-            for disk in firewire_disks:
-                if device.dependsOn(disk):
-                    uses_firewire = True
-                    break
-
-        if uses_usb:
-            warnings.append(_("Installing on a USB device.  This may "
-                              "or may not produce a working system."))
-        if uses_firewire:
-            warnings.append(_("Installing on a FireWire device.  This may "
-                              "or may not produce a working system."))
-        """
+                                 "minSize": device.minSize, "maxSize": device.maxSize}))
 
         if self.bootloader and not self.bootloader.skip_bootloader:
             stage1 = self.bootloader.stage1_device
             if not stage1:
-                errors.append(_("No valid bootloader target device found. "
-                                "See below for details."))
+                exns.append(
+                   SanityError(_("No valid bootloader target device found. "
+                                "See below for details.")))
                 pe = _platform.stage1MissingError
                 if pe:
-                    errors.append(_(pe))
+                    exns.append(SanityError(_(pe)))
             else:
                 self.bootloader.is_valid_stage1_device(stage1)
-                errors.extend(self.bootloader.errors)
-                warnings.extend(self.bootloader.warnings)
+                exns.extend(SanityError(msg) for msg in self.bootloader.errors)
+                exns.extend(SanityWarning(msg) for msg in self.bootloader.warnings)
 
             stage2 = self.bootloader.stage2_device
             if stage1 and not stage2:
-                errors.append(_("You have not created a bootable partition."))
+                exns.append(SanityError(_("You have not created a bootable partition.")))
             else:
                 self.bootloader.is_valid_stage2_device(stage2)
-                errors.extend(self.bootloader.errors)
-                warnings.extend(self.bootloader.warnings)
+                exns.extend(SanityError(msg) for msg in self.bootloader.errors)
+                exns.extend(SanityWarning(msg) for msg in self.bootloader.warnings)
                 if not self.bootloader.check():
-                    errors.extend(self.bootloader.errors)
+                    exns.extend(SanityError(msg) for msg in self.bootloader.errors)
 
             #
             # check that GPT boot disk on BIOS system has a BIOS boot partition
@@ -1659,52 +1636,58 @@ class Blivet(object):
                         break
 
                 if missing:
-                    errors.append(_("Your BIOS-based system needs a special "
+                    exns.append(
+                       SanityError(_("Your BIOS-based system needs a special "
                                     "partition to boot from a GPT disk label. "
                                     "To continue, please create a 1MiB "
-                                    "'biosboot' type partition."))
+                                    "'biosboot' type partition.")))
 
         if not swaps:
             installed = util.total_memory()
             required = Size(spec="%s KiB" % isys.EARLY_SWAP_RAM)
 
             if installed < required:
-                errors.append(_("You have not specified a swap partition.  "
+                exns.append(
+                   SanityError(_("You have not specified a swap partition.  "
                                 "%(requiredMem)s of memory is required to continue installation "
                                 "without a swap partition, but you only have %(installedMem)s.")
                               % {"requiredMem": required,
-                                 "installedMem": installed})
+                                 "installedMem": installed}))
             else:
-                warnings.append(_("You have not specified a swap partition.  "
+                exns.append(
+                   SanityWarning(_("You have not specified a swap partition.  "
                                   "Although not strictly required in all cases, "
                                   "it will significantly improve performance "
-                                  "for most installations."))
+                                  "for most installations.")))
         no_uuid = [s for s in swaps if s.format.exists and not s.format.uuid]
         if no_uuid:
-            warnings.append(_("At least one of your swap devices does not have "
+            exns.append(
+               SanityWarning(_("At least one of your swap devices does not have "
                               "a UUID, which is common in swap space created "
                               "using older versions of mkswap. These devices "
                               "will be referred to by device path in "
                               "/etc/fstab, which is not ideal since device "
                               "paths can change under a variety of "
-                              "circumstances. "))
+                              "circumstances. ")))
 
         for (mountpoint, dev) in filesystems.items():
             if mountpoint in mustbeonroot:
-                errors.append(_("This mount point is invalid.  The %s directory must "
-                                "be on the / file system.") % mountpoint)
+                exns.append(
+                   SanityError(_("This mount point is invalid.  The %s directory must "
+                                "be on the / file system.") % mountpoint))
 
             if mountpoint in mustbeonlinuxfs and (not dev.format.mountable or not dev.format.linuxNative):
-                errors.append(_("The mount point %s must be on a linux file system.") % mountpoint)
+                exns.append(
+                   SanityError(_("The mount point %s must be on a linux file system.") % mountpoint))
 
         if self.rootDevice and self.rootDevice.format.exists:
             e = self.mustFormat(self.rootDevice)
             if e:
-                errors.append(e)
+                exns.append(SanityError(e))
 
-        errors += self._verifyLUKSDevicesHaveKey()
+        exns += self._verifyLUKSDevicesHaveKey()
 
-        return (errors, warnings)
+        return exns
 
     def dumpState(self, suffix):
         """ Dump the current device list to the storage shelf. """
