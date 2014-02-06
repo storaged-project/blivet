@@ -393,14 +393,26 @@ def doAutoPartition(storage, data):
     new_swaps = (dev for dev in storage.swaps if not dev.format.exists)
     storage.setFstabSwaps(new_swaps)
 
-    # now do a full check of the requests
-    (errors, warnings) = storage.sanityCheck()
+def sanityCheck(storage):
+    """Do a sanity check in a partitioning context.
+
+       :param storage: a :class:`~.Blivet` instance
+       :type storage: :class:`~.Blivet`
+
+       Logs all SanityErrors and SanityWarnings, SanityErrors first.
+
+       Raises a partitioning error on SanityErrors.
+    """
+    exns = storage.sanityCheck()
+    errors = [exc for exc in exns if isinstance(exc, SanityError)]
+    warnings = [exc for exc in exns if isinstance(exc, SanityWarning)]
     for error in errors:
-        log.error(error)
+        log.error(error.message)
     for warning in warnings:
-        log.warning(warning)
+        log.warning(warning.message)
+
     if errors:
-        raise PartitioningError("\n".join(errors))
+        raise PartitioningError("\n".join(error.message for error in errors))
 
 def partitionCompare(part1, part2):
     """ More specifically defined partitions come first.
