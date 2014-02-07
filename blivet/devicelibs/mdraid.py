@@ -304,6 +304,35 @@ def mdexamine(device):
 
     return info
 
+def mddetail(device):
+    """Run mdadm --detail in order to read information about an array.
+
+       Note: The --export flag is not used. According to the man pages
+       the export flag just formats the output as key=value pairs for
+       easy import, but in the case of --detail it also omits the majority
+       of the information, including information of real use like the
+       number of spares in the array.
+
+       :param str device: path of the array device
+       :rtype: a dict of strings
+       :returns: a dict containing labels and values extracted from output
+    """
+    try:
+        lines = mdadm(["--detail", device], capture=True).split("\n")
+    except MDRaidError as e:
+        raise MDRaidError("mddetail failed for %s: %s" % (device, e))
+
+    info = {}
+    for (name, colon, value) in (line.strip().partition(":") for line in lines):
+        value = value.strip()
+        name = name.strip().upper()
+        if colon and value and name:
+            info[name] = value
+
+    process_UUIDS(info, ('UUID',))
+
+    return info
+
 def md_node_from_name(name):
     named_path = "/dev/md/" + name
     try:
