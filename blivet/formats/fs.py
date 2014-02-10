@@ -1393,7 +1393,7 @@ class NTFS(FS):
                 log.warning("Unable to discover minimum size of filesystem "
                             "on %s" %(self.device,))
             else:
-                size = min(minSize * 1.1, minSize + 500, self.currentSize)
+                size = min(minSize * Decimal('1.1'), minSize + 500, self.currentSize)
                 if minSize < size:
                     log.debug("padding min size from %d up to %d" % (minSize, size))
                 else:
