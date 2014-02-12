@@ -53,6 +53,7 @@ import sys
 import statvfs
 import copy
 import tempfile
+import shlex
 
 try:
     import nss.nss
@@ -2962,7 +2963,80 @@ class FSSet(object):
 
         self._fstab_swaps = set(devices)
 
+def releaseFromRedhatRelease(fn):
+    """
+    Attempt to identify the installation of a Linux distribution via
+    /etc/redhat-release.  This file must already have been verified to exist
+    and be readable.
+
+    :param fn: an open filehandle on /etc/redhat-release
+    :type fn: filehandle
+    :returns: The distribution's name and version, or None for either or both
+    if they cannot be determined
+    :rtype: (string, string)
+    """
+    relName = None
+    relVer = None
+
+    with open(fn) as f:
+        try:
+            relstr = f.readline().strip()
+        except (IOError, AttributeError):
+            relstr = ""
+
+    # get the release name and version
+    # assumes that form is something
+    # like "Red Hat Linux release 6.2 (Zoot)"
+    (product, sep, version) = relstr.partition(" release ")
+    if sep:
+        relName = product
+        relVer = version.split()[0]
+
+    return (relName, relVer)
+
+def releaseFromOsRelease(fn):
+    """
+    Attempt to identify the installation of a Linux distribution via
+    /etc/os-release.  This file must already have been verified to exist
+    and be readable.
+
+    :param fn: an open filehandle on /etc/os-release
+    :type fn: filehandle
+    :returns: The distribution's name and version, or None for either or both
+    if they cannot be determined
+    :rtype: (string, string)
+    """
+    relName = None
+    relVer = None
+
+    with open(fn, "r") as f:
+        parser = shlex.shlex(f)
+
+        while True:
+            key = parser.get_token()
+            if key == parser.eof:
+                break
+            elif key == "NAME":
+                # Throw away the "=".
+                parser.get_token()
+                relName = parser.get_token().strip("'\"")
+            elif key == "VERSION_ID":
+                # Throw away the "=".
+                parser.get_token()
+                relVer = parser.get_token().strip("'\"")
+
+    return (relName, relVer)
+
 def getReleaseString():
+    """
+    Attempt to identify the installation of a Linux distribution by checking
+    a previously mounted filesystem for several files.  The filesystem must
+    be mounted under ROOT_PATH.
+
+    :returns: The machine's arch, distribution name, and distribution version
+    or None for any parts that cannot be determined
+    :rtype: (string, string, string)
+    """
     relName = None
     relVer = None
 
@@ -2973,19 +3047,11 @@ def getReleaseString():
 
     filename = "%s/etc/redhat-release" % ROOT_PATH
     if os.access(filename, os.R_OK):
-        with open(filename) as f:
-            try:
-                relstr = f.readline().strip()
-            except (IOError, AttributeError):
-                relstr = ""
-
-        # get the release name and version
-        # assumes that form is something
-        # like "Red Hat Linux release 6.2 (Zoot)"
-        (product, sep, version) = relstr.partition(" release ")
-        if sep:
-            relName = product
-            relVer = version.split()[0]
+        (relName, relVer) = releaseFromRedhatRelease(filename)
+    else:
+        filename = "%s/etc/os-release" % ROOT_PATH
+        if os.access(filename, os.R_OK):
+            (relName, relVer) = releaseFromOsRelease(filename)
 
     return (relArch, relName, relVer)
 
