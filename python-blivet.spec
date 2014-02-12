@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.40
+Version: 0.41
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,15 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Feb 11 2014 Brian C. Lane <bcl@redhat.com> - 0.41-1
+- ntfs _getSize needs to use Decimal (#1063077) (bcl)
+- Separate sanityCheck-ing from doAutoPartition (#1060255) (amulhern)
+- Change messages to SanityExceptions objects (#1060255) (amulhern)
+- Make a small SanityException hierarchy (#1060255) (amulhern)
+- Remove unused exception class (#1060255) (amulhern)
+- Add another .decode("utf-8") to humanReadable (#1059807) (dshea)
+- makebumpver: Any failure should cancel the bump (bcl)
+
 * Tue Feb 04 2014 Brian C. Lane <bcl@redhat.com> - 0.40-1
 - makebumpver: Only remove from list if action is not Resolves (bcl)
 - Update bumpver to allow Related bugs (bcl)
