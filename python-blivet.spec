@@ -6,7 +6,7 @@ Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
 %define realname blivet
-Source0: http://git.fedorahosted.org/cgit/blivet.git/snapshot/%{realname}-%{version}.tar.gz
+Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
