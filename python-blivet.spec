@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.23
+Version: 0.18.24
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Feb 11 2014 Brian C. Lane <bcl@redhat.com> - 0.18.24-1
+- Separate sanityCheck-ing from doAutoPartition (amulhern)
+  Related: rhbz#1060255
+- Change messages to SanityExceptions objects (amulhern)
+  Related: rhbz#1060255
+- Make a small SanityException hierarchy (amulhern)
+  Related: rhbz#1060255
+- Remove unused exception class (amulhern)
+  Related: rhbz#1060255
+- Add a test target to Makefile (amulhern)
+  Resolves: rhbz#1057665
+
 * Tue Feb 04 2014 Brian C. Lane <bcl@redhat.com> - 0.18.23-1
 - Remove all dependent devices of san device becoming multipath (rvykydal)
   Resolves: rhbz#1058939
