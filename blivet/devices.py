@@ -1491,7 +1491,7 @@ class PartitionDevice(StorageDevice):
         device = self.partedPartition.geometry.device.path
 
         # Erase 1MiB or to end of partition
-        count = Size(spec="1 MiB") / bs
+        count = int(Size(spec="1 MiB") / bs)
         count = min(count, part_len)
 
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
