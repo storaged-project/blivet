@@ -482,7 +482,8 @@ def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
 
 def thinlvcreate(vg_name, pool_name, lv_name, size):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, pool_name),
-            "--virtualsize", "%dm" % size, "-n", lv_name] + \
+            "--virtualsize", "%dm" % size.convertTo(spec="MiB"),
+            "-n", lv_name] + \
             _getConfigArgs()
 
     try:
