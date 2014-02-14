@@ -4,8 +4,12 @@ import mock
 import blivet
 from pykickstart.constants import *
 from parted import PARTITION_NORMAL
+from blivet.flags import flags
 
 class ClearPartTestCase(unittest.TestCase):
+    def setUp(self):
+        flags.testing = True
+
     def testShouldClear(self):
         """ Test the Blivet.shouldClear method. """
         b = blivet.Blivet()
@@ -180,6 +184,9 @@ class ClearPartTestCase(unittest.TestCase):
         # clearpart type list
         #
         # TODO
+
+    def tearDown(self):
+        flags.testing = False
 
     def testInitializeDisk(self):
         """
