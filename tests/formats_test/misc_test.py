@@ -332,27 +332,27 @@ class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
         an_fs = fs.HFS(device=_LOOP_DEV0, label="")
         self.assertIsNone(an_fs.create())
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingSwapSpace(self):
+@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+class LabelingSwapSpaceTestCase(baseclass.DevicelibsTestCase):
+
+    def testLabeling(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
 
-        an_fs = swap.SwapSpace(device=_LOOP_DEV0)
-        an_fs.label = "mkswap is really pretty permissive about labels"
-        self.assertIsNone(an_fs.create())
+        swp = swap.SwapSpace(device=_LOOP_DEV0)
+        swp.label = "mkswap is really pretty permissive about labels"
+        self.assertIsNone(swp.create())
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testCreatingSwapSpaceNone(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
 
-        an_fs = swap.SwapSpace(device=_LOOP_DEV0, label=None)
-        self.assertIsNone(an_fs.create())
+        swp = swap.SwapSpace(device=_LOOP_DEV0, label=None)
+        self.assertIsNone(swp.create())
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testCreatingSwapSpaceEmpty(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
 
-        an_fs = swap.SwapSpace(device=_LOOP_DEV0, label="")
-        self.assertIsNone(an_fs.create())
+        swp = swap.SwapSpace(device=_LOOP_DEV0, label="")
+        self.assertIsNone(swp.create())
 
 def suite():
     suite1 = unittest.TestLoader().loadTestsFromTestCase(InitializationTestCase)
