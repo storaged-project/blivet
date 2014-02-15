@@ -7,6 +7,8 @@ from blivet.formats import device_formats
 import blivet.formats.fs as fs
 import blivet.formats.swap as swap
 
+from . import fslabeling
+
 class InitializationTestCase(unittest.TestCase):
     """Test FS object initialization."""
 
@@ -83,254 +85,41 @@ class MethodsTestCase(unittest.TestCase):
             if issubclass(v, fs.FS) and not v.labeling() and not issubclass(v, fs.NFS):
                 self.assertEqual(v(device="/dev", label=label).label, label)
 
-class LabelingAsRootTestCase(baseclass.DevicelibsTestCase):
-    """Tests for labeling a filesystem and reading its label.
+class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
+    def setUp(self):
+        self._fs_class = fs.XFS
+        self._invalid_label = "root filesystem"
+        super(XFSTestCase, self).setUp()
 
-       For some filesystems, there is an application for writing the label
-       but the same application does not read the label. For those, it
-       is only possible to check if the write operation completed succesfully.
-    """
+class FATFSTestCase(fslabeling.CompleteLabelingAsRoot):
+    def setUp(self):
+        self._fs_class = fs.FATFS
+        self._invalid_label = "root___filesystem"
+        super(FATFSTestCase, self).setUp()
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingXFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
+    def setUp(self):
+        self._fs_class = fs.Ext2FS
+        self._invalid_label = "root___filesystem"
+        super(Ext2FSTestCase, self).setUp()
 
-        an_fs = fs.XFS(device=_LOOP_DEV0, label="root___filesystem")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
+class JFSTestCase(fslabeling.LabelingWithRelabeling):
+    def setUp(self):
+        self._fs_class = fs.JFS
+        self._invalid_label = "root___filesystem"
+        super(JFSTestCase, self).setUp()
 
-        an_fs.label = "temeraire"
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
+class ReiserFSTestCase(fslabeling.LabelingWithRelabeling):
+    def setUp(self):
+        self._fs_class = fs.ReiserFS
+        self._invalid_label = "root___filesystem"
+        super(ReiserFSTestCase, self).setUp()
 
-        an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
-
-        an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
-            "default label",
-            an_fs.writeLabel)
-
-        an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(fs.FSError,
-           "bad label format",
-           an_fs.writeLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingXFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.XFS(device=_LOOP_DEV0, label="start")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "start")
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingXFSNone(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.XFS(device=_LOOP_DEV0, label=None)
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingXFSEmpty(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.XFS(device=_LOOP_DEV0, label="")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "")
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingFATFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.FATFS(device=_LOOP_DEV0, label="root___filesystem")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
-
-        an_fs.label = "an fs"
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
-
-        an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
-
-        an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
-            "default label",
-            an_fs.writeLabel)
-
-        an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(fs.FSError,
-           "bad label format",
-           an_fs.writeLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingFATFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.FATFS(device=_LOOP_DEV0, label="start")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "start")
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingFATFSNone(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.FATFS(device=_LOOP_DEV0, label=None)
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingFATFSEmpty(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.FATFS(device=_LOOP_DEV0, label="")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "")
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingExt2FS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label="root___filesystem")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
-
-        an_fs.label = "an fs"
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
-
-        an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
-
-        an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
-            "default label",
-            an_fs.writeLabel)
-
-        an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(fs.FSError,
-           "bad label format",
-           an_fs.writeLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingExt2FS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label="start")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "start")
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingExt2FSNone(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label=None)
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingExt2FSEmpty(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label="")
-        self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "")
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingJFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.JFS(device=_LOOP_DEV0, label="root___filesystem")
-        self.assertIsNone(an_fs.create())
-
-        an_fs.label = "an fs"
-        self.assertIsNone(an_fs.writeLabel())
-
-        self.assertRaisesRegexp(fs.FSError,
-           "no application to read label",
-           an_fs.readLabel)
-
-        an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
-
-        an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
-            "default label",
-            an_fs.writeLabel)
-
-        an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(fs.FSError,
-           "bad label format",
-           an_fs.writeLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingReiserFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.ReiserFS(device=_LOOP_DEV0, label="root___filesystem")
-        self.assertIsNone(an_fs.create())
-
-        an_fs.label = "an fs"
-        self.assertIsNone(an_fs.writeLabel())
-
-        self.assertRaisesRegexp(fs.FSError,
-           "no application to read label",
-           an_fs.readLabel)
-
-        an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
-
-        an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
-            "default label",
-            an_fs.writeLabel)
-
-        an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(fs.FSError,
-           "bad label format",
-           an_fs.writeLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testLabelingHFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.HFS(device=_LOOP_DEV0, label="root___filesystem")
-        self.assertIsNone(an_fs.create())
-
-        self.assertRaisesRegexp(fs.FSError,
-           "no application to read label",
-           an_fs.readLabel)
-
-        an_fs.label = "an fs"
-        self.assertRaisesRegexp(fs.FSError,
-           "no application to set label for filesystem",
-           an_fs.writeLabel)
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingHFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.HFS(device=_LOOP_DEV0, label="start")
-        self.assertIsNone(an_fs.create())
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingHFSNone(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label=None)
-        self.assertIsNone(an_fs.create())
-
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-    def testCreatingHFSEmpty(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.HFS(device=_LOOP_DEV0, label="")
-        self.assertIsNone(an_fs.create())
+class HFSTestCase(fslabeling.LabelingAsRoot):
+    def setUp(self):
+        self._fs_class = fs.HFS
+        self._invalid_label = "".join(["n" for x in range(28)])
+        super(HFSTestCase, self).setUp()
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class LabelingSwapSpaceTestCase(baseclass.DevicelibsTestCase):
@@ -353,12 +142,6 @@ class LabelingSwapSpaceTestCase(baseclass.DevicelibsTestCase):
 
         swp = swap.SwapSpace(device=_LOOP_DEV0, label="")
         self.assertIsNone(swp.create())
-
-def suite():
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(InitializationTestCase)
-    suite2 = unittest.TestLoader().loadTestsFromTestCase(MethodsTestCase)
-    return unittest.TestSuite([suite1, suite2])
-
 
 if __name__ == "__main__":
     unittest.main()
