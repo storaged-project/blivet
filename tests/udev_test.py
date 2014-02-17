@@ -104,6 +104,9 @@ class UdevTest(unittest.TestCase):
         import blivet.udev
         # For this one we're accessing the real uevent file (twice).
         path = '/devices/virtual/block/loop1'
+        if not os.path.exists("/sys" + path):
+            self.skipTest("this test requires the presence of /dev/loop1")
+
         info = {'sysfs_path': path}
         for line in open('/sys' + path + '/uevent').readlines():
             (name, equals, value) = line.strip().partition("=")
@@ -126,8 +129,12 @@ class UdevTest(unittest.TestCase):
         import blivet.udev
         blivet.udev.os.path.normpath = os.path.normpath
         blivet.udev.os.access.return_value = False
+        path = '/devices/virtual/block/loop1'
+        if not os.path.exists("/sys" + path):
+            self.skipTest("this test requires the presence of /dev/loop1")
 
-        dev = {'sysfs_path': '/devices/virtual/block/loop1'}
+        dev = {'sysfs_path': path}
+
         ret = blivet.udev.udev_parse_uevent_file(dev)
         self.assertEqual(ret, {'sysfs_path': '/devices/virtual/block/loop1'})
 
