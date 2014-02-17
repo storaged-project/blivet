@@ -1490,7 +1490,7 @@ class Chunk(object):
                     # Each request is allocated free units from the pool
                     # based on the relative _base_ sizes of the remaining
                     # growable requests.
-                    share = p.base / float(self.base)
+                    share = p.base / self.base
                     growth = int(share * last_pool) # truncate, don't round
 
                 p.growth += growth
