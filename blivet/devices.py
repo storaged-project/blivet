@@ -550,7 +550,7 @@ class StorageDevice(Device):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if newsize > self.maxSize:
+        if self.maxSize and newsize > self.maxSize:
             log.error("requested size %s is larger than maximum %s",
                       newsize, self.maxSize)
             raise ValueError("size is larger than the maximum for this device")
@@ -820,7 +820,7 @@ class StorageDevice(Device):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if newsize > self.maxSize:
+        if self.maxSize and newsize > self.maxSize:
             raise DeviceError("device cannot be larger than %s" %
                               (self.maxSize,), self.name)
         self._size = newsize
