@@ -1341,6 +1341,9 @@ class DeviceTree(object):
 
                 lv_class = LVMThinLogicalVolumeDevice
                 lv_parents = [pool_device]
+            elif lv_name.endswith(']'):
+                # Internal LVM2 device
+                return
             elif lv_attr[0] not in '-mMrR':
                 return
 
