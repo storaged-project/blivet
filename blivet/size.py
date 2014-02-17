@@ -257,7 +257,7 @@ class Size(Decimal):
         spec = spec.lower()
 
         if spec in _bytes:
-            return self
+            return Decimal(self)
 
         for factor, prefix, abbr in _prefixes:
             check = _makeSpecs(prefix, abbr, False)
