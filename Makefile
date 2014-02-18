@@ -22,6 +22,12 @@ test:
 	@echo "*** Running unittests ***"
 	PYTHONPATH=.:tests/ python -m unittest discover -v -s tests/ -p '*_test.py'
 
+coverage:
+	@which coverage || (echo "*** Please install python-coverage ***"; exit 2)
+	@echo "*** Running unittests with coverage ***"
+	PYTHONPATH=.:tests/ coverage run --branch -m unittest discover -v -s tests/ -p '*_test.py'
+	coverage report --include="blivet/*"
+
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
 	$(MAKE) -C po clean
