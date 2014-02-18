@@ -30,6 +30,7 @@ from devices import LVMLogicalVolumeDevice
 from formats import getFormat
 from errors import *
 from parted import partitionFlag, PARTITION_LBA
+from flags import flags
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
@@ -529,10 +530,12 @@ class ActionDestroyFormat(DeviceAction):
 
     def execute(self):
         """ wipe the filesystem signature from the device """
+        status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
         udev_settle()
-        self.device.teardown()
+        if flags.installer_mode or not status:
+            self.device.teardown()
 
     def cancel(self):
         self.device.format = self.origFormat
