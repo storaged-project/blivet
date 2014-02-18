@@ -1968,6 +1968,9 @@ class DeviceTree(object):
         log.info("DeviceTree.populate: ignoredDisks is %s ; exclusiveDisks is %s"
                     % (self.ignoredDisks, self.exclusiveDisks))
 
+        # this has proven useful when populating after opening a LUKS device
+        udev_settle()
+
         if flags.installer_mode and not flags.image_install:
             devicelibs.mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
 
