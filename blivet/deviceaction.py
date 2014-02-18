@@ -304,8 +304,6 @@ class ActionDestroyDevice(DeviceAction):
     def __init__(self, device):
         # XXX should we insist that device.fs be None?
         DeviceAction.__init__(self, device)
-        if device.exists:
-            device.teardown()
 
     def execute(self):
         self.device.destroy()
@@ -440,8 +438,6 @@ class ActionCreateFormat(DeviceAction):
         DeviceAction.__init__(self, device)
         if format:
             self.origFormat = device.format
-            if self.device.format.exists:
-                self.device.format.teardown()
             self.device.format = format
         else:
             self.origFormat = getFormat(None)
@@ -524,16 +520,16 @@ class ActionDestroyFormat(DeviceAction):
     def __init__(self, device):
         DeviceAction.__init__(self, device)
         self.origFormat = self.device.format
-        if device.format.exists:
-            device.format.teardown()
         self.device.format = None
 
     def execute(self):
         """ wipe the filesystem signature from the device """
+        status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
         udev_settle()
-        self.device.teardown()
+        if not status:
+            self.device.teardown()
 
     def cancel(self):
         self.device.format = self.origFormat
