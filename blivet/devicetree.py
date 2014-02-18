@@ -253,7 +253,14 @@ class DeviceTree(object):
         # removal of partitions makes use of originalFormat, so it has to stay
         # up to date in case of multiple passes through this method
         for disk in (d for d in self.devices if d.partitioned):
+            disk.format.updateOrigPartedDisk()
             disk.originalFormat = copy.deepcopy(disk.format)
+
+        # now we have to update the parted partitions of all devices so they
+        # match the parted disks we just updated
+        for partition in self.getDevicesByInstance(PartitionDevice):
+            pdisk = partition.disk.format.partedDisk
+            partition.partedPartition = pdisk.getPartitionByPath(partition.path)
 
     def _addDevice(self, newdev):
         """ Add a device to the tree.
