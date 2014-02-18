@@ -14,6 +14,12 @@ class LabelingAsRoot(baseclass.DevicelibsTestCase):
        set and where the filesystem can not be relabeled.
     """
 
+    def setUp(self):
+        an_fs = self._fs_class()
+        if not an_fs.utilsAvailable:
+            self.skipTest("utilities unavailable for filesystem %s" % an_fs.name)
+        super(LabelingAsRoot, self).setUp()
+
     def testLabeling(self):
         """A sequence of tests of filesystem labeling.
 
