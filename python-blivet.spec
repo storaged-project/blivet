@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.25
+Version: 0.18.26
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,30 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Feb 19 2014 Brian C. Lane <bcl@redhat.com> - 0.18.26-1
+- Add a coverage test target (amulhern)
+  Resolves: rhbz#1064895
+- Disable tests in action_test.py (amulhern)
+  Resolves: rhbz#1065437
+- Fix some problems with action_test.py (amulhern)
+  Related: rhbz#1065437
+- Update tests/storagetestcase.py (amulhern)
+  Related: rhbz#1065437
+- Skip a test if device isn't available (amulhern)
+  Related: rhbz#1065431
+- Fix failing udev_test (amulhern)
+  Resolves: rhbz#1065431
+- Fix some size_test.py ERRORs (amulhern)
+  Resolves: rhbz#1065443
+- Filesystem labeling tests will not run without utilities (amulhern)
+  Resolves: rhbz#1065422
+- Rename misc_test.py to something more descriptive (amulhern)
+  Related: rhbz#1065422
+- Refactor labeling tests (amulhern)
+  Related: rhbz#1065422
+- Move SwapSpace tests into a separate class (amulhern)
+  Resolves: rhbz#1065422
+
 * Tue Feb 18 2014 Brian C. Lane <bcl@redhat.com> - 0.18.25-1
 - Wait for udev to create device node for new md arrays. (dlehman)
   Resolves: rhbz#1036014
