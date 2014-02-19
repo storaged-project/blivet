@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.24
+Version: 0.18.25
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Feb 18 2014 Brian C. Lane <bcl@redhat.com> - 0.18.25-1
+- Wait for udev to create device node for new md arrays. (dlehman)
+  Resolves: rhbz#1036014
+- Fix detection of thin pool with non-standard segment types. (dlehman)
+  Resolves: rhbz#1029915
+- NFSDevice does not accept the exists kwarg. (dlehman)
+  Resolves: rhbz#1063413
+- Don't run mpathconf for disk image installations. (dlehman)
+  Resolves: rhbz#1066008
+
 * Tue Feb 11 2014 Brian C. Lane <bcl@redhat.com> - 0.18.24-1
 - Separate sanityCheck-ing from doAutoPartition (amulhern)
   Related: rhbz#1060255
