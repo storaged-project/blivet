@@ -63,9 +63,11 @@ _prefixes = _binaryPrefix + _decimalPrefix
 # Translated versions of the byte and prefix arrays
 # All strings are decoded as utf-8 so that locale-specific upper/lower functions work
 def _xlated_bytes():
+    """Return a translated version of the bytes list as a list of unicode strings"""
     return [_(b).decode("utf-8") for b in _bytes]
 
 def _xlated_prefixes():
+    """Return translated prefixes as unicode strings"""
     return [_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
             for p in _prefixes]
 
@@ -208,7 +210,7 @@ class Size(Decimal):
 
     def __str__(self, context=None):
         # Convert the result of humanReadable from unicode to str
-        return self.humanReadable().encode('utf-8')
+        return self.humanReadable()
 
     def __repr__(self):
         return "Size('%s')" % self
@@ -279,7 +281,7 @@ class Size(Decimal):
         check = self._trimEnd("%d" % self)
 
         if abs(Decimal(check)) < 1000:
-            return "%s %s" % (check, _("B").decode("utf-8"))
+            return "%s %s" % (check, _("B"))
 
         for factor, prefix, abbr in _xlated_prefixes():
             newcheck = super(Size, self).__div__(Decimal(factor))
@@ -311,7 +313,10 @@ class Size(Decimal):
         if radix != '.':
             retval = retval.replace('.', radix)
 
+        # abbr and prefix are unicode objects so that lower/upper work correctly
+        # Convert them to str before concatenating so that the return type is
+        # str.
         if abbr:
-            return retval + " " + abbr + _("B").decode("utf-8")
+            return retval + " " + abbr.encode("utf-8") + _("B")
         else:
-            return retval + " " + prefix + P_("byte", "bytes", newcheck).decode("utf-8")
+            return retval + " " + prefix.encode("utf-8") + P_("byte", "bytes", newcheck)
