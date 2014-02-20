@@ -380,6 +380,9 @@ class Blivet(object):
 
     def shutdown(self):
         """ Deactivate all devices (installer_mode only). """
+        if not flags.installer_mode:
+            return
+
         try:
             self.devicetree.teardownAll()
         except Exception as e:

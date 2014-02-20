@@ -264,6 +264,9 @@ class DeviceTree(object):
                 try:
                     action.execute()
                 except DiskLabelCommitError:
+                    if not flags.installer_mode:
+                        raise
+
                     # it's likely that a previous format destroy action
                     # triggered setup of an lvm or md device.
                     self.teardownAll()
@@ -2100,7 +2103,8 @@ class DeviceTree(object):
         # inconsistencies are ignored or resolved.
         self._handleInconsistencies()
 
-        self.teardownAll()
+        if flags.installer_mode:
+            self.teardownAll()
 
         def _is_ignored(disk):
             return ((self.ignoredDisks and disk.name in self.ignoredDisks) or
@@ -2123,9 +2127,6 @@ class DeviceTree(object):
 
     def teardownAll(self):
         """ Run teardown methods on all devices. """
-        if not flags.installer_mode:
-            return
-
         for device in self.leaves:
             if device.protected:
                 continue
