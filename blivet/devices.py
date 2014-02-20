@@ -4087,6 +4087,8 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         for nic, dcb, auto_vlan in fcoe().nics:
             if nic == self.nic:
                 break
+        else:
+            return set()
 
         if dcb:
             dcbOpt = "dcb"
