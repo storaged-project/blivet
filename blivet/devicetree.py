@@ -1034,6 +1034,20 @@ class DeviceTree(object):
                 # make sure any device we found is an md device
                 device = None
 
+        # If multipath loses the race to claim the member disks they can have
+        # stuff like lvm activated on the member, in which case we just ignore
+        # the other members completely. In this case the user will have to
+        # convert to using multipath after installation.
+        if udev_device_is_disk(info) and not device:
+            serial = udev_device_get_serial(info)
+            path = "/dev/%s" % info["DEVNAME"]
+            if serial and self.getDevicesBySerial(serial) and \
+               not devicelibs.mpath.is_multipath_member(path):
+                log.warning("ignoring apparent multipath member %s ; it "
+                            "looks as if multipath lost the race to claim it"
+                            % name)
+                return
+
         if device and device.isDisk and \
            devicelibs.mpath.is_multipath_member(device.path):
             # mark as multipath_member also when repopulating devicetree
