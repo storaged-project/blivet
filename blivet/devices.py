@@ -878,6 +878,11 @@ class StorageDevice(Device):
         self.updateSysfsPath()
         udev.udev_settle()
 
+        # make sure that targetSize is updated to reflect the actual size
+        if self.resizable:
+            self._partedDevice = None
+            self._targetSize = self.currentSize
+
     #
     # destroy
     #
