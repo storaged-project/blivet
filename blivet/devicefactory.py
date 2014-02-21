@@ -1144,7 +1144,7 @@ class LVMFactory(DeviceFactory):
         if self.container and self.container.exists:
             return size
 
-        if self.container_size == 0:
+        if self.container_size == SIZE_POLICY_AUTO:
             # automatic container size management
             if self.container:
                 size += sum([p.size for p in self.container.parents])
@@ -1222,6 +1222,13 @@ class LVMFactory(DeviceFactory):
 
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
+
+        if self.container_raid_level and self.container_size in [SIZE_POLICY_AUTO,
+                                                                 SIZE_POLICY_MAX]:
+            # container pushed to the limit, but we need some extra space for
+            # metadata, so we need to make the LV smaller
+            extra_md_space = LVM_PE_SIZE * len(self.disks) * 5
+            kwargs["size"] -= extra_md_space
         return self.storage.newLV(*args, **kwargs)
 
     def _set_name(self):
