@@ -2098,6 +2098,7 @@ class Blivet(object):
 
         # custom storage
         ksMap = {PartitionDevice: ("PartData", "partition"),
+                 TmpFSDevice: ("PartData", "partition"),
                  LVMLogicalVolumeDevice: ("LogVolData", "logvol"),
                  LVMVolumeGroupDevice: ("VolGroupData", "volgroup"),
                  MDRaidArrayDevice: ("RaidData", "raid"),
