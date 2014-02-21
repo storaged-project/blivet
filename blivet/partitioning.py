@@ -652,23 +652,24 @@ def sizeToSectors(size, sectorSize):
     sectors = int(size / sectorSize)
     return sectors
 
-def removeNewPartitions(disks, partitions):
+def removeNewPartitions(disks, remove, all_partitions):
     """ Remove newly added partitions from disks.
 
         Remove all non-existent partitions from the disks in blivet's model.
 
         :param: disks: list of partitioned disks
         :type disks: list of :class:`~.devices.StorageDevice`
-        :param partitions: list of partitions
-        :type partitions: list of :class:`~.devices.PartitionDevice`
+        :param remove: list of partitions to remove
+        :type remove: list of :class:`~.devices.PartitionDevice`
+        :param all_partitions: list of all partitions on the disks
+        :type all_partitions: list of :class:`~.devices.PartitionDevice`
         :returns: None
         :rtype: NoneType
     """
     log.debug("removing all non-preexisting partitions %s from disk(s) %s",
-                ["%s(id %d)" % (p.name, p.id) for p in partitions
-                                                    if not p.exists],
+                ["%s(id %d)" % (p.name, p.id) for p in remove],
                 [d.name for d in disks])
-    for part in partitions:
+    for part in remove:
         if part.partedPartition and part.disk in disks:
             if part.exists:
                 # we're only removing partitions that don't physically exist
@@ -682,13 +683,12 @@ def removeNewPartitions(disks, partitions):
             part.partedPartition = None
             part.disk = None
 
-    if not flags.installer_mode:
-        return
-
     for disk in disks:
         # remove empty extended so it doesn't interfere
         extended = disk.format.extendedPartition
-        if extended and not disk.format.logicalPartitions:
+        if extended and not disk.format.logicalPartitions and \
+           (flags.installer_mode or
+            extended not in (p.partedPartition for p in all_partitions)):
             log.debug("removing empty extended partition from %s", disk.name)
             disk.format.partedDisk.removePartition(extended)
 
@@ -859,16 +859,19 @@ def doPartitioning(storage):
             log.error("failed to set up disk %s: %s", disk.name, e)
             raise PartitioningError(_("disk %s inaccessible") % disk.name)
 
+    # Remove any extended partition that does not have an action associated.
+    #
+    # XXX This does not remove the extended from the parted.Disk, but it should
+    #     cause removeNewPartitions to remove it since there will no longer be
+    #     a PartitionDevice for it.
+    for partition in storage.partitions:
+        if not partition.exists and partition.isExtended and \
+           not storage.devicetree.findActions(device=partition, action_type="create"):
+            storage.devicetree._removeDevice(partition, moddisk=False, force=True)
+
     partitions = storage.partitions[:]
     for part in storage.partitions:
         part.req_bootable = False
-
-        if part.exists:
-            # if the partition is preexisting or part of a complex device
-            # then we shouldn't modify it
-            partitions.remove(part)
-            continue
-
         if not part.exists:
             # start over with flexible-size requests
             part.req_size = part.req_base_size
@@ -879,7 +882,7 @@ def doPartitioning(storage):
         # there's no stage2 device. hopefully it's temporary.
         pass
 
-    removeNewPartitions(disks, partitions)
+    removeNewPartitions(disks, partitions, partitions)
     free = getFreeRegions(disks)
     try:
         allocatePartitions(storage, disks, partitions, free)
@@ -960,7 +963,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
             disklabels[disk.path] = disk.format
             all_disks[disk.path] = disk
 
-    removeNewPartitions(disks, new_partitions)
+    removeNewPartitions(disks, new_partitions, partitions)
 
     for _part in new_partitions:
         if _part.partedPartition and _part.isExtended:
@@ -2040,7 +2043,8 @@ def growPartitions(disks, partitions, free, size_sets=None):
                 new_partitions.append((new_partition, p.device))
 
             # remove all new partitions from this chunk
-            removeNewPartitions([disk], [r.device for r in chunk.requests])
+            removeNewPartitions([disk], [r.device for r in chunk.requests],
+                                partitions)
             log.debug("back from removeNewPartitions")
 
             # adjust the extended partition as needed
