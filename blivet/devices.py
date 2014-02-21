@@ -402,7 +402,7 @@ class Device(util.ObjectID):
 
     @property
     def isleaf(self):
-        """ True if this device has no children. """
+        """ True if no other device depends on this one. """
         return self.kids == 0
 
     @property
@@ -1508,11 +1508,20 @@ class PartitionDevice(StorageDevice):
 
     @property
     def isleaf(self):
-        """ True if this device has no children. """
+        """ True if no other device depends on this one. """
         no_kids = super(PartitionDevice, self).isleaf
+        # it is possible that the disk that originally contained this partition
+        # no longer contains a disklabel, in which case we can assume that this
+        # device is a leaf
+        if self.disk and self.partedPartition and \
+           self.disk.format.type == "disklabel" and \
+           self.partedPartition in self.disk.format.partitions:
+            disklabel = self.disk.format
+        else:
+            disklabel = None
+
         extended_has_logical = (self.isExtended and
-                                (self.disk and
-                                 self.disk.format.logicalPartitions))
+                                (disklabel and disklabel.logicalPartitions))
         return (no_kids and not extended_has_logical)
 
     def _setFormat(self, fmt):
@@ -1721,6 +1730,7 @@ class PartitionDevice(StorageDevice):
             raise
 
         if self.disk.format.exists and \
+           self.disk.format.type == "disklabel" and \
            self.disk.format.partedDisk != self.disk.originalFormat.partedDisk:
             # If the new/current disklabel is the same as the original one, we
             # have to duplicate the removal on the other copy of the DiskLabel.

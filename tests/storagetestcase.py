@@ -122,6 +122,8 @@ class StorageTestCase(unittest.TestCase):
         if isinstance(fmt, blivet.formats.disklabel.DiskLabel):
             fmt._partedDevice = Mock()
             fmt._partedDisk = Mock()
+            attrs = {"partitions": []}
+            fmt._partedDisk.configure_mock(**attrs)
 
         fmt.exists = exists
 

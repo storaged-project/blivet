@@ -23,6 +23,7 @@ class ClearPartTestCase(unittest.TestCase):
                                               exists=True)
         sda.format._partedDisk = mock.Mock()
         sda.format._partedDevice = mock.Mock()
+        sda.format._partedDisk.configure_mock(partitions=[])
         b.devicetree._addDevice(sda)
 
         # sda1 is a partition containing an existing ext4 filesystem

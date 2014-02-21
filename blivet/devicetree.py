@@ -240,9 +240,10 @@ class DeviceTree(object):
         for device in self.devices:
             if device.partitioned:
                 device.format.resetPartedDisk()
-                if device.originalFormat.type == "disklabel" and \
-                   device.originalFormat != device.format:
-                    device.originalFormat.resetPartedDisk()
+
+            if device.originalFormat.type == "disklabel" and \
+               device.originalFormat != device.format:
+                device.originalFormat.resetPartedDisk()
 
         # Call preCommitFixup on all devices
         mpoints = [getattr(d.format, 'mountpoint', "") for d in self.devices]
