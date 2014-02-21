@@ -3794,6 +3794,12 @@ class TmpFSDevice(NoDevice):
     def fstabSpec(self):
         return self._type
 
+    def populateKSData(self, data):
+        super(TmpFSDevice, self).populateKSData(data)
+        # we need to supply a format to ksdata, otherwise the kickstart line
+        # would include --noformat, resulting in an invalid command combination
+        data.format = self.format
+
 
 class FileDevice(StorageDevice):
     """ A file on a filesystem.
