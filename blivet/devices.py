@@ -1738,6 +1738,16 @@ class PartitionDevice(StorageDevice):
             self.disk.format.removePartition(part)
             self.disk.format.commit()
 
+    def _postDestroy(self):
+        super(PartitionDevice, self)._postDestroy()
+        if isinstance(self.disk, DMDevice):
+            udev.udev_settle()
+            if self.status:
+                try:
+                    dm.dm_remove(self.name)
+                except (errors.DMError, OSError):
+                    pass
+
     def deactivate(self):
         """
         This is never called. For instructional purposes only.
@@ -1987,6 +1997,10 @@ class DMDevice(StorageDevice):
         if rc:
             raise errors.DMError("partition deactivation failed for '%s'" % self.name)
         udev.udev_settle()
+        for dev in os.listdir("/dev/mapper/"):
+            prefix = self.name + "p"
+            if dev.startswith(prefix) and dev[len(prefix):].isdigit():
+                dm.dm_remove(dev)
 
     def _setName(self, name):
         """ Set the device's map name. """
