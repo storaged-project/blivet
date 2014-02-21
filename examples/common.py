@@ -8,7 +8,7 @@ def set_up_logging():
     program_log.setLevel(logging.DEBUG)
     handler = logging.FileHandler("/tmp/blivet.log")
     handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s,%(msecs)03d %(levelname)s %(name)s: %(message)s")
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
     handler.setFormatter(formatter)
     blivet_log.addHandler(handler)
     program_log.addHandler(handler)
