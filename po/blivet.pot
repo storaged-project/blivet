@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-19 07:53-0800\n"
+"POT-Creation-Date: 2014-02-21 16:31-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,16 +154,16 @@ msgstr ""
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:2959
+#: ../blivet/__init__.py:2960
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2964
+#: ../blivet/__init__.py:2965
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2966
+#: ../blivet/__init__.py:2967
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -527,36 +527,36 @@ msgstr ""
 msgid "U-Boot Partition"
 msgstr ""
 
-#: ../blivet/deviceaction.py:262
+#: ../blivet/deviceaction.py:263
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:309
+#: ../blivet/deviceaction.py:310
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:381
+#: ../blivet/deviceaction.py:382
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:438
+#: ../blivet/deviceaction.py:439
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:451
+#: ../blivet/deviceaction.py:452
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:521
+#: ../blivet/deviceaction.py:522
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:580
+#: ../blivet/deviceaction.py:583
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:598
+#: ../blivet/deviceaction.py:601
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
