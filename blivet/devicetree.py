@@ -443,6 +443,7 @@ class DeviceTree(object):
 
         action.cancel()
         self._actions.remove(action)
+        log.info("canceled action %s", action)
 
     def findActions(self, device=None, type=None, object=None, path=None,
                     devid=None):
