@@ -1873,14 +1873,33 @@ class DeviceTree(object):
             :param device: the device to hide
             :type device: :class:`~.devices.StorageDevice`
 
+            Hiding a device will cancel all actions and will remove the
+            device from the device list.
+
             If the device is not a leaf device, all devices that depend on it
             will be hidden leaves-first until the device is a leaf device.
 
-            .. note::
+            If a device exists, performs some special actions and places
+            it on a list of hidden devices.
 
-                Hiding a device will cancel any actions scheduled on that device
-                or any device that depends on it.
+            Mixes recursion and side effects, most significantly in the code
+            that removes all the actions. However, this code is a null op
+            in every case except the first base case that is reached,
+            where all actions are removed. This means that when a device
+            is removed explicitly in this function by means of a direct call to
+            _removeDevices it is guaranteed that all actions have already
+            been canceled.
 
+            The recursion guarantees that when a device is removed by an
+            explicit _removeDevice call it is a leaf device.
+
+            It also guarantees that hidden devices are added to self._hidden
+            in a topologically sorted order (assuming edges are child
+            relationships), leaves first.
+
+            If a device does not exist then it must have been removed by the
+            cancelation of all the actions, so it does not need to be removed
+            explicitly.
         """
         if device in self._hidden:
             return
@@ -1893,34 +1912,21 @@ class DeviceTree(object):
                                                   device.id))
 
         for action in reversed(self._actions):
-            if not action.device.dependsOn(device) and action.device != device:
-                continue
-
-            log.debug("cancelling action: %s" % action)
-            try:
-                action.cancel()
-            except Exception:
-                log.warning("failed to cancel action while hiding %s: %s"
-                            % (device.name, action))
-            finally:
-                self._actions.remove(action)
-
-        # XXX modifications that do not require actions, like setting a
-        #     mountpoint, will not be reversed here
-
-        # we're intentionally not modifying self.names here
-        self._devices.remove(device)
-        for parent in device.parents:
-            parent.removeChild()
+            self.cancelAction(action)
 
         if not device.exists:
             return
+
+        self._removeDevice(device, moddisk=False)
 
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
         if isinstance(device, DASDDevice):
             self.dasd.remove(device)
+
+        if device.name not in self.names:
+            self.names.append(device.name)
 
     def unhide(self, device):
         """ Restore a device's visibility.
