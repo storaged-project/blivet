@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.27
+Version: 0.18.28
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Feb 25 2014 Brian C. Lane <bcl@redhat.com> - 0.18.28-1
+- Count with the extra metadata extents for RAID consistently (vpodzime)
+  Resolves: rhbz#1065737
+- Make partitioning error message more friendly (amulhern)
+  Resolves: rhbz#1020388
+
 * Fri Feb 21 2014 Brian C. Lane <bcl@redhat.com> - 0.18.27-1
 - Leave already-active devices up after destroying formatting. (dlehman)
   Resolves: rhbz#1064898
