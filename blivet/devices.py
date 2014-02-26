@@ -1128,6 +1128,7 @@ class PartitionDevice(StorageDevice):
         self.req_base_weight = 0
         self.req_start_sector = None
         self.req_end_sector = None
+        self.req_name = None
 
         self._bootable = False
 
