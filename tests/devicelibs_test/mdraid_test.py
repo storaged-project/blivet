@@ -51,6 +51,35 @@ class MDRaidTestCase(unittest.TestCase):
 
 class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
+    names_0 = [
+      'DEVICE',
+      'MD_DEVICES',
+      'MD_EVENTS',
+      'MD_LEVEL',
+      'MD_UPDATE_TIME',
+      'MD_UUID'
+    ]
+
+    names_1 = [
+       'DEVICE',
+       'MD_ARRAY_SIZE',
+       'MD_DEV_UUID',
+       'MD_DEVICES',
+       'MD_EVENTS',
+       'MD_LEVEL',
+       'MD_METADATA',
+       'MD_NAME',
+       'MD_UPDATE_TIME',
+       'MD_UUID'
+    ]
+
+    names_container = [
+       'MD_DEVICES',
+       'MD_LEVEL',
+       'MD_METADATA',
+       'MD_UUID'
+    ]
+
     def __init__(self, methodName='runTest'):
         """Set up the structure of the mdraid array."""
         super(MDRaidAsRootTestCase, self).__init__(methodName=methodName)
@@ -66,14 +95,73 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         super(MDRaidAsRootTestCase, self).tearDown()
 
+    def testMDExamineMDRaidArray(self):
+        mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices)
+        # wait for raid to settle
+        time.sleep(2)
+
+        # examining the array itself yield no data
+        info = mdraid.mdexamine(self._dev_name)
+        self.assertEqual(info, {})
+
+    def testMDExamineNonMDRaid(self):
+        # invoking mdexamine on a device that is not an array member yields {}
+        info = mdraid.mdexamine(self.loopDevices[0])
+        self.assertEqual(info, {})
+
+    def _testMDExamine(self, names, metadataVersion=None, level=None):
+        """ Test mdexamine for a specified metadataVersion.
+
+            :param list names: mdexamine's expected list of names to return
+            :param str metadataVersion: the metadata version for the array
+            :param object level: any valid RAID level descriptor
+
+            Verifies that:
+              - exactly the predicted names are returned by mdexamine
+              - RAID level and number of devices are correct
+        """
+        level = mdraid.RAID_levels.raidLevel(level or raid.RAID1)
+        mdraid.mdcreate(self._dev_name, level, self.loopDevices, metadataVer=metadataVersion)
+        # wait for raid to settle
+        time.sleep(2)
+
+        info = mdraid.mdexamine(self.loopDevices[0])
+
+        # info contains values for exactly names
+        for n in names:
+            self.assertIn(n, info, msg="name '%s' not in info" % n)
+
+        for n in info.keys():
+            self.assertIn(n, names, msg="unexpected name '%s' in info" % n)
+
+        # check names with predictable values
+        self.assertEqual(info['MD_DEVICES'], '2')
+        self.assertEqual(info['MD_LEVEL'], str(level))
+
+    def testMDExamineContainerDefault(self):
+        self._testMDExamine(self.names_container, level="container")
+
+    def testMDExamineDefault(self):
+        self._testMDExamine(self.names_1)
+
+    def testMDExamine0(self):
+        self._testMDExamine(self.names_0, metadataVersion='0')
+
+    def testMDExamine0_90(self):
+        self._testMDExamine(self.names_0, metadataVersion='0.90')
+
+    def testMDExamine1(self):
+        self._testMDExamine(self.names_1, metadataVersion='1')
+
+    def testMDExamine1_2(self):
+        self._testMDExamine(self.names_1, metadataVersion='1.2')
+
     def testMDRaidAsRoot(self):
         ##
         ## mdcreate
         ##
         # pass
         self.assertEqual(mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices), None)
-        # wait for raid to settle
-        time.sleep(2)
 
         # fail
         with self.assertRaises(MDRaidError):
