@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.28
+Version: 0.18.29
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Feb 26 2014 Brian C. Lane <bcl@redhat.com> - 0.18.29-1
+- Let the udev queue settle before populating the devicetree. (dlehman)
+  Resolves: rhbz#1049772
+- Allow use of a single path if multipath activation fails. (dlehman)
+  Resolves: rhbz#1054806
+
 * Tue Feb 25 2014 Brian C. Lane <bcl@redhat.com> - 0.18.28-1
 - Count with the extra metadata extents for RAID consistently (vpodzime)
   Resolves: rhbz#1065737
