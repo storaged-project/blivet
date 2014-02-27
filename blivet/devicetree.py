@@ -301,31 +301,31 @@ class DeviceTree(object):
             log.debug("%s has %d kids" % (dev.name, dev.kids))
             raise ValueError("Cannot remove non-leaf device '%s'" % dev.name)
 
-        # if this is a partition we need to remove it from the parted.Disk
-        if moddisk and isinstance(dev, PartitionDevice) and \
-                dev.disk is not None:
-            # if this partition hasn't been allocated it could not have
-            # a disk attribute
-            if dev.partedPartition.type == parted.PARTITION_EXTENDED and \
-                    len(dev.disk.format.logicalPartitions) > 0:
-                raise ValueError("Cannot remove extended partition %s.  "
-                        "Logical partitions present." % dev.name)
+        if moddisk:
+            # if this is a partition we need to remove it from the parted.Disk
+            if isinstance(dev, PartitionDevice) and dev.disk is not None:
+                # if this partition hasn't been allocated it could not have
+                # a disk attribute
+                if dev.partedPartition.type == parted.PARTITION_EXTENDED and \
+                        len(dev.disk.format.logicalPartitions) > 0:
+                    raise ValueError("Cannot remove extended partition %s.  "
+                            "Logical partitions present." % dev.name)
 
-            dev.disk.format.removePartition(dev.partedPartition)
+                dev.disk.format.removePartition(dev.partedPartition)
 
-            # adjust all other PartitionDevice instances belonging to the
-            # same disk so the device name matches the potentially altered
-            # name of the parted.Partition
-            for device in self._devices:
-                if isinstance(device, PartitionDevice) and \
-                   device.disk == dev.disk:
-                    device.updateName()
-        elif hasattr(dev, "pool"):
-            dev.pool._removeLogVol(dev)
-        elif hasattr(dev, "vg"):
-            dev.vg._removeLogVol(dev)
-        elif hasattr(dev, "volume"):
-            dev.volume._removeSubVolume(dev.name)
+                # adjust all other PartitionDevice instances belonging to the
+                # same disk so the device name matches the potentially altered
+                # name of the parted.Partition
+                for device in self._devices:
+                    if isinstance(device, PartitionDevice) and \
+                       device.disk == dev.disk:
+                        device.updateName()
+            elif hasattr(dev, "pool"):
+                dev.pool._removeLogVol(dev)
+            elif hasattr(dev, "vg"):
+                dev.vg._removeLogVol(dev)
+            elif hasattr(dev, "volume"):
+                dev.volume._removeSubVolume(dev.name)
 
         self._devices.remove(dev)
         if dev.name in self.names and getattr(dev, "complete", True):
