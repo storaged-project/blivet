@@ -87,6 +87,7 @@ class Flags(object):
         self.testing = anaconda_flags.testing
         self.automated_install = anaconda_flags.automatedInstall
         self.live_install = anaconda_flags.livecdInstall
+        self.image_install = anaconda_flags.imageInstall
 
         self.selinux = anaconda_flags.selinux
 
