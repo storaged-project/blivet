@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.42
+Version: 0.43
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,34 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Feb 28 2014 Brian C. Lane <bcl@redhat.com> - 0.43-1
+- Include tmpfs mounts in post-install kickstart (#1061063) (mkolman)
+- Count with the extra metadata extents for RAID consistently (#1065737)
+  (vpodzime)
+- Make partitioning error message more friendly (#1020388) (amulhern)
+- Fix partition handling across multiple processActions calls. (#1065522)
+  (dlehman)
+- Let the udev queue settle before populating the devicetree. (#1049772)
+  (dlehman)
+- Don't activate or deactivate devices from the action classes. (#1064898)
+  (dlehman)
+- Improve handling of parted.DiskLabelCommitError slightly. (dlehman)
+- Make teardownAll work regardless of flags. (dlehman)
+- Fix maxSize test when setting device target size. (dlehman)
+- Size.convertTo should return a Decimal. (dlehman)
+- Don't use float for anything. (dlehman)
+- Fix type of block count in PartitionDevice._wipe. (dlehman)
+- Fix handling of size argument to devicelibs.lvm.thinlvcreate. (#1062223)
+  (dlehman)
+- return empty set when no matching fcoe nic (#1067159) (bcl)
+- Return str from Size.humanReadable (#1066721) (dshea)
+- Add a coverage test target (#1064895) (amulhern)
+- Filesystem labeling tests will not run without utilities (#1065422)
+  (amulhern)
+- Rename misc_test.py to something more descriptive (#1065422) (amulhern)
+- Refactor labeling tests (#1065422) (amulhern)
+- Move SwapSpace tests into a separate class (#1065422) (amulhern)
+
 * Tue Feb 18 2014 Brian C. Lane <bcl@redhat.com> - 0.42-1
 - Wait for udev to create device node for new md arrays. (#1036014) (dlehman)
 - Fix detection of thin pool with non-standard segment types. (#1022810)

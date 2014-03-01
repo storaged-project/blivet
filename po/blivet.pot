@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-18 16:35-0800\n"
+"POT-Creation-Date: 2014-02-28 16:59-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,72 +17,72 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1349
+#: ../blivet/__init__.py:1352
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:1517
+#: ../blivet/__init__.py:1520
 #, python-format
 msgid "LUKS device %s has no encryption key"
 msgstr ""
 
-#: ../blivet/__init__.py:1552
+#: ../blivet/__init__.py:1555
 #, python-format
 msgid ""
 "Your root partition is less than 250 megabytes which is usually too small to "
 "install %s."
 msgstr ""
 
-#: ../blivet/__init__.py:1557
+#: ../blivet/__init__.py:1560
 #, python-format
 msgid ""
 "You have not defined a root partition (/), which is required for "
 "installation of %s to continue."
 msgstr ""
 
-#: ../blivet/__init__.py:1571
+#: ../blivet/__init__.py:1574
 msgid ""
 "This platform requires /boot on a dedicated partition or logical volume.  If "
 "you do not want a /boot volume, you must place / on a dedicated non-LVM "
 "partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1581
+#: ../blivet/__init__.py:1584
 #, python-format
 msgid ""
 "Your %(mount)s partition is less than %(size)s megabytes which is lower than "
 "recommended for a normal %(productName)s install."
 msgstr ""
 
-#: ../blivet/__init__.py:1592
+#: ../blivet/__init__.py:1595
 #, python-format
 msgid ""
 "Your %(mount)s partition is too small for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1598
+#: ../blivet/__init__.py:1601
 #, python-format
 msgid ""
 "Your %(mount)s partition is too large for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1607
+#: ../blivet/__init__.py:1610
 msgid "No valid bootloader target device found. See below for details."
 msgstr ""
 
-#: ../blivet/__init__.py:1619
+#: ../blivet/__init__.py:1622
 msgid "You have not created a bootable partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1641
+#: ../blivet/__init__.py:1644
 msgid ""
 "Your BIOS-based system needs a special partition to boot from a GPT disk "
 "label. To continue, please create a 1MiB 'biosboot' type partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1652
+#: ../blivet/__init__.py:1655
 #, python-format
 msgid ""
 "You have not specified a swap partition.  %(requiredMem)s of memory is "
@@ -90,13 +90,13 @@ msgid ""
 "have %(installedMem)s."
 msgstr ""
 
-#: ../blivet/__init__.py:1659
+#: ../blivet/__init__.py:1662
 msgid ""
 "You have not specified a swap partition.  Although not strictly required in "
 "all cases, it will significantly improve performance for most installations."
 msgstr ""
 
-#: ../blivet/__init__.py:1666
+#: ../blivet/__init__.py:1669
 msgid ""
 "At least one of your swap devices does not have a UUID, which is common in "
 "swap space created using older versions of mkswap. These devices will be "
@@ -104,29 +104,37 @@ msgid ""
 "paths can change under a variety of circumstances. "
 msgstr ""
 
-#: ../blivet/__init__.py:1677
+#: ../blivet/__init__.py:1680
 #, python-format
 msgid ""
 "This mount point is invalid.  The %s directory must be on the / file system."
 msgstr ""
 
-#: ../blivet/__init__.py:1682
+#: ../blivet/__init__.py:1685
 #, python-format
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:3090
+#: ../blivet/__init__.py:3094
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3095
+#: ../blivet/__init__.py:3099
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3097
+#: ../blivet/__init__.py:3101
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/fcoe.py:111
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/devicetree.py:1231
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/partitioning.py:370
@@ -165,7 +173,7 @@ msgid ""
 msgstr ""
 
 #: ../blivet/partitioning.py:1181
-msgid "unable to allocate a large enough partition"
+msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
 #: ../blivet/partitioning.py:1204
@@ -192,14 +200,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:2158
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/devicetree.py:1220
-msgid "Invalid Disk Label"
-msgstr ""
-
-#: ../blivet/fcoe.py:111
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:52
@@ -536,19 +536,19 @@ msgstr ""
 msgid "Yi"
 msgstr ""
 
-#: ../blivet/size.py:60 ../blivet/size.py:282 ../blivet/size.py:315
+#: ../blivet/size.py:60 ../blivet/size.py:284 ../blivet/size.py:320
 msgid "B"
 msgstr ""
 
-#: ../blivet/size.py:60 ../blivet/size.py:91
+#: ../blivet/size.py:60 ../blivet/size.py:93
 msgid "b"
 msgstr ""
 
-#: ../blivet/size.py:60 ../blivet/size.py:83
+#: ../blivet/size.py:60 ../blivet/size.py:85
 msgid "byte"
 msgstr ""
 
-#: ../blivet/size.py:60 ../blivet/size.py:84
+#: ../blivet/size.py:60 ../blivet/size.py:86
 msgid "bytes"
 msgstr ""
 
@@ -560,28 +560,28 @@ msgstr ""
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:374
+#: ../blivet/deviceaction.py:372
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:437
+#: ../blivet/deviceaction.py:435
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:450
+#: ../blivet/deviceaction.py:446
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:522
+#: ../blivet/deviceaction.py:518
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:581
+#: ../blivet/deviceaction.py:577
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:599
+#: ../blivet/deviceaction.py:595
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
