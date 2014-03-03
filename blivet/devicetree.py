@@ -2241,8 +2241,13 @@ class DeviceTree(object):
     def getDevicesByInstance(self, device_class):
         return [d for d in self._devices if isinstance(d, device_class)]
 
-    def getDeviceByID(self, id_num):
-        for device in self._devices:
+    def getDeviceByID(self, id_num, hidden=False):
+
+        devices = self._devices[:]
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if device.id == id_num:
                 return device
 
