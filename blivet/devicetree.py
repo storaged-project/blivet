@@ -2382,13 +2382,17 @@ class DeviceTree(object):
         """
         return [d for d in self._devices if isinstance(d, device_class)]
 
-    def getDeviceByID(self, id_num):
+    def getDeviceByID(self, id_num, hidden=False):
         """ Return a device with specified device id.
 
-            :param id_num: the id to look for
-            :type id_num: int
+            :param int id_num: the id to look for
+            :param bool hidden: if True return hidden devices 
         """
-        for device in self._devices:
+        devices = self._devices[:]
+        if hidden:
+            devices += self._hidden
+
+        for device in devices:
             if device.id == id_num:
                 return device
 
