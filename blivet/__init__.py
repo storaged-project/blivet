@@ -2005,8 +2005,8 @@ class Blivet(object):
                     # if the device has been removed don't include this
                     # mountpoint at all
                     del root.mounts[mountpoint]
-
-                root.mounts[mountpoint] = new_dev
+                else:
+                    root.mounts[mountpoint] = new_dev
 
         log.debug("finished Blivet copy")
         return new
