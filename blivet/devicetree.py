@@ -953,7 +953,7 @@ class DeviceTree(object):
             info["ID_FS_TYPE"] = "multipath_member"
 
         if diskType == DASDDevice:
-            self.dasd.addDASD(device)
+            self.dasd.append(device)
 
         self._addDevice(device)
         return device
@@ -1854,7 +1854,7 @@ class DeviceTree(object):
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
         if isinstance(device, DASDDevice):
-            self.dasd.removeDASD(device)
+            self.dasd.remove(device)
 
     def unhide(self, device):
         # the hidden list should be in leaves-first order
@@ -1870,7 +1870,7 @@ class DeviceTree(object):
                     parent.addChild()
 
                 if isinstance(device, DASDDevice):
-                    self.dasd.addDASD(device)
+                    self.dasd.append(device)
 
     def setupDiskImages(self):
         """ Set up devices to represent the disk image files. """
