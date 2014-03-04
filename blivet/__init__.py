@@ -76,11 +76,11 @@ import devicefactory
 from devicelibs.dm import name_from_dm_node
 from devicelibs.crypto import generateBackupPassphrase
 from devicelibs.edd import get_edd_dict
+from devicelibs.dasd import make_dasd_list, write_dasd_conf
 from udev import udev_trigger
 import iscsi
 import fcoe
 import zfcp
-import dasd
 import util
 import arch
 from flags import flags
@@ -286,6 +286,7 @@ class Blivet(object):
         self.autoPartAddBackupPassphrase = False
         self.autoPartitionRequests = []
         self.eddDict = {}
+        self.dasd = []
 
         self.__luksDevs = {}
         self.size_sets = []
@@ -294,7 +295,6 @@ class Blivet(object):
         self.iscsi = iscsi.iscsi()
         self.fcoe = fcoe.fcoe()
         self.zfcp = zfcp.ZFCP()
-        self.dasd = dasd.DASD()
 
         self._nextID = 0
         self._dumpFile = "%s/storage.state" % tempfile.gettempdir()
@@ -415,12 +415,11 @@ class Blivet(object):
             self.iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
-            self.dasd.startup(None,
-                              self.config.exclusiveDisks,
-                              self.config.initializeDisks)
+            self.dasd = make_dasd_list(self.dasd, self.devices)
+
         if self.dasd:
             # Reset the internal dasd list (823534)
-            self.dasd.clear_device_list()
+            self.dasd = []
 
         self.devicetree.reset(conf=self.config,
                               passphrase=self.encryptionPassphrase,
@@ -1724,7 +1723,7 @@ class Blivet(object):
         self.iscsi.write(ROOT_PATH, self)
         self.fcoe.write(ROOT_PATH)
         self.zfcp.write(ROOT_PATH)
-        self.dasd.write(ROOT_PATH)
+        write_dasd_conf(self.dasd, ROOT_PATH)
 
     def turnOnSwap(self, upgrading=None):
         self.fsset.turnOnSwap(rootPath=ROOT_PATH,
