@@ -66,7 +66,7 @@ class PPCPRePBoot(DeviceFormat):
                      os.write(fd, buf)
                      length -= len(buf)
                 else:
-                     buf = '0' * length
+                     buf = '\0' * length
                      os.write(fd, buf)
                      length = 0
             os.close(fd)
