@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.29
+Version: 0.18.30
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,28 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Mar 04 2014 Brian C. Lane <bcl@redhat.com> - 0.18.30-1
+- When copying a root, also copy hidden devices (amulhern)
+  Related: rhbz#1043763
+- Add hidden flag to devicetree.getDeviceByID (amulhern)
+  Resolves: rhbz#1043763
+- Only set device for mountpoint if it is not None (amulhern)
+  Related: rhbz#1043763
+- Extend the list of things to be omitted if moddisk is False (amulhern)
+  Related: rhbz#1043763
+- Set req_name to None at the top of initializer (amulhern)
+  Related: rhbz#1043763
+- Log action cancelation (amulhern)
+  Resolves: rhbz#1043763
+- Make DeviceTree.hide() remove a larger set (amulhern)
+  Related: rhbz#1043763
+- Find more used devices when calculating unused devices (dlehman)
+  Related: rhbz#1043763
+- Re-write the DASD storage code. (sbueno+anaconda)
+  Resolves: rhbz#1001070
+- Include image install flag when updating from anaconda flags. (dlehman)
+  Resolves: rhbz#1066008
+
 * Wed Feb 26 2014 Brian C. Lane <bcl@redhat.com> - 0.18.29-1
 - Let the udev queue settle before populating the devicetree. (dlehman)
   Resolves: rhbz#1049772
