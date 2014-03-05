@@ -117,6 +117,7 @@ from flags import flags
 from storage_log import log_method_call
 from udev import *
 from formats import get_device_format_class, getFormat, DeviceFormat
+from size import Size
 
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
@@ -2713,6 +2714,30 @@ class LVMLogicalVolumeDevice(DMDevice):
                 log.debug("vg %s teardown failed; continuing" % self.vg.name)
             else:
                 raise
+
+    def _preCreate(self):
+        super(LVMLogicalVolumeDevice, self)._preCreate()
+
+        try:
+            vg_info = lvm.vginfo(self.vg.name)
+        except LVMError as lvmerr:
+            msg = "Failed to get free space for the %s VG: %s" % self.vg.name, lvmerr
+            log.error(msg)
+            # nothing more can be done, we don't know the VG's free space
+            return
+
+        extent_size = Size(spec=vg_info[3] + "MiB")
+        extents_free = int(vg_info[5])
+        can_use = extent_size * extents_free
+
+        # self.size is in MiB
+        can_use = int(can_use.convertTo("MiB"))
+
+        if self.size > can_use:
+            msg = ("%s LV's size (%s) exceeds the VG's usable free space (%s),"
+                  "shrinking the LV") % (self.name, self.size, can_use)
+            log.warning(msg)
+            self.size = can_use
 
     def _create(self):
         """ Create the device. """
