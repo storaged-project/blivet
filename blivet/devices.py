@@ -2434,10 +2434,11 @@ class LVMVolumeGroupDevice(DMDevice):
         # total the sizes of any LVs
         log.debug("%s size is %dMB" % (self.name, self.size))
         used = sum(lv.vgSpaceUsed for lv in self.lvs) + self.snapshotSpace
-        if raid_disks:
-            # LV on RAID allocates (5 * num_disks) extra extents for metadata
-            # (see the devicefactory.LVMFactory._get_total_space method)
-            used += len(self.lvs) * 5 * raid_disks * self.peSize
+        if not self.exists and raid_disks:
+            # (only) we allocate (5 * num_disks) extra extents for LV metadata
+            # on RAID (see the devicefactory.LVMFactory._get_total_space method)
+            new_lvs = [lv for lv in self.lvs if not lv.exists]
+            used += len(new_lvs) * 5 * raid_disks * self.peSize
         used += self.reservedSpace
         used += self.poolMetaData
         free = self.size - used
