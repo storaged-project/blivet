@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.30
+Version: 0.18.31
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Mar 05 2014 Brian C. Lane <bcl@redhat.com> - 0.18.31-1
+- Fix traceback with write_dasd_conf. (sbueno+anaconda)
+  Resolves: rhbz#1072911
+
 * Tue Mar 04 2014 Brian C. Lane <bcl@redhat.com> - 0.18.30-1
 - When copying a root, also copy hidden devices (amulhern)
   Related: rhbz#1043763
