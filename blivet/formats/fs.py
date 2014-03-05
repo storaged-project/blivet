@@ -350,10 +350,13 @@ class FS(DeviceFormat):
         argv.extend(self.defaultFormatOptions)
         if self._fsProfileSpecifier and self.fsprofile:
             argv.extend([self._fsProfileSpecifier, self.fsprofile])
-        if do_labeling and self.label is not None and self.labelFormatOK(self.label):
-            argv.extend(self._labelfs.labelingArgs(self.label))
-        else:
-            log.warning("Could not create label (%s) on filesystem %s", self.label, self.type)
+
+        if do_labeling and self.label is not None:
+            if self.labelFormatOK(self.label):
+                argv.extend(self._labelfs.labelingArgs(self.label))
+            else:
+                log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
+
         argv.append(self.device)
         return argv
 
