@@ -1,7 +1,7 @@
 # devicetree.py
 # Device management for anaconda's storage configuration module.
 #
-# Copyright (C) 2009, 2010, 2011, 2012, 2013  Red Hat, Inc.
+# Copyright (C) 2009-2014  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
@@ -1487,7 +1487,7 @@ class DeviceTree(object):
                 return
 
             vg_device = LVMVolumeGroupDevice(vg_name,
-                                             device,
+                                             parents=[device],
                                              uuid=vg_uuid,
                                              size=vg_size,
                                              free=vg_free,

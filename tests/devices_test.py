@@ -19,6 +19,8 @@ from blivet.devices import mdraid
 from blivet.devicelibs import btrfs
 from blivet.size import Size
 
+from blivet.formats import getFormat
+
 class DeviceStateTestCase(unittest.TestCase):
     """A class which implements a simple method of checking the state
        of a device object.
@@ -106,8 +108,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level="raid0",
            memberDevices=2,
            parents=[
-              MDRaidArrayDevice("parent", level="container"),
-              MDRaidArrayDevice("other", level=0)],
+              MDRaidArrayDevice("parent", level="container",
+                                format=getFormat("mdmember")),
+              MDRaidArrayDevice("other", level=0,
+                                format=getFormat("mdmember"))],
            totalDevices=2)
 
         self.dev10 = MDRaidArrayDevice(
@@ -120,8 +124,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=1,
            memberDevices=2,
            parents=[
-              MDRaidArrayDevice("parent", level="container"),
-              MDRaidArrayDevice("other", level="raid0")],
+              MDRaidArrayDevice("parent", level="container",
+                                format=getFormat("mdmember")),
+              MDRaidArrayDevice("other", level="raid0",
+                                format=getFormat("mdmember"))],
            size=Size(spec="32 MiB"),
            totalDevices=2)
 
@@ -131,8 +137,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            memberDevices=2,
            parents=[
               Mock(**{"type": "mdcontainer",
-                      "size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+                      "size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            size=Size(spec="32 MiB"),
            totalDevices=2)
 
@@ -141,8 +149,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=0,
            memberDevices=3,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            size=Size(spec="32 MiB"),
            totalDevices=3)
 
@@ -151,9 +161,12 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=4,
            memberDevices=3,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            totalDevices=3)
 
         self.dev15 = MDRaidArrayDevice(
@@ -161,9 +174,12 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=5,
            memberDevices=3,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            totalDevices=3)
 
         self.dev16 = MDRaidArrayDevice(
@@ -171,10 +187,14 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=6,
            memberDevices=4,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            totalDevices=4)
 
         self.dev17 = MDRaidArrayDevice(
@@ -182,10 +202,14 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=10,
            memberDevices=4,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            totalDevices=4)
 
         self.dev18 = MDRaidArrayDevice(
@@ -193,10 +217,14 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=10,
            memberDevices=4,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="4 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")}),
-              Mock(**{"size": Size(spec="2 MiB")})],
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="4 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")}),
+              Mock(**{"size": Size(spec="2 MiB"),
+                      "format": getFormat("mdmember")})],
            totalDevices=5)
 
 
@@ -367,14 +395,16 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev",
-                                parents=[Device("parent")])
+                                parents=[StorageDevice("parent",
+                                                format=getFormat("mdmember"))])
 
         self.assertRaisesRegexp(DeviceError,
                                 "set requires at least 2 members",
                                 MDRaidArrayDevice,
                                 "dev",
                                 level="raid0",
-                                parents=[Device("parent")])
+                                parents=[StorageDevice("parent",
+                                                format=getFormat("mdmember"))])
 
         self.assertRaisesRegexp(mdraid.MDRaidError,
                                 "invalid RAID level descriptor junk",
@@ -464,7 +494,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            "dev")
 
         self.assertRaisesRegexp(ValueError,
-           "member device.*is not BTRFS",
+           "member has wrong format",
            BTRFSVolumeDevice,
            "dev", parents=[OpticalDevice("deva")])
 

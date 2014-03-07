@@ -1,7 +1,7 @@
 # devices.py
-# Device classes for anaconda's storage configuration module.
+# Classes to represent various types of block devices.
 # 
-# Copyright (C) 2009-2013  Red Hat, Inc.
+# Copyright (C) 2009-2014  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
@@ -2028,7 +2028,153 @@ class LUKSDevice(DMCryptDevice):
         data.encrypted = True
         super(LUKSDevice, self).populateKSData(data)
 
-class LVMVolumeGroupDevice(DMDevice):
+class ContainerDevice(StorageDevice):
+    """ A device that aggregates a set of member devices.
+
+        The only interfaces provided by this class are for addition and removal
+        of member devices -- one set for modifying the member set of the
+        python objects, and one for writing the changes to disk.
+
+        :meth:`_addMember` and :meth:`_removeMember` operate on the object, but
+        do not change anything on the disk(s). They are used when detecting
+        devices (as in  :class:`~.devicetree.DeviceTree`) and when manipulating
+        the container objects (as in :class:`~.devicefactory.DeviceFactory` and
+        :class:`~.deviceaction.ActionAddMember`).
+
+        :meth:`add` and :meth:`remove` remove a member from the container's on-
+        disk representation. These methods should normally only be called from
+        within :meth:`.deviceaction.ActionAddMember.execute` and
+        :meth:`.deviceaction.ActionRemoveMember.execute`.
+    """
+    _formatClassName = None
+    _formatUUIDAttr = None
+
+    def __init__(self, *args, **kwargs):
+        self.formatClass = get_device_format_class(self._formatClassName)
+        if not self.formatClass:
+            raise StorageError("cannot find '%s' class" % self._formatClassName)
+
+        # Instantiate the superclass without any parents so we can do some
+        # validation on them before adding them as parents.
+        parents = kwargs.pop("parents", [])
+        super(ContainerDevice, self).__init__(*args, **kwargs)
+
+        # could be None
+        for parent in parents or []:
+            self._addMember(parent)
+
+        # restore kwargs in case another class wants to use them further
+        kwargs["parents"] = parents
+
+    def _addMember(self, member):
+        """ Add a member device to the container.
+
+            :param member: the member device to add
+            :type member: :class:`.StorageDevice`
+
+            This operates on the in-memory model and does not alter disk
+            contents at all.
+        """
+        log_method_call(self,
+                        self.name,
+                        member=member.name,
+                        status=self.status)
+        if not isinstance(member.format, self.formatClass):
+            raise ValueError("member has wrong format")
+
+        if member in self.parents:
+            raise ValueError("member is already part of this container")
+
+        if member.format.exists and self.uuid and self._formatUUIDAttr and \
+           getattr(member.format, self._formatUUIDAttr) != self.uuid:
+            raise ValueError("cannot add member with mismatched UUID")
+
+        self.parents.append(member)
+        member.addChild()
+
+    def _removeMember(self, member):
+        """ Remove a member device from the container.
+
+            :param member: the member device to add
+            :type member: :class:`.StorageDevice`
+
+            This operates on the in-memory model and does not alter disk
+            contents at all.
+        """
+        log_method_call(self,
+                        self.name,
+                        member=member.name,
+                        status=self.status)
+        if member not in self.parents:
+            raise ValueError("member is not part of this container")
+
+        self.parents.remove(member)
+        member.removeChild()
+
+    def _add(self, member):
+        """ Device-type specific code to add a member to the container.
+
+            :param member: the member device to add
+            :type member: :class:`.StorageDevice`
+
+            This method writes the member addition to disk.
+        """
+        pass
+
+    def add(self, member):
+        """ Add a member to the container.
+
+            :param member: the member device to add
+            :type member: :class:`.StorageDevice`
+
+            This method writes the member addition to disk.
+        """
+        if not self.exists:
+            raise DeviceError("device has not been created", self.name)
+
+        if member.format.exists and self.uuid and self._formatUUIDAttr and \
+           getattr(member.format, self._formatUUIDAttr) == self.uuid:
+            log.error("cannot re-add member: %s" % member)
+            raise ValueError("cannot add members that are already part of the container")
+
+        self._add(member)
+
+        if member not in self.parents:
+            self._addMember(member)
+
+    def _remove(self, member):
+        """ Device-type specific code to remove a member from the container.
+
+            :param member: the member device to remove
+            :type member: :class:`.StorageDevice`
+
+            This method writes the member removal to disk.
+        """
+        pass
+
+    def remove(self, member):
+        """ Remove a member from the container.
+
+            :param member: the member device to remove
+            :type member: :class:`.StorageDevice`
+
+            This method writes the member removal to disk.
+        """
+        log_method_call(self, self.name, status=self.status)
+        if not self.exists:
+            raise DeviceError("device has not been created", self.name)
+
+        if self._formatUUIDAttr and self.uuid and \
+           getattr(member.format, self._formatUUIDAttr) != self.uuid:
+            log.error("cannot remove non-member: %s (%s/%s)", member, getattr(member.format, self._formatUUIDAttr), self.uuid)
+            raise ValueError("cannot remove members that are not part of the container")
+
+        self._remove(member)
+
+        if member in self.parents:
+            self._removeMember(member)
+
+class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group
 
         XXX Maybe this should inherit from StorageDevice instead of
@@ -2036,6 +2182,8 @@ class LVMVolumeGroupDevice(DMDevice):
     """
     _type = "lvmvg"
     _packages = ["lvm2"]
+    _formatClassName = "lvmpv"
+    _formatUUIDAttr = "vgUuid"
 
     def __init__(self, name, parents=None, size=None, free=None,
                  peSize=None, peCount=None, peFree=None, pvCount=None,
@@ -2067,40 +2215,30 @@ class LVMVolumeGroupDevice(DMDevice):
             :keyword uuid: the VG UUID
             :type uuid: str
         """
-        self.pvClass = get_device_format_class("lvmpv")
-        if not self.pvClass:
-            raise StorageError("cannot find 'lvmpv' class")
+        # These attributes are used by _addMember, so they must be initialized
+        # prior to instantiating the superclass.
+        self._lvs = []
+        self.hasDuplicate = False
+        self.pvCount = util.numeric_type(pvCount)
 
-        if isinstance(parents, list):
-            for dev in parents:
-                if not isinstance(dev.format, self.pvClass):
-                    raise ValueError("constructor requires a list of PVs")
-        elif not isinstance(parents.format, self.pvClass):
-            raise ValueError("constructor requires a list of PVs")
-
-        DMDevice.__init__(self, name, parents=parents,
-                          exists=exists, sysfsPath=sysfsPath)
+        super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
+                                            exists=exists, sysfsPath=sysfsPath)
 
         self.uuid = uuid
         self.free = util.numeric_type(free)
         self.peSize = util.numeric_type(peSize)
         self.peCount = util.numeric_type(peCount)
         self.peFree = util.numeric_type(peFree)
-        self.pvCount = util.numeric_type(pvCount)
         self.lv_names = []
         self.lv_uuids = []
         self.lv_sizes = []
         self.lv_attr = []
         self.lv_types = []
-        self.hasDuplicate = False
         self.reserved_percent = 0
         self.reserved_space = Size(bytes=0)
 
         # this will have to be covered by the 20% pad for non-existent pools
         self.poolMetaData = 0
-
-        # circular references, here I come
-        self._lvs = []
 
         # TODO: validate peSize if given
         if not self.peSize:
@@ -2117,7 +2255,7 @@ class LVMVolumeGroupDevice(DMDevice):
         self.size_policy = self.size
 
     def __repr__(self):
-        s = DMDevice.__repr__(self)
+        s = super(LVMVolumeGroupDevice, self).__repr__()
         s += ("  free = %(free)s  PE Size = %(peSize)s  PE Count = %(peCount)s\n"
               "  PE Free = %(peFree)s  PV Count = %(pvCount)s\n"
               "  LV Names = %(lv_names)s  modified = %(modified)s\n"
@@ -2194,56 +2332,6 @@ class LVMVolumeGroupDevice(DMDevice):
 
         return True
 
-    def _addDevice(self, device):
-        """ Add a new physical volume device to the volume group.
-
-            XXX This is for use by device probing routines and is not
-                intended for modification of the VG.
-        """
-        log_method_call(self,
-                        self.name,
-                        device=device.name,
-                        status=self.status)
-        if not self.exists:
-            raise DeviceError("device does not exist", self.name)
-
-        if not isinstance(device.format, self.pvClass):
-            raise ValueError("addDevice requires a PV arg")
-
-        if self.uuid and device.format.vgUuid != self.uuid:
-            # this means there is another vg with the same name on the system
-            # set hasDuplicate which will make complete return False
-            # and let devicetree._handleInconsistencies() further handle this.
-            # Note we still add the device to our parents for use by
-            # devicetree._handleInconsistencies()
-            self.hasDuplicate = True
-
-        if device in self.pvs:
-            raise ValueError("device is already a member of this VG")
-
-        self.parents.append(device)
-        device.addChild()
-
-        # now see if the VG can be activated
-        if self.complete and flags.installer_mode:
-            self.setup()
-
-    def _removeDevice(self, device):
-        """ Remove a physical volume from the volume group.
-
-            This is for cases like clearing of preexisting partitions.
-        """
-        log_method_call(self,
-                        self.name,
-                        device=device.name,
-                        status=self.status)
-        try:
-            self.parents.remove(device)
-        except ValueError:
-            raise ValueError("cannot remove non-member PV device from VG")
-
-        device.removeChild()
-
     def _preSetup(self, orig=False):
         if self.exists and not self.complete:
             raise DeviceError("cannot activate VG with missing PV(s)", self.name)
@@ -2317,41 +2405,26 @@ class LVMVolumeGroupDevice(DMDevice):
         if self.poolMetaData and not self.thinpools:
             self.poolMetaData = 0
 
-    def _addPV(self, pv):
-        """ Add a PV to this VG. """
-        if pv in self.pvs:
-            raise ValueError("pv is already part of this vg")
+    def _addMember(self, member):
+        super(LVMVolumeGroupDevice, self)._addMember(member)
 
-        # for the time being we will not allow vgextend
-        if self.exists:
-            raise DeviceError("cannot add pv to existing vg", self.name)
-
-        self.parents.append(pv)
-        pv.addChild()
+        # now see if the VG can be activated
+        ## XXX TODO: remove this activation code
+        if self.exists and member.format.exists and self.complete and \
+           flags.installer_mode:
+            self.setup()
 
         # and update our pv count
         self.pvCount = len(self.parents)
 
-    def addMember(self, member):
-        self._addPV(member)
-
-    def _removePV(self, pv):
-        """ Remove an PV from this VG. """
-        if not pv in self.pvs:
-            raise ValueError("specified pv is not part of this vg")
-
-        # for the time being we will not allow vgreduce
-        if self.exists:
-            raise DeviceError("cannot remove pv from existing vg", self.name)
-
-        self.parents.remove(pv)
-        pv.removeChild()
+    def _removeMember(self, member):
+        # XXX It would be nice to raise an exception if removing this member
+        #     would not leave enough space, but the devicefactory relies on it
+        #     being possible to _temporarily_ overcommit the VG.
+        super(LVMVolumeGroupDevice, self)._removeMember(member)
 
         # and update our pv count
         self.pvCount = len(self.parents)
-
-    def removeMember(self, member):
-        self._removePV(member)
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -2982,11 +3055,13 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         data.thin_volume = True
         data.pool_name = self.pool.lvname
 
-class MDRaidArrayDevice(StorageDevice):
+class MDRaidArrayDevice(ContainerDevice):
     """ An mdraid (Linux RAID) device. """
     _type = "mdarray"
     _packages = ["mdadm"]
     _devDir = "/dev/md"
+    _formatClassName = "mdmember"
+    _formatUUIDAttr = "mdUuid"
 
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  memberDevices=None, totalDevices=None,
@@ -3015,9 +3090,15 @@ class MDRaidArrayDevice(StorageDevice):
             :keyword minor: the device minor (obsolete?)
             :type minor: int
         """
-        StorageDevice.__init__(self, name, format=format, exists=exists,
-                               major=major, minor=minor, size=size,
-                               parents=parents, sysfsPath=sysfsPath)
+        # These attributes are used by _addMember, so they must be initialized
+        # prior to instantiating the superclass.
+        self._memberDevices = 0
+        self._totalDevices = 0
+
+        super(MDRaidArrayDevice, self).__init__(name, format=format,
+                                                exists=exists, size=size,
+                                                parents=parents,
+                                                sysfsPath=sysfsPath)
 
         if level == "container":
             self._type = "mdcontainer"
@@ -3048,12 +3129,6 @@ class MDRaidArrayDevice(StorageDevice):
         if self.parents and self.parents[0].type == "mdcontainer":
             self._size = self.currentSize
             self._type = "mdbiosraidarray"
-
-        self.formatClass = get_device_format_class("mdmember")
-        if not self.formatClass:
-            for dev in self.parents:
-                dev.removeChild()
-            raise DeviceError("cannot find class for 'mdmember'", self.name)
 
         if self.exists and self.uuid and not flags.testing:
             # this is a hack to work around mdadm's insistence on giving
@@ -3249,83 +3324,38 @@ class MDRaidArrayDevice(StorageDevice):
         else:
             self.sysfsPath = ''
 
-    def _addDevice(self, device):
-        """ Add a new member device to the array.
+    def _addMember(self, member):
+        super(MDRaidArrayDevice, self)._addMember(member)
 
-            XXX This is for use when probing devices, not for modification
-                of arrays.
-        """
-        log_method_call(self,
-                        self.name,
-                        device=device.name,
-                        status=self.status)
-        if not self.exists:
-            raise DeviceError("device has not been created", self.name)
-
-        if not isinstance(device.format, self.formatClass):
-            raise ValueError("invalid device format for mdraid member")
-
-        if self.uuid and device.format.mdUuid != self.uuid:
-            raise ValueError("cannot add member with non-matching UUID")
-
-        if device in self.devices:
-            raise ValueError("device is already a member of this array")
-
-        # we added it, so now set up the relations
-        self.devices.append(device)
-        device.addChild()
-
-        if flags.installer_mode:
-            device.setup()
+        ## XXX TODO: remove this whole block of activation code
+        if self.exists and member.format.exists and flags.installer_mode:
+            member.setup()
             udev_settle()
 
-            if self.spares > 0:
-                # mdadm doesn't like it when you try to incrementally add spares
-                return
+            if self.spares <= 0:
+                try:
+                    mdraid.mdadd(None, [member.path], incremental=True)
+                    # mdadd causes udev events
+                    udev_settle()
+                except MDRaidError as e:
+                    log.warning("failed to add member %s to md array %s: %s"
+                                % (member.path, self.path, e))
 
-            try:
-                mdraid.mdadd(device.path)
-                # mdadd causes udev events
-                udev_settle()
-            except MDRaidError as e:
-                log.warning("failed to add member %s to md array %s: %s",
-                            device.path, self.path, e)
-
-        if self.status:
+        if self.status and member.format.exists:
             # we always probe since the device may not be set up when we want
             # information about it
             self._size = self.currentSize
 
-    def _removeDevice(self, device):
-        """ Remove a component device from the array.
+        if not self.exists:
+            self._totalDevices += 1
 
-            XXX This is for use by clearpart, not for reconfiguration.
-        """
-        log_method_call(self,
-                        self.name,
-                        device=device.name,
-                        status=self.status)
-
-        if device not in self.devices:
-            raise ValueError("cannot remove non-member device from array")
-
-        self.devices.remove(device)
-        device.removeChild()
-
-    def addMember(self, member):
-        if member in self.parents:
-            raise ValueError("member is already part of this array")
-
-        # for the time being we will not allow adding members to existing arrays
-        if self.exists:
-            raise DeviceError("cannot add member to existing array", self.name)
-
-        self.parents.append(member)
-        member.addChild()
         self.memberDevices += 1
 
-    def removeMember(self, member):
-        self._removeDevice(member)
+    def _removeMember(self, member):
+        if self.level.name == "raid0" and self.exists and member.format.exists:
+            raise DeviceError("cannot remove members from existing raid0")
+
+        super(MDRaidArrayDevice, self)._removeMember(member)
         self.memberDevices -= 1
 
     @property
@@ -3522,12 +3552,13 @@ class MDRaidArrayDevice(StorageDevice):
         data.preexist = self.exists
         data.device = self.name
 
-class DMRaidArrayDevice(DMDevice):
+class DMRaidArrayDevice(DMDevice, ContainerDevice):
     """ A dmraid (device-mapper RAID) device """
     _type = "dm-raid array"
     _packages = ["dmraid"]
     _partitionable = True
     _isDisk = True
+    _formatClassName = "dmraidmember"
 
     def __init__(self, name, raidSet=None, format=None,
                  size=None, parents=None, sysfsPath=''):
@@ -3548,43 +3579,15 @@ class DMRaidArrayDevice(DMDevice):
             DMRaidArrayDevices always exist. Blivet cannot create or destroy
             them.
         """
-        if isinstance(parents, list):
-            for parent in parents:
-                if not parent.format or parent.format.type != "dmraidmember":
-                    raise ValueError("parent devices must contain dmraidmember format")
-        DMDevice.__init__(self, name, format=format, size=size,
-                          parents=parents, sysfsPath=sysfsPath, exists=True)
-
-        self.formatClass = get_device_format_class("dmraidmember")
-        if not self.formatClass:
-            raise StorageError("cannot find class for 'dmraidmember'")
+        super(DMRaidArrayDevice, self).__init__(name, format=format, size=size,
+                                                parents=parents, exists=True,
+                                                sysfsPath=sysfsPath)
 
         self._raidSet = raidSet
 
     @property
     def raidSet(self):
         return self._raidSet
-
-    def _addDevice(self, device):
-        """ Add a new member device to the array.
-
-            XXX This is for use when probing devices, not for modification
-                of arrays.
-        """
-        log_method_call(self, self.name, device=device.name, status=self.status)
-
-        if not self.exists:
-            raise DeviceError("device has not been created", self.name)
-
-        if not isinstance(device.format, self.formatClass):
-            raise ValueError("invalid device format for dmraid member")
-
-        if device in self.members:
-            raise ValueError("device is already a member of this array")
-
-        # we added it, so now set up the relations
-        self.devices.append(device)
-        device.addChild()
 
     @property
     def members(self):
@@ -4461,7 +4464,7 @@ class BTRFSDevice(StorageDevice):
 
     @property
     def path(self):
-        return self.parents[0].path
+        return self.parents[0].path if self.parents else None
 
     @property
     def fstabSpec(self):
@@ -4471,9 +4474,11 @@ class BTRFSDevice(StorageDevice):
             spec = super(BTRFSDevice, self).fstabSpec
         return spec
 
-class BTRFSVolumeDevice(BTRFSDevice):
+class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     _type = "btrfs volume"
     vol_id = btrfs.MAIN_VOLUME_ID
+    _formatClassName = "btrfs"
+    _formatUUIDAttr = "volUUID"
 
     def __init__(self, *args, **kwargs):
         self.dataLevel = kwargs.pop("dataLevel", None)
@@ -4483,16 +4488,6 @@ class BTRFSVolumeDevice(BTRFSDevice):
 
         self.subvolumes = []
         self.size_policy = self.size
-
-        for parent in self.parents:
-            if parent.format.type != "btrfs":
-                raise ValueError("member device %s is not BTRFS" % parent.name)
-
-            if parent.format.exists and self.exists and \
-               parent.format.volUUID != self.uuid:
-                raise ValueError("BTRFS member device %s UUID %s does not "
-                                 "match volume UUID %s" % (parent.name,
-                                 parent.format.volUUID, self.uuid))
 
         if self.parents and not self.format.type:
             label = getattr(self.parents[0].format, "label", None)
@@ -4521,67 +4516,24 @@ class BTRFSVolumeDevice(BTRFSDevice):
 
         return size
 
-    def _addDevice(self, device):
-        """ Add a new device to this volume.
+    def _removeMember(self, member):
+        # btrfs won't let you degrade it
+        limits = []
+        levels = raid.RAIDLevels()
+        if self.dataLevel and self.dataLevel != "single":
+            limits.append(levels.raidLevel(self.dataLevel).min_members)
 
-            XXX This is for use by device probing routines and is not
-                intended for modification of the volume.
-        """
-        log_method_call(self,
-                        self.name,
-                        device=device.name,
-                        status=self.status)
-        if not self.exists:
-            raise DeviceError("device does not exist", self.name)
+        if self.metaDataLevel and self.metaDataLevel != "single":
+            limits.append(levels.raidLevel(self.metaDataLevel).min_members)
 
-        if device.format.type != "btrfs":
-            raise ValueError("addDevice requires a btrfs device as sole arg")
+        if limits:
+            min_members = min(limits)
 
-        if device.format.volUUID != self.uuid:
-            raise ValueError("device UUID does not match the volume UUID")
+        if limits and len(self.parents) - 1 < min_members:
+            raise DeviceError("cannot remove member due to raid level "
+                              "constraints")
 
-        if device in self.parents:
-            raise ValueError("device is already a member of this volume")
-
-        self.parents.append(device)
-        device.addChild()
-
-    def _removeDevice(self, device):
-        """ Remove a device from the volume.
-
-            This is for cases like clearing of preexisting partitions.
-        """
-        log_method_call(self,
-                        self.name,
-                        device=device.name,
-                        status=self.status)
-        try:
-            self.parents.remove(device)
-        except ValueError:
-            raise ValueError("cannot remove non-member device from volume")
-
-        device.removeChild()
-
-    def addMember(self, member):
-        if member in self.parents:
-            raise ValueError("member is already part of this volume")
-
-        # for the time being we will not allow adding members to existing vols
-        if self.exists:
-            raise DeviceError("cannot add member to existing volume", self.name)
-
-        self.parents.append(member)
-        member.addChild()
-
-    def removeMember(self, member):
-        if member not in self.parents:
-            raise ValueError("member is not part of this volume")
-
-        if self.exists:
-            raise DeviceError("cannot remove member from an existing volume")
-
-        self.parents.remove(member)
-        member.removeChild()
+        super(BTRFSVolumeDevice, self)._removeMember(member)
 
     def _addSubVolume(self, vol):
         if vol.name in [v.name for v in self.subvolumes]:
