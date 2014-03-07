@@ -1206,6 +1206,7 @@ class LVMFactory(DeviceFactory):
             kwargs["raid_level"] = self.container_raid_level
             if self.container and self.container.parents:
                 kwargs["device"] = self.container.parents[0]
+                kwargs["name"] = self.container.parents[0].name
             else:
                 kwargs["name"] = self.storage.suggestDeviceName(prefix="pv")
 
