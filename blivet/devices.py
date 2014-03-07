@@ -3921,6 +3921,7 @@ class DirectoryDevice(FileDevice):
 class LoopDevice(StorageDevice):
     """ A loop device. """
     _type = "loop"
+    _partitionable = True
 
     def __init__(self, name=None, format=None, size=None, sysfsPath=None,
                  exists=False, parents=None):
