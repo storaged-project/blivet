@@ -2737,6 +2737,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         return self.parents[0]
 
     @property
+    def container(self):
+        return self.vg
+
+    @property
     def mapName(self):
         """ This device's device-mapper map name """
         # Thank you lvm for this lovely hack.
@@ -4741,6 +4745,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         if not isinstance(vol, BTRFSVolumeDevice):
             raise DeviceError("%s %s's first non subvolume ancestor must be a btrfs volume" % (self.type, self.name))
         return vol
+
+    @property
+    def container(self):
+        return self.volume
 
     def setupParents(self, orig=False):
         """ Run setup method of all parent devices. """
