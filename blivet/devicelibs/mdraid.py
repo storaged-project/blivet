@@ -2,7 +2,7 @@
 # mdraid.py
 # mdraid functions
 #
-# Copyright (C) 2009  Red Hat, Inc.  All rights reserved.
+# Copyright (C) 2009-2014  Red Hat, Inc.  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -134,14 +134,62 @@ def mddestroy(device):
     except MDRaidError as msg:
         raise MDRaidError("mddestroy failed for %s: %s" % (device, msg))
 
-def mdadd(device):
-    args = ["--incremental", "--quiet"]
+def mdadd(array, device, incremental=False, raid_devices=None):
+    """ Add a device to an array.
+
+        :param str array: path to the array to add the device to
+        :param str device: path to the device to add to the array
+        :keyword bool incremental: add the device incrementally (see note below)
+        :keyword int raid_devices: the number of active member devices
+
+        The raid_devices parameter is used when adding devices to a raid0 array
+        since raid0 does not allow spares.
+
+        Whether the new device will be added as a spare or an active member is
+        decided by mdadm.
+
+        .. note::
+
+            Incremental add is used during block device discovery and is a
+            different operation than changing the member set of an array.
+
+    """
+    if incremental:
+        args = ["--incremental", "--quiet"]
+    elif raid_devices is None:
+        args = [array, "--add"]
+    else:
+        args = ["--grow", array, "--raid-devices", str(raid_devices), "--add"]
+
     args.append(device)
 
     try:
         mdadm(args)
     except MDRaidError as msg:
         raise MDRaidError("mdadd failed for %s: %s" % (device, msg))
+
+def mdremove(array, device, fail=False):
+    """ Remove a device from an array.
+
+        :param str array: path to the array to remove the device from
+        :param str device: path to the device to remove
+        :keyword bool fail: mark the device as failed before removing it
+
+        .. note::
+
+            Only spares and failed devices can be removed. To remove an active
+            member device you must specify fail=True.
+    """
+    args = [array]
+    if fail:
+        args.extend(["--fail", device])
+
+    args.extend(["--remove", device])
+
+    try:
+        mdadm(args)
+    except MDRaidError as msg:
+        raise MDRaidError("mdremove failed for %s: %s" % (device, msg))
 
 def mdactivate(device, members=[], uuid=None):
     """Assemble devices given by members into a single device.

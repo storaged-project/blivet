@@ -2,7 +2,7 @@
 # lvm.py
 # lvm functions
 #
-# Copyright (C) 2009  Red Hat, Inc.  All rights reserved.
+# Copyright (C) 2009-2014  Red Hat, Inc.  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -258,6 +258,21 @@ def pvscan(device):
     except LVMError as msg:
         raise LVMError("pvscan failed for %s: %s" % (device, msg))
 
+def pvmove(source, dest=None):
+    """ Move physical extents from one PV to another.
+
+        :param str source: pv device path to move extents off of
+        :keyword str dest: pv device path to move the extents onto
+    """
+    args = ["pvmove"] + _getConfigArgs() + [source]
+    if dest:
+        args.extend(dest)
+
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("pvmove failed for %s->%s: %s" % (source, dest, msg))
+
 def pvinfo(device):
     """
         If the PV was created with '--metadacopies 0', lvm will do some
@@ -334,24 +349,44 @@ def vgdeactivate(vg_name):
     except LVMError as msg:
         raise LVMError("vgdeactivate failed for %s: %s" % (vg_name, msg))
 
-def vgreduce(vg_name, pv_list, rm=False):
-    """ Reduce a VG.
+def vgreduce(vg_name, pv, missing=False):
+    """ Remove PVs from a VG.
 
-    rm -> with RemoveMissing option.
-    Use pv_list when rm=False, otherwise ignore pv_list and call vgreduce with
-    the --removemissing option.
+        :param str pv: PV device path to remove
+        :keyword bool missing: whether to remove missing PVs
+
+        When missing is True any specified PV is ignored and vgreduce is
+        instead called with the --removemissing option.
+
+        .. note::
+
+            This function does not move extents off of the PV before removing
+            it from the VG. You must do that first by calling :func:`.pvmove`.
     """
     args = ["vgreduce"]
     args.extend(_getConfigArgs())
-    if rm:
+    if missing:
         args.extend(["--removemissing", "--force", vg_name])
     else:
-        args.extend([vg_name] + pv_list)
+        args.extend([vg_name, pv])
 
     try:
         lvm(args)
     except LVMError as msg:
         raise LVMError("vgreduce failed for %s: %s" % (vg_name, msg))
+
+def vgextend(vg_name, pv):
+    """ Add a PV to a VG.
+
+        :param str vg_name: the name of the VG
+        :param str pv: device path of PV to add
+    """
+    args = ["vgextend"] + _getConfigArgs() + [vg_name, pv]
+
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("vgextend failed for %s: %s" % (vg_name, msg))
 
 def vginfo(vg_name):
     args = ["vgs", "--noheadings", "--nosuffix", "--nameprefixes", "--unquoted",

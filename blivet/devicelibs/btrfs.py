@@ -2,7 +2,7 @@
 # btrfs.py
 # btrfs functions
 #
-# Copyright (C) 2011  Red Hat, Inc.  All rights reserved.
+# Copyright (C) 2011-2014  Red Hat, Inc.  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,9 +78,17 @@ def create_volume(devices, label=None, data=None, metadata=None):
 
 # destroy is handled using wipefs
 
-# add device
+def add(mountpoint, device):
+    if not os.path.ismount(mountpoint):
+        raise ValueError("volume not mounted")
 
-# remove device
+    return btrfs(["device", "add", device, mountpoint])
+
+def remove(mountpoint, device):
+    if not os.path.ismount(mountpoint):
+        raise ValueError("volume not mounted")
+
+    return btrfs(["device", "delete", device, mountpoint])
 
 def create_subvolume(mountpoint, name):
     """Create a subvolume named name below mountpoint mountpoint."""
