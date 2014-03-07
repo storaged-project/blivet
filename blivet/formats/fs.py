@@ -1104,11 +1104,11 @@ class BTRFS(FS):
 
     def create(self, *args, **kwargs):
         # filesystem creation is done in storage.devicelibs.btrfs.create_volume
-        pass
+        self.exists = True
 
     def destroy(self, *args, **kwargs):
         # filesystem creation is done in storage.devicelibs.btrfs.delete_volume
-        pass
+        self.exists = False
 
     def setup(self, *args, **kwargs):
         """ Mount the filesystem.

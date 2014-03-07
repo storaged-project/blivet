@@ -27,6 +27,7 @@ import tempfile
 from decimal import Decimal
 
 # device backend modules
+from devicelibs import raid
 from devicelibs import mdraid
 from devicelibs import lvm
 from devicelibs import dm
@@ -2366,18 +2367,26 @@ class LVMVolumeGroupDevice(ContainerDevice):
             # the same name that we want to keep/use.
             return
 
-        lvm.vgreduce(self.name, [], rm=True)
+        lvm.vgreduce(self.name, None, rm=True)
         lvm.vgdeactivate(self.name)
         lvm.vgremove(self.name)
 
-    def reduce(self, pv_list):
-        """ Remove the listed PVs from the VG. """
-        log_method_call(self, self.name, status=self.status)
-        if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+    def _remove(self, member):
+        status = []
+        for lv in self.lvs:
+            status.append(lv.status)
+            if lv.exists:
+                lv.setup()
 
-        lvm.vgreduce(self.name, pv_list)
-        # XXX do we need to notify the kernel?
+        lvm.pvmove(member.path)
+        lvm.vgreduce(self.name, member.path)
+
+        for (lv, status) in zip(self.lvs, status):
+            if lv.status and not status:
+                lv.teardown()
+
+    def _add(self, member):
+        lvm.vgextend(self.name, member.path)
 
     def _addLogVol(self, lv):
         """ Add an LV to this VG. """
@@ -2421,6 +2430,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
         #     being possible to _temporarily_ overcommit the VG.
+        #
+        #     Maybe removeMember could be a wrapper with the checks and the
+        #     devicefactory could call the _ versions to bypass the checks.
         super(LVMVolumeGroupDevice, self)._removeMember(member)
 
         # and update our pv count
@@ -3334,7 +3346,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
             if self.spares <= 0:
                 try:
-                    mdraid.mdadd(None, [member.path], incremental=True)
+                    mdraid.mdadd(None, member.path, incremental=True)
                     # mdadd causes udev events
                     udev_settle()
                 except MDRaidError as e:
@@ -3383,6 +3395,19 @@ class MDRaidArrayDevice(ContainerDevice):
             status = False
 
         return status
+
+    def memberStatus(self, member):
+        if not (self.status and member.status):
+            return
+
+        member_name = os.path.basename(member.sysfsPath)
+        path = "/sys/%s/md/dev-%s/state" % (self.sysfsPath, member_name)
+        try:
+            state = open(path).read().strip()
+        except IOError:
+            state = None
+
+        return state
 
     @property
     def degraded(self):
@@ -3488,7 +3513,7 @@ class MDRaidArrayDevice(ContainerDevice):
         info = udev_get_block_device(self.sysfsPath)
         self.uuid = udev_device_get_md_uuid(info)
         for member in self.devices:
-            member.mdUuid = self.uuid
+            member.format.mdUuid = self.uuid
 
     def _create(self):
         """ Create the device. """
@@ -3502,6 +3527,21 @@ class MDRaidArrayDevice(ContainerDevice):
                         metadataVer=self.metadataVersion,
                         bitmap=self.createBitmap)
         udev_settle()
+
+    def _remove(self, member):
+        self.setup()
+        # see if the device must be marked as failed before it can be removed
+        fail = (self.memberStatus(member) == "in_sync")
+        mdraid.mdremove(self.path, member.path, fail=fail)
+
+    def _add(self, member):
+        self.setup()
+        if self.level.name == "raid0":
+            raid_devices = self.memberDevices
+        else:
+            raid_devices = None
+
+        mdraid.mdadd(self.path, member.path, raid_devices=raid_devices)
 
     @property
     def formatArgs(self):
@@ -4622,11 +4662,39 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         else:
             self.format.volUUID = udev_device_get_uuid(info)
 
+        self.format.exists = True
+        self.originalFormat.exists = True
+
     def _destroy(self):
         log_method_call(self, self.name, status=self.status)
         for device in self.parents:
             device.setup(orig=True)
             DeviceFormat(device=device.path, exists=True).destroy()
+
+    def _remove(self, member):
+        log_method_call(self, self.name, status=self.status)
+        try:
+            self._do_temp_mount(orig=True)
+        except FSError as e:
+            log.debug("btrfs temp mount failed: %s" % e)
+            raise
+
+        try:
+            btrfs.remove(self.originalFormat._mountpoint, member.path)
+        finally:
+            self._undo_temp_mount()
+
+    def _add(self, member):
+        try:
+            self._do_temp_mount(orig=True)
+        except FSError as e:
+            log.debug("btrfs temp mount failed: %s" % e)
+            raise
+
+        try:
+            btrfs.add(self.originalFormat._mountpoint, member.path)
+        finally:
+            self._undo_temp_mount()
 
     def populateKSData(self, data):
         super(BTRFSVolumeDevice, self).populateKSData(data)
