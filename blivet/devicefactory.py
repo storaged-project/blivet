@@ -482,11 +482,11 @@ class DeviceFactory(object):
         log.debug("old member set: %s", [d.name for d in self.container.parents])
         for member in self.container.parents[:]:
             if member not in members:
-                self.container.removeMember(member)
+                self.container._removeMember(member)
 
         for member in members:
             if member not in self.container.parents:
-                self.container.addMember(member)
+                self.container._addMember(member)
 
     def _set_container_raid_level(self):
         pass
@@ -650,15 +650,15 @@ class DeviceFactory(object):
             raw_device = self.raw_device
             leaf_format = self.device.format
             if parent_container:
-                parent_container.removeMember(self.device)
+                parent_container._removeMember(self.device)
             self.storage.destroyDevice(self.device)
             self.storage.formatDevice(self.raw_device, leaf_format)
             self.device = raw_device
             if parent_container:
-                parent_container.addMember(self.device)
+                parent_container._addMember(self.device)
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
             if parent_container:
-                parent_container.removeMember(self.device)
+                parent_container._removeMember(self.device)
             leaf_format = self.device.format
             self.storage.formatDevice(self.device, getFormat("luks"))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
@@ -667,7 +667,7 @@ class DeviceFactory(object):
             self.storage.createDevice(luks_device)
             self.device = luks_device
             if parent_container:
-                parent_container.addMember(self.device)
+                parent_container._addMember(self.device)
 
     def _set_name(self):
         if not self.device_name:
@@ -971,7 +971,7 @@ class PartitionSetFactory(PartitionFactory):
         for member in members[:]:
             if any([d in remove_disks for d in member.disks]):
                 if container:
-                    container.removeMember(member)
+                    container._removeMember(member)
 
                 if isinstance(member, LUKSDevice):
                     self.storage.destroyDevice(member)
@@ -989,7 +989,7 @@ class PartitionSetFactory(PartitionFactory):
             member_encrypted = isinstance(member, LUKSDevice)
             if member_encrypted and not self.encrypted:
                 if container:
-                    container.removeMember(member)
+                    container._removeMember(member)
 
                 self.storage.destroyDevice(member)
                 members.remove(member)
@@ -997,14 +997,14 @@ class PartitionSetFactory(PartitionFactory):
                                           getFormat(self.fstype))
                 members.append(member.slave)
                 if container:
-                    container.addMember(member.slave)
+                    container._addMember(member.slave)
 
                 continue
 
             if not member_encrypted and self.encrypted:
                 members.remove(member)
                 if container:
-                    container.removeMember(member)
+                    container._removeMember(member)
 
                 self.storage.formatDevice(member, getFormat("luks"))
                 luks_member = LUKSDevice("luks-%s" % member.name,
@@ -1013,7 +1013,7 @@ class PartitionSetFactory(PartitionFactory):
                 self.storage.createDevice(luks_member)
                 members.append(luks_member)
                 if container:
-                    container.addMember(luks_member)
+                    container._addMember(luks_member)
 
                 continue
 
@@ -1058,7 +1058,7 @@ class PartitionSetFactory(PartitionFactory):
             members.append(member)
             new_members.append(member)
             if container:
-                container.addMember(member)
+                container._addMember(member)
 
         ##
         ## Determine target container size.
@@ -1272,7 +1272,7 @@ class LVMFactory(DeviceFactory):
 
                 if ((self.container_raid_level and use_dev.type != "mdarray") or
                     (not self.container_raid_level and use_dev.type == "mdarray")):
-                    self.container.removeMember(member)
+                    self.container._removeMember(member)
                     self.storage.destroyDevice(member)
                     if member != use_dev:
                         self.storage.destroyDevice(use_dev)
