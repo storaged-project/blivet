@@ -26,6 +26,8 @@ from blivet.deviceaction import ActionDestroyDevice
 from blivet.deviceaction import ActionCreateFormat
 from blivet.deviceaction import ActionResizeFormat
 from blivet.deviceaction import ActionDestroyFormat
+from blivet.deviceaction import ActionAddMember
+from blivet.deviceaction import ActionRemoveMember
 
 """ DeviceActionTestSuite """
 class DeviceActionTestCase(StorageTestCase):
@@ -913,6 +915,102 @@ class DeviceActionTestCase(StorageTestCase):
         # device
         self.assertEqual(destroy_pv_format.requires(destroy_lv_format), True)
         self.assertEqual(destroy_lv_format.requires(destroy_pv_format), False)
+
+    def testContainerActions(self):
+        self.destroyAllDevices()
+        sda = self.storage.devicetree.getDeviceByName("sda")
+        sdb = self.storage.devicetree.getDeviceByName("sdb")
+
+        #
+        # create something like an existing lvm autopart layout across two disks
+        #
+        sda1 = self.newDevice(device_class=PartitionDevice,
+                              exists=True, name="sda1", parents=[sda],
+                              size=Size(spec="500 MiB"))
+        sda1.format = self.newFormat("ext4", mountpoint="/boot",
+                                     device_instance=sda1,
+                                     device=sda1.path, exists=True)
+        self.storage.devicetree._addDevice(sda1)
+
+        sda2 = self.newDevice(device_class=PartitionDevice,
+                              size=Size(spec="99.5 GiB"), name="sda2",
+                              parents=[sda], exists=True)
+        sda2.format = self.newFormat("lvmpv", device=sda2.path, exists=True)
+        self.storage.devicetree._addDevice(sda2)
+
+        sdb1 = self.newDevice(device_class=PartitionDevice,
+                              size=Size(spec="99.999 GiB"), name="sdb1",
+                              parents=[sdb], exists=True)
+        sdb1.format = self.newFormat("lvmpv", device=sdb1.path, exists=True)
+        self.storage.devicetree._addDevice(sdb1)
+
+        vg = self.newDevice(device_class=LVMVolumeGroupDevice,
+                            name="VolGroup", parents=[sda2, sdb1],
+                            exists=True)
+        self.storage.devicetree._addDevice(vg)
+
+        lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
+                                 name="lv_root", parents=[vg],
+                                 size=Size(spec="160 GiB"), exists=True)
+        lv_root.format = self.newFormat("ext4", mountpoint="/",
+                                        device_instance=lv_root,
+                                        device=lv_root.path, exists=True)
+        self.storage.devicetree._addDevice(lv_root)
+
+        lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
+                                 name="lv_swap", parents=[vg],
+                                 size=Size(spec="4000 MiB"), exists=True)
+        lv_swap.format = self.newFormat("swap", device=lv_swap.path,
+                                        device_instance=lv_swap,
+                                        exists=True)
+        self.storage.devicetree._addDevice(lv_swap)
+
+        #
+        # test some modifications to the VG
+        #
+        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
+                              size=Size(spec="50 GiB"), parents=[sdc])
+        sdc1_format = self.newFormat("lvmpv", device=sdc1.path)
+        create_sdc1 = self.scheduleCreateDevice(device=sdc1)
+        create_sdc1_format = self.scheduleCreateFormat(device=sdc1,
+                                                       format=sdc1_format)
+
+        self.assertEqual(len(vg.parents), 2)
+
+        add_sdc1 = ActionAddMember(vg, sdc1)
+        self.assertEqual(len(vg.parents), 3)
+
+        self.assertEqual(add_sdc1.requires(create_sdc1), True)
+        self.assertEqual(add_sdc1.requires(create_sdc1_format), True)
+
+        new_lv = self.newDevice(device_class=LVMLogicalVolumeDevice,
+                                name="newlv", parents=[vg],
+                                size=Size(spec="20 GiB"))
+        create_new_lv = self.scheduleCreateDevice(device=new_lv)
+        new_lv_format = self.newFormat("xfs", device=new_lv.path)
+        create_new_lv_format = self.scheduleCreateFormat(device=new_lv,
+                                                         format=new_lv_format)
+
+        self.assertEqual(create_new_lv.requires(add_sdc1), True)
+        self.assertEqual(create_new_lv_format.requires(add_sdc1), False)
+
+        self.storage.devicetree.cancelAction(create_new_lv_format)
+        self.storage.devicetree.cancelAction(create_new_lv)
+
+        remove_sdb1 = ActionRemoveMember(vg, sdb1)
+        self.assertEqual(len(vg.parents), 2)
+
+        self.assertEqual(remove_sdb1.requires(add_sdc1), True)
+
+        vg._addMember(sdb1)
+        remove_sdb1_2 = ActionRemoveMember(vg, sdb1)
+        self.assertEqual(remove_sdb1_2.obsoletes(remove_sdb1), False)
+        self.assertEqual(remove_sdb1.obsoletes(remove_sdb1_2), True)
+
+        remove_sdc1 = ActionRemoveMember(vg, sdc1)
+        self.assertEqual(remove_sdc1.obsoletes(add_sdc1), True)
+        self.assertEqual(add_sdc1.obsoletes(remove_sdc1), True)
 
     def testActionSorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """

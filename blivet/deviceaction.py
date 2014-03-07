@@ -1,8 +1,7 @@
 # deviceaction.py
-# Device modification action classes for anaconda's storage configuration
-# module.
+# Device modification action classes.
 #
-# Copyright (C) 2009  Red Hat, Inc.
+# Copyright (C) 2009-2014  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
@@ -49,19 +48,25 @@ ACTION_TYPE_NONE = 0
 ACTION_TYPE_DESTROY = 1000
 ACTION_TYPE_RESIZE = 500
 ACTION_TYPE_CREATE = 100
+ACTION_TYPE_ADD = 50
+ACTION_TYPE_REMOVE = 10
 
 action_strings = {ACTION_TYPE_NONE: "None",
                   ACTION_TYPE_DESTROY: "Destroy",
                   ACTION_TYPE_RESIZE: "Resize",
-                  ACTION_TYPE_CREATE: "Create"}
+                  ACTION_TYPE_CREATE: "Create",
+                  ACTION_TYPE_ADD: "Add",
+                  ACTION_TYPE_REMOVE: "Remove"}
 
 ACTION_OBJECT_NONE = 0
 ACTION_OBJECT_FORMAT = 1
 ACTION_OBJECT_DEVICE = 2
+ACTION_OBJECT_CONTAINER = 3
 
 object_strings = {ACTION_OBJECT_NONE: "None",
                   ACTION_OBJECT_FORMAT: "Format",
-                  ACTION_OBJECT_DEVICE: "Device"}
+                  ACTION_OBJECT_DEVICE: "Device",
+                  ACTION_OBJECT_CONTAINER: "Container"}
 
 RESIZE_SHRINK = 88
 RESIZE_GROW = 89
@@ -148,6 +153,7 @@ class DeviceAction(util.ObjectID):
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
         self.device = device
+        self.container = getattr(self.device, "container", None)
 
     def execute(self):
         """ perform the action """
@@ -178,8 +184,20 @@ class DeviceAction(util.ObjectID):
         return (self.type == ACTION_TYPE_RESIZE and self.dir == RESIZE_GROW)
 
     @property
+    def isAdd(self):
+        return self.type == ACTION_TYPE_ADD
+
+    @property
+    def isRemove(self):
+        return self.type == ACTION_TYPE_REMOVE
+
+    @property
     def isDevice(self):
         return self.obj == ACTION_OBJECT_DEVICE
+
+    @property
+    def isContainer(self):
+        return self.obj == ACTION_OBJECT_CONTAINER
 
     @property
     def isFormat(self):
@@ -223,7 +241,7 @@ class DeviceAction(util.ObjectID):
         return _(self.typeDescStr)
 
     def __str__(self):
-        s = "[%d] %s %s" % (self.id, self.typeString, self.objectString)
+        s = "[%d] %s" % (self.id, self.typeDescStr)
         if self.isResize:
             s += " (%s)" % self.resizeString
         if self.isFormat:
@@ -273,6 +291,7 @@ class ActionCreateDevice(DeviceAction):
                 - this action's device depends on the other action's device
                 - both actions are partition create actions on the same disk
                   and this partition has a higher number
+                - the other action adds a member to this device's container
         """
         rc = False
         if self.device.dependsOn(action.device):
@@ -292,6 +311,9 @@ class ActionCreateDevice(DeviceAction):
               self.device.vg == action.device.vg and
               action.device.singlePV and not self.device.singlePV):
             rc = True
+        elif (action.isAdd and action.container == self.container):
+            rc = True
+
         return rc
 
 
@@ -325,6 +347,7 @@ class ActionDestroyDevice(DeviceAction):
                 - the other action's device depends on this action's device
                 - both actions are partition create actions on the same disk
                   and this partition has a lower number
+                - the other action removes this action's device from a container
         """
         rc = False
         if action.device.dependsOn(self.device) and action.isDestroy:
@@ -342,6 +365,8 @@ class ActionDestroyDevice(DeviceAction):
               action.device.id == self.device.id):
             # device destruction comes after destruction of device's format
             rc = True
+        elif (action.isRemove and action.device == self.device):
+            rc = True
         return rc
 
     def obsoletes(self, action):
@@ -352,6 +377,10 @@ class ActionDestroyDevice(DeviceAction):
 
             - obsoletes all but ActionDestroyFormat actions w/ lower id on the
               same device if device exists
+
+            - obsoletes all actions that add a member to this action's
+              (container) device
+
         """
         rc = False
         if action.device.id == self.device.id:
@@ -361,6 +390,10 @@ class ActionDestroyDevice(DeviceAction):
                  self.device.exists and \
                  not (action.isDestroy and action.isFormat):
                 rc = True
+            elif action.isAdd and (action.device == self.device):
+                rc = True
+        elif action.isAdd and (action.container == self.device):
+            rc = True
 
         return rc
 
@@ -413,6 +446,8 @@ class ActionResizeDevice(DeviceAction):
                   this action's device depends on
                 - the other action shrinks a device (or format it contains)
                   that depends on this action's device
+                - the other action removes this action's device from a container
+                - the other action adds a member to this device's container
         """
         retval = False
         if action.isResize:
@@ -424,6 +459,10 @@ class ActionResizeDevice(DeviceAction):
                 retval = True
             elif action.isShrink and action.device.dependsOn(self.device):
                 retval = True
+        elif (action.isRemove and action.device == self.device):
+            retval = True
+        elif (action.isAdd and action.container == self.container):
+            retval = True
 
         return retval
 
@@ -488,12 +527,14 @@ class ActionCreateFormat(DeviceAction):
             Format create action can require another action if:
 
                 - this action's device depends on the other action's device
-                  and the other action is not a device destroy action
+                  and the other action is not a device destroy action or a
+                  container action
                 - the other action is a create or resize of this action's
                   device
         """
         return ((self.device.dependsOn(action.device) and
-                 not (action.isDestroy and action.isDevice)) or
+                 not ((action.isDestroy and action.isDevice) or
+                      action.isContainer)) or
                 (action.isDevice and (action.isCreate or action.isResize) and
                  self.device.id == action.device.id))
 
@@ -545,8 +586,15 @@ class ActionDestroyFormat(DeviceAction):
 
                 - the other action's device depends on this action's device
                   and the other action is a destroy action
+                - the other action removes this action's device from a container
         """
-        return action.device.dependsOn(self.device) and action.isDestroy
+        retval = False
+        if action.device.dependsOn(self.device) and action.isDestroy:
+            retval = True
+        elif (action.isRemove and action.device == self.device):
+            retval = True
+
+        return retval
 
     def obsoletes(self, action):
         """ Return True if this action obsoletes action.
@@ -611,6 +659,7 @@ class ActionResizeFormat(DeviceAction):
                   that depends on this action's device
                 - the other action grows a device (or format) that this
                   action's device depends on
+                - the other action removes this action's device from a container
         """
         retval = False
         if action.isResize:
@@ -622,5 +671,118 @@ class ActionResizeFormat(DeviceAction):
                 retval = True
             elif action.isGrow and self.device.dependsOn(action.device):
                 retval = True
+        elif (action.isRemove and action.device == self.device):
+            retval = True
+
+        return retval
+
+
+class ActionAddMember(DeviceAction):
+    """ An action representing addition of a member device to a container. """
+    type = ACTION_TYPE_ADD
+    obj = ACTION_OBJECT_CONTAINER
+    typeDescStr = N_("add container member")
+
+    def __init__(self, container, device):
+        super(ActionAddMember, self).__init__(device)
+        self.container = container
+        container._addMember(device)
+
+    def cancel(self):
+        self.container._removeMember(self.device)
+
+    def execute(self):
+        self.container.add(self.device)
+
+    def requires(self, action):
+        """
+            requires
+                - create/resize the same device
+
+            required by
+                - any create/grow action on a device in the same container
+        """
+        return ((action.isCreate or action.isResize) and
+                action.device == self.device)
+
+    def obsoletes(self, action):
+        """
+            obsoletes
+                - remove same member from same container
+                - add same member to same container w/ higher id
+
+            obsoleted by
+                - destroy the container
+                - destroy the device
+                - remove same member from same container
+        """
+        retval = False
+        if (action.isRemove and
+            action.device == self.device and
+            action.container == self.container):
+            retval = True
+        elif (action.isAdd and
+              action.device == self.device and
+              action.container == self.container and
+              action.id > self.id):
+            retval = True
+
+        return retval
+
+
+class ActionRemoveMember(DeviceAction):
+    """ An action representing removal of a member device from a container. """
+    type = ACTION_TYPE_REMOVE
+    obj = ACTION_OBJECT_CONTAINER
+    typeDescStr = N_("remove container member")
+
+    def __init__(self, container, device):
+        super(ActionRemoveMember, self).__init__(device)
+        self.container = container
+        container._removeMember(device)
+
+    def cancel(self):
+        self.container._addMember(self.device)
+
+    def execute(self):
+        self.container.remove(self.device)
+
+    def requires(self, action):
+        """
+            requires
+                - any destroy/shrink action on a device in the same container
+                - any add action on this container
+
+            required by
+                - any destroy/resize action on the device
+        """
+        retval = False
+        if ((action.isShrink or action.isDestroy) and
+            action.device.container == self.container):
+            retval = True
+        elif action.isAdd and action.container == self.container:
+            retval = True
+
+        return retval
+
+    def obsoletes(self, action):
+        """
+            obsoletes
+                - add same member to same container
+                - remove same member from same container w/ higher id
+
+            obsoleted by
+                - add same member to same container
+        """
+        retval = False
+        if (action.isAdd and
+            action.device == self.device and
+            action.container == self.container):
+            retval = True
+        elif (action.isRemove and
+              action.device == self.device and
+              action.container == self.container and
+              action.id > self.id):
+            retval = True
 
         return retval
