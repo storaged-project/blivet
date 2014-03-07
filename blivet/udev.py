@@ -113,6 +113,9 @@ def udev_resolve_devspec(devspec):
         elif udev_device_get_name(dev) == _devices.devicePathToName(devspec):
             ret = dev
             break
+        elif udev_device_get_md_name(dev) == _devices.devicePathToName(devspec):
+            ret = dev
+            break
         else:
             spec = devspec
             if not spec.startswith("/dev/"):
@@ -125,7 +128,12 @@ def udev_resolve_devspec(devspec):
 
     del _devices
     if ret:
-        return udev_device_get_name(ret)
+        if udev_device_is_md(ret):
+            name = udev_device_get_md_name(ret)
+        else:
+            name = udev_device_get_name(ret)
+
+        return name
 
 def udev_resolve_glob(glob):
     import fnmatch
