@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.31
+Version: 0.18.32
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Mar 07 2014 Brian C. Lane <bcl@redhat.com> - 0.18.32-1
+- Resolve md names in udev_resolve_devspec. (dlehman)
+  Related: rhbz#1047338
+- Fix an old typo in zeroing out a PReP partition. (dlehman)
+  Resolves: rhbz#1072781
+- Use container's parent's name for PV if available (vpodzime)
+  Resolves: rhbz#1065737
+- Limit the LV size to VG's free space size (vpodzime)
+  Related: rhbz#1072999
+- Only count with the extra metadata extents in new VGs and LVs (vpodzime)
+  Resolves: rhbz#1072999
+
 * Wed Mar 05 2014 Brian C. Lane <bcl@redhat.com> - 0.18.31-1
 - Fix traceback with write_dasd_conf. (sbueno+anaconda)
   Resolves: rhbz#1072911
