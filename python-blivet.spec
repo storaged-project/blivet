@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.43
+Version: 0.44
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,24 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Mar 07 2014 Brian C. Lane <bcl@redhat.com> - 0.44-1
+- Fix an old typo in zeroing out a PReP partition. (#1072781) (dlehman)
+- Only count with the extra metadata extents in new VGs and LVs (#1072999)
+  (vpodzime)
+- Use container's parent's name for PV if available (#1065737) (vpodzime)
+- Fix traceback with write_dasd_conf. (#1072911) (sbueno+anaconda)
+- When copying a root, also copy hidden devices (#1043763) (amulhern)
+- Add hidden flag to devicetree.getDeviceByID (#1043763) (amulhern)
+- Only set device for mountpoint if it is not None (#1043763) (amulhern)
+- Extend the list of things to be omitted if moddisk is False (#1043763)
+  (amulhern)
+- Set req_name to None at the top of initializer (#1043763) (amulhern)
+- Log action cancelation (#1043763) (amulhern)
+- Make DeviceTree.hide() remove a larger set (#1043763) (amulhern)
+- Re-write the DASD storage code. (#1001070) (sbueno+anaconda)
+- Include image install flag when updating from anaconda flags. (#1066008)
+  (dlehman)
+
 * Fri Feb 28 2014 Brian C. Lane <bcl@redhat.com> - 0.43-1
 - Include tmpfs mounts in post-install kickstart (#1061063) (mkolman)
 - Count with the extra metadata extents for RAID consistently (#1065737)
