@@ -2724,8 +2724,8 @@ class LVMLogicalVolumeDevice(DMDevice):
             # nothing more can be done, we don't know the VG's free space
             return
 
-        extent_size = Size(spec=vg_info[3] + "MiB")
-        extents_free = int(vg_info[5])
+        extent_size = Size(spec=vg_info["LVM2_VG_EXTENT_SIZE"] + "MiB")
+        extents_free = int(vg_info["LVM2_VG_FREE_COUNT"])
         can_use = extent_size * extents_free
 
         if self.size > can_use:

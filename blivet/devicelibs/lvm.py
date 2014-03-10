@@ -354,15 +354,28 @@ def vgreduce(vg_name, pv_list, rm=False):
         raise LVMError("vgreduce failed for %s: %s" % (vg_name, msg))
 
 def vginfo(vg_name):
-    args = ["vgs", "--noheadings", "--nosuffix"] + \
-            ["--units", "m"] + \
-            ["-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count"] + \
-            _getConfigArgs(read_only_locking=True) + \
-            [vg_name]
+    args = ["vgs", "--noheadings", "--nosuffix", "--nameprefixes", "--unquoted",
+            "--units", "m",
+            "-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count"] + \
+            _getConfigArgs(read_only_locking=True) + [vg_name]
 
+    # TODO: make this a common code reused many functions
     buf = util.capture_output(["lvm"] + args)
-    info = buf.split()
-    if len(info) != 7:
+    fields = buf.split()
+    info = {}
+    for field in fields:
+        (name, equals, value) = field.partition("=")
+        if not equals:
+            continue
+
+        if "," in value:
+            val = value.strip().split(",")
+        else:
+            val = value.strip()
+
+        info[name] = val
+
+    if len(info.keys()) != 7:
         raise LVMError(_("vginfo failed for %s" % vg_name))
 
     return info
