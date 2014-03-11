@@ -149,7 +149,7 @@ class iscsi(object):
         try:
             found_nodes = libiscsi.discover_firmware()
         except Exception:
-            log.info("iscsi: No IBFT info found.");
+            log.info("iscsi: No IBFT info found.")
             # an exception here means there is no ibft firmware, just return
             return
 
