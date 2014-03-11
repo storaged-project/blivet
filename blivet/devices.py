@@ -533,7 +533,7 @@ class StorageDevice(Device):
     @property
     def partedDevice(self):
         if self.exists and self.status and not self._partedDevice:
-            log.debug("looking up parted Device: %s" % self.path)
+            log.debug("looking up parted Device: %s", self.path)
 
             # We aren't guaranteed to be able to get a device.  In
             # particular, built-in USB flash readers show up as devices but
@@ -602,7 +602,7 @@ class StorageDevice(Device):
         sysfsName = self.name.replace("/", "!")
         path = os.path.join("/sys", self.sysfsBlockDir, sysfsName)
         self.sysfsPath = os.path.realpath(path)[4:]
-        log.debug("%s sysfsPath set to %s" % (self.name, self.sysfsPath))
+        log.debug("%s sysfsPath set to %s", self.name, self.sysfsPath)
 
     @property
     def formatArgs(self):
@@ -631,7 +631,7 @@ class StorageDevice(Device):
         try:
             util.notify_kernel(path, action="change")
         except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s" % e)
+            log.warning("failed to notify kernel of change: %s", e)
 
     @property
     def fstabSpec(self):
@@ -1153,7 +1153,7 @@ class PartitionDevice(StorageDevice):
         #        parted.
 
         if self.exists and not flags.testing:
-            log.debug("looking up parted Partition: %s" % self.path)
+            log.debug("looking up parted Partition: %s", self.path)
             self._partedPartition = self.disk.format.partedDisk.getPartitionByPath(self.path)
             if not self._partedPartition:
                 raise DeviceError("cannot find parted partition instance", self.name)
@@ -1317,7 +1317,7 @@ class PartitionDevice(StorageDevice):
         else:
             raise ValueError("partition must be a parted.Partition instance")
 
-        log.debug("device %s new partedPartition %s" % (self.name, partition))
+        log.debug("device %s new partedPartition %s", self.name, partition)
         self._partedPartition = partition
         self.updateName()
 
@@ -1524,8 +1524,8 @@ class PartitionDevice(StorageDevice):
             start = self.partedPartition.geometry.start
             partition = self.disk.format.partedDisk.getPartitionBySector(start)
 
-        log.debug("post-commit partition path is %s" % getattr(partition,
-                                                               "path", None))
+        log.debug("post-commit partition path is %s", getattr(partition,
+                                                             "path", None))
         self.partedPartition = partition
         if not self.isExtended:
             # Ensure old metadata which lived in freespace so did not get
@@ -1942,7 +1942,7 @@ class DMLinearDevice(DMDevice):
         if not self._preTeardown(recursive=recursive):
             return
 
-        log.debug("not tearing down dm-linear device %s" % self.name)
+        log.debug("not tearing down dm-linear device %s", self.name)
 
     @property
     def description(self):
@@ -2304,7 +2304,7 @@ class LVMVolumeGroupDevice(DMDevice):
            lv.size > self.freeSpace:
             raise DeviceError("new lv is too large to fit in free space", self.name)
 
-        log.debug("Adding %s/%s to %s" % (lv.name, lv.size, self.name))
+        log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
 
     def _removeLogVol(self, lv):
@@ -2422,7 +2422,7 @@ class LVMVolumeGroupDevice(DMDevice):
                 raid_disks = max([raid_disks, len(pv.disks)])
 
         # total the sizes of any LVs
-        log.debug("%s size is %s" % (self.name, self.size))
+        log.debug("%s size is %s", self.name, self.size)
         used = sum(lv.vgSpaceUsed for lv in self.lvs) + self.snapshotSpace
         if not self.exists and raid_disks:
             # (only) we allocate (5 * num_disks) extra extents for LV metadata
@@ -2432,7 +2432,7 @@ class LVMVolumeGroupDevice(DMDevice):
         used += self.reservedSpace
         used += self.poolMetaData
         free = self.size - used
-        log.debug("vg %s has %s free" % (self.name, free))
+        log.debug("vg %s has %s free", self.name, free)
         return free
 
     @property
@@ -2623,12 +2623,12 @@ class LVMLogicalVolumeDevice(DMDevice):
             raise ValueError("new size must of type Size")
 
         size = self.vg.align(size)
-        log.debug("trying to set lv %s size to %s" % (self.name, size))
+        log.debug("trying to set lv %s size to %s", self.name, size)
         if size <= self.vg.freeSpace + self.vgSpaceUsed:
             self._size = size
             self.targetSize = size
         else:
-            log.debug("failed to set size: %s short" % (size - (self.vg.freeSpace + self.vgSpaceUsed),))
+            log.debug("failed to set size: %s short", size - (self.vg.freeSpace + self.vgSpaceUsed))
             raise ValueError("not enough free space in volume group")
 
     size = property(StorageDevice._getSize, _setSize)
@@ -2709,7 +2709,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             StorageDevice._postTeardown(self, recursive=recursive)
         except StorageError:
             if recursive:
-                log.debug("vg %s teardown failed; continuing" % self.vg.name)
+                log.debug("vg %s teardown failed; continuing", self.vg.name)
             else:
                 raise
 
@@ -2886,7 +2886,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
         # TODO: add some checking to prevent overcommit for preexisting
         self.vg._addLogVol(lv)
-        log.debug("Adding %s/%s to %s" % (lv.name, lv.size, self.name))
+        log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
 
     def _removeLogVol(self, lv):
@@ -3105,7 +3105,7 @@ class MDRaidArrayDevice(StorageDevice):
         smallestMemberSize = smallestMember.size
         size = self.level.get_raw_array_size(self.memberDevices,
            smallestMemberSize)
-        log.debug("raw RAID %s size == %s" % (self.level, size))
+        log.debug("raw RAID %s size == %s", self.level, size)
         return size
 
     @property
@@ -3142,10 +3142,10 @@ class MDRaidArrayDevice(StorageDevice):
                    self.chunkSize)
             except (MDRaidError, RaidError):
                 size = 0
-            log.debug("non-existent RAID %s size == %s" % (self.level, size))
+            log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
             size = Size(bytes=self.partedDevice.getLength(unit="B"))
-            log.debug("existing RAID %s size == %s" % (self.level, size))
+            log.debug("existing RAID %s size == %s", self.level, size)
 
         return size
 
@@ -3288,8 +3288,8 @@ class MDRaidArrayDevice(StorageDevice):
                 # mdadd causes udev events
                 udev_settle()
             except MDRaidError as e:
-                log.warning("failed to add member %s to md array %s: %s"
-                            % (device.path, self.path, e))
+                log.warning("failed to add member %s to md array %s: %s",
+                            device.path, self.path, e)
 
         if self.status:
             # we always probe since the device may not be set up when we want
@@ -3621,7 +3621,7 @@ class DMRaidArrayDevice(DMDevice):
         if not self._preTeardown(recursive=recursive):
             return
 
-        log.debug("not tearing down dmraid device %s" % self.name)
+        log.debug("not tearing down dmraid device %s", self.name)
 
     @property
     def description(self):
@@ -4071,17 +4071,17 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             NetworkStorageDevice.__init__(self,
                                           host_address=address,
                                           nic=self.nic)
-            log.debug("created new iscsi disk %s %s:%s using fw initiator %s"
-                      % (name, address, port, self.initiator))
+            log.debug("created new iscsi disk %s %s:%s using fw initiator %s",
+                      name, address, port, self.initiator)
         else:
             DiskDevice.__init__(self, device, **kwargs)
             NetworkStorageDevice.__init__(self, host_address=self.node.address,
                                           nic=self.nic)
-            log.debug("created new iscsi disk %s %s:%d via %s:%s" % (self.node.name,
-                                                                  self.node.address,
-                                                                  self.node.port,
-                                                                  self.node.iface,
-                                                                  self.nic))
+            log.debug("created new iscsi disk %s %s:%d via %s:%s", self.node.name,
+                                                                   self.node.address,
+                                                                   self.node.port,
+                                                                   self.node.iface,
+                                                                   self.nic)
 
     def dracutSetupArgs(self):
         if self.ibft:
@@ -4140,8 +4140,8 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         self.identifier = kwargs.pop("identifier")
         DiskDevice.__init__(self, device, **kwargs)
         NetworkStorageDevice.__init__(self, nic=self.nic)
-        log.debug("created new fcoe disk %s (%s) @ %s" %
-                  (device, self.identifier, self.nic))
+        log.debug("created new fcoe disk %s (%s) @ %s",
+                  device, self.identifier, self.nic)
 
     def dracutSetupArgs(self):
         dcb = True
@@ -4211,7 +4211,7 @@ class OpticalDevice(StorageDevice):
         try:
             util.run_program(["eject", self.name]) 
         except OSError as e:
-            log.warning("error ejecting cdrom %s: %s" % (self.name, e))
+            log.warning("error ejecting cdrom %s: %s", self.name, e)
 
 
 class ZFCPDiskDevice(DiskDevice):
@@ -4328,7 +4328,7 @@ class DASDDevice(DiskDevice):
                 # If we don't know what the feature is (feat not in translate
                 # or if we get a val that doesn't cleanly convert to an int
                 # we can't do anything with it.
-                log.warning("failed to parse dasd feature %s" % chunk)
+                log.warning("failed to parse dasd feature %s", chunk)
 
         if opts:
             return set(["rd.dasd=%s(%s)" % (self.busid,
@@ -4400,7 +4400,7 @@ class BTRFSDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         self.parents[0].updateSysfsPath()
         self.sysfsPath = self.parents[0].sysfsPath
-        log.debug("%s sysfsPath set to %s" % (self.name, self.sysfsPath))
+        log.debug("%s sysfsPath set to %s", self.name, self.sysfsPath)
 
     def _postCreate(self):
         super(BTRFSDevice, self)._postCreate()
@@ -4602,13 +4602,13 @@ class BTRFSVolumeDevice(BTRFSDevice):
         try:
             self._do_temp_mount(orig=True)
         except FSError as e:
-            log.debug("btrfs temp mount failed: %s" % e)
+            log.debug("btrfs temp mount failed: %s", e)
             return subvols
 
         try:
             subvols = btrfs.list_subvolumes(self.originalFormat._mountpoint)
         except BTRFSError as e:
-            log.debug("failed to list subvolumes: %s" % e)
+            log.debug("failed to list subvolumes: %s", e)
         else:
             self._getDefaultSubVolumeID()
         finally:
@@ -4632,7 +4632,7 @@ class BTRFSVolumeDevice(BTRFSDevice):
         try:
             subvolid = btrfs.get_default_subvolume(self.originalFormat._mountpoint)
         except BTRFSError as e:
-            log.debug("failed to get default subvolume id: %s" % e)
+            log.debug("failed to get default subvolume id: %s", e)
 
         self._defaultSubVolumeID = subvolid
 

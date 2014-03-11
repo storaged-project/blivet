@@ -30,7 +30,7 @@ log = logging.getLogger("blivet")
 
 def loggedWriteLineToFile(fn, value):
     f = open(fn, "w")
-    log.debug("echo %s > %s" % (value, fn))
+    log.debug("echo %s > %s", value, fn)
     f.write("%s\n" % (value))
     f.close()
 
@@ -121,7 +121,7 @@ class ZFCPDevice:
         failed = "%s/failed" %(unitdir)
 
         if not os.path.exists(online):
-            log.info("Freeing zFCP device %s" % (self.devnum,))
+            log.info("Freeing zFCP device %s", self.devnum)
             util.run_program(["zfcp_cio_free", "-d", self.devnum])
 
         if not os.path.exists(online):
@@ -161,8 +161,8 @@ class ZFCPDevice:
             if os.path.exists(portadd):
                 # older zfcp sysfs interface
                 log.info("WWPN %(wwpn)s at zFCP device %(devnum)s already "
-                         "there." % {'wwpn': self.wwpn,
-                                     'devnum': self.devnum})
+                         "there.", {'wwpn': self.wwpn,
+                                    'devnum': self.devnum})
 
         if not os.path.exists(unitdir):
             try:
@@ -239,8 +239,8 @@ class ZFCPDevice:
                 udev_settle()
                 return
 
-        log.warn("no scsi device found to delete for zfcp %s %s %s"
-                 %(self.devnum, self.wwpn, self.fcplun))
+        log.warn("no scsi device found to delete for zfcp %s %s %s",
+                 self.devnum, self.wwpn, self.fcplun)
 
     def offlineDevice(self):
         offline = "%s/%s/online" %(zfcpsysfs, self.devnum)
@@ -273,8 +273,8 @@ class ZFCPDevice:
             for lun in os.listdir(portdir):
                 if lun.startswith("0x") and \
                         os.path.isdir(os.path.join(portdir, lun)):
-                    log.info("Not removing WWPN %s at zFCP device %s since port still has other LUNs, e.g. %s."
-                             %(self.wwpn, self.devnum, lun))
+                    log.info("Not removing WWPN %s at zFCP device %s since port still has other LUNs, e.g. %s.",
+                             self.wwpn, self.devnum, lun)
                     return True
 
             try:
@@ -290,8 +290,8 @@ class ZFCPDevice:
             for port in os.listdir(devdir):
                 if port.startswith("0x") and \
                         os.path.isdir(os.path.join(devdir, port)):
-                    log.info("Not setting zFCP device %s offline since it still has other ports, e.g. %s."
-                             %(self.devnum, port))
+                    log.info("Not setting zFCP device %s offline since it still has other ports, e.g. %s.",
+                             self.devnum, port)
                     return True
         else:
             # newer zfcp sysfs interface with auto port scan
@@ -299,8 +299,8 @@ class ZFCPDevice:
             luns = glob.glob("%s/0x????????????????/0x????????????????"
                           %(devdir,))
             if len(luns) != 0:
-                log.info("Not setting zFCP device %s offline since it still has other LUNs, e.g. %s."
-                         %(self.devnum, luns[0]))
+                log.info("Not setting zFCP device %s offline since it still has other LUNs, e.g. %s.",
+                         self.devnum, luns[0])
                 return True
 
         try:
@@ -338,7 +338,7 @@ class ZFCP:
         try:
             f = open(zfcpconf, "r")
         except IOError:
-            log.info("no %s; not configuring zfcp" % (zfcpconf,))
+            log.info("no %s; not configuring zfcp", zfcpconf)
             return
 
         lines = map(lambda x: x.strip().lower(), f.readlines())
@@ -361,7 +361,7 @@ class ZFCP:
                 wwpn   = fields[2]
                 fcplun = fields[4]
             else:
-                log.warn("Invalid line found in %s: %s" % (zfcpconf, line,))
+                log.warn("Invalid line found in %s: %s", zfcpconf, line)
                 continue
 
             try:
@@ -370,7 +370,7 @@ class ZFCP:
                 if self.intf:
                     self.intf.messageWindow(_("Error"), str(e))
                 else:
-                    log.warning(str(e))
+                    log.warning("%s", str(e))
 
     def addFCP(self, devnum, wwpn, fcplun):
         d = ZFCPDevice(devnum, wwpn, fcplun)
@@ -387,7 +387,7 @@ class ZFCP:
             try:
                 d.offlineDevice()
             except ValueError as e:
-                log.warn(str(e))
+                log.warn("%s", str(e))
 
     def startup(self):
         if not self.down:
@@ -405,7 +405,7 @@ class ZFCP:
             try:
                 d.onlineDevice()
             except ValueError as e:
-                log.warn(str(e))
+                log.warn("%s", str(e))
 
     def write(self, ROOT_PATH):
         if len(self.fcpdevs) == 0:

@@ -166,9 +166,9 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
         if swap > max_swap:
             log.info("Suggested swap size (%(swap)s) exceeds %(percent)d %% of "
                      "disk space, using %(percent)d %% of disk space (%(size)s) "
-                     "instead." % {"percent": MAX_SWAP_DISK_RATIO*100,
-                                   "swap": swap,
-                                   "size": max_swap})
+                     "instead.", {"percent": MAX_SWAP_DISK_RATIO*100,
+                                  "swap": swap,
+                                  "size": max_swap})
             swap = max_swap
 
     if not quiet:

@@ -200,7 +200,7 @@ class LUKS(DeviceFormat):
             raise LUKSError("format has not been created")
 
         if self.status:
-            log.debug("unmapping %s" % self.mapName)
+            log.debug("unmapping %s", self.mapName)
             crypto.luks_close(self.mapName)
 
     def create(self, *args, **kwargs):
@@ -318,7 +318,7 @@ class LUKS(DeviceFormat):
         return volume_ident
 
     def escrow(self, directory, backupPassphrase):
-        log.debug("escrow: escrowVolume start for %s" % self.device)
+        log.debug("escrow: escrowVolume start for %s", self.device)
         if volume_key is None:
             raise LUKSError("Missing key escrow support libraries")
 
@@ -357,7 +357,7 @@ class LUKS(DeviceFormat):
                 f.write(backup_passphrase_packet)
             log.debug("escrow: backup packet written")
 
-        log.debug("escrow: escrowVolume done for %s" % repr(self.device))
+        log.debug("escrow: escrowVolume done for %s", repr(self.device))
 
 
 register_device_format(LUKS)

@@ -52,7 +52,7 @@ def has_iscsi():
         if not location:
             return False
         ISCSID = location
-        log.info("ISCSID is %s" % (ISCSID,))
+        log.info("ISCSID is %s", ISCSID)
 
     return True
 
@@ -156,12 +156,12 @@ class iscsi(object):
         for node in found_nodes:
             try:
                 node.login()
-                log.info("iscsi IBFT: logged into %s at %s:%s through %s" % (
-                    node.name, node.address, node.port, node.iface))
+                log.info("iscsi IBFT: logged into %s at %s:%s through %s",
+                    node.name, node.address, node.port, node.iface)
                 self.ibftNodes.append(node)
             except IOError as e:
-                log.error("Could not log into ibft iscsi target %s: %s" %
-                          (node.name, str(e)))
+                log.error("Could not log into ibft iscsi target %s: %s",
+                          node.name, str(e))
                 pass
 
         self.stabilize()
@@ -186,7 +186,7 @@ class iscsi(object):
                               "-n", "iface.net_ifacename", "-v", iface])
 
             self.ifaces[iscsi_iface_name] = iface
-            log.debug("created_interface %s:%s" % (iscsi_iface_name, iface))
+            log.debug("created_interface %s:%s", iscsi_iface_name, iface)
 
     def delete_interfaces(self):
         if not self.ifaces:
@@ -208,7 +208,7 @@ class iscsi(object):
             log.info("no initiator set")
             return
 
-        log.debug("Setting up %s" % (INITIATOR_FILE, ))
+        log.debug("Setting up %s", INITIATOR_FILE)
         log.info("iSCSI initiator name %s", self.initiator)
         if os.path.exists(INITIATOR_FILE):
             os.unlink(INITIATOR_FILE)
@@ -234,7 +234,7 @@ class iscsi(object):
         except RuntimeError:
             log.info("iscsi: iscsiuio not found.")
         else:
-            log.debug("iscsi: iscsiuio is at %s" % iscsiuio)
+            log.debug("iscsi: iscsiuio is at %s", iscsiuio)
             util.run_program([iscsiuio])
         # run the daemon
         util.run_program([ISCSID])
@@ -265,8 +265,8 @@ class iscsi(object):
             raise ValueError, _("No initiator name set")
 
         if self.active_nodes((ipaddr, port)):
-            log.debug("iSCSI: skipping discovery of %s:%s due to active nodes" %
-                      (ipaddr, port))
+            log.debug("iSCSI: skipping discovery of %s:%s due to active nodes",
+                      ipaddr, port)
         else:
             if username or password or r_username or r_password:
                 # Note may raise a ValueError
@@ -285,7 +285,7 @@ class iscsi(object):
             self.discovered_targets[(ipaddr, port)] = []
             for node in found_nodes:
                 self.discovered_targets[(ipaddr, port)].append([node, False])
-                log.debug("discovered iSCSI node: %s" % node.name)
+                log.debug("discovered iSCSI node: %s", node.name)
 
         # only return the nodes we are not logged into yet
         return [node for (node, logged_in) in
@@ -311,13 +311,13 @@ class iscsi(object):
             node.setAuth(authinfo)
             node.login()
             rc = True
-            log.info("iSCSI: logged into %s at %s:%s through %s" % (
-                    node.name, node.address, node.port, node.iface))
+            log.info("iSCSI: logged into %s at %s:%s through %s",
+                    node.name, node.address, node.port, node.iface)
             if not self._mark_node_active(node):
                 log.error("iSCSI: node not found among discovered")
         except (IOError, ValueError) as e:
             msg = str(e)
-            log.warning("iSCSI: could not log into %s: %s" % (node.name, msg))
+            log.warning("iSCSI: could not log into %s: %s", node.name, msg)
 
         return (rc, msg)
 
@@ -334,14 +334,13 @@ class iscsi(object):
 
         for node in found_nodes:
             if target and target != node.name:
-                log.debug("iscsi: skipping logging to iscsi node '%s'" %
-                          node.name)
+                log.debug("iscsi: skipping logging to iscsi node '%s'", node.name)
                 continue
             if iface:
                 node_net_iface = self.ifaces.get(node.iface, node.iface)
                 if iface != node_net_iface:
-                    log.debug("iscsi: skipping logging to iscsi node '%s' via %s" %
-                               (node.name, node_net_iface))
+                    log.debug("iscsi: skipping logging to iscsi node '%s' via %s",
+                               node.name, node_net_iface)
                     continue
 
             found = found + 1

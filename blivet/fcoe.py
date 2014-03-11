@@ -74,15 +74,15 @@ class fcoe(object):
             rc = e.strerror
 
         if not rc.startswith("NIC="):
-            log.info("No FCoE EDD info found: %s" % rc.rstrip())
+            log.info("No FCoE EDD info found: %s", rc.rstrip())
             return
 
         (key, val) = rc.strip().split("=", 1)
         #if val not in isys.getDeviceProperties():
-        #    log.error("Unknown FCoE NIC found in EDD: %s, ignoring" % val)
+        #    log.error("Unknown FCoE NIC found in EDD: %s, ignoring", val)
         #    return
 
-        log.info("FCoE NIC found in EDD: %s" % val)
+        log.info("FCoE NIC found in EDD: %s", val)
         self.addSan(val, dcb=True, auto_vlan=True)
 
     def startup(self):
@@ -110,8 +110,8 @@ class fcoe(object):
         if not has_fcoe():
             raise IOError, _("FCoE not available")
 
-        log.info("Activating FCoE SAN attached to %s, dcb: %s autovlan: %s" %
-                 (nic, dcb, auto_vlan))
+        log.info("Activating FCoE SAN attached to %s, dcb: %s autovlan: %s",
+                 nic, dcb, auto_vlan)
 
         util.run_program(["ip", "link", "set", nic, "up"])
 
@@ -139,7 +139,7 @@ class fcoe(object):
             self._stabilize()
             self.nics.append((nic, dcb, auto_vlan))
         else:
-            log.debug("Activating FCoE SAN failed: %s %s" % (rc, out))
+            log.debug("Activating FCoE SAN failed: %s %s", rc, out)
             error_msg = out
 
         return error_msg

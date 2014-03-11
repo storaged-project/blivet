@@ -477,7 +477,7 @@ class ActionCreateFormat(DeviceAction):
                 self.device.deviceLinks = udev_device_get_symlinks(info)
             elif self.device.format.type != "tmpfs":
                 # udev lookup failing is a serious issue for anything other than tmpfs
-                log.error("udev lookup failed for device: %s" % self.device)
+                log.error("udev lookup failed for device: %s", self.device)
 
     def cancel(self):
         self.device.format = self.origFormat

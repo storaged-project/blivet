@@ -174,12 +174,12 @@ class DiskLabel(DeviceFormat):
                 # MAC can boot as EFI or as BIOS, neither should have PMBR boot set
                 if arch.isEfi() or arch.isMactel():
                     self._partedDisk.unsetFlag(parted.DISK_GPT_PMBR_BOOT)
-                    log.debug("Clear pmbr_boot on %s" % (self._partedDisk,))
+                    log.debug("Clear pmbr_boot on %s", self._partedDisk)
                 else:
                     self._partedDisk.setFlag(parted.DISK_GPT_PMBR_BOOT)
-                    log.debug("Set pmbr_boot on %s" % (self._partedDisk,))
+                    log.debug("Set pmbr_boot on %s", self._partedDisk)
             else:
-                log.debug("Did not change pmbr_boot on %s" % (self._partedDisk,))
+                log.debug("Did not change pmbr_boot on %s", self._partedDisk)
 
         return self._partedDisk
 
@@ -194,9 +194,9 @@ class DiskLabel(DeviceFormat):
                 try:
                     self._partedDevice = parted.Device(path=self.device)
                 except (_ped.IOException, _ped.DeviceException) as e:
-                    log.error("DiskLabel.partedDevice: Parted exception: %s" % e)
+                    log.error("DiskLabel.partedDevice: Parted exception: %s", e)
             else:
-                log.info("DiskLabel.partedDevice: %s does not exist" % self.device)
+                log.info("DiskLabel.partedDevice: %s does not exist", self.device)
 
         if not self._partedDevice:
             log.info("DiskLabel.partedDevice returning None")

@@ -93,17 +93,17 @@ def _getConfigArgs(**kwargs):
 def lvm_cc_addFilterRejectRegexp(regexp):
     """ Add a regular expression to the --config string."""
     global config_args_data
-    log.debug("lvm filter: adding %s to the reject list" % regexp)
+    log.debug("lvm filter: adding %s to the reject list", regexp)
     config_args_data["filterRejects"].append(regexp)
 
 def lvm_cc_removeFilterRejectRegexp(regexp):
     """ Remove a regular expression from the --config string."""
     global config_args_data
-    log.debug("lvm filter: removing %s from the reject list" % regexp)
+    log.debug("lvm filter: removing %s from the reject list", regexp)
     try:
         config_args_data["filterRejects"].remove(regexp)
     except ValueError:
-        log.debug("%s wasn't in the reject list" % regexp)
+        log.debug("%s wasn't in the reject list", regexp)
         return
 
 def lvm_cc_resetFilter():

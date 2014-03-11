@@ -45,8 +45,8 @@ def register_device_format(fmt_class):
         raise ValueError("arg1 must be a subclass of DeviceFormat")
 
     device_formats[fmt_class._type] = fmt_class
-    log.debug("registered device format class %s as %s" % (fmt_class.__name__,
-                                                           fmt_class._type))
+    log.debug("registered device format class %s as %s", fmt_class.__name__,
+                                                         fmt_class._type)
 
 default_fstypes = ("ext4", "ext3", "ext2")
 def get_default_filesystem_type():
@@ -88,8 +88,8 @@ def getFormat(fmt_type, *args, **kwargs):
         # this should add/set an instance attribute
         fmt._name = fmt_type
 
-    log.debug("getFormat('%s') returning %s instance with object id %d" %
-       (fmt_type, fmt.__class__.__name__, fmt.id))
+    log.debug("getFormat('%s') returning %s instance with object id %d",
+       fmt_type, fmt.__class__.__name__, fmt.id)
     return fmt
 
 def collect_device_format_classes():
@@ -109,9 +109,9 @@ def collect_device_format_classes():
             try:
                 globals()[mod_name] = __import__(mod_name, globals(), locals(), [], -1)
             except ImportError:
-                log.error("import of device format module '%s' failed" % mod_name)
+                log.error("import of device format module '%s' failed", mod_name)
                 from traceback import format_exc
-                log.debug(format_exc())
+                log.debug("%s", format_exc())
 
 def get_device_format_class(fmt_type):
     """ Return an appropriate format class.
@@ -331,13 +331,13 @@ class DeviceFormat(ObjectID):
             try:
                 name = dm_node_from_name(os.path.basename(self.device))
             except DMError:
-                log.warning("failed to get dm node for %s" % self.device)
+                log.warning("failed to get dm node for %s", self.device)
                 return
         elif self.device.startswith("/dev/md/"):
             try:
                 name = md_node_from_name(os.path.basename(self.device))
             except MDRaidError:
-                log.warning("failed to get md node for %s" % self.device)
+                log.warning("failed to get md node for %s", self.device)
                 return
         else:
             name = self.device
@@ -346,7 +346,7 @@ class DeviceFormat(ObjectID):
         try:
             notify_kernel(path, action="change")
         except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s" % e)
+            log.warning("failed to notify kernel of change: %s", e)
 
     def cacheMajorminor(self):
         """ Cache the value of self.majorminor.

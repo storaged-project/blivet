@@ -94,7 +94,7 @@ def getPPCMachine():
             if _type[0] in part:
                 return _type[1]
 
-    log.warning("Unknown PowerPC machine type: %s platform: %s" % (machine, platform,))
+    log.warning("Unknown PowerPC machine type: %s platform: %s", machine, platform)
 
     return None
 
@@ -148,7 +148,7 @@ def getPPCMacGen():
         if _type in gen:
             return _type
 
-    log.warning("Unknown Power Mac generation: %s" %(gen,))
+    log.warning("Unknown Power Mac generation: %s", gen)
     return None
 
 def getPPCMacBook():
@@ -370,5 +370,5 @@ def bits():
         bits = int(bits)
         return bits
     except Exception as e:
-        log.error("architecture word size detection failed: %s" % e)
+        log.error("architecture word size detection failed: %s", e)
         return None

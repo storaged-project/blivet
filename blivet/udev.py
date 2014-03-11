@@ -40,7 +40,7 @@ def udev_enumerate_devices(deviceClass="block"):
 
 def udev_get_device(sysfs_path):
     if not os.path.exists("/sys%s" % sysfs_path):
-        log.debug("%s does not exist" % sysfs_path)
+        log.debug("%s does not exist", sysfs_path)
         return None
 
     # XXX we remove the /sys part when enumerating devices,
@@ -175,7 +175,7 @@ def __is_blacklisted_blockdev(dev_name):
         model = open("/sys/class/block/%s/device/model" %(dev_name,)).read()
         for bad in ("IBM *STMF KERNEL", "SCEI Flash-5", "DGC LUNZ"):
             if model.find(bad) != -1:
-                log.info("ignoring %s with model %s" %(dev_name, model))
+                log.info("ignoring %s with model %s", dev_name, model)
                 return True
 
     return False
@@ -286,7 +286,7 @@ def udev_device_get_zfcp_attribute(info, attr=None):
     attribute = os.path.realpath(attribute)
 
     if not os.path.isfile(attribute):
-        log.warning("%s is not a valid zfcp attribute" % (attribute,))
+        log.warning("%s is not a valid zfcp attribute", attribute)
         return None
 
     return open(attribute, "r").read().strip()
@@ -624,7 +624,7 @@ def udev_device_get_iscsi_session(info):
     if match:
         session = match.groups()[0]
     else:
-        log.error("udev_device_get_iscsi_session: session not found in %s" % info)
+        log.error("udev_device_get_iscsi_session: session not found in %s", info)
     return session
 
 
@@ -644,8 +644,8 @@ def udev_device_get_iscsi_initiator(info):
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
                 initiator = open(initiator_file).read().strip()
-                log.debug("found offload iscsi initiatorname %s in file %s" %
-                          (initiator, initiator_file))
+                log.debug("found offload iscsi initiatorname %s in file %s",
+                          initiator, initiator_file)
                 if initiator.lstrip("(").rstrip(")").lower() == "null":
                     initiator = None
     if initiator is None:
@@ -653,7 +653,7 @@ def udev_device_get_iscsi_initiator(info):
         if session:
             initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
                              session).read().strip()
-            log.debug("found iscsi initiatorname %s" % initiator)
+            log.debug("found iscsi initiatorname %s", initiator)
     return initiator
 
 
@@ -725,7 +725,7 @@ def udev_device_get_fcoe_nic(info):
     if (sysfs_pci, host) != (None, None):
         net, iface = info['sysfs_path'].split("/")[5:7]
         if net != "net":
-            log.warning("unexpected sysfs_path of bnx2fc device: %s" % info['sysfs_path'])
+            log.warning("unexpected sysfs_path of bnx2fc device: %s", info['sysfs_path'])
             match = re.compile(r'.*/net/([^/]*)').match(info['sysfs_path'])
             if match:
                 return match.groups()[0].split(".")[0]

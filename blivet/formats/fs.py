@@ -232,7 +232,7 @@ class FS(DeviceFormat):
             try:
                 buf = util.capture_output([self.infofsProg] + argv)
             except OSError as e:
-                log.error("failed to gather fs info: %s" % e)
+                log.error("failed to gather fs info: %s", e)
 
         return buf
 
@@ -315,8 +315,8 @@ class FS(DeviceFormat):
 
                 size = Size(bytes=size)
             except Exception as e:
-                log.error("failed to obtain size of filesystem on %s: %s"
-                          % (self.device, e))
+                log.error("failed to obtain size of filesystem on %s: %s",
+                          self.device, e)
 
         return size
 
@@ -439,8 +439,8 @@ class FS(DeviceFormat):
         self._minInstanceSize = None
         if self.targetSize < self.minSize:
             self.targetSize = self.minSize
-            log.info("Minimum size changed, setting targetSize on %s to %s" \
-                     % (self.device, self.targetSize))
+            log.info("Minimum size changed, setting targetSize on %s to %s",
+                     self.device, self.targetSize)
         try:
             ret = util.run_program([self.resizefsProg] + self.resizeArgs)
         except OSError as e:
@@ -504,12 +504,12 @@ class FS(DeviceFormat):
             try:
                 rc = util.run_program(["modprobe", module])
             except OSError as e:
-                log.error("Could not load kernel module %s: %s" % (module, e))
+                log.error("Could not load kernel module %s: %s", module, e)
                 self._supported = False
                 return
 
             if rc:
-                log.error("Could not load kernel module %s" % module)
+                log.error("Could not load kernel module %s", module)
                 self._supported = False
                 return
 
@@ -532,7 +532,7 @@ class FS(DeviceFormat):
         try:
             self.mount(mountpoint=mountpoint)
         except Exception as e:
-            log.info("test mount failed: %s" % e)
+            log.info("test mount failed: %s", e)
         else:
             self.unmount()
             ret = True
@@ -980,15 +980,15 @@ class Ext2FS(FS):
 
             if size is None:
                 log.warning("failed to get minimum size for %s filesystem "
-                            "on %s" % (self.mountType, self.device))
+                            "on %s", self.mountType, self.device)
             else:
                 orig_size = size
-                log.debug("size=%s, current=%s" % (size, self.currentSize))
+                log.debug("size=%s, current=%s", size, self.currentSize)
                 size = min(size * Decimal('1.1'), size + 500, self.currentSize)
                 if orig_size < size:
-                    log.debug("padding min size from %d up to %d" % (orig_size, size))
+                    log.debug("padding min size from %d up to %d", orig_size, size)
                 else:
-                    log.debug("using current size %d as min size" % size)
+                    log.debug("using current size %d as min size", size)
 
         self._minInstanceSize = size
 
@@ -1273,12 +1273,12 @@ class XFS(FS):
         try:
             util.run_program(["xfs_freeze", "-f", self.mountpoint], root=root)
         except OSError as e:
-            log.error("failed to run xfs_freeze: %s" % e)
+            log.error("failed to run xfs_freeze: %s", e)
 
         try:
             util.run_program(["xfs_freeze", "-u", self.mountpoint], root=root)
         except OSError as e:
-            log.error("failed to run xfs_freeze: %s" % e)
+            log.error("failed to run xfs_freeze: %s", e)
 
 register_device_format(XFS)
 
@@ -1383,17 +1383,17 @@ class NTFS(FS):
                     minSize = Size(spec="%d mb" % int(l.split(":")[1].strip()))
                 except (IndexError, ValueError) as e:
                     minSize = None
-                    log.warning("Unable to parse output for minimum size on %s: %s" %(self.device, e))
+                    log.warning("Unable to parse output for minimum size on %s: %s", self.device, e)
 
             if minSize is None:
                 log.warning("Unable to discover minimum size of filesystem "
-                            "on %s" %(self.device,))
+                            "on %s", self.device)
             else:
                 size = min(minSize * Decimal('1.1'), minSize + 500, self.currentSize)
                 if minSize < size:
-                    log.debug("padding min size from %d up to %d" % (minSize, size))
+                    log.debug("padding min size from %d up to %d", minSize, size)
                 else:
-                    log.debug("using current size %d as min size" % size)
+                    log.debug("using current size %d as min size", size)
 
         self._minInstanceSize = size
 

@@ -26,7 +26,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
             os.chroot(root)
 
     with program_log_lock:
-        program_log.info("Running... %s" % " ".join(argv))
+        program_log.info("Running... %s", " ".join(argv))
 
         env = os.environ.copy()
         env.update({"LC_ALL": "C",
@@ -45,13 +45,13 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
             out = proc.communicate()[0]
             if out:
                 for line in out.splitlines():
-                    program_log.info(line)
+                    program_log.info("%s", line)
 
         except OSError as e:
-            program_log.error("Error running %s: %s" % (argv[0], e.strerror))
+            program_log.error("Error running %s: %s", argv[0], e.strerror)
             raise
 
-        program_log.debug("Return code: %d" % proc.returncode)
+        program_log.debug("Return code: %d", proc.returncode)
 
     return (proc.returncode, out)
 
@@ -103,7 +103,7 @@ def get_mount_paths(dev):
             mount_paths.append(path)
 
     if mount_paths:
-        log.debug("%s is mounted on %s" % (dev, ', '.join(mount_paths)))
+        log.debug("%s is mounted on %s", dev, ', '.join(mount_paths))
     return mount_paths
 
 def get_mount_device(mountpoint):
@@ -124,11 +124,11 @@ def get_mount_device(mountpoint):
         from blivet.devicelibs import loop
         loop_name = os.path.basename(mount_device)
         mount_device = loop.get_backing_file(loop_name)
-        log.debug("found backing file %s for loop device %s" % (mount_device,
-                                                                loop_name))
+        log.debug("found backing file %s for loop device %s", mount_device,
+                                                              loop_name)
 
     if mount_device:
-        log.debug("%s is mounted on %s" % (mount_device, mountpoint))
+        log.debug("%s is mounted on %s", mount_device, mountpoint)
 
     return mount_device
 
@@ -157,10 +157,10 @@ def notify_kernel(path, action="change"):
 
         Exceptions raised: ValueError, IOError
     """
-    log.debug("notifying kernel of '%s' event on device %s" % (action, path))
+    log.debug("notifying kernel of '%s' event on device %s", action, path)
     path = os.path.join(path, "uevent")
     if not path.startswith("/sys/") or not os.access(path, os.W_OK):
-        log.debug("sysfs path '%s' invalid" % path)
+        log.debug("sysfs path '%s' invalid", path)
         raise ValueError("invalid sysfs path")
 
     f = open(path, "a")
@@ -176,7 +176,7 @@ def get_sysfs_attr(path, attr):
     attribute = os.path.realpath(attribute)
 
     if not os.path.isfile(attribute) and not os.path.islink(attribute):
-        log.warning("%s is not a valid attribute" % (attr,))
+        log.warning("%s is not a valid attribute", attr)
         return None
 
     return open(attribute, "r").read().strip()
@@ -208,7 +208,7 @@ def match_path_context(path):
     try:
         context = selinux.matchpathcon(os.path.normpath(path), 0)[1]
     except OSError as e:
-        log.info("failed to get default SELinux context for %s: %s" % (path, e))
+        log.info("failed to get default SELinux context for %s: %s", path, e)
 
     return context
 
@@ -238,7 +238,7 @@ def set_file_context(path, context, root=None):
     try:
         rc = (selinux.lsetfilecon(full_path, context) == 0)
     except OSError as e:
-        log.info("failed to set SELinux context for %s: %s" % (full_path, e))
+        log.info("failed to set SELinux context for %s: %s", full_path, e)
         rc = False
 
     return rc
@@ -284,12 +284,12 @@ def copy_to_system(source):
     from . import ROOT_PATH
 
     if not os.access(source, os.R_OK):
-        log.info("copy_to_system: source '%s' does not exist." % source)
+        log.info("copy_to_system: source '%s' does not exist.", source)
         return False
 
     target = ROOT_PATH + source
     target_dir = os.path.dirname(target)
-    log.debug("copy_to_system: '%s' -> '%s'." % (source, target))
+    log.debug("copy_to_system: '%s' -> '%s'.", source, target)
     if not os.path.isdir(target_dir):
         os.makedirs(target_dir)
     shutil.copy(source, target)

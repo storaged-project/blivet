@@ -154,7 +154,7 @@ def storageInitialize(storage, ksdata, protected):
         if not ksdata.ignoredisk.onlyuse:
             ksdata.ignoredisk.onlyuse = [d.name for d in storage.disks \
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
-            log.debug("onlyuse is now: %s" % (",".join(ksdata.ignoredisk.onlyuse)))
+            log.debug("onlyuse is now: %s", ",".join(ksdata.ignoredisk.onlyuse))
 
 def turnOnFilesystems(storage, mountOnly=False):
     """ Perform installer-specific activation of storage configuration. """
@@ -208,14 +208,14 @@ def writeEscrowPackets(storage):
         log.debug("escrow: writing escrow packets to %s", escrowDir)
         util.makedirs(escrowDir)
         for device in escrowDevices:
-            log.debug("escrow: device %s: %s" %
-                      (repr(device.path), repr(device.format.type)))
+            log.debug("escrow: device %s: %s",
+                      repr(device.path), repr(device.format.type))
             device.format.escrow(escrowDir,
                                  backupPassphrase)
 
     except (IOError, RuntimeError) as e:
         # TODO: real error handling
-        log.error("failed to store encryption key: %s" % e)
+        log.error("failed to store encryption key: %s", e)
 
     log.debug("escrow: writeEscrowPackets done")
 
@@ -386,7 +386,7 @@ class Blivet(object):
         try:
             self.devicetree.teardownAll()
         except Exception as e:
-            log.error("failure tearing down device tree: %s" % e)
+            log.error("failure tearing down device tree: %s", e)
 
     def reset(self, cleanupOnly=False):
         """ Reset storage configuration to reflect actual system state.
@@ -400,7 +400,7 @@ class Blivet(object):
             See :meth:`devicetree.Devicetree.populate` for more information
             about the cleanupOnly keyword argument.
         """
-        log.info("resetting Blivet (version %s) instance %s" % (__version__, self))
+        log.info("resetting Blivet (version %s) instance %s", __version__, self)
         if flags.installer_mode:
             # save passphrases for luks devices so we don't have to reprompt
             self.encryptionPassphrase = None
@@ -439,7 +439,7 @@ class Blivet(object):
             try:
                 self.roots = findExistingInstallations(self.devicetree)
             except Exception as e:
-                log.info("failure detecting existing installations: %s" % e)
+                log.info("failure detecting existing installations: %s", e)
 
             self.dumpState("initial")
 
@@ -494,7 +494,7 @@ class Blivet(object):
         for device in self.devicetree.devices:
             if device.isDisk:
                 if not device.mediaPresent:
-                    log.info("Skipping disk: %s: No media present" % device.name)
+                    log.info("Skipping disk: %s: No media present", device.name)
                     continue
                 disks.append(device)
         disks.sort(key=lambda d: d.name, cmp=self.compareDisks)
@@ -519,7 +519,7 @@ class Blivet(object):
                 continue
 
             if not device.mediaPresent:
-                log.info("Skipping device: %s: No media present" % device.name)
+                log.info("Skipping device: %s: No media present", device.name)
                 continue
 
             partitioned.append(device)
@@ -759,7 +759,7 @@ class Blivet(object):
             formatting is removed by no attempt is made to actually remove the
             disk device.
         """
-        log.debug("removing %s" % device.name)
+        log.debug("removing %s", device.name)
         devices = self.deviceDeps(device)
 
         # this isn't strictly necessary, but it makes the action list easier to
@@ -769,9 +769,9 @@ class Blivet(object):
         devices.reverse()
 
         while devices:
-            log.debug("devices to remove: %s" % ([d.name for d in devices],))
+            log.debug("devices to remove: %s", [d.name for d in devices])
             leaves = [d for d in devices if d.isleaf]
-            log.debug("leaves to remove: %s" % ([d.name for d in leaves],))
+            log.debug("leaves to remove: %s", [d.name for d in leaves])
             for leaf in leaves:
                 self.destroyDevice(leaf)
                 devices.remove(leaf)
@@ -791,12 +791,12 @@ class Blivet(object):
                             key=lambda p: p.partedPartition.number,
                             reverse=True)
         for part in partitions:
-            log.debug("clearpart: looking at %s" % part.name)
+            log.debug("clearpart: looking at %s", part.name)
             if not self.shouldClear(part):
                 continue
 
             self.recursiveRemove(part)
-            log.debug("partitions: %s" % [p.getDeviceNodeName() for p in part.partedPartition.disk.partitions])
+            log.debug("partitions: %s", [p.getDeviceNodeName() for p in part.partedPartition.disk.partitions])
 
         # now remove any empty extended partitions
         self.removeEmptyExtendedPartitions()
@@ -806,7 +806,7 @@ class Blivet(object):
             if not self.shouldClear(disk):
                 continue
 
-            log.debug("clearpart: initializing %s" % disk.name)
+            log.debug("clearpart: initializing %s", disk.name)
             self.recursiveRemove(disk)
             self.initializeDisk(disk)
 
@@ -834,7 +834,7 @@ class Blivet(object):
                 # remove the magic partition
                 for part in self.devicetree.getChildren(disk):
                     if part.partedPartition.number == magic:
-                        log.debug("removing %s" % part.name)
+                        log.debug("removing %s", part.name)
                         # We can't schedule the magic partition for removal
                         # because parted will not allow us to remove it from the
                         # disk. Still, we need it out of the devicetree.
@@ -857,12 +857,12 @@ class Blivet(object):
 
     def removeEmptyExtendedPartitions(self):
         for disk in self.partitioned:
-            log.debug("checking whether disk %s has an empty extended" % disk.name)
+            log.debug("checking whether disk %s has an empty extended", disk.name)
             extended = disk.format.extendedPartition
             logical_parts = disk.format.logicalPartitions
-            log.debug("extended is %s ; logicals is %s" % (extended, [p.getDeviceNodeName() for p in logical_parts]))
+            log.debug("extended is %s ; logicals is %s", extended, [p.getDeviceNodeName() for p in logical_parts])
             if extended and not logical_parts:
-                log.debug("removing empty extended partition from %s" % disk.name)
+                log.debug("removing empty extended partition from %s", disk.name)
                 extended_name = devicePathToName(extended.getDeviceNodeName())
                 extended = self.devicetree.getDeviceByName(extended_name)
                 self.destroyDevice(extended)
@@ -1006,8 +1006,8 @@ class Blivet(object):
         if name:
             safe_name = self.safeDeviceName(name)
             if safe_name != name:
-                log.warning("using '%s' instead of specified name '%s'"
-                                % (safe_name, name))
+                log.warning("using '%s' instead of specified name '%s'",
+                                safe_name, name)
                 name = safe_name
         else:
             swap = getattr(kwargs.get("format"), "type", None) == "swap"
@@ -1039,8 +1039,8 @@ class Blivet(object):
         if name:
             safe_name = self.safeDeviceName(name)
             if safe_name != name:
-                log.warning("using '%s' instead of specified name '%s'"
-                                % (safe_name, name))
+                log.warning("using '%s' instead of specified name '%s'",
+                                safe_name, name)
                 name = safe_name
         else:
             hostname = ""
@@ -1102,8 +1102,8 @@ class Blivet(object):
             safe_name = self.safeDeviceName(full_name)
             if safe_name != full_name:
                 new_name = safe_name[len(safe_vg_name)+1:]
-                log.warning("using '%s' instead of specified name '%s'"
-                                % (new_name, name))
+                log.warning("using '%s' instead of specified name '%s'",
+                                new_name, name)
                 name = new_name
         else:
             if kwargs.get("format") and kwargs["format"].type == "swap":
@@ -1157,7 +1157,7 @@ class Blivet(object):
                 contain the volume you want to contain the subvolume.
 
         """
-        log.debug("newBTRFS: args = %s ; kwargs = %s" % (args, kwargs))
+        log.debug("newBTRFS: args = %s ; kwargs = %s", args, kwargs)
         name = kwargs.pop("name", None)
         if args:
             name = args[0]
@@ -1404,7 +1404,7 @@ class Blivet(object):
 
             if not name:
                 log.error("failed to create device name based on prefix "
-                          "'%s' and hostname '%s'" % (prefix, hostname))
+                          "'%s' and hostname '%s'", prefix, hostname)
                 raise RuntimeError("unable to find suitable device name")
 
         return name
@@ -1459,8 +1459,8 @@ class Blivet(object):
 
             if not name:
                 log.error("failed to create device name based on parent '%s', "
-                          "prefix '%s', mountpoint '%s', swap '%s'"
-                          % (parent.name, prefix, mountpoint, swap))
+                          "prefix '%s', mountpoint '%s', swap '%s'",
+                          parent.name, prefix, mountpoint, swap)
                 raise RuntimeError("unable to find suitable device name")
 
         return name
@@ -1821,14 +1821,14 @@ class Blivet(object):
 
             Raise ValueError on invalid input.
         """
-        log.debug("trying to set new default fstype to '%s'" % newtype)
+        log.debug("trying to set new default fstype to '%s'", newtype)
         fmt = getFormat(newtype)
         if fmt.type is None:
             raise ValueError("unrecognized value %s for new default fs type" % newtype)
 
         if (not fmt.mountable or not fmt.formattable or not fmt.supported or
             not fmt.linuxNative):
-            log.debug("invalid default fstype: %r" % fmt)
+            log.debug("invalid default fstype: %r", fmt)
             raise ValueError("new value %s is not valid as a default fs type" % fmt)
 
         self._defaultFSType = newtype
@@ -1946,7 +1946,7 @@ class Blivet(object):
 
         # we can't do anything with existing devices
         #if device and device.exists:
-        #    log.info("factoryDevice refusing to change device %s" % device)
+        #    log.info("factoryDevice refusing to change device %s", device)
         #    return
 
         if not kwargs.get("fstype"):
@@ -2099,7 +2099,7 @@ class Blivet(object):
                     break
 
             if not class_attr or not list_attr:
-                log.info("omitting ksdata: %s" % device)
+                log.info("omitting ksdata: %s", device)
                 continue
 
             cls = getattr(self.ksdata, class_attr)
@@ -2183,8 +2183,8 @@ def mountExistingSystem(fsset, rootDevice,
             continue
 
         if device.format.needsFSCheck:
-            log.info("%s contains a dirty %s filesystem" % (device.path,
-                                                            device.format.type))
+            log.info("%s contains a dirty %s filesystem", device.path,
+                                                          device.format.type)
             dirtyDevs.append(device.path)
 
     if dirtyDevs and (not allowDirty or dirtyCB(dirtyDevs)):
@@ -2201,7 +2201,7 @@ class BlkidTab(object):
 
     def parse(self):
         path = "%s/etc/blkid/blkid.tab" % self.chroot
-        log.debug("parsing %s" % path)
+        log.debug("parsing %s", path)
         with open(path) as f:
             for line in f.readlines():
                 # this is pretty ugly, but an XML parser is more work than
@@ -2244,7 +2244,7 @@ class CryptTab(object):
             chroot = ""
 
         path = "%s/etc/crypttab" % chroot
-        log.debug("parsing %s" % path)
+        log.debug("parsing %s", path)
         with open(path) as f:
             if not self.blkidTab:
                 try:
@@ -2496,15 +2496,15 @@ class FSSet(object):
                 device = NoDevice(format=format)
 
         if device is None:
-            log.error("failed to resolve %s (%s) from fstab" % (devspec,
-                                                                fstype))
+            log.error("failed to resolve %s (%s) from fstab", devspec,
+                                                              fstype)
             raise UnrecognizedFSTabEntryError()
 
         device.setup()
         fmt = getFormat(fstype, device=device.path, exists=True)
         if fstype != "auto" and None in (device.format.type, fmt.type):
-            log.info("Unrecognized filesystem type for %s (%s)"
-                     % (device.name, fstype))
+            log.info("Unrecognized filesystem type for %s (%s)",
+                     device.name, fstype)
             device.teardown()
             raise UnrecognizedFSTabEntryError()
 
@@ -2513,7 +2513,7 @@ class FSSet(object):
         ftype = getattr(fmt, "mountType", fmt.type)
         dtype = getattr(device.format, "mountType", device.format.type)
         if fstype != "auto" and ftype != dtype:
-            log.info("fstab says %s at %s is %s" % (dtype, mountpoint, ftype))
+            log.info("fstab says %s at %s is %s", dtype, mountpoint, ftype)
             if fmt.testMount():
                 device.format = fmt
             else:
@@ -2554,30 +2554,30 @@ class FSSet(object):
         path = "%s/etc/fstab" % chroot
         if not os.access(path, os.R_OK):
             # XXX should we raise an exception instead?
-            log.info("cannot open %s for read" % path)
+            log.info("cannot open %s for read", path)
             return
 
         blkidTab = BlkidTab(chroot=chroot)
         try:
             blkidTab.parse()
-            log.debug("blkid.tab devs: %s" % blkidTab.devices.keys())
+            log.debug("blkid.tab devs: %s", blkidTab.devices.keys())
         except Exception as e:
-            log.info("error parsing blkid.tab: %s" % e)
+            log.info("error parsing blkid.tab: %s", e)
             blkidTab = None
 
         cryptTab = CryptTab(self.devicetree, blkidTab=blkidTab, chroot=chroot)
         try:
             cryptTab.parse(chroot=chroot)
-            log.debug("crypttab maps: %s" % cryptTab.mappings.keys())
+            log.debug("crypttab maps: %s", cryptTab.mappings.keys())
         except Exception as e:
-            log.info("error parsing crypttab: %s" % e)
+            log.info("error parsing crypttab: %s", e)
             cryptTab = None
 
         self.blkidTab = blkidTab
         self.cryptTab = cryptTab
 
         with open(path) as f:
-            log.debug("parsing %s" % path)
+            log.debug("parsing %s", path)
 
             lines = f.readlines()
 
@@ -2627,7 +2627,7 @@ class FSSet(object):
                 parent = get_containing_device(targetDir, self.devicetree)
                 if not parent:
                     log.error("cannot determine which device contains "
-                              "directory %s" % device.path)
+                              "directory %s", device.path)
                     device.parents = []
                     self.devicetree._removeDevice(device)
                     continue
@@ -2676,7 +2676,7 @@ class FSSet(object):
                 parent = get_containing_device(targetDir, self.devicetree)
                 if not parent:
                     log.error("cannot determine which device contains "
-                              "directory %s" % device.path)
+                              "directory %s", device.path)
                     device.parents = []
                     self.devicetree._removeDevice(device)
                     continue
@@ -2698,8 +2698,8 @@ class FSSet(object):
                 device.format.setup(options=options,
                                     chroot=rootPath)
             except Exception as e:
-                log.error("error mounting %s on %s: %s"
-                          % (device.path, device.format.mountpoint, e))
+                log.error("error mounting %s on %s: %s",
+                          device.path, device.format.mountpoint, e)
                 if errorHandler.cb(e, device) == ERROR_RAISE:
                     raise
 
@@ -2891,9 +2891,9 @@ class FSSet(object):
                 mountpoint = device.format.mountpoint
                 options = device.format.options
                 if not mountpoint:
-                    log.warning("%s filesystem on %s has no mountpoint" % \
-                                                            (fstype,
-                                                             device.path))
+                    log.warning("%s filesystem on %s has no mountpoint",
+                                                            fstype,
+                                                            device.path)
                     continue
 
             options = options or "defaults"
@@ -3064,16 +3064,16 @@ def findExistingInstallations(devicetree):
         try:
             device.setup()
         except Exception as e:
-            log.warning("setup of %s failed: %s" % (device.name, e))
+            log.warning("setup of %s failed: %s", device.name, e)
             continue
 
         options = device.format.options + ",ro"
         try:
             device.format.mount(options=options, mountpoint=ROOT_PATH)
         except Exception as e:
-            log.warning("mount of %s as %s failed: %s" % (device.name,
-                                                          device.format.type,
-                                                          e))
+            log.warning("mount of %s as %s failed: %s", device.name,
+                                                        device.format.type,
+                                                        e)
             device.teardown()
             continue
 
@@ -3145,27 +3145,27 @@ def parseFSTab(devicetree, chroot=None):
     path = "%s/etc/fstab" % chroot
     if not os.access(path, os.R_OK):
         # XXX should we raise an exception instead?
-        log.info("cannot open %s for read" % path)
+        log.info("cannot open %s for read", path)
         return (mounts, swaps)
 
     blkidTab = BlkidTab(chroot=chroot)
     try:
         blkidTab.parse()
-        log.debug("blkid.tab devs: %s" % blkidTab.devices.keys())
+        log.debug("blkid.tab devs: %s", blkidTab.devices.keys())
     except Exception as e:
-        log.info("error parsing blkid.tab: %s" % e)
+        log.info("error parsing blkid.tab: %s", e)
         blkidTab = None
 
     cryptTab = CryptTab(devicetree, blkidTab=blkidTab, chroot=chroot)
     try:
         cryptTab.parse(chroot=chroot)
-        log.debug("crypttab maps: %s" % cryptTab.mappings.keys())
+        log.debug("crypttab maps: %s", cryptTab.mappings.keys())
     except Exception as e:
-        log.info("error parsing crypttab: %s" % e)
+        log.info("error parsing crypttab: %s", e)
         cryptTab = None
 
     with open(path) as f:
-        log.debug("parsing %s" % path)
+        log.debug("parsing %s", path)
         for line in f.readlines():
             # strip off comments
             (line, pound, comment) = line.partition("#")

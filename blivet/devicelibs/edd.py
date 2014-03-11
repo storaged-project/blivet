@@ -88,7 +88,7 @@ class EddEntry(object):
                 self.pci_dev = match.group(1)
                 self.channel = int(match.group(2))
             else:
-                log.warning("edd: can not match host_bus: %s" % hbus)
+                log.warning("edd: can not match host_bus: %s", hbus)
 
 class EddMatcher(object):
     """ This object tries to match given entry to a disk device name.
@@ -114,7 +114,7 @@ class EddMatcher(object):
                 if len(block_entries) == 1:
                     name = block_entries[0]
             else:
-                log.warning("edd: directory does not exist: %s" % path)
+                log.warning("edd: directory does not exist: %s", path)
         elif self.edd.type == "SCSI":
             pattern = "/sys/devices/pci0000:00/0000:%(pci_dev)s/virtio*/block" % \
                 {'pci_dev' : self.edd.pci_dev}
@@ -165,25 +165,25 @@ def collect_mbrs(devices):
             mbrsig = struct.unpack('I', os.read(fd, 4))
             os.close(fd)
         except OSError as e:
-            log.warning("edd: error reading mbrsig from disk %s: %s" %
-                        (dev.name, str(e)))
+            log.warning("edd: error reading mbrsig from disk %s: %s",
+                        dev.name, str(e))
             continue
 
         mbrsig_str = "0x%08x" % mbrsig
         # sanity check
         if mbrsig_str == '0x00000000':
-            log.info("edd: MBR signature on %s is zero. new disk image?" % dev.name)
+            log.info("edd: MBR signature on %s is zero. new disk image?", dev.name)
             continue
         else:
             for (dev_name, mbrsig_str_old) in mbr_dict.items():
                 if mbrsig_str_old == mbrsig_str:
-                    log.error("edd: dupicite MBR signature %s for %s and %s" %
-                              (mbrsig_str, dev_name, dev.name))
+                    log.error("edd: dupicite MBR signature %s for %s and %s",
+                              mbrsig_str, dev_name, dev.name)
                     # this actually makes all the other data useless
                     return {}
         # update the dictionary
         mbr_dict[dev.name] = mbrsig_str
-    log.info("edd: collected mbr signatures: %s" % mbr_dict)
+    log.info("edd: collected mbr signatures: %s", mbr_dict)
     return mbr_dict
 
 def get_edd_dict(devices):
@@ -204,28 +204,28 @@ def get_edd_dict(devices):
     edd_entries_dict = collect_edd_data()
     global edd_dict
     for (edd_number, edd_entry) in edd_entries_dict.items():
-        log.debug("edd: data extracted from 0x%x:\n%s" % (edd_number, edd_entry))
+        log.debug("edd: data extracted from 0x%x:\n%s", edd_number, edd_entry)
         matcher = EddMatcher(edd_entry)
         # first try to match through the pci dev etc.
         name = matcher.devname_from_pci_dev()
         # next try to compare mbr signatures
         if name:
-            log.debug("edd: matched 0x%x to %s using pci_dev" % (edd_number, name))
+            log.debug("edd: matched 0x%x to %s using pci_dev", edd_number, name)
         else:
             name = matcher.match_via_mbrsigs(mbr_dict)
             if name:
-                log.info("edd: matched 0x%x to %s using MBR sig" % (edd_number, name))
+                log.info("edd: matched 0x%x to %s using MBR sig", edd_number, name)
 
         if name:
             old_edd_number = edd_dict.get(name)
             if old_edd_number:
-                log.info("edd: both edd entries 0x%x and 0x%x seem to map to %s" %
-                          (old_edd_number, edd_number, name))
+                log.info("edd: both edd entries 0x%x and 0x%x seem to map to %s",
+                          old_edd_number, edd_number, name)
                 # this means all the other data can be confused and useless
                 return {}
             edd_dict[name] = edd_number
             continue
-        log.error("edd: unable to match edd entry 0x%x" % edd_number)
+        log.error("edd: unable to match edd entry 0x%x", edd_number)
     return edd_dict
 
 edd_dict = {}

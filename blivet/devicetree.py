@@ -165,13 +165,13 @@ class DeviceTree(object):
         """ Remove redundant/obsolete actions from the action list. """
         for action in reversed(self._actions[:]):
             if action not in self._actions:
-                log.debug("action %d already pruned" % action.id)
+                log.debug("action %d already pruned", action.id)
                 continue
 
             for obsolete in self._actions[:]:
                 if action.obsoletes(obsolete):
-                    log.info("removing obsolete action %d (%d)"
-                             % (obsolete.id, action.id))
+                    log.info("removing obsolete action %d (%d)",
+                             obsolete.id, action.id)
                     self._actions.remove(obsolete)
 
     def sortActions(self):
@@ -244,7 +244,7 @@ class DeviceTree(object):
                 self._actions.append(ActionCreateDevice(device))
 
         for action in self._actions:
-            log.debug("action: %s" % action)
+            log.debug("action: %s", action)
 
         log.info("pruning action queue...")
         self.pruneActions()
@@ -252,14 +252,14 @@ class DeviceTree(object):
         log.info("sorting actions...")
         self.sortActions()
         for action in self._actions:
-            log.debug("action: %s" % action)
+            log.debug("action: %s", action)
 
             # Remove lvm filters for devices we are operating on
             for device in (d for d in self._devices if d.dependsOn(action.device)):
                 lvm.lvm_cc_removeFilterRejectRegexp(device.name)
 
         for action in self._actions[:]:
-            log.info("executing action: %s" % action)
+            log.info("executing action: %s", action)
             if not dryRun:
                 try:
                     action.execute()
@@ -320,9 +320,9 @@ class DeviceTree(object):
             newdev.type != "btrfs volume" and
             newdev.name not in self.names):
             self.names.append(newdev.name)
-        log.info("added %s %s (id %d) to device tree" % (newdev.type,
-                                                          newdev.name,
-                                                          newdev.id))
+        log.info("added %s %s (id %d) to device tree", newdev.type,
+                                                       newdev.name,
+                                                       newdev.id)
 
     def _removeDevice(self, dev, force=None, moddisk=True):
         """ Remove a device from the tree.
@@ -342,7 +342,7 @@ class DeviceTree(object):
             raise ValueError("Device '%s' not in tree" % dev.name)
 
         if not dev.isleaf and not force:
-            log.debug("%s has %d kids" % (dev.name, dev.kids))
+            log.debug("%s has %d kids", dev.name, dev.kids)
             raise ValueError("Cannot remove non-leaf device '%s'" % dev.name)
 
         if moddisk:
@@ -374,9 +374,9 @@ class DeviceTree(object):
         self._devices.remove(dev)
         if dev.name in self.names and getattr(dev, "complete", True):
             self.names.remove(dev.name)
-        log.info("removed %s %s (id %d) from device tree" % (dev.type,
-                                                              dev.name,
-                                                              dev.id))
+        log.info("removed %s %s (id %d) from device tree", dev.type,
+                                                           dev.name,
+                                                           dev.id)
 
         for parent in dev.parents:
             # Will this cause issues with garbage collection?
@@ -419,7 +419,7 @@ class DeviceTree(object):
                action.device.format.mountpoint in self.filesystems:
                 raise DeviceTreeError("mountpoint already in use")
 
-        log.info("registered action: %s" % action)
+        log.info("registered action: %s", action)
         self._actions.append(action)
 
     def cancelAction(self, action):
@@ -579,7 +579,7 @@ class DeviceTree(object):
         if self.udevDeviceIsDisk(info):
             # Ignore any readonly disks
             if util.get_sysfs_attr(info["sysfs_path"], 'ro') == '1':
-                log.debug("Ignoring read only device %s" % name)
+                log.debug("Ignoring read only device %s", name)
                 # FIXME: We have to handle this better, ie: not ignore these.
                 self.addIgnoredDisk(name)
                 return True
@@ -619,7 +619,7 @@ class DeviceTree(object):
         vg_name = udev_device_get_lv_vg_name(info)
         device = self.getDeviceByName(vg_name, hidden=True)
         if device and not isinstance(device, LVMVolumeGroupDevice):
-            log.warning("found non-vg device with name %s" % vg_name)
+            log.warning("found non-vg device with name %s", vg_name)
             device = None
 
         if not device:
@@ -634,7 +634,7 @@ class DeviceTree(object):
         vg_name = udev_device_get_lv_vg_name(info)
         device = self.getDeviceByName(vg_name)
         if not device:
-            log.error("failed to find vg '%s' after scanning pvs" % vg_name)
+            log.error("failed to find vg '%s' after scanning pvs", vg_name)
 
         # Don't return the device like we do in the other addUdevFooDevice
         # methods. The device we have here is a vg, not an lv.
@@ -662,7 +662,7 @@ class DeviceTree(object):
                 # This is a little lame, but the VG device is a DMDevice
                 # and it won't have a dm node. At any rate, this is not
                 # important enough to crash the install.
-                log.debug("failed to find dm node for %s" % dmdev.name)
+                log.debug("failed to find dm node for %s", dmdev.name)
                 continue
 
         handle_luks = (udev_device_is_dm_luks(info) and
@@ -691,7 +691,7 @@ class DeviceTree(object):
                         if slave_dev is None:
                             # if the current slave is still not in
                             # the tree, something has gone wrong
-                            log.error("failure scanning device %s: could not add slave %s" % (name, dev_name))
+                            log.error("failure scanning device %s: could not add slave %s", name, dev_name)
                             return
 
                 if handle_luks:
@@ -728,7 +728,7 @@ class DeviceTree(object):
             # the tree, this device should be as well
             if device is None:
                 devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
-                log.warning("ignoring dm device %s" % name)
+                log.warning("ignoring dm device %s", name)
 
         return device
 
@@ -763,7 +763,7 @@ class DeviceTree(object):
                     if slave_dev is None:
                         # if the current slave is still not in
                         # the tree, something has gone wrong
-                        log.error("failure scanning device %s: could not add slave %s" % (name, dev_name))
+                        log.error("failure scanning device %s: could not add slave %s", name, dev_name)
                         return
 
             slave_devs.append(slave_dev)
@@ -772,7 +772,7 @@ class DeviceTree(object):
             try:
                 serial = info["DM_UUID"].split("-", 1)[1]
             except (IndexError, AttributeError):
-                log.error("multipath device %s has no DM_UUID" % name)
+                log.error("multipath device %s has no DM_UUID", name)
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
 
             device = MultipathDevice(name, parents=slave_devs,
@@ -809,7 +809,7 @@ class DeviceTree(object):
                     if self.getDeviceByName(dev_name) is None:
                         # if the current slave is still not in
                         # the tree, something has gone wrong
-                        log.error("failure scanning device %s: could not add slave %s" % (name, dev_name))
+                        log.error("failure scanning device %s: could not add slave %s", name, dev_name)
                         return
 
         # try to get the device again now that we've got all the slaves
@@ -828,11 +828,11 @@ class DeviceTree(object):
             else:
                 path = "/dev/md/" + name
 
-            log.error("failed to scan md array %s" % name)
+            log.error("failed to scan md array %s", name)
             try:
                 devicelibs.mdraid.mddeactivate(path)
             except MDRaidError:
-                log.error("failed to stop broken md array %s" % name)
+                log.error("failed to stop broken md array %s", name)
 
         return device
 
@@ -867,7 +867,7 @@ class DeviceTree(object):
             if disk is None:
                 # if the current device is still not in
                 # the tree, something has gone wrong
-                log.error("failure scanning device %s" % disk_name)
+                log.error("failure scanning device %s", disk_name)
                 devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
                 return
 
@@ -888,7 +888,7 @@ class DeviceTree(object):
             if not disk.format.hidden:
                 devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
 
-            log.debug("ignoring partition %s on %s" % (name, disk.format.type))
+            log.debug("ignoring partition %s on %s", name, disk.format.type)
             return
 
         try:
@@ -902,7 +902,7 @@ class DeviceTree(object):
             # prompt to re-initialize the disk, so simply skip the
             # faulty partitions.
             # XXX not sure about this
-            log.error("Failed to instantiate PartitionDevice: %s" % e)
+            log.error("Failed to instantiate PartitionDevice: %s", e)
             return
 
         self._addDevice(device)
@@ -937,7 +937,7 @@ class DeviceTree(object):
                 kwargs["node"] = node
                 kwargs["ibft"] = node in self.iscsi.ibftNodes
                 kwargs["nic"] = self.iscsi.ifaces.get(node.iface, node.iface)
-                log.info("%s is an iscsi disk" % name)
+                log.info("%s is an iscsi disk", name)
             else:
                 # qla4xxx partial offload
                 kwargs["node"] = None
@@ -950,7 +950,7 @@ class DeviceTree(object):
             diskType = FcoeDiskDevice
             kwargs["nic"]        = udev_device_get_fcoe_nic(info)
             kwargs["identifier"] = udev_device_get_fcoe_identifier(info)
-            log.info("%s is an fcoe disk" % name)
+            log.info("%s is an fcoe disk", name)
         elif udev_device_get_md_container(info):
             name = udev_device_get_md_name(info)
             diskType = MDRaidArrayDevice
@@ -962,14 +962,14 @@ class DeviceTree(object):
                 container_sysfs = "/class/block/" + parentSysName
                 container_info = udev_get_block_device(container_sysfs)
                 if not container_info:
-                    log.error("failed to find md container %s at %s"
-                                % (parentName, container_sysfs))
+                    log.error("failed to find md container %s at %s",
+                                parentName, container_sysfs)
                     return
 
                 self.addUdevDevice(container_info)
                 container = self.getDeviceByName(parentName)
                 if not container:
-                    log.error("failed to scan md container %s" % parentName)
+                    log.error("failed to scan md container %s", parentName)
                     return
 
             kwargs["parents"] = [container]
@@ -988,17 +988,17 @@ class DeviceTree(object):
             for attr in ['readonly', 'use_diag', 'erplog', 'failfast']:
                 kwargs["opts"][attr] = udev_device_get_dasd_flag(info, attr)
 
-            log.info("%s is a dasd device" % name)
+            log.info("%s is a dasd device", name)
         elif udev_device_is_zfcp(info):
             diskType = ZFCPDiskDevice
 
             for attr in ['hba_id', 'wwpn', 'fcp_lun']:
                 kwargs[attr] = udev_device_get_zfcp_attribute(info, attr=attr)
 
-            log.info("%s is a zfcp device" % name)
+            log.info("%s is a zfcp device", name)
         else:
             diskType = DiskDevice
-            log.info("%s is a disk" % name)
+            log.info("%s is a disk", name)
 
         device = diskType(name,
                           major=udev_device_get_major(info),
@@ -1068,7 +1068,7 @@ class DeviceTree(object):
                 else:
                     reason = "hidden"
 
-                log.debug("skipping %s device %s" % (reason, name))
+                log.debug("skipping %s device %s", reason, name)
                 return
 
         # make sure we note the name of every device we see
@@ -1076,13 +1076,13 @@ class DeviceTree(object):
             self.names.append(name)
 
         if self.isIgnored(info):
-            log.info("ignoring %s (%s)" % (name, sysfs_path))
+            log.info("ignoring %s (%s)", name, sysfs_path)
             if name not in self.ignoredDisks:
                 self.addIgnoredDisk(name)
 
             return
 
-        log.info("scanning %s (%s)..." % (name, sysfs_path))
+        log.info("scanning %s (%s)...", name, sysfs_path)
         device = self.getDeviceByName(name)
         if device is None and udev_device_is_md(info):
             device = self.getDeviceByName(udev_device_get_md_name(info))
@@ -1096,7 +1096,7 @@ class DeviceTree(object):
             info["ID_FS_TYPE"] = "multipath_member"
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
-                log.debug("%s newly detected as multipath member, dropping old format and removing kids" % device.name)
+                log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
                 # remove children from tree so that we don't stumble upon them later
                 self._removeChildrenFromTree(device)
                 device.format = formats.DeviceFormat()
@@ -1109,20 +1109,20 @@ class DeviceTree(object):
             # first, grab the parted.Device while it's active
             _unused = device.partedDevice
         elif udev_device_is_loop(info):
-            log.info("%s is a loop device" % name)
+            log.info("%s is a loop device", name)
             device = self.addUdevLoopDevice(info)
         elif udev_device_is_dm_mpath(info) and \
              not udev_device_is_dm_partition(info):
-            log.info("%s is a multipath device" % name)
+            log.info("%s is a multipath device", name)
             device = self.addUdevMultiPathDevice(info)
         elif udev_device_is_dm_lvm(info):
-            log.info("%s is an lvm logical volume" % name)
+            log.info("%s is an lvm logical volume", name)
             device = self.addUdevLVDevice(info)
         elif udev_device_is_dm(info):
-            log.info("%s is a device-mapper device" % name)
+            log.info("%s is a device-mapper device", name)
             device = self.addUdevDMDevice(info)
         elif udev_device_is_md(info) and not udev_device_get_md_container(info):
-            log.info("%s is an md device" % name)
+            log.info("%s is an md device", name)
             if uuid:
                 # try to find the device by uuid
                 device = self.getDeviceByUuid(uuid)
@@ -1130,10 +1130,10 @@ class DeviceTree(object):
             if device is None:
                 device = self.addUdevMDDevice(info)
         elif udev_device_is_cdrom(info):
-            log.info("%s is a cdrom" % name)
+            log.info("%s is a cdrom", name)
             device = self.addUdevOpticalDevice(info)
         elif udev_device_is_biosraid_member(info) and udev_device_is_disk(info):
-            log.info("%s is part of a biosraid" % name)
+            log.info("%s is part of a biosraid", name)
             device = DiskDevice(name,
                             major=udev_device_get_major(info),
                             minor=udev_device_get_minor(info),
@@ -1142,10 +1142,10 @@ class DeviceTree(object):
         elif udev_device_is_disk(info):
             device = self.addUdevDiskDevice(info)
         elif udev_device_is_partition(info):
-            log.info("%s is a partition" % name)
+            log.info("%s is a partition", name)
             device = self.addUdevPartitionDevice(info)
         else:
-            log.error("Unknown block device type for: %s" % name)
+            log.error("Unknown block device type for: %s", name)
             return
 
         # If this device is protected, mark it as such now. Once the tree
@@ -1176,9 +1176,9 @@ class DeviceTree(object):
 
         # now handle the device's formatting
         self.handleUdevDeviceFormat(info, device)
-        log.info("got device: %r" % device)
+        log.info("got device: %r", device)
         if device.format.type:
-            log.info("got format: %r" % device.format)
+            log.info("got format: %r", device.format)
         device.originalFormat = copy.copy(device.format)
         device.deviceLinks = udev_device_get_symlinks(info)
 
@@ -1188,19 +1188,19 @@ class DeviceTree(object):
         # if there is no disklabel on the device
         if disklabel_type is None and \
            getFormat(udev_device_get_format(info)).type is not None:
-            log.debug("device %s does not contain a disklabel" % device.name)
+            log.debug("device %s does not contain a disklabel", device.name)
             return
 
         if device.partitioned:
             # this device is already set up
-            log.debug("disklabel format on %s already set up" % device.name)
+            log.debug("disklabel format on %s already set up", device.name)
             return
 
         try:
             device.setup()
         except Exception as e:
-            log.debug("setup of %s failed: %s" % (device.name, e))
-            log.warning("aborting disklabel handler for %s" % device.name)
+            log.debug("setup of %s failed: %s", device.name, e)
+            log.warning("aborting disklabel handler for %s", device.name)
             return
 
         # special handling for unsupported partitioned devices
@@ -1211,8 +1211,8 @@ class DeviceTree(object):
                                    labelType=disklabel_type,
                                    exists=True)
             except InvalidDiskLabelError:
-                log.warning("disklabel detected but not usable on %s"
-                            % device.name)
+                log.warning("disklabel detected but not usable on %s",
+                            device.name)
                 pass
             return
 
@@ -1226,7 +1226,7 @@ class DeviceTree(object):
                                labelType=labelType,
                                exists=True)
         except InvalidDiskLabelError as e:
-            log.info("no usable disklabel on %s" % device.name)
+            log.info("no usable disklabel on %s", device.name)
             if disklabel_type == "gpt":
                 log.debug(e)
                 device.format = getFormat(_("Invalid Disk Label"))
@@ -1236,7 +1236,7 @@ class DeviceTree(object):
     def handleUdevLUKSFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
         if not device.format.uuid:
-            log.info("luks device %s has no uuid" % device.path)
+            log.info("luks device %s has no uuid", device.path)
             return
 
         # look up or create the mapped device
@@ -1247,8 +1247,8 @@ class DeviceTree(object):
             elif passphrase:
                 device.format.passphrase = passphrase
             elif device.format.uuid in self.__luksDevs:
-                log.info("skipping previously-skipped luks device %s"
-                            % device.name)
+                log.info("skipping previously-skipped luks device %s",
+                            device.name)
             elif self._cleanup or flags.testing:
                 # if we're only building the devicetree so that we can
                 # tear down all of the devices we don't need a passphrase
@@ -1275,15 +1275,14 @@ class DeviceTree(object):
             try:
                 luks_device.setup()
             except (LUKSError, CryptoError, DeviceError) as e:
-                log.info("setup of %s failed: %s" % (device.format.mapName,
-                                                     e))
+                log.info("setup of %s failed: %s", device.format.mapName, e)
                 device.removeChild()
             else:
                 luks_device.updateSysfsPath()
                 self._addDevice(luks_device)
         else:
-            log.warning("luks device %s already in the tree"
-                        % device.format.mapName)
+            log.warning("luks device %s already in the tree",
+                        device.format.mapName)
 
     def handleVgLvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
@@ -1296,11 +1295,11 @@ class DeviceTree(object):
         lv_types = vg_device.lv_types
 
         if not vg_device.complete:
-            log.warning("Skipping LVs for incomplete VG %s" % vg_name)
+            log.warning("Skipping LVs for incomplete VG %s", vg_name)
             return
 
         if not lv_names:
-            log.debug("no LVs listed for VG %s" % vg_name)
+            log.debug("no LVs listed for VG %s", vg_name)
             return
 
         def lv_attr_cmp(a, b):
@@ -1329,22 +1328,22 @@ class DeviceTree(object):
 
             if self.getDeviceByName(name):
                 # some lvs may have been added on demand below
-                log.debug("already added %s" % name)
+                log.debug("already added %s", name)
                 return
 
             if lv_attr[0] in 'Ss':
-                log.info("found lvm snapshot volume '%s'" % name)
+                log.info("found lvm snapshot volume '%s'", name)
                 origin_name = devicelibs.lvm.lvorigin(vg_name, lv_name)
                 if not origin_name:
-                    log.error("lvm snapshot '%s-%s' has unknown origin"
-                                % (vg_name, lv_name))
+                    log.error("lvm snapshot '%s-%s' has unknown origin",
+                                vg_name, lv_name)
                     return
 
                 origin_device_name = "%s-%s" % (vg_name, origin_name)
                 origin = self.getDeviceByName(origin_device_name)
                 if not origin:
                     if origin_name.endswith("_vorigin]"):
-                        log.info("snapshot volume '%s' has vorigin" % name)
+                        log.info("snapshot volume '%s' has vorigin", name)
                         vg_device.voriginSnapshots[lv_name] = lv_size
                         return
                     else:
@@ -1355,11 +1354,11 @@ class DeviceTree(object):
 
                         if origin is None:
                             log.warning("snapshot lv '%s' origin lv '%s' not "
-                                        "found" % (name, origin_device_name))
+                                        "found", name, origin_device_name)
                             return
 
-                log.debug("adding %s to %s snapshot total"
-                            % (lv_sizes[index], origin.name))
+                log.debug("adding %s to %s snapshot total",
+                            lv_sizes[index], origin.name)
                 origin.snapshotSpace += lv_size
                 return
             elif lv_attr[0] == 'v':
@@ -1425,7 +1424,7 @@ class DeviceTree(object):
                     lv_device.updateSysfsPath()
                     lv_info = udev_get_block_device(lv_device.sysfsPath)
                     if not lv_info:
-                        log.error("failed to get udev data for lv %s" % lv_device.name)
+                        log.error("failed to get udev data for lv %s", lv_device.name)
                         return
 
                     # do format handling now
@@ -1454,9 +1453,9 @@ class DeviceTree(object):
             lv_dev.metaDataSize = data["meta"]
             lv_dev.logSize = data["log"]
             log.debug("set %s copies to %d, metadata size to %s, log size "
-                      "to %s, total size %s"
-                        % (lv_dev.name, lv_dev.copies, lv_dev.metaDataSize,
-                           lv_dev.logSize, lv_dev.vgSpaceUsed))
+                      "to %s, total size %s",
+                        lv_dev.name, lv_dev.copies, lv_dev.metaDataSize,
+                        lv_dev.logSize, lv_dev.vgSpaceUsed)
 
     def handleUdevLVMPVFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
@@ -1469,7 +1468,7 @@ class DeviceTree(object):
             return
 
         if not vg_name:
-            log.info("lvm pv %s has no vg" % device.name)
+            log.info("lvm pv %s has no vg", device.name)
             return
 
         vg_device = self.getDeviceByUuid(vg_uuid, incomplete=True)
@@ -1484,7 +1483,7 @@ class DeviceTree(object):
                 pe_free = udev_device_get_vg_free_extents(info)
                 pv_count = udev_device_get_vg_pv_count(info)
             except (KeyError, ValueError) as e:
-                log.warning("invalid data for %s: %s" % (device.name, e))
+                log.warning("invalid data for %s: %s", device.name, e)
                 return
 
             vg_device = LVMVolumeGroupDevice(vg_name,
@@ -1511,7 +1510,7 @@ class DeviceTree(object):
             lv_attr = udev_device_get_lv_attr(info)
             lv_types = udev_device_get_lv_types(info)
         except KeyError as e:
-            log.warning("invalid data for %s: %s" % (device.name, e))
+            log.warning("invalid data for %s: %s", device.name, e)
             return
 
         for i in range(len(lv_names)):
@@ -1548,7 +1547,7 @@ class DeviceTree(object):
                 md_devices = int(udev_device_get_md_devices(info))
                 md_uuid = udev_device_get_md_uuid(info)
             except (KeyError, ValueError) as e:
-                log.warning("invalid data for %s: %s" % (name, e))
+                log.warning("invalid data for %s: %s", name, e)
                 return
 
             md_metadata = info.get("MD_METADATA")
@@ -1597,11 +1596,10 @@ class DeviceTree(object):
                     if md_name:
                         array = self.getDeviceByName(md_name, incomplete=True)
                         if array and array.uuid != md_uuid:
-                            log.error("found multiple devices with the name %s"
-                                        % md_name)
+                            log.error("found multiple devices with the name %s", md_name)
 
-            log.info("using name %s for md array containing member %s"
-                        % (md_name, device.name))
+            log.info("using name %s for md array containing member %s",
+                        md_name, device.name)
             try:
                 md_array = MDRaidArrayDevice(md_name,
                                              level=md_level,
@@ -1610,7 +1608,7 @@ class DeviceTree(object):
                                              metadataVersion=md_metadata,
                                              exists=True)
             except ValueError as e:
-                log.error("failed to create md array: %s" % e)
+                log.error("failed to create md array: %s", e)
                 return
 
             md_array.updateSysfsPath()
@@ -1638,7 +1636,7 @@ class DeviceTree(object):
                                             major=major, minor=minor)
         if len(rss) == 0:
             log.warning("dmraid member %s does not appear to belong to any "
-                        "array" % device.name)
+                        "array", device.name)
             return
 
         for rs in rss:
@@ -1686,11 +1684,11 @@ class DeviceTree(object):
                 break
 
         if btrfs_dev:
-            log.info("found btrfs volume %s" % btrfs_dev.name)
+            log.info("found btrfs volume %s", btrfs_dev.name)
             btrfs_dev._addDevice(device)
         else:
             label = udev_device_get_label(info)
-            log.info("creating btrfs volume btrfs.%s" % label)
+            log.info("creating btrfs volume btrfs.%s", label)
             btrfs_dev = BTRFSVolumeDevice(label, parents=[device], uuid=uuid,
                                           exists=True)
             self._addDevice(btrfs_dev)
@@ -1712,8 +1710,8 @@ class DeviceTree(object):
                         break
 
                 if parent is None:
-                    log.error("failed to find parent (%d) for subvol %s"
-                              % (parent_id, vol_path))
+                    log.error("failed to find parent (%d) for subvol %s",
+                              parent_id, vol_path)
                     raise DeviceTreeError("could not find parent for subvol")
 
                 fmt = getFormat("btrfs", device=btrfs_dev.path, exists=True,
@@ -1755,7 +1753,7 @@ class DeviceTree(object):
         if (not device) or (not format_type) or device.format.type:
             # this device has no formatting or it has already been set up
             # FIXME: this probably needs something special for disklabels
-            log.debug("no type or existing type for %s, bailing" % (name,))
+            log.debug("no type or existing type for %s, bailing", name)
             return
 
         # set up the common arguments for the format constructor
@@ -1777,7 +1775,7 @@ class DeviceTree(object):
             try:
                 kwargs["mdUuid"] = udev_device_get_md_uuid(info)
             except KeyError:
-                log.warning("mdraid member %s has no md uuid" % name)
+                log.warning("mdraid member %s has no md uuid", name)
             kwargs["biosraid"] = udev_device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
@@ -1786,15 +1784,15 @@ class DeviceTree(object):
             try:
                 kwargs["vgName"] = udev_device_get_vg_name(info)
             except KeyError as e:
-                log.warning("PV %s has no vg_name" % name)
+                log.warning("PV %s has no vg_name", name)
             try:
                 kwargs["vgUuid"] = udev_device_get_vg_uuid(info)
             except KeyError:
-                log.warning("PV %s has no vg_uuid" % name)
+                log.warning("PV %s has no vg_uuid", name)
             try:
                 kwargs["peStart"] = udev_device_get_pv_pe_start(info)
             except KeyError:
-                log.warning("PV %s has no pe_start" % name)
+                log.warning("PV %s has no pe_start", name)
         elif format_type == "vfat":
             # efi magic
             if isinstance(device, PartitionDevice) and device.bootable:
@@ -1820,11 +1818,11 @@ class DeviceTree(object):
             kwargs["volUUID"] = uuid
 
         try:
-            log.info("type detected on '%s' is '%s'" % (name, format_type,))
+            log.info("type detected on '%s' is '%s'", name, format_type)
             device.format = formats.getFormat(*args, **kwargs)
         except FSError:
-            log.warning("type '%s' on '%s' invalid, assuming no format" %
-                      (format_type, name,))
+            log.warning("type '%s' on '%s' invalid, assuming no format",
+                      format_type, name)
             device.format = formats.DeviceFormat()
             return
 
@@ -1843,11 +1841,11 @@ class DeviceTree(object):
             self.handleBTRFSFormat(info, device)
 
     def updateDeviceFormat(self, device):
-        log.info("updating format of device: %s" % device)
+        log.info("updating format of device: %s", device)
         try:
             util.notify_kernel("/sys%s" % device.sysfsPath)
         except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s" % e)
+            log.warning("failed to notify kernel of change: %s", e)
 
         udev_settle()
         info = udev_get_device(device.sysfsPath)
@@ -1855,7 +1853,7 @@ class DeviceTree(object):
         if info:
             self.handleUdevDeviceFormat(info, device)
             if device.format.type:
-                log.info("got format: %s" % device.format)
+                log.info("got format: %s", device.format)
 
     def _handleInconsistencies(self):
         for vg in [d for d in self.devices if d.type == "lvmvg"]:
@@ -1910,9 +1908,9 @@ class DeviceTree(object):
         for d in self.getChildren(device):
             self.hide(d)
 
-        log.info("hiding device %s %s (id %d)" % (device.type,
-                                                  device.name,
-                                                  device.id))
+        log.info("hiding device %s %s (id %d)", device.type,
+                                                device.name,
+                                                device.id)
 
         for action in reversed(self._actions):
             self.cancelAction(action)
@@ -1947,9 +1945,9 @@ class DeviceTree(object):
         # the hidden list should be in leaves-first order
         for hidden in reversed(self._hidden):
             if hidden == device or hidden.dependsOn(device):
-                log.info("unhiding device %s %s (id %d)" % (hidden.type,
-                                                            hidden.name,
-                                                            hidden.id))
+                log.info("unhiding device %s %s (id %d)", hidden.type,
+                                                          hidden.name,
+                                                          hidden.id)
                 self._hidden.remove(hidden)
                 self._devices.append(hidden)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
@@ -1962,11 +1960,11 @@ class DeviceTree(object):
     def setupDiskImages(self):
         """ Set up devices to represent the disk image files. """
         for (name, path) in self.diskImages.items():
-            log.info("setting up disk image file '%s' as '%s'" % (path, name))
+            log.info("setting up disk image file '%s' as '%s'", path, name)
             try:
                 filedev = FileDevice(path, exists=True)
                 filedev.setup()
-                log.debug("%s" % filedev)
+                log.debug("%s", filedev)
 
                 loop_name = devicelibs.loop.get_loop_name(filedev.path)
                 loop_sysfs = None
@@ -1977,16 +1975,16 @@ class DeviceTree(object):
                                      sysfsPath=loop_sysfs,
                                      exists=True)
                 loopdev.setup()
-                log.debug("%s" % loopdev)
+                log.debug("%s", loopdev)
                 dmdev = DMLinearDevice(name,
                                        dmUuid="ANACONDA-%s" % name,
                                        parents=[loopdev],
                                        exists=True)
                 dmdev.setup()
                 dmdev.updateSysfsPath()
-                log.debug("%s" % dmdev)
+                log.debug("%s", dmdev)
             except (ValueError, DeviceError) as e:
-                log.error("failed to set up disk image: %s" % e)
+                log.error("failed to set up disk image: %s", e)
             else:
                 self._addDevice(filedev)
                 self._addDevice(loopdev)
@@ -2014,7 +2012,7 @@ class DeviceTree(object):
                     os.unlink(dst)
                 except OSError as e:
                     msg = str(e)
-                    log.info("failed to remove %s: %s" % (dst, msg))
+                    log.info("failed to remove %s: %s", dst, msg)
 
             if os.access(src, os.W_OK):
                 # copy the config to a backup with extension ".anacbak"
@@ -2022,18 +2020,18 @@ class DeviceTree(object):
                     func(src, dst)
                 except (IOError, OSError) as e:
                     msg = str(e)
-                    log.error("failed to %s of %s: %s" % (op, cfg, msg))
+                    log.error("failed to %s of %s: %s", op, cfg, msg)
             elif restore and os.access(cfg, os.W_OK):
                 # remove the config since we created it
-                log.info("removing anaconda-created %s" % cfg)
+                log.info("removing anaconda-created %s", cfg)
                 try:
                     os.unlink(cfg)
                 except OSError as e:
                     msg = str(e)
-                    log.error("failed to remove %s: %s" % (cfg, msg))
+                    log.error("failed to remove %s: %s", cfg, msg)
             else:
                 # don't try to backup non-existent configs
-                log.info("not going to %s of non-existent %s" % (op, cfg))
+                log.info("not going to %s of non-existent %s", op, cfg)
 
     def restoreConfigs(self):
         self.backupConfigs(restore=True)
@@ -2060,8 +2058,8 @@ class DeviceTree(object):
             self.restoreConfigs()
 
     def _populate(self):
-        log.info("DeviceTree.populate: ignoredDisks is %s ; exclusiveDisks is %s"
-                    % (self.ignoredDisks, self.exclusiveDisks))
+        log.info("DeviceTree.populate: ignoredDisks is %s ; exclusiveDisks is %s",
+                    self.ignoredDisks, self.exclusiveDisks)
 
         # this has proven useful when populating after opening a LUKS device
         udev_settle()
@@ -2078,7 +2076,7 @@ class DeviceTree(object):
         # resolve the protected device specs to device names
         for spec in self.protectedDevSpecs:
             name = udev_resolve_devspec(spec)
-            log.debug("protected device spec %s resolved to %s" % (spec, name))
+            log.debug("protected device spec %s resolved to %s", spec, name)
             if name:
                 self.protectedDevNames.append(name)
 
@@ -2090,8 +2088,8 @@ class DeviceTree(object):
                 continue
 
             live_device_name = mnt.split()[0].split("/")[-1]
-            log.info("%s looks to be the live device; marking as protected"
-                     % (live_device_name,))
+            log.info("%s looks to be the live device; marking as protected",
+                     live_device_name)
             self.protectedDevNames.append(live_device_name)
             self.liveBackingDevice = live_device_name
             break
@@ -2113,7 +2111,7 @@ class DeviceTree(object):
                 # nothing is changing -- we are finished building devices
                 break
 
-            log.info("devices to scan: %s" % [d['name'] for d in devices])
+            log.info("devices to scan: %s", [d['name'] for d in devices])
             for dev in devices:
                 self.addUdevDevice(dev)
 
@@ -2154,7 +2152,7 @@ class DeviceTree(object):
             try:
                 device.teardown(recursive=True)
             except StorageError as e:
-                log.info("teardown of %s failed: %s" % (device.name, e))
+                log.info("teardown of %s failed: %s", device.name, e)
 
     def setupAll(self):
         """ Run setup methods on all devices. """
@@ -2162,7 +2160,7 @@ class DeviceTree(object):
             try:
                 device.setup()
             except DeviceError as (msg, name):
-                log.error("setup of %s failed: %s" % (device.name, msg))
+                log.error("setup of %s failed: %s", device.name, msg)
 
     def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
         """ Return a list of devices with a matching sysfs path.
@@ -2245,7 +2243,7 @@ class DeviceTree(object):
                 continue
 
             if not hasattr(device, "serial"):
-                log.warning("device %s has no serial attr" % device.name)
+                log.warning("device %s has no serial attr", device.name)
                 continue
             if device.serial == serial:
                 retval.append(device)
@@ -2530,7 +2528,7 @@ class DeviceTree(object):
                     try:
                         dm_name = devicelibs.dm.name_from_dm_node(devspec[5:])
                     except StorageError as e:
-                        log.info("failed to resolve %s: %s" % (devspec, e))
+                        log.info("failed to resolve %s: %s", devspec, e)
                         dm_name = None
 
                     if dm_name:
@@ -2540,7 +2538,7 @@ class DeviceTree(object):
                     try:
                         md_name = devicelibs.mdraid.name_from_md_node(devspec[5:])
                     except StorageError as e:
-                        log.info("failed to resolve %s: %s" % (devspec, e))
+                        log.info("failed to resolve %s: %s", devspec, e)
                         md_name = None
 
                     if md_name:
@@ -2555,7 +2553,7 @@ class DeviceTree(object):
                     # path with a UUID
                     blkidTabEnt = blkidTab.get(devspec)
                     if blkidTabEnt:
-                        log.debug("found blkid.tab entry for '%s'" % devspec)
+                        log.debug("found blkid.tab entry for '%s'", devspec)
                         uuid = blkidTabEnt.get("UUID")
                         if uuid:
                             device = self.getDeviceByUuid(uuid)
@@ -2563,11 +2561,11 @@ class DeviceTree(object):
                                 devstr = device.name
                             else:
                                 devstr = "None"
-                            log.debug("found device '%s' in tree" % devstr)
+                            log.debug("found device '%s' in tree", devstr)
                         if device and device.format and \
                            device.format.type == "luks":
                             map_name = device.format.mapName
-                            log.debug("luks device; map name is '%s'" % map_name)
+                            log.debug("luks device; map name is '%s'", map_name)
                             mapped_dev = self.getDeviceByName(map_name)
                             if mapped_dev:
                                 device = mapped_dev
@@ -2618,9 +2616,9 @@ class DeviceTree(object):
                         break
 
         if device:
-            log.debug("resolved '%s' to '%s' (%s)" % (devspec, device.name, device.type))
+            log.debug("resolved '%s' to '%s' (%s)", devspec, device.name, device.type)
         else:
-            log.debug("failed to resolve '%s'" % devspec)
+            log.debug("failed to resolve '%s'", devspec)
         return device
 
     def getActiveMounts(self):
@@ -2631,7 +2629,7 @@ class DeviceTree(object):
                 (devspec, mountpoint, fstype, options, rest) = line.split(None,
                                                                           4)
             except IndexError:
-                log.error("failed to parse /proc/mounts line: %s" % line)
+                log.error("failed to parse /proc/mounts line: %s", line)
                 continue
 
             if fstype == "btrfs":
@@ -2642,15 +2640,15 @@ class DeviceTree(object):
                     _mountpoint = fields[4]
                     _devspec = fields[9]
                     if _mountpoint == mountpoint and _devspec == devspec:
-                        log.debug("subvol %s" % _subvol)
+                        log.debug("subvol %s", _subvol)
                         options += ",subvol=%s" % _subvol[1:]
 
             if fstype in nodev_filesystems:
                 if not flags.include_nodev:
                     continue
 
-                log.info("found nodev %s filesystem mounted at %s"
-                            % (fstype, mountpoint))
+                log.info("found nodev %s filesystem mounted at %s",
+                            fstype, mountpoint)
                 # nodev filesystems require some special handling.
                 # For now, a lot of this is based on the idea that it's a losing
                 # battle to require the presence of an FS class for every type

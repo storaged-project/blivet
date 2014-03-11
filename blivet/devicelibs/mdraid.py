@@ -101,7 +101,7 @@ def get_raid_superblock_size(size, version=None):
 
         headroom = Size(bytes=headroom)
 
-    log.info("Using %s superBlockSize" % (headroom))
+    log.info("Using %s superBlockSize", headroom)
     return headroom
 
 def mdadm(args):
@@ -220,7 +220,7 @@ def name_from_md_node(node):
         for link in os.listdir(md_dir):
             full_path = "%s/%s" % (md_dir, link)
             md_name = os.path.basename(os.readlink(full_path))
-            log.debug("link: %s -> %s" % (link, os.readlink(full_path)))
+            log.debug("link: %s -> %s", link, os.readlink(full_path))
             if md_name == node:
                 name = link
                 break
@@ -228,5 +228,5 @@ def name_from_md_node(node):
     if not name:
         raise MDRaidError("name_from_md_node(%s) failed" % node)
 
-    log.debug("returning %s" % name)
+    log.debug("returning %s", name)
     return name

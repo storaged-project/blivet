@@ -90,7 +90,7 @@ class PPCPRePBoot(DeviceFormat):
                      length = 0
             os.close(fd)
         except OSError as e:
-            log.error("error zeroing out %s: %s" % (self.device, e))
+            log.error("error zeroing out %s: %s", self.device, e)
             if fd:
                 os.close(fd)
 

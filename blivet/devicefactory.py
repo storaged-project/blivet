@@ -102,8 +102,8 @@ def get_device_factory(blivet, device_type, size, **kwargs):
                    DEVICE_TYPE_DISK: DeviceFactory}
 
     factory_class = class_table[device_type]
-    log.debug("instantiating %s: %s, %s, %s, %s" % (factory_class,
-                blivet, size, [d.name for d in disks], kwargs))
+    log.debug("instantiating %s: %s, %s, %s, %s", factory_class,
+                blivet, size, [d.name for d in disks], kwargs)
     return factory_class(blivet, size, disks, **kwargs)
 
 
@@ -478,8 +478,8 @@ class DeviceFactory(object):
             return
 
         members = self.child_factory.devices
-        log.debug("new member set: %s" % [d.name for d in members])
-        log.debug("old member set: %s" % [d.name for d in self.container.parents])
+        log.debug("new member set: %s", [d.name for d in members])
+        log.debug("old member set: %s", [d.name for d in self.container.parents])
         for member in self.container.parents[:]:
             if member not in members:
                 self.container.removeMember(member)
@@ -553,7 +553,7 @@ class DeviceFactory(object):
                                           fmt_args=fmt_args,
                                           **kwa)
         except (StorageError, ValueError) as e:
-            log.error("device instance creation failed: %s" % e)
+            log.error("device instance creation failed: %s", e)
             raise
 
         self.storage.createDevice(device)
@@ -561,7 +561,7 @@ class DeviceFactory(object):
         try:
             self._post_create()
         except StorageError as e:
-            log.error("device post-create method failed: %s" % e)
+            log.error("device post-create method failed: %s", e)
         else:
             if not device.size:
                 e = StorageError("failed to create device")
@@ -617,7 +617,7 @@ class DeviceFactory(object):
         try:
             self._post_create()
         except StorageError as e:
-            log.error("device post-create method failed: %s" % e)
+            log.error("device post-create method failed: %s", e)
         else:
             if self.device.size <= self.device.format.minSize:
                 e = StorageError("failed to adjust device -- not enough free space in specified disks?")
@@ -680,12 +680,12 @@ class DeviceFactory(object):
         safe_new_name = self.storage.safeDeviceName(self.device_name)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
-                log.error("not renaming '%s' to in-use name '%s'"
-                            % (self.device._name, safe_new_name))
+                log.error("not renaming '%s' to in-use name '%s'",
+                            self.device._name, safe_new_name)
                 return
 
-            log.debug("renaming device '%s' to '%s'"
-                        % (self.device._name, safe_new_name))
+            log.debug("renaming device '%s' to '%s'",
+                        self.device._name, safe_new_name)
             self.device._name = safe_new_name
 
     def _post_create(self):
@@ -705,9 +705,9 @@ class DeviceFactory(object):
 
         args = self._get_child_factory_args()
         kwargs = self._get_child_factory_kwargs()
-        log.debug("child factory class: %s" % self.child_factory_class)
-        log.debug("child factory args: %s" % args)
-        log.debug("child factory kwargs: %s" % kwargs)
+        log.debug("child factory class: %s", self.child_factory_class)
+        log.debug("child factory args: %s", args)
+        log.debug("child factory kwargs: %s", kwargs)
         factory = self.child_factory_class(*args, **kwargs)
         self.child_factory = factory
         factory.parent_factory = self
@@ -732,7 +732,7 @@ class DeviceFactory(object):
         try:
             self._configure()
         except Exception as e:
-            log.error("failed to configure device factory: %s" % e)
+            log.error("failed to configure device factory: %s", e)
             if self.parent_factory is None:
                 # only do the backup/restore error handling at the top-level
                 self._revert_devicetree()
@@ -829,8 +829,8 @@ class PartitionFactory(DeviceFactory):
     def _set_device_size(self):
         """ Set the size of a defined factory device. """
         if self.device and self.size != self.raw_device.size:
-            log.info("adjusting device size from %s to %s"
-                            % (self.raw_device.size, self.size))
+            log.info("adjusting device size from %s to %s",
+                            self.raw_device.size, self.size)
 
             base_size = self._get_base_size()
             size = self._get_device_size()
@@ -875,7 +875,7 @@ class PartitionFactory(DeviceFactory):
         try:
             doPartitioning(self.storage)
         except StorageError as e:
-            log.error("failed to allocate partitions: %s" % e)
+            log.error("failed to allocate partitions: %s", e)
             raise
 
 class PartitionSetFactory(PartitionFactory):
@@ -929,7 +929,7 @@ class PartitionSetFactory(PartitionFactory):
         # Grab the starting member list from the parent factory.
         members = self._devices
         container = self.parent_factory.container
-        log.debug("parent factory container: %s" % self.parent_factory.container)
+        log.debug("parent factory container: %s", self.parent_factory.container)
         if container:
             if container.exists:
                 log.info("parent factory container exists -- nothing to do")
@@ -939,7 +939,7 @@ class PartitionSetFactory(PartitionFactory):
             members = container.parents[:]
             self._devices = members
 
-        log.debug("members: %s" % [d.name for d in members])
+        log.debug("members: %s", [d.name for d in members])
 
         ##
         ## Determine the target disk set.
@@ -962,8 +962,8 @@ class PartitionSetFactory(PartitionFactory):
         add_disks = [d for d in add_disks if d.partitioned and
                                              d.format.free >= min_free]
 
-        log.debug("add_disks: %s" % [d.name for d in add_disks])
-        log.debug("remove_disks: %s" % [d.name for d in remove_disks])
+        log.debug("add_disks: %s", [d.name for d in add_disks])
+        log.debug("remove_disks: %s", [d.name for d in remove_disks])
 
         ##
         ## Remove members from dropped disks.
@@ -1045,7 +1045,7 @@ class PartitionSetFactory(PartitionFactory):
                                            size=base_size,
                                            fmt_type=member_format)
             except StorageError as e:
-                log.error("failed to create new member partition: %s" % e)
+                log.error("failed to create new member partition: %s", e)
                 continue
 
             self.storage.createDevice(member)
@@ -1068,8 +1068,8 @@ class PartitionSetFactory(PartitionFactory):
         ##
         ## Set up SizeSet to manage growth of member partitions.
         ##
-        log.debug("adding a %s with size %s"
-                  % (self.parent_factory.size_set_class.__name__, total_space))
+        log.debug("adding a %s with size %s",
+                  self.parent_factory.size_set_class.__name__, total_space)
         size_set = self.parent_factory.size_set_class(members, total_space)
         self.storage.size_sets.append(size_set)
         for member in members[:]:
@@ -1125,7 +1125,7 @@ class LVMFactory(DeviceFactory):
 
         if free < size:
             log.info("adjusting size from %s to %s so it fits "
-                     "in container %s" % (size, free, self.container.name))
+                     "in container %s", size, free, self.container.name)
             size = free
 
         return size
@@ -1133,8 +1133,8 @@ class LVMFactory(DeviceFactory):
     def _set_device_size(self):
         size = self._get_device_size()
         if self.device and size != self.raw_device.size:
-            log.info("adjusting device size from %s to %s"
-                            % (self.raw_device.size, size))
+            log.info("adjusting device size from %s to %s",
+                            self.raw_device.size, size)
             self.raw_device.size = size
             self.raw_device.req_grow = False
 
@@ -1153,10 +1153,10 @@ class LVMFactory(DeviceFactory):
             # grow the container as large as possible
             if self.container:
                 size += sum(p.size for p in self.container.parents)
-                log.debug("size bumped to %s to include container parents" % size)
+                log.debug("size bumped to %s to include container parents", size)
 
             size += self._get_free_disk_space()
-            log.debug("size bumped to %s to include free disk space" % size)
+            log.debug("size bumped to %s to include free disk space", size)
         else:
             # container_size is a request for a fixed size for the container
             size += get_pv_space(self.container_size, len(self.disks))
@@ -1164,14 +1164,14 @@ class LVMFactory(DeviceFactory):
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
             size += self._get_device_space()
-            log.debug("size bumped to %s to include new device space" % size)
+            log.debug("size bumped to %s to include new device space", size)
             if self.device and self.container_size == SIZE_POLICY_AUTO:
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
                 size -= get_pv_space(self.device.size,
                    len(self.container.parents))
-                log.debug("size cut to %s to omit old device space" % size)
+                log.debug("size cut to %s to omit old device space", size)
 
         if self.container_raid_level:
             # add five extents per disk to account for md metadata
@@ -1244,18 +1244,18 @@ class LVMFactory(DeviceFactory):
         safe_new_name = self.storage.safeDeviceName(lvname)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
-                log.error("not renaming '%s' to in-use name '%s'"
-                            % (self.device._name, safe_new_name))
+                log.error("not renaming '%s' to in-use name '%s'",
+                            self.device._name, safe_new_name)
                 return
 
             if not safe_new_name.startswith(self.container.name):
-                log.error("device rename failure (%s)" % safe_new_name)
+                log.error("device rename failure (%s)", safe_new_name)
                 return
 
             # strip off the vg name before setting
             safe_new_name = safe_new_name[len(self.container.name)+1:]
-            log.debug("renaming device '%s' to '%s'"
-                        % (self.device._name, safe_new_name))
+            log.debug("renaming device '%s' to '%s'",
+                        self.device._name, safe_new_name)
             self.device._name = safe_new_name
 
     def _configure(self):
@@ -1339,7 +1339,7 @@ class LVMThinPFactory(LVMFactory):
     def _get_device_size(self):
         # calculate device size based on space in the pool
         pool_size = self.pool.size
-        log.debug("pool size is %s" % pool_size)
+        log.debug("pool size is %s", pool_size)
         free = pool_size - self.pool.usedSpace
         if self.device:
             free += self.raw_device.poolSpaceUsed
@@ -1347,7 +1347,7 @@ class LVMThinPFactory(LVMFactory):
         size = self.size
         if free < size:
             log.info("adjusting size from %s to %s so it fits "
-                     "in pool %s" % (size, free, self.pool.name))
+                     "in pool %s", size, free, self.pool.name)
             size = free
 
         return size
@@ -1363,9 +1363,9 @@ class LVMThinPFactory(LVMFactory):
             Our container will still be None if we are going to create it.
         """
         space = super(LVMThinPFactory, self)._get_device_space()
-        log.debug("calculated total disk space prior to padding: %s" % space)
+        log.debug("calculated total disk space prior to padding: %s", space)
         space += get_pool_padding(space, pesize=self._pesize)
-        log.debug("total disk space needed: %s" % space)
+        log.debug("total disk space needed: %s", space)
         return space
 
     def _get_total_space(self):
@@ -1380,13 +1380,13 @@ class LVMThinPFactory(LVMFactory):
                self.pool and not self.pool.exists and self.pool.freeSpace > 0:
                 # this is mostly for cleaning up after removing a thin lv
                 size -= self.pool.freeSpace
-                log.debug("size cut to %s to omit pool free space" % size)
+                log.debug("size cut to %s to omit pool free space", size)
 
                 pad = get_pool_padding(self.pool.freeSpace,
                                        pesize=self._pesize)
                 size -= pad
                 log.debug("size cut to %s to omit pool padding from free "
-                          "space" % size)
+                          "space", size)
 
             if self.device and self.container_size == SIZE_POLICY_AUTO:
                 # Now we have to reduce the space again by the current device's
@@ -1396,9 +1396,9 @@ class LVMThinPFactory(LVMFactory):
                 # usage.
                 pad = get_pool_padding(self.device.size,
                                        pesize=self._pesize)
-                log.debug("old device size: %s ; old pad: %s" % (self.device.size, pad))
+                log.debug("old device size: %s ; old pad: %s", self.device.size, pad)
                 size -= pad
-                log.debug("size cut to %s to omit old device padding" % size)
+                log.debug("size cut to %s to omit old device padding", size)
 
         return size
 
@@ -1445,7 +1445,7 @@ class LVMThinPFactory(LVMFactory):
         if self.pool and self.pool.exists:
             return self.pool.size
 
-        log.debug("requested size is %s" % self.size)
+        log.debug("requested size is %s", self.size)
         size = self.size    # projected size for the pool (not padded)
         free = Size(bytes=0)# total space within the vg that is available to us
         if self.pool:
@@ -1453,15 +1453,15 @@ class LVMThinPFactory(LVMFactory):
             # pool lv sizes go toward projected pool size and vg free space
             size += self.pool.usedSpace
             free += self.pool.usedSpace
-            log.debug("increasing free and size by pool used (%s)" % self.pool.usedSpace)
+            log.debug("increasing free and size by pool used (%s)", self.pool.usedSpace)
             if self.device:
-                log.debug("reducing size by device space (%s)" % self.device.poolSpaceUsed)
+                log.debug("reducing size by device space (%s)", self.device.poolSpaceUsed)
                 size -= self.device.poolSpaceUsed   # don't count our device
 
             # increase vg free space by the size of the current pool's pad
             pad = get_pool_padding(self.pool.size,
                                    pesize=self._pesize)
-            log.debug("increasing free by current pool pad size (%s)" % pad)
+            log.debug("increasing free by current pool pad size (%s)", pad)
             free += pad
 
         # round to nearest extent. free rounds down, size rounds up.
@@ -1470,12 +1470,12 @@ class LVMThinPFactory(LVMFactory):
 
         pad = get_pool_padding(size, pesize=self._pesize)
 
-        log.debug("size is %s ; pad is %s ; free is %s" % (size, pad, free))
+        log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
         if free < (size + pad):
             pad = int(get_pool_padding(free, pesize=self._pesize, reverse=True))
             free = self.container.align(free - pad) # round down
             log.info("adjusting pool size from %s to %s so it fits "
-                     "in container %s" % (size, free, self.container.name))
+                     "in container %s", size, free, self.container.name)
             size = free
 
         return size
@@ -1508,11 +1508,11 @@ class LVMThinPFactory(LVMFactory):
         super(LVMThinPFactory, self)._set_container()
         self.pool = self.get_pool()
         if self.pool:
-            log.debug("pool is %s ; size: %s ; free: %s" % (self.pool.name,
-                                                            self.pool.size,
-                                                            self.pool.freeSpace))
+            log.debug("pool is %s ; size: %s ; free: %s", self.pool.name,
+                                                          self.pool.size,
+                                                          self.pool.freeSpace)
             for lv in self.pool.lvs:
-                log.debug("  %s size is %s" % (lv.name, lv.size))
+                log.debug("  %s size is %s", lv.name, lv.size)
 
     def _reconfigure_container(self):
         """ Reconfigure a defined container required by this factory device. """

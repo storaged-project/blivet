@@ -103,8 +103,7 @@ def dasd_needs_format(dasd):
         if not bypath:
             bypath = "/dev/" + dasd
 
-        log.info("  %s (%s) status is %s, needs dasdfmt" % (dasd, bypath,
-                                                            status,))
+        log.info("  %s (%s) status is %s, needs dasdfmt", dasd, bypath, status)
         return True
 
     return False
