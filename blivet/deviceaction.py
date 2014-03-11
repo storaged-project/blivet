@@ -381,7 +381,7 @@ class ActionResizeDevice(DeviceAction):
         if newsize < device.minSize:
             raise ValueError("new size is too small")
 
-        if newsize > device.maxSize:
+        if device.maxSize and newsize > device.maxSize:
             raise ValueError("new size is too large")
 
         DeviceAction.__init__(self, device)
