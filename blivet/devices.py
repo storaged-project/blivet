@@ -73,6 +73,9 @@ def devicePathToName(devicePath):
         :returns: the name
         :rtype: str
     """
+    if not devicePath:
+        return None
+
     if devicePath.startswith("/dev/"):
         name = devicePath[5:]
     else:
@@ -1340,15 +1343,15 @@ class PartitionDevice(StorageDevice):
         if self.isExtended:
             # getPartitionBySector doesn't work on extended partitions
             _partition = _disklabel.extendedPartition
-            log.debug("extended lookup found partition %s"
-                        % devicePathToName(getattr(_partition, "path", None)))
+            log.debug("extended lookup found partition %s",
+                        devicePathToName(getattr(_partition, "path", None) or "(none)"))
         else:
             # lookup the partition by sector to avoid the renumbering
             # nonsense entirely
             _sector = self.partedPartition.geometry.start
             _partition = _disklabel.partedDisk.getPartitionBySector(_sector)
-            log.debug("sector-based lookup found partition %s"
-                        % devicePathToName(getattr(_partition, "path", None)))
+            log.debug("sector-based lookup found partition %s",
+                        devicePathToName(getattr(_partition, "path", None) or "(none)"))
 
         self.partedPartition = _partition
 
