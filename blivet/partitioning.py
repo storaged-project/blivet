@@ -857,8 +857,8 @@ def doPartitioning(storage):
     for disk in disks:
         try:
             disk.setup()
-        except DeviceError as (msg, name):
-            log.error("failed to set up disk %s: %s", name, msg)
+        except DeviceError as e:
+            log.error("failed to set up disk %s: %s", e.name, e)
             raise PartitioningError(_("disk %s inaccessible") % disk.name)
 
     partitions = storage.partitions[:]

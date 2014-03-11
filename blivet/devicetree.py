@@ -2163,8 +2163,8 @@ class DeviceTree(object):
         for device in self.leaves:
             try:
                 device.setup()
-            except DeviceError as (msg, name):
-                log.error("setup of %s failed: %s", device.name, msg)
+            except DeviceError as e:
+                log.error("setup of %s failed: %s", device.name, e)
 
     def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
         """ Return a list of devices with a matching sysfs path.
