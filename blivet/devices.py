@@ -4456,7 +4456,7 @@ class DASDDevice(DiskDevice):
                 feat, val = chunk.split('=')
                 if int(val):
                     opts.append(translate[feat])
-            except:
+            except (ValueError, KeyError):
                 # If we don't know what the feature is (feat not in translate
                 # or if we get a val that doesn't cleanly convert to an int
                 # we can't do anything with it.

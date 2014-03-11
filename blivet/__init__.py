@@ -3034,7 +3034,7 @@ def getReleaseString():
 
     try:
         relArch = util.capture_output(["arch"], root=ROOT_PATH).strip()
-    except:
+    except OSError:
         relArch = None
 
     filename = "%s/etc/redhat-release" % ROOT_PATH
