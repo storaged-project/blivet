@@ -620,7 +620,7 @@ def udev_device_get_iscsi_session(info):
     # The position of sessionX part depends on device
     # (e.g. offload vs. sw; also varies for different offload devs)
     session = None
-    match = re.match('/.*/(session\d+)', info["sysfs_path"])
+    match = re.match(r'/.*/(session\d+)', info["sysfs_path"])
     if match:
         session = match.groups()[0]
     else:
@@ -639,7 +639,7 @@ def udev_device_get_iscsi_nic(info):
 def udev_device_get_iscsi_initiator(info):
     initiator = None
     if udev_device_is_partoff_iscsi(info):
-        host = re.match('.*/(host\d+)', info["sysfs_path"]).groups()[0]
+        host = re.match(r'.*/(host\d+)', info["sysfs_path"]).groups()[0]
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
@@ -682,7 +682,7 @@ def udev_device_get_iscsi_initiator(info):
 # Ethernet interface.
 
 def _detect_broadcom_fcoe(info):
-    re_pci_host=re.compile('/(.*)/(host\d+)')
+    re_pci_host=re.compile(r'/(.*)/(host\d+)')
     match = re_pci_host.match(info["sysfs_path"])
     if match:
         sysfs_pci, host = match.groups()

@@ -547,7 +547,7 @@ class DeviceTree(object):
             md_name = udev_device_get_md_name(info)
             # mdadm may have appended _<digit>+ if the current hostname
             # does not match the one in the array metadata
-            alt_name = re.sub("_\d+$", "", md_name)
+            alt_name = re.sub(r"_\d+$", "", md_name)
             raw_pattern = "isw_[a-z]*_%s"
             # XXX FIXME: This is completely insane.
             for i in range(0, len(self.exclusiveDisks)):
