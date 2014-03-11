@@ -50,6 +50,21 @@ class MDRaidTestCase(unittest.TestCase):
 
 class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
 
+    def __init__(self, *args, **kwargs):
+        """Set up the structure of the mdraid array."""
+        super(MDRaidAsRootTestCase, self).__init__(*args, **kwargs)
+        self._dev_name = "/dev/md0"
+
+    def tearDown(self):
+        try:
+            mdraid.mddeactivate(self._dev_name)
+            mdraid.mddestroy(_LOOP_DEV0)
+            mdraid.mddestroy(_LOOP_DEV1)
+        except mdraid.MDRaidError:
+            pass
+
+        super(MDRaidAsRootTestCase, self).tearDown()
+
     @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testMDRaidAsRoot(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
@@ -59,7 +74,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         ## mdcreate
         ##
         # pass
-        self.assertEqual(mdraid.mdcreate("/dev/md0", 1, [_LOOP_DEV0, _LOOP_DEV1]), None)
+        self.assertEqual(mdraid.mdcreate(self._dev_name, 1, [_LOOP_DEV0, _LOOP_DEV1]), None)
         # wait for raid to settle
         time.sleep(2)
 
@@ -70,7 +85,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         ## mddeactivate
         ##
         # pass
-        self.assertEqual(mdraid.mddeactivate("/dev/md0"), None)
+        self.assertEqual(mdraid.mddeactivate(self._dev_name), None)
 
         # fail
         self.assertRaises(mdraid.MDRaidError, mdraid.mddeactivate, "/not/existing/md")
@@ -102,7 +117,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         # Note that these should fail because mdadm is unable to locate the
         # device. The mdadm Kill function does return 2, but the mdadm process
         # returns 0 for both tests.
-        self.assertIsNone(mdraid.mddestroy("/dev/md0"))
+        self.assertIsNone(mdraid.mddestroy(self._dev_name))
         self.assertIsNone(mdraid.mddestroy("/not/existing/device"))
 
 
