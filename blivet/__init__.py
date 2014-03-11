@@ -347,11 +347,11 @@ class Blivet(object):
                 # GPT partitions with the boot flag)
                 if dev.disk.format.labelType == "gpt" and \
                    dev.format.type not in ["efi", "macefi"]:
-                       skip = True
+                    skip = True
 
                 if skip:
-                     log.info("Skipping %s", dev.name)
-                     continue
+                    log.info("Skipping %s", dev.name)
+                    continue
 
                 # hfs+ partitions on gpt can't be marked bootable via parted
                 if dev.disk.format.partedDisk.type != "gpt" or \

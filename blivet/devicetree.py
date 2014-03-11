@@ -270,7 +270,7 @@ class DeviceTree(object):
                     # it's likely that a previous format destroy action
                     # triggered setup of an lvm or md device.
                     for dep in self.getDependentDevices(action.device.disk):
-                       dep.teardown(recursive=True)
+                        dep.teardown(recursive=True)
                     action.execute()
 
                 udev_settle()

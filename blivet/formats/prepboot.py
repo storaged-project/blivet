@@ -82,12 +82,12 @@ class PPCPRePBoot(DeviceFormat):
             buf = '\0' * 1024 * 1024
             while length > 0:
                 if length >= len(buf):
-                     os.write(fd, buf)
-                     length -= len(buf)
+                    os.write(fd, buf)
+                    length -= len(buf)
                 else:
-                     buf = '\0' * length
-                     os.write(fd, buf)
-                     length = 0
+                    buf = '\0' * length
+                    os.write(fd, buf)
+                    length = 0
             os.close(fd)
         except OSError as e:
             log.error("error zeroing out %s: %s", self.device, e)

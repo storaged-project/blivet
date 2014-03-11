@@ -128,8 +128,8 @@ def getPossiblePhysicalExtents():
     possiblePE = []
     curpe = Size(spec="1 KiB")
     while curpe <= Size(spec="16 GiB"):
-	possiblePE.append(curpe)
-	curpe = curpe * 2
+        possiblePE.append(curpe)
+        curpe = curpe * 2
 
     return possiblePE
 
