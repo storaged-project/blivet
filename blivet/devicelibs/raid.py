@@ -189,7 +189,7 @@ class RAIDLevel(object):
         return self._get_recommended_stride(member_count)
 
     @abc.abstractmethod
-    def _get_recommended_stride(member_count):
+    def _get_recommended_stride(self, member_count):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
 
