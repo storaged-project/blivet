@@ -45,11 +45,11 @@ class ZFCPDevice:
         self.fcplun = self.sanitizeFCPLInput(fcplun)
 
         if not self.checkValidDevice(self.devnum):
-            raise ValueError, _("You have not specified a device number or the number is invalid")
+            raise ValueError(_("You have not specified a device number or the number is invalid"))
         if not self.checkValidWWPN(self.wwpn):
-            raise ValueError, _("You have not specified a worldwide port name or the name is invalid.")
+            raise ValueError(_("You have not specified a worldwide port name or the name is invalid."))
         if not self.checkValidFCPLun(self.fcplun):
-            raise ValueError, _("You have not specified a FCP LUN or the number is invalid.")
+            raise ValueError(_("You have not specified a FCP LUN or the number is invalid."))
 
     def __str__(self):
         return "%s %s %s" %(self.devnum, self.wwpn, self.fcplun)
@@ -125,9 +125,8 @@ class ZFCPDevice:
             util.run_program(["zfcp_cio_free", "-d", self.devnum])
 
         if not os.path.exists(online):
-            raise ValueError, _(
-                "zFCP device %s not found, not even in device ignore list."
-                %(self.devnum,))
+            raise ValueError(_("zFCP device %s not found, not even in device ignore list." % \
+                    (self.devnum,)))
 
         try:
             f = open(online, "r")
@@ -136,9 +135,9 @@ class ZFCPDevice:
             if devonline != "1":
                 loggedWriteLineToFile(online, "1")
         except IOError as e:
-            raise ValueError, _("Could not set zFCP device %(devnum)s "
+            raise ValueError(_("Could not set zFCP device %(devnum)s "
                                 "online (%(e)s).") \
-                              % {'devnum': self.devnum, 'e': e}
+                              % {'devnum': self.devnum, 'e': e})
 
         if not os.path.exists(portdir):
             if os.path.exists(portadd):
@@ -147,16 +146,16 @@ class ZFCPDevice:
                     loggedWriteLineToFile(portadd, self.wwpn)
                     udev_settle()
                 except IOError as e:
-                    raise ValueError, _("Could not add WWPN %(wwpn)s to zFCP "
+                    raise ValueError(_("Could not add WWPN %(wwpn)s to zFCP "
                                         "device %(devnum)s (%(e)s).") \
                                       % {'wwpn': self.wwpn,
                                          'devnum': self.devnum,
-                                         'e': e}
+                                         'e': e})
             else:
                 # newer zfcp sysfs interface with auto port scan
-                raise ValueError, _("WWPN %(wwpn)s not found at zFCP device "
+                raise ValueError(_("WWPN %(wwpn)s not found at zFCP device "
                                     "%(devnum)s.") % {'wwpn': self.wwpn,
-                                                      'devnum': self.devnum}
+                                                      'devnum': self.devnum})
         else:
             if os.path.exists(portadd):
                 # older zfcp sysfs interface
@@ -169,17 +168,17 @@ class ZFCPDevice:
                 loggedWriteLineToFile(unitadd, self.fcplun)
                 udev_settle()
             except IOError as e:
-                raise ValueError, _("Could not add LUN %(fcplun)s to WWPN "
+                raise ValueError(_("Could not add LUN %(fcplun)s to WWPN "
                                     "%(wwpn)s on zFCP device %(devnum)s "
                                     "(%(e)s).") \
                                   % {'fcplun': self.fcplun, 'wwpn': self.wwpn,
-                                     'devnum': self.devnum, 'e': e}
+                                     'devnum': self.devnum, 'e': e})
         else:
-            raise ValueError, _("LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
+            raise ValueError(_("LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
                                 "device %(devnum)s already configured.") \
                               % {'fcplun': self.fcplun,
                                  'wwpn': self.wwpn,
-                                 'devnum': self.devnum}
+                                 'devnum': self.devnum})
 
         fail = "0"
         try:
@@ -187,20 +186,20 @@ class ZFCPDevice:
             fail = f.readline().strip()
             f.close()
         except IOError as e:
-            raise ValueError, _("Could not read failed attribute of LUN "
+            raise ValueError(_("Could not read failed attribute of LUN "
                                 "%(fcplun)s at WWPN %(wwpn)s on zFCP device "
                                 "%(devnum)s (%(e)s).") \
                               % {'fcplun': self.fcplun,
                                  'wwpn': self.wwpn,
                                  'devnum': self.devnum,
-                                 'e': e}
+                                 'e': e})
         if fail != "0":
             self.offlineDevice()
-            raise ValueError, _("Failed LUN %(fcplun)s at WWPN %(wwpn)s on "
+            raise ValueError(_("Failed LUN %(fcplun)s at WWPN %(wwpn)s on "
                                 "zFCP device %(devnum)s removed again.") \
                               % {'fcplun': self.fcplun,
                                  'wwpn': self.wwpn,
-                                 'devnum': self.devnum}
+                                 'devnum': self.devnum})
 
         return True
 
@@ -253,20 +252,20 @@ class ZFCPDevice:
         try:
             self.offlineSCSIDevice()
         except IOError as e:
-            raise ValueError, _("Could not correctly delete SCSI device of "
+            raise ValueError(_("Could not correctly delete SCSI device of "
                                 "zFCP %(devnum)s %(wwpn)s %(fcplun)s "
                                 "(%(e)s).") \
                               % {'devnum': self.devnum, 'wwpn': self.wwpn,
-                                 'fcplun': self.fcplun, 'e': e}
+                                 'fcplun': self.fcplun, 'e': e})
 
         try:
             loggedWriteLineToFile(unitremove, self.fcplun)
         except IOError as e:
-            raise ValueError, _("Could not remove LUN %(fcplun)s at WWPN "
+            raise ValueError(_("Could not remove LUN %(fcplun)s at WWPN "
                                 "%(wwpn)s on zFCP device %(devnum)s "
                                 "(%(e)s).") \
                               % {'fcplun': self.fcplun, 'wwpn': self.wwpn,
-                                 'devnum': self.devnum, 'e': e}
+                                 'devnum': self.devnum, 'e': e})
 
         if os.path.exists(portadd):
             # only try to remove ports with older zfcp sysfs interface
@@ -280,10 +279,10 @@ class ZFCPDevice:
             try:
                 loggedWriteLineToFile(portremove, self.wwpn)
             except IOError as e:
-                raise ValueError, _("Could not remove WWPN %(wwpn)s on zFCP "
+                raise ValueError(_("Could not remove WWPN %(wwpn)s on zFCP "
                                     "device %(devnum)s (%(e)s).") \
                                   % {'wwpn': self.wwpn,
-                                     'devnum': self.devnum, 'e': e}
+                                     'devnum': self.devnum, 'e': e})
 
         if os.path.exists(portadd):
             # older zfcp sysfs interface
@@ -306,9 +305,9 @@ class ZFCPDevice:
         try:
             loggedWriteLineToFile(offline, "0")
         except IOError as e:
-            raise ValueError, _("Could not set zFCP device %(devnum)s "
+            raise ValueError(_("Could not set zFCP device %(devnum)s "
                                 "offline (%(e)s).") \
-                              % {'devnum': self.devnum, 'e': e}
+                              % {'devnum': self.devnum, 'e': e})
 
         return True
 

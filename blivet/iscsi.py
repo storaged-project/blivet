@@ -101,9 +101,9 @@ class iscsi(object):
 
     def _setInitiator(self, val):
         if self.initiatorSet and val != self._initiator:
-            raise ValueError, _("Unable to change iSCSI initiator name once set")
+            raise ValueError(_("Unable to change iSCSI initiator name once set"))
         if len(val) == 0:
-            raise ValueError, _("Must provide an iSCSI initiator name")
+            raise ValueError(_("Must provide an iSCSI initiator name"))
         self._initiator = val
 
     initiator = property(_getInitiator, _setInitiator)
@@ -260,9 +260,9 @@ class iscsi(object):
         authinfo = None
 
         if not has_iscsi():
-            raise IOError, _("iSCSI not available")
+            raise IOError(_("iSCSI not available"))
         if self._initiator == "":
-            raise ValueError, _("No initiator name set")
+            raise ValueError(_("No initiator name set"))
 
         if self.active_nodes((ipaddr, port)):
             log.debug("iSCSI: skipping discovery of %s:%s due to active nodes",
@@ -330,7 +330,7 @@ class iscsi(object):
 
         found_nodes = self.discover(ipaddr, port, user, pw, user_in, pw_in)
         if found_nodes == None:
-            raise IOError, _("No iSCSI nodes discovered")
+            raise IOError(_("No iSCSI nodes discovered"))
 
         for node in found_nodes:
             if target and target != node.name:
@@ -350,10 +350,10 @@ class iscsi(object):
                 logged_in = logged_in +1
 
         if found == 0:
-            raise IOError, _("No new iSCSI nodes discovered")
+            raise IOError(_("No new iSCSI nodes discovered"))
 
         if logged_in == 0:
-            raise IOError, _("Could not log in to any of the discovered nodes")
+            raise IOError(_("Could not log in to any of the discovered nodes"))
 
         self.stabilize()
 

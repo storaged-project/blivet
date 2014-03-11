@@ -398,7 +398,7 @@ def getPlatform():
         elif ppcMachine == "PS3":
             return PS3()
         else:
-            raise SystemError, "Unsupported PPC machine type: %s" % ppcMachine
+            raise SystemError("Unsupported PPC machine type: %s" % ppcMachine)
     elif arch.isS390():
         return S390()
     elif arch.isEfi():
@@ -417,7 +417,7 @@ def getPlatform():
         else:
             return ARM()
     else:
-        raise SystemError, "Could not determine system architecture."
+        raise SystemError("Could not determine system architecture.")
 
 def reset_platform():
     global platform

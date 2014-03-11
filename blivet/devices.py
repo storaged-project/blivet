@@ -3027,10 +3027,10 @@ class MDRaidArrayDevice(StorageDevice):
         if (not exists and parents and len(parents) < self.level.min_members):
             for dev in self.parents:
                 dev.removeChild()
-            raise DeviceError, P_("A %(raidLevel)s set requires at least %(minMembers)d member",
+            raise DeviceError(P_("A %(raidLevel)s set requires at least %(minMembers)d member",
                                  "A %(raidLevel)s set requires at least %(minMembers)d members",
                                  self.level.min_members) % \
-                                 {"raidLevel": self.level, "minMembers": self.level.min_members}
+                                 {"raidLevel": self.level, "minMembers": self.level.min_members})
 
         self.uuid = uuid
         self._totalDevices = util.numeric_type(totalDevices)

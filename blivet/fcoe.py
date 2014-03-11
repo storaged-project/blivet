@@ -108,7 +108,7 @@ class fcoe(object):
            Returns error message, or empty string if succeeded.
         """
         if not has_fcoe():
-            raise IOError, _("FCoE not available")
+            raise IOError(_("FCoE not available"))
 
         log.info("Activating FCoE SAN attached to %s, dcb: %s autovlan: %s",
                  nic, dcb, auto_vlan)
