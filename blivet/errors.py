@@ -186,9 +186,6 @@ class SizePlacesError(StorageError):
 class UnknownSourceDeviceError(StorageError):
     pass
 
-class NoDisksError(StorageError):
-    pass
-
 # factories
 class DeviceFactoryError(StorageError):
     pass
