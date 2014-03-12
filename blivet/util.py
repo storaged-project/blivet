@@ -75,7 +75,7 @@ def mount(device, mountpoint, fstype, options=None):
     argv = ["mount", "-t", fstype, "-o", options, device, mountpoint]
     try:
         rc = run_program(argv)
-    except OSError as e:
+    except OSError:
         raise
 
     return rc
@@ -84,7 +84,7 @@ def umount(mountpoint):
     udev_settle()
     try:
         rc = run_program(["umount", mountpoint])
-    except OSError as e:
+    except OSError:
         raise
 
     return rc

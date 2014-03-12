@@ -1787,7 +1787,7 @@ class DeviceTree(object):
 
             try:
                 kwargs["vgName"] = udev_device_get_vg_name(info)
-            except KeyError as e:
+            except KeyError:
                 log.warning("PV %s has no vg_name", name)
             try:
                 kwargs["vgUuid"] = udev_device_get_vg_uuid(info)

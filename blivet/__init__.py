@@ -2174,7 +2174,7 @@ def mountExistingSystem(fsset, rootDevice,
 
         try:
             device.setup()
-        except DeviceError as e:
+        except DeviceError:
             # we'll catch this in the main loop
             continue
 
