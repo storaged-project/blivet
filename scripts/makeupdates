@@ -82,15 +82,6 @@ def doGitDiff(tag, args=[]):
     return lines
 
 def copyUpdatedFiles(tag, updates, cwd):
-    def pruneFile(src, names):
-        lst = []
-
-        for name in names:
-            if name.startswith('Makefile') or name.endswith('.pyc'):
-                lst.append(name)
-
-        return lst
-
     def install_to_dir(fname, relpath):
         sys.stdout.write("Including %s\n" % fname)
         outdir = os.path.join(updates, relpath)
