@@ -618,7 +618,6 @@ class DeviceTree(object):
     def addUdevLVDevice(self, info):
         name = udev_device_get_name(info)
         log_method_call(self, name=name)
-        uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
 
         vg_name = udev_device_get_lv_vg_name(info)
@@ -647,7 +646,6 @@ class DeviceTree(object):
     def addUdevDMDevice(self, info):
         name = udev_device_get_name(info)
         log_method_call(self, name=name)
-        uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
         device = None
 
@@ -740,7 +738,6 @@ class DeviceTree(object):
     def addUdevMultiPathDevice(self, info):
         name = udev_device_get_name(info)
         log_method_call(self, name=name)
-        uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
         device = None
 
@@ -789,7 +786,6 @@ class DeviceTree(object):
     def addUdevMDDevice(self, info):
         name = udev_device_get_md_name(info)
         log_method_call(self, name=name)
-        uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
         device = None
 
@@ -844,7 +840,6 @@ class DeviceTree(object):
     def addUdevPartitionDevice(self, info, disk=None):
         name = udev_device_get_name(info)
         log_method_call(self, name=name)
-        uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
         device = None
 
@@ -916,7 +911,6 @@ class DeviceTree(object):
     def addUdevDiskDevice(self, info):
         name = udev_device_get_name(info)
         log_method_call(self, name=name)
-        uuid = udev_device_get_uuid(info)
         sysfs_path = udev_device_get_sysfs_path(info)
         serial = udev_device_get_serial(info)
         bus = udev_device_get_bus(info)
@@ -1538,7 +1532,6 @@ class DeviceTree(object):
         log_method_call(self, name=device.name, type=device.format.type)
         # either look up or create the array device
         name = udev_device_get_name(info)
-        sysfs_path = udev_device_get_sysfs_path(info)
 
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
         if device.format.mdUuid and md_array:
@@ -1622,7 +1615,6 @@ class DeviceTree(object):
     def handleUdevDMRaidMemberFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
         name = udev_device_get_name(info)
-        sysfs_path = udev_device_get_sysfs_path(info)
         uuid = udev_device_get_uuid(info)
         major = udev_device_get_major(info)
         minor = udev_device_get_minor(info)
@@ -1677,8 +1669,6 @@ class DeviceTree(object):
 
     def handleBTRFSFormat(self, info, device):
         log_method_call(self, name=device.name)
-        name = udev_device_get_name(info)
-        sysfs_path = udev_device_get_sysfs_path(info)
         uuid = udev_device_get_uuid(info)
 
         btrfs_dev = None
@@ -1731,7 +1721,6 @@ class DeviceTree(object):
     def handleUdevDeviceFormat(self, info, device):
         log_method_call(self, name=getattr(device, "name", None))
         name = udev_device_get_name(info)
-        sysfs_path = udev_device_get_sysfs_path(info)
         uuid = udev_device_get_uuid(info)
         label = udev_device_get_label(info)
         format_type = udev_device_get_format(info)
