@@ -850,18 +850,12 @@ class StorageDevice(Device):
     @property
     def minSize(self):
         """ The minimum size this device can be. """
-        if self.format.minSize:
-            return self.format.minSize
-        else:
-            return self.size
+        return self.format.minSize if self.resizable else self.currentSize
 
     @property
     def maxSize(self):
         """ The maximum size this device can be. """
-        if self.format.maxSize > self.currentSize:
-            return self.currentSize
-        else:
-            return self.format.maxSize
+        return self.format.maxSize if self.resizable else self.currentSize
 
     @property
     def status(self):
@@ -1715,7 +1709,8 @@ class PartitionDevice(StorageDevice):
             if partition.type == parted.PARTITION_FREESPACE:
                 maxPartSize = self.size + Size(bytes=partition.getLength(unit="B"))
 
-        return min(self.format.maxSize, maxPartSize)
+        maxFormatSize = self.format.maxSize
+        return min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
 
     @property
     def currentSize(self):
@@ -2641,7 +2636,9 @@ class LVMLogicalVolumeDevice(DMDevice):
     @property
     def maxSize(self):
         """ The maximum size this lv can be. """
-        return min(self.format.maxSize, self.size + self.vg.freeSpace)
+        max_lv = self.size + self.vg.freeSpace
+        max_format = self.format.maxSize
+        return min(max_lv, max_format) if max_format else max_lv
 
     @property
     def vgSpaceUsed(self):
