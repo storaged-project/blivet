@@ -28,14 +28,13 @@ from blivet.deviceaction import ActionResizeFormat
 from blivet.deviceaction import ActionDestroyFormat
 
 """ DeviceActionTestSuite """
-@unittest.skip("broken")
 class DeviceActionTestCase(StorageTestCase):
     def setUp(self):
         """ Create something like a preexisting autopart on two disks (sda,sdb).
 
             The other two disks (sdc,sdd) are left for individual tests to use.
         """
-        self.setUpStorage()
+        super(DeviceActionTestCase, self).setUp()
 
         for name in ["sda", "sdb", "sdc", "sdd"]:
             disk = self.newDevice(device_class=DiskDevice,
@@ -307,7 +306,7 @@ class DeviceActionTestCase(StorageTestCase):
         destroy_sdc1 = ActionDestroyDevice(sdc1)
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
-                              resize_sdc1)
+                              destroy_sdc1)
 
         # registering a device destroy action should cause the device to be
         # removed from the devicetree
@@ -539,6 +538,8 @@ class DeviceActionTestCase(StorageTestCase):
         # shrinks the device's format
         lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
+        lv_root.format._minInstanceSize = Size(spec="10 MiB")
+        lv_root.format._targetSize = lv_root.format._minInstanceSize
         shrink_format = ActionResizeFormat(lv_root,
                                            lv_root.size - Size(spec="5 GiB"))
         shrink_device = ActionResizeDevice(lv_root,
@@ -795,8 +796,7 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that resizes a device should require an action that grows
         # a device that the first action's device depends on, eg: grow
         # device containing PV before resize of VG or LVs
-        tmp = sdc1.format
-        sdc1.format = None      # since lvmpv format is not resizable
+        sdc1.format._resizable = True   # override lvmpv.resizable
         sdc1.exists = True
         sdc1.format.exists = True
         grow_pv = ActionResizeDevice(sdc1, sdc1.size + Size(spec="10 GiB"))
@@ -842,6 +842,8 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that resizes a device should require an action that
         # shrinks a device that depends on the first action's device, eg:
         # shrink LV before resizing VG or PV devices
+        testlv.format._minInstanceSize = Size(spec="10 MiB")
+        testlv.format._targetSize = testlv.format._minInstanceSize
         shrink_lv = ActionResizeDevice(testlv,
                                        testlv.size - Size(spec="10 GiB"))
         sdc1.exists = True
@@ -876,7 +878,6 @@ class DeviceActionTestCase(StorageTestCase):
         shrink_lv_format.cancel()
         shrink_lv.cancel()
         shrink_pv.cancel()
-        sdc1.format = tmp   # restore pv's lvmpv format
 
         # ActionCreateFormat
         # an action that creates a format on a device should require an action
