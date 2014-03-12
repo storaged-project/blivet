@@ -1543,10 +1543,6 @@ class Blivet(object):
         filesystems = self.mountpoints
         root = self.fsset.rootDevice
         swaps = self.fsset.swapDevices
-        try:
-            boot = self.bootDevice
-        except (DeviceError, AttributeError):
-            boot = None
 
         if root:
             if root.size < 250:
