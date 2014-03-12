@@ -345,7 +345,7 @@ class iscsi(object):
 
             found = found + 1
 
-            (rc, msg) = self.log_into_node(node, user, pw, user_in, pw_in)
+            (rc, _msg) = self.log_into_node(node, user, pw, user_in, pw_in)
             if rc:
                 logged_in = logged_in +1
 

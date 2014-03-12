@@ -24,7 +24,7 @@ def create_sparse_file(b, name, size):
     import blivet
     import tempfile
 
-    (fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-image-%s" % name)
+    (_fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-image-%s" % name)
 
     file_device = blivet.devices.SparseFileDevice(path, size=size)
     file_device.create()
@@ -33,7 +33,7 @@ def create_sparse_file(b, name, size):
 def tear_down_disk_images(b):
     """ Tear down any disk image stacks. """
     b.devicetree.teardownAll()
-    for (name, path) in b.config.diskImages.items():
+    for (name, _path) in b.config.diskImages.items():
         dm_device = b.devicetree.getDeviceByName(name)
         if not dm_device:
             continue

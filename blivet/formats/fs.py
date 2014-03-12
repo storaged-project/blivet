@@ -752,7 +752,7 @@ class FS(DeviceFormat):
         modname = "%s.ko" % self.mountType
 
         if not canmount and os.path.isdir(modpath):
-            for root, dirs, files in os.walk(modpath):
+            for _root, _dirs, files in os.walk(modpath):
                 have = filter(lambda x: x.startswith(modname), files)
                 if len(have) == 1 and have[0].startswith(modname):
                     return True

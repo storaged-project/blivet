@@ -163,7 +163,7 @@ def main(argv):
     add_rpms = []
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'a:t:o:kc?',
+        opts, _args = getopt.getopt(sys.argv[1:], 'a:t:o:kc?',
                                    ['add=', 'tag=', 'offset=',
                                     'keep', 'compile', 'help'])
     except getopt.GetoptError:

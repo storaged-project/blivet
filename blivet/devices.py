@@ -2375,7 +2375,7 @@ class LVMVolumeGroupDevice(DMDevice):
         for lv in self.lvs:
             used += self.align(lv.snapshotSpace, roundup=True)
 
-        for (vname, vsize) in self.voriginSnapshots.items():
+        for (_vname, vsize) in self.voriginSnapshots.items():
             used += self.align(vsize, roundup=True)
 
         return used
@@ -4147,7 +4147,8 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         dcb = True
 
         from .fcoe import fcoe
-        for nic, dcb, auto_vlan in fcoe().nics:
+
+        for nic, dcb, _auto_vlan in fcoe().nics:
             if nic == self.nic:
                 break
         else:
@@ -4618,7 +4619,8 @@ class BTRFSVolumeDevice(BTRFSDevice):
 
     def createSubVolumes(self):
         self._do_temp_mount()
-        for name, subvol in self.subvolumes:
+
+        for _name, subvol in self.subvolumes:
             if subvol.exists:
                 continue
             subvol.create(mountpoint=self._temp_dir_prefix)

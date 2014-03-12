@@ -47,7 +47,7 @@ def getFreeLoopDev():
     out = None
 
     while True:
-        (out, err) = proc.communicate()
+        (out, _err) = proc.communicate()
         if proc.returncode is not None:
             rc = proc.returncode
             out = out.strip()

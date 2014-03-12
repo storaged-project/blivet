@@ -42,7 +42,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvcreate
         ##
         # pass
-        for dev, file in self._loopMap.iteritems():
+        for dev, _file in self._loopMap.iteritems():
             self.assertEqual(lvm.pvcreate(dev), None)
 
         # fail

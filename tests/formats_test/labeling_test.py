@@ -48,7 +48,7 @@ class InitializationTestCase(unittest.TestCase):
 
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
-        for k, v  in device_formats.items():
+        for _k, v  in device_formats.items():
             self.assertIsNotNone(v(label=None))
 
 class MethodsTestCase(unittest.TestCase):
