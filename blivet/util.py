@@ -95,7 +95,7 @@ def get_mount_paths(dev):
     mount_paths = []
     for mount in mounts:
         try:
-            (device, path, rest) = mount.split(None, 2)
+            (device, path, _rest) = mount.split(None, 2)
         except ValueError:
             continue
 
@@ -112,7 +112,7 @@ def get_mount_device(mountpoint):
     mount_device = None
     for mount in mounts:
         try:
-            (device, path, rest) = mount.split(None, 2)
+            (device, path, _rest) = mount.split(None, 2)
         except ValueError:
             continue
 

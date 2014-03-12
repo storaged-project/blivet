@@ -2210,7 +2210,8 @@ class BlkidTab(object):
                     continue
 
                 line = line[len("<device "):-len("</device>\n")]
-                (data, sep, device) = line.partition(">")
+
+                (data, _sep, device) = line.partition(">")
                 if not device:
                     continue
 
@@ -2254,7 +2255,7 @@ class CryptTab(object):
                     self.blkidTab = None
 
             for line in f.readlines():
-                (line, pound, comment) = line.partition("#")
+                (line, _pound, _comment) = line.partition("#")
                 fields = line.split()
                 if not 2 <= len(fields) <= 4:
                     continue
@@ -2585,8 +2586,8 @@ class FSSet(object):
             self.origFStab = ''.join(lines)
 
             for line in lines:
-                # strip off comments
-                (line, pound, comment) = line.partition("#")
+
+                (line, _pound, _comment) = line.partition("#")
                 fields = line.split()
 
                 if not 4 <= len(fields) <= 6:
@@ -3167,8 +3168,8 @@ def parseFSTab(devicetree, chroot=None):
     with open(path) as f:
         log.debug("parsing %s", path)
         for line in f.readlines():
-            # strip off comments
-            (line, pound, comment) = line.partition("#")
+
+            (line, _pound, _comment) = line.partition("#")
             fields = line.split(None, 4)
 
             if len(fields) < 5:

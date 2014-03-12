@@ -2587,7 +2587,8 @@ class DeviceTree(object):
                     #           for each logical volume?
                     #           three just doesn't seem like enough.
                     name = devspec[5:]      # strip off leading "/dev/"
-                    (vg_name, slash, lv_name) = name.partition("/")
+
+                    (vg_name, _slash, lv_name) = name.partition("/")
                     if lv_name and not "/" in lv_name:
                         # looks like we may have one
                         lv = "%s-%s" % (vg_name, lv_name)
