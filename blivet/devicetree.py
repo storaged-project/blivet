@@ -1218,7 +1218,6 @@ class DeviceTree(object):
             except InvalidDiskLabelError:
                 log.warning("disklabel detected but not usable on %s",
                             device.name)
-                pass
             return
 
         # we're going to pass the "best" disklabel type into the DiskLabel

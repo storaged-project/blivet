@@ -162,7 +162,6 @@ class iscsi(object):
             except IOError as e:
                 log.error("Could not log into ibft iscsi target %s: %s",
                           node.name, str(e))
-                pass
 
         self.stabilize()
 
