@@ -30,6 +30,7 @@ class FSLabelApp(object):
     """
 
     __metaclass__ = abc.ABCMeta
+    _name = None
 
     @property
     def name(self):
@@ -80,6 +81,16 @@ class FSLabelApp(object):
            :param FS fs: a filesystem object
            :return: the arguments
            :rtype: list of str
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _labelstrRegex(self):
+        """Returns a regular expression to match against output of file
+           label reading application to extract label.
+
+           :return: the regular expressions
+           :rtype: str
         """
         raise NotImplementedError
 
