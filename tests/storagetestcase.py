@@ -30,15 +30,7 @@ class StorageTestCase(unittest.TestCase):
         system, along with a couple of convenience methods.
 
     """
-    def __init__(self, *args, **kwargs):
-        super(StorageTestCase, self).__init__(*args, **kwargs)
-        blivet.util.execWithRedirect = Mock()
-        blivet.util.execWithCapture = Mock()
-
-        self.setUpStorage()
-
-    def setUpStorage(self):
-        self.setUpDeviceLibs()
+    def setUp(self):
         self.storage = blivet.Blivet()
 
         # device status
@@ -52,36 +44,25 @@ class StorageTestCase(unittest.TestCase):
         # prevent PartitionDevice from trying to dig around in the partition's
         # geometry
         blivet.devices.PartitionDevice._setTargetSize = StorageDevice._setTargetSize
+        blivet.devices.PartitionDevice.maxSize = StorageDevice.maxSize
 
-        # prevent Ext2FS from trying to run resize2fs to get a filesystem's
-        # minimum size
-        blivet.formats.fs.Ext2FS.minSize = blivet.formats.DeviceFormat.minSize
+        def partition_probe(device):
+            if isinstance(device._partedPartition, Mock):
+                # don't clobber a Mock we already set up here
+                part_mock = device._partedPartition
+            else:
+                part_mock = Mock()
 
-    def setUpDeviceLibs(self):
-        # devicelibs shouldn't be touching or looking at the host system
+            attrs = {"getLength.return_value": int(device._size),
+                     "getDeviceNodeName.return_value": device.name,
+                     "type": parted.PARTITION_NORMAL}
+            part_mock.configure_mock(**attrs)
+            device._partedPartition = part_mock
+            device._currentSize = device._size
+            device._partType = parted.PARTITION_NORMAL
+            device._bootable = False
 
-        # lvm is easy because all calls to /sbin/lvm are via lvm()
-        blivet.devicelibs.lvm.lvm = Mock()
-
-        # mdraid is easy because all calls to /sbin/mdadm are via mdadm()
-        blivet.devicelibs.mdraid.mdadm = Mock()
-
-        # swap
-        blivet.devicelibs.swap.swapstatus = Mock(return_value=False)
-        blivet.devicelibs.swap.swapon = Mock()
-        blivet.devicelibs.swap.swapoff = Mock()
-
-        # dm
-        blivet.devicelibs.dm = Mock()
-
-        # crypto/luks
-	blivet.devicelibs.crypto.luks_status = Mock(return_value=False)
-	blivet.devicelibs.crypto.luks_uuid = Mock()
-	blivet.devicelibs.crypto.luks_format = Mock()
-	blivet.devicelibs.crypto.luks_open = Mock()
-	blivet.devicelibs.crypto.luks_close = Mock()
-	blivet.devicelibs.crypto.luks_add_key = Mock()
-	blivet.devicelibs.crypto.luks_remove_key = Mock()
+        PartitionDevice.probe = partition_probe
 
     def newDevice(*args, **kwargs):
         """ Return a new Device instance suitable for testing. """
@@ -94,8 +75,7 @@ class StorageTestCase(unittest.TestCase):
         if exists:
             # set up mock parted.Device w/ correct size
             device._partedDevice = Mock()
-            device._partedDevice.getSize = Mock(return_value=float(device.size))
-            device._partedDevice.getLength = Mock(return_value=float(device.size))
+            device._partedDevice.getLength = Mock(return_value=int(device.size.convertTo(spec="B")))
             device._partedDevice.sectorSize = 512
 
         if isinstance(device, blivet.devices.PartitionDevice):
@@ -112,8 +92,14 @@ class StorageTestCase(unittest.TestCase):
             partedPartition.type = part_type
             partedPartition.path = device.path
             partedPartition.getDeviceNodeName = Mock(return_value=device.name)
-            partedPartition.getSize = Mock(return_value=float(device.size))
-            partedPartition.getLength = Mock(return_value=float(device.size))
+            if len(device.parents) == 1:
+                disk_name = device.parents[0].name
+                number = device.name.replace(disk_name, "")
+                try:
+                    partedPartition.number = int(number)
+                except ValueError:
+                    pass
+
             device._partedPartition = partedPartition
 
         device.exists = exists
