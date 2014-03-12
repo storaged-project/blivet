@@ -143,7 +143,7 @@ class DosFsLabel(FSLabelApp):
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
 
-    def _readLabelArgs(sefl, fs):
+    def _readLabelArgs(self, fs):
         return [fs.device]
 
     def _labelstrRegex(self):
@@ -161,7 +161,7 @@ class JFSTune(FSLabelApp):
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label, fs.device]
 
-    def _readLabelArgs(sefl, fs):
+    def _readLabelArgs(self, fs):
         raise NotImplementedError
 
     def _labelstrRegex(self):
@@ -197,7 +197,7 @@ class XFSAdmin(FSLabelApp):
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label if fs.label != "" else "--", fs.device]
 
-    def _readLabelArgs(sefl, fs):
+    def _readLabelArgs(self, fs):
         return ["-l", fs.device]
 
     def _labelstrRegex(self):
@@ -217,7 +217,7 @@ class NTFSLabel(FSLabelApp):
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
 
-    def _readLabelArgs(sefl, fs):
+    def _readLabelArgs(self, fs):
         return [fs.device]
 
     def _labelstrRegex(self):
