@@ -22,15 +22,6 @@ class LVMTestCase(unittest.TestCase):
  True),
                          Size(spec="12 MiB"))
 
-    #def testVGUsedSpace(self):
-        # TODO
-        pass
-
-    #def testVGFreeSpace(self):
-        # TODO
-        pass
-
-
 # FIXME: Some of these tests expect behavior that is not entirely correct.
 #
 # The following is a list of the known incorrect behaviors:
