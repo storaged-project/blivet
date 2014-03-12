@@ -8,7 +8,7 @@ def makeLoopDev(device_name, file_name):
                              "bs=1024", "count=102400"],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
-        (out, err) = proc.communicate()
+        proc.communicate()
         if proc.returncode is not None:
             rc = proc.returncode
             break
@@ -18,7 +18,7 @@ def makeLoopDev(device_name, file_name):
     proc = subprocess.Popen(["losetup", device_name, file_name],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
-        (out, err) = proc.communicate()
+        proc.communicate()
         if proc.returncode is not None:
             rc = proc.returncode
             break
@@ -29,7 +29,7 @@ def removeLoopDev(device_name, file_name):
     proc = subprocess.Popen(["losetup", "-d", device_name],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
-        (out, err) = proc.communicate()
+        proc.communicate()
         if proc.returncode is not None:
             rc = proc.returncode
             break

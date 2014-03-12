@@ -41,7 +41,7 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
         """
         proc = subprocess.Popen(["umount", self.device])
         while True:
-            (out, err) = proc.communicate()
+            proc.communicate()
             if proc.returncode is not None:
                 rc = proc.returncode
                 break
