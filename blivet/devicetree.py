@@ -2632,9 +2632,8 @@ class DeviceTree(object):
         log.info("collecting information about active mounts")
         for line in open("/proc/mounts").readlines():
             try:
-                (devspec, mountpoint, fstype, options, rest) = line.split(None,
-                                                                          4)
-            except IndexError:
+                (devspec, mountpoint, fstype, options, _rest) = line.split(None, 4)
+            except ValueError:
                 log.error("failed to parse /proc/mounts line: %s", line)
                 continue
 
