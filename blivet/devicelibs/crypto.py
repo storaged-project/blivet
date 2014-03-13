@@ -58,16 +58,16 @@ def askpassphrase(text):
     return None
 
 def is_luks(device):
-    cs = CryptSetup(device=device, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
     return cs.isLuks()
 
 def luks_uuid(device):
-    cs = CryptSetup(device=device, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
     return cs.luksUUID()
 
 def luks_status(name):
     """True means active, False means inactive (or non-existent)"""
-    cs = CryptSetup(name=name, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(name=name, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
     return cs.status()
 
 def luks_format(device,
@@ -76,7 +76,7 @@ def luks_format(device,
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
 
     #None is not considered as default value and pycryptsetup doesn't accept it
     #so we need to filter out all Nones
@@ -89,7 +89,7 @@ def luks_format(device,
         cparts = cipher.split("-")
         cipherType = "".join(cparts[0:1])
         cipherMode = "-".join(cparts[1:])
-    
+
     if cipherType: kwargs["cipher"]  = cipherType
     if cipherMode: kwargs["cipherMode"]  = cipherMode
     if   key_size: kwargs["keysize"]  = key_size
@@ -99,7 +99,7 @@ def luks_format(device,
         raise CryptoError("luks_format failed for '%s'" % device)
 
     # activate first keyslot
-    cs.addKeyByVolumeKey(newPassphrase = passphrase)
+    cs.addKeyByVolumeKey(newPassphrase=passphrase)
     if rc:
         raise CryptoError("luks_add_key_by_volume_key failed for '%s'" % device)
 
@@ -108,14 +108,14 @@ def luks_open(device, name, passphrase=None, key_file=None):
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
 
-    rc = cs.activate(passphrase = passphrase, name = name)
+    rc = cs.activate(passphrase=passphrase, name=name)
     if rc<0:
         raise CryptoError("luks_open failed for %s (%s) with errno %d" % (device, name, rc))
 
 def luks_close(name):
-    cs = CryptSetup(name=name, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(name=name, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
     rc = cs.deactivate()
 
     if rc:
@@ -128,9 +128,9 @@ def luks_add_key(device,
     if not passphrase:
         raise ValueError("luks_add_key requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
-    rc = cs.addKeyByPassphrase(passphrase = passphrase, newPassphrase = new_passphrase)
-    
+    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    rc = cs.addKeyByPassphrase(passphrase=passphrase, newPassphrase=new_passphrase)
+
     if rc<0:
         raise CryptoError("luks add key failed with errcode %d" % (rc,))
 
@@ -141,11 +141,8 @@ def luks_remove_key(device,
     if not passphrase:
         raise ValueError("luks_remove_key requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog = askyes, logFunc = dolog, passwordDialog = askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
     rc = cs.removePassphrase(passphrase = passphrase)
-    
+
     if rc:
         raise CryptoError("luks remove key failed with errcode %d" % (rc,))
-
-
-
