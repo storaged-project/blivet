@@ -60,7 +60,7 @@ def has_lvm():
 # argument.  For every time we call an lvm_cc (lvm compose config) funciton
 # we regenerate the config_args with all global info.
 config_args_data = { "filterRejects": [],    # regular expressions to reject.
-                            "filterAccepts": [] }   # regexp to accept
+                     "filterAccepts": [] }   # regexp to accept
 
 def _getConfigArgs(**kwargs):
     """lvm command accepts lvm.conf type arguments preceded by --config. """
@@ -112,7 +112,7 @@ def lvm_cc_resetFilter():
     config_args_data["filterAccepts"] = []
 # End config_args handling code.
 
-# Names that should not be used int the creation of VGs
+# Names that should not be used in the creation of VGs
 lvm_vg_blacklist = []
 def blacklistVG(name):
     global lvm_vg_blacklist
