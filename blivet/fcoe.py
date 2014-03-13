@@ -121,9 +121,12 @@ class fcoe(object):
         error_msg = ""
         if dcb:
             self._startLldpad()
+            time.sleep(1)
             util.run_program(["dcbtool", "sc", nic, "dcb", "on"])
+            time.sleep(1)
             util.run_program(["dcbtool", "sc", nic, "app:fcoe",
                                                 "e:1", "a:1", "w:1"])
+            time.sleep(1)
             rc, out = util.run_program_and_capture_output(["fipvlan", "-c", "-s", "-f",
                                                "-fcoe", nic])
         else:
