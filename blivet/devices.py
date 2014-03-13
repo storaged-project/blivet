@@ -1418,12 +1418,9 @@ class PartitionDevice(StorageDevice):
     def _setPartedPartition(self, partition):
         """ Set this PartitionDevice's parted Partition instance. """
         log_method_call(self, self.name)
-        if partition is None:
-            path = None
-        elif isinstance(partition, parted.Partition):
-            path = partition.path
-        else:
-            raise ValueError("partition must be a parted.Partition instance")
+
+        if partition is not None and not isinstance(partition, parted.Partition):
+            raise ValueError("partition must be None or a parted.Partition instance")
 
         log.debug("device %s new partedPartition %s", self.name, partition)
         self._partedPartition = partition
