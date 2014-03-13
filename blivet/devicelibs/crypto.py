@@ -20,7 +20,7 @@
 #            Martin Sivak <msivak@redhat.com>
 #
 
-import os
+import random
 from pycryptsetup import CryptSetup
 
 from ..errors import *
@@ -38,9 +38,9 @@ GENERATED_PASSPHRASE_CHARSET = ("0123456789"
 GENERATED_PASSPHRASE_LENGTH = 20
 
 def generateBackupPassphrase():
-    rnd = os.urandom(GENERATED_PASSPHRASE_LENGTH)
-    cs = GENERATED_PASSPHRASE_CHARSET
-    raw = "".join([cs[ord(c) % len(cs)] for c in rnd])
+    raw = ""
+    for i in xrange(GENERATED_PASSPHRASE_LENGTH):
+        raw += random.choice(GENERATED_PASSPHRASE_CHARSET)
 
     # Make the result easier to read
     parts = []
