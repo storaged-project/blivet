@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.32
+Version: 0.18.33
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Mar 18 2014 Brian C. Lane <bcl@redhat.com> - 0.18.33-1
+- fcoe: add sleep for dcbtool command (rvykydal)
+  Related: rhbz#1039223
+- Add a PE for LUKS metadata (bcl)
+  Resolves: rhbz#1076078
+
 * Fri Mar 07 2014 Brian C. Lane <bcl@redhat.com> - 0.18.32-1
 - Resolve md names in udev_resolve_devspec. (dlehman)
   Related: rhbz#1047338
