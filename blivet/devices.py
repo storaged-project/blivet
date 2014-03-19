@@ -1119,9 +1119,9 @@ class PartitionDevice(StorageDevice):
         self.req_primary = None
         self.req_grow = None
         self.req_bootable = None
-        self.req_size = 0
-        self.req_base_size = 0
-        self.req_max_size = 0
+        self.req_size = Size(0)
+        self.req_base_size = Size(0)
+        self.req_max_size = Size(0)
         self.req_base_weight = 0
         self.req_start_sector = None
         self.req_end_sector = None
@@ -1183,7 +1183,7 @@ class PartitionDevice(StorageDevice):
             self.req_name = name
             self.req_partType = partType
             self.req_primary = primary
-            self.req_max_size = util.numeric_type(maxsize)
+            self.req_max_size = Size(bytes=util.numeric_type(maxsize))
             self.req_grow = grow
             self.req_bootable = bootable
 
@@ -1749,10 +1749,10 @@ class PartitionDevice(StorageDevice):
         data.resize = (self.exists and self.targetSize and
                        self.targetSize != self.currentSize)
         if not self.exists:
-            data.size = int(self.req_base_size)
+            data.size = self.req_base_size.convertTo(spec="MiB")
             data.grow = self.req_grow
             if self.req_grow:
-                data.maxSizeMB = int(self.req_max_size.convertTo(spec="mib"))
+                data.maxSizeMB = self.req_max_size.convertTo(spec="MiB")
 
             ##data.disk = self.disk.name                      # by-id
             if self.req_disks and len(self.req_disks) == 1:
@@ -1762,7 +1762,7 @@ class PartitionDevice(StorageDevice):
             data.onPart = self.name                     # by-id
 
             if data.resize:
-                data.size = int(self.size)
+                data.size = self.size.convertTo(spec="MiB")
 
 class DMDevice(StorageDevice):
     """ A device-mapper device """
@@ -2567,13 +2567,13 @@ class LVMLogicalVolumeDevice(DMDevice):
         self.segType = segType or "linear"
 
         self.req_grow = None
-        self.req_max_size = 0
-        self.req_size = 0   
+        self.req_max_size = Size(0)
+        self.req_size = Size(0)
         self.req_percent = 0
 
         if not self.exists:
             self.req_grow = grow
-            self.req_max_size = util.numeric_type(maxsize)
+            self.req_max_size = Size(util.numeric_type(maxsize))
             # XXX should we enforce that req_size be pe-aligned?
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
@@ -2810,14 +2810,14 @@ class LVMLogicalVolumeDevice(DMDevice):
         if not self.exists:
             data.grow = self.req_grow
             if self.req_grow:
-                data.size = int(self.req_size)
-                data.maxSizeMB = self.req_max_size.convertTo(spec="mib")
+                data.size = self.req_size.convertTo(spec="MiB")
+                data.maxSizeMB = self.req_max_size.convertTo(spec="MiB")
             else:
-                data.size = int(self.size)
+                data.size = self.size.convertTo(spec="MiB")
 
             data.percent = self.req_percent
         elif data.resize:
-            data.size = int(self.targetSize)
+            data.size = self.targetSize.convertTo(spec="MiB")
 
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
