@@ -426,7 +426,7 @@ class StorageDevice(Device):
 
         self.uuid = uuid
         self._format = None
-        self._size = util.numeric_type(size)
+        self._size = Size(bytes=util.numeric_type(size))
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
         self.sysfsPath = sysfsPath
