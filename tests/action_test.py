@@ -1025,6 +1025,11 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(remove_sdc1.obsoletes(add_sdc1), True)
         self.assertEqual(add_sdc1.obsoletes(remove_sdc1), True)
 
+        # add/remove loops (same member&container) should obsolete both actions
+        add_sdb1 = ActionAddMember(vg, sdb1)
+        self.assertEqual(add_sdb1.obsoletes(remove_sdb1), True)
+        self.assertEqual(remove_sdb1.obsoletes(add_sdb1), True)
+
         sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
                               size=Size(spec="5 GiB"), parents=[sdc])
         create_sdc2 = self.scheduleCreateDevice(device=sdc2)
