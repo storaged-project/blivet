@@ -277,13 +277,13 @@ def makedirs(path):
 
 def copy_to_system(source):
     # do the import now because enable_installer_mode() has finally been called.
-    from . import ROOT_PATH
+    from . import getSysroot
 
     if not os.access(source, os.R_OK):
         log.info("copy_to_system: source '%s' does not exist." % source)
         return False
 
-    target = ROOT_PATH + source
+    target = getSysroot() + source
     target_dir = os.path.dirname(target)
     log.debug("copy_to_system: '%s' -> '%s'." % (source, target))
     if not os.path.isdir(target_dir):

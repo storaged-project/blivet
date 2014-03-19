@@ -358,7 +358,7 @@ class iscsi(object):
 
         self.stabilize()
 
-    def write(self, ROOT_PATH, storage):
+    def write(self, root, storage):
         if not self.initiatorSet:
             return
 
@@ -375,17 +375,17 @@ class iscsi(object):
             if autostart:
                 node.setParameter("node.startup", "automatic")
 
-        if not os.path.isdir(ROOT_PATH + "/etc/iscsi"):
-            os.makedirs(ROOT_PATH + "/etc/iscsi", 0755)
-        fd = os.open(ROOT_PATH + INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
+        if not os.path.isdir(root + "/etc/iscsi"):
+            os.makedirs(root + "/etc/iscsi", 0755)
+        fd = os.open(root + INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
         os.write(fd, "InitiatorName=%s\n" %(self.initiator))
         os.close(fd)
 
         # copy "db" files.  *sigh*
-        if os.path.isdir(ROOT_PATH + "/var/lib/iscsi"):
-            shutil.rmtree(ROOT_PATH + "/var/lib/iscsi")
+        if os.path.isdir(root + "/var/lib/iscsi"):
+            shutil.rmtree(root + "/var/lib/iscsi")
         if os.path.isdir("/var/lib/iscsi"):
-            shutil.copytree("/var/lib/iscsi", ROOT_PATH + "/var/lib/iscsi",
+            shutil.copytree("/var/lib/iscsi", root + "/var/lib/iscsi",
                             symlinks=True)
 
     def getNode(self, name, address, port, iface):

@@ -407,15 +407,15 @@ class ZFCP:
             except ValueError as e:
                 log.warn(str(e))
 
-    def write(self, ROOT_PATH):
+    def write(self, root):
         if len(self.fcpdevs) == 0:
             return
-        f = open(ROOT_PATH + zfcpconf, "w")
+        f = open(root + zfcpconf, "w")
         for d in self.fcpdevs:
             f.write("%s\n" %(d,))
         f.close()
-        
-        f = open(ROOT_PATH + "/etc/modprobe.conf", "a")
+
+        f = open(root + "/etc/modprobe.conf", "a")
         f.write("alias scsi_hostadapter zfcp\n")
         f.close()
 

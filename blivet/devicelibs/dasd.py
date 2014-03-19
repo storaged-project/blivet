@@ -110,14 +110,14 @@ def dasd_needs_format(dasd):
     return False
 
 
-def write_dasd_conf(disks, ROOT_PATH):
+def write_dasd_conf(disks, root):
     """ Write /etc/dasd.conf to target system for all DASD devices
         configured during installation.
     """
     if not (arch.isS390() or disks):
         return
 
-    with open(os.path.realpath(ROOT_PATH + "/etc/dasd.conf"), "w") as f:
+    with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:
         for dasd in sorted(disks, key=lambda d: d.name):
             fields = [dasd.busid] + dasd.getOpts()
             f.write("%s\n" % " ".join(fields),)
