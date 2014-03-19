@@ -11,7 +11,7 @@ fi
 file_suffix="$(eval echo \$$#|sed s?/?_?g)"
 
 pylint_output="$(pylint \
-    --msg-template='{msg_id}:{line:3d},{column}: {obj}: {msg}' \
+    --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' \
     -r n --disable=C,R --rcfile=/dev/null \
     --dummy-variables-rgx=_ \
     --ignored-classes=Popen,TransactionSet \
