@@ -196,6 +196,8 @@ class Size(Decimal):
         if bytes is not None:
             if isinstance(bytes, (int, long, float, Decimal)):
                 value = Decimal(bytes)
+            elif isinstance(bytes, Size):
+                value = Decimal(bytes.convertTo("b"))
             else:
                 raise ValueError("invalid value for bytes param")
         elif spec:
