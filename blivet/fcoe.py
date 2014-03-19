@@ -141,15 +141,15 @@ class fcoe(object):
 
         return error_msg
 
-    def write(self, ROOT_PATH):
+    def write(self, root):
         if not self.nics:
             return
 
-        if not os.path.isdir(ROOT_PATH + "/etc/fcoe"):
-            os.makedirs(ROOT_PATH + "/etc/fcoe", 0755)
+        if not os.path.isdir(root + "/etc/fcoe"):
+            os.makedirs(root + "/etc/fcoe", 0755)
 
         for nic, dcb, auto_vlan in self.nics:
-            fd = os.open(ROOT_PATH + "/etc/fcoe/cfg-" + nic,
+            fd = os.open(root + "/etc/fcoe/cfg-" + nic,
                          os.O_RDWR | os.O_CREAT)
             os.write(fd, '# Created by anaconda\n')
             os.write(fd, '# Enable/Disable FCoE service at the Ethernet port\n')
