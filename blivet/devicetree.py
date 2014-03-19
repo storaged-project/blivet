@@ -190,7 +190,7 @@ class DeviceTree(object):
                     continue
 
                 # create edges based on both action type and dependencies.
-                if action.type > _action.type or _action.requires(action):
+                if _action.requires(action):
                     children.append(_action)
 
             for child in children:

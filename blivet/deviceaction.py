@@ -252,7 +252,8 @@ class DeviceAction(util.ObjectID):
 
     def requires(self, action):
         """ Return True if self requires action. """
-        return False
+        return (not (self.isContainer or action.isContainer) and
+                self.type < action.type)
 
     def obsoletes(self, action):
         """ Return True is self obsoletes action.
@@ -293,7 +294,7 @@ class ActionCreateDevice(DeviceAction):
                   and this partition has a higher number
                 - the other action adds a member to this device's container
         """
-        rc = False
+        rc = super(ActionCreateDevice, self).requires(action)
         if self.device.dependsOn(action.device):
             rc = True
         elif (action.isCreate and action.isDevice and
@@ -349,7 +350,7 @@ class ActionDestroyDevice(DeviceAction):
                   and this partition has a lower number
                 - the other action removes this action's device from a container
         """
-        rc = False
+        rc = super(ActionDestroyDevice, self).requires(action)
         if action.device.dependsOn(self.device) and action.isDestroy:
             rc = True
         elif (action.isDestroy and action.isDevice and
@@ -449,7 +450,7 @@ class ActionResizeDevice(DeviceAction):
                 - the other action removes this action's device from a container
                 - the other action adds a member to this device's container
         """
-        retval = False
+        retval = super(ActionResizeDevice, self).requires(action)
         if action.isResize:
             if self.device.id == action.device.id and \
                self.dir == action.dir and \
@@ -532,7 +533,8 @@ class ActionCreateFormat(DeviceAction):
                 - the other action is a create or resize of this action's
                   device
         """
-        return ((self.device.dependsOn(action.device) and
+        return (super(ActionCreateFormat, self).requires(action) or
+                (self.device.dependsOn(action.device) and
                  not ((action.isDestroy and action.isDevice) or
                       action.isContainer)) or
                 (action.isDevice and (action.isCreate or action.isResize) and
@@ -588,7 +590,7 @@ class ActionDestroyFormat(DeviceAction):
                   and the other action is a destroy action
                 - the other action removes this action's device from a container
         """
-        retval = False
+        retval = super(ActionDestroyFormat, self).requires(action)
         if action.device.dependsOn(self.device) and action.isDestroy:
             retval = True
         elif (action.isRemove and action.device == self.device):
@@ -661,7 +663,7 @@ class ActionResizeFormat(DeviceAction):
                   action's device depends on
                 - the other action removes this action's device from a container
         """
-        retval = False
+        retval = super(ActionResizeFormat, self).requires(action)
         if action.isResize:
             if self.device.id == action.device.id and \
                self.dir == action.dir and \

@@ -916,6 +916,19 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_pv_format.requires(destroy_lv_format), True)
         self.assertEqual(destroy_lv_format.requires(destroy_pv_format), False)
 
+        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
+                              size=Size(spec="5 GiB"), parents=[sdc])
+        create_sdc2 = self.scheduleCreateDevice(device=sdc2)
+
+        # create actions should always require destroy actions -- even for
+        # unrelated devices -- since, after pruning, it should always be the
+        # case that destroy actions are processed before create actions (no
+        # create/destroy loops are allowed)
+        self.assertEqual(create_sdc2.requires(destroy_lv), True)
+
+        # similarly, create actions should also require resize actions
+        self.assertEqual(create_sdc2.requires(grow_lv), True)
+
     def testContainerActions(self):
         self.destroyAllDevices()
         sda = self.storage.devicetree.getDeviceByName("sda")
@@ -1011,6 +1024,14 @@ class DeviceActionTestCase(StorageTestCase):
         remove_sdc1 = ActionRemoveMember(vg, sdc1)
         self.assertEqual(remove_sdc1.obsoletes(add_sdc1), True)
         self.assertEqual(add_sdc1.obsoletes(remove_sdc1), True)
+
+        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
+                              size=Size(spec="5 GiB"), parents=[sdc])
+        create_sdc2 = self.scheduleCreateDevice(device=sdc2)
+
+        # destroy/resize/create sequencing does not apply to container actions
+        self.assertEqual(create_sdc2.requires(remove_sdc1), False)
+        self.assertEqual(remove_sdc1.requires(create_sdc2), False)
 
     def testActionSorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
