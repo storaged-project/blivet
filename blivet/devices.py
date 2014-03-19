@@ -3320,7 +3320,12 @@ class MDRaidArrayDevice(ContainerDevice):
         return spares
 
     def _setSpares(self, spares):
-        # FIXME: this is too simple to be right
+        max_spares = self.level.get_max_spares(len(self.parents))
+        if spares > max_spares:
+            log.debug("failed to set new spares value %d (max is %d)",
+                      spares, max_spares)
+            raise DeviceError("new spares value is too large")
+
         if self.totalDevices > spares:
             self.memberDevices = self.totalDevices - spares
 
