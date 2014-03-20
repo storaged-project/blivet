@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.44
+Version: 0.45
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,22 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Mar 20 2014 Brian C. Lane <bcl@redhat.com> - 0.45-1
+- Changes to allow pylint checks to be run on a distribution of the source.
+  (amulhern)
+- Remove non-doing check target (amulhern)
+- Add a script to relate pylint errors to lines changed. (amulhern)
+- Change output format so that it is suitable for diff-cover. (amulhern)
+- Do an initial setup for running pylint tests in blivet. (amulhern)
+- Handle None in devicePathToName(#996303) (dshea)
+- Remove bootloader.packages from storage.packages (#1074522). (clumens)
+- Whitespace fixes for the crypto devicelib module (vpodzime)
+- Use random.choice for generating LUKS backup passphrase (vpodzime)
+- Trivial fixes for the lvm devicelib module (vpodzime)
+- Make vginfo work the same way as pvinfo and other LVM functions (vpodzime)
+- Allow NTFS to be mountable. (#748780) (dshea)
+- Limit the LV size to VG's free space size (vpodzime)
+
 * Fri Mar 07 2014 Brian C. Lane <bcl@redhat.com> - 0.44-1
 - Fix an old typo in zeroing out a PReP partition. (#1072781) (dlehman)
 - Only count with the extra metadata extents in new VGs and LVs (#1072999)

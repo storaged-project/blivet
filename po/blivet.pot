@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-07 18:30-0800\n"
+"POT-Creation-Date: 2014-03-20 16:37-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -329,16 +329,16 @@ msgstr ""
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:3090
+#: ../blivet/__init__.py:3087
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3095
+#: ../blivet/__init__.py:3092
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3097
+#: ../blivet/__init__.py:3094
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -674,7 +674,7 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:366
+#: ../blivet/devicelibs/lvm.py:379
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""
