@@ -1842,6 +1842,16 @@ class DeviceTree(object):
            If a device does not exist then it must have been removed by the
            cancelation of all the actions, so it does not need to be removed
            explicitly.
+
+           Most devices are considered leaf devices if they have no children,
+           however, some devices must satisfy more stringent requirements.
+           _removeDevice() will raise an exception if the device it is
+           removing is not a leaf device. hide() guarantees that any
+           device that it removes will have no children, but it does not
+           guarantee that the more stringent requirements will be enforced.
+           Therefore, _removeDevice() is invoked with the force parameter
+           set to True, to skip the isleaf check.
+
         """
         if device in self._hidden:
             return
@@ -1859,7 +1869,7 @@ class DeviceTree(object):
         if not device.exists:
             return
 
-        self._removeDevice(device, moddisk=False)
+        self._removeDevice(device, force=True, moddisk=False)
 
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
