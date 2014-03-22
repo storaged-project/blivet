@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.33
+Version: 0.18.34
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Mar 21 2014 Brian C. Lane <bcl@redhat.com> - 0.18.34-1
+- Force removal of hidden devices (amulhern)
+  Resolves: rhbz#1078163
+
 * Tue Mar 18 2014 Brian C. Lane <bcl@redhat.com> - 0.18.33-1
 - fcoe: add sleep for dcbtool command (rvykydal)
   Related: rhbz#1039223
