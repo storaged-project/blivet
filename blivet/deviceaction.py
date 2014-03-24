@@ -688,10 +688,10 @@ class ActionAddMember(DeviceAction):
     def __init__(self, container, device):
         super(ActionAddMember, self).__init__(device)
         self.container = container
-        container._addMember(device)
+        container.parents.append(device)
 
     def cancel(self):
-        self.container._removeMember(self.device)
+        self.container.parents.remove(self.device)
 
     def execute(self):
         self.container.add(self.device)
@@ -741,10 +741,10 @@ class ActionRemoveMember(DeviceAction):
     def __init__(self, container, device):
         super(ActionRemoveMember, self).__init__(device)
         self.container = container
-        container._removeMember(device)
+        container.parents.remove(device)
 
     def cancel(self):
-        self.container._addMember(self.device)
+        self.container.parents.append(self.device)
 
     def execute(self):
         self.container.remove(self.device)

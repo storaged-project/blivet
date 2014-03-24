@@ -1478,7 +1478,7 @@ class DeviceTree(object):
 
         vg_device = self.getDeviceByUuid(vg_uuid, incomplete=True)
         if vg_device:
-            vg_device._addMember(device)
+            vg_device.parents.append(device)
         else:
             try:
                 vg_size = udev_device_get_vg_size(info)
@@ -1543,7 +1543,7 @@ class DeviceTree(object):
 
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
         if device.format.mdUuid and md_array:
-            md_array._addMember(device)
+            md_array.parents.append(device)
         else:
             # create the array with just this one member
             try:
@@ -1617,7 +1617,7 @@ class DeviceTree(object):
                 return
 
             md_array.updateSysfsPath()
-            md_array._addMember(device)
+            md_array.parents.append(device)
             self._addDevice(md_array)
 
     def handleUdevDMRaidMemberFormat(self, info, device):
@@ -1648,7 +1648,7 @@ class DeviceTree(object):
             dm_array = self.getDeviceByName(rs.name, incomplete=True)
             if dm_array is not None:
                 # We add the new device.
-                dm_array._addMember(device)
+                dm_array.parents.append(device)
             else:
                 # Activate the Raid set.
                 rs.activate(mknod=True)
@@ -1690,7 +1690,7 @@ class DeviceTree(object):
 
         if btrfs_dev:
             log.info("found btrfs volume %s" % btrfs_dev.name)
-            btrfs_dev._addMember(device)
+            btrfs_dev.parents.append(device)
         else:
             label = udev_device_get_label(info)
             log.info("creating btrfs volume btrfs.%s", label)
