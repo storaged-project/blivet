@@ -113,6 +113,81 @@ def deviceNameToDiskByPath(deviceName=None):
         return ret
     raise DeviceNotFoundError(deviceName)
 
+class ParentList(object):
+    """ A list with auditing and side-effects for additions and removals.
+
+        The class provides an ordered list with guaranteed unique members and
+        optional functions to run before adding or removing a member. It
+        provides a subset of the functionality provided by :class:`list`,
+        making it easy to ensure that changes pass through the check functions.
+
+        The following operations are implemented:
+
+        .. code::
+
+            ml.append(x)
+            ml.remove(x)
+            iter(ml)
+            len(ml)
+            x in ml
+            x = ml[i]   # not ml[i] = x
+    """
+    def __init__(self, items=None, appendfunc=None, removefunc=None):
+        """
+            :keyword items: initial contents
+            :type items: any iterable
+            :keyword appendfunc: a function to call before adding an item
+            :type appendfunc: callable
+            :keyword removefunc: a function to call before removing an item
+            :type removefunc: callable
+
+            appendfunc and removefunc should take the item to be added or
+            removed and perform any checks or other processing. The appropriate
+            function will be called immediately before adding or removing the
+            item. The function should raise an exception if the addition/removal
+            should not take place. :class:`~.ParentList` instance is not passed
+            to the function. While this is not optimal for general-purpose use,
+            it is ideal for the intended use as part of :class:`~.Device`. The
+            functions themselves should not modify the :class:`~.ParentList`.
+        """
+        self.items = list()
+        if items:
+            self.items.extend(items)
+
+        self.appendfunc = appendfunc or (lambda i: True)
+        """ a function to call before adding an item """
+
+        self.removefunc = removefunc or (lambda i: True)
+        """ a function to call before removing an item """
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __contains__(self, y):
+        return y in self.items
+
+    def __getitem__(self, i):
+        return self.items[i]
+
+    def __len__(self):
+        return len(self.items)
+
+    def append(self, y):
+        """ Add an item to the list after running a callback. """
+        if y in self.items:
+            raise ValueError("item is already in the list")
+
+        self.appendfunc(y)
+        self.items.append(y)
+
+    def remove(self, y):
+        """ Remove an item from the list after running a callback. """
+        if y not in self.items:
+            raise ValueError("item is not in the list")
+
+        self.removefunc(y)
+        self.items.remove(y)
+
 class Device(util.ObjectID):
     """ A generic device.
 
@@ -159,16 +234,14 @@ class Device(util.ObjectID):
             :type parents: list of :class:`Device` instances
         """
         util.ObjectID.__init__(self)
-        self._name = name
-        if parents is None:
-            parents = []
-        elif not isinstance(parents, list):
-            raise ValueError("parents must be a list of Device instances")
-        self.parents = parents
         self.kids = 0
+        self._name = name
+        self.parents = []
+        if parents and not isinstance(parents, list):
+            raise ValueError("parents must be a list of Device instances")
 
-        for parent in self.parents:
-            parent.addChild()
+        if parents:
+            self.parents = parents
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Device instance.
@@ -204,6 +277,41 @@ class Device(util.ObjectID):
     def __str__(self):
         s = "%s %s (%d)" % (self.type, self.name, self.id)
         return s
+
+    def _addParent(self, parent):
+        """ Called before adding a parent to this device.
+
+            See :attr:`~.ParentList.appendfunc`.
+        """
+        parent.addChild()
+
+    def _removeParent(self, parent):
+        """ Called before removing a parent from this device.
+
+            See :attr:`~.ParentList.removefunc`.
+        """
+        parent.removeChild()
+
+    def _initParentList(self):
+        """ Initialize this instance's parent list. """
+        if not hasattr(self, "_parents"):
+            self._parents = ParentList(appendfunc=self._addParent,
+                                       removefunc=self._removeParent)
+
+        for parent in self._parents:
+            self._parents.remove(parent)
+
+    def _setParentList(self, parents):
+        """ Set this instance's parent list. """
+        self._initParentList()
+        for parent in parents:
+            self._parents.append(parent)
+
+    def _getParentList(self):
+        return self._parents
+
+    parents = property(_getParentList, _setParentList,
+                       doc="devices upon which this device is built")
 
     @property
     def dict(self):
@@ -1137,9 +1245,7 @@ class PartitionDevice(StorageDevice):
 
         if not exists:
             # this is a request, not a partition -- it has no parents
-            self.req_disks = self.parents[:]
-            for dev in self.parents:
-                dev.removeChild()
+            self.req_disks = list(self.parents)
             self.parents = []
 
         # FIXME: Validate partType, but only if this is a new partition
@@ -1683,14 +1789,9 @@ class PartitionDevice(StorageDevice):
         """
         log_method_call(self, self.name, old=getattr(self.disk, "name", None),
                         new=getattr(disk, "name", None))
-        if self.disk:
-            self.disk.removeChild()
-
+        self.parents = []
         if disk:
-            self.parents = [disk]
-            disk.addChild()
-        else:
-            self.parents = []
+            self.parents.append(disk)
 
     disk = property(lambda p: p._getDisk(), lambda p,d: p._setDisk(d))
 
@@ -2037,11 +2138,9 @@ class ContainerDevice(StorageDevice):
         of member devices -- one set for modifying the member set of the
         python objects, and one for writing the changes to disk.
 
-        :meth:`_addMember` and :meth:`_removeMember` operate on the object, but
-        do not change anything on the disk(s). They are used when detecting
-        devices (as in  :class:`~.devicetree.DeviceTree`) and when manipulating
-        the container objects (as in :class:`~.devicefactory.DeviceFactory` and
-        :class:`~.deviceaction.ActionAddMember`).
+        The member set of the instance can be manipulated using the methods
+        :meth:`~.ParentList.append` and :meth:`~.ParentList.remove` of the
+        instance's :attr:`~.Device.parents` attribute.
 
         :meth:`add` and :meth:`remove` remove a member from the container's on-
         disk representation. These methods should normally only be called from
@@ -2060,19 +2159,9 @@ class ContainerDevice(StorageDevice):
         if not self.formatClass:
             raise StorageError("cannot find '%s' class" % self._formatClassName)
 
-        # Instantiate the superclass without any parents so we can do some
-        # validation on them before adding them as parents.
-        parents = kwargs.pop("parents", [])
         super(ContainerDevice, self).__init__(*args, **kwargs)
 
-        # could be None
-        for parent in parents or []:
-            self._addMember(parent)
-
-        # restore kwargs in case another class wants to use them further
-        kwargs["parents"] = parents
-
-    def _addMember(self, member):
+    def _addParent(self, member):
         """ Add a member device to the container.
 
             :param member: the member device to add
@@ -2081,41 +2170,15 @@ class ContainerDevice(StorageDevice):
             This operates on the in-memory model and does not alter disk
             contents at all.
         """
-        log_method_call(self,
-                        self.name,
-                        member=member.name,
-                        status=self.status)
+        log_method_call(self, self.name, member=member.name)
         if not isinstance(member.format, self.formatClass):
             raise ValueError("member has wrong format")
-
-        if member in self.parents:
-            raise ValueError("member is already part of this container")
 
         if member.format.exists and self.uuid and self._formatUUIDAttr and \
            getattr(member.format, self._formatUUIDAttr) != self.uuid:
             raise ValueError("cannot add member with mismatched UUID")
 
-        self.parents.append(member)
-        member.addChild()
-
-    def _removeMember(self, member):
-        """ Remove a member device from the container.
-
-            :param member: the member device to add
-            :type member: :class:`.StorageDevice`
-
-            This operates on the in-memory model and does not alter disk
-            contents at all.
-        """
-        log_method_call(self,
-                        self.name,
-                        member=member.name,
-                        status=self.status)
-        if member not in self.parents:
-            raise ValueError("member is not part of this container")
-
-        self.parents.remove(member)
-        member.removeChild()
+        super(ContainerDevice, self)._addParent(member)
 
     @abc.abstractmethod
     def _add(self, member):
@@ -2147,7 +2210,7 @@ class ContainerDevice(StorageDevice):
         self._add(member)
 
         if member not in self.parents:
-            self._addMember(member)
+            self.parents.append(member)
 
     @abc.abstractmethod
     def _remove(self, member):
@@ -2180,7 +2243,7 @@ class ContainerDevice(StorageDevice):
         self._remove(member)
 
         if member in self.parents:
-            self._removeMember(member)
+            self.parents.remove(member)
 
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group
@@ -2223,7 +2286,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
             :keyword uuid: the VG UUID
             :type uuid: str
         """
-        # These attributes are used by _addMember, so they must be initialized
+        # These attributes are used by _addParent, so they must be initialized
         # prior to instantiating the superclass.
         self._lvs = []
         self.hasDuplicate = False
@@ -2235,7 +2298,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
                                             exists=exists, sysfsPath=sysfsPath)
 
-        self.uuid = uuid
         self.free = util.numeric_type(free)
         self.peSize = util.numeric_type(peSize)
         self.peCount = util.numeric_type(peCount)
@@ -2428,8 +2490,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if self.poolMetaData and not self.thinpools:
             self.poolMetaData = 0
 
-    def _addMember(self, member):
-        super(LVMVolumeGroupDevice, self)._addMember(member)
+    def _addParent(self, member):
+        super(LVMVolumeGroupDevice, self)._addParent(member)
 
         # now see if the VG can be activated
         ## XXX TODO: remove this activation code
@@ -2441,17 +2503,14 @@ class LVMVolumeGroupDevice(ContainerDevice):
             len(self.parents) == self.pvCount):
             self._complete = True
 
-    def _removeMember(self, member):
+    def _removeParent(self, member):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
         #     being possible to _temporarily_ overcommit the VG.
         #
         #     Maybe removeMember could be a wrapper with the checks and the
         #     devicefactory could call the _ versions to bypass the checks.
-        super(LVMVolumeGroupDevice, self)._removeMember(member)
-
-        # and update our pv count
-        self.pvCount = len(self.parents)
+        super(LVMVolumeGroupDevice, self)._removeParent(member)
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -2550,12 +2609,12 @@ class LVMVolumeGroupDevice(ContainerDevice):
     @property
     def pvs(self):
         """ A list of this VG's PVs """
-        return self.parents[:]  # we don't want folks changing our list
+        return self.parents[:]
 
     @property
     def lvs(self):
         """ A list of this VG's LVs """
-        return self._lvs[:]     # we don't want folks changing our list
+        return self._lvs[:]
 
     @property
     def thinpools(self):
@@ -3121,7 +3180,7 @@ class MDRaidArrayDevice(ContainerDevice):
             :keyword minor: the device minor (obsolete?)
             :type minor: int
         """
-        # These attributes are used by _addMember, so they must be initialized
+        # These attributes are used by _addParent, so they must be initialized
         # prior to instantiating the superclass.
         self._memberDevices = 0
         self._totalDevices = 0
@@ -3360,8 +3419,8 @@ class MDRaidArrayDevice(ContainerDevice):
         else:
             self.sysfsPath = ''
 
-    def _addMember(self, member):
-        super(MDRaidArrayDevice, self)._addMember(member)
+    def _addParent(self, member):
+        super(MDRaidArrayDevice, self)._addParent(member)
 
         ## XXX TODO: remove this whole block of activation code
         if self.exists and member.format.exists and flags.installer_mode:
@@ -3387,11 +3446,11 @@ class MDRaidArrayDevice(ContainerDevice):
 
         self.memberDevices += 1
 
-    def _removeMember(self, member):
+    def _removeParent(self, member):
         if self.level.name == "raid0" and self.exists and member.format.exists:
             raise DeviceError("cannot remove members from existing raid0")
 
-        super(MDRaidArrayDevice, self)._removeMember(member)
+        super(MDRaidArrayDevice, self)._removeParent(member)
         self.memberDevices -= 1
 
     @property
@@ -4587,7 +4646,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         return size
 
-    def _removeMember(self, member):
+    def _removeParent(self, member):
         # btrfs won't let you degrade it
         limits = []
         levels = raid.RAIDLevels()
@@ -4604,7 +4663,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             raise DeviceError("cannot remove member due to raid level "
                               "constraints")
 
-        super(BTRFSVolumeDevice, self)._removeMember(member)
+        super(BTRFSVolumeDevice, self)._removeParent(member)
 
     def _addSubVolume(self, vol):
         if vol.name in [v.name for v in self.subvolumes]:

@@ -15,7 +15,8 @@ from blivet.devices import BTRFSVolumeDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import OpticalDevice
 from blivet.devices import StorageDevice
-from blivet.devices import mdraid
+from blivet.devices import ParentList
+from blivet.devicelibs import mdraid
 from blivet.devicelibs import btrfs
 from blivet.size import Size
 
@@ -65,7 +66,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "createBitmap" : lambda x,m: self.assertTrue(x, m),
            "currentSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
            "description" : self.assertIsNotNone,
-           "devices" : lambda x, m: self.assertEqual(x, [], m),
+           "devices" : lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m),
            "exists" : self.assertFalse,
            "format" : self.assertIsNotNone,
            "formatArgs" : lambda x, m: self.assertEqual(x, [], m),
@@ -77,7 +79,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "mediaPresent" : self.assertFalse,
            "metadataVersion" : lambda x, m: self.assertEqual(x, "default", m),
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
-           "parents" : lambda x, m: self.assertEqual(x, [], m),
+           "parents" : lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m),
            "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
            "partitionable" : self.assertFalse,
            "rawArraySize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
@@ -447,7 +450,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            "maxSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
            "mediaPresent" : self.assertTrue,
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
-           "parents" : lambda x, m: self.assertEqual(x, [], m),
+           "parents" : lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m),
            "partitionable" : self.assertFalse,
            "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
            "resizable" : lambda x, m: self.assertFalse,

@@ -575,7 +575,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         sda2 = self.newDevice(device_class=PartitionDevice, name="sda2",
                               size=Size(spec="99.5 GiB"), parents=[sda])
-        sda2_format = self.newFormat("lvmpv", device=sda1.path)
+        sda2_format = self.newFormat("lvmpv", device=sda2.path)
         self.scheduleCreateDevice(device=sda2)
         self.scheduleCreateFormat(device=sda2, format=sda2_format)
 
@@ -1016,7 +1016,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         self.assertEqual(remove_sdb1.requires(add_sdc1), True)
 
-        vg._addMember(sdb1)
+        vg.parents.append(sdb1)
         remove_sdb1_2 = ActionRemoveMember(vg, sdb1)
         self.assertEqual(remove_sdb1_2.obsoletes(remove_sdb1), False)
         self.assertEqual(remove_sdb1.obsoletes(remove_sdb1_2), True)
