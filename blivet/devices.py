@@ -423,9 +423,9 @@ class StorageDevice(Device):
             parents = [parents]
 
         self.exists = exists
+        self.uuid = uuid
         Device.__init__(self, name, parents=parents)
 
-        self.uuid = uuid
         self._format = None
         self._size = Size(bytes=util.numeric_type(size))
         self.major = util.numeric_type(major)
