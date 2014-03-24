@@ -24,6 +24,7 @@ import os
 import copy
 import pprint
 import tempfile
+import abc
 from decimal import Decimal
 
 # device backend modules
@@ -2047,8 +2048,12 @@ class ContainerDevice(StorageDevice):
         within :meth:`.deviceaction.ActionAddMember.execute` and
         :meth:`.deviceaction.ActionRemoveMember.execute`.
     """
-    _formatClassName = None
-    _formatUUIDAttr = None
+    __metaclass__ = abc.ABCMeta
+
+    _formatClassName = abc.abstractproperty(lambda s: None,
+        doc="The type of member devices' required format")
+    _formatUUIDAttr = abc.abstractproperty(lambda s: None,
+        doc="The container UUID attribute in the member format class")
 
     def __init__(self, *args, **kwargs):
         self.formatClass = get_device_format_class(self._formatClassName)
@@ -2112,6 +2117,7 @@ class ContainerDevice(StorageDevice):
         self.parents.remove(member)
         member.removeChild()
 
+    @abc.abstractmethod
     def _add(self, member):
         """ Device-type specific code to add a member to the container.
 
@@ -2120,7 +2126,7 @@ class ContainerDevice(StorageDevice):
 
             This method writes the member addition to disk.
         """
-        pass
+        raise NotImplementedError()
 
     def add(self, member):
         """ Add a member to the container.
@@ -2143,6 +2149,7 @@ class ContainerDevice(StorageDevice):
         if member not in self.parents:
             self._addMember(member)
 
+    @abc.abstractmethod
     def _remove(self, member):
         """ Device-type specific code to remove a member from the container.
 
@@ -2151,7 +2158,7 @@ class ContainerDevice(StorageDevice):
 
             This method writes the member removal to disk.
         """
-        pass
+        raise NotImplementedError()
 
     def remove(self, member):
         """ Remove a member from the container.
@@ -2183,8 +2190,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
     """
     _type = "lvmvg"
     _packages = ["lvm2"]
-    _formatClassName = "lvmpv"
-    _formatUUIDAttr = "vgUuid"
+    _formatClassName = property(lambda s: "lvmpv")
+    _formatUUIDAttr = property(lambda s: "vgUuid")
 
     def __init__(self, name, parents=None, size=None, free=None,
                  peSize=None, peCount=None, peFree=None, pvCount=None,
@@ -3084,8 +3091,8 @@ class MDRaidArrayDevice(ContainerDevice):
     _type = "mdarray"
     _packages = ["mdadm"]
     _devDir = "/dev/md"
-    _formatClassName = "mdmember"
-    _formatUUIDAttr = "mdUuid"
+    _formatClassName = property(lambda s: "mdmember")
+    _formatUUIDAttr = property(lambda s: "mdUuid")
 
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  memberDevices=None, totalDevices=None,
@@ -3615,7 +3622,8 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     _packages = ["dmraid"]
     _partitionable = True
     _isDisk = True
-    _formatClassName = "dmraidmember"
+    _formatClassName = property(lambda s: "dmraidmember")
+    _formatUUIDAttr = property(lambda s: None)
 
     def __init__(self, name, raidSet=None, format=None,
                  size=None, parents=None, sysfsPath=''):
@@ -3682,6 +3690,12 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
             return
 
         log.debug("not tearing down dmraid device %s", self.name)
+
+    def _add(self, member):
+        raise NotImplementedError()
+
+    def _remove(self, member):
+        raise NotImplementedError()
 
     @property
     def description(self):
@@ -4534,8 +4548,8 @@ class BTRFSDevice(StorageDevice):
 class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     _type = "btrfs volume"
     vol_id = btrfs.MAIN_VOLUME_ID
-    _formatClassName = "btrfs"
-    _formatUUIDAttr = "volUUID"
+    _formatClassName = property(lambda s: "btrfs")
+    _formatUUIDAttr = property(lambda s: "volUUID")
 
     def __init__(self, *args, **kwargs):
         self.dataLevel = kwargs.pop("dataLevel", None)
