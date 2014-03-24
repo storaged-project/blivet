@@ -101,6 +101,8 @@ class StorageTestCase(unittest.TestCase):
                     pass
 
             device._partedPartition = partedPartition
+        elif isinstance(device, blivet.devices.LVMVolumeGroupDevice) and exists:
+            device._complete = True
 
         device.exists = exists
         device.format.exists = exists

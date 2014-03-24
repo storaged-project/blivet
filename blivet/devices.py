@@ -2220,7 +2220,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # prior to instantiating the superclass.
         self._lvs = []
         self.hasDuplicate = False
+        self._complete = False
         self.pvCount = util.numeric_type(pvCount)
+        if exists and not pvCount:
+            self._complete = True
 
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
                                             exists=exists, sysfsPath=sysfsPath)
@@ -2350,6 +2353,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
         pv_list = [pv.path for pv in self.parents]
         lvm.vgcreate(self.name, pv_list, self.peSize)
 
+    def _postCreate(self):
+        self._complete = True
+        super(LVMVolumeGroupDevice, self)._postCreate()
+
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
         # set up the pvs since lvm needs access to them to do the vgremove
@@ -2423,8 +2430,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
            flags.installer_mode:
             self.setup()
 
-        # and update our pv count
-        self.pvCount = len(self.parents)
+        if (self.exists and member.format.exists and
+            len(self.parents) == self.pvCount):
+            self._complete = True
 
     def _removeMember(self, member):
         # XXX It would be nice to raise an exception if removing this member
@@ -2559,7 +2567,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if self.hasDuplicate:
             return False
 
-        return len(self.pvs) == self.pvCount or not self.exists
+        return self._complete or not self.exists
 
     def populateKSData(self, data):
         super(LVMVolumeGroupDevice, self).populateKSData(data)
