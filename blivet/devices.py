@@ -3900,7 +3900,8 @@ class FileDevice(StorageDevice):
         MiB = Size(spec="1 MiB")
         count = int(self.size.convertTo(spec="MiB"))
         rem = self.size % MiB
-        for n in range(count):
+
+        for _n in range(count):
             os.write(fd, zero * MiB)
 
         if rem:
