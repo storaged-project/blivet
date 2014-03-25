@@ -121,6 +121,9 @@ def main():
     commit = args.commit
     pylint_log = os.path.abspath(args.pylint_log)
 
+    if not os.path.isfile(pylint_log):
+        sys.exit("Pylint log file %s does not exist." % pylint_log)
+
     try:
         current_branch = current_branch_name()
         checkout_new_branch(branch)
