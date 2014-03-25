@@ -37,14 +37,14 @@ class InitializationTestCase(unittest.TestCase):
         self.assertTrue(fs.XFS.labelFormatOK("root_filesys"))
 
         #HFS has a maximum length of 27, minimum length of 1, and does not allow colons
-        self.assertFalse(fs.HFS.labelFormatOK("".join(["n" for x in range(28)])))
+        self.assertFalse(fs.HFS.labelFormatOK("n" * 28))
         self.assertFalse(fs.HFS.labelFormatOK("root:file"))
         self.assertFalse(fs.HFS.labelFormatOK(""))
-        self.assertTrue(fs.HFS.labelFormatOK("".join(["n" for x in range(27)])))
+        self.assertTrue(fs.HFS.labelFormatOK("n" * 27))
 
         # NTFS has a maximum length of 128
-        self.assertFalse(fs.NTFS.labelFormatOK("".join(["n" for x in range(129)])))
-        self.assertTrue(fs.NTFS.labelFormatOK("".join(["n" for x in range(128)])))
+        self.assertFalse(fs.NTFS.labelFormatOK("n" * 129))
+        self.assertTrue(fs.NTFS.labelFormatOK("n" * 128))
 
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
@@ -118,7 +118,7 @@ class ReiserFSTestCase(fslabeling.LabelingWithRelabeling):
 class HFSTestCase(fslabeling.LabelingAsRoot):
     def setUp(self):
         self._fs_class = fs.HFS
-        self._invalid_label = "".join(["n" for x in range(28)])
+        self._invalid_label = "n" * 28
         super(HFSTestCase, self).setUp()
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
