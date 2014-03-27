@@ -48,7 +48,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
 
         try:
             lvm.vgdeactivate(self._vg_name)
-            lvm.vgreduce(self._vg_name, [], rm=True)
+            lvm.vgreduce(self._vg_name, None, missing=True)
         except lvm.LVMError:
             pass
 
@@ -129,11 +129,11 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## vgreduce
         ##
         # pass
-        self.assertEqual(lvm.vgreduce(self._vg_name, [_LOOP_DEV1]), None)
+        self.assertEqual(lvm.vgreduce(self._vg_name, _LOOP_DEV1), None)
 
         # fail
-        self.assertRaises(lvm.LVMError, lvm.vgreduce, "wrong-vg-name", [_LOOP_DEV1])
-        self.assertRaises(lvm.LVMError, lvm.vgreduce, self._vg_name, ["/not/existing/device"])
+        self.assertRaises(lvm.LVMError, lvm.vgreduce, "wrong-vg-name", _LOOP_DEV1)
+        self.assertRaises(lvm.LVMError, lvm.vgreduce, self._vg_name, "/not/existing/device")
 
         ##
         ## vgactivate

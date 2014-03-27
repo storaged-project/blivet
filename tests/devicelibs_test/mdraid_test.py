@@ -97,7 +97,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         # TODO
 
         # fail
-        self.assertRaises(mdraid.MDRaidError, mdraid.mdadd, "/not/existing/device")
+        self.assertRaises(mdraid.MDRaidError, mdraid.mdadd, self._dev_name, "/not/existing/device")
 
         ##
         ## mdactivate
