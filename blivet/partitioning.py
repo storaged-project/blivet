@@ -1709,7 +1709,7 @@ class VGChunk(Chunk):
                         growth, self.lengthToSize(growth),
                         req.device.id, req.device.name)
 
-            new_base = self.trimOverGrownRequest(req)
+            self.trimOverGrownRequest(req)
             log.debug("new grow amount for request %d (%s) is %d "
                       "units, or %s",
                         req.device.id, req.device.name, req.growth,
