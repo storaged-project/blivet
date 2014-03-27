@@ -31,6 +31,9 @@ def make_parser(parser):
     parser.add_argument('--branch',
        default='pylint-code-diff-test',
        help='name of test branch')
+    parser.add_argument('--force',
+       action='store_true',
+       help='run anyway')
     parser.add_argument('--pylint-log',
        default='pylint-log',
        help='path to pylint log')
@@ -111,6 +114,24 @@ def diff_quality(pylint_file):
 
     print(stdoutdata)
 
+def clean():
+    """ Checks whether git detects some changes in the current branch.
+
+        :return: True if git finds no changes, otherwise False
+        :rtype: bool
+    """
+    command = [ 'git', 'diff-index', '--exit-code', '--cached', 'HEAD' ]
+    (stdoutdata, stderrdata, ret) = run_command(command)
+    if ret != 0:
+        return False
+
+    command = [ 'git', 'diff-files', '--exit-code' ]
+    (stdoutdata, stderrdata, ret) = run_command(command)
+    if ret != 0:
+        return False
+
+    return True
+
 def main():
     parser = argparse.ArgumentParser(description="Find pylint messages related to changes subsequent to given commit.")
     make_parser(parser)
@@ -119,6 +140,14 @@ def main():
 
     branch = args.branch
     commit = args.commit
+    force = args.force
+
+    if not force and not clean():
+        sys.exit(
+           "Your working branch has some changes that may be lost while "
+           "running this test. Use the --force flag to proceed anyway."
+        )
+
     pylint_log = os.path.abspath(args.pylint_log)
 
     if not os.path.isfile(pylint_log):
