@@ -58,7 +58,7 @@ def current_branch_name():
         :rtype: str
     """
     command = [ 'git', 'rev-parse', '--abbrev-ref', 'HEAD']
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (stdoutdata, _stderrdata, ret) = run_command(command)
     if ret == 0:
         return stdoutdata.strip()
     else:
@@ -70,7 +70,7 @@ def checkout_new_branch(branch):
         :param str branch: Name of branch, should not currently exist.
     """
     command = [ 'git', 'checkout', '-b', branch ]
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (_stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         raise RuntimeError("failed to check out new branch %s" % branch)
 
@@ -82,7 +82,7 @@ def checkout_branch(branch, force=False):
     command = [ 'git', 'checkout', branch ]
     if force:
         command.append('-f')
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (_stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         raise RuntimeError("failed to check out branch %s" % branch)
 
@@ -92,7 +92,7 @@ def remove_branch(branch):
         :param str branch: Name of branch, must exist.
     """
     command = [ 'git', 'branch', '-D', branch ]
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (_stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         raise RuntimeError("failed to delete branch %s" % branch)
 
@@ -102,13 +102,13 @@ def reset(commit):
         :param str commit: commit id
     """
     command = [ 'git', 'reset', commit ]
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (_stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         raise RuntimeError("failed to reset commit %s" % commit)
 
 def diff_quality(pylint_file):
     command = [ 'diff-quality', '--violations=pylint', pylint_file ]
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         raise RuntimeError("diff-quality did not complete succesfully")
 
@@ -121,12 +121,12 @@ def clean():
         :rtype: bool
     """
     command = [ 'git', 'diff-index', '--exit-code', '--cached', 'HEAD' ]
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (_stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         return False
 
     command = [ 'git', 'diff-files', '--exit-code' ]
-    (stdoutdata, stderrdata, ret) = run_command(command)
+    (_stdoutdata, _stderrdata, ret) = run_command(command)
     if ret != 0:
         return False
 
