@@ -871,11 +871,6 @@ class DeviceTree(object):
                 devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
                 return
 
-        # Sun disklabels have a partition that spans the entire disk as
-        # partition 3. It does not appear in the partition list. Fantastic.
-        is_sun_magic = (getattr(disk.format, "labelType", None) == "sun" and
-                        udev_device_get_minor(info) == 3)
-
         if not disk.partitioned:
             # Ignore partitions on:
             #  - devices we do not support partitioning of, like logical volumes
@@ -1432,7 +1427,6 @@ class DeviceTree(object):
         # the end
         indices = range(len(lv_names))
         indices.sort(key=lambda i: lv_attrs[i], cmp=lv_attr_cmp)
-        lv_real_names = [n.replace("[", "").replace("]", "") for n in lv_names]
         raid = dict([("%s-%s" % (vg_device.name,
                                  n.replace("[", "").replace("]", "")),
                       {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
@@ -1742,7 +1736,6 @@ class DeviceTree(object):
                 # we fall through to handle that.
                 return
 
-        format = None
         if (not device) or (not format_type) or device.format.type:
             # this device has no formatting or it has already been set up
             # FIXME: this probably needs something special for disklabels

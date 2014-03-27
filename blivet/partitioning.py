@@ -1002,7 +1002,6 @@ def allocatePartitions(storage, disks, partitions, freespace):
         # loop through disks
         for _disk in req_disks:
             disklabel = disklabels[_disk.path]
-            sectorSize = Size(bytes=disklabel.partedDevice.sectorSize)
             best = None
             current_free = free
 
@@ -1699,7 +1698,6 @@ class VGChunk(Chunk):
         self.sortRequests()
 
         # grow the percentage-based requests
-        last_pool = self.pool
         for req in self.requests:
             if req.done or not req.device.req_percent:
                 continue
@@ -2028,7 +2026,6 @@ def growPartitions(disks, partitions, free, size_sets=None):
                 if ptype == parted.PARTITION_LOGICAL:
                     start += disklabel.alignment.grainSize
 
-                old_geometry = p.device.partedPartition.geometry
                 new_length = p.base + p.growth
                 end = start + new_length - 1
                 # align end sector as needed

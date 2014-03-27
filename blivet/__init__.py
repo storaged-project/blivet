@@ -2727,7 +2727,6 @@ class FSSet(object):
                                               device.format.mountpoint))
         while os.path.exists("%s/%s" % (basedir, filename)) or \
               self.devicetree.getDeviceByName(filename):
-            file = os.path.normpath("%s/%s" % (basedir, filename))
             count += 1
             filename = "/SWAP-%d" % count
 

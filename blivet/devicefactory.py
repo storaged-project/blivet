@@ -631,7 +631,6 @@ class DeviceFactory(object):
                                    exists=False)
             self.storage.formatDevice(self.device, new_format)
         else:
-            current_mountpoint = getattr(current_format, "mountpoint", None)
             if (hasattr(current_format, "mountpoint") and
                 current_format.mountpoint != self.mountpoint):
                 current_format.mountpoint = self.mountpoint
