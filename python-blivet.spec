@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.45
+Version: 0.46
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,46 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Mar 26 2014 Brian C. Lane <bcl@redhat.com> - 0.46-1
+- Adapt callers to use the new parent list interface. (dlehman)
+- Change management of Device parents to use a simple list interface. (dlehman)
+- Convert ContainerDevice to an abstract base class. (dlehman)
+- Set device uuid before calling Device ctor. (dlehman)
+- Improve the mechanism for VG completeness. (dlehman)
+- Support mutually-obsoleting actions. (dlehman)
+- Add some checking to MDRaidArrayDevice._setSpares. (dlehman)
+- Make sorting by action type part of the action classes. (dlehman)
+- Add action classes for container member set management. (dlehman)
+- Add a property to provide consistent access to parent container device.
+  (dlehman)
+- Add type-specific methods for member set management. (dlehman)
+- Adapt callers to new method names for add/remove member device. (dlehman)
+- Add a ContainerDevice class to consolidate member management code. (dlehman)
+- Add backend functions for container member set management. (dlehman)
+- Teardown RAID device once testing is over (amulhern)
+- Make lvm tests runnable. (amulhern)
+- Make crypt tests runnable. (amulhern)
+- Replace unnecessarily complicated expression with string multiplication
+  (amulhern)
+- Suppress unused variable warning for index in range (amulhern)
+- Suppress some unused variable warnings. (amulhern)
+- Suppress some unused variable warnings (amulhern)
+- Update to the new raise syntax (dshea)
+- Removed an unnecessary semicolon (dshea)
+- Removed a redundant definition of NoDisksError (dshea)
+- Specify regular expressions containing backslashes as raw strings (dshea)
+- Fixed some questionable indentation (dshea)
+- Fix logging function string format warnings. (dshea)
+- All size specifications should be Size instances (#1077163) (vpodzime)
+- Make sure StorageDevice's self._size is a Size instance (#1077179) (vpodzime)
+- Allow creating Size instance from another Size instance (vpodzime)
+- Force removal of hidden devices (#1078163) (amulhern)
+- Get action_test into working order. (dlehman)
+- Update action_test.py to specify sizes using blivet.size.Size. (dlehman)
+- Don't corrupt the environment when setting up StorageTestCase. (dlehman)
+- Make minSize, maxSize consistent and correct. (dlehman)
+- Don't prevent grow actions on devices with no max size. (dlehman)
+
 * Thu Mar 20 2014 Brian C. Lane <bcl@redhat.com> - 0.45-1
 - Changes to allow pylint checks to be run on a distribution of the source.
   (amulhern)
