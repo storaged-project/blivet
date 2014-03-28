@@ -33,9 +33,6 @@ from __future__ import absolute_import
 
 import os
 
-import logging
-log = logging.getLogger("blivet")
-
 from .flags import flags
 
 import logging
