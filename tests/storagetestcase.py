@@ -64,9 +64,8 @@ class StorageTestCase(unittest.TestCase):
 
         PartitionDevice.probe = partition_probe
 
-    def newDevice(*args, **kwargs):
+    def newDevice(self, *args, **kwargs):
         """ Return a new Device instance suitable for testing. """
-        args = args[1:] # drop self arg
         device_class = kwargs.pop("device_class")
         exists = kwargs.pop("exists", False)
         part_type = kwargs.pop("part_type", parted.PARTITION_NORMAL)
@@ -113,7 +112,7 @@ class StorageTestCase(unittest.TestCase):
 
         return device
 
-    def newFormat(*args, **kwargs):
+    def newFormat(self, *args, **kwargs):
         """ Return a new DeviceFormat instance suitable for testing.
 
             Keyword Arguments:
@@ -125,7 +124,6 @@ class StorageTestCase(unittest.TestCase):
             All other arguments are passed directly to
             blivet.formats.getFormat.
         """
-        args = args[1:] # drop self arg
         exists = kwargs.pop("exists", False)
         device_instance = kwargs.pop("device_instance", None)
         format = getFormat(*args, **kwargs)
