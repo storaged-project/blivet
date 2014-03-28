@@ -1280,32 +1280,14 @@ class DeviceTree(object):
     def handleVgLvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
-
-        info = devicelibs.lvm.lvs(vg_name)
-
-        # Now we add any lv info found in this pv to the vg_device, we
-        # do this for all pvs as pvs only contain lv info for lvs which they
-        # contain themselves
-        try:
-            lv_names = udev_device_get_lv_names(info)
-            lv_uuids = udev_device_get_lv_uuids(info)
-            lv_sizes = udev_device_get_lv_sizes(info)
-            lv_attr = udev_device_get_lv_attr(info)
-            lv_types = udev_device_get_lv_types(info)
-        except KeyError as e:
-            log.warning("invalid data for %s: %s", device.name, e)
-            return
-
-        for i in range(len(lv_names)):
-            name = "%s-%s" % (vg_name, lv_names[i])
-            if name not in self.names:
-                self.names.append(name)
+        lv_info = devicelibs.lvm.lvs(vg_name)
+        self.names.extend(n for n in lv_info.keys() if n not in self.names)
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s", vg_name)
             return
 
-        if not lv_names:
+        if not lv_info:
             log.debug("no LVs listed for VG %s", vg_name)
             return
 
@@ -1328,7 +1310,14 @@ class DeviceTree(object):
             else:
                 return 0
 
-        def addLV(lv_name, lv_uuid, lv_attr, lv_size, lv_type):
+        def addLV(lv):
+            log.debug("addLV: %s", lv)
+            lv_name = udev_device_get_lv_name(lv)
+            lv_uuid = udev_device_get_lv_uuid(lv)
+            lv_attr = udev_device_get_lv_attr(lv)
+            lv_size = udev_device_get_lv_size(lv)
+            lv_type = udev_device_get_lv_type(lv)
+
             lv_class = LVMLogicalVolumeDevice
             lv_parents = [vg_device]
             name = "%s-%s" % (vg_name, lv_name)
@@ -1354,10 +1343,9 @@ class DeviceTree(object):
                         vg_device.voriginSnapshots[lv_name] = lv_size
                         return
                     else:
-                        oidx = lv_names.index(origin_name)
-                        if oidx:
-                            addLV(*lv_data[oidx])
-                            origin = self.getDeviceByName(origin_device_name)
+                        olv = lv_info[origin_device_name]
+                        addLV(olv)
+                        origin = self.getDeviceByName(origin_device_name)
 
                         if origin is None:
                             log.warning("snapshot lv '%s' origin lv '%s' not "
@@ -1402,10 +1390,9 @@ class DeviceTree(object):
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
                 pool_device = self.getDeviceByName(pool_device_name)
                 if pool_device is None:
-                    pidx = lv_names.index(pool_name)
-                    if pidx:
-                        addLV(*lv_data[pidx])
-                        pool_device = self.getDeviceByName(pool_device_name)
+                    plv = lv_info[pool_device_name]
+                    addLV(plv)
+                    pool_device = self.getDeviceByName(pool_device_name)
 
                 if pool_device is None:
                     raise DeviceTreeError("failed to look up thin pool")
@@ -1437,18 +1424,12 @@ class DeviceTree(object):
                     # do format handling now
                     self.addUdevDevice(lv_info)
 
-        # make a list of indices with mirror volumes up front and snapshots at
-        # the end
-        indices = range(len(lv_names))
-        indices.sort(key=lambda i: lv_attr[i], cmp=lv_attr_cmp)
-        lv_real_names = [n.replace("[", "").replace("]", "") for n in lv_names]
-        raid = dict([("%s-%s" % (vg_device.name,
-                                 n.replace("[", "").replace("]", "")),
-                      {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
-                     for n in lv_names])
-        lv_data = zip(lv_names, lv_uuids, lv_attr, lv_sizes, lv_types)
-        for i in range(len(lv_data)):
-            addLV(*lv_data[i])
+        raid = dict(("%s-%s" % (vg_device.name,
+                                n.replace("[", "").replace("]", "")),
+                     {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
+                     for n in lv_info.keys())
+        for lv in lv_info.values():
+            addLV(lv)
 
         for name, data in raid.items():
             lv_dev = self.getDeviceByName(name)

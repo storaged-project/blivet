@@ -299,7 +299,7 @@ def pvinfo(device):
             'devices { scan = "/dev" filter = ["a/loop0/", "r/.*/"] }'
     """
     args = ["pvs",
-            "--unit=k", "--nosuffix", "--nameprefixes", "--rows",
+            "--unit=k", "--nosuffix", "--nameprefixes",
             "--unquoted", "--noheadings",
             "-opv_uuid,pe_start,vg_name,vg_uuid,vg_size,vg_free,vg_extent_size,vg_extent_count,vg_free_count,pv_count"] + \
             _getConfigArgs(read_only_locking=True) + \
@@ -409,28 +409,24 @@ def vginfo(vg_name):
 
 def lvs(vg_name):
     args = ["lvs",
-            "-a", "--unit", "k", "--nosuffix", "--nameprefixes", "--rows",
+            "-a", "--unit", "k", "--nosuffix", "--nameprefixes",
             "--unquoted", "--noheadings",
-            "-olv_name,lv_uuid,lv_size,lv_attr,segtype"] + \
+            "-ovg_name,lv_name,lv_uuid,lv_size,lv_attr,segtype"] + \
             _getConfigArgs(read_only_locking=True) + \
             [vg_name]
 
-    rc = util.capture_output(["lvm"] + args)
-    _vars = rc.split()
-    info = {}
-    for var in _vars:
-        (name, equals, value) = var.partition("=")
-        if not equals:
+    buf = util.capture_output(["lvm"] + args)
+    lvs = {}
+    for line in buf.splitlines():
+        info = parse_lvm_vars(line)
+        if len(info.keys()) != 6:
+            log.debug("ignoring lvs output line: %s", line)
             continue
 
-        val = value.strip()
+        lv_name = "%s-%s" % (info["LVM2_VG_NAME"], info["LVM2_LV_NAME"])
+        lvs[lv_name] = info
 
-        if name not in info:
-            info[name] = []
-
-        info[name].append(val)
-
-    return info
+    return lvs
 
 def lvorigin(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "origin"] + \

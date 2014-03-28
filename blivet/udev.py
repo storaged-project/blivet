@@ -421,46 +421,20 @@ def udev_device_get_vg_pv_count(info):
 def udev_device_get_pv_pe_start(info):
     return Size(spec="%s KiB" % info['LVM2_PE_START'])
 
-def udev_device_get_lv_names(info):
-    names = info['LVM2_LV_NAME']
-    if not names:
-        names = []
-    elif not isinstance(names, list):
-        names = [names]
-    return names
+def udev_device_get_lv_name(info):
+    return info['LVM2_LV_NAME']
 
-def udev_device_get_lv_uuids(info):
-    uuids = info['LVM2_LV_UUID']
-    if not uuids:
-        uuids = []
-    elif not isinstance(uuids, list):
-        uuids = [uuids]
-    return uuids
+def udev_device_get_lv_uuid(info):
+    return info['LVM2_LV_UUID']
 
-def udev_device_get_lv_sizes(info):
-    sizes = info['LVM2_LV_SIZE']
-    if not sizes:
-        sizes = []
-    elif not isinstance(sizes, list):
-        sizes = [sizes]
-
-    return [Size(spec="%s KiB" % s) for s in sizes]
+def udev_device_get_lv_size(info):
+    return Size(spec="%s KiB" % info['LVM2_LV_SIZE'])
 
 def udev_device_get_lv_attr(info):
-    attr = info['LVM2_LV_ATTR']
-    if not attr:
-        attr = []
-    elif not isinstance(attr, list):
-        attr = [attr]
-    return attr
+    return info['LVM2_LV_ATTR']
 
-def udev_device_get_lv_types(info):
-    segtypes = info['LVM2_SEGTYPE']
-    if not segtypes:
-        segtypes = []
-    elif not isinstance(segtypes, list):
-        segtypes = [segtypes]
-    return segtypes
+def udev_device_get_lv_type(info):
+    return info['LVM2_SEGTYPE']
 
 def udev_device_dm_subsystem_match(info, subsystem):
     """ Return True if the device matches a given device-mapper subsystem. """
