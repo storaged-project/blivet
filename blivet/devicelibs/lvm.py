@@ -289,8 +289,15 @@ def parse_lvm_vars(line):
 
     return info
 
-def pvinfo(device):
-    """
+def pvinfo(device=None):
+    """ Return a dict with information about LVM PVs.
+
+        :keyword str device: path to PV device node (optional)
+        :returns: dict containing PV path keys and udev info dict values
+        :rtype: dict
+
+        If device is None we let LVM report on all known PVs.
+
         If the PV was created with '--metadacopies 0', lvm will do some
         scanning of devices to determine from their metadata which VG
         this PV belongs to.
@@ -301,16 +308,24 @@ def pvinfo(device):
     args = ["pvs",
             "--unit=k", "--nosuffix", "--nameprefixes",
             "--unquoted", "--noheadings",
-            "-opv_uuid,pe_start,vg_name,vg_uuid,vg_size,vg_free,vg_extent_size,vg_extent_count,vg_free_count,pv_count"] + \
-            _getConfigArgs(read_only_locking=True) + \
-            [device]
+            "-opv_name,pv_uuid,pe_start,vg_name,vg_uuid,vg_size,vg_free,"
+            "vg_extent_size,vg_extent_count,vg_free_count,pv_count"] + \
+            _getConfigArgs(read_only_locking=True)
+
+    if device:
+        args.append(device)
 
     buf = util.capture_output(["lvm"] + args)
-    info = parse_lvm_vars(buf)
-    if len(info.keys()) != 10:
-        raise LVMError(_("pvinfo failed for %s" % device))
+    pvs = {}
+    for line in buf.splitlines():
+        info = parse_lvm_vars(line)
+        if len(info.keys()) != 11:
+            log.warning("ignoring pvs output line: %s", line)
+            continue
 
-    return info
+        pvs[info["LVM2_PV_NAME"]] = info
+
+    return pvs
 
 def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
@@ -395,6 +410,11 @@ def vgextend(vg_name, pv):
         raise LVMError("vgextend failed for %s: %s" % (vg_name, msg))
 
 def vginfo(vg_name):
+    """ Return a dict with information about an LVM VG.
+
+        :returns: a udev info dict
+        :rtype: dict
+    """
     args = ["vgs", "--noheadings", "--nosuffix", "--nameprefixes", "--unquoted",
             "--units", "m",
             "-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count"] + \
@@ -407,13 +427,22 @@ def vginfo(vg_name):
 
     return info
 
-def lvs(vg_name):
+def lvs(vg_name=None):
+    """ Return a dict with information about LVM LVs.
+
+        :keyword str vgname: name of VG to list LVs from (optional)
+        :returns: a dict with LV name keys and udev info dict values
+        :rtype: dict
+
+        If vg_name is None we let LVM report on all known LVs.
+    """
     args = ["lvs",
             "-a", "--unit", "k", "--nosuffix", "--nameprefixes",
             "--unquoted", "--noheadings",
             "-ovg_name,lv_name,lv_uuid,lv_size,lv_attr,segtype"] + \
-            _getConfigArgs(read_only_locking=True) + \
-            [vg_name]
+            _getConfigArgs(read_only_locking=True)
+    if vg_name:
+        args.append(vg_name)
 
     buf = util.capture_output(["lvm"] + args)
     lvs = {}

@@ -1731,7 +1731,8 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev_device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            info.update(devicelibs.lvm.pvinfo(device.path))
+            pv_info = devicelibs.lvm.pvinfo(device.path)
+            info.update(pv_info.get(device.path, {}))
 
             try:
                 kwargs["vgName"] = udev_device_get_vg_name(info)
