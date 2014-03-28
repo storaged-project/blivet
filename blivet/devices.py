@@ -3988,20 +3988,14 @@ class FileDevice(StorageDevice):
 
     @property
     def path(self):
-        root = ""
         try:
-            status = self.parents[0].format.status
-        except (AttributeError, IndexError):
-            # either this device has no parents or something is wrong with
-            # the first one
-            status = (os.access(self.name, os.R_OK) and
-                      self.parents in ([], None))
-        else:
-            # this is the actual active mountpoint
             root = self.parents[0].format._mountpoint
+            mountpoint = self.parents[0].format.mountpoint
+        except (AttributeError, IndexError):
+            root = ""
+        else:
             # trim the mountpoint down to the chroot since we already have
             # the otherwise fully-qualified path
-            mountpoint = self.parents[0].format.mountpoint
             while mountpoint.endswith("/"):
                 mountpoint = mountpoint[:-1]
             if mountpoint:
