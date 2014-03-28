@@ -69,18 +69,15 @@ class fcoe(object):
 
     def _startEDD(self):
         try:
-            rc = util.capture_output(["/usr/libexec/fcoe/fcoe_edd.sh", "-i"])
+            buf = util.capture_output(["/usr/libexec/fcoe/fcoe_edd.sh", "-i"])
         except OSError as e:
-            rc = e.strerror
-
-        if not rc.startswith("NIC="):
-            log.info("No FCoE EDD info found: %s", rc.rstrip())
+            log.info("Failed to read FCoE EDD info: %s", e.strerror)
             return
 
-        (key, val) = rc.strip().split("=", 1) 
-        #if val not in isys.getDeviceProperties():
-        #    log.error("Unknown FCoE NIC found in EDD: %s, ignoring", val)
-        #    return
+        (key, _equals, val) = buf.strip().partition("=")
+        if not val or key != "NIC":
+            log.info("No FCoE EDD info found: %s", buf.rstrip())
+            return
 
         log.info("FCoE NIC found in EDD: %s", val)
         self.addSan(val, dcb=True, auto_vlan=True)
