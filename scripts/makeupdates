@@ -148,16 +148,16 @@ def main(argv):
     cwd = os.getcwd()
     spec = os.path.realpath(cwd + '/python-blivet.spec')
     updates = cwd + '/updates'
-    keep, compile, help, unknown = False, False, False, False
+    keep, help, unknown = False, False, False
     tag = None
     opts = []
     offset = 0
     add_rpms = []
 
     try:
-        opts, _args = getopt.getopt(sys.argv[1:], 'a:t:o:kc?',
+        opts, _args = getopt.getopt(sys.argv[1:], 'a:t:o:k?',
                                    ['add=', 'tag=', 'offset=',
-                                    'keep', 'compile', 'help'])
+                                    'keep', 'help'])
     except getopt.GetoptError:
         help = True
 
