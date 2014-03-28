@@ -90,9 +90,7 @@ def create_graph(items, edges):
 
     return graph 
 
-
-if __name__ == "__main__":
-
+def main():
     items = [5, 2, 3, 4, 1]
     edges = [(1, 2), (2, 4), (4, 5), (3, 2)]
 
@@ -102,3 +100,5 @@ if __name__ == "__main__":
     graph = create_graph(items, edges)
     print tsort(graph)
 
+if __name__ == "__main__":
+    main()
