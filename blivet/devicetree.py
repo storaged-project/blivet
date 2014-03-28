@@ -28,7 +28,15 @@ import pprint
 import copy
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
-from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice, FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice, PartitionDevice, ZFCPDiskDevice, devicePathToName, iScsiDiskDevice
+from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice
+from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
+from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
+from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
+from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
+from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice
+from .devices import MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice
+from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
+from .devices import devicePathToName
 from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
 from . import formats
 from .formats import getFormat
@@ -1391,6 +1399,7 @@ class DeviceTree(object):
 
             lv_class = LVMLogicalVolumeDevice
             lv_parents = [vg_device]
+            lv_kwargs = {}
             name = "%s-%s" % (vg_name, lv_name)
 
             if self.getDeviceByName(name):
@@ -1407,17 +1416,16 @@ class DeviceTree(object):
                     return
 
                 if origin_name.endswith("_vorigin]"):
-                    log.info("snapshot volume '%s' has vorigin", name)
-                    vg_device.voriginSnapshots[lv_name] = lv_size
-                    return
+                    lv_kwargs["vorigin"] = True
+                    origin = None
+                else:
+                    origin_device_name = "%s-%s" % (vg_name, origin_name)
+                    addRequiredLV(origin_device_name,
+                                  "failed to locate origin lv")
+                    origin = self.getDeviceByName(origin_device_name)
 
-                origin_device_name = "%s-%s" % (vg_name, origin_name)
-                addRequiredLV(origin_device_name, "failed to locate origin lv")
-                origin = self.getDeviceByName(origin_device_name)
-                log.debug("adding %s to %s snapshot total", lv_size,
-                                                            origin.name)
-                origin.snapshotSpace += lv_size
-                return
+                lv_kwargs["origin"] = origin
+                lv_class = LVMSnapShotDevice
             elif lv_attr[0] == 'v':
                 # skip vorigins
                 return
@@ -1454,19 +1462,37 @@ class DeviceTree(object):
                 pool_name = lvm.thinlvpoolname(vg_name, lv_name)
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
                 addRequiredLV(pool_device_name, "failed to look up thin pool")
-                lv_class = LVMThinLogicalVolumeDevice
+
+                origin_name = lvm.lvorigin(vg_name, lv_name)
+                if origin_name:
+                    origin_device_name = "%s-%s" % (vg_name, origin_name)
+                    addRequiredLV(origin_device_name, "failed to locate origin lv")
+                    origin = self.getDeviceByName(origin_device_name)
+                    lv_kwargs["origin"] = origin
+                    lv_class = LVMThinSnapShotDevice
+                else:
+                    lv_class = LVMThinLogicalVolumeDevice
+
                 lv_parents = [self.getDeviceByName(pool_device_name)]
             elif lv_name.endswith(']'):
                 # Internal LVM2 device
                 return
-            elif lv_attr[0] not in '-mMrR':
+            elif lv_attr[0] not in '-mMrRoO':
+                # Ignore anything else except for the following:
+                #   - normal lv
+                #   m mirrored
+                #   M mirrored without initial sync
+                #   r raid
+                #   R raid without initial sync
+                #   o origin
+                #   O origin with merging snapshot
                 return
 
             lv_dev = self.getDeviceByUuid(lv_uuid)
             if lv_dev is None:
                 lv_device = lv_class(lv_name, parents=lv_parents,
                                      uuid=lv_uuid, size=lv_size,segType=lv_type,
-                                     exists=True)
+                                     exists=True, **lv_kwargs)
                 self._addDevice(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
