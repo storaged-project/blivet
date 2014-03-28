@@ -42,7 +42,6 @@ def tsort(graph):
             raise CyclicGraphError("graph contains cycles")
 
         visited.append(root)
-        i = graph['items'].index(root)
         order.append(root)
         # remove each edge from the root to another node
         for (parent, child) in [e for e in graph['edges'] if e[0] == root]:
