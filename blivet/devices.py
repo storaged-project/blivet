@@ -2287,7 +2287,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # prior to instantiating the superclass.
         self._lvs = []
         self.hasDuplicate = False
-        self._complete = False
+        self._complete = False  # have we found all of this VG's PVs?
         self.pvCount = util.numeric_type(pvCount)
         if exists and not pvCount:
             self._complete = True
@@ -2497,7 +2497,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
             self.setup()
 
         if (self.exists and member.format.exists and
-            len(self.parents) == self.pvCount):
+            len(self.parents) + 1 == self.pvCount):
             self._complete = True
 
     def _removeParent(self, member):
