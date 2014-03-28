@@ -1,6 +1,7 @@
 
 import unittest
 from blivet.devices import ParentList
+from blivet.devices import Device
 
 class ParentListTestCase(unittest.TestCase):
     def testParentList(self):
@@ -51,6 +52,21 @@ class ParentListTestCase(unittest.TestCase):
         pl.remove(4)
         pl.remove(3)
         self.assertRaises(RuntimeError, pl.remove, 2)
+
+    def testDeviceParents(self):
+        """ Verify that Device.parents functions as expected. """
+        dev1 = Device("dev1", [])
+        self.assertEqual(len(dev1.parents), 0)
+        self.assertIsInstance(dev1.parents, ParentList)
+        dev2 = Device("dev2")
+        dev3 = Device("dev3", [dev1])
+        self.assertEqual(len(dev3.parents), 1)
+        dev3.parents.remove(dev1)
+        self.assertEqual(len(dev3.parents), 0)
+        dev3.parents.append(dev1)
+        self.assertEqual(len(dev3.parents), 1)
+        dev3.parents.append(dev2)
+        self.assertEqual(len(dev3.parents), 2)
 
 
 def suite():
