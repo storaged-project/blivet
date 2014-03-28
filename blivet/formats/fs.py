@@ -688,9 +688,6 @@ class FS(DeviceFormat):
         uuid = util.capture_output(["uuidgen"]).strip()
         return uuid
 
-    def writeRandomUUID(self):
-        raise NotImplementedError("FS does not implement writeRandomUUID")
-
     @property
     def needsFSCheck(self):
         return False
@@ -917,22 +914,6 @@ class Ext2FS(FS):
                 msg += "\n" + _(self._fsckErrors[errorCode])
 
         return msg.strip()
-
-    def writeRandomUUID(self):
-        if not self.exists:
-            raise FSError("filesystem does not exist")
-
-        err = None
-        try:
-            rc = util.run_program(["tune2fs", "-U", "random", self.device])
-        except OSError as e:
-            err = str(e)
-        else:
-            if rc:
-                err = rc
-
-        if err:
-            raise FSError("failed to set UUID for %s: %s" % (self.device, err))
 
     def _getMinSize(self, info=None):
         """ Set the minimum size for this filesystem in MiB.
