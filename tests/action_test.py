@@ -246,13 +246,13 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(lv_swap, None)
         orig_format = lv_swap.format
         self.assertEqual(lv_swap.format.type, "swap")
-        a = blivet.deviceaction.ActionDestroyFormat(lv_swap)
+        blivet.deviceaction.ActionDestroyFormat(lv_swap)
         self.assertEqual(lv_swap.format.type, None)
 
         # instantiation of format create action for device causes new format
         # to be accessible via device's format attribute
         new_format = getFormat("vfat", device=lv_swap.path)
-        a = blivet.deviceaction.ActionCreateFormat(lv_swap, new_format)
+        blivet.deviceaction.ActionCreateFormat(lv_swap, new_format)
         self.assertEqual(lv_swap.format, new_format)
         lv_swap.format = orig_format
 
