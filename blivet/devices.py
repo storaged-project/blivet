@@ -2553,6 +2553,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
         log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
 
+        # snapshot accounting
+        origin = getattr(lv, "origin", None)
+        if origin:
+            origin.snapshots.append(lv)
+
     def _removeLogVol(self, lv):
         """ Remove an LV from this VG. """
         if lv not in self.lvs:
@@ -2562,6 +2567,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         if self.poolMetaData and not self.thinpools:
             self.poolMetaData = 0
+
+        # snapshot accounting
+        origin = getattr(lv, "origin", None)
+        if origin:
+            origin.snapshots.remove(lv)
 
     def _addParent(self, member):
         super(LVMVolumeGroupDevice, self)._addParent(member)
@@ -2816,6 +2826,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         self.metaDataSize = 0
         self.singlePV = singlePV
         self.segType = segType or "linear"
+        self.snapshots = []
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -3029,6 +3040,15 @@ class LVMLogicalVolumeDevice(DMDevice):
         udev.udev_settle()
         lvm.lvresize(self.vg.name, self._name, self.size)
 
+    @property
+    def isleaf(self):
+        # Thin snapshots do not need to be removed prior to removal of the
+        # origin, but the old snapshots do.
+        non_thin_snapshots = any(s for s in self.snapshots
+                                    if not isinstance(s, LVMThinSnapShotDevice))
+        return (super(LVMLogicalVolumeDevice, self).isleaf and
+                not non_thin_snapshots)
+
     def dracutSetupArgs(self):
         # Note no mapName usage here, this is a lvm cmdline name, which
         # is different (ofcourse)
@@ -3095,6 +3115,175 @@ class LVMLogicalVolumeDevice(DMDevice):
                 return False
 
         return True
+
+class LVMSnapShotBase(object):
+    """ Abstract base class for lvm snapshots
+
+        This class is intended to be used with multiple inheritance in addition
+        to some subclass of :class:`~.StorageDevice`.
+
+        Snapshots do not have their origin/source volume as parent. They are
+        like other LVs except that they have an origin attribute and are in that
+        instance's snapshots list.
+
+        Normal/old snapshots must be removed with their origin, while thin
+        snapshots can remain after their origin is removed.
+
+        It is also impossible to set the format for a snapshot explicitly as it
+        always has the same format as its origin.
+    """
+    _type = "lvmsnapshotbase"
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, origin=None, vorigin=False, exists=False):
+        """
+            :keyword :class:`~.LVMLogicalVolumeDevice` origin: source volume
+            :keyword bool vorigin: is this a vorigin snapshot?
+            :keyword bool exists: is this an existing snapshot?
+
+            vorigin is a special type of device that makes use of snapshots to
+            create a sparse device. These snapshots have no origin lv, instead
+            using space in the vg directly. Only preexisting vorigin snapshots
+            are supported here.
+        """
+        self._originSpecifiedCheck(origin, vorigin, exists)
+        self._originTypeCheck(origin)
+        self._originExistenceCheck(origin)
+        self._voriginExistenceCheck(vorigin, exists)
+
+        self.origin = origin
+        """ the snapshot's source volume """
+
+        self.vorigin = vorigin
+        """ a boolean flag indicating a vorigin snapshot """
+
+    def _originSpecifiedCheck(self, origin, vorigin, exists):
+        # pylint: disable=unused-argument
+        if not origin and not vorigin:
+            raise ValueError("lvm snapshot devices require an origin lv")
+
+    def _originTypeCheck(self, origin):
+        if origin and not isinstance(origin, LVMLogicalVolumeDevice):
+            raise ValueError("lvm snapshot origin must be a logical volume")
+
+    def _originExistenceCheck(self, origin):
+        if origin and not origin.exists:
+            raise ValueError("lvm snapshot origin volume must already exist")
+
+    def _voriginExistenceCheck(self, vorigin, exists):
+        if vorigin and not exists:
+            raise ValueError("only existing vorigin snapshots are supported")
+
+    def _setFormat(self, fmt):
+        pass
+
+    def _getFormat(self):
+        if self.origin is None:
+            fmt = getFormat(None)
+        else:
+            fmt = self.origin.format
+        return fmt
+
+    @abc.abstractmethod
+    def _create(self):
+        """ Create the device. """
+        raise NotImplementedError()
+
+    def merge(self):
+        """ Merge the snapshot back into its origin volume. """
+        log_method_call(self, self.name, status=self.status) # pylint: disable=no-member
+        self.vg.setup()    # pylint: disable=no-member
+        try:
+            self.origin.teardown()
+        except errors.FSError:
+            # the merge will begin based on conditions described in the --merge
+            # section of lvconvert(8)
+            pass
+
+        try:
+            self.teardown() # pylint: disable=no-member
+        except errors.FSError:
+            pass
+
+        udev.udev_settle()
+        lvm.lvsnapshotmerge(self.vg.name, self.lvname) # pylint: disable=no-member
+
+class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
+    """ An LVM snapshot """
+    _type = "lvmsnapshot"
+
+    def __init__(self, name, parents=None, size=None, uuid=None,
+                 copies=1, logSize=0, segType=None,
+                 fmt=None, exists=False, sysfsPath='',
+                 grow=None, maxsize=None, percent=None,
+                 origin=None, vorigin=False):
+        """ Create an LVMSnapShotDevice instance.
+
+            This class is for the old-style (not thin) lvm snapshots. The origin
+            volume cannot be removed without also removing all snapshots (not so
+            for thin snapshots). Also, the snapshot is automatically activated
+            or deactivated with its origin.
+
+            :param str name: the device name (generally a device node basename)
+            :keyword bool exists: does this device exist?
+            :keyword :class:`~.size.Size` size: the device's size
+            :keyword :class:`~.ParentList` parents: list of parent devices
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat`
+            :keyword str sysfsPath: sysfs device path
+            :keyword str uuid: the device UUID
+            :keyword str segType: segment type
+
+            :keyword :class:`~.StorageDevice` origin: the origin/source volume
+            :keyword bool vorigin: is this a vorigin snapshot?
+
+            For non-existent devices only:
+
+            :keyword bool grow: whether to grow this LV
+            :keyword :class:`~.size.Size` maxsize: maximum size for growable LV
+            :keyword int percent: percent of VG space to take
+        """
+        # pylint: disable=unused-argument
+
+        if isinstance(origin, LVMLogicalVolumeDevice) and \
+           isinstance(parents[0], LVMVolumeGroupDevice) and \
+           origin.vg != parents[0]:
+            raise ValueError("lvm snapshot and origin must be in the same vg")
+
+        LVMSnapShotBase.__init__(self, origin=origin, vorigin=vorigin,
+                                 exists=exists)
+
+        LVMLogicalVolumeDevice.__init__(self, name, parents=parents, size=size,
+                                        uuid=uuid, fmt=None, exists=exists,
+                                        copies=copies, logSize=logSize,
+                                        segType=segType,
+                                        sysfsPath=sysfsPath, grow=grow,
+                                        maxsize=maxsize, percent=percent)
+
+    def setup(self, orig=False):
+        pass
+
+    def teardown(self, recursive=False):
+        pass
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        lvm.lvsnapshotcreate(self.vg.name, self._name, self.size,
+                             self.origin.lvname)
+
+    def _destroy(self):
+        """ Destroy the device. """
+        log_method_call(self, self.name, status=self.status)
+        # old-style snapshots' status is tied to the origin's so we never
+        # explicitly activate or deactivate them and we have to tell lvremove
+        # that it is okay to remove the active snapshot
+        lvm.lvremove(self.vg.name, self._name, force=True)
+
+    def dependsOn(self, dep):
+        # pylint: disable=bad-super-call
+        return (self.origin == dep or
+                super(LVMSnapShotBase, self).dependsOn(dep))
 
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
@@ -3263,6 +3452,71 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         super(LVMThinLogicalVolumeDevice, self).populateKSData(data)
         data.thin_volume = True
         data.pool_name = self.pool.lvname
+
+class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
+    """ An LVM Thin Snapshot """
+    _type = "lvmthinsnapshot"
+    _resizable = False
+
+    def __init__(self, name, parents=None, sysfsPath='', origin=None,
+                 fmt=None, uuid=None, size=None, exists=False, segType=None):
+        """
+            :param str name: the name of the device
+            :param :class:`~.ParentList` parents: parent devices
+            :param str sysfsPath: path to this device's /sys directory
+            :keyword origin: the origin(source) volume for the snapshot
+            :type origin: :class:`~.LVMLogicalVolumeDevice` or None
+            :keyword str segType: segment type
+            :keyword :class:`~.formats.DeviceFormat` fmt: this device's format
+            :keyword str uuid: the device UUID
+            :keyword :class:`~.size.Size` size: the device's size
+            :keyword bool exists: is this an existing device?
+
+            LVM thin snapshots can remain after their origin volume is removed,
+            unlike the older-style snapshots.
+        """
+        # pylint: disable=unused-argument
+
+        if isinstance(origin, LVMLogicalVolumeDevice) and \
+           isinstance(parents[0], LVMThinPoolDevice) and \
+           origin.vg != parents[0].vg:
+            raise ValueError("lvm snapshot and origin must be in the same vg")
+
+        if size and not exists:
+            raise ValueError("thin snapshot size is determined automatically")
+
+        LVMSnapShotBase.__init__(self, origin=origin, exists=exists)
+        LVMThinLogicalVolumeDevice.__init__(self, name, parents=parents,
+                                            sysfsPath=sysfsPath,fmt=None,
+                                            segType=segType,
+                                            uuid=uuid, size=size, exists=exists)
+
+    def _originSpecifiedCheck(self, origin, vorigin, exists):
+        if not exists and not origin:
+            raise ValueError("non-existent lvm thin snapshots require an origin")
+
+    def _setup(self, orig=False):
+        """ Open, or set up, a device. """
+        log_method_call(self, self.name, orig=orig, status=self.status,
+                        controllable=self.controllable)
+        lvm.lvactivate(self.vg.name, self._name, ignore_skip=True)
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        pool_name = None
+        if not isinstance(self.origin, LVMThinLogicalVolumeDevice):
+            # if the origin is not a thin volume we need to tell lvm which pool
+            # to use
+            pool_name = self.pool.lvname
+
+        lvm.thinsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
+                               pool_name=pool_name)
+
+    def dependsOn(self, dep):
+        # once a thin snapshot exists it no longer depends on its origin
+        return ((self.origin == dep and not self.exists) or
+                super(LVMThinSnapShotDevice, self).dependsOn(dep))
 
 class MDRaidArrayDevice(ContainerDevice):
     """ An mdraid (Linux RAID) device. """
@@ -4879,7 +5133,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         names = [v.name for v in self.subvolumes]
         self.subvolumes.pop(names.index(name))
 
-    def listSubVolumes(self):
+    def listSubVolumes(self, snapshotsOnly=False):
         subvols = []
         if flags.installer_mode:
             self.setup(orig=True)
@@ -4891,7 +5145,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             return subvols
 
         try:
-            subvols = btrfs.list_subvolumes(self.originalFormat._mountpoint)
+            subvols = btrfs.list_subvolumes(self.originalFormat._mountpoint,
+                                            snapshots_only=snapshotsOnly)
         except errors.BTRFSError as e:
             log.debug("failed to list subvolumes: %s", e)
         else:
@@ -5058,8 +5313,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         if not mountpoint:
             raise RuntimeError("btrfs subvol create requires mounted volume")
 
-        btrfs.create_subvolume(mountpoint, self.name)
-        self.volume._undo_temp_mount()
+        try:
+            btrfs.create_subvolume(mountpoint, self.name)
+        finally:
+            self.volume._undo_temp_mount()
 
     def _postCreate(self):
         super(BTRFSSubVolumeDevice, self)._postCreate()
@@ -5084,3 +5341,69 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
     def isNameValid(cls, name):
         # Override StorageDevice.isNameValid to allow /
         return not('\x00' in name or name == '.' or name == '..')
+
+class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
+    """ A btrfs snapshot pseudo-device.
+
+        BTRFS snapshots are a specialized type of subvolume that contains a
+        source attribute which identifies which subvolume the snapshot was taken
+        from. They do not have to be removed when removing the source subvolume.
+    """
+    _type = "btrfs snapshot"
+
+    def __init__(self, *args, **kwargs):
+        """
+            :param str name: the subvolume name
+            :keyword bool exists: does this device exist?
+            :keyword :class:`~.size.Size` size: the device's size
+            :keyword :class:`~.ParentList` parents: a list of parent devices
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat`
+            :keyword str sysfsPath: sysfs device path
+            :keyword :class:`~.BTRFSDevice` source: the snapshot source
+
+            Snapshot source can be either a subvolume or a top-level volume.
+
+        """
+        source = kwargs.pop("source", None)
+        if not kwargs.get("exists") and not source:
+            # it is possible to remove a source subvol and keep snapshots of it
+            raise ValueError("non-existent btrfs snapshots must have a source")
+
+        if source and not isinstance(source, BTRFSDevice):
+            raise ValueError("btrfs snapshot source must be a btrfs subvolume")
+
+        if source and not source.exists:
+            raise ValueError("btrfs snapshot source must already exist")
+
+        self.source = source
+        """ the snapshot's source subvolume """
+
+        super(BTRFSSnapShotDevice, self).__init__(*args, **kwargs)
+
+        if source and getattr(source, "volume", source) != self.volume:
+            self.volume._removeSubVolume(self.name)
+            self.parents = []
+            raise ValueError("btrfs snapshot and source must be in the same volume")
+
+    def _create(self):
+        log_method_call(self, self.name, status=self.status)
+        self.volume._do_temp_mount()
+        mountpoint = self.volume.format._mountpoint
+        if not mountpoint:
+            raise RuntimeError("btrfs subvol create requires mounted volume")
+
+        if isinstance(self.source, BTRFSVolumeDevice):
+            source_path = mountpoint
+        else:
+            source_path = "%s/%s" % (mountpoint, self.source.name)
+
+        dest_path = "%s/%s" % (mountpoint, self.name)
+        try:
+            btrfs.create_snapshot(source_path, dest_path)
+        finally:
+            self.volume._undo_temp_mount()
+
+    def dependsOn(self, dep):
+        return (dep == self.source or
+                super(BTRFSSnapShotDevice, self).dependsOn(dep))
