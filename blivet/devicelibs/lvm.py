@@ -273,6 +273,22 @@ def pvmove(source, dest=None):
     except LVMError as msg:
         raise LVMError("pvmove failed for %s->%s: %s" % (source, dest, msg))
 
+def parse_lvm_vars(line):
+    info = {}
+    for var in line.split():
+        (name, equals, value) = var.partition("=")
+        if not equals:
+            continue
+
+        if "," in value:
+            val = value.strip().split(",")
+        else:
+            val = value.strip()
+
+        info[name] = val
+
+    return info
+
 def pvinfo(device):
     """
         If the PV was created with '--metadacopies 0', lvm will do some
@@ -289,20 +305,10 @@ def pvinfo(device):
             _getConfigArgs(read_only_locking=True) + \
             [device]
 
-    rc = util.capture_output(["lvm"] + args)
-    _vars = rc.split()
-    info = {}
-    for var in _vars:
-        (name, equals, value) = var.partition("=")
-        if not equals:
-            continue
-
-        if "," in value:
-            val = value.strip().split(",")
-        else:
-            val = value.strip()
-
-        info[name] = val
+    buf = util.capture_output(["lvm"] + args)
+    info = parse_lvm_vars(buf)
+    if len(info.keys()) != 10:
+        raise LVMError(_("pvinfo failed for %s" % device))
 
     return info
 
@@ -394,22 +400,8 @@ def vginfo(vg_name):
             "-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count"] + \
             _getConfigArgs(read_only_locking=True) + [vg_name]
 
-    # TODO: make this a common code reused many functions
     buf = util.capture_output(["lvm"] + args)
-    fields = buf.split()
-    info = {}
-    for field in fields:
-        (name, equals, value) = field.partition("=")
-        if not equals:
-            continue
-
-        if "," in value:
-            val = value.strip().split(",")
-        else:
-            val = value.strip()
-
-        info[name] = val
-
+    info = parse_lvm_vars(buf)
     if len(info.keys()) != 7:
         raise LVMError(_("vginfo failed for %s" % vg_name))
 
