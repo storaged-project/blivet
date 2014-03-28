@@ -180,10 +180,10 @@ class StorageTestCase(unittest.TestCase):
             Return the DeviceAction instance.
         """
         device = kwargs.pop("device")
-	if hasattr(device, "req_disks") and \
-	   len(device.req_disks) == 1 and \
-	   not device.parents:
-	    device.parents = device.req_disks
+        if hasattr(device, "req_disks") and \
+           len(device.req_disks) == 1 and \
+           not device.parents:
+            device.parents = device.req_disks
 
         devicetree = self.storage.devicetree
 
