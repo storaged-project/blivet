@@ -29,8 +29,9 @@ from blivet.deviceaction import ActionDestroyFormat
 from blivet.deviceaction import ActionAddMember
 from blivet.deviceaction import ActionRemoveMember
 
-""" DeviceActionTestSuite """
 class DeviceActionTestCase(StorageTestCase):
+    """ DeviceActionTestSuite """
+
     def setUp(self):
         """ Create something like a preexisting autopart on two disks (sda,sdb).
 
