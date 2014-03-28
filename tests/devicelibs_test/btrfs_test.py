@@ -33,7 +33,7 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
         self.mountpoint = tempfile.mkdtemp()
         rc = subprocess.call(["mount", self.device, self.mountpoint])
         if rc:
-            raise OSError, "mount failed to mount device %s" % device
+            raise OSError("mount failed to mount device %s" % self.device)
 
     def tearDown(self):
         """Before the DevicelibsTestCase cleanup unmount the device and
@@ -46,7 +46,7 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
                 rc = proc.returncode
                 break
         if rc:
-            raise OSError, "failed to unmount device %s" % self.device
+            raise OSError("failed to unmount device %s" % self.device)
 
         os.rmdir(self.mountpoint)
         baseclass.DevicelibsTestCase.tearDown(self)

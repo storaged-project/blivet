@@ -13,7 +13,7 @@ def makeLoopDev(device_name, file_name):
             rc = proc.returncode
             break
     if rc:
-        raise OSError, "dd failed creating the file %s" % file_name
+        raise OSError("dd failed creating the file %s" % file_name)
 
     proc = subprocess.Popen(["losetup", device_name, file_name],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -23,7 +23,7 @@ def makeLoopDev(device_name, file_name):
             rc = proc.returncode
             break
     if rc:
-        raise OSError, "losetup failed setting up the loop device %s" % device_name
+        raise OSError("losetup failed setting up the loop device %s" % device_name)
 
 def removeLoopDev(device_name, file_name):
     proc = subprocess.Popen(["losetup", "-d", device_name],
@@ -34,7 +34,7 @@ def removeLoopDev(device_name, file_name):
             rc = proc.returncode
             break
     if rc:
-        raise OSError, "losetup failed removing the loop device %s" % device_name
+        raise OSError("losetup failed removing the loop device %s" % device_name)
 
     os.unlink(file_name)
 
@@ -54,7 +54,7 @@ def getFreeLoopDev():
             break
 
     if rc:
-        raise OSError, "losetup failed to find a free device"
+        raise OSError("losetup failed to find a free device")
 
     return out
 
