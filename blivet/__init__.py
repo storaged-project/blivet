@@ -3170,7 +3170,7 @@ def parseFSTab(devicetree, chroot=None):
             if len(fields) < 5:
                 continue
 
-            (devspec, mountpoint, fstype, options, rest) = fields
+            (devspec, mountpoint, fstype, options, _rest) = fields
 
             # find device in the tree
             device = devicetree.resolveDevice(devspec,
