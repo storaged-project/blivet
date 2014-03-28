@@ -2299,11 +2299,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.peSize = util.numeric_type(peSize)
         self.peCount = util.numeric_type(peCount)
         self.peFree = util.numeric_type(peFree)
-        self.lv_names = []
-        self.lv_uuids = []
-        self.lv_sizes = []
-        self.lv_attr = []
-        self.lv_types = []
         self.reserved_percent = 0
         self.reserved_space = Size(bytes=0)
 
@@ -2328,7 +2323,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         s = super(LVMVolumeGroupDevice, self).__repr__()
         s += ("  free = %(free)s  PE Size = %(peSize)s  PE Count = %(peCount)s\n"
               "  PE Free = %(peFree)s  PV Count = %(pvCount)s\n"
-              "  LV Names = %(lv_names)s  modified = %(modified)s\n"
+              "  modified = %(modified)s"
               "  extents = %(extents)s  free space = %(freeSpace)s\n"
               "  free extents = %(freeExtents)s"
               "  reserved percent = %(rpct)s  reserved space = %(res)s\n"
@@ -2336,7 +2331,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
               "  LVs = %(lvs)s" %
               {"free": self.free, "peSize": self.peSize, "peCount": self.peCount,
                "peFree": self.peFree, "pvCount": self.pvCount,
-               "lv_names": self.lv_names, "modified": self.isModified,
+               "modified": self.isModified,
                "extents": self.extents, "freeSpace": self.freeSpace,
                "freeExtents": self.freeExtents,
                "rpct": self.reserved_percent, "res": self.reserved_space,
@@ -2352,10 +2347,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
                   "pvCount": self.pvCount, "extents": self.extents,
                   "freeSpace": self.freeSpace,
                   "freeExtents": self.freeExtents,
-                  "lv_names": self.lv_names,
-                  "lv_uuids": self.lv_uuids,
-                  "lv_sizes": self.lv_sizes,
-                  "lv_attr": self.lv_attr,
                   "reserved_percent": self.reserved_percent,
                   "reserved_space": self.reserved_space,
                   "lvNames": [lv.name for lv in self.lvs]})

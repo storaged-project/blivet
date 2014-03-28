@@ -1281,11 +1281,25 @@ class DeviceTree(object):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
 
-        lv_names = vg_device.lv_names
-        lv_uuids = vg_device.lv_uuids
-        lv_sizes = vg_device.lv_sizes
-        lv_attrs = vg_device.lv_attr
-        lv_types = vg_device.lv_types
+        info = devicelibs.lvm.lvs(vg_name)
+
+        # Now we add any lv info found in this pv to the vg_device, we
+        # do this for all pvs as pvs only contain lv info for lvs which they
+        # contain themselves
+        try:
+            lv_names = udev_device_get_lv_names(info)
+            lv_uuids = udev_device_get_lv_uuids(info)
+            lv_sizes = udev_device_get_lv_sizes(info)
+            lv_attr = udev_device_get_lv_attr(info)
+            lv_types = udev_device_get_lv_types(info)
+        except KeyError as e:
+            log.warning("invalid data for %s: %s", device.name, e)
+            return
+
+        for i in range(len(lv_names)):
+            name = "%s-%s" % (vg_name, lv_names[i])
+            if name not in self.names:
+                self.names.append(name)
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s", vg_name)
@@ -1426,12 +1440,13 @@ class DeviceTree(object):
         # make a list of indices with mirror volumes up front and snapshots at
         # the end
         indices = range(len(lv_names))
-        indices.sort(key=lambda i: lv_attrs[i], cmp=lv_attr_cmp)
+        indices.sort(key=lambda i: lv_attr[i], cmp=lv_attr_cmp)
+        lv_real_names = [n.replace("[", "").replace("]", "") for n in lv_names]
         raid = dict([("%s-%s" % (vg_device.name,
                                  n.replace("[", "").replace("]", "")),
                       {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
                      for n in lv_names])
-        lv_data = zip(lv_names, lv_uuids, lv_attrs, lv_sizes, lv_types)
+        lv_data = zip(lv_names, lv_uuids, lv_attr, lv_sizes, lv_types)
         for i in range(len(lv_data)):
             addLV(*lv_data[i])
 
@@ -1489,36 +1504,6 @@ class DeviceTree(object):
                                              pvCount=pv_count,
                                              exists=True)
             self._addDevice(vg_device)
-
-        info.update(lvm.lvs(vg_name))
-
-        # Now we add any lv info found in this pv to the vg_device, we
-        # do this for all pvs as pvs only contain lv info for lvs which they
-        # contain themselves
-        try:
-            lv_names = udev_device_get_lv_names(info)
-            lv_uuids = udev_device_get_lv_uuids(info)
-            lv_sizes = udev_device_get_lv_sizes(info)
-            lv_attr = udev_device_get_lv_attr(info)
-            lv_types = udev_device_get_lv_types(info)
-        except KeyError as e:
-            log.warning("invalid data for %s: %s", device.name, e)
-            return
-
-        for i in range(len(lv_names)):
-            # Skip empty and already added lvs
-            if not lv_names[i] or lv_names[i] in vg_device.lv_names:
-                continue
-
-            vg_device.lv_names.append(lv_names[i])
-            vg_device.lv_uuids.append(lv_uuids[i])
-            vg_device.lv_sizes.append(lv_sizes[i])
-            vg_device.lv_attr.append(lv_attr[i])
-            vg_device.lv_types.append(lv_types[i])
-
-            name = "%s-%s" % (vg_name, lv_names[i])
-            if name not in self.names:
-                self.names.append(name)
 
         self.handleVgLvs(vg_device)
 
