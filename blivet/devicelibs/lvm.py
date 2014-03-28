@@ -454,7 +454,9 @@ def lvorigin(vg_name, lv_name):
 
     return origin
 
-def lvcreate(vg_name, lv_name, size, pvs=[]):
+def lvcreate(vg_name, lv_name, size, pvs=None):
+    pvs = pvs or []
+
     args = ["lvcreate"] + \
             ["-L", "%dm" % size.convertTo(spec="mib")] + \
             ["-n", lv_name] + \
