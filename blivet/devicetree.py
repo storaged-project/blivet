@@ -128,6 +128,9 @@ class DeviceTree(object):
 
         self.unusedRaidMembers = []
 
+        # initialize attributes that may later hold cached lvm info
+        self.dropLVMCache()
+
         self.__passphrases = []
         if passphrase:
             self.__passphrases.append(passphrase)
@@ -160,6 +163,25 @@ class DeviceTree(object):
     def addIgnoredDisk(self, disk):
         self.ignoredDisks.append(disk)
         devicelibs.lvm.lvm_cc_addFilterRejectRegexp(disk)
+
+    @property
+    def pvInfo(self):
+        if self._pvInfo is None:
+            self._pvInfo = devicelibs.lvm.pvinfo()
+
+        return self._pvInfo
+
+    @property
+    def lvInfo(self):
+        if self._lvInfo is None:
+            self._lvInfo = devicelibs.lvm.lvs()
+
+        return self._lvInfo
+
+    def dropLVMCache(self):
+        """ Drop cached lvm information. """
+        self._pvInfo = None
+        self._lvInfo = None
 
     def pruneActions(self):
         """ Remove redundant/obsolete actions from the action list. """
@@ -1280,7 +1302,9 @@ class DeviceTree(object):
     def handleVgLvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
-        lv_info = devicelibs.lvm.lvs(vg_name)
+        lv_info = dict((k, v) for (k, v) in self.lvInfo.iteritems()
+                                if udev_device_get_vg_name(v) == vg_name)
+
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
 
         if not vg_device.complete:
@@ -1731,8 +1755,7 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev_device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            pv_info = devicelibs.lvm.pvinfo(device.path)
-            info.update(pv_info.get(device.path, {}))
+            info.update(self.pvInfo.get(device.path, {}))
 
             try:
                 kwargs["vgName"] = udev_device_get_vg_name(info)
@@ -2016,6 +2039,8 @@ class DeviceTree(object):
 
         # this has proven useful when populating after opening a LUKS device
         udev_settle()
+
+        self.dropLVMCache()
 
         if flags.installer_mode and not flags.image_install:
             devicelibs.mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
