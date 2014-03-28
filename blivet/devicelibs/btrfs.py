@@ -115,20 +115,23 @@ def delete_subvolume(mountpoint, name):
     args = ["subvol", "delete", path]
     return btrfs(args)
 
-_SUBVOL_REGEX_STR = r'ID (\d+) gen \d+ parent (\d+) top level \d+ path (.+)\n'
+_SUBVOL_REGEX_STR = r'ID (?P<id>\d+) gen \d+ (cgen \d+ )?parent (?P<parent>\d+) top level \d+ (otime \d{4}-\d{2}-\d{2} \d\d:\d\d:\d\d )?path (?P<path>.+)\n'
 _SUBVOL_REGEX = re.compile(_SUBVOL_REGEX_STR)
 
 # get a list of subvolumes from a mounted btrfs filesystem
-def list_subvolumes(mountpoint):
+def list_subvolumes(mountpoint, snapshots_only=False):
     if not os.path.ismount(mountpoint):
         raise ValueError("volume not mounted")
 
     args = ["subvol", "list", "-p", mountpoint]
+    if snapshots_only:
+        args.insert(2, "-s")
+
     buf = btrfs(args, capture=True)
     vols = []
-    for group in _SUBVOL_REGEX.findall(buf):
-        vols.append({"id": int(group[0]), "parent": int(group[1]),
-                     "path": group[2]})
+    for m in _SUBVOL_REGEX.finditer(buf):
+        vols.append({"id": int(m.group('id')), "parent": int(m.group('parent')),
+                     "path": m.group('path')})
 
     return vols
 
@@ -145,6 +148,13 @@ def get_default_subvolume(mountpoint):
         raise BTRFSError("failed to get default subvolume from %s" % mountpoint)
 
     return default
+
+def create_snapshot(source, dest):
+    if not os.path.ismount(source):
+        raise ValueError("source is not a mounted subvolume")
+
+    args = ["subvol", "snapshot", source, dest]
+    return btrfs(args)
 
 _DEVICE_REGEX_STR = r'devid[ \t]+(\d+)[ \t]+size[ \t]+(\S+)[ \t]+used[ \t]+(\S+)[ \t]+path[ \t]+(\S+)\n'
 _DEVICE_REGEX = re.compile(_DEVICE_REGEX_STR)

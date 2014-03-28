@@ -523,6 +523,38 @@ def lvdeactivate(vg_name, lv_name):
     except LVMError as msg:
         raise LVMError("lvdeactivate failed for %s: %s" % (lv_name, msg))
 
+def lvsnapshotmerge(vg_name, lv_name):
+    """ Merge(/rollback/revert) a snapshot volume into its origin.
+
+        .. note::
+
+            This is an asynchronous procedure. See lvconvert(8) for details of
+            how merge is handled by lvm.
+
+    """
+    args = ["lvconvert", "--merge", "%s/%s" % (vg_name, lv_name)]
+    args += _getConfigArgs() + [lv_name]
+
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("lvsnapshotmerge failed for %s: %s" % (lv_name, msg))
+
+def lvsnapshotcreate(vg_name, snap_name, size, origin_name):
+    """
+        :param str vg_name: the volume group name
+        :param str snap_name: the name of the new snapshot
+        :param :class:`~.size.Size` size: the snapshot's size
+        :param str origin_name: the name of the origin logical volume
+    """
+    args = ["lvcreate", "-s", "-L", "%dm" % size.convertTo(spec="MiB"),
+            "-n", snap_name] + _getConfigArgs() + ["%s/%s" % (vg_name, origin_name)]
+
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("lvsnapshotcreate failed for %s/%s: %s" % (vg_name, snap_name, msg))
+
 def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, lv_name),
             "--size", "%dm" % size.convertTo(spec="mib")]
@@ -552,6 +584,21 @@ def thinlvcreate(vg_name, pool_name, lv_name, size):
         lvm(args)
     except LVMError as msg:
         raise LVMError("lvcreate failed for %s/%s: %s" % (vg_name, lv_name, msg))
+
+def thinsnapshotcreate(vg_name, snap_name, origin_name, pool_name=None):
+    """
+        :param str vg_name: the volume group name
+        :param str snap_name: the name of the new snapshot
+        :param str origin_name: the name of the origin logical volume
+        :keyword str pool_name: the name of the pool to create the snapshot in
+    """
+    args = ["lvcreate", "-s", "-n", snap_name, "%s/%s" % (vg_name, origin_name)]
+    if pool_name:
+        args.extend(["--thinpool", pool_name])
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("lvcreate (snapshot) failed for %s/%s: %s" % (vg_name, snap_name, msg))
 
 def thinlvpoolname(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "pool_lv"] + \
