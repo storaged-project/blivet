@@ -34,13 +34,8 @@ class FSLabelApp(object):
     name = abc.abstractproperty(
        doc="The name of the filesystem labeling application.")
 
-    @abc.abstractproperty
-    def reads(self):
-        """Returns True if this app can also read a label.
-
-           :rtype: bool
-        """
-        raise NotImplementedError
+    reads = abc.abstractproperty(
+        doc="Whether this application can read a label as well as write one.")
 
     @abc.abstractmethod
     def _writeLabelArgs(self, fs):
@@ -122,10 +117,7 @@ class E2Label(FSLabelApp):
     """Application used by ext2 and its descendants."""
 
     name = property(lambda s: "e2label")
-
-    @property
-    def reads(self):
-        return True
+    reads = property(lambda s: True)
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
@@ -140,10 +132,7 @@ class DosFsLabel(FSLabelApp):
     """Application used by FATFS."""
 
     name = property(lambda s: "dosfslabel")
-
-    @property
-    def reads(self):
-        return True
+    reads = property(lambda s: True)
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
@@ -158,10 +147,7 @@ class JFSTune(FSLabelApp):
     """Application used by JFS."""
 
     name = property(lambda s: "jfs_tune")
-
-    @property
-    def reads(self):
-        return False
+    reads = property(lambda s: False)
 
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label, fs.device]
@@ -176,10 +162,7 @@ class ReiserFSTune(FSLabelApp):
     """Application used by ReiserFS."""
 
     name = property(lambda s: "reiserfstune")
-
-    @property
-    def reads(self):
-        return False
+    reads = property(lambda s: False)
 
     def _writeLabelArgs(self, fs):
         return ["-l", fs.label, fs.device]
@@ -194,10 +177,7 @@ class XFSAdmin(FSLabelApp):
     """Application used by XFS."""
 
     name = property(lambda s: "xfs_admin")
-
-    @property
-    def reads(self):
-        return True
+    reads = property(lambda s: True)
 
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label if fs.label != "" else "--", fs.device]
@@ -212,10 +192,7 @@ class NTFSLabel(FSLabelApp):
     """Application used by NTFS."""
 
     name = property(lambda s: "ntfslabel")
-
-    @property
-    def reads(self):
-        return True
+    reads = property(lambda s: True)
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
