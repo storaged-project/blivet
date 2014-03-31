@@ -30,15 +30,9 @@ class FSLabelApp(object):
     """
 
     __metaclass__ = abc.ABCMeta
-    _name = None
 
-    @property
-    def name(self):
-        """The name of the filesystem labeling application.
-
-           :rtype: str
-        """
-        return self._name
+    name = abc.abstractproperty(
+       doc="The name of the filesystem labeling application.")
 
     @abc.abstractproperty
     def reads(self):
@@ -127,7 +121,7 @@ class FSLabelApp(object):
 class E2Label(FSLabelApp):
     """Application used by ext2 and its descendants."""
 
-    _name = "e2label"
+    name = property(lambda s: "e2label")
 
     @property
     def reads(self):
@@ -145,7 +139,7 @@ class E2Label(FSLabelApp):
 class DosFsLabel(FSLabelApp):
     """Application used by FATFS."""
 
-    _name = "dosfslabel"
+    name = property(lambda s: "dosfslabel")
 
     @property
     def reads(self):
@@ -163,7 +157,7 @@ class DosFsLabel(FSLabelApp):
 class JFSTune(FSLabelApp):
     """Application used by JFS."""
 
-    _name = "jfs_tune"
+    name = property(lambda s: "jfs_tune")
 
     @property
     def reads(self):
@@ -181,7 +175,7 @@ class JFSTune(FSLabelApp):
 class ReiserFSTune(FSLabelApp):
     """Application used by ReiserFS."""
 
-    _name = "reiserfstune"
+    name = property(lambda s: "reiserfstune")
 
     @property
     def reads(self):
@@ -199,7 +193,7 @@ class ReiserFSTune(FSLabelApp):
 class XFSAdmin(FSLabelApp):
     """Application used by XFS."""
 
-    _name = "xfs_admin"
+    name = property(lambda s: "xfs_admin")
 
     @property
     def reads(self):
@@ -217,9 +211,7 @@ class XFSAdmin(FSLabelApp):
 class NTFSLabel(FSLabelApp):
     """Application used by NTFS."""
 
-    @property
-    def name(self):
-        return "ntfslabel"
+    name = property(lambda s: "ntfslabel")
 
     @property
     def reads(self):
