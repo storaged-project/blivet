@@ -37,6 +37,9 @@ class FSLabelApp(object):
     reads = abc.abstractproperty(
         doc="Whether this application can read a label as well as write one.")
 
+    _label_regex = abc.abstractproperty(
+        doc="Matches the string output by the label reading application.")
+
     @abc.abstractmethod
     def _writeLabelArgs(self, fs):
         """Returns a list of the arguments for writing a label.
@@ -73,16 +76,6 @@ class FSLabelApp(object):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def _labelstrRegex(self):
-        """Returns a regular expression to match against output of file
-           label reading application to extract label.
-
-           :return: the regular expressions
-           :rtype: str
-        """
-        raise NotImplementedError
-
     def readLabelCommand(self, fs):
         """Get the command to read the filesystem label.
 
@@ -106,9 +99,9 @@ class FSLabelApp(object):
 
            Raises an FSError if the label can not be extracted.
         """
-        if not self.reads:
+        if not self.reads or self._label_regex is None:
             raise errors.FSError("Unknown format for application %s" % self.name)
-        match = re.match(self._labelstrRegex(), labelstr)
+        match = re.match(self._label_regex, labelstr)
         if match is None:
             raise errors.FSError("Unknown format for application %s" % self.name)
         return match.group('label')
@@ -119,14 +112,13 @@ class E2Label(FSLabelApp):
     name = property(lambda s: "e2label")
     reads = property(lambda s: True)
 
+    _label_regex = property(lambda s: r'(?P<label>.*)')
+
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
 
     def _readLabelArgs(self, fs):
         return [fs.device]
-
-    def _labelstrRegex(self):
-        return r'(?P<label>.*)'
 
 class DosFsLabel(FSLabelApp):
     """Application used by FATFS."""
@@ -134,14 +126,13 @@ class DosFsLabel(FSLabelApp):
     name = property(lambda s: "dosfslabel")
     reads = property(lambda s: True)
 
+    _label_regex = property(lambda s: r'(?P<label>.*)')
+
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
 
     def _readLabelArgs(self, fs):
         return [fs.device]
-
-    def _labelstrRegex(self):
-        return r'(?P<label>.*)'
 
 class JFSTune(FSLabelApp):
     """Application used by JFS."""
@@ -149,13 +140,12 @@ class JFSTune(FSLabelApp):
     name = property(lambda s: "jfs_tune")
     reads = property(lambda s: False)
 
+    _label_regex = property(lambda s: None)
+
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label, fs.device]
 
     def _readLabelArgs(self, fs):
-        raise NotImplementedError
-
-    def _labelstrRegex(self):
         raise NotImplementedError
 
 class ReiserFSTune(FSLabelApp):
@@ -164,13 +154,12 @@ class ReiserFSTune(FSLabelApp):
     name = property(lambda s: "reiserfstune")
     reads = property(lambda s: False)
 
+    _label_regex = property(lambda s: None)
+
     def _writeLabelArgs(self, fs):
         return ["-l", fs.label, fs.device]
 
     def _readLabelArgs(self, fs):
-        raise NotImplementedError
-
-    def _labelstrRegex(self):
         raise NotImplementedError
 
 class XFSAdmin(FSLabelApp):
@@ -179,14 +168,13 @@ class XFSAdmin(FSLabelApp):
     name = property(lambda s: "xfs_admin")
     reads = property(lambda s: True)
 
+    _label_regex = property(lambda s: r'label = "(?P<label>.*)"')
+
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label if fs.label != "" else "--", fs.device]
 
     def _readLabelArgs(self, fs):
         return ["-l", fs.device]
-
-    def _labelstrRegex(self):
-        return r'label = "(?P<label>.*)"'
 
 class NTFSLabel(FSLabelApp):
     """Application used by NTFS."""
@@ -194,11 +182,10 @@ class NTFSLabel(FSLabelApp):
     name = property(lambda s: "ntfslabel")
     reads = property(lambda s: True)
 
+    _label_regex = property(lambda s: r'label = "(?P<label>.*)"')
+
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
 
     def _readLabelArgs(self, fs):
         return [fs.device]
-
-    def _labelstrRegex(self):
-        return r'label = "(?P<label>.*)"'
