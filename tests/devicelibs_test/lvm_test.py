@@ -148,11 +148,11 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvinfo
         ##
         # pass
-        self.assertEqual(lvm.pvinfo(_LOOP_DEV0)["LVM2_VG_NAME"], self._vg_name) 
+        self.assertEqual(lvm.pvinfo(device=_LOOP_DEV0)[_LOOP_DEV0]["LVM2_VG_NAME"], self._vg_name) 
         # no vg
-        self.assertEqual(lvm.pvinfo(_LOOP_DEV1)["LVM2_VG_NAME"], "")
+        self.assertEqual(lvm.pvinfo(device=_LOOP_DEV1)[_LOOP_DEV1]["LVM2_VG_NAME"], "")
 
-        self.assertEqual(lvm.pvinfo("/not/existing/device"), {})
+        self.assertEqual(lvm.pvinfo(device="/not/existing/device"), {})
 
         ##
         ## vginfo
@@ -211,10 +211,12 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## lvs
         ##
         # pass
-        self.assertEqual(lvm.lvs(self._vg_name)["LVM2_LV_NAME"], [self._lv_name])
+        full_name = "%s-%s" % (self._vg_name, self._lv_name)
+        info = lvm.lvs(vg_name=self._vg_name)
+        self.assertEqual(info[full_name]["LVM2_LV_NAME"], self._lv_name)
 
         # fail
-        self.assertEqual(lvm.lvs("wrong-vg-name"), {})
+        self.assertEqual(lvm.lvs(vg_name="wrong-vg-name"), {})
 
         ##
         ## has_lvm
