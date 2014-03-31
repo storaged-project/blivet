@@ -161,7 +161,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return cls._labelfs is not None and cls._labelfs.labelApp is not None
+        return cls._labelfs is not None and cls._labelfs.label_app is not None
 
     @classmethod
     def labelFormatOK(cls, label):
@@ -638,10 +638,10 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        if not self._labelfs or not self._labelfs.labelApp or not self._labelfs.labelApp.reads:
+        if not self._labelfs or not self._labelfs.label_app or not self._labelfs.label_app.reads:
             raise FSError("no application to read label for filesystem %s" % self.type)
 
-        (rc, out) = util.run_program_and_capture_output(self._labelfs.labelApp.readLabelCommand(self))
+        (rc, out) = util.run_program_and_capture_output(self._labelfs.label_app.readLabelCommand(self))
         if rc:
             raise FSError("read label failed")
 
@@ -650,7 +650,7 @@ class FS(DeviceFormat):
         if label == "":
             return ""
         else:
-            return self._labelfs.labelApp.extractLabel(label)
+            return self._labelfs.label_app.extractLabel(label)
 
     def writeLabel(self):
         """ Create a label for this filesystem.
@@ -669,16 +669,16 @@ class FS(DeviceFormat):
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        if not self._labelfs or not self._labelfs.labelApp:
+        if not self._labelfs or not self._labelfs.label_app:
             raise FSError("no application to set label for filesystem %s" % self.type)
 
         if not self.labelFormatOK(self.label):
-            raise FSError("bad label format for labelling application %s" % self._labelfs.labelApp.name)
+            raise FSError("bad label format for labelling application %s" % self._labelfs.label_app.name)
 
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        rc = util.run_program(self._labelfs.labelApp.setLabelCommand(self))
+        rc = util.run_program(self._labelfs.label_app.setLabelCommand(self))
         if rc:
             raise FSError("label failed")
 
@@ -713,8 +713,8 @@ class FS(DeviceFormat):
 
             May be None if no such program exists.
         """
-        if self._labelfs and self._labelfs.labelApp:
-            return self._labelfs.labelApp.name
+        if self._labelfs and self._labelfs.label_app:
+            return self._labelfs.label_app.name
         else:
             return None
 

@@ -120,6 +120,8 @@ class E2Label(FSLabelApp):
     def _readLabelArgs(self, fs):
         return [fs.device]
 
+E2Label = E2Label()
+
 class DosFsLabel(FSLabelApp):
     """Application used by FATFS."""
 
@@ -133,6 +135,8 @@ class DosFsLabel(FSLabelApp):
 
     def _readLabelArgs(self, fs):
         return [fs.device]
+
+DosFsLabel = DosFsLabel()
 
 class JFSTune(FSLabelApp):
     """Application used by JFS."""
@@ -148,6 +152,8 @@ class JFSTune(FSLabelApp):
     def _readLabelArgs(self, fs):
         raise NotImplementedError
 
+JFSTune = JFSTune()
+
 class ReiserFSTune(FSLabelApp):
     """Application used by ReiserFS."""
 
@@ -161,6 +167,8 @@ class ReiserFSTune(FSLabelApp):
 
     def _readLabelArgs(self, fs):
         raise NotImplementedError
+
+ReiserFSTune = ReiserFSTune()
 
 class XFSAdmin(FSLabelApp):
     """Application used by XFS."""
@@ -176,6 +184,8 @@ class XFSAdmin(FSLabelApp):
     def _readLabelArgs(self, fs):
         return ["-l", fs.device]
 
+XFSAdmin = XFSAdmin()
+
 class NTFSLabel(FSLabelApp):
     """Application used by NTFS."""
 
@@ -189,3 +199,5 @@ class NTFSLabel(FSLabelApp):
 
     def _readLabelArgs(self, fs):
         return [fs.device]
+
+NTFSLabel = NTFSLabel()

@@ -32,16 +32,8 @@ class FSLabeling(object):
     default_label = abc.abstractproperty(
        doc="Default label set on this filesystem at creation.")
 
-    @abc.abstractproperty
-    def labelApp(self):
-        """Application that may be used to label filesystem after the
-           filesystem has been created.
-
-           :rtype: object or None
-           :return: the object representing the labeling application or None
-           if no such object exists
-        """
-        raise NotImplementedError
+    label_app = abc.abstractproperty(
+       doc="Post creation filesystem labeling application.")
 
     @abc.abstractmethod
     def labelFormatOK(self, label):
@@ -68,10 +60,7 @@ class FSLabeling(object):
 class Ext2FSLabeling(FSLabeling):
 
     default_label = property(lambda s: "")
-
-    @property
-    def labelApp(self):
-        return fslabel.E2Label()
+    label_app = property(lambda s: fslabel.E2Label)
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -82,10 +71,7 @@ class Ext2FSLabeling(FSLabeling):
 class FATFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "NO NAME")
-
-    @property
-    def labelApp(self):
-        return fslabel.DosFsLabel()
+    label_app = property(lambda s: fslabel.DosFsLabel)
 
     def labelFormatOK(self, label):
         return len(label) < 12
@@ -93,14 +79,10 @@ class FATFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-n", label]
 
-
 class JFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "")
-
-    @property
-    def labelApp(self):
-        return fslabel.JFSTune()
+    label_app = property(lambda s: fslabel.JFSTune)
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -111,10 +93,7 @@ class JFSLabeling(FSLabeling):
 class ReiserFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "")
-
-    @property
-    def labelApp(self):
-        return fslabel.ReiserFSTune()
+    label_app = property(lambda s: fslabel.ReiserFSTune)
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -125,10 +104,7 @@ class ReiserFSLabeling(FSLabeling):
 class XFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "")
-
-    @property
-    def labelApp(self):
-        return fslabel.XFSAdmin()
+    label_app = property(lambda s: fslabel.XFSAdmin)
 
     def labelFormatOK(self, label):
         return ' ' not in label and len(label) < 13
@@ -139,10 +115,7 @@ class XFSLabeling(FSLabeling):
 class HFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "Untitled")
-
-    @property
-    def labelApp(self):
-        return None
+    label_app = property(lambda s: None)
 
     def labelFormatOK(self, label):
         return ':' not in label and len(label) < 28 and len(label) > 0
@@ -153,10 +126,7 @@ class HFSLabeling(FSLabeling):
 class NTFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "")
-
-    @property
-    def labelApp(self):
-        return fslabel.NTFSLabel()
+    label_app = property(lambda s: fslabel.NTFSLabel)
 
     def labelFormatOK(self, label):
         return len(label) < 129
