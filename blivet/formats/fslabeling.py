@@ -29,6 +29,9 @@ class FSLabeling(object):
 
     __metaclass__ = abc.ABCMeta
 
+    default_label = abc.abstractproperty(
+       doc="Default label set on this filesystem at creation.")
+
     @abc.abstractproperty
     def labelApp(self):
         """Application that may be used to label filesystem after the
@@ -62,17 +65,9 @@ class FSLabeling(object):
         """
         raise NotImplementedError
 
-    @abc.abstractproperty
-    def defaultLabel(self):
-        """Returns the default label for this filesystem, which will be used
-           if no label is specified.
-
-           :return: the default label
-           :rtype: str
-        """
-        raise NotImplementedError
-
 class Ext2FSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "")
 
     @property
     def labelApp(self):
@@ -84,11 +79,9 @@ class Ext2FSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-L", label]
 
-    @property
-    def defaultLabel(self):
-        return ""
-
 class FATFSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "NO NAME")
 
     @property
     def labelApp(self):
@@ -100,11 +93,10 @@ class FATFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-n", label]
 
-    @property
-    def defaultLabel(self):
-        return "NO NAME"
 
 class JFSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "")
 
     @property
     def labelApp(self):
@@ -116,11 +108,9 @@ class JFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-L", label]
 
-    @property
-    def defaultLabel(self):
-        return ""
-
 class ReiserFSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "")
 
     @property
     def labelApp(self):
@@ -132,11 +122,9 @@ class ReiserFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-l", label]
 
-    @property
-    def defaultLabel(self):
-        return ""
-
 class XFSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "")
 
     @property
     def labelApp(self):
@@ -148,11 +136,9 @@ class XFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-L", label]
 
-    @property
-    def defaultLabel(self):
-        return ""
-
 class HFSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "Untitled")
 
     @property
     def labelApp(self):
@@ -164,11 +150,9 @@ class HFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-l", label]
 
-    @property
-    def defaultLabel(self):
-        return "Untitled"
-
 class NTFSLabeling(FSLabeling):
+
+    default_label = property(lambda s: "")
 
     @property
     def labelApp(self):
@@ -179,7 +163,3 @@ class NTFSLabeling(FSLabeling):
 
     def labelingArgs(self, label):
         return ["-L", label]
-
-    @property
-    def defaultLabel(self):
-        return ""

@@ -124,7 +124,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
 
         an_fs = self._fs_class(device=_LOOP_DEV0, label=self._invalid_label)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
+        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
         an_fs.label = "an_fs"
         self.assertIsNone(an_fs.writeLabel())
@@ -162,7 +162,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
 
         an_fs = self._fs_class(device=_LOOP_DEV0, label=None)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.defaultLabel)
+        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
     def testCreatingEmpty(self):
         """Create a filesystem with an empty label.
