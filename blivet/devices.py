@@ -1869,7 +1869,7 @@ class DMDevice(StorageDevice):
     _type = "dm"
     _devDir = "/dev/mapper"
 
-    def __init__(self, name, format=None, size=None, dmUuid=None,
+    def __init__(self, name, format=None, size=None, dmUuid=None, uuid=None,
                  target=None, exists=False, parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -1884,13 +1884,20 @@ class DMDevice(StorageDevice):
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
-            :keyword dmUuid: device-mapper UUID
+            :keyword dmUuid: device-mapper UUID (see note below)
             :type dmUuid: str
+            :type str uuid: device UUID (see note below)
             :keyword target: device mapper table/target name (eg: "linear")
             :type target: str
+
+            .. note::
+
+                The dmUuid is not necessarily persistent, as it is based on
+                map name in many cases. The uuid, however, is a persistent UUID
+                stored in device metadata on disk.
         """
         StorageDevice.__init__(self, name, format=format, size=size,
-                               exists=exists,
+                               exists=exists, uuid=uuid,
                                parents=parents, sysfsPath=sysfsPath)
         self.target = target
         self.dmUuid = dmUuid
@@ -2293,6 +2300,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
             self._complete = True
 
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
+                                            uuid=uuid,
                                             exists=exists, sysfsPath=sysfsPath)
 
         self.free = util.numeric_type(free)
