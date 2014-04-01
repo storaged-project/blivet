@@ -27,7 +27,7 @@ class DeviceStateTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        self._state_functions = []
+        self._state_functions = {}
 
     def stateCheck(self, device, **kwargs):
         """Checks the current state of a device by means of its
