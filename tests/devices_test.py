@@ -62,7 +62,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def setUp(self):
         self._state_functions = {
-           "createBitmap" : lambda x,m: self.assertTrue(x, m),
+           "createBitmap" : self.assertTrue,
            "currentSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
            "description" : self.assertIsNotNone,
            "devices" : lambda x, m: self.assertEqual(len(x), 0, m) and
@@ -85,7 +85,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "rawArraySize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
            "resizable" : self.assertFalse,
            "size" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
-           "smallestMember" : lambda x, m: self.assertIsNone(x, m),
+           "smallestMember" : self.assertIsNone,
            "spares" : lambda x, m: self.assertEqual(x, 0, m),
            "status" : self.assertFalse,
            "superBlockSize" : lambda x, m: self.assertEqual(x, Size(spec="1 MiB"), m),
