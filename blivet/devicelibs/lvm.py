@@ -62,7 +62,6 @@ config_args_data = { "filterRejects": [],    # regular expressions to reject.
 
 def _getConfigArgs(**kwargs):
     """lvm command accepts lvm.conf type arguments preceded by --config. """
-    global config_args_data
     config_args = []
 
     read_only_locking = kwargs.get("read_only_locking", False)
@@ -90,13 +89,11 @@ def _getConfigArgs(**kwargs):
 
 def lvm_cc_addFilterRejectRegexp(regexp):
     """ Add a regular expression to the --config string."""
-    global config_args_data
     log.debug("lvm filter: adding %s to the reject list", regexp)
     config_args_data["filterRejects"].append(regexp)
 
 def lvm_cc_removeFilterRejectRegexp(regexp):
     """ Remove a regular expression from the --config string."""
-    global config_args_data
     log.debug("lvm filter: removing %s from the reject list", regexp)
     try:
         config_args_data["filterRejects"].remove(regexp)
@@ -105,7 +102,6 @@ def lvm_cc_removeFilterRejectRegexp(regexp):
         return
 
 def lvm_cc_resetFilter():
-    global config_args_data
     config_args_data["filterRejects"] = []
     config_args_data["filterAccepts"] = []
 # End config_args handling code.

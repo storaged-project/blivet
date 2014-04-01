@@ -48,8 +48,6 @@ kernel_filesystems = []
 nodev_filesystems = []
 
 def update_kernel_filesystems():
-    global kernel_filesystems
-    global nodev_filesystems
     for line in open("/proc/filesystems").readlines():
         fields = line.split()
         kernel_filesystems.append(fields[-1])
@@ -495,8 +493,6 @@ class FS(DeviceFormat):
 
     def loadModule(self):
         """Load whatever kernel module is required to support this filesystem."""
-        global kernel_filesystems
-
         if not self._modules or self.mountType in kernel_filesystems:
             return
 
