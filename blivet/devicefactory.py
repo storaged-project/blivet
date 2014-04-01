@@ -331,7 +331,7 @@ class DeviceFactory(object):
         """
         size = self._get_device_space()
         if self.container:
-            size += container.size
+            size += self.container.size
 
         if self.device:
             size -= self.device.size
