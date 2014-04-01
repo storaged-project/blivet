@@ -4283,8 +4283,8 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         else:
             dcbOpt = "nodcb"
 
-        if nic in fcoe().added_nics:
-            return set(["fcoe=%s:%s" % (nic, dcbOpt)])
+        if self.nic in fcoe().added_nics:
+            return set(["fcoe=%s:%s" % (self.nic, dcbOpt)])
         else:
             return set(["fcoe=edd:%s" % dcbOpt])
 
