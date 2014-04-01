@@ -411,7 +411,7 @@ def vginfo(vg_name):
     buf = util.capture_output(["lvm"] + args)
     info = parse_lvm_vars(buf)
     if len(info.keys()) != 7:
-        raise LVMError(_("vginfo failed for %s" % vg_name))
+        raise LVMError(_("vginfo failed for %s") % vg_name)
 
     return info
 

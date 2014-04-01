@@ -125,8 +125,8 @@ class ZFCPDevice:
             util.run_program(["zfcp_cio_free", "-d", self.devnum])
 
         if not os.path.exists(online):
-            raise ValueError(_("zFCP device %s not found, not even in device ignore list." % \
-                    (self.devnum,)))
+            raise ValueError(_("zFCP device %s not found, not even in device ignore list.") % \
+                    (self.devnum,))
 
         try:
             f = open(online, "r")
