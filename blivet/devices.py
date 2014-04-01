@@ -2431,7 +2431,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
             # the same name that we want to keep/use.
             return
 
-        lvm.vgreduce(self.name, None, rm=True)
+        lvm.vgreduce(self.name, None, missing=True)
         lvm.vgdeactivate(self.name)
         lvm.vgremove(self.name)
 
