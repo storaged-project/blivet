@@ -112,12 +112,6 @@ def lvm_cc_resetFilter():
     config_args_data["filterAccepts"] = []
 # End config_args handling code.
 
-# Names that should not be used in the creation of VGs
-lvm_vg_blacklist = []
-def blacklistVG(name):
-    global lvm_vg_blacklist
-    lvm_vg_blacklist.append(name)
-
 def getPossiblePhysicalExtents():
     """ Returns a list of possible values for physical extent of a volume group.
 

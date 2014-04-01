@@ -137,8 +137,6 @@ def storageInitialize(storage, ksdata, protected):
     # ignore, etc.  Luckily that's all in the kickstart data.
     storage.config.update(ksdata)
 
-    lvm.lvm_vg_blacklist = []
-
     # Set up the protected partitions list now.
     if protected:
         storage.config.protectedDevSpecs.extend(protected)
