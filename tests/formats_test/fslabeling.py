@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import abc
 import os
 import unittest
 
@@ -12,6 +13,14 @@ class LabelingAsRoot(baseclass.DevicelibsTestCase):
        is no easy way to read the filesystem's label once it has been
        set and where the filesystem can not be relabeled.
     """
+
+    __metaclass__ = abc.ABCMeta
+
+    _fs_class = abc.abstractproperty(
+       doc="The class of the filesystem being tested on.")
+
+    _invalid_label = abc.abstractproperty(
+       doc="A label which is invalid for this filesystem.")
 
     def setUp(self):
         an_fs = self._fs_class()

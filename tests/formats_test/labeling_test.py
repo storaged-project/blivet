@@ -86,39 +86,45 @@ class MethodsTestCase(unittest.TestCase):
                 self.assertEqual(v(device="/dev", label=label).label, label)
 
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
+    _fs_class = property(lambda s: fs.XFS)
+    _invalid_label = property(lambda s: "root filesystem")
+
     def setUp(self):
-        self._fs_class = fs.XFS
-        self._invalid_label = "root filesystem"
         super(XFSTestCase, self).setUp()
 
 class FATFSTestCase(fslabeling.CompleteLabelingAsRoot):
+    _fs_class = property(lambda s: fs.FATFS)
+    _invalid_label = property(lambda s: "root___filesystem")
+
     def setUp(self):
-        self._fs_class = fs.FATFS
-        self._invalid_label = "root___filesystem"
         super(FATFSTestCase, self).setUp()
 
 class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
+    _fs_class = property(lambda s: fs.Ext2FS)
+    _invalid_label = property(lambda s: "root___filesystem")
+
     def setUp(self):
-        self._fs_class = fs.Ext2FS
-        self._invalid_label = "root___filesystem"
         super(Ext2FSTestCase, self).setUp()
 
 class JFSTestCase(fslabeling.LabelingWithRelabeling):
+    _fs_class = property(lambda s: fs.JFS)
+    _invalid_label = property(lambda s: "root___filesystem")
+
     def setUp(self):
-        self._fs_class = fs.JFS
-        self._invalid_label = "root___filesystem"
         super(JFSTestCase, self).setUp()
 
 class ReiserFSTestCase(fslabeling.LabelingWithRelabeling):
+    _fs_class = property(lambda s: fs.ReiserFS)
+    _invalid_label = property(lambda s: "root___filesystem")
+
     def setUp(self):
-        self._fs_class = fs.ReiserFS
-        self._invalid_label = "root___filesystem"
         super(ReiserFSTestCase, self).setUp()
 
 class HFSTestCase(fslabeling.LabelingAsRoot):
+    _fs_class = property(lambda s: fs.HFS)
+    _invalid_label = property(lambda s: "n" * 28)
+
     def setUp(self):
-        self._fs_class = fs.HFS
-        self._invalid_label = "n" * 28
         super(HFSTestCase, self).setUp()
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
