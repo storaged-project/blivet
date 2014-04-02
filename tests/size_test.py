@@ -23,7 +23,7 @@
 
 import unittest
 
-from blivet.errors import *
+from blivet.errors import SizeParamsError, SizePlacesError
 from blivet.size import Size, _prefixes
 
 class SizeTestCase(unittest.TestCase):

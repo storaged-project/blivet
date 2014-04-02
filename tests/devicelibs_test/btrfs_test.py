@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 import blivet.devicelibs.btrfs as btrfs
-import blivet.util as util
+from blivet.errors import BTRFSError
 
 import tests.devicelibs_test.baseclass as baseclass
 
@@ -78,13 +78,13 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
            ["/not/existing/device"])
 
         # bad data
-        self.assertRaisesRegexp(btrfs.BTRFSError,
+        self.assertRaisesRegexp(BTRFSError,
            "1",
            btrfs.create_volume,
            [_LOOP_DEV0], data="RaID7")
 
         # bad metadata
-        self.assertRaisesRegexp(btrfs.BTRFSError,
+        self.assertRaisesRegexp(BTRFSError,
            "1",
            btrfs.create_volume,
            [_LOOP_DEV0], metadata="RaID7")
@@ -93,7 +93,7 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
         self.assertEqual(btrfs.create_volume(self._loopMap.values()), 0)
 
         # already created
-        self.assertRaisesRegexp(btrfs.BTRFSError,
+        self.assertRaisesRegexp(BTRFSError,
            "1",
            btrfs.create_volume,
            [_LOOP_DEV0], metadata="RaID7")
@@ -159,13 +159,13 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         self.assertNotIn("SV1", [v['path'] for v in subvolumes])
 
         # if the subvolume is already gone,  an error is raised by btrfs
-        self.assertRaisesRegexp(btrfs.BTRFSError,
+        self.assertRaisesRegexp(BTRFSError,
            "1",
            btrfs.delete_subvolume,
            self.mountpoint, "SV1")
 
         # if the subvolume is already there, an error is raise by btrfs
-        self.assertRaisesRegexp(btrfs.BTRFSError,
+        self.assertRaisesRegexp(BTRFSError,
            "1",
            btrfs.create_subvolume,
            self.mountpoint, "SV2")

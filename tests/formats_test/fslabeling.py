@@ -4,8 +4,7 @@ import os
 import unittest
 
 from tests.devicelibs_test import baseclass
-
-import blivet.formats.fs as fs
+from blivet.errors import FSError
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class LabelingAsRoot(baseclass.DevicelibsTestCase):
@@ -32,12 +31,12 @@ class LabelingAsRoot(baseclass.DevicelibsTestCase):
         an_fs = self._fs_class(device=_LOOP_DEV0, label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
            "no application to read label",
            an_fs.readLabel)
 
         an_fs.label = "an fs"
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
            "no application to set label for filesystem",
            an_fs.writeLabel)
 
@@ -83,7 +82,7 @@ class LabelingWithRelabeling(LabelingAsRoot):
         an_fs = self._fs_class(device=_LOOP_DEV0, label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
            "no application to read label",
            an_fs.readLabel)
 
@@ -94,12 +93,12 @@ class LabelingWithRelabeling(LabelingAsRoot):
         self.assertIsNone(an_fs.writeLabel())
 
         an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
             "default label",
             an_fs.writeLabel)
 
         an_fs.label = self._invalid_label
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
            "bad label format",
            an_fs.writeLabel)
 
@@ -135,12 +134,12 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
         an_fs.label = None
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
             "default label",
             an_fs.writeLabel)
 
         an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(fs.FSError,
+        self.assertRaisesRegexp(FSError,
            "bad label format",
            an_fs.writeLabel)
 

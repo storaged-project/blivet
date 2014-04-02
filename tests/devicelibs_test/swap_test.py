@@ -3,6 +3,7 @@ import os
 import unittest
 
 import blivet.devicelibs.swap as swap
+from blivet.errors import SwapError
 
 from tests.devicelibs_test import baseclass
 
@@ -21,7 +22,7 @@ class SwapTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(swap.mkswap(_LOOP_DEV0, "swap"), None)
 
         # fail
-        self.assertRaises(swap.SwapError, swap.mkswap, "/not/existing/device")
+        self.assertRaises(SwapError, swap.mkswap, "/not/existing/device")
         
         ##
         ## swapon
@@ -30,9 +31,9 @@ class SwapTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(swap.swapon(_LOOP_DEV0, 1), None)
 
         # fail
-        self.assertRaises(swap.SwapError, swap.swapon, "/not/existing/device")
+        self.assertRaises(SwapError, swap.swapon, "/not/existing/device")
         # not a swap partition
-        self.assertRaises(swap.SwapError, swap.swapon, _LOOP_DEV1)
+        self.assertRaises(SwapError, swap.swapon, _LOOP_DEV1)
         
         # pass
         # make another swap
@@ -62,9 +63,9 @@ class SwapTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(swap.swapoff(_LOOP_DEV0), None)
 
         # fail
-        self.assertRaises(swap.SwapError, swap.swapoff, "/not/existing/device")
+        self.assertRaises(SwapError, swap.swapoff, "/not/existing/device")
         # already off
-        self.assertRaises(swap.SwapError, swap.swapoff, _LOOP_DEV0)
+        self.assertRaises(SwapError, swap.swapoff, _LOOP_DEV0)
 
 
 def suite():

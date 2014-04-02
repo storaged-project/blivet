@@ -4,7 +4,7 @@ import unittest
 import time
 
 import blivet.devicelibs.mdraid as mdraid
-import blivet.errors as errors
+from blivet.errors import MDRaidError
 from blivet.size import Size
 
 from tests.devicelibs_test import baseclass
@@ -61,7 +61,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
             mdraid.mddeactivate(self._dev_name)
             mdraid.mddestroy(_LOOP_DEV0)
             mdraid.mddestroy(_LOOP_DEV1)
-        except mdraid.MDRaidError:
+        except MDRaidError:
             pass
 
         super(MDRaidAsRootTestCase, self).tearDown()
@@ -80,7 +80,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         time.sleep(2)
 
         # fail
-        self.assertRaises(mdraid.MDRaidError, mdraid.mdcreate, "/dev/md1", 1, ["/not/existing/dev0", "/not/existing/dev1"])
+        self.assertRaises(MDRaidError, mdraid.mdcreate, "/dev/md1", 1, ["/not/existing/dev0", "/not/existing/dev1"])
 
         ##
         ## mddeactivate
@@ -89,7 +89,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(mdraid.mddeactivate(self._dev_name), None)
 
         # fail
-        self.assertRaises(mdraid.MDRaidError, mdraid.mddeactivate, "/not/existing/md")
+        self.assertRaises(MDRaidError, mdraid.mddeactivate, "/not/existing/md")
 
         ##
         ## mdadd
@@ -98,14 +98,14 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         # TODO
 
         # fail
-        self.assertRaises(mdraid.MDRaidError, mdraid.mdadd, self._dev_name, "/not/existing/device")
+        self.assertRaises(MDRaidError, mdraid.mdadd, self._dev_name, "/not/existing/device")
 
         ##
         ## mdactivate
         ##
-        self.assertRaises(mdraid.MDRaidError, mdraid.mdactivate, "/not/existing/md", uuid=32)
+        self.assertRaises(MDRaidError, mdraid.mdactivate, "/not/existing/md", uuid=32)
         # requires uuid
-        self.assertRaises(mdraid.MDRaidError, mdraid.mdactivate, "/dev/md1")
+        self.assertRaises(MDRaidError, mdraid.mdactivate, "/dev/md1")
 
         ##
         ## mddestroy

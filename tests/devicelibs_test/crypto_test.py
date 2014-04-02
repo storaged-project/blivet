@@ -5,6 +5,7 @@ import tempfile
 import os
 
 from blivet.devicelibs import crypto
+from blivet.errors import CryptoError
 from tests.devicelibs_test import baseclass
 
 #FIXME: some of these tests expect behavior which is not correct
@@ -88,7 +89,7 @@ class CryptoTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(crypto.luks_add_key(_LOOP_DEV0, new_passphrase="another-secret", passphrase="secret"), None)
 
         # fail
-        self.assertRaisesRegexp(crypto.CryptoError,
+        self.assertRaisesRegexp(CryptoError,
            "luks add key failed",
            crypto.luks_add_key,
            _LOOP_DEV0, new_passphrase="another-secret", passphrase="wrong-passphrase")
@@ -97,7 +98,7 @@ class CryptoTestCase(baseclass.DevicelibsTestCase):
         ## luks_remove_key
         ##
         # fail
-        self.assertRaisesRegexp(crypto.CryptoError,
+        self.assertRaisesRegexp(CryptoError,
            "luks remove key failed",
            crypto.luks_remove_key,
            _LOOP_DEV0, del_passphrase="another-secret", passphrase="wrong-pasphrase")
@@ -142,7 +143,7 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
         for name in self._names.values():
             try:
                 crypto.luks_close(name)
-            except (IOError, crypto.CryptoError):
+            except (IOError, CryptoError):
                 pass
         super(CryptoTestCase2, self).tearDown()
 
