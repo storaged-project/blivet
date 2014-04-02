@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.46
+Version: 0.47
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,62 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Apr 02 2014 Brian C. Lane <bcl@redhat.com> - 0.47-1
+- Change labelApp to a more concisely defined abstract property (amulhern)
+- Change defaultLabel to a more concisely defined abstract property. (amulhern)
+- Change _labelstrRegex to a more concisely defined abstract property.
+  (amulhern)
+- Make reads property a bit more succinct. (amulhern)
+- Make name an abstract property and omit _name (amulhern)
+- Remove an unused import from devicelibs/raid.py (vpodzime)
+- Fix all pylint errors in pylintcodediff (amulhern)
+- Don't run test if the git branch is dirty (amulhern)
+- Exit if the specified log file does not exist. (amulhern)
+- Update lvm devicelibs tests to reflect recent changes. (dlehman)
+- Add required LVs as needed instead of trying to sort by attrs. (dlehman)
+- Fix missed conversion of rm->missing in vgreduce call. (dlehman)
+- Only gather lvm information one time per DeviceTree.populate call. (dlehman)
+- Add support for listing everything to pvinfo and lvs. (dlehman)
+- Get lv list from lvm in a more straightforward format. (dlehman)
+- Gather lv list where we use it to save from having to stash it. (dlehman)
+- Split out common lvm parsing code. (dlehman)
+- Add tests that use ParentList as part of Device. (dlehman)
+- Parent list length doesn't reflect new member in _addParent. (dlehman)
+- Rearrange _startEdd to be a little more obvious. (amulhern)
+- Raise exceptions using the new syntax (amulhern)
+- Do not import logging twice. (amulhern)
+- Suppress unused variable warning (amulhern)
+- Get rid of writeRandomUUID. (amulhern)
+- Remove unused variable but retain call for its side-effects (amulhern)
+- Put docstring in class (amulhern)
+- Remove appendiceal assignment (amulhern)
+- Keep first parameter "self" (amulhern)
+- Omit compile flag (amulhern)
+- Move lines beneath __main__ into a main method (amulhern)
+- Indent with spaces, not tabs (amulhern)
+- Change param default [] to None and convert in method (amulhern)
+- Change to a semantically equivalent version of FileDevice.path (amulhern)
+- Adapt existing tests to changed signature of some methods (amulhern)
+- Don't assign return value to unused variable (amulhern)
+- Be specific when catching exceptions (dshea)
+- Remove appendiceal assignments (amulhern)
+- Remove a lot of unused variables extracted from udev info (amulhern)
+- Don't get return values from communicate() if they are ignored (amulhern)
+- Use the disk's name in log message (amulhern)
+- Get rid of old exception unpacking syntax (dshea)
+- Rearranged some iffy exception checking (dshea)
+- Replace with a semantically equivalent chunk. (amulhern)
+- Remove some unused exception names. (amulhern)
+- Remove unused assignment to boot. (amulhern)
+- Delete method-local pruneFile function. (amulhern)
+- Don't comment out function headers but leave their bodies uncommented
+  (amulhern)
+- Get rid of unnecessary pass statements (amulhern)
+- Put a field and a method in the base class (amulhern)
+- Spell parameter self correctly (amulhern)
+- Give abstract method the same signature as its overriding methods. (amulhern)
+- Catch correct error and disable warning. (amulhern)
+
 * Wed Mar 26 2014 Brian C. Lane <bcl@redhat.com> - 0.46-1
 - Adapt callers to use the new parent list interface. (dlehman)
 - Change management of Device parents to use a simple list interface. (dlehman)
