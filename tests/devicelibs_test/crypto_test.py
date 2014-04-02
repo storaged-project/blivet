@@ -4,6 +4,7 @@ import unittest
 import tempfile
 import os
 
+from blivet.devicelibs import crypto
 from tests.devicelibs_test import baseclass
 
 #FIXME: some of these tests expect behavior which is not correct
@@ -32,7 +33,6 @@ class CryptoTestCase(baseclass.DevicelibsTestCase):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
 
-        import blivet.devicelibs.crypto as crypto
 
         ##
         ## is_luks
@@ -139,7 +139,6 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
 
     def tearDown(self):
         """Close all devices just in case they are still open."""
-        import blivet.devicelibs.crypto as crypto
         for name in self._names.values():
             try:
                 crypto.luks_close(name)
@@ -154,8 +153,6 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
 
         _name0 = self._names[self._LOOP_DEVICES[0]]
         _name1 = self._names[self._LOOP_DEVICES[1]]
-
-        import blivet.devicelibs.crypto as crypto
 
         ##
         ## luks_format
