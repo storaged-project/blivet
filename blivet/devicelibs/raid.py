@@ -24,7 +24,6 @@
 import abc
 
 from ..errors import RaidError
-from ..size import Size
 
 def div_up(a,b):
     """Rounds up integer division.  For example, div_up(3, 2) is 2.
