@@ -2,7 +2,7 @@ import unittest
 import mock
 
 import blivet
-from pykickstart.constants import *
+from pykickstart.constants import CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_NONE
 from parted import PARTITION_NORMAL
 from blivet.flags import flags
 
