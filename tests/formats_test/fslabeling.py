@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from devicelibs_test import baseclass
+from tests.devicelibs_test import baseclass
 
 import blivet.formats.fs as fs
 

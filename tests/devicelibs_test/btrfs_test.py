@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import baseclass
 import os
 import os.path
 import subprocess
@@ -8,6 +7,8 @@ import unittest
 
 import blivet.devicelibs.btrfs as btrfs
 import blivet.util as util
+
+import tests.devicelibs_test.baseclass as baseclass
 
 class BTRFSMountDevice(baseclass.DevicelibsTestCase):
     """A superclass that mounts and unmounts the filesystem.

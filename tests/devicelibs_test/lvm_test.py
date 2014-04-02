@@ -1,10 +1,11 @@
 #!/usr/bin/python
-import baseclass
 import os
 import unittest
 
 import blivet.devicelibs.lvm as lvm
 from blivet.size import Size
+
+from tests.devicelibs_test import baseclass
 
 class LVMTestCase(unittest.TestCase):
 

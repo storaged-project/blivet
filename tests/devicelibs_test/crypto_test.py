@@ -1,9 +1,10 @@
 #!/usr/bin/python
-import baseclass
 import unittest
 
 import tempfile
 import os
+
+from tests.devicelibs_test import baseclass
 
 #FIXME: some of these tests expect behavior which is not correct
 #

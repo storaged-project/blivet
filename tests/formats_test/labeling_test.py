@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from devicelibs_test import baseclass
+from tests.devicelibs_test import baseclass
 from blivet.formats import device_formats
 import blivet.formats.fs as fs
 import blivet.formats.swap as swap

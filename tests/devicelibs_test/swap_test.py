@@ -1,7 +1,8 @@
 #!/usr/bin/python
-import baseclass
 import os
 import unittest
+
+from tests.devicelibs_test import baseclass
 
 class SwapTestCase(baseclass.DevicelibsTestCase):
 

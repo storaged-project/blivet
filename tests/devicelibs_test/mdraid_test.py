@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import baseclass
 import os
 import unittest
 import time
@@ -7,6 +6,8 @@ import time
 import blivet.devicelibs.mdraid as mdraid
 import blivet.errors as errors
 from blivet.size import Size
+
+from tests.devicelibs_test import baseclass
 
 class MDRaidTestCase(unittest.TestCase):
 

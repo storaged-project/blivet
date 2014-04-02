@@ -3,7 +3,7 @@
 import unittest
 from mock import Mock
 
-from storagetestcase import StorageTestCase
+from tests.storagetestcase import StorageTestCase
 import blivet
 from blivet.formats import getFormat
 from blivet.size import Size
