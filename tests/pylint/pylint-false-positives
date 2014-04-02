@@ -1,0 +1,2 @@
+^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value passed for parameter 'member_count' in function call$
+^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value passed for parameter 'smallest_member_size' in function call$
