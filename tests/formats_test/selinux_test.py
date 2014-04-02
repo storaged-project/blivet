@@ -6,7 +6,6 @@ import unittest
 
 import blivet
 from tests.devicelibs_test import baseclass
-from blivet.formats import device_formats
 import blivet.formats.fs as fs
 
 class SELinuxContextTestCase(baseclass.DevicelibsTestCase):

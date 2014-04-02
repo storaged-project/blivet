@@ -90,7 +90,6 @@ class SizeTestCase(unittest.TestCase):
         import locale
         import os
         from blivet.i18n import _
-        import gettext
 
         saved_lang = os.environ.get('LANG', None)
 

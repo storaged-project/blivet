@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import unittest
-from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
 import blivet
@@ -9,15 +8,11 @@ from blivet.formats import getFormat
 from blivet.size import Size
 
 # device classes for brevity's sake -- later on, that is
-from blivet.devices import StorageDevice
 from blivet.devices import DiskDevice
 from blivet.devices import PartitionDevice
 from blivet.devices import MDRaidArrayDevice
-from blivet.devices import DMDevice
-from blivet.devices import LUKSDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import FileDevice
 
 # action classes
 from blivet.deviceaction import ActionCreateDevice

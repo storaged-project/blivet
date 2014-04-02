@@ -5,9 +5,6 @@ import unittest
 import blivet
 
 from blivet import devicefactory
-from blivet import devices
-from blivet.devicelibs import mdraid
-from blivet.devicelibs import raid
 from blivet.errors import MDRaidError, RaidError
 from blivet.size import Size
 

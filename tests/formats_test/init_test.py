@@ -3,7 +3,6 @@ import copy
 import unittest
 
 import blivet.formats as formats
-import blivet.errors as errors
 
 class FormatsTestCase(unittest.TestCase):
 

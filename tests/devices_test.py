@@ -9,8 +9,6 @@ import blivet
 from blivet.errors import DeviceError
 from blivet.errors import MDRaidError
 
-from blivet.devices import Device
-from blivet.devices import BTRFSDevice
 from blivet.devices import BTRFSSubVolumeDevice
 from blivet.devices import BTRFSVolumeDevice
 from blivet.devices import MDRaidArrayDevice

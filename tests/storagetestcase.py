@@ -10,15 +10,7 @@ from blivet.formats import getFormat
 
 # device classes for brevity's sake -- later on, that is
 from blivet.devices import StorageDevice
-from blivet.devices import DiskDevice
 from blivet.devices import PartitionDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.devices import DMDevice
-from blivet.devices import LUKSDevice
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import FileDevice
-
 
 class StorageTestCase(unittest.TestCase):
     """ StorageTestCase
