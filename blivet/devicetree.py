@@ -1390,7 +1390,7 @@ class DeviceTree(object):
                     return
 
                 # raid metadata volume
-                lv_name = re.sub(r'_rmeta.+', '', lv_name[1:-1])
+                lv_name = re.sub(r'_[tr]meta.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
                 addRequiredLV(name, "failed to look up raid lv")
                 raid[name]["meta"] += lv_size
@@ -1437,8 +1437,7 @@ class DeviceTree(object):
                     # do format handling now
                     self.addUdevDevice(lv_info)
 
-        raid = dict(("%s-%s" % (vg_device.name,
-                                n.replace("[", "").replace("]", "")),
+        raid = dict((n.replace("[", "").replace("]", ""),
                      {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
                      for n in lv_info.keys())
         for lv in lv_info.values():
