@@ -59,8 +59,8 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
     def tearDown(self):
         try:
             mdraid.mddeactivate(self._dev_name)
-            mdraid.mddestroy(_LOOP_DEV0)
-            mdraid.mddestroy(_LOOP_DEV1)
+            for dev in self._loopMap.values():
+                mdraid.mddestroy(dev)
         except MDRaidError:
             pass
 
