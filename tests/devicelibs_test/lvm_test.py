@@ -60,7 +60,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
             pass
 
         try:
-            for dev in self._loopMap.keys():
+            for dev in self._loopMap.values():
                 lvm.pvremove(dev)
         except LVMError:
             pass
@@ -76,7 +76,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvcreate
         ##
         # pass
-        for _file, dev in self._loopMap.iteritems():
+        for dev in self._loopMap.values():
             self.assertEqual(lvm.pvcreate(dev), None)
 
         # fail
@@ -86,7 +86,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvresize
         ##
         # pass
-        for _file, dev in self._loopMap.iteritems():
+        for dev in self._loopMap.values():
             self.assertEqual(lvm.pvresize(dev, Size(spec="50MiB")), None)
             self.assertEqual(lvm.pvresize(dev, Size(spec="100MiB")), None)
 
@@ -258,7 +258,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvremove
         ##
         # pass
-        for _file, dev in self._loopMap.iteritems():
+        for dev in self._loopMap.values():
             self.assertEqual(lvm.pvremove(dev), None)
 
         # fail
