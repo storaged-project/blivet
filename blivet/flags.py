@@ -68,8 +68,9 @@ class Flags(object):
         buf = open("/proc/cmdline").read().strip()
         args = shlex.split(buf)
         for arg in args:
-            (opt, equals, val) = arg.partition("=")
-            self.boot_cmdline[opt] = val
+            (opt, _equals, val) = arg.partition("=")
+            if val:
+                self.boot_cmdline[opt] = val
 
     def update_from_boot_cmdline(self):
         self.get_boot_cmdline()
