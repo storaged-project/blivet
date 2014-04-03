@@ -329,7 +329,7 @@ class Device(util.ObjectID):
         log_method_call(self, name=self.name, kids=self.kids)
         self.kids += 1
 
-    def setup(self):
+    def setup(self, orig=False):
         """ Open, or set up, a device. """
         raise NotImplementedError("setup method not defined for Device")
 
