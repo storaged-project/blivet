@@ -181,8 +181,6 @@ def __is_blacklisted_blockdev(dev_name):
     return False
 
 def udev_enumerate_block_devices():
-    import os.path
-
     return filter(lambda d: not __is_blacklisted_blockdev(os.path.basename(d)),
                   udev_enumerate_devices(deviceClass="block"))
 
