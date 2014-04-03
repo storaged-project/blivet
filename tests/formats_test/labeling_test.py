@@ -71,19 +71,19 @@ class MethodsTestCase(unittest.TestCase):
 
         # JFS, XFS use a -L flag
         lflag_classes = [fs.JFS, fs.XFS]
-        for k, v in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in lflag_classes)]:
-            self.assertEqual(v._labelfs.label_app.setLabelCommand(v), [v._labelfs.label_app.name, "-L", "myfs", "/dev"], msg=k)
+        for name, klass in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in lflag_classes)]:
+            self.assertEqual(klass._labelfs.label_app.setLabelCommand(v), [klass._labelfs.label_app.name, "-L", "myfs", "/dev"], msg=name)
 
         # Ext2FS and descendants and FATFS do not use a flag
         noflag_classes = [fs.Ext2FS, fs.FATFS]
-        for k, v in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in noflag_classes)]:
-            self.assertEqual(v._labelfs.label_app.setLabelCommand(v), [v._labelfs.label_app.name, "/dev", "myfs"], msg=k)
+        for name, klass in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in noflag_classes)]:
+            self.assertEqual(klass._labelfs.label_app.setLabelCommand(klass), [klass._labelfs.label_app.name, "/dev", "myfs"], msg=name)
 
         # all of the remaining are non-labeling so will accept any label
         label = "Houston, we have a problem!"
-        for k, v in device_formats.items():
-            if issubclass(v, fs.FS) and not v.labeling() and not issubclass(v, fs.NFS):
-                self.assertEqual(v(device="/dev", label=label).label, label)
+        for name, klass in device_formats.items():
+            if issubclass(klass, fs.FS) and not klass.labeling() and not issubclass(klass, fs.NFS):
+                self.assertEqual(klass(device="/dev", label=label).label, label, msg=name)
 
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = property(lambda s: fs.XFS)
