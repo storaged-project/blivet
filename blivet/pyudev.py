@@ -16,19 +16,12 @@ def find_library(name, somajor=0):
     else:
         libdirs = common
 
-    libdirs = filter(os.path.isdir, libdirs)
-
-    for dir in libdirs:
-        files = fnmatch.filter(os.listdir(dir), "lib%s.so.%d" % (name, somajor))
-        files = [os.path.join(dir, file) for file in files]
-
+    for ldir in filter(os.path.isdir, libdirs):
+        files = fnmatch.filter(os.listdir(ldir), "lib%s.so.%d" % (name, somajor))
         if files:
-            break
+            return next(os.path.join(ldir, lfile) for lfile in files)
 
-    if files:
-        return files[0]
-    else:
-        return None
+    return None
 
 # find the udev library
 name = "udev"
