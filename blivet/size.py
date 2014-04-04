@@ -28,7 +28,7 @@ from decimal import Decimal
 from decimal import InvalidOperation
 from decimal import ROUND_DOWN
 
-from errors import *
+from errors import SizeParamsError, SizePlacesError
 from i18n import _, P_, N_
 
 # Container for size unit prefix information

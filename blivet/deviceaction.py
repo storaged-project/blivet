@@ -20,14 +20,13 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-from udev import *
 import util
 
+import udev
 from devices import StorageDevice
 from devices import PartitionDevice
 from devices import LVMLogicalVolumeDevice
 from formats import getFormat
-from errors import *
 from parted import partitionFlag, PARTITION_LBA
 from i18n import _, N_
 
@@ -505,16 +504,16 @@ class ActionCreateFormat(DeviceAction):
             self.device.format.create(device=self.device.path,
                                       options=self.device.formatArgs)
             # Get the UUID now that the format is created
-            udev_settle()
+            udev.udev_settle()
             self.device.updateSysfsPath()
-            info = udev_get_block_device(self.device.sysfsPath)
+            info = udev.udev_get_block_device(self.device.sysfsPath)
             # only do this if the format has a device known to udev
             # (the format might not have a normal device at all)
             if info:
                 if self.device.format.type != "btrfs":
-                    self.device.format.uuid = udev_device_get_uuid(info)
+                    self.device.format.uuid = udev.udev_device_get_uuid(info)
 
-                self.device.deviceLinks = udev_device_get_symlinks(info)
+                self.device.deviceLinks = udev.udev_device_get_symlinks(info)
             elif self.device.format.type != "tmpfs":
                 # udev lookup failing is a serious issue for anything other than tmpfs
                 log.error("udev lookup failed for device: %s", self.device)
@@ -570,7 +569,7 @@ class ActionDestroyFormat(DeviceAction):
         status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
-        udev_settle()
+        udev.udev_settle()
         if not status:
             self.device.teardown()
 

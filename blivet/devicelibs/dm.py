@@ -24,7 +24,7 @@ import os
 
 import block
 from .. import util
-from ..errors import *
+from ..errors import DMError
 
 import logging
 log = logging.getLogger("blivet")

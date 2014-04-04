@@ -23,7 +23,7 @@
 import os
 
 from .. import util
-from ..errors import *
+from ..errors import MDRaidError, RaidError
 from ..size import Size
 from . import raid
 

@@ -23,7 +23,7 @@
 import os
 
 from .. import util
-from ..errors import *
+from ..errors import DeviceError, LoopError
 
 import logging
 log = logging.getLogger("blivet")

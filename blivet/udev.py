@@ -25,7 +25,6 @@ import os
 import re
 
 import util
-from errors import *
 from size import Size
 
 import pyudev

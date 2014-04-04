@@ -54,6 +54,7 @@ import statvfs
 import copy
 import tempfile
 import shlex
+import re
 
 try:
     import nss.nss
@@ -62,13 +63,13 @@ except ImportError:
 
 import parted
 
-from pykickstart.constants import *
+from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
 from storage_log import log_method_call
-from errors import *
-from devices import *
+from errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
+from devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from devicetree import DeviceTree
-from deviceaction import *
+from deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from formats import getFormat
 from formats import get_device_format_class
 from formats import get_default_filesystem_type

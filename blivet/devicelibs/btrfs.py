@@ -24,7 +24,7 @@ import os
 import re
 
 from .. import util
-from ..errors import *
+from ..errors import BTRFSError
 
 import logging
 log = logging.getLogger("blivet")

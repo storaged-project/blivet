@@ -30,7 +30,7 @@ except ImportError:
     volume_key = None
 
 from ..storage_log import log_method_call
-from ..errors import *
+from ..errors import LUKSError
 from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags

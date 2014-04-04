@@ -24,7 +24,7 @@ import os
 
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
-from ..errors import *
+from ..errors import LVMError, PhysicalVolumeError
 from ..devicelibs import lvm
 from ..i18n import N_
 from . import DeviceFormat, register_device_format

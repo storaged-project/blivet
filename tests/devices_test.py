@@ -15,7 +15,6 @@ from blivet.devices import MDRaidArrayDevice
 from blivet.devices import OpticalDevice
 from blivet.devices import StorageDevice
 from blivet.devices import ParentList
-from blivet.devicelibs import mdraid
 from blivet.devicelibs import btrfs
 from blivet.size import Size
 

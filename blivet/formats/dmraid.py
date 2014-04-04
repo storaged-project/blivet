@@ -22,7 +22,7 @@
 
 from ..storage_log import log_method_call
 from ..flags import flags
-from ..errors import *
+from ..errors import DMRaidMemberError
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
 

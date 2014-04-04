@@ -24,11 +24,10 @@
 """ Filesystem classes. """
 from decimal import Decimal
 import os
-import sys
 import tempfile
 
 from . import fslabeling
-from ..errors import *
+from ..errors import FormatCreateError, FSError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
 from .. import platform

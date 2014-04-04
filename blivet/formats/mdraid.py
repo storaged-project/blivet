@@ -24,7 +24,7 @@ import os
 
 from ..storage_log import log_method_call
 from parted import PARTITION_RAID
-from ..errors import *
+from ..errors import MDMemberError
 from ..devicelibs import mdraid
 from . import DeviceFormat, register_device_format
 from ..flags import flags

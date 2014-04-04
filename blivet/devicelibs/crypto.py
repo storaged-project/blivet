@@ -23,7 +23,7 @@
 import random
 from pycryptsetup import CryptSetup
 
-from ..errors import *
+from ..errors import CryptoError
 from ..size import Size
 
 LUKS_METADATA_SIZE = Size(spec="2 MiB")

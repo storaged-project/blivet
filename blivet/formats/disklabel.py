@@ -26,7 +26,7 @@ import copy
 from ..storage_log import log_method_call
 import parted
 import _ped
-from ..errors import *
+from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
 from .. import arch
 from ..flags import flags
 from ..udev import udev_settle

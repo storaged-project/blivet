@@ -39,12 +39,12 @@ import parted
 import _ped
 import block
 
-from errors import *
+import errors
 import util
 import arch
 from flags import flags
 from storage_log import log_method_call
-from udev import *
+import udev
 from formats import get_device_format_class, getFormat, DeviceFormat
 from size import Size
 from i18n import P_
@@ -104,14 +104,14 @@ def deviceNameToDiskByPath(deviceName=None):
         return ""
 
     ret = None
-    for dev in udev_get_block_devices():
-        if udev_device_get_name(dev) == deviceName:
-            ret = udev_device_get_by_path(dev)
+    for dev in udev.udev_get_block_devices():
+        if udev.udev_device_get_name(dev) == deviceName:
+            ret = udev.udev_device_get_by_path(dev)
             break
 
     if ret:
         return ret
-    raise DeviceNotFoundError(deviceName)
+    raise errors.DeviceNotFoundError(deviceName)
 
 class ParentList(object):
     """ A list with auditing and side-effects for additions and removals.
@@ -770,7 +770,7 @@ class StorageDevice(Device):
             Return True if setup should proceed or False if not.
         """
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         if self.status or not self.controllable:
             return False
@@ -794,7 +794,7 @@ class StorageDevice(Device):
 
     def _postSetup(self):
         """ Perform post-setup operations. """
-        udev_settle()
+        udev.udev_settle()
         # we always probe since the device may not be set up when we want
         # information about it
         self._size = self.currentSize
@@ -808,7 +808,7 @@ class StorageDevice(Device):
             Return True if teardown should proceed or False if not.
         """
         if not self.exists and not recursive:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         if not self.status or not self.controllable:
             return False
@@ -818,7 +818,7 @@ class StorageDevice(Device):
         self.format.cacheMajorminor()
         if self.format.exists:
             self.format.teardown()
-        udev_settle()
+        udev.udev_settle()
         return True
 
     def _teardown(self, recursive=None):
@@ -846,7 +846,7 @@ class StorageDevice(Device):
     def _preCreate(self):
         """ Preparation and pre-condition checking for device creation. """
         if self.exists:
-            raise DeviceError("device has already been created", self.name)
+            raise errors.DeviceError("device has already been created", self.name)
 
         self.setupParents()
 
@@ -861,7 +861,7 @@ class StorageDevice(Device):
         try:
             self._create()
         except Exception as e:
-            raise DeviceCreateError(str(e), self.name)
+            raise errors.DeviceCreateError(str(e), self.name)
         else:
             self._postCreate()
 
@@ -870,7 +870,7 @@ class StorageDevice(Device):
         self.exists = True
         self.setup()
         self.updateSysfsPath()
-        udev_settle()
+        udev.udev_settle()
 
     #
     # destroy
@@ -878,10 +878,10 @@ class StorageDevice(Device):
     def _preDestroy(self):
         """ Preparation and precondition checking for device destruction. """
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         if not self.isleaf:
-            raise DeviceError("Cannot destroy non-leaf device", self.name)
+            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
 
         self.teardown()
 
@@ -934,7 +934,7 @@ class StorageDevice(Device):
             raise ValueError("new size must of type Size")
 
         if self.maxSize and newsize > self.maxSize:
-            raise DeviceError("device cannot be larger than %s" %
+            raise errors.DeviceError("device cannot be larger than %s" %
                               (self.maxSize,), self.name)
         self._size = newsize
 
@@ -987,7 +987,7 @@ class StorageDevice(Device):
                         current=getattr(self._format, "type", None))
         if self._format and self._format.status:
             # FIXME: self.format.status doesn't mean much
-            raise DeviceError("cannot replace active format", self.name)
+            raise errors.DeviceError("cannot replace active format", self.name)
 
         self._format = format
         self._format.device = self.path
@@ -1156,7 +1156,7 @@ class DiskDevice(StorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         if not self.mediaPresent:
-            raise DeviceError("cannot destroy disk with no media", self.name)
+            raise errors.DeviceError("cannot destroy disk with no media", self.name)
 
         StorageDevice._preDestroy(self)
 
@@ -1264,7 +1264,7 @@ class PartitionDevice(StorageDevice):
             log.debug("looking up parted Partition: %s", self.path)
             self._partedPartition = self.disk.format.partedDisk.getPartitionByPath(self.path)
             if not self._partedPartition:
-                raise DeviceError("cannot find parted partition instance", self.name)
+                raise errors.DeviceError("cannot find parted partition instance", self.name)
 
             self._origPath = self.path
             # collect information about the partition from parted
@@ -1520,7 +1520,7 @@ class PartitionDevice(StorageDevice):
                 else:
                     self.unsetFlag(parted.PARTITION_BOOT)
             else:
-                raise DeviceError("boot flag not available for this partition", self.name)
+                raise errors.DeviceError("boot flag not available for this partition", self.name)
 
             self._bootable = bootable
         else:
@@ -1607,7 +1607,7 @@ class PartitionDevice(StorageDevice):
             # If a udev device is created with the watch option, then
             # a change uevent is synthesized and we need to wait for
             # things to settle.
-            udev_settle()
+            udev.udev_settle()
 
     def _create(self):
         """ Create the device. """
@@ -1617,7 +1617,7 @@ class PartitionDevice(StorageDevice):
         self._wipe()
         try:
             self.disk.format.commit()
-        except DiskLabelCommitError:
+        except errors.DiskLabelCommitError:
             part = self.disk.format.partedDisk.getPartitionByPath(self.path)
             self.disk.format.removePartition(part)
             raise
@@ -1646,10 +1646,10 @@ class PartitionDevice(StorageDevice):
         self._preCreate()
         try:
             self._create()
-        except DiskLabelCommitError as e:
+        except errors.DiskLabelCommitError as e:
             raise
         except Exception as e:
-            raise DeviceCreateError(str(e), self.name)
+            raise errors.DeviceCreateError(str(e), self.name)
         else:
             self._postCreate()
 
@@ -1704,7 +1704,7 @@ class PartitionDevice(StorageDevice):
         self.disk.originalFormat.removePartition(self.partedPartition)
         try:
             self.disk.originalFormat.commit()
-        except DiskLabelCommitError:
+        except errors.DiskLabelCommitError:
             self.disk.originalFormat.addPartition(self.partedPartition)
             self.partedPartition = self.disk.originalFormat.partedDisk.getPartitionByPath(self.path)
             raise
@@ -1729,8 +1729,8 @@ class PartitionDevice(StorageDevice):
                 try:
                     block.removeDeviceMap(devmap)
                 except Exception as e:
-                    raise DeviceTeardownError("failed to tear down device-mapper partition %s: %s" % (self.name, e))
-            udev_settle()
+                    raise errors.DeviceTeardownError("failed to tear down device-mapper partition %s: %s" % (self.name, e))
+            udev.udev_settle()
 
     def _getSize(self):
         """ Get the device's size. """
@@ -1753,7 +1753,7 @@ class PartitionDevice(StorageDevice):
             raise ValueError("new size must of type Size")
 
         if not self.exists:
-            raise DeviceError("device does not exist", self.name)
+            raise errors.DeviceError("device does not exist", self.name)
 
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
@@ -1938,7 +1938,7 @@ class DMDevice(StorageDevice):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         if self.status:
             dm_node = self.getDMNode()
@@ -1954,7 +1954,7 @@ class DMDevice(StorageDevice):
         """ Return the dm-X (eg: dm-0) device node for this device. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         return dm.dm_node_from_name(self.name)
 
@@ -1962,21 +1962,21 @@ class DMDevice(StorageDevice):
         log_method_call(self, name=self.name, kids=self.kids)
         rc = util.run_program(["kpartx", "-a", "-s", self.path])
         if rc:
-            raise DMError("partition activation failed for '%s'" % self.name)
-        udev_settle()
+            raise errors.DMError("partition activation failed for '%s'" % self.name)
+        udev.udev_settle()
 
     def teardownPartitions(self):
         log_method_call(self, name=self.name, kids=self.kids)
         rc = util.run_program(["kpartx", "-d", "-s", self.path])
         if rc:
-            raise DMError("partition deactivation failed for '%s'" % self.name)
-        udev_settle()
+            raise errors.DMError("partition deactivation failed for '%s'" % self.name)
+        udev.udev_settle()
 
     def _setName(self, name):
         """ Set the device's map name. """
         log_method_call(self, self.name, status=self.status)
         if self.status:
-            raise DeviceError("cannot rename active device", self.name)
+            raise errors.DeviceError("cannot rename active device", self.name)
 
         self._name = name
         #self.sysfsPath = "/dev/disk/by-id/dm-name-%s" % self.name
@@ -2031,13 +2031,13 @@ class DMLinearDevice(DMDevice):
     def _postSetup(self):
         StorageDevice._postSetup(self)
         self.setupPartitions()
-        udev_settle()
+        udev.udev_settle()
 
     def _teardown(self, recursive=False):
         self.teardownPartitions()
-        udev_settle()
+        udev.udev_settle()
         dm.dm_remove(self.name)
-        udev_settle()
+        udev.udev_settle()
 
     def deactivate(self, recursive=False):
         StorageDevice.teardown(self, recursive=recursive)
@@ -2161,7 +2161,7 @@ class ContainerDevice(StorageDevice):
     def __init__(self, *args, **kwargs):
         self.formatClass = get_device_format_class(self._formatClassName)
         if not self.formatClass:
-            raise StorageError("cannot find '%s' class" % self._formatClassName)
+            raise errors.StorageError("cannot find '%s' class" % self._formatClassName)
 
         super(ContainerDevice, self).__init__(*args, **kwargs)
 
@@ -2204,7 +2204,7 @@ class ContainerDevice(StorageDevice):
             This method writes the member addition to disk.
         """
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         if member.format.exists and self.uuid and self._formatUUIDAttr and \
            getattr(member.format, self._formatUUIDAttr) == self.uuid:
@@ -2237,7 +2237,7 @@ class ContainerDevice(StorageDevice):
         """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         if self._formatUUIDAttr and self.uuid and \
            getattr(member.format, self._formatUUIDAttr) != self.uuid:
@@ -2375,7 +2375,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         self.sysfsPath = ''
 
@@ -2403,7 +2403,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     def _preSetup(self, orig=False):
         if self.exists and not self.complete:
-            raise DeviceError("cannot activate VG with missing PV(s)", self.name)
+            raise errors.DeviceError("cannot activate VG with missing PV(s)", self.name)
         return StorageDevice._preSetup(self, orig=orig)
 
     def _teardown(self, recursive=None):
@@ -2471,7 +2471,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if not lv.exists and not self.growable and \
            not isinstance(lv, LVMThinLogicalVolumeDevice) and \
            lv.size > self.freeSpace:
-            raise DeviceError("new lv is too large to fit in free space", self.name)
+            raise errors.DeviceError("new lv is too large to fit in free space", self.name)
 
         log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
@@ -2740,7 +2740,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             if not validpvs:
                 for dev in self.parents:
                     dev.removeChild()
-                raise SinglePhysicalVolumeError(self.singlePVerr)
+                raise errors.SinglePhysicalVolumeError(self.singlePVerr)
 
         # here we go with the circular references
         self.parents[0]._addLogVol(self)
@@ -2825,7 +2825,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Return the dm-X (eg: dm-0) device node for this device. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         return dm.dm_node_from_name(self.mapName)
 
@@ -2866,7 +2866,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             # LVs being active (filesystems mounted, &c), so don't let
             # it bring everything down.
             StorageDevice._postTeardown(self, recursive=recursive)
-        except StorageError:
+        except errors.StorageError:
             if recursive:
                 log.debug("vg %s teardown failed; continuing", self.vg.name)
             else:
@@ -2877,7 +2877,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         try:
             vg_info = lvm.vginfo(self.vg.name)
-        except LVMError as lvmerr:
+        except errors.LVMError as lvmerr:
             msg = "Failed to get free space for the %s VG: %s" % self.vg.name, lvmerr
             log.error(msg)
             # nothing more can be done, we don't know the VG's free space
@@ -2917,7 +2917,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         validpvs = filter(lambda x: float(x.size) >= self.size, self.vg.pvs)
 
         if not validpvs:
-            raise SinglePhysicalVolumeError(self.singlePVerr)
+            raise errors.SinglePhysicalVolumeError(self.singlePVerr)
 
         return [validpvs[0].path]
 
@@ -2932,7 +2932,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         if self.format.exists:
             self.format.teardown()
 
-        udev_settle()
+        udev.udev_settle()
         lvm.lvresize(self.vg.name, self._name, self.size)
 
     def dracutSetupArgs(self):
@@ -3194,7 +3194,7 @@ class MDRaidArrayDevice(ContainerDevice):
         if (not exists and parents and len(parents) < self.level.min_members):
             for dev in self.parents:
                 dev.removeChild()
-            raise DeviceError(P_("A %(raidLevel)s set requires at least %(minMembers)d member",
+            raise errors.DeviceError(P_("A %(raidLevel)s set requires at least %(minMembers)d member",
                                  "A %(raidLevel)s set requires at least %(minMembers)d members",
                                  self.level.min_members) % \
                                  {"raidLevel": self.level, "minMembers": self.level.min_members})
@@ -3301,7 +3301,7 @@ class MDRaidArrayDevice(ContainerDevice):
                 size = self.level.get_size(self.memberDevices,
                    smallestMemberSize,
                    self.chunkSize)
-            except (MDRaidError, RaidError):
+            except (errors.MDRaidError, errors.RaidError):
                 size = 0
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
@@ -3346,7 +3346,7 @@ class MDRaidArrayDevice(ContainerDevice):
     def mdadmConfEntry(self):
         """ This array's mdadm.conf entry. """
         if self.memberDevices is None or not self.uuid:
-            raise DeviceError("array is not fully defined", self.name)
+            raise errors.DeviceError("array is not fully defined", self.name)
 
         # containers and the sets within must only have a UUID= parameter
         if self.type == "mdcontainer" or self.type == "mdbiosraidarray":
@@ -3394,7 +3394,7 @@ class MDRaidArrayDevice(ContainerDevice):
         if spares > max_spares:
             log.debug("failed to set new spares value %d (max is %d)",
                       spares, max_spares)
-            raise DeviceError("new spares value is too large")
+            raise errors.DeviceError("new spares value is too large")
 
         if self.totalDevices > spares:
             self.memberDevices = self.totalDevices - spares
@@ -3405,7 +3405,7 @@ class MDRaidArrayDevice(ContainerDevice):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         # We don't use self.status here because self.status requires a valid
         # sysfs path to function correctly.
@@ -3421,14 +3421,14 @@ class MDRaidArrayDevice(ContainerDevice):
         ## XXX TODO: remove this whole block of activation code
         if self.exists and member.format.exists and flags.installer_mode:
             member.setup()
-            udev_settle()
+            udev.udev_settle()
 
             if self.spares <= 0:
                 try:
                     mdraid.mdadd(None, member.path, incremental=True)
                     # mdadd causes udev events
-                    udev_settle()
-                except MDRaidError as e:
+                    udev.udev_settle()
+                except errors.MDRaidError as e:
                     log.warning("failed to add member %s to md array %s: %s"
                                 % (member.path, self.path, e))
 
@@ -3444,7 +3444,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
     def _removeParent(self, member):
         if self.level.name == "raid0" and self.exists and member.format.exists:
-            raise DeviceError("cannot remove members from existing raid0")
+            raise errors.DeviceError("cannot remove members from existing raid0")
 
         super(MDRaidArrayDevice, self)._removeParent(member)
         self.memberDevices -= 1
@@ -3589,8 +3589,8 @@ class MDRaidArrayDevice(ContainerDevice):
         StorageDevice._postCreate(self)
 
         # update our uuid attribute with the new array's UUID
-        info = udev_get_block_device(self.sysfsPath)
-        self.uuid = udev_device_get_md_uuid(info)
+        info = udev.udev_get_block_device(self.sysfsPath)
+        self.uuid = udev.udev_device_get_md_uuid(info)
         for member in self.devices:
             member.format.mdUuid = self.uuid
 
@@ -3605,7 +3605,7 @@ class MDRaidArrayDevice(ContainerDevice):
                         spares,
                         metadataVer=self.metadataVersion,
                         bitmap=self.createBitmap)
-        udev_settle()
+        udev.udev_settle()
 
     def _remove(self, member):
         self.setup()
@@ -3729,7 +3729,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         log_method_call(self, self.name, status=self.status)
         # This call already checks if the set is active.
         self._raidSet.activate(mknod=True)
-        udev_settle()
+        udev.udev_settle()
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -3858,23 +3858,23 @@ class MultipathDevice(DMDevice):
             try:
                 block.removeDeviceMap(devmap)
             except Exception as e:
-                raise MPathError("failed to tear down multipath device %s: %s"
+                raise errors.MPathError("failed to tear down multipath device %s: %s"
                                 % (self.name, e))
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        udev_settle()
+        udev.udev_settle()
         rc = util.run_program(["multipath", self.name])
         if rc:
-            raise MPathError("multipath activation failed for '%s'" %
+            raise errors.MPathError("multipath activation failed for '%s'" %
                             self.name, hardware_fault=True)
 
     def _postSetup(self):
         StorageDevice._postSetup(self)
         self.setupPartitions()
-        udev_settle()
+        udev.udev_settle()
 
 class NoDevice(StorageDevice):
     """ A nodev device for nodev filesystems like tmpfs. """
@@ -4122,7 +4122,7 @@ class LoopDevice(StorageDevice):
 
     def _preSetup(self, orig=False):
         if not os.path.exists(self.slave.path):
-            raise DeviceError("specified file (%s) does not exist" % self.slave.path)
+            raise errors.DeviceError("specified file (%s) does not exist" % self.slave.path)
         return StorageDevice._preSetup(self, orig=orig)
 
     def _setup(self, orig=False):
@@ -4310,7 +4310,7 @@ class OpticalDevice(StorageDevice):
         """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         try:
             fd = os.open(self.path, os.O_RDONLY)
@@ -4328,7 +4328,7 @@ class OpticalDevice(StorageDevice):
         """ Eject the drawer. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created", self.name)
 
         #try to umount and close device before ejecting
         self.teardown()
@@ -4650,7 +4650,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             min_members = min(limits)
 
         if limits and len(self.parents) - 1 < min_members:
-            raise DeviceError("cannot remove member due to raid level "
+            raise errors.DeviceError("cannot remove member due to raid level "
                               "constraints")
 
         super(BTRFSVolumeDevice, self)._removeParent(member)
@@ -4675,13 +4675,13 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         try:
             self._do_temp_mount(orig=True)
-        except FSError as e:
+        except errors.FSError as e:
             log.debug("btrfs temp mount failed: %s", e)
             return subvols
 
         try:
             subvols = btrfs.list_subvolumes(self.originalFormat._mountpoint)
-        except BTRFSError as e:
+        except errors.BTRFSError as e:
             log.debug("failed to list subvolumes: %s", e)
         else:
             self._getDefaultSubVolumeID()
@@ -4706,7 +4706,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         subvolid = None
         try:
             subvolid = btrfs.get_default_subvolume(self.originalFormat._mountpoint)
-        except BTRFSError as e:
+        except errors.BTRFSError as e:
             log.debug("failed to get default subvolume id: %s", e)
 
         self._defaultSubVolumeID = subvolid
@@ -4736,11 +4736,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def _postCreate(self):
         super(BTRFSVolumeDevice, self)._postCreate()
-        info = udev_get_block_device(self.sysfsPath)
+        info = udev.udev_get_block_device(self.sysfsPath)
         if not info:
             log.error("failed to get updated udev info for new btrfs volume")
         else:
-            self.format.volUUID = udev_device_get_uuid(info)
+            self.format.volUUID = udev.udev_device_get_uuid(info)
 
         self.format.exists = True
         self.originalFormat.exists = True
@@ -4755,7 +4755,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         log_method_call(self, self.name, status=self.status)
         try:
             self._do_temp_mount(orig=True)
-        except FSError as e:
+        except errors.FSError as e:
             log.debug("btrfs temp mount failed: %s" % e)
             raise
 
@@ -4767,7 +4767,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     def _add(self, member):
         try:
             self._do_temp_mount(orig=True)
-        except FSError as e:
+        except errors.FSError as e:
             log.debug("btrfs temp mount failed: %s" % e)
             raise
 
@@ -4793,10 +4793,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         super(BTRFSSubVolumeDevice, self).__init__(*args, **kwargs)
 
         if len(self.parents) != 1:
-            raise DeviceError("%s %s must have exactly one parent." % (self.type, self.name))
+            raise errors.DeviceError("%s %s must have exactly one parent." % (self.type, self.name))
 
         if not isinstance(self.parents[0], BTRFSDevice):
-            raise DeviceError("%s %s's unique parent must be a BTRFSDevice." % (self.type, self.name))
+            raise errors.DeviceError("%s %s's unique parent must be a BTRFSDevice." % (self.type, self.name))
 
         self.volume._addSubVolume(self)
 
@@ -4819,7 +4819,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             parent = parent.parents[0]
 
         if not isinstance(vol, BTRFSVolumeDevice):
-            raise DeviceError("%s %s's first non subvolume ancestor must be a btrfs volume" % (self.type, self.name))
+            raise errors.DeviceError("%s %s's first non subvolume ancestor must be a btrfs volume" % (self.type, self.name))
         return vol
 
     @property

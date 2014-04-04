@@ -20,9 +20,7 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import os
 import math
-import re
 from decimal import Decimal
 
 import logging
@@ -31,7 +29,7 @@ log = logging.getLogger("blivet")
 from ..size import Size
 from .. import util
 from .. import arch
-from ..errors import *
+from ..errors import LVMError
 from ..i18n import _
 
 MAX_LV_SLOTS = 256

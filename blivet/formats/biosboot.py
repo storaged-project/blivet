@@ -22,7 +22,6 @@
 
 from parted import PARTITION_BIOS_GRUB
 
-from ..errors import *
 from ..size import Size
 from .. import platform
 from ..i18n import N_

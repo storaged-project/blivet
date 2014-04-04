@@ -20,7 +20,7 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-from ..errors import *
+from ..errors import FormatCreateError
 from ..size import Size
 from .. import platform
 from ..i18n import N_

@@ -20,15 +20,12 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import sys
-import os
-from operator import add, sub, gt, lt
+from operator import gt, lt
 
 import parted
-from pykickstart.constants import *
+from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
-from errors import *
-from deviceaction import *
+from errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError, SanityError, SanityWarning
 from flags import flags
 from devices import PartitionDevice, LUKSDevice, devicePathToName
 from formats import getFormat

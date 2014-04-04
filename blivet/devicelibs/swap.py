@@ -24,7 +24,7 @@ import resource
 import os
 from decimal import Decimal
 
-from ..errors import *
+from ..errors import DMError, OldSwapError, SuspendError, SwapError, UnknownSwapError
 from .. import util
 from . import dm
 from ..size import Size

@@ -21,7 +21,7 @@
 #
 
 from storage_log import log_method_call
-from errors import *
+from errors import DeviceFactoryError, StorageError
 from devices import LUKSDevice
 from formats import getFormat
 from devicelibs import mdraid

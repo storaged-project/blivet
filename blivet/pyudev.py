@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import os
 import fnmatch
-from ctypes import *
+from ctypes import CDLL, c_char_p, c_int, c_void_p
 
 
 # XXX this one may need some tweaking...
