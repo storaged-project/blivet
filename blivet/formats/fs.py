@@ -943,17 +943,15 @@ class Ext2FS(FS):
             buf = util.capture_output([self.resizefsProg,
                                        "-P", self.device])
             for line in buf.splitlines():
-                if "minimum size of the filesystem:" not in line:
-                    continue
-
                 # line will look like:
                 # Estimated minimum size of the filesystem: 1148649
-                #
-                # NOTE: The minimum size reported is in blocks.  Convert
-                # to bytes, then megabytes, and finally round up.
-                (text, sep, minSize) = line.partition(": ")
-                size = long(minSize) * blockSize
-                size = Size(bytes=size)
+                (text, _sep, minSize) = line.partition(":")
+                if "minimum size of the filesystem" not in text:
+                    continue
+                minSize = minSize.strip()
+                if not minSize:
+                    break
+                size = Size(bytes=long(minSize) * blockSize)
                 break
 
             if size is None:
