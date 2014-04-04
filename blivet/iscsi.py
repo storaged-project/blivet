@@ -218,8 +218,8 @@ class iscsi(object):
         os.close(fd)
         self.initiatorSet = True
 
-        for dir in ['ifaces','isns','nodes','send_targets','slp','static']:
-            fulldir = "/var/lib/iscsi/%s" % (dir,)
+        for fulldir in (os.path.join("/var/lib/iscsi", d) for d in \
+           ['ifaces','isns','nodes','send_targets','slp','static']):
             if not os.path.isdir(fulldir):
                 os.makedirs(fulldir, 0755)
 
