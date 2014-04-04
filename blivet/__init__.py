@@ -36,7 +36,7 @@ bootLoaderError = Exception
 ERROR_RAISE = 0
 
 class ErrorHandler(object):
-    def cb(self, *args, **kwargs):
+    def cb(self, exn):
         return ERROR_RAISE
 
 errorHandler = ErrorHandler()
@@ -171,7 +171,7 @@ def turnOnFilesystems(storage, mountOnly=False):
         try:
             storage.doIt()
         except FSResizeError as e:
-            if errorHandler.cb(e, e.args[0], details=e.args[1]) == ERROR_RAISE:
+            if errorHandler.cb(e) == ERROR_RAISE:
                 raise
         except Exception as e:
             raise
@@ -2184,7 +2184,7 @@ def mountExistingSystem(fsset, rootDevice,
             dirtyDevs.append(device.path)
 
     if dirtyDevs and (not allowDirty or dirtyCB(dirtyDevs)):
-        raise DirtyFSError("\n".join(dirtyDevs))
+        raise DirtyFSError(dirtyDevs)
 
     fsset.mountFilesystems(rootPath=ROOT_PATH, readOnly=readOnly, skipRoot=True)
 
@@ -2636,7 +2636,7 @@ class FSSet(object):
                     device.setup()
                     device.format.setup()
                 except StorageError as e:
-                    if errorHandler.cb(e, device) == ERROR_RAISE:
+                    if errorHandler.cb(e) == ERROR_RAISE:
                         raise
                 else:
                     break
@@ -2683,7 +2683,7 @@ class FSSet(object):
             try:
                 device.setup()
             except Exception as e:
-                if errorHandler.cb(e, device) == ERROR_RAISE:
+                if errorHandler.cb(e) == ERROR_RAISE:
                     raise
                 else:
                     continue
@@ -2697,7 +2697,7 @@ class FSSet(object):
             except Exception as e:
                 log.error("error mounting %s on %s: %s",
                           device.path, device.format.mountpoint, e)
-                if errorHandler.cb(e, device) == ERROR_RAISE:
+                if errorHandler.cb(e) == ERROR_RAISE:
                     raise
 
         self.active = True
