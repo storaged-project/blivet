@@ -23,7 +23,7 @@
 import os
 import copy
 
-from ..storage_log import log_method_call
+from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
 from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
@@ -207,7 +207,8 @@ class DiskLabel(DeviceFormat):
         """ The disklabel type (eg: 'gpt', 'msdos') """
         try:
             lt = self.partedDisk.type
-        except Exception:
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
             lt = self._labelType
         return lt
 
@@ -221,7 +222,8 @@ class DiskLabel(DeviceFormat):
         if not size:
             try:
                 size = Size(bytes=self.partedDevice.getLength(unit="B"))
-            except Exception:
+            except Exception: # pylint: disable=broad-except
+                log_exception_info()
                 size = 0
 
         return size
@@ -329,7 +331,8 @@ class DiskLabel(DeviceFormat):
     def extendedPartition(self):
         try:
             extended = self.partedDisk.getExtendedPartition()
-        except Exception:
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
             extended = None
         return extended
 
@@ -337,7 +340,8 @@ class DiskLabel(DeviceFormat):
     def logicalPartitions(self):
         try:
             logicals = self.partedDisk.getLogicalPartitions()
-        except Exception:
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
             logicals = []
         return logicals
 
@@ -345,7 +349,8 @@ class DiskLabel(DeviceFormat):
     def firstPartition(self):
         try:
             part = self.partedDisk.getFirstPartition()
-        except Exception:
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
             part = None
         return part
 
@@ -353,7 +358,8 @@ class DiskLabel(DeviceFormat):
     def partitions(self):
         try:
             parts = self.partedDisk.partitions
-        except Exception:
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
             parts = []
             if flags.testing:
                 sys_block_root = "/sys/class/block/"
@@ -413,7 +419,8 @@ class DiskLabel(DeviceFormat):
         try:
             free = sum(Size(bytes=f.getLength(unit="B"))
                         for f in self.partedDisk.getFreeSpacePartitions())
-        except Exception:
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
             sys_block_root = "/sys/class/block/"
 
             # FIXME: /dev/mapper/foo won't work without massaging
