@@ -100,12 +100,12 @@ def collect_device_format_classes():
             Modules must call :func:`register_device_format` to make format
             classes available to :func:`getFormat`.
     """
-    dir = os.path.dirname(__file__)
-    for module_file in os.listdir(dir):
-        # make sure we're not importing this module
-        if module_file.endswith(".py") and module_file != __file__:
-            mod_name = module_file[:-3]
-            # imputil is deprecated in python 2.6
+    mydir = os.path.dirname(__file__)
+    myfile = os.path.basename(__file__)
+    (myfile_name, _ext) = os.path.splitext(myfile)
+    for module_file in os.listdir(mydir):
+        (mod_name, ext) = os.path.splitext(module_file)
+        if ext == ".py" and mod_name != myfile_name:
             try:
                 globals()[mod_name] = __import__(mod_name, globals(), locals(), [], -1)
             except ImportError:
