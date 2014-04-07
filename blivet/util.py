@@ -6,7 +6,6 @@ import subprocess
 import re
 from decimal import Decimal
 
-from .udev import udev_settle
 from .size import Size
 
 import logging
@@ -81,7 +80,6 @@ def mount(device, mountpoint, fstype, options=None):
     return rc
 
 def umount(mountpoint):
-    udev_settle()
     try:
         rc = run_program(["umount", mountpoint])
     except OSError:
