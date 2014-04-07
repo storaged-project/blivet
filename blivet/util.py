@@ -6,8 +6,8 @@ import subprocess
 import re
 from decimal import Decimal
 
-from udev import udev_settle
-from size import Size
+from .udev import udev_settle
+from .size import Size
 
 import logging
 log = logging.getLogger("blivet")

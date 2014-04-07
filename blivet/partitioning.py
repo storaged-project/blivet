@@ -25,13 +25,13 @@ from operator import gt, lt
 import parted
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
-from errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError, SanityError, SanityWarning
-from flags import flags
-from devices import PartitionDevice, LUKSDevice, devicePathToName
-from formats import getFormat
-from devicelibs.lvm import get_pool_padding
-from size import Size
-from i18n import _
+from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError, SanityError, SanityWarning
+from .flags import flags
+from .devices import PartitionDevice, LUKSDevice, devicePathToName
+from .formats import getFormat
+from .devicelibs.lvm import get_pool_padding
+from .size import Size
+from .i18n import _
 
 import logging
 log = logging.getLogger("blivet")

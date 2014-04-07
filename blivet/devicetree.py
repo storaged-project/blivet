@@ -27,27 +27,27 @@ import shutil
 import pprint
 import copy
 
-from errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
-from devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice, FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice, PartitionDevice, ZFCPDiskDevice, devicePathToName, iScsiDiskDevice
-from deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
-import formats
-from formats import getFormat
-from formats.fs import nodev_filesystems
-import devicelibs.mdraid
-import devicelibs.dm
-import devicelibs.lvm
-import devicelibs.mpath
-import devicelibs.loop
-import devicelibs.edd
-import udev
-import util
-from platform import platform
-import tsort
-from flags import flags
-from storage_log import log_method_call, log_method_return
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
+from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice, FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice, PartitionDevice, ZFCPDiskDevice, devicePathToName, iScsiDiskDevice
+from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
+from . import formats
+from .formats import getFormat
+from .formats.fs import nodev_filesystems
+from .devicelibs import mdraid
+from .devicelibs import dm
+from .devicelibs import lvm
+from .devicelibs import mpath
+from .devicelibs import loop
+from .devicelibs import edd
+from . import udev
+from . import util
+from .platform import platform
+from . import tsort
+from .flags import flags
+from .storage_log import log_method_call, log_method_return
 import parted
-from i18n import _
-from size import Size
+from .i18n import _
+from .size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -138,7 +138,7 @@ class DeviceTree(object):
             self.__luksDevs = luksDict
             self.__passphrases.extend([p for p in luksDict.values() if p])
 
-        devicelibs.lvm.lvm_cc_resetFilter()
+        lvm.lvm_cc_resetFilter()
 
         self._cleanup = False
 
@@ -160,19 +160,19 @@ class DeviceTree(object):
 
     def addIgnoredDisk(self, disk):
         self.ignoredDisks.append(disk)
-        devicelibs.lvm.lvm_cc_addFilterRejectRegexp(disk)
+        lvm.lvm_cc_addFilterRejectRegexp(disk)
 
     @property
     def pvInfo(self):
         if self._pvInfo is None:
-            self._pvInfo = devicelibs.lvm.pvinfo()
+            self._pvInfo = lvm.pvinfo()
 
         return self._pvInfo
 
     @property
     def lvInfo(self):
         if self._lvInfo is None:
-            self._lvInfo = devicelibs.lvm.lvs()
+            self._lvInfo = lvm.lvs()
 
         return self._lvInfo
 
@@ -281,7 +281,7 @@ class DeviceTree(object):
 
             # Remove lvm filters for devices we are operating on
             for device in (d for d in self._devices if d.dependsOn(action.device)):
-                devicelibs.lvm.lvm_cc_removeFilterRejectRegexp(device.name)
+                lvm.lvm_cc_removeFilterRejectRegexp(device.name)
 
         for action in self._actions[:]:
             log.info("executing action: %s", action)
@@ -599,7 +599,7 @@ class DeviceTree(object):
 
         if name.startswith("loop"):
             # ignore loop devices unless they're backed by a file
-            return (not devicelibs.loop.get_backing_file(name))
+            return (not loop.get_backing_file(name))
 
         if self.udevDeviceIsDisk(info):
             # Ignore any readonly disks
@@ -700,7 +700,7 @@ class DeviceTree(object):
             for slave_name in slave_names:
                 # if it's a dm-X name, resolve it to a map name first
                 if slave_name.startswith("dm-"):
-                    dev_name = devicelibs.dm.name_from_dm_node(slave_name)
+                    dev_name = dm.name_from_dm_node(slave_name)
                 else:
                     dev_name = slave_name.replace("!", "/") # handles cciss
                 slave_dev = self.getDeviceByName(dev_name)
@@ -750,7 +750,7 @@ class DeviceTree(object):
             # something must be wrong -- if all of the slaves are in
             # the tree, this device should be as well
             if device is None:
-                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
+                lvm.lvm_cc_addFilterRejectRegexp(name)
                 log.warning("ignoring dm device %s", name)
 
         return device
@@ -771,7 +771,7 @@ class DeviceTree(object):
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name first
             if slave_name.startswith("dm-"):
-                dev_name = devicelibs.dm.name_from_dm_node(slave_name)
+                dev_name = dm.name_from_dm_node(slave_name)
             else:
                 dev_name = slave_name.replace("!", "/") # handles cciss
             slave_dev = self.getDeviceByName(dev_name)
@@ -815,7 +815,7 @@ class DeviceTree(object):
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name
             if slave_name.startswith("dm-"):
-                dev_name = devicelibs.dm.name_from_dm_node(slave_name)
+                dev_name = dm.name_from_dm_node(slave_name)
             else:
                 dev_name = slave_name
             slave_dev = self.getDeviceByName(dev_name)
@@ -851,7 +851,7 @@ class DeviceTree(object):
 
             log.error("failed to scan md array %s", name)
             try:
-                devicelibs.mdraid.mddeactivate(path)
+                mdraid.mddeactivate(path)
             except MDRaidError:
                 log.error("failed to stop broken md array %s", name)
 
@@ -864,7 +864,7 @@ class DeviceTree(object):
         device = None
 
         if name.startswith("md"):
-            name = devicelibs.mdraid.name_from_md_node(name)
+            name = mdraid.name_from_md_node(name)
             device = self.getDeviceByName(name)
             if device:
                 return device
@@ -873,7 +873,7 @@ class DeviceTree(object):
             disk_name = os.path.basename(os.path.dirname(sysfs_path))
             disk_name = disk_name.replace('!','/')
             if disk_name.startswith("md"):
-                disk_name = devicelibs.mdraid.name_from_md_node(disk_name)
+                disk_name = mdraid.name_from_md_node(disk_name)
 
             disk = self.getDeviceByName(disk_name)
 
@@ -888,7 +888,7 @@ class DeviceTree(object):
                 # if the current device is still not in
                 # the tree, something has gone wrong
                 log.error("failure scanning device %s", disk_name)
-                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
+                lvm.lvm_cc_addFilterRejectRegexp(name)
                 return
 
         if not disk.partitioned:
@@ -901,7 +901,7 @@ class DeviceTree(object):
             # fwraid members from lvm since multipath and dmraid are already
             # active and lvm should therefore know to ignore them
             if not disk.format.hidden:
-                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(name)
+                lvm.lvm_cc_addFilterRejectRegexp(name)
 
             log.debug("ignoring partition %s on %s", name, disk.format.type)
             return
@@ -972,7 +972,7 @@ class DeviceTree(object):
             parentName = devicePathToName(parentPath)
             container = self.getDeviceByName(parentName)
             if not container:
-                parentSysName = devicelibs.mdraid.md_node_from_name(parentName)
+                parentSysName = mdraid.md_node_from_name(parentName)
                 container_sysfs = "/class/block/" + parentSysName
                 container_info = udev.udev_get_block_device(container_sysfs)
                 if not container_info:
@@ -1019,7 +1019,7 @@ class DeviceTree(object):
                           minor=udev.udev_device_get_minor(info),
                           sysfsPath=sysfs_path, **kwargs)
 
-        if devicelibs.mpath.is_multipath_member(device.path):
+        if mpath.is_multipath_member(device.path):
             info["ID_FS_TYPE"] = "multipath_member"
 
         if diskType == DASDDevice:
@@ -1105,7 +1105,7 @@ class DeviceTree(object):
                 device = None
 
         if device and device.isDisk and \
-           devicelibs.mpath.is_multipath_member(device.path):
+           mpath.is_multipath_member(device.path):
             # mark as multipath_member also when repopulating devicetree
             info["ID_FS_TYPE"] = "multipath_member"
             # newly added device (eg iSCSI) could make this one a multipath member
@@ -1355,7 +1355,7 @@ class DeviceTree(object):
 
             if lv_attr[0] in 'Ss':
                 log.info("found lvm snapshot volume '%s'", name)
-                origin_name = devicelibs.lvm.lvorigin(vg_name, lv_name)
+                origin_name = lvm.lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin",
                                 vg_name, lv_name)
@@ -1405,7 +1405,7 @@ class DeviceTree(object):
                 lv_class = LVMThinPoolDevice
             elif lv_attr[0] == 'V':
                 # thin volume
-                pool_name = devicelibs.lvm.thinlvpoolname(vg_name, lv_name)
+                pool_name = lvm.thinlvpoolname(vg_name, lv_name)
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
                 addRequiredLV(pool_device_name, "failed to look up thin pool")
                 lv_class = LVMThinLogicalVolumeDevice
@@ -1731,7 +1731,7 @@ class DeviceTree(object):
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
-            info.update(devicelibs.mdraid.mdexamine(device.path))
+            info.update(mdraid.mdexamine(device.path))
 
             # mdraid
             try:
@@ -1826,7 +1826,7 @@ class DeviceTree(object):
             # incomplete VGs. We will remove the PVs from the blacklist when/if
             # the time comes to remove the incomplete VG and its PVs.
             for pv in vg.pvs:
-                devicelibs.lvm.lvm_cc_addFilterRejectRegexp(pv.name)
+                lvm.lvm_cc_addFilterRejectRegexp(pv.name)
 
     def hide(self, device):
         """ Hide the specified device.
@@ -1883,7 +1883,7 @@ class DeviceTree(object):
         self._removeDevice(device, force=True, moddisk=False)
 
         self._hidden.append(device)
-        devicelibs.lvm.lvm_cc_addFilterRejectRegexp(device.name)
+        lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
         if isinstance(device, DASDDevice):
             self.dasd.remove(device)
@@ -1912,7 +1912,7 @@ class DeviceTree(object):
                                                           hidden.id)
                 self._hidden.remove(hidden)
                 self._devices.append(hidden)
-                devicelibs.lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
+                lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
                 for parent in hidden.parents:
                     parent.addChild()
 
@@ -1928,7 +1928,7 @@ class DeviceTree(object):
                 filedev.setup()
                 log.debug("%s", filedev)
 
-                loop_name = devicelibs.loop.get_loop_name(filedev.path)
+                loop_name = loop.get_loop_name(filedev.path)
                 loop_sysfs = None
                 if loop_name:
                     loop_sysfs = "/class/block/%s" % loop_name
@@ -2029,7 +2029,7 @@ class DeviceTree(object):
         self.dropLVMCache()
 
         if flags.installer_mode and not flags.image_install:
-            devicelibs.mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
+            mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
 
         self.setupDiskImages()
 
@@ -2472,7 +2472,7 @@ class DeviceTree(object):
         elif re.match(r'(0x)?[A-Za-z0-9]{2}(p\d+)?$', devspec):
             # BIOS drive number
             spec = int(devspec, 16)
-            for (edd_name, edd_number) in devicelibs.edd.edd_dict.items():
+            for (edd_name, edd_number) in edd.edd_dict.items():
                 if edd_number == spec:
                     device = self.getDeviceByName(edd_name)
                     break
@@ -2490,7 +2490,7 @@ class DeviceTree(object):
 
                 if devspec.startswith("/dev/dm-"):
                     try:
-                        dm_name = devicelibs.dm.name_from_dm_node(devspec[5:])
+                        dm_name = dm.name_from_dm_node(devspec[5:])
                     except StorageError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         dm_name = None
@@ -2500,7 +2500,7 @@ class DeviceTree(object):
 
                 if re.match(r'/dev/md\d+(p\d+)?$', devspec):
                     try:
-                        md_name = devicelibs.mdraid.name_from_md_node(devspec[5:])
+                        md_name = mdraid.name_from_md_node(devspec[5:])
                     except StorageError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         md_name = None

@@ -24,10 +24,10 @@
 import os
 import re
 
-import util
-from size import Size
+from . import util
+from .size import Size
 
-import pyudev
+from . import pyudev
 global_udev = pyudev.Udev()
 
 import logging
@@ -99,7 +99,7 @@ def udev_resolve_devspec(devspec):
     if not devspec:
         return None
 
-    import devices as _devices
+    from . import devices as _devices
     ret = None
     for dev in udev_get_block_devices():
         if devspec.startswith("LABEL="):
@@ -491,8 +491,8 @@ def udev_device_is_biosraid_member(info):
     # string that describes the type of dmraid (isw_raid_member...),  I don't
     # want to maintain a list and mdraid's ID_FS_TYPE='linux_raid_member', so
     # dmraid will be everything that is raid and not linux_raid_member
-    from formats.dmraid import DMRaidMember
-    from formats.mdraid import MDRaidMember
+    from .formats.dmraid import DMRaidMember
+    from .formats.mdraid import MDRaidMember
     if info.has_key("ID_FS_TYPE") and \
             (info["ID_FS_TYPE"] in DMRaidMember._udevTypes or \
              info["ID_FS_TYPE"] in MDRaidMember._udevTypes) and \

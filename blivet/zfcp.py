@@ -21,7 +21,7 @@
 
 import string
 import os
-from udev import udev_settle
+from .udev import udev_settle
 from . import util
 from .i18n import _
 

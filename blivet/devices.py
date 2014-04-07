@@ -28,26 +28,26 @@ import abc
 from decimal import Decimal
 
 # device backend modules
-from devicelibs import raid
-from devicelibs import mdraid
-from devicelibs import lvm
-from devicelibs import dm
-from devicelibs import loop
-from devicelibs import btrfs
-from devicelibs import crypto
+from .devicelibs import raid
+from .devicelibs import mdraid
+from .devicelibs import lvm
+from .devicelibs import dm
+from .devicelibs import loop
+from .devicelibs import btrfs
+from .devicelibs import crypto
 import parted
 import _ped
 import block
 
-import errors
-import util
-import arch
-from flags import flags
-from storage_log import log_method_call
-import udev
-from formats import get_device_format_class, getFormat, DeviceFormat
-from size import Size
-from i18n import P_
+from . import errors
+from . import util
+from . import arch
+from .flags import flags
+from .storage_log import log_method_call
+from . import udev
+from .formats import get_device_format_class, getFormat, DeviceFormat
+from .size import Size
+from .i18n import P_
 
 import logging
 log = logging.getLogger("blivet")

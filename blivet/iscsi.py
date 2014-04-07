@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from udev import udev_settle
+from .udev import udev_settle
 from . import util
 from .flags import flags
 from .i18n import _

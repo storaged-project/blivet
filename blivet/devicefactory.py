@@ -20,14 +20,14 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from storage_log import log_method_call
-from errors import DeviceFactoryError, StorageError
-from devices import LUKSDevice
-from formats import getFormat
-from devicelibs import mdraid
-from devicelibs.lvm import get_pv_space
-from devicelibs.lvm import get_pool_padding
-from devicelibs.lvm import LVM_PE_SIZE
+from .storage_log import log_method_call
+from .errors import DeviceFactoryError, StorageError
+from .devices import LUKSDevice
+from .formats import getFormat
+from .devicelibs import mdraid
+from .devicelibs.lvm import get_pv_space
+from .devicelibs.lvm import get_pool_padding
+from .devicelibs.lvm import LVM_PE_SIZE
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning

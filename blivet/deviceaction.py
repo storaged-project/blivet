@@ -20,15 +20,15 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import util
+from . import util
 
-import udev
-from devices import StorageDevice
-from devices import PartitionDevice
-from devices import LVMLogicalVolumeDevice
-from formats import getFormat
+from . import udev
+from .devices import StorageDevice
+from .devices import PartitionDevice
+from .devices import LVMLogicalVolumeDevice
+from .formats import getFormat
 from parted import partitionFlag, PARTITION_LBA
-from i18n import _, N_
+from .i18n import _, N_
 
 import logging
 log = logging.getLogger("blivet")

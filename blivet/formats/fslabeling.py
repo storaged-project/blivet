@@ -21,7 +21,7 @@
 
 import abc
 
-import fslabel
+from . import fslabel
 
 class FSLabeling(object):
     """An abstract class that represents filesystem labeling actions.

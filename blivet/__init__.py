@@ -65,29 +65,29 @@ import parted
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
-from storage_log import log_method_call
-from errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
-from devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
-from devicetree import DeviceTree
-from deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
-from formats import getFormat
-from formats import get_device_format_class
-from formats import get_default_filesystem_type
-import devicefactory
-from devicelibs.dm import name_from_dm_node
-from devicelibs.crypto import generateBackupPassphrase
-from devicelibs.edd import get_edd_dict
-from devicelibs.dasd import make_dasd_list, write_dasd_conf
-from udev import udev_trigger
-import iscsi
-import fcoe
-import zfcp
-import util
-import arch
-from flags import flags
-from platform import platform as _platform
-from size import Size
-from i18n import _
+from .storage_log import log_method_call
+from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
+from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
+from .devicetree import DeviceTree
+from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
+from .formats import getFormat
+from .formats import get_device_format_class
+from .formats import get_default_filesystem_type
+from . import devicefactory
+from .devicelibs.dm import name_from_dm_node
+from .devicelibs.crypto import generateBackupPassphrase
+from .devicelibs.edd import get_edd_dict
+from .devicelibs.dasd import make_dasd_list, write_dasd_conf
+from .udev import udev_trigger
+from . import iscsi
+from . import fcoe
+from . import zfcp
+from . import util
+from . import arch
+from .flags import flags
+from .platform import platform as _platform
+from .size import Size
+from .i18n import _
 
 import shelve
 import contextlib
@@ -129,7 +129,7 @@ def storageInitialize(storage, ksdata, protected):
     flags.update_from_anaconda_flags(anaconda_flags)
 
     # Platform class setup depends on flags, re-initialize it.
-    import platform
+    from . import platform
     platform.reset_platform()
 
     storage.shutdown()
