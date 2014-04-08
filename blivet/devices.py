@@ -3295,7 +3295,7 @@ class MDRaidArrayDevice(ContainerDevice):
         if self.type == "mdbiosraidarray":
             return self._size
 
-        smallestMemberSize = self.smallestMember.size - self.superBlockSize
+        smallestMemberSize = smallestMember.size - self.superBlockSize
         if not self.exists or not self.partedDevice:
             try:
                 size = self.level.get_size(self.memberDevices,
