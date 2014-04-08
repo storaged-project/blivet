@@ -422,4 +422,4 @@ def reset_platform():
     global platform
     platform = getPlatform()
 
-reset_platform()
+platform = getPlatform()
