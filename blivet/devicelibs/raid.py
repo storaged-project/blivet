@@ -65,14 +65,12 @@ class RAIDLevel(object):
     __metaclass__ = abc.ABCMeta
 
     # ABSTRACT PROPERTIES
-    level = abc.abstractproperty(lambda s: None,
-       doc="A code representing the level")
+    level = abc.abstractproperty(doc="A code representing the level")
 
-    min_members = abc.abstractproperty(lambda s: None,
+    min_members = abc.abstractproperty(
        doc="The minimum number of members required for this level")
 
-    nick = abc.abstractproperty(lambda s : None,
-       doc="A nickname for this level")
+    nick = abc.abstractproperty(doc="A nickname for this level")
 
     # PROPERTIES
     number = property(lambda s : int(s.level),
