@@ -34,7 +34,7 @@ def log_method_call(d, *args, **kwargs):
             v = "Skipped"
         fmt_args.extend([k, v])
 
-    logging.getLogger("blivet").debug(fmt % tuple(fmt_args))
+    log.debug(fmt, *fmt_args)
 
 def log_method_return(d, retval):
     classname = d.__class__.__name__
@@ -42,5 +42,4 @@ def log_method_return(d, retval):
     spaces = depth * ' '
     fmt = "%s%s.%s returned %s"
     fmt_args = (spaces, classname, methodname, retval)
-    logging.getLogger("blivet").debug(fmt % fmt_args)
-
+    log.debug(fmt, *fmt_args)
