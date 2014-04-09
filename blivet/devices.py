@@ -3184,7 +3184,7 @@ class MDRaidArrayDevice(ContainerDevice):
         self._memberDevices = 0     # the number of active (non-spare) members
         self._totalDevices = 0      # the total number of members
 
-        super(MDRaidArrayDevice, self).__init__(name, format=format,
+        super(MDRaidArrayDevice, self).__init__(name, format=format, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
