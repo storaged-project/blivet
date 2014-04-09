@@ -3293,9 +3293,9 @@ class MDRaidArrayDevice(ContainerDevice):
         if smallestMember is None:
             return 0
 
-        smallestMemberSize = smallestMember.size - self.superBlockSize
         if not self.exists or not self.partedDevice:
             try:
+                smallestMemberSize = smallestMember.size - self.superBlockSize
                 size = self.level.get_size(self.memberDevices,
                    smallestMemberSize,
                    self.chunkSize)
