@@ -1137,9 +1137,13 @@ class DeviceTree(object):
             device = self.addUdevDMDevice(info)
         elif udev.udev_device_is_md(info) and not udev.udev_device_get_md_container(info):
             log.info("%s is an md device", name)
-            if uuid:
+            try:
+                md_uuid = udev_device_get_md_uuid(info)
+            except KeyError:
+                pass
+            else:
                 # try to find the device by uuid
-                device = self.getDeviceByUuid(uuid)
+                device = self.getDeviceByUuid(md_uuid)
 
             if device is None:
                 device = self.addUdevMDDevice(info)
