@@ -20,6 +20,7 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+
 from . import util
 
 from . import udev
@@ -27,6 +28,7 @@ from .devices import StorageDevice
 from .devices import PartitionDevice
 from .devices import LVMLogicalVolumeDevice
 from .formats import getFormat
+from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
 
@@ -335,8 +337,8 @@ class ActionDestroyDevice(DeviceAction):
         if self.device.partedDevice:
             try:
                 self.device.partedDevice.removeFromCache()
-            except Exception:
-                pass
+            except Exception: # pylint: disable=broad-except
+                log_exception_info(fmt_str="failed to remove info for device %s from libparted cache", fmt_args=[self.device])
 
     def requires(self, action):
         """ Return True if self requires action.

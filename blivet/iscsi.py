@@ -87,8 +87,8 @@ class iscsi(object):
                 initiatorname = libiscsi.get_firmware_initiator_name()
                 self._initiator = initiatorname
                 self.initiatorSet = True
-            except Exception:
-                pass
+            except Exception: # pylint: disable=broad-except
+                log_exception_info(fmt_str="failed to get initiator name from iscsi firmware")
 
     # So that users can write iscsi() to get the singleton instance
     def __call__(self):

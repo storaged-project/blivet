@@ -2246,7 +2246,8 @@ class CryptTab(object):
                 try:
                     self.blkidTab = BlkidTab(chroot=chroot)
                     self.blkidTab.parse()
-                except Exception:
+                except Exception: # pylint: disable=broad-except
+                    log_exception_info(fmt_str="failed to parse blkid.tab")
                     self.blkidTab = None
 
             for line in f.readlines():
@@ -2322,7 +2323,8 @@ def get_containing_device(path, devicetree):
 
     try:
         device_name = os.path.basename(os.readlink(link))
-    except Exception:
+    except Exception: # pylint: disable=broad-except
+        log_exception_info(fmt_str="failed to find device name for path %s", fmt_args=[path])
         return None
 
     if device_name.startswith("dm-"):
@@ -2681,7 +2683,8 @@ class FSSet(object):
 
             try:
                 device.setup()
-            except Exception as e:
+            except Exception as e: # pylint: disable=broad-except
+                log_exception_info(fmt_str="unable to set up device %s", fmt_args=[device])
                 if errorHandler.cb(e) == ERROR_RAISE:
                     raise
                 else:
