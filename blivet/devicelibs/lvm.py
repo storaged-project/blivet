@@ -72,13 +72,18 @@ def _getConfigArgs(**kwargs):
         filter_string += ("\"r|/%s$|\"," % reject)
 
     if filter_string:
-        filter_string = " filter=[%s] " % filter_string.strip(",")
+        filter_string = "filter=[%s]" % filter_string.strip(",")
+
+    # XXX consider making /tmp/blivet.lvm.XXXXX, writing an lvm.conf there, and
+    #     setting LVM_SYSTEM_DIR
+    devices_string = 'preferred_names=["^/dev/mapper/", "^/dev/md/", "^/dev/sd"]'
+    if filter_string:
+        devices_string += " %s" % filter_string
 
     # devices_string can have (inside the brackets) "dir", "scan",
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
-    config_string = ""
-    devices_string = " devices {%s} " % (filter_string) # strings can be added
+    config_string = " devices { %s } " % (devices_string) # strings can be added
     if filter_string:
         config_string += devices_string # more strings can be added.
     if read_only_locking:
