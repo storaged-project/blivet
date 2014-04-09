@@ -3172,6 +3172,8 @@ class MDRaidArrayDevice(ContainerDevice):
 
             :keyword level: the device's RAID level
             :type level: str (eg: "raid1")
+            :keyword int memberDevices: the number of active member devices
+            :keyword int totalDevices: the total number of member devices
             :keyword metadataVersion: the version of the device's md metadata
             :type metadataVersion: str (eg: "0.90")
             :keyword minor: the device minor (obsolete?)
@@ -3179,8 +3181,8 @@ class MDRaidArrayDevice(ContainerDevice):
         """
         # These attributes are used by _addParent, so they must be initialized
         # prior to instantiating the superclass.
-        self._memberDevices = 0
-        self._totalDevices = 0
+        self._memberDevices = 0     # the number of active (non-spare) members
+        self._totalDevices = 0      # the total number of members
 
         super(MDRaidArrayDevice, self).__init__(name, format=format,
                                                 exists=exists, size=size,
@@ -3438,10 +3440,14 @@ class MDRaidArrayDevice(ContainerDevice):
             # information about it
             self._size = self.currentSize
 
-        if not self.exists:
+        # These should be incremented when adding new member devices except
+        # during devicetree.populate. When detecting existing arrays we will
+        # have gotten these values from udev and will use them to determine
+        # whether we found all of the members, so we shouldn't change them in
+        # that case.
+        if not member.format.exists:
             self._totalDevices += 1
-
-        self.memberDevices += 1
+            self.memberDevices += 1
 
     def _removeParent(self, member):
         if self.level.name == "raid0" and self.exists and member.format.exists:
