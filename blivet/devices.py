@@ -3406,7 +3406,9 @@ class MDRaidArrayDevice(ContainerDevice):
 
     def updateSysfsPath(self):
         """ Update this device's sysfs path. """
-        log_method_call(self, self.name, status=self.status)
+        # don't include self.status here since this method is called by
+        # MDRaidArrayDevice.status
+        log_method_call(self, self.name)
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
@@ -3468,6 +3470,19 @@ class MDRaidArrayDevice(ContainerDevice):
         status = False
         if not self.exists:
             return status
+
+        if os.path.exists(self.path) and not self.sysfsPath:
+            # the array has been activated from outside of blivet
+            self.updateSysfsPath()
+
+            # make sure the active array is the one we expect
+            info = udev.udev_get_block_device(self.sysfsPath)
+            uuid = udev.udev_device_get_md_uuid(info)
+            if uuid and uuid != self.uuid:
+                log.warning("md array %s is active, but has UUID %s -- not %s",
+                            self.path, uuid, self.uuid)
+                self.sysfsPath = ""
+                return status
 
         state_file = "/sys/%s/md/array_state" % self.sysfsPath
         try:
