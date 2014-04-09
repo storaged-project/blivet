@@ -41,6 +41,7 @@ class TopologicalSortTestCase(unittest.TestCase):
 
         try:
             order = blivet.tsort.tsort(graph)
+        # pylint: disable=W0703
         except Exception as e:
             self.fail(e)
 
