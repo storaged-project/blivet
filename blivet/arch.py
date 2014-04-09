@@ -34,6 +34,7 @@ from __future__ import absolute_import
 import os
 
 from .flags import flags
+from .storage_log import log_exception_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -366,6 +367,6 @@ def bits():
         bits = bits.strip("bit")
         bits = int(bits)
         return bits
-    except Exception as e:
-        log.error("architecture word size detection failed: %s", e)
+    except Exception: # pylint: disable=broad-except
+        log_exception_info(log.error, "architecture word size detection failed")
         return None

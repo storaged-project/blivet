@@ -44,7 +44,7 @@ from . import util
 from .platform import platform
 from . import tsort
 from .flags import flags
-from .storage_log import log_method_call, log_method_return
+from .storage_log import log_exception_info, log_method_call, log_method_return
 import parted
 from .i18n import _
 from .size import Size
@@ -1212,9 +1212,8 @@ class DeviceTree(object):
 
         try:
             device.setup()
-        except Exception as e:
-            log.debug("setup of %s failed: %s", device.name, e)
-            log.warning("aborting disklabel handler for %s", device.name)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.warning, "setup of %s failed, aborting disklabel handler", [device.name])
             return
 
         # special handling for unsupported partitioned devices

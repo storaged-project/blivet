@@ -65,7 +65,7 @@ import parted
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
-from .storage_log import log_method_call
+from .storage_log import log_exception_info, log_method_call
 from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from .devicetree import DeviceTree
@@ -384,8 +384,8 @@ class Blivet(object):
 
         try:
             self.devicetree.teardownAll()
-        except Exception as e:
-            log.error("failure tearing down device tree: %s", e)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.error, "failure tearing down device tree")
 
     def reset(self, cleanupOnly=False):
         """ Reset storage configuration to reflect actual system state.
@@ -437,8 +437,8 @@ class Blivet(object):
         if flags.installer_mode:
             try:
                 self.roots = findExistingInstallations(self.devicetree)
-            except Exception as e:
-                log.info("failure detecting existing installations: %s", e)
+            except Exception: # pylint: disable=broad-except
+                log_exception_info(log.info, "failure detecting existing installations")
 
             self.dumpState("initial")
 
@@ -2557,16 +2557,16 @@ class FSSet(object):
         try:
             blkidTab.parse()
             log.debug("blkid.tab devs: %s", blkidTab.devices.keys())
-        except Exception as e:
-            log.info("error parsing blkid.tab: %s", e)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.info, "error parsing blkid.tab")
             blkidTab = None
 
         cryptTab = CryptTab(self.devicetree, blkidTab=blkidTab, chroot=chroot)
         try:
             cryptTab.parse(chroot=chroot)
             log.debug("crypttab maps: %s", cryptTab.mappings.keys())
-        except Exception as e:
-            log.info("error parsing crypttab: %s", e)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.info, "error parsing crypttab")
             cryptTab = None
 
         self.blkidTab = blkidTab
@@ -2693,9 +2693,8 @@ class FSSet(object):
             try:
                 device.format.setup(options=options,
                                     chroot=rootPath)
-            except Exception as e:
-                log.error("error mounting %s on %s: %s",
-                          device.path, device.format.mountpoint, e)
+            except Exception as e: # pylint: disable=broad-except
+                log_exception_info(log.error, "error mounting %s on %s", [device.path, device.format.mountpoint])
                 if errorHandler.cb(e) == ERROR_RAISE:
                     raise
 
@@ -3058,17 +3057,15 @@ def findExistingInstallations(devicetree):
 
         try:
             device.setup()
-        except Exception as e:
-            log.warning("setup of %s failed: %s", device.name, e)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.warning, "setup of %s failed", [device.name])
             continue
 
         options = device.format.options + ",ro"
         try:
             device.format.mount(options=options, mountpoint=ROOT_PATH)
-        except Exception as e:
-            log.warning("mount of %s as %s failed: %s", device.name,
-                                                        device.format.type,
-                                                        e)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.warning, "mount of %s as %s failed", [device.name, device.format.type])
             device.teardown()
             continue
 
@@ -3147,16 +3144,16 @@ def parseFSTab(devicetree, chroot=None):
     try:
         blkidTab.parse()
         log.debug("blkid.tab devs: %s", blkidTab.devices.keys())
-    except Exception as e:
-        log.info("error parsing blkid.tab: %s", e)
+    except Exception: # pylint: disable=broad-except
+        log_exception_info(log.info, "error parsing blkid.tab")
         blkidTab = None
 
     cryptTab = CryptTab(devicetree, blkidTab=blkidTab, chroot=chroot)
     try:
         cryptTab.parse(chroot=chroot)
         log.debug("crypttab maps: %s", cryptTab.mappings.keys())
-    except Exception as e:
-        log.info("error parsing crypttab: %s", e)
+    except Exception: # pylint: disable=broad-except
+        log_exception_info(log.info, "error parsing crypttab")
         cryptTab = None
 
     with open(path) as f:

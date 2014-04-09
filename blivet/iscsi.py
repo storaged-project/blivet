@@ -22,6 +22,7 @@ from .udev import udev_settle
 from . import util
 from .flags import flags
 from .i18n import _
+from .storage_log import log_exception_info
 import os
 import logging
 import shutil
@@ -148,8 +149,8 @@ class iscsi(object):
 
         try:
             found_nodes = libiscsi.discover_firmware()
-        except Exception:
-            log.info("iscsi: No IBFT info found.")
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.info, "iscsi: No IBFT info found.")
             # an exception here means there is no ibft firmware, just return
             return
 

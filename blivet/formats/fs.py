@@ -33,7 +33,7 @@ from .. import util
 from .. import platform
 from ..flags import flags
 from parted import fileSystemType
-from ..storage_log import log_method_call
+from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size
 from ..i18n import _, N_
@@ -312,9 +312,8 @@ class FS(DeviceFormat):
                     size *= value
 
                 size = Size(bytes=size)
-            except Exception as e:
-                log.error("failed to obtain size of filesystem on %s: %s",
-                          self.device, e)
+            except Exception: # pylint: disable=broad-except
+                log_exception_info(log.error, "failed to obtain size of filesystem on %s", [self.device])
 
         return size
 
@@ -527,8 +526,8 @@ class FS(DeviceFormat):
         # try the mount
         try:
             self.mount(mountpoint=mountpoint)
-        except Exception as e:
-            log.info("test mount failed: %s", e)
+        except Exception: # pylint: disable=broad-except
+            log_exception_info(log.info, "test mount failed")
         else:
             self.unmount()
             ret = True
