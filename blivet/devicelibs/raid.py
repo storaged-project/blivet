@@ -130,13 +130,20 @@ class RAIDLevel(object):
         raise NotImplementedError()
 
     def get_raw_array_size(self, member_count, smallest_member_size):
-        """Return the raw arraysize.
+        """Return the space, essentially the number of bits available
+           for storage. This value is generally a function of the
+           smallest member size. If the smallest member size represents
+           the amount of data that can be stored on the smallest member,
+           then the result will represent the amount of data that can be
+           stored on the array. If the smallest member size represents
+           both data and metadata, then the result will represent the
+           available space in the array for both data and metadata.
 
            :param int member_count: the number of members in the array
            :param smallest_member_size: the size of the smallest
              member of this array
            :type smallest_member_size: :class:`~.size.Size`
-           :returns: the array size, not including metadata or chunk size
+           :returns: the array size
            :rtype: :class:`~.size.Size`
 
            Raises a RaidError if member_count is fewer than the minimum
@@ -156,11 +163,16 @@ class RAIDLevel(object):
 
     def get_size(self, member_count, smallest_member_size, chunk_size):
         """
+           Calculates the number of bits available on the this array modulo
+           the chunk size based on the smallest member size.
+
            :param int member_count: the number of members in the array
-           :param int smallest_member_size: the size of the smallest
+           :param smallest_member_size: the size of the smallest
              member of this array
-           :param int chunk_size: the smallest size this array allows
-           :rtype: int
+           :type smallest_member_size: :class:`~.size.Size`
+           :param chunk_size: the smallest unit of size this array allows
+           :type chunk_size: :class:`~.size.Size`
+           :rtype: :class:`~.size.Size`
         """
         size = self.get_raw_array_size(member_count, smallest_member_size)
         return self._get_size(size, chunk_size)
