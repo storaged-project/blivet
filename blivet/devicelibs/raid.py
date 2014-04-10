@@ -212,6 +212,45 @@ class RAIDLevel(object):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
 
+    def size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
+        """Estimate the amount of data that can be stored on this array.
+
+           :param member_size: a list of the sizes of members of this array
+           :type member_size: list of :class:`~.size.Size`
+           :param int num_members: the number of members in the array
+           :param chunk_size: the smallest unit of size for
+           :type chunk_size: :class:`~.size.Size`
+           :param superblock_size_func: a function that estimates the
+              superblock size for this array
+           :type superblock_size_func: a function from :class:`~.size.Size` to
+              :class:`~.size.Size`
+           :returns: an estimate of the amount of data that can be stored on
+              this array
+           :rtype: :class:`~.size.Size`
+
+           Note that the number of members in the array may not be the same
+           as the length of member_sizes if the array is still
+           under construction.
+        """
+        if not member_sizes:
+            return 0
+
+        if num_members is None:
+            num_members = len(member_sizes)
+
+        if chunk_size is None or chunk_size == 0:
+            raise RaidError("chunk_size parameter value %s is not acceptable")
+
+        if superblock_size_func is None:
+            raise RaidError("superblock_size_func value of None is not acceptable")
+
+        min_size = min(member_sizes)
+        total_space = self.get_net_array_size(num_members, min_size)
+        superblock_size = superblock_size_func(total_space)
+        min_data_size = min_size - superblock_size
+        total_data_size = self.get_net_array_size(num_members, min_data_size)
+        return self._trim(total_data_size, chunk_size)
+
     def __str__(self):
         return self.name
 

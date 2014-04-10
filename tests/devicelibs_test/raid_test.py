@@ -3,6 +3,7 @@ import unittest
 
 import blivet.devicelibs.raid as raid
 import blivet.errors as errors
+from blivet.size import Size
 
 class RaidTestCase(unittest.TestCase):
 
@@ -95,7 +96,38 @@ class RaidTestCase(unittest.TestCase):
 
         self.assertRaises(errors.RaidError, raid.RAID10.get_recommended_stride, 1)
 
+        ##
+        ## size
+        ##
+        for r in raid.RAIDLevels():
+            self.assertEqual(r.size([ Size(spec="32MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="64MiB") ],
+               4,
+               Size(spec="1MiB"),
+               lambda x: Size(bytes=0)),
+               r.get_net_array_size(4, Size(spec="32MiB")))
 
+        for r in raid.RAIDLevels():
+            self.assertEqual(r.size([ Size(spec="32MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="64MiB") ],
+               5,
+               Size(spec="1MiB"),
+               lambda x: Size(bytes=0)),
+               r.get_net_array_size(5, Size(spec="32MiB")))
+
+        for r in raid.RAIDLevels():
+            self.assertEqual(r.size([ Size(spec="32MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="64MiB") ],
+               4,
+               Size(spec="1MiB"),
+               lambda x: Size(spec="32MiB")),
+               0)
         ##
         ## names
         ##

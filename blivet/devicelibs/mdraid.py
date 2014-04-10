@@ -57,6 +57,9 @@ class Container(object):
         raise MDRaidError("get_size is not defined for level container.")
     def get_raw_array_size(self, member_count, smallest_member_size):
         raise MDRaidError("get_raw_array_size is not defined for level container.")
+    def size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
+        return sum(member_sizes)
+
     def __str__(self):
         return self.name
 
