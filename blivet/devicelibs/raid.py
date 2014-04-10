@@ -129,7 +129,7 @@ class RAIDLevel(object):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
 
-    def get_raw_array_size(self, member_count, smallest_member_size):
+    def get_net_array_size(self, member_count, smallest_member_size):
         """Return the space, essentially the number of bits available
            for storage. This value is generally a function of the
            smallest member size. If the smallest member size represents
@@ -154,10 +154,10 @@ class RAIDLevel(object):
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
         if smallest_member_size < 0:
             raise RaidError("size is a negative number")
-        return self._get_raw_array_size(member_count, smallest_member_size)
+        return self._get_net_array_size(member_count, smallest_member_size)
 
     @abc.abstractmethod
-    def _get_raw_array_size(self, member_count, smallest_member_size):
+    def _get_net_array_size(self, member_count, smallest_member_size):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
 
@@ -174,7 +174,7 @@ class RAIDLevel(object):
            :type chunk_size: :class:`~.size.Size`
            :rtype: :class:`~.size.Size`
         """
-        size = self.get_raw_array_size(member_count, smallest_member_size)
+        size = self.get_net_array_size(member_count, smallest_member_size)
         return self._trim(size, chunk_size)
 
     @abc.abstractmethod
@@ -344,8 +344,7 @@ class RAID0(RAIDLevel):
     def _get_base_member_size(self, size, member_count):
         return div_up(size, member_count)
 
-    def _get_raw_array_size(self, member_count, smallest_member_size):
-        # smallest_member_size dictates the return type
+    def _get_net_array_size(self, member_count, smallest_member_size):
         return smallest_member_size * member_count
 
     def _trim(self, size, chunk_size):
@@ -368,7 +367,7 @@ class RAID1(RAIDLevel):
     def _get_base_member_size(self, size, member_count):
         return size
 
-    def _get_raw_array_size(self, member_count, smallest_member_size):
+    def _get_net_array_size(self, member_count, smallest_member_size):
         return smallest_member_size
 
     def _trim(self, size, chunk_size):
@@ -391,8 +390,7 @@ class RAID4(RAIDLevel):
     def _get_base_member_size(self, size, member_count):
         return div_up(size, member_count - 1)
 
-    def _get_raw_array_size(self, member_count, smallest_member_size):
-        # smallest_member_size dictates the return type
+    def _get_net_array_size(self, member_count, smallest_member_size):
         return smallest_member_size * (member_count - 1)
 
     def _trim(self, size, chunk_size):
@@ -415,8 +413,7 @@ class RAID5(RAIDLevel):
     def _get_base_member_size(self, size, member_count):
         return div_up(size, (member_count - 1))
 
-    def _get_raw_array_size(self, member_count, smallest_member_size):
-        # smallest_member_size dictates the return type
+    def _get_net_array_size(self, member_count, smallest_member_size):
         return smallest_member_size * (member_count - 1)
 
     def _trim(self, size, chunk_size):
@@ -439,8 +436,7 @@ class RAID6(RAIDLevel):
     def _get_base_member_size(self, size, member_count):
         return div_up(size, member_count - 2)
 
-    def _get_raw_array_size(self, member_count, smallest_member_size):
-        # smallest_member_size dictates the return type
+    def _get_net_array_size(self, member_count, smallest_member_size):
         return smallest_member_size * (member_count - 2)
 
     def _trim(self, size, chunk_size):
@@ -463,8 +459,7 @@ class RAID10(RAIDLevel):
     def _get_base_member_size(self, size, member_count):
         return div_up(size, (member_count // 2))
 
-    def _get_raw_array_size(self, member_count, smallest_member_size):
-        # smallest_member_size dictates the return type
+    def _get_net_array_size(self, member_count, smallest_member_size):
         return smallest_member_size * (member_count // 2)
 
     def _trim(self, size, chunk_size):

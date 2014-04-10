@@ -3262,7 +3262,7 @@ class MDRaidArrayDevice(ContainerDevice):
             return 0
 
         smallestMemberSize = smallestMember.size
-        size = self.level.get_raw_array_size(self.memberDevices,
+        size = self.level.get_net_array_size(self.memberDevices,
            smallestMemberSize)
         log.debug("raw RAID %s size == %s", self.level, size)
         return size

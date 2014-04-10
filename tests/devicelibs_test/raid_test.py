@@ -72,15 +72,15 @@ class RaidTestCase(unittest.TestCase):
                           -4, 4)
 
         ##
-        ## get_raw_array_size
+        ## get_net_array_size
         ##
-        self.assertEqual(raid.RAID0.get_raw_array_size(4, 2), 8)
-        self.assertEqual(raid.RAID1.get_raw_array_size(4, 2), 2)
-        self.assertEqual(raid.RAID4.get_raw_array_size(4, 2), 6)
-        self.assertEqual(raid.RAID5.get_raw_array_size(4, 2), 6)
-        self.assertEqual(raid.RAID6.get_raw_array_size(4, 2), 4)
-        self.assertEqual(raid.RAID10.get_raw_array_size(4, 2), 4)
-        self.assertEqual(raid.RAID10.get_raw_array_size(5, 2), 4)
+        self.assertEqual(raid.RAID0.get_net_array_size(4, 2), 8)
+        self.assertEqual(raid.RAID1.get_net_array_size(4, 2), 2)
+        self.assertEqual(raid.RAID4.get_net_array_size(4, 2), 6)
+        self.assertEqual(raid.RAID5.get_net_array_size(4, 2), 6)
+        self.assertEqual(raid.RAID6.get_net_array_size(4, 2), 4)
+        self.assertEqual(raid.RAID10.get_net_array_size(4, 2), 4)
+        self.assertEqual(raid.RAID10.get_net_array_size(5, 2), 4)
 
         ##
         ## get_recommended_stride
