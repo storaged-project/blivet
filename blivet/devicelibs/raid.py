@@ -175,11 +175,21 @@ class RAIDLevel(object):
            :rtype: :class:`~.size.Size`
         """
         size = self.get_raw_array_size(member_count, smallest_member_size)
-        return self._get_size(size, chunk_size)
+        return self._trim(size, chunk_size)
 
     @abc.abstractmethod
-    def _get_size(self, size, chunk_size):
-        """Helper function; not to be called directly."""
+    def _trim(self, size, chunk_size):
+        """Helper function; not to be called directly.
+
+           Trims size to the largest size that the level allows based on the
+           chunk_size.
+
+           :param size: the size of the array
+           :type size: :class:`~.size.Size`
+           :param chunk_size: the smallest unit of size this array allows
+           :type chunk_size: :class:`~.size.Size`
+           :rtype: :class:`~.size.Size`
+        """
         raise NotImplementedError()
 
     def get_recommended_stride(self, member_count):
@@ -338,7 +348,7 @@ class RAID0(RAIDLevel):
         # smallest_member_size dictates the return type
         return smallest_member_size * member_count
 
-    def _get_size(self, size, chunk_size):
+    def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
     def _get_recommended_stride(self, member_count):
@@ -361,7 +371,7 @@ class RAID1(RAIDLevel):
     def _get_raw_array_size(self, member_count, smallest_member_size):
         return smallest_member_size
 
-    def _get_size(self, size, chunk_size):
+    def _trim(self, size, chunk_size):
         return size
 
     def _get_recommended_stride(self, member_count):
@@ -385,7 +395,7 @@ class RAID4(RAIDLevel):
         # smallest_member_size dictates the return type
         return smallest_member_size * (member_count - 1)
 
-    def _get_size(self, size, chunk_size):
+    def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
     def _get_recommended_stride(self, member_count):
@@ -409,7 +419,7 @@ class RAID5(RAIDLevel):
         # smallest_member_size dictates the return type
         return smallest_member_size * (member_count - 1)
 
-    def _get_size(self, size, chunk_size):
+    def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
     def _get_recommended_stride(self, member_count):
@@ -433,7 +443,7 @@ class RAID6(RAIDLevel):
         # smallest_member_size dictates the return type
         return smallest_member_size * (member_count - 2)
 
-    def _get_size(self, size, chunk_size):
+    def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
     def _get_recommended_stride(self, member_count):
@@ -457,7 +467,7 @@ class RAID10(RAIDLevel):
         # smallest_member_size dictates the return type
         return smallest_member_size * (member_count // 2)
 
-    def _get_size(self, size, chunk_size):
+    def _trim(self, size, chunk_size):
         return size
 
     def _get_recommended_stride(self, member_count):
