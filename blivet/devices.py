@@ -3299,7 +3299,8 @@ class MDRaidArrayDevice(ContainerDevice):
                 size = self.level.get_size(self.memberDevices,
                    smallestMemberSize,
                    self.chunkSize)
-            except (errors.MDRaidError, errors.RaidError):
+            except (errors.MDRaidError, errors.RaidError) as e:
+                log.info("could not calculate size of device %s for raid level %s: %s", self.name, self.level, e)
                 size = 0
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
