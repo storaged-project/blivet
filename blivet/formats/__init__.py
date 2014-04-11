@@ -273,7 +273,7 @@ class DeviceFormat(ObjectID):
 
            This method is not intended to be overridden.
         """
-        self._label = label
+        self._label = label # pylint: disable=attribute-defined-outside-init
 
     def _getLabel(self):
         """The label for this filesystem.
@@ -286,7 +286,7 @@ class DeviceFormat(ObjectID):
         return self._label
 
     def _setOptions(self, options):
-        self._options = options
+        self._options = options # pylint: disable=attribute-defined-outside-init
 
     def _getOptions(self):
         return self._options
@@ -296,7 +296,7 @@ class DeviceFormat(ObjectID):
     def _setDevice(self, devspec):
         if devspec and not devspec.startswith("/"):
             raise ValueError("device must be a fully qualified path")
-        self._device = devspec
+        self._device = devspec # pylint: disable=attribute-defined-outside-init
 
     def _getDevice(self):
         return self._device

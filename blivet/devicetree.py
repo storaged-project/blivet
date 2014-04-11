@@ -178,8 +178,8 @@ class DeviceTree(object):
 
     def dropLVMCache(self):
         """ Drop cached lvm information. """
-        self._pvInfo = None
-        self._lvInfo = None
+        self._pvInfo = None # pylint: disable=attribute-defined-outside-init
+        self._lvInfo = None # pylint: disable=attribute-defined-outside-init
 
     def pruneActions(self):
         """ Remove redundant/obsolete actions from the action list. """

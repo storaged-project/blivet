@@ -295,6 +295,7 @@ class Device(util.ObjectID):
     def _initParentList(self):
         """ Initialize this instance's parent list. """
         if not hasattr(self, "_parents"):
+            # pylint: disable=attribute-defined-outside-init
             self._parents = ParentList(appendfunc=self._addParent,
                                        removefunc=self._removeParent)
 
@@ -3241,10 +3242,10 @@ class MDRaidArrayDevice(ContainerDevice):
 
             Sets createBitmap True unless level is 0
         """
-        self._level = mdraid.getRaidLevel(value)
+        self._level = mdraid.getRaidLevel(value) # pylint: disable=attribute-defined-outside-init
 
         # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
-        self.createBitmap = self._level.name != "raid0"
+        self.createBitmap = self._level.name != "raid0" # pylint: disable=attribute-defined-outside-init
 
     @property
     def rawArraySize(self):
@@ -3578,7 +3579,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
         # Bitmaps are not useful for swap and small partitions
         if self.size < 1000 or self.format.type == "swap":
-            self.createBitmap = False
+            self.createBitmap = False # pylint: disable=attribute-defined-outside-init
 
     def _postCreate(self):
         # this is critical since our status method requires a valid sysfs path

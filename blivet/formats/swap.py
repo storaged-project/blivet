@@ -95,6 +95,7 @@ class SwapSpace(DeviceFormat):
        doc="the label for this swap space")
 
     def _setPriority(self, priority):
+        # pylint: disable=attribute-defined-outside-init
         if priority is None:
             self._priority = None
             return

@@ -1828,7 +1828,7 @@ class Blivet(object):
             log.debug("invalid default fstype: %r", fmt)
             raise ValueError("new value %s is not valid as a default fs type" % fmt)
 
-        self._defaultFSType = newtype
+        self._defaultFSType = newtype # pylint: disable=attribute-defined-outside-init
 
     @property
     def mountpoints(self):
