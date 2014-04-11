@@ -53,8 +53,6 @@ class Container(object):
     min_members = 1
     def get_recommended_stride(self, member_devices):
         return None
-    def get_size(self, member_count, smallest_member_size, chunk_size):
-        raise MDRaidError("get_size is not defined for level container.")
     def get_raw_array_size(self, member_count, smallest_member_size):
         raise MDRaidError("get_raw_array_size is not defined for level container.")
     def size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):

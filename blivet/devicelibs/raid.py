@@ -161,22 +161,6 @@ class RAIDLevel(object):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
 
-    def get_size(self, member_count, smallest_member_size, chunk_size):
-        """
-           Calculates the number of bits available on the this array modulo
-           the chunk size based on the smallest member size.
-
-           :param int member_count: the number of members in the array
-           :param smallest_member_size: the size of the smallest
-             member of this array
-           :type smallest_member_size: :class:`~.size.Size`
-           :param chunk_size: the smallest unit of size this array allows
-           :type chunk_size: :class:`~.size.Size`
-           :rtype: :class:`~.size.Size`
-        """
-        size = self.get_net_array_size(member_count, smallest_member_size)
-        return self._trim(size, chunk_size)
-
     @abc.abstractmethod
     def _trim(self, size, chunk_size):
         """Helper function; not to be called directly.
