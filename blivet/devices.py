@@ -3244,29 +3244,6 @@ class MDRaidArrayDevice(ContainerDevice):
         # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
         self.createBitmap = self._level.name != "raid0" # pylint: disable=attribute-defined-outside-init
 
-    @property
-    def rawArraySize(self):
-        """ Calculate the raw array size without taking into account space
-        reserved for metadata or chunkSize alignment.
-
-        This is used to calculate the superBlockSize for v1.1 and v1.2
-        metadata.
-
-        Returns the raw size
-
-        Raises an MDRaidError if this operation is not meaningful for the
-        raid level.
-        """
-        smallestMember = self.smallestMember
-        if smallestMember is None:
-            return 0
-
-        smallestMemberSize = smallestMember.size
-        size = self.level.get_net_array_size(self.memberDevices,
-           smallestMemberSize)
-        log.debug("raw RAID %s size == %s", self.level, size)
-        return size
-
     def getSuperBlockSize(self, raw_array_size):
         """Estimate the superblock size for a member of an array,
            given the total available memory for this array and raid level.
@@ -3278,13 +3255,6 @@ class MDRaidArrayDevice(ContainerDevice):
         """
         return mdraid.get_raid_superblock_size(raw_array_size,
                                                version=self.metadataVersion)
-
-    @property
-    def smallestMember(self):
-        if not self.devices:
-            return None
-        else:
-            return min(self.devices, key=lambda d: d.size)
 
     @property
     def size(self):
