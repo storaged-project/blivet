@@ -231,9 +231,8 @@ class RAIDLevel(object):
         min_size = min(member_sizes)
         total_space = self.get_net_array_size(num_members, min_size)
         superblock_size = superblock_size_func(total_space)
-        min_data_size = min_size - superblock_size
-        total_data_size = self.get_net_array_size(num_members, min_data_size)
-        return self._trim(total_data_size, chunk_size)
+        min_data_size = self._trim(min_size - superblock_size, chunk_size)
+        return self.get_net_array_size(num_members, min_data_size)
 
     def __str__(self):
         return self.name

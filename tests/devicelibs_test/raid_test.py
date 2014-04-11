@@ -129,6 +129,16 @@ class RaidTestCase(unittest.TestCase):
                lambda x: Size(spec="32MiB")),
                0)
 
+        for r in raid.RAIDLevels():
+            self.assertEqual(r.get_size([ Size(spec="32MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="128MiB"),
+                                      Size(spec="64MiB") ],
+               4,
+               Size(spec="2MiB"),
+               lambda x: Size(spec="31MiB")),
+               0 if r not in (raid.RAID1, raid.RAID10) else r.get_net_array_size(4, Size(spec="1MiB")))
+
         ##
         ## names
         ##
