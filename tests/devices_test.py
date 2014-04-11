@@ -87,7 +87,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "smallestMember" : self.assertIsNone,
            "spares" : lambda x, m: self.assertEqual(x, 0, m),
            "status" : self.assertFalse,
-           "superBlockSize" : lambda x, m: self.assertEqual(x, Size(spec="1 MiB"), m),
            "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
            "targetSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
            "uuid" : self.assertIsNone,

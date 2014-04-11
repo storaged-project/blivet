@@ -3267,9 +3267,16 @@ class MDRaidArrayDevice(ContainerDevice):
         log.debug("raw RAID %s size == %s", self.level, size)
         return size
 
-    @property
-    def superBlockSize(self):
-        return mdraid.get_raid_superblock_size(self.rawArraySize,
+    def getSuperBlockSize(self, raw_array_size):
+        """Estimate the superblock size for a member of an array,
+           given the total available memory for this array and raid level.
+
+           :param raw_array_size: total available for this array and level
+           :type raw_array_size: :class:`~.size.Size`
+           :returns: estimated superblock size
+           :rtype: :class:`~.size.Size`
+        """
+        return mdraid.get_raid_superblock_size(raw_array_size,
                                                version=self.metadataVersion)
 
     @property
@@ -3289,16 +3296,12 @@ class MDRaidArrayDevice(ContainerDevice):
         if self.type == "mdbiosraidarray":
             return self._size
 
-        smallestMember = self.smallestMember
-        if smallestMember is None:
-            return 0
-
         if not self.exists or not self.partedDevice:
             try:
-                smallestMemberSize = smallestMember.size - self.superBlockSize
-                size = self.level.get_size(self.memberDevices,
-                   smallestMemberSize,
-                   self.chunkSize)
+                size = self.level.size([d.size for d in self.devices],
+                    self.memberDevices,
+                    self.chunkSize,
+                    self.getSuperBlockSize)
             except (errors.MDRaidError, errors.RaidError) as e:
                 log.info("could not calculate size of device %s for raid level %s: %s", self.name, self.level, e)
                 size = 0
