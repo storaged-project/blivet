@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.47
+Version: 0.48
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,35 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Apr 10 2014 Brian C. Lane <bcl@redhat.com> - 0.48-1
+- Do not execute smallestMember property method twice. (amulhern)
+- Remove unnecessary function definitions in abstract properties (amulhern)
+- Pass format args as arguments to debug method (#1085057) (amulhern)
+- Move udev_settle call from util into fs to break circular dependency
+  (amulhern)
+- Change implicit relative imports to explicit relative imports (amulhern)
+- Remove unused imports (amulhern)
+- Get rid of os.path import (amulhern)
+- Really avoid dynamic import of formats/__init__.py by itself (amulhern)
+- Ignore E1101 errors in savePassphrase. (amulhern)
+- Add a bunch of E1120 errors to the false positives file (amulhern)
+- Make LabelingAsRoot class an abstract class and define two properties
+  (amulhern)
+- Suppress false positive W0631 error. (amulhern)
+- Use self.nic instead of nic (amulhern)
+- Make sure _state_functions is a dictionary in base class (amulhern)
+- Remove unnecessary lambda wrappers on assertion functions (amulhern)
+- Obvious fix inspired by an "Undefined variable warning" (amulhern)
+- Remove all references to lvm_vg_blacklist and blacklistVG. (amulhern)
+- Update for changes in the anaconda errorHandler API. (dshea)
+- Remove unused imports. (amulhern)
+- Import from the defining module. (amulhern)
+- Move import to top level. (amulhern)
+- Do not use implicit relative imports (amulhern)
+- Remove wildcard import (amulhern)
+- Fix a bug and catch a change in lvm's thin pool layout. (dlehman)
+- Plumb uuid down through DMDevice. (dlehman)
+
 * Wed Apr 02 2014 Brian C. Lane <bcl@redhat.com> - 0.47-1
 - Change labelApp to a more concisely defined abstract property (amulhern)
 - Change defaultLabel to a more concisely defined abstract property. (amulhern)
