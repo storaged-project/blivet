@@ -307,6 +307,9 @@ class RAIDLevels(object):
         if not level in self._raid_levels:
             self._raid_levels.append(level)
 
+    def __iter__(self):
+        return iter(self._raid_levels)
+
 class RAID0(RAIDLevel):
 
     level = property(lambda s: "0")
