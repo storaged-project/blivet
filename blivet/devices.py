@@ -3284,14 +3284,14 @@ class MDRaidArrayDevice(ContainerDevice):
         """Returns the actual or estimated size depending on whether or
            not the array exists.
         """
-        smallestMember = self.smallestMember
-        if smallestMember is None:
-            return 0
-
         # For container members return probed size, as we cannot determine it
         # when teared down.
         if self.type == "mdbiosraidarray":
             return self._size
+
+        smallestMember = self.smallestMember
+        if smallestMember is None:
+            return 0
 
         smallestMemberSize = smallestMember.size - self.superBlockSize
         if not self.exists or not self.partedDevice:
