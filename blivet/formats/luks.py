@@ -254,22 +254,6 @@ class LUKS(DeviceFormat):
         """ Path to key file to be used in /etc/crypttab """
         return self._key_file
 
-    def addKeyFromFile(self, keyfile):
-        """ Add a new key from a file.
-
-            Add the contents of the specified key file to an available key
-            slot in the LUKS header.
-        """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status, file=keyfile)
-        if not self.exists:
-            raise LUKSError("format has not been created")
-
-        crypto.luks_add_key(self.device,
-                          passphrase=self.__passphrase,
-                          key_file=self._key_file,
-                          new_key_file=keyfile)
-
     def addPassphrase(self, passphrase):
         """ Add a new passphrase.
 
