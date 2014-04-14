@@ -210,7 +210,7 @@ class Size(Decimal):
         self = Decimal.__new__(cls, value=value)
         return self
 
-    def __str__(self, context=None):
+    def __str__(self, eng=False, context=None):
         # Convert the result of humanReadable from unicode to str
         return self.humanReadable()
 
