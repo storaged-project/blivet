@@ -302,6 +302,7 @@ class DeviceFactory(object):
         self.__devices = []
         self.__actions = []
         self.__names = []
+        self.__roots = []
 
     #
     # methods related to device size and disk space requirements
