@@ -120,6 +120,7 @@ def enable_installer_mode():
 
     flags.installer_mode = True
 
+    from . import deviceaction
     from pyanaconda.progress import progress_report
     deviceaction.progress_report = progress_report
 
