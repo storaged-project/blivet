@@ -2208,7 +2208,7 @@ class ContainerDevice(StorageDevice):
 
         if member.format.exists and self.uuid and self._formatUUIDAttr and \
            getattr(member.format, self._formatUUIDAttr) == self.uuid:
-            log.error("cannot re-add member: %s" % member)
+            log.error("cannot re-add member: %s", member)
             raise ValueError("cannot add members that are already part of the container")
 
         self._add(member)
@@ -3429,8 +3429,8 @@ class MDRaidArrayDevice(ContainerDevice):
                     # mdadd causes udev events
                     udev.udev_settle()
                 except errors.MDRaidError as e:
-                    log.warning("failed to add member %s to md array %s: %s"
-                                % (member.path, self.path, e))
+                    log.warning("failed to add member %s to md array %s: %s",
+                                member.path, self.path, e)
 
         if self.status and member.format.exists:
             # we always probe since the device may not be set up when we want
@@ -4756,7 +4756,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         try:
             self._do_temp_mount(orig=True)
         except errors.FSError as e:
-            log.debug("btrfs temp mount failed: %s" % e)
+            log.debug("btrfs temp mount failed: %s", e)
             raise
 
         try:
@@ -4768,7 +4768,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         try:
             self._do_temp_mount(orig=True)
         except errors.FSError as e:
-            log.debug("btrfs temp mount failed: %s" % e)
+            log.debug("btrfs temp mount failed: %s", e)
             raise
 
         try:

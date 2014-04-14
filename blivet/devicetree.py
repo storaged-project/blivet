@@ -195,8 +195,8 @@ class DeviceTree(object):
                     self._actions.remove(obsolete)
 
                     if obsolete.obsoletes(action) and action in self._actions:
-                        log.info("removing mutually-obsolete action %d (%d)"
-                                 % (action.id, obsolete.id))
+                        log.info("removing mutually-obsolete action %d (%d)",
+                                 action.id, obsolete.id)
                         self._actions.remove(action)
 
     def sortActions(self):
@@ -1647,7 +1647,7 @@ class DeviceTree(object):
                 break
 
         if btrfs_dev:
-            log.info("found btrfs volume %s" % btrfs_dev.name)
+            log.info("found btrfs volume %s", btrfs_dev.name)
             btrfs_dev.parents.append(device)
         else:
             label = udev.udev_device_get_label(info)
