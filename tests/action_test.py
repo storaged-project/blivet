@@ -1038,11 +1038,6 @@ class DeviceActionTestCase(StorageTestCase):
         """ Verify correct functioning of action sorting. """
         pass
 
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(DeviceActionTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()
 

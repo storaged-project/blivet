@@ -202,9 +202,5 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
            crypto.luks_close,
            "encrypted")
 
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(CryptoTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()

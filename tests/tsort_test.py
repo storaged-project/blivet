@@ -52,11 +52,5 @@ class TopologicalSortTestCase(unittest.TestCase):
         self.failUnless(check_order(order, graph),
                         "ordering constraints not satisfied")
 
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(TopologicalSortTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()
-

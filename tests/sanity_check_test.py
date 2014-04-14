@@ -48,8 +48,5 @@ class LUKSKeyTestCase(unittest.TestCase):
         errors += b._verifyLUKSDevicesHaveKey()
         self.assertEqual(errors, [])
 
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(LUKSKeyTestCase)
-
 if __name__ == "__main__":
     unittest.main()

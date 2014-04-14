@@ -180,12 +180,5 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         subvolumes = btrfs.list_subvolumes(self.mountpoint)
         self.assertEqual(len([v for v in subvolumes if v['path'].find("SV1.1") != -1]), 1)
 
-
-def suite():
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(BTRFSAsRootTestCase1)
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(BTRFSAsRootTestCase2)
-    return unittest.TestSuite([suite1, suite2])
-
-
 if __name__ == "__main__":
     unittest.main()

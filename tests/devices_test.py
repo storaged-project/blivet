@@ -524,10 +524,6 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            "cannot directly set size of btrfs volume"):
             self.dev1.size = 32
 
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(MDRaidArrayDeviceTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()
 

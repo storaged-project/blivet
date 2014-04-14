@@ -129,8 +129,5 @@ class SizeTestCase(unittest.TestCase):
         os.environ['LANG'] = saved_lang
         locale.setlocale(locale.LC_ALL, '')
 
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(SizeTestCase)
-
 if __name__ == "__main__":
     unittest.main()

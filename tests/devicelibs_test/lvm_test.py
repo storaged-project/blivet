@@ -266,11 +266,5 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         # pv already removed
         self.assertEqual(lvm.pvremove(_LOOP_DEV0), None)
 
-def suite():
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(LVMTestCase)
-    suite2 = unittest.TestLoader().loadTestsFromTestCase(LVMAsRootTestCase)
-    return unittest.TestSuite([suite1, suite2])
-
-
 if __name__ == "__main__":
     unittest.main()

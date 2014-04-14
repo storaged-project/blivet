@@ -51,9 +51,5 @@ class MDFactoryTestCase(unittest.TestCase):
 
         self.assertIsNone(self.factory2.get_container())
 
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(MDFactoryTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()

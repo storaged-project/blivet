@@ -121,12 +121,5 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         self.assertIsNone(mdraid.mddestroy(self._dev_name))
         self.assertIsNone(mdraid.mddestroy("/not/existing/device"))
 
-
-def suite():
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(MDRaidTestCase)
-    suite2 = unittest.TestLoader().loadTestsFromTestCase(MDRaidAsRootTestCase)
-    return unittest.TestSuite([suite1, suite2])
-
-
 if __name__ == "__main__":
     unittest.main()

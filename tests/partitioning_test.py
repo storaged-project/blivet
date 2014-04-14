@@ -118,10 +118,5 @@ class PartitioningTestCase(unittest.TestCase):
         disk = self.getDisk(disk_type="mac")
         self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
 
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(PartitioningTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()

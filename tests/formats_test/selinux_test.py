@@ -92,10 +92,5 @@ class SELinuxContextTestCase(baseclass.DevicelibsTestCase):
 
         self.assertEqual(root_selinux_context[1], 'system_u:object_r:file_t:s0')
 
-def suite():
-    suite1 = unittest.TestLoader().loadTestsFromTestCase(SELinuxContextTestCase)
-    return unittest.TestSuite([suite1])
-
-
 if __name__ == "__main__":
     unittest.main()

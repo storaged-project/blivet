@@ -119,6 +119,3 @@ class RaidTestCase(unittest.TestCase):
         self.assertRaisesRegexp(errors.RaidError,
                                 "invalid standard RAID level descriptor",
                                 raid.RAIDLevels, ["raid3.1415"])
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(RaidTestCase)

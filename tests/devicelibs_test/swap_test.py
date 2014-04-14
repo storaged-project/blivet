@@ -67,10 +67,5 @@ class SwapTestCase(baseclass.DevicelibsTestCase):
         # already off
         self.assertRaises(SwapError, swap.swapoff, _LOOP_DEV0)
 
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(SwapTestCase)
-
-
 if __name__ == "__main__":
     unittest.main()

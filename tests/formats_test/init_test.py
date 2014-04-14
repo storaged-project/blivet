@@ -40,6 +40,3 @@ class FormatsTestCase(unittest.TestCase):
         ## Copy or deepcopy should preserve the id
         self.assertEqual(ids, [copy.copy(obj).id for obj in objs])
         self.assertEqual(ids, [copy.deepcopy(obj).id for obj in objs])
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(FormatsTestCase)
