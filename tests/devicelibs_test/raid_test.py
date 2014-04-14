@@ -100,7 +100,7 @@ class RaidTestCase(unittest.TestCase):
         ## size
         ##
         for r in raid.RAIDLevels():
-            self.assertEqual(r.size([ Size(spec="32MiB"),
+            self.assertEqual(r.get_size([ Size(spec="32MiB"),
                                       Size(spec="128MiB"),
                                       Size(spec="128MiB"),
                                       Size(spec="64MiB") ],
@@ -110,7 +110,7 @@ class RaidTestCase(unittest.TestCase):
                r.get_net_array_size(4, Size(spec="32MiB")))
 
         for r in raid.RAIDLevels():
-            self.assertEqual(r.size([ Size(spec="32MiB"),
+            self.assertEqual(r.get_size([ Size(spec="32MiB"),
                                       Size(spec="128MiB"),
                                       Size(spec="128MiB"),
                                       Size(spec="64MiB") ],
@@ -120,7 +120,7 @@ class RaidTestCase(unittest.TestCase):
                r.get_net_array_size(5, Size(spec="32MiB")))
 
         for r in raid.RAIDLevels():
-            self.assertEqual(r.size([ Size(spec="32MiB"),
+            self.assertEqual(r.get_size([ Size(spec="32MiB"),
                                       Size(spec="128MiB"),
                                       Size(spec="128MiB"),
                                       Size(spec="64MiB") ],
@@ -128,6 +128,7 @@ class RaidTestCase(unittest.TestCase):
                Size(spec="1MiB"),
                lambda x: Size(spec="32MiB")),
                0)
+
         ##
         ## names
         ##

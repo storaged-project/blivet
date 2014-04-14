@@ -196,7 +196,7 @@ class RAIDLevel(object):
         """Helper function; not to be called directly."""
         raise NotImplementedError()
 
-    def size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
+    def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
         """Estimate the amount of data that can be stored on this array.
 
            :param member_size: a list of the sizes of members of this array

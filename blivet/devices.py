@@ -3298,7 +3298,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
         if not self.exists or not self.partedDevice:
             try:
-                size = self.level.size([d.size for d in self.devices],
+                size = self.level.get_size([d.size for d in self.devices],
                     self.memberDevices,
                     self.chunkSize,
                     self.getSuperBlockSize)
