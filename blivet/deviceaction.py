@@ -155,14 +155,20 @@ class DeviceAction(util.ObjectID):
             raise ValueError("arg 1 must be a StorageDevice instance")
         self.device = device
         self.container = getattr(self.device, "container", None)
+        self._applied = False
+
+    def apply(self):
+        """ apply changes related to the action to the device(s) """
+        self._applied = True
 
     def execute(self):
         """ perform the action """
-        pass
+        if not self._applied:
+            raise RuntimeError("cannot execute unapplied action")
 
     def cancel(self):
         """ cancel the action """
-        pass
+        self._applied = False
 
     @property
     def isDestroy(self):
@@ -282,6 +288,7 @@ class ActionCreateDevice(DeviceAction):
         DeviceAction.__init__(self, device)
 
     def execute(self):
+        super(ActionCreateDevice, self).execute()
         self.device.create()
 
     def requires(self, action):
@@ -330,6 +337,7 @@ class ActionDestroyDevice(DeviceAction):
         DeviceAction.__init__(self, device)
 
     def execute(self):
+        super(ActionDestroyDevice, self).execute()
         self.device.destroy()
 
         # Make sure libparted does not keep cached info for this device
@@ -429,13 +437,26 @@ class ActionResizeDevice(DeviceAction):
         else:
             self.origsize = device.size
 
-        self.device.targetSize = newsize
+        self._targetSize = newsize
+
+    def apply(self):
+        """ apply changes related to the action to the device(s) """
+        if self._applied:
+            return
+
+        self.device.targetSize = self._targetSize
+        super(ActionResizeDevice, self).apply()
 
     def execute(self):
+        super(ActionResizeDevice, self).execute()
         self.device.resize()
 
     def cancel(self):
+        if not self._applied:
+            return
+
         self.device.targetSize = self.origsize
+        super(ActionResizeDevice, self).cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -476,14 +497,36 @@ class ActionCreateFormat(DeviceAction):
     typeDescStr = N_("create format")
 
     def __init__(self, device, format=None):
+        """
+            :param device: the device on which the format will be created
+            :type device: :class:`~.devices.StorageDevice`
+            :keyword format: the format to put on the device
+            :type format: :class:~.formats.DeviceFormat`
+
+            If no format is specified, it is assumed that the format is already
+            associated with the device.
+        """
         DeviceAction.__init__(self, device)
         if format:
             self.origFormat = device.format
-            self.device.format = format
         else:
             self.origFormat = getFormat(None)
 
+        self._format = format or device.format
+
+        if self._format.exists:
+            raise ValueError("specified format already exists")
+
+    def apply(self):
+        """ apply changes related to the action to the device(s) """
+        if self._applied:
+            return
+
+        self.device.format = self._format
+        super(ActionCreateFormat, self).apply()
+
     def execute(self):
+        super(ActionCreateFormat, self).execute()
         msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
         with progress_report(msg):
             self.device.setup()
@@ -521,7 +564,11 @@ class ActionCreateFormat(DeviceAction):
                 log.error("udev lookup failed for device: %s", self.device)
 
     def cancel(self):
+        if not self._applied:
+            return
+
         self.device.format = self.origFormat
+        super(ActionCreateFormat, self).cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -564,10 +611,17 @@ class ActionDestroyFormat(DeviceAction):
     def __init__(self, device):
         DeviceAction.__init__(self, device)
         self.origFormat = self.device.format
+
+    def apply(self):
+        if self._applied:
+            return
+
         self.device.format = None
+        super(ActionDestroyFormat, self).apply()
 
     def execute(self):
         """ wipe the filesystem signature from the device """
+        super(ActionDestroyFormat, self).execute()
         status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
@@ -576,7 +630,11 @@ class ActionDestroyFormat(DeviceAction):
             self.device.teardown()
 
     def cancel(self):
+        if not self._applied:
+            return
+
         self.device.format = self.origFormat
+        super(ActionDestroyFormat, self).cancel()
 
     @property
     def format(self):
@@ -640,16 +698,28 @@ class ActionResizeFormat(DeviceAction):
         else:
             self.dir = RESIZE_SHRINK
         self.origSize = self.device.format.targetSize
-        self.device.format.targetSize = newsize
+        self._targetSize = newsize
+
+    def apply(self):
+        if self._applied:
+            return
+
+        self.device.format.targetSize = self._targetSize
+        super(ActionResizeFormat, self).apply()
 
     def execute(self):
+        super(ActionResizeFormat, self).execute()
         msg = _("Resizing filesystem on %(device)s") % {"device": self.device.path}
         with progress_report(msg):
             self.device.setup(orig=True)
             self.device.format.doResize()
 
     def cancel(self):
+        if not self._applied:
+            return
+
         self.device.format.targetSize = self.origSize
+        super(ActionResizeFormat, self).cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -689,12 +759,23 @@ class ActionAddMember(DeviceAction):
     def __init__(self, container, device):
         super(ActionAddMember, self).__init__(device)
         self.container = container
-        container.parents.append(device)
+
+    def apply(self):
+        if self._applied:
+            return
+
+        self.container.parents.append(self.device)
+        super(ActionAddMember, self).apply()
 
     def cancel(self):
+        if not self._applied:
+            return
+
         self.container.parents.remove(self.device)
+        super(ActionAddMember, self).cancel()
 
     def execute(self):
+        super(ActionAddMember, self).execute()
         self.container.add(self.device)
 
     def requires(self, action):
@@ -742,12 +823,23 @@ class ActionRemoveMember(DeviceAction):
     def __init__(self, container, device):
         super(ActionRemoveMember, self).__init__(device)
         self.container = container
-        container.parents.remove(device)
+
+    def apply(self):
+        if self._applied:
+            return
+
+        self.container.parents.remove(self.device)
+        super(ActionRemoveMember, self).apply()
 
     def cancel(self):
+        if not self._applied:
+            return
+
         self.container.parents.append(self.device)
+        super(ActionRemoveMember, self).cancel()
 
     def execute(self):
+        super(ActionRemoveMember, self).execute()
         self.container.remove(self.device)
 
     def requires(self, action):

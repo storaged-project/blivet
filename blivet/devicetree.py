@@ -435,6 +435,8 @@ class DeviceTree(object):
             if action.device in self._devices:
                 raise DeviceTreeError("device is already in the tree")
 
+        action.apply()
+
         if action.isCreate and action.isDevice:
             self._addDevice(action.device)
         elif action.isDestroy and action.isDevice:

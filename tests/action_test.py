@@ -193,7 +193,7 @@ class DeviceActionTestCase(StorageTestCase):
         p = self.newDevice(device_class=PartitionDevice,
                            name="sdd1", size=Size(spec="32 GiB"), parents=[sdd])
         self.failUnlessRaises(ValueError,
-                              blivet.deviceaction.ActionResizeDevice,
+                              ActionResizeDevice,
                               p,
                               p.size + Size(spec="7232 MiB"))
 
@@ -202,7 +202,7 @@ class DeviceActionTestCase(StorageTestCase):
         vg = self.storage.devicetree.getDeviceByName("VolGroup")
         self.assertNotEqual(vg, None)
         self.failUnlessRaises(ValueError,
-                              blivet.deviceaction.ActionResizeDevice,
+                              ActionResizeDevice,
                               vg,
                               vg.size + Size(spec="32 MiB"))
 
@@ -211,7 +211,7 @@ class DeviceActionTestCase(StorageTestCase):
         lv_swap = self.storage.devicetree.getDeviceByName("VolGroup-lv_swap")
         self.assertNotEqual(lv_swap, None)
         self.failUnlessRaises(ValueError,
-                              blivet.deviceaction.ActionResizeFormat,
+                              ActionResizeFormat,
                               lv_swap,
                               lv_swap.size + Size(spec="32 MiB"))
 
@@ -221,7 +221,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(lv_root, None)
         lv_root.format.exists = False
         self.failUnlessRaises(ValueError,
-                              blivet.deviceaction.ActionResizeFormat,
+                              ActionResizeFormat,
                               lv_root,
                               lv_root.size - Size(spec="1000 MiB"))
         lv_root.format.exists = True
@@ -232,7 +232,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(lv_swap, None)
         self.assertEqual(lv_swap.exists, True)
         self.failUnlessRaises(ValueError,
-                              blivet.deviceaction.ActionCreateDevice,
+                              ActionCreateDevice,
                               lv_swap)
 
         # instantiation of format destroy action for device causes device's
@@ -241,13 +241,17 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(lv_swap, None)
         orig_format = lv_swap.format
         self.assertEqual(lv_swap.format.type, "swap")
-        blivet.deviceaction.ActionDestroyFormat(lv_swap)
+        destroy_swap = ActionDestroyFormat(lv_swap)
+        self.assertEqual(lv_swap.format.type, "swap")
+        destroy_swap.apply()
         self.assertEqual(lv_swap.format.type, None)
 
         # instantiation of format create action for device causes new format
         # to be accessible via device's format attribute
         new_format = getFormat("vfat", device=lv_swap.path)
-        blivet.deviceaction.ActionCreateFormat(lv_swap, new_format)
+        create_swap = ActionCreateFormat(lv_swap, new_format)
+        self.assertEqual(lv_swap.format.type, None)
+        create_swap.apply()
         self.assertEqual(lv_swap.format, new_format)
         lv_swap.format = orig_format
 
@@ -260,7 +264,7 @@ class DeviceActionTestCase(StorageTestCase):
         vg = self.storage.devicetree.getDeviceByName("VolGroup")
         self.assertNotEqual(vg, None)
         self.assertEqual(vg.isleaf, False)
-        a = blivet.deviceaction.ActionDestroyDevice(vg)
+        a = ActionDestroyDevice(vg)
         self.failUnlessRaises(ValueError,
                               self.storage.devicetree.registerAction,
 			      a)
@@ -275,6 +279,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         sdc1_format = self.newFormat("ext2", device=sdc1.path, mountpoint="/")
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
+        create_sdc1_format.apply()
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
                               create_sdc1_format)
@@ -283,11 +288,13 @@ class DeviceActionTestCase(StorageTestCase):
 
         resize_sdc1_format = ActionResizeFormat(sdc1,
                                                 sdc1.size - Size(spec="10 GiB"))
+        resize_sdc1_format.apply()
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
                               resize_sdc1_format)
 
         resize_sdc1 = ActionResizeDevice(sdc1, sdc1.size - Size(spec="10 GiB"))
+        resize_sdc1.apply()
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
                               resize_sdc1)
@@ -344,7 +351,9 @@ class DeviceActionTestCase(StorageTestCase):
         # - obsoletes other ActionCreateDevice instances w/ lower id and same
         #   device
         create_device_1 = ActionCreateDevice(sdc1)
+        create_device_1.apply()
         create_device_2 = ActionCreateDevice(sdc1)
+        create_device_2.apply()
         self.assertEqual(create_device_2.obsoletes(create_device_1), True)
         self.assertEqual(create_device_1.obsoletes(create_device_2), False)
 
@@ -355,7 +364,9 @@ class DeviceActionTestCase(StorageTestCase):
         format_1 = self.newFormat("ext3", mountpoint="/home", device=sdc1.path)
         format_2 = self.newFormat("ext3", mountpoint="/opt", device=sdc1.path)
         create_format_1 = ActionCreateFormat(sdc1, format_1)
+        create_format_1.apply()
         create_format_2 = ActionCreateFormat(sdc1, format_2)
+        create_format_2.apply()
         self.assertEqual(create_format_2.obsoletes(create_format_1), True)
         self.assertEqual(create_format_1.obsoletes(create_format_2), False)
 
@@ -366,7 +377,9 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1.exists = True
         sdc1.format.exists = True
         resize_format_1 = ActionResizeFormat(sdc1, sdc1.size - Size(spec="1000 MiB"))
+        resize_format_1.apply()
         resize_format_2 = ActionResizeFormat(sdc1, sdc1.size - Size(spec="5000 MiB"))
+        resize_format_2.apply()
         self.assertEqual(resize_format_2.obsoletes(resize_format_1), True)
         self.assertEqual(resize_format_1.obsoletes(resize_format_2), False)
         sdc1.exists = False
@@ -377,6 +390,7 @@ class DeviceActionTestCase(StorageTestCase):
         # - obsoletes resize format actions w/ lower id on same device
         new_format = self.newFormat("ext4", mountpoint="/foo", device=sdc1.path)
         create_format_3 = ActionCreateFormat(sdc1, new_format)
+        create_format_3.apply()
         self.assertEqual(create_format_3.obsoletes(resize_format_1), True)
         self.assertEqual(create_format_3.obsoletes(resize_format_2), True)
 
@@ -388,8 +402,10 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1.format.exists = True
         resize_device_1 = ActionResizeDevice(sdc1,
                                              sdc1.size + Size(spec="10 GiB"))
+        resize_device_1.apply()
         resize_device_2 = ActionResizeDevice(sdc1,
                                              sdc1.size - Size(spec="10 GiB"))
+        resize_device_2.apply()
         self.assertEqual(resize_device_2.obsoletes(resize_device_1), True)
         self.assertEqual(resize_device_1.obsoletes(resize_device_2), False)
         sdc1.exists = False
@@ -400,6 +416,7 @@ class DeviceActionTestCase(StorageTestCase):
         # - obsoletes all format actions w/ lower id on same device (including
         #   self if format does not exist)
         destroy_format_1 = ActionDestroyFormat(sdc1)
+        destroy_format_1.apply()
         self.assertEqual(destroy_format_1.obsoletes(create_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(resize_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(destroy_format_1), True)
@@ -410,6 +427,7 @@ class DeviceActionTestCase(StorageTestCase):
         #   device (including self)
         # sdc1 does not exist
         destroy_sdc1 = ActionDestroyDevice(sdc1)
+        destroy_sdc1.apply()
         self.assertEqual(destroy_sdc1.obsoletes(create_format_2), True)
         self.assertEqual(destroy_sdc1.obsoletes(resize_format_2), True)
         self.assertEqual(destroy_sdc1.obsoletes(create_device_1), True)
@@ -425,9 +443,13 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(sda1, None)
         resize_sda1_format = ActionResizeFormat(sda1,
                                                 sda1.size - Size(spec="50 MiB"))
+        resize_sda1_format.apply()
         resize_sda1 = ActionResizeDevice(sda1, sda1.size - Size(spec="50 MiB"))
+        resize_sda1.apply()
         destroy_sda1_format = ActionDestroyFormat(sda1)
+        destroy_sda1_format.apply()
         destroy_sda1 = ActionDestroyDevice(sda1)
+        destroy_sda1.apply()
         self.assertEqual(destroy_sda1.obsoletes(resize_sda1_format), True)
         self.assertEqual(destroy_sda1.obsoletes(resize_sda1), True)
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1), False)
@@ -540,8 +562,10 @@ class DeviceActionTestCase(StorageTestCase):
         lv_root.format._targetSize = lv_root.format._minInstanceSize
         shrink_format = ActionResizeFormat(lv_root,
                                            lv_root.size - Size(spec="5 GiB"))
+        shrink_format.apply()
         shrink_device = ActionResizeDevice(lv_root,
                                            lv_root.size - Size(spec="5 GiB"))
+        shrink_device.apply()
         self.assertEqual(shrink_device.requires(shrink_format), True)
         self.assertEqual(shrink_format.requires(shrink_device), False)
         shrink_format.cancel()
@@ -553,8 +577,10 @@ class DeviceActionTestCase(StorageTestCase):
         orig_size = lv_root.currentSize
         grow_device = ActionResizeDevice(lv_root,
                                          orig_size + Size(spec="100 MiB"))
+        grow_device.apply()
         grow_format = ActionResizeFormat(lv_root,
                                          orig_size + Size(spec="100 MiB"))
+        grow_format.apply()
         self.assertEqual(grow_format.requires(grow_device), True)
         self.assertEqual(grow_device.requires(grow_format), False)
 
@@ -798,9 +824,12 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1.exists = True
         sdc1.format.exists = True
         grow_pv = ActionResizeDevice(sdc1, sdc1.size + Size(spec="10 GiB"))
+        grow_pv.apply()
         grow_lv = ActionResizeDevice(testlv, testlv.size + Size(spec="5 GiB"))
+        grow_lv.apply()
         grow_lv_format = ActionResizeFormat(testlv,
                                             testlv.size + Size(spec="5 GiB"))
+        grow_lv_format.apply()
         sdc1.exists = False
         sdc1.format.exists = False
 
@@ -844,9 +873,11 @@ class DeviceActionTestCase(StorageTestCase):
         testlv.format._targetSize = testlv.format._minInstanceSize
         shrink_lv = ActionResizeDevice(testlv,
                                        testlv.size - Size(spec="10 GiB"))
+        shrink_lv.apply()
         sdc1.exists = True
         sdc1.format.exists = True
         shrink_pv = ActionResizeDevice(sdc1, sdc1.size - Size(spec="5 GiB"))
+        shrink_pv.apply()
         sdc1.exists = False
         sdc1.format.exists = False
 
@@ -858,6 +889,7 @@ class DeviceActionTestCase(StorageTestCase):
         # shrinks a format on a device that depends on the first action's
         # device, eg: shrink LV format before resizing VG or PV devices
         shrink_lv_format = ActionResizeFormat(testlv, testlv.size)
+        shrink_lv_format.apply()
         self.assertEqual(shrink_pv.requires(shrink_lv_format), True)
         self.assertEqual(shrink_lv_format.requires(shrink_pv), False)
 
@@ -925,6 +957,74 @@ class DeviceActionTestCase(StorageTestCase):
         # similarly, create actions should also require resize actions
         self.assertEqual(create_sdc2.requires(grow_lv), True)
 
+    def testActionApplyCancel(self):
+        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+
+        # ActionResizeFormat
+        lv_root.format._minInstanceSize = Size(spec="10 MiB")
+        lv_root.format._size = lv_root.size
+        lv_root.format._targetSize = lv_root.size
+        original_format_size = lv_root.format.currentSize
+        target_size = lv_root.size - Size(spec="1 GiB")
+        action = ActionResizeFormat(lv_root, target_size)
+        self.assertEqual(lv_root.format.size, original_format_size)
+        action.apply()
+        self.assertEqual(lv_root.format.size, target_size)
+        action.cancel()
+        self.assertEqual(lv_root.format.size, original_format_size)
+
+        # ActionResizeDevice
+        original_device_size = lv_root.currentSize
+        action = ActionResizeDevice(lv_root, target_size)
+        self.assertEqual(lv_root.size, original_device_size)
+        action.apply()
+        self.assertEqual(lv_root.size, target_size)
+        action.cancel()
+        self.assertEqual(lv_root.size, original_device_size)
+
+        # ActionDestroyFormat
+        original_format = lv_root.format
+        action = ActionDestroyFormat(lv_root)
+        self.assertEqual(lv_root.format, original_format)
+        self.assertNotEqual(lv_root.format.type, None)
+        action.apply()
+        self.assertEqual(lv_root.format.type, None)
+        action.cancel()
+        self.assertEqual(lv_root.format, original_format)
+
+
+        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        sdc.format = None
+        pv_fmt = self.newFormat("lvmpv", device_instance=sdc, device=sdc.path)
+        self.scheduleCreateFormat(device=sdc, format=pv_fmt)
+        vg = self.storage.devicetree.getDeviceByName("VolGroup")
+        original_pvs = vg.parents[:]
+
+        # ActionAddMember
+        # XXX ActionAddMember and ActionRemoveMember make no effort to restore
+        #     the original ordering of the container's parents list when
+        #     canceled.
+        pvs = original_pvs[:]
+        action = ActionAddMember(vg, sdc)
+        self.assertEqual(list(vg.parents), original_pvs)
+        action.apply()
+        pvs.append(sdc)
+        self.assertEqual(list(vg.parents), pvs)
+        action.cancel()
+        pvs.remove(sdc)
+        self.assertEqual(list(vg.parents), original_pvs)
+
+        # ActionRemoveMember
+        pvs = original_pvs[:]
+        sdb1 = self.storage.devicetree.getDeviceByName("sdb1")
+        action = ActionRemoveMember(vg, sdb1)
+        self.assertEqual(list(vg.parents), original_pvs)
+        action.apply()
+        pvs.remove(sdb1)
+        self.assertEqual(list(vg.parents), pvs)
+        action.cancel()
+        self.assertEqual(list(vg.parents), original_pvs)
+
     def testContainerActions(self):
         self.destroyAllDevices()
         sda = self.storage.devicetree.getDeviceByName("sda")
@@ -988,6 +1088,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(len(vg.parents), 2)
 
         add_sdc1 = ActionAddMember(vg, sdc1)
+        self.assertEqual(len(vg.parents), 2)
+        add_sdc1.apply()
         self.assertEqual(len(vg.parents), 3)
 
         self.assertEqual(add_sdc1.requires(create_sdc1), True)
@@ -1008,21 +1110,26 @@ class DeviceActionTestCase(StorageTestCase):
         self.storage.devicetree.cancelAction(create_new_lv)
 
         remove_sdb1 = ActionRemoveMember(vg, sdb1)
+        self.assertEqual(len(vg.parents), 3)
+        remove_sdb1.apply()
         self.assertEqual(len(vg.parents), 2)
 
         self.assertEqual(remove_sdb1.requires(add_sdc1), True)
 
         vg.parents.append(sdb1)
         remove_sdb1_2 = ActionRemoveMember(vg, sdb1)
+        remove_sdb1_2.apply()
         self.assertEqual(remove_sdb1_2.obsoletes(remove_sdb1), False)
         self.assertEqual(remove_sdb1.obsoletes(remove_sdb1_2), True)
 
         remove_sdc1 = ActionRemoveMember(vg, sdc1)
+        remove_sdc1.apply()
         self.assertEqual(remove_sdc1.obsoletes(add_sdc1), True)
         self.assertEqual(add_sdc1.obsoletes(remove_sdc1), True)
 
         # add/remove loops (same member&container) should obsolete both actions
         add_sdb1 = ActionAddMember(vg, sdb1)
+        add_sdb1.apply()
         self.assertEqual(add_sdb1.obsoletes(remove_sdb1), True)
         self.assertEqual(remove_sdb1.obsoletes(add_sdb1), True)
 
