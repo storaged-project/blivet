@@ -364,9 +364,8 @@ def bits():
         # "<number>bit"
         # so we remove the bit suffix and convert the
         # number to an integer
-        bits = bits.strip("bit")
-        bits = int(bits)
-        return bits
+        (bits, _rest) = bits.split("bit", 1)
+        return int(bits)
     except Exception: # pylint: disable=broad-except
         log_exception_info(log.error, "architecture word size detection failed")
         return None
