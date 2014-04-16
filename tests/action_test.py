@@ -134,8 +134,8 @@ class DeviceActionTestCase(StorageTestCase):
                               name="sda2", size=Size(spec="100 GiB"),
                               parents=[sda])
         self.scheduleCreateDevice(device=sda2)
-        format = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateFormat(device=sda2, format=format)
+        fmt = self.newFormat("lvmpv", device=sda2.path)
+        self.scheduleCreateFormat(device=sda2, format=fmt)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
                             name="vg", parents=[sda2])
@@ -145,22 +145,22 @@ class DeviceActionTestCase(StorageTestCase):
                                  name="lv_root", parents=[vg],
                                  size=Size(spec="60 GiB"))
         self.scheduleCreateDevice(device=lv_root)
-        format = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
-        self.scheduleCreateFormat(device=lv_root, format=format)
+        fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
+        self.scheduleCreateFormat(device=lv_root, format=fmt)
 
         lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_swap", parents=[vg],
                                  size=Size(spec="4000 MiB"))
         self.scheduleCreateDevice(device=lv_swap)
-        format = self.newFormat("swap", device=lv_swap.path)
-        self.scheduleCreateFormat(device=lv_swap, format=format)
+        fmt = self.newFormat("swap", device=lv_swap.path)
+        self.scheduleCreateFormat(device=lv_swap, format=fmt)
 
         sda3 = self.newDevice(device_class=PartitionDevice,
                               name="sda3", parents=[sda],
                               size=Size(spec="40 GiB"))
         self.scheduleCreateDevice(device=sda3)
-        format = self.newFormat("mdmember", device=sda3.path)
-        self.scheduleCreateFormat(device=sda3, format=format)
+        fmt = self.newFormat("mdmember", device=sda3.path)
+        self.scheduleCreateFormat(device=sda3, format=fmt)
 
         sdb = devicetree.getDeviceByName("sdb")
         self.assertNotEqual(sdb, None, "failed to find disk 'sdb'")
@@ -169,8 +169,8 @@ class DeviceActionTestCase(StorageTestCase):
                               name="sdb1", parents=[sdb],
                               size=Size(spec="40 GiB"))
         self.scheduleCreateDevice(device=sdb1)
-        format = self.newFormat("mdmember", device=sdb1.path,)
-        self.scheduleCreateFormat(device=sdb1, format=format)
+        fmt = self.newFormat("mdmember", device=sdb1.path,)
+        self.scheduleCreateFormat(device=sdb1, format=fmt)
 
         md0 = self.newDevice(device_class=MDRaidArrayDevice,
                              name="md0", level="raid0", minor=0,
@@ -178,11 +178,11 @@ class DeviceActionTestCase(StorageTestCase):
                              parents=[sdb1, sda3])
         self.scheduleCreateDevice(device=md0)
 
-        format = self.newFormat("ext4", device=md0.path, mountpoint="/home")
-        self.scheduleCreateFormat(device=md0, format=format)
+        fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
+        self.scheduleCreateFormat(device=md0, format=fmt)
 
-        format = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
-        self.scheduleCreateFormat(device=sda1, format=format)
+        fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
+        self.scheduleCreateFormat(device=sda1, format=fmt)
 
     def testActionCreation(self, *args, **kwargs):
         """ Verify correct operation of action class constructors. """
@@ -471,8 +471,8 @@ class DeviceActionTestCase(StorageTestCase):
                               name="sda2", size=Size(spec="100 GiB"),
                               parents=[sda])
         self.scheduleCreateDevice(device=sda2)
-        format = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateFormat(device=sda2, format=format)
+        fmt = self.newFormat("lvmpv", device=sda2.path)
+        self.scheduleCreateFormat(device=sda2, format=fmt)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
                             name="vg", parents=[sda2])
@@ -482,15 +482,15 @@ class DeviceActionTestCase(StorageTestCase):
                                  name="lv_root", parents=[vg],
                                  size=Size(spec="60 GiB"))
         self.scheduleCreateDevice(device=lv_root)
-        format = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
-        self.scheduleCreateFormat(device=lv_root, format=format)
+        fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
+        self.scheduleCreateFormat(device=lv_root, format=fmt)
 
         lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_swap", parents=[vg],
                                  size=Size(spec="4 GiB"))
         self.scheduleCreateDevice(device=lv_swap)
-        format = self.newFormat("swap", device=lv_swap.path)
-        self.scheduleCreateFormat(device=lv_swap, format=format)
+        fmt = self.newFormat("swap", device=lv_swap.path)
+        self.scheduleCreateFormat(device=lv_swap, format=fmt)
 
         # we'll soon schedule destroy actions for these members and the array,
         # which will test pruning. the whole mess should reduce to nothing
@@ -498,8 +498,8 @@ class DeviceActionTestCase(StorageTestCase):
                               name="sda3", parents=[sda],
                               size=Size(spec="40 GiB"))
         self.scheduleCreateDevice(device=sda3)
-        format = self.newFormat("mdmember", device=sda3.path)
-        self.scheduleCreateFormat(device=sda3, format=format)
+        fmt = self.newFormat("mdmember", device=sda3.path)
+        self.scheduleCreateFormat(device=sda3, format=fmt)
 
         sdb = self.storage.devicetree.getDeviceByName("sdb")
         self.assertNotEqual(sdb, None, "failed to find disk 'sdb'")
@@ -508,8 +508,8 @@ class DeviceActionTestCase(StorageTestCase):
                               name="sdb1", parents=[sdb],
                               size=Size(spec="40 GiB"))
         self.scheduleCreateDevice(device=sdb1)
-        format = self.newFormat("mdmember", device=sdb1.path,)
-        self.scheduleCreateFormat(device=sdb1, format=format)
+        fmt = self.newFormat("mdmember", device=sdb1.path,)
+        self.scheduleCreateFormat(device=sdb1, format=fmt)
 
         md0 = self.newDevice(device_class=MDRaidArrayDevice,
                              name="md0", level="raid0", minor=0,
@@ -517,8 +517,8 @@ class DeviceActionTestCase(StorageTestCase):
                              parents=[sdb1, sda3])
         self.scheduleCreateDevice(device=md0)
 
-        format = self.newFormat("ext4", device=md0.path, mountpoint="/home")
-        self.scheduleCreateFormat(device=md0, format=format)
+        fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
+        self.scheduleCreateFormat(device=md0, format=fmt)
 
         # now destroy the md and its components
         self.scheduleDestroyFormat(device=md0)
@@ -526,8 +526,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.scheduleDestroyDevice(device=sdb1)
         self.scheduleDestroyDevice(device=sda3)
 
-        format = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
-        self.scheduleCreateFormat(device=sda1, format=format)
+        fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
+        self.scheduleCreateFormat(device=sda1, format=fmt)
 
         # verify the md actions are present prior to pruning
         md0_actions = self.storage.devicetree.findActions(devid=md0.id)
@@ -615,15 +615,15 @@ class DeviceActionTestCase(StorageTestCase):
                                  name="lv_root", parents=[vg],
                                  size=Size(spec="160 GiB"))
         self.scheduleCreateDevice(device=lv_root)
-        format = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
-        self.scheduleCreateFormat(device=lv_root, format=format)
+        fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
+        self.scheduleCreateFormat(device=lv_root, format=fmt)
 
         lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_swap", parents=[vg],
                                  size=Size(spec="4 GiB"))
         self.scheduleCreateDevice(device=lv_swap)
-        format = self.newFormat("swap", device=lv_swap.path)
-        self.scheduleCreateFormat(device=lv_swap, format=format)
+        fmt = self.newFormat("swap", device=lv_swap.path)
+        self.scheduleCreateFormat(device=lv_swap, format=fmt)
 
         # ActionCreateDevice
         # creation of an LV should require the actions that create the VG,
@@ -714,22 +714,22 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               parents=[sdc], size=Size(spec="40 GiB"))
         self.scheduleCreateDevice(device=sdc1)
-        format = self.newFormat("mdmember", device=sdc1.path)
-        self.scheduleCreateFormat(device=sdc1, format=format)
+        fmt = self.newFormat("mdmember", device=sdc1.path)
+        self.scheduleCreateFormat(device=sdc1, format=fmt)
 
         sdd1 = self.newDevice(device_class=PartitionDevice, name="sdd1",
                               parents=[sdd], size=Size(spec="40 GiB"))
         self.scheduleCreateDevice(device=sdd1)
-        format = self.newFormat("mdmember", device=sdd1.path,)
-        self.scheduleCreateFormat(device=sdd1, format=format)
+        fmt = self.newFormat("mdmember", device=sdd1.path,)
+        self.scheduleCreateFormat(device=sdd1, format=fmt)
 
         md0 = self.newDevice(device_class=MDRaidArrayDevice,
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
                              parents=[sdc1, sdd1])
         self.scheduleCreateDevice(device=md0)
-        format = self.newFormat("ext4", device=md0.path, mountpoint="/home")
-        self.scheduleCreateFormat(device=md0, format=format)
+        fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
+        self.scheduleCreateFormat(device=md0, format=fmt)
 
         destroy_md0_format = self.scheduleDestroyFormat(device=md0)
         destroy_md0 = self.scheduleDestroyDevice(device=md0)
@@ -770,8 +770,8 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               parents=[sdc], size=Size(spec="50 GiB"))
         create_pv = self.scheduleCreateDevice(device=sdc1)
-        format = self.newFormat("lvmpv", device=sdc1.path)
-        create_pv_format = self.scheduleCreateFormat(device=sdc1, format=format)
+        fmt = self.newFormat("lvmpv", device=sdc1.path)
+        create_pv_format = self.scheduleCreateFormat(device=sdc1, format=fmt)
 
         testvg = self.newDevice(device_class=LVMVolumeGroupDevice,
                                 name="testvg", parents=[sdc1])
@@ -780,8 +780,8 @@ class DeviceActionTestCase(StorageTestCase):
                                 name="testlv", parents=[testvg],
                                 size=Size(spec="30 GiB"))
         create_lv = self.scheduleCreateDevice(device=testlv)
-        format = self.newFormat("ext4", device=testlv.path)
-        create_lv_format = self.scheduleCreateFormat(device=testlv, format=format)
+        fmt = self.newFormat("ext4", device=testlv.path)
+        create_lv_format = self.scheduleCreateFormat(device=testlv, format=fmt)
 
         # ActionCreateFormat
         # creation of a format on a non-existent device should require the
@@ -923,8 +923,8 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that creates a format on a device should require an action
         # that resizes the device that will contain the format
         grow_lv = ActionResizeDevice(testlv, testlv.size + Size(spec="1 GiB"))
-        format = self.newFormat("msdos", device=testlv.path)
-        format_lv = ActionCreateFormat(testlv, format)
+        fmt = self.newFormat("msdos", device=testlv.path)
+        format_lv = ActionCreateFormat(testlv, fmt)
         self.assertEqual(format_lv.requires(grow_lv), True)
         self.assertEqual(grow_lv.requires(format_lv), False)
 

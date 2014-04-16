@@ -374,9 +374,9 @@ class Blivet(object):
     @property
     def nextID(self):
         """ Used for creating unique placeholder names. """
-        id = self._nextID
+        newid = self._nextID
         self._nextID += 1
-        return id
+        return newid
 
     def shutdown(self):
         """ Deactivate all devices (installer_mode only). """
@@ -2488,11 +2488,11 @@ class FSSet(object):
             return None
         else:
             # nodev filesystem -- preserve or drop completely?
-            format = getFormat(fstype)
+            fmt = getFormat(fstype)
             fmt_class = get_device_format_class("nodev")
             if devspec == "none" or \
-               (fmt_class and isinstance(format, fmt_class)):
-                device = NoDevice(format=format)
+               (fmt_class and isinstance(fmt, fmt_class)):
+                device = NoDevice(format=fmt)
 
         if device is None:
             log.error("failed to resolve %s (%s) from fstab", devspec,
@@ -2850,7 +2850,7 @@ class FSSet(object):
         return conf
 
     def fstab (self):
-        format = "%-23s %-23s %-7s %-15s %d %d\n"
+        fmt_str = "%-23s %-23s %-7s %-15s %d %d\n"
         fstab = """
 #
 # /etc/fstab
@@ -2910,8 +2910,8 @@ class FSSet(object):
             else:
                 passno = 0
             fstab = fstab + device.fstabComment
-            fstab = fstab + format % (devspec, mountpoint, fstype,
-                                      options, dump, passno)
+            fstab = fstab + fmt_str % (devspec, mountpoint, fstype,
+                                       options, dump, passno)
 
         # now, write out any lines we were unable to process because of
         # unrecognized filesystems or unresolveable device specifications

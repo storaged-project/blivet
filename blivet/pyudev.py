@@ -176,28 +176,28 @@ class Udev(object):
         return UdevDevice(self.udev, sysfs_path)
 
     def enumerate_devices(self, subsystem=None):
-        enumerate = libudev_udev_enumerate_new(self.udev)
+        context = libudev_udev_enumerate_new(self.udev)
 
         # add the match subsystem
         if subsystem is not None:
-            rc = libudev_udev_enumerate_add_match_subsystem(enumerate, subsystem)
+            rc = libudev_udev_enumerate_add_match_subsystem(context, subsystem)
             if not rc == 0:
                 print("error: unable to add the match subsystem", file=sys.stderr)
-                libudev_udev_enumerate_unref(enumerate)
+                libudev_udev_enumerate_unref(context)
                 return []
 
         # scan the devices
-        rc = libudev_udev_enumerate_scan_devices(enumerate)
+        rc = libudev_udev_enumerate_scan_devices(context)
         if not rc == 0:
             print("error: unable to enumerate the devices", file=sys.stderr)
-            libudev_udev_enumerate_unref(enumerate)
+            libudev_udev_enumerate_unref(context)
             return []
 
         # create the list of sysfs paths
         sysfs_paths = []
 
         # get the first list entry
-        list_entry = libudev_udev_enumerate_get_list_entry(enumerate)
+        list_entry = libudev_udev_enumerate_get_list_entry(context)
 
         while list_entry:
             sysfs_path = libudev_udev_list_entry_get_name(list_entry)
@@ -207,7 +207,7 @@ class Udev(object):
             list_entry = libudev_udev_list_entry_get_next(list_entry)
 
         # cleanup
-        libudev_udev_enumerate_unref(enumerate)
+        libudev_udev_enumerate_unref(context)
 
         return sysfs_paths
 

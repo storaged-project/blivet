@@ -118,17 +118,17 @@ class StorageTestCase(unittest.TestCase):
         """
         exists = kwargs.pop("exists", False)
         device_instance = kwargs.pop("device_instance", None)
-        format = getFormat(*args, **kwargs)
-        if isinstance(format, blivet.formats.disklabel.DiskLabel):
-            format._partedDevice = Mock()
-            format._partedDisk = Mock()
+        fmt = getFormat(*args, **kwargs)
+        if isinstance(fmt, blivet.formats.disklabel.DiskLabel):
+            fmt._partedDevice = Mock()
+            fmt._partedDisk = Mock()
 
-        format.exists = exists
+        fmt.exists = exists
 
-        if format.resizable and device_instance:
-            format._size = device_instance.currentSize
+        if fmt.resizable and device_instance:
+            fmt._size = device_instance.currentSize
 
-        return format
+        return fmt
 
     def destroyAllDevices(self, disks=None):
         """ Remove all devices from the devicetree.

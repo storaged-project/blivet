@@ -215,9 +215,9 @@ class ZFCPDevice:
             scsihost = string.split(line)
             host = scsihost[1]
             channel = "0"
-            id = scsihost[5]
+            devid = scsihost[5]
             lun = scsihost[7]
-            scsidev = "%s:%s:%s:%s" % (host[4:], channel, id, lun)
+            scsidev = "%s:%s:%s:%s" % (host[4:], channel, devid, lun)
             fcpsysfs = "%s/%s" % (scsidevsysfs, scsidev)
             scsidel = "%s/%s/delete" % (scsidevsysfs, scsidev)
 

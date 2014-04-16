@@ -67,11 +67,11 @@ class DevicelibsTestCase(unittest.TestCase):
         self._loopMap = {}
 
     def setUp(self):
-        for file in self._LOOP_DEVICES:
+        for store in self._LOOP_DEVICES:
             dev = getFreeLoopDev()
-            makeLoopDev(dev, file)
-            self._loopMap[file] = dev
+            makeLoopDev(dev, store)
+            self._loopMap[store] = dev
 
     def tearDown(self):
-        for (file, dev) in self._loopMap.iteritems():
-            removeLoopDev(dev, file)
+        for (store, dev) in self._loopMap.iteritems():
+            removeLoopDev(dev, store)

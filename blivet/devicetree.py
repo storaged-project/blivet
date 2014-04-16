@@ -700,8 +700,8 @@ class DeviceTree(object):
         if device is None:
             # we couldn't find it, so create it
             # first, get a list of the slave devs and look them up
-            dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
-            slave_names = os.listdir(dir)
+            slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+            slave_names = os.listdir(slave_dir)
             for slave_name in slave_names:
                 # if it's a dm-X name, resolve it to a map name first
                 if slave_name.startswith("dm-"):
@@ -709,7 +709,7 @@ class DeviceTree(object):
                 else:
                     dev_name = slave_name.replace("!", "/") # handles cciss
                 slave_dev = self.getDeviceByName(dev_name)
-                path = os.path.normpath("%s/%s" % (dir, slave_name))
+                path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
                 new_info = udev.udev_get_block_device(os.path.realpath(path)[4:])
                 if not slave_dev:
                     # we haven't scanned the slave yet, so do it now
@@ -771,8 +771,8 @@ class DeviceTree(object):
         # TODO: look for this device by dm-uuid?
 
         # first, get a list of the slave devs and look them up
-        dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
-        slave_names = os.listdir(dir)
+        slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+        slave_names = os.listdir(slave_dir)
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name first
             if slave_name.startswith("dm-"):
@@ -780,7 +780,7 @@ class DeviceTree(object):
             else:
                 dev_name = slave_name.replace("!", "/") # handles cciss
             slave_dev = self.getDeviceByName(dev_name)
-            path = os.path.normpath("%s/%s" % (dir, slave_name))
+            path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
             new_info = udev.udev_get_block_device(os.path.realpath(path)[4:])
             if not slave_dev:
                 # we haven't scanned the slave yet, so do it now
@@ -815,8 +815,8 @@ class DeviceTree(object):
         device = None
 
         slaves = []
-        dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
-        slave_names = os.listdir(dir)
+        slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+        slave_names = os.listdir(slave_dir)
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name
             if slave_name.startswith("dm-"):
@@ -828,7 +828,7 @@ class DeviceTree(object):
                 slaves.append(slave_dev)
             else:
                 # we haven't scanned the slave yet, so do it now
-                path = os.path.normpath("%s/%s" % (dir, slave_name))
+                path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
                 new_info = udev.udev_get_block_device(os.path.realpath(path)[4:])
                 if new_info:
                     self.addUdevDevice(new_info)
@@ -1228,15 +1228,12 @@ class DeviceTree(object):
         # special handling for unsupported partitioned devices
         if not device.partitionable:
             try:
-                format = getFormat("disklabel",
-                                   device=device.path,
-                                   labelType=disklabel_type,
-                                   exists=True)
+                fmt = getFormat("disklabel", device=device.path, labelType=disklabel_type, exists=True)
             except InvalidDiskLabelError:
                 log.warning("disklabel detected but not usable on %s",
                             device.name)
             else:
-                device.format = format
+                device.format = fmt
             return
 
         # we're going to pass the "best" disklabel type into the DiskLabel
@@ -1244,17 +1241,14 @@ class DeviceTree(object):
         labelType = platform.bestDiskLabelType(device)
 
         try:
-            format = getFormat("disklabel",
-                               device=device.path,
-                               labelType=labelType,
-                               exists=True)
+            fmt = getFormat("disklabel", device=device.path, labelType=labelType, exists=True)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", device.name)
             if disklabel_type == "gpt":
                 log.debug(e)
                 device.format = getFormat(_("Invalid Disk Label"))
         else:
-            device.format = format
+            device.format = fmt
 
     def handleUdevLUKSFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
