@@ -351,5 +351,5 @@ class ObjectID(object):
 
     def __new__(cls, *args, **kwargs):
         self = super(ObjectID, cls).__new__(cls, *args, **kwargs)
-        self.id = self._newid_gen()
+        self.id = self._newid_gen() # pylint: disable=attribute-defined-outside-init
         return self
