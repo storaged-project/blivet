@@ -143,6 +143,9 @@ def _parseSpec(spec):
     except UnicodeDecodeError:
         pass
     else:
+        if spec_ascii and not spec_ascii.endswith("b"):
+            spec_ascii += "ib"
+
         if spec_ascii in _bytes or not spec_ascii:
             return size
 
