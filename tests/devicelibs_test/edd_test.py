@@ -13,7 +13,7 @@ class EddTestCase(unittest.TestCase):
         from blivet.devicelibs import edd
 
         # test with vda, vdb
-        fs = EddTestFS(self, edd).vda_vdb()
+        EddTestFS(self, edd).vda_vdb()
         edd_dict = edd.collect_edd_data()
         self.assertEqual(len(edd_dict), 2)
         self.assertEqual(edd_dict[0x80].type, "SCSI")
@@ -25,7 +25,7 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(edd_dict[0x81].pci_dev, "00:06.0")
 
         # test with sda, vda
-        fs = EddTestFS(self, edd).sda_vda()
+        EddTestFS(self, edd).sda_vda()
         edd_dict = edd.collect_edd_data()
         self.assertEqual(len(edd_dict), 2)
         self.assertEqual(edd_dict[0x80].type, "ATA")
@@ -40,7 +40,7 @@ class EddTestCase(unittest.TestCase):
     @unittest.skip("not implemented")
     def test_collect_edd_data_cciss(self):
         from blivet.devicelibs import edd
-        fs = EddTestFS(self, edd).sda_cciss()
+        EddTestFS(self, edd).sda_cciss()
         edd_dict = edd.collect_edd_data()
 
         self.assertEqual(edd_dict[0x80].pci_dev, None)
@@ -49,7 +49,7 @@ class EddTestCase(unittest.TestCase):
     @unittest.skip("not implemented")
     def test_edd_entry_str(self):
         from blivet.devicelibs import edd
-        fs = EddTestFS(self, edd).sda_vda()
+        EddTestFS(self, edd).sda_vda()
         edd_dict = edd.collect_edd_data()
         expected_output = """\ttype: ATA, ata_device: 0
 \tchannel: 0, mbr_signature: 0x000ccb01
@@ -60,7 +60,7 @@ class EddTestCase(unittest.TestCase):
     @unittest.skip("not implemented")
     def test_matcher_device_path(self):
         from blivet.devicelibs import edd
-        fs = EddTestFS(self, edd).sda_vda()
+        EddTestFS(self, edd).sda_vda()
         edd_dict = edd.collect_edd_data()
 
         analyzer = edd.EddMatcher(edd_dict[0x80])
@@ -74,7 +74,7 @@ class EddTestCase(unittest.TestCase):
     @unittest.skip("not implemented")
     def test_bad_device_path(self):
         from blivet.devicelibs import edd
-        fs = EddTestFS(self, edd).sda_vda_no_pcidev()
+        EddTestFS(self, edd).sda_vda_no_pcidev()
         edd_dict = edd.collect_edd_data()
 
         analyzer = edd.EddMatcher(edd_dict[0x80])
@@ -84,7 +84,7 @@ class EddTestCase(unittest.TestCase):
     @unittest.skip("not implemented")
     def test_bad_host_bus(self):
         from blivet.devicelibs import edd
-        fs = EddTestFS(self, edd).sda_vda_no_host_bus()
+        EddTestFS(self, edd).sda_vda_no_host_bus()
 
         edd_dict = edd.collect_edd_data()
 
@@ -102,7 +102,7 @@ class EddTestCase(unittest.TestCase):
     def test_get_edd_dict_1(self):
         """ Test get_edd_dict()'s pci_dev matching. """
         from blivet.devicelibs import edd
-        fs = EddTestFS(self, edd).sda_vda()
+        EddTestFS(self, edd).sda_vda()
         self.assertEqual(edd.get_edd_dict([]),
                          {'sda' : 0x80,
                           'vda' : 0x81})
@@ -114,7 +114,7 @@ class EddTestCase(unittest.TestCase):
         edd.collect_mbrs = mock.Mock(return_value = {
                 'sda' : '0x000ccb01',
                 'vda' : '0x0006aef1'})
-        fs = EddTestFS(self, edd).sda_vda_missing_details()
+        EddTestFS(self, edd).sda_vda_missing_details()
         self.assertEqual(edd.get_edd_dict([]),
                          {'sda' : 0x80,
                           'vda' : 0x81})
@@ -128,7 +128,7 @@ class EddTestCase(unittest.TestCase):
         edd.log = mock.Mock()
         edd.collect_mbrs = mock.Mock(return_value={'sda' : '0x000ccb01',
                                                    'vda' : '0x0006aef1'})
-        fs = EddTestFS(self, edd).sda_sdb_same()
+        EddTestFS(self, edd).sda_sdb_same()
         self.assertEqual(edd.get_edd_dict([]), {})
         self.assertIn((('edd: both edd entries 0x80 and 0x81 seem to map to sda',), {}),
                       edd.log.info.call_args_list)
