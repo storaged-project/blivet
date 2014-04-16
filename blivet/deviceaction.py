@@ -178,11 +178,11 @@ class DeviceAction(util.ObjectID):
 
     @property
     def isShrink(self):
-        return (self.type == ACTION_TYPE_RESIZE and self.dir == RESIZE_SHRINK)
+        return (self.isResize and self.dir == RESIZE_SHRINK)
 
     @property
     def isGrow(self):
-        return (self.type == ACTION_TYPE_RESIZE and self.dir == RESIZE_GROW)
+        return (self.isResize and self.dir == RESIZE_GROW)
 
     @property
     def isAdd(self):
