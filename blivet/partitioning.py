@@ -1733,8 +1733,7 @@ class ThinPoolChunk(VGChunk):
         self.vg = pool.vg   # only used for align, &c
         self.path = pool.path
         usable_extents = (pool.size / pool.vg.peSize)
-        # Skip VGChunk's constructor.
-        super(VGChunk, self).__init__(usable_extents, requests=requests)
+        super(VGChunk, self).__init__(usable_extents, requests=requests) # pylint: disable=bad-super-call
 
 def getDiskChunks(disk, partitions, free):
     """ Return a list of Chunk instances representing a disk.
