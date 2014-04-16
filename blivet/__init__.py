@@ -40,6 +40,8 @@ class ErrorHandler(object):
 
 errorHandler = ErrorHandler()
 
+get_bootloader = lambda: None
+
 ##
 ## end installer stubs
 ##
