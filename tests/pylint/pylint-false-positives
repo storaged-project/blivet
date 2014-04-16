@@ -1,5 +1,6 @@
 ^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
 ^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
 ^blivet/devices.py:[[:digit:]]+: \[W0105\(pointless\-string\-statement\), ParentList.__init__\] String statement has no effect$
+^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value passed for parameter 'member_count' in function call$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value passed for parameter 'smallest_member_size' in function call$
