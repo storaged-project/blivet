@@ -348,7 +348,7 @@ def getArch():
     else:
         return os.uname()[4]
 
-def bits():
+def numBits():
     """ Return an integer representing the length
         of the "word" used by the current architecture
         -> it is usually either 32 or 64

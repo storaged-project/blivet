@@ -1518,7 +1518,7 @@ class TmpFS(NoDevFS):
         # http://www.gossamer-threads.com/lists/linux/kernel/875278
         # maximum tmpfs mount size is 16TB on 32 bit systems
         # and 16EB on 64 bit systems
-        bits = arch.bits()
+        bits = arch.numBits()
         if bits == 32:
             self._maxSize = Size(spec="16TiB")
         elif bits == 64:
