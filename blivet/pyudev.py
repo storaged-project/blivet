@@ -23,16 +23,17 @@ def find_library(name, somajor=0):
 
     return None
 
-# find the udev library
-name = "udev"
-somajor = 1
-libudev = find_library(name=name, somajor=somajor)
+def get_library():
+    name = "udev"
+    somajor = 1
+    libudev = find_library(name=name, somajor=somajor)
 
-if not libudev or not os.path.exists(libudev):
-    raise ImportError("No library named %s.%d" % (name, somajor))
+    if not libudev or not os.path.exists(libudev):
+        raise ImportError("No library named %s.%d" % (name, somajor))
+    return libudev
 
 # load the udev library
-libudev = CDLL(libudev)
+libudev = CDLL(get_library())
 
 
 # create aliases for needed functions and set the return types where needed
