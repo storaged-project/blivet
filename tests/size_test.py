@@ -39,35 +39,35 @@ class SizeTestCase(unittest.TestCase):
 
         self.assertEqual(s.humanReadable(places=0), "500 B")
 
-    def _prefixTestHelper(self, bytes, factor, prefix, abbr):
-        c = bytes * factor
+    def _prefixTestHelper(self, numbytes, factor, prefix, abbr):
+        c = numbytes * factor
 
         s = Size(bytes=c)
         self.assertEquals(s, c)
 
         if prefix:
             u = "%sbytes" % prefix
-            s = Size(spec="%ld %s" % (bytes, u))
+            s = Size(spec="%ld %s" % (numbytes, u))
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(spec=u), bytes)
+            self.assertEquals(s.convertTo(spec=u), numbytes)
 
         if abbr:
             u = "%sb" % abbr
-            s = Size(spec="%ld %s" % (bytes, u))
+            s = Size(spec="%ld %s" % (numbytes, u))
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(spec=u), bytes)
+            self.assertEquals(s.convertTo(spec=u), numbytes)
 
         if not prefix and not abbr:
-            s = Size(spec="%ld" % bytes)
+            s = Size(spec="%ld" % numbytes)
             self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(), bytes)
+            self.assertEquals(s.convertTo(), numbytes)
 
     def testPrefixes(self):
-        bytes = 47L
-        self._prefixTestHelper(bytes, 1, None, None)
+        numbytes = 47L
+        self._prefixTestHelper(numbytes, 1, None, None)
 
         for factor, prefix, abbr in _prefixes:
-            self._prefixTestHelper(bytes, factor, prefix, abbr)
+            self._prefixTestHelper(numbytes, factor, prefix, abbr)
 
     def testHumanReadable(self):
         s = Size(bytes=58929971L)

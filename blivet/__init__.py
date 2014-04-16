@@ -1253,12 +1253,12 @@ class Blivet(object):
         action = ActionDestroyDevice(device)
         self.devicetree.registerAction(action)
 
-    def formatDevice(self, device, format):
+    def formatDevice(self, device, fmt):
         """ Schedule formatting of a device.
 
             :param device: the device to create the formatting on
             :type device: :class:`~.devices.StorageDevice`
-            :param format: the format to create on the device
+            :param fmt: the format to create on the device
             :type format: :class:`~.formats.DeviceFormat`
             :rtype: None
 
@@ -1268,7 +1268,7 @@ class Blivet(object):
             method.
         """
         self.devicetree.registerAction(ActionDestroyFormat(device))
-        self.devicetree.registerAction(ActionCreateFormat(device, format))
+        self.devicetree.registerAction(ActionCreateFormat(device, fmt))
 
     def resetDevice(self, device):
         """ Cancel all scheduled actions and reset formatting.

@@ -66,13 +66,13 @@ class ZFCPDevice:
         else:
             return bus + dev
 
-    def sanitizeWWPNInput(self, id):
-        if id is None or id == "":
+    def sanitizeWWPNInput(self, wwpn):
+        if wwpn is None or wwpn == "":
             return None
-        id = id.lower()
-        if id[:2] != "0x":
-            return "0x" + id
-        return id
+        wwpn = wwpn.lower()
+        if wwpn[:2] != "0x":
+            return "0x" + wwpn
+        return wwpn
 
     # ZFCP LUNs are usually entered as 16 bit, sysfs accepts only 64 bit 
     # (#125632), expand with zeroes if necessary
@@ -86,30 +86,30 @@ class ZFCPDevice:
         lun = lun + "0" * (16 - len(lun) + 2)
         return lun
 
-    def _hextest(self, hex):
+    def _hextest(self, hexnum):
         try:
-            int(hex, 16)
+            int(hexnum, 16)
             return True
         except TypeError:
             return False
 
-    def checkValidDevice(self, id):
-        if id is None or id == "":
+    def checkValidDevice(self, devnum):
+        if devnum is None or devnum == "":
             return False
-        if len(id) != 8:             # p.e. 0.0.0600
+        if len(devnum) != 8:             # p.e. 0.0.0600
             return False
-        if id[0] not in string.digits or id[2] not in string.digits:
+        if devnum[0] not in string.digits or devnum[2] not in string.digits:
             return False
-        if id[1] != "." or id[3] != ".":
+        if devnum[1] != "." or devnum[3] != ".":
             return False
-        return self._hextest(id[4:])
+        return self._hextest(devnum[4:])
 
-    def checkValid64BitHex(self, hex):
-        if hex is None or hex == "":
+    def checkValid64BitHex(self, hexnum):
+        if hexnum is None or hexnum == "":
             return False
-        if len(hex) != 18:
+        if len(hexnum) != 18:
             return False
-        return self._hextest(hex)
+        return self._hextest(hexnum)
     checkValidWWPN = checkValidFCPLun = checkValid64BitHex
 
     def onlineDevice(self):

@@ -985,17 +985,17 @@ class StorageDevice(Device):
             return False
         return os.access(self.path, os.W_OK)
 
-    def _setFormat(self, format):
+    def _setFormat(self, fmt):
         """ Set the Device's format. """
-        if not format:
-            format = getFormat(None, device=self.path, exists=self.exists)
-        log_method_call(self, self.name, type=format.type,
+        if not fmt:
+            fmt = getFormat(None, device=self.path, exists=self.exists)
+        log_method_call(self, self.name, type=fmt.type,
                         current=getattr(self._format, "type", None))
         if self._format and self._format.status:
             # FIXME: self.format.status doesn't mean much
             raise errors.DeviceError("cannot replace active format", self.name)
 
-        self._format = format
+        self._format = fmt
         self._format.device = self.path
 
     def _getFormat(self):
@@ -1510,10 +1510,10 @@ class PartitionDevice(StorageDevice):
                                  self.disk.format.logicalPartitions))
         return (no_kids and not extended_has_logical)
 
-    def _setFormat(self, format):
+    def _setFormat(self, fmt):
         """ Set the Device's format. """
         log_method_call(self, self.name)
-        StorageDevice._setFormat(self, format)
+        StorageDevice._setFormat(self, fmt)
 
     def _setBootable(self, bootable):
         """ Set the bootable flag for this partition. """
@@ -4627,9 +4627,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         self._defaultSubVolumeID = None
 
-    def _setFormat(self, format):
+    def _setFormat(self, fmt):
         """ Set the Device's format. """
-        super(BTRFSVolumeDevice, self)._setFormat(format)
+        super(BTRFSVolumeDevice, self)._setFormat(fmt)
         self._name = "btrfs.%d" % self.id
         label = getattr(self.format, "label", None)
         if label:
