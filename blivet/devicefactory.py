@@ -807,10 +807,7 @@ class PartitionFactory(DeviceFactory):
         if self.device:
             min_format_size = self.device.format.minSize
         else:
-            # this is a little dirty, but cache the DeviceFormat so we only
-            # instantiate one of them
-            self.__fmt = getattr(self, "__fmt", getFormat(self.fstype))
-            min_format_size = self.__fmt.minSize
+            min_format_size = getFormat(self.fstype).minSize
 
         # min_format_size may be None here, make sure it is a number
         min_format_size = min_format_size or 0
