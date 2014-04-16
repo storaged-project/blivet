@@ -178,11 +178,11 @@ class DeviceAction(util.ObjectID):
 
     @property
     def isShrink(self):
-        return (self.isResize and self.dir == RESIZE_SHRINK)
+        return (self.isResize and self.dir == RESIZE_SHRINK) # pylint: disable=no-member
 
     @property
     def isGrow(self):
-        return (self.isResize and self.dir == RESIZE_GROW)
+        return (self.isResize and self.dir == RESIZE_GROW) # pylint: disable=no-member
 
     @property
     def isAdd(self):
@@ -223,7 +223,7 @@ class DeviceAction(util.ObjectID):
         """ String representing the direction of a resize action. """
         s = ""
         if self.isResize:
-            s = resize_strings[self.dir]
+            s = resize_strings[self.dir] # pylint: disable=no-member
 
         return s
 
