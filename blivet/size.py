@@ -241,14 +241,6 @@ class Size(Decimal):
     def __mod__(self, other, context=None):
         return Size(bytes=Decimal.__mod__(self, other, context=context))
 
-    def _trimEnd(self, val):
-        """ Internal method to trim trailing zeros. """
-        val = re.sub(r'(\.\d*?)0+$', '\\1', val)
-        while val.endswith('.'):
-            val = val[:-1]
-
-        return val
-
     def convertTo(self, spec="b"):
         """ Return the size in the units indicated by the specifier.  The
             specifier can be prefixes from the _decimalPrefix and
@@ -272,7 +264,8 @@ class Size(Decimal):
     def humanReadable(self, places=None, max_places=2):
         """ Return a string representation of this size with appropriate
             size specifier and in the specified number of decimal places
-            (default: auto with a maximum of 2 decimal places).
+            (i.e. the maximal precision is only achieved by setting both places
+            and max_places to None).
         """
         if places is not None and places < 0:
             raise SizePlacesError("places= must be >=0 or None")
@@ -280,10 +273,9 @@ class Size(Decimal):
         if max_places is not None and max_places < 0:
             raise SizePlacesError("max_places= must be >=0 or None")
 
-        check = self._trimEnd("%d" % self)
-
-        if abs(Decimal(check)) < 1000:
-            return "%s %s" % (check, _("B"))
+        in_bytes = int(Decimal(self))
+        if abs(in_bytes) < 1000:
+            return "%d %s" % (in_bytes, _("B"))
 
         for factor, prefix, abbr in _xlated_prefixes():
             newcheck = super(Size, self).__div__(Decimal(factor))
@@ -291,35 +283,33 @@ class Size(Decimal):
             if abs(newcheck) < 1000:
                 # nice value, use this factor, prefix and abbr
                 break
+        else:
+            # no nice value found, just return size in bytes
+            return "%s %s" % (in_bytes, _("B"))
+
+        retval = newcheck
+        if places is not None:
+            retval = round(newcheck, places)
+
+        if max_places is not None:
+            if places is not None:
+                limit = min((places, max_places))
+            else:
+                limit = max_places
+            retval = round(newcheck, limit)
 
         # Format the value with '.' as the decimal separator
         # If necessary, substitute with a localized separator before returning
-        if places is not None:
-            newcheck_str = str(newcheck)
-            retval = newcheck_str
-            if "." in newcheck_str:
-                dot_idx = newcheck_str.index(".")
-                retval = newcheck_str[:dot_idx+places+1]
-        else:
-            retval = self._trimEnd(str(newcheck))
-
-        if max_places is not None:
-            (whole, point, fraction) = retval.partition(".")
-            if point and len(fraction) > max_places:
-                if max_places == 0:
-                    retval = whole
-                else:
-                    retval = "%s%s%s" % (whole, point, fraction[:max_places])
-
+        retval_str = str(retval)
         radix = locale.nl_langinfo(locale.RADIXCHAR)
         if radix != '.':
-            retval = retval.replace('.', radix)
+            retval_str = retval_str.replace('.', radix)
 
         # abbr and prefix are unicode objects so that lower/upper work correctly
         # Convert them to str before concatenating so that the return type is
         # str.
         # pylint: disable=undefined-loop-variable
         if abbr:
-            return retval + " " + abbr.encode("utf-8") + _("B")
+            return retval_str + " " + abbr.encode("utf-8") + _("B")
         else:
-            return retval + " " + prefix.encode("utf-8") + P_("byte", "bytes", newcheck)
+            return retval_str + " " + prefix.encode("utf-8") + P_("byte", "bytes", newcheck)
