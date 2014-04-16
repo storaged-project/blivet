@@ -32,7 +32,6 @@ isys = None
 ROOT_PATH = '/'
 shortProductName = 'blivet'
 productName = 'blivet'
-bootLoaderError = Exception
 ERROR_RAISE = 0
 
 class ErrorHandler(object):
@@ -102,7 +101,6 @@ def enable_installer_mode():
     global shortProductName
     global productName
     global get_bootloader
-    global BootLoaderError
     global errorHandler
     global ERROR_RAISE
 
@@ -111,7 +109,6 @@ def enable_installer_mode():
     from pyanaconda.constants import shortProductName
     from pyanaconda.constants import productName
     from pyanaconda.bootloader import get_bootloader
-    from pyanaconda.bootloader import BootLoaderError
     from pyanaconda.errors import errorHandler
     from pyanaconda.errors import ERROR_RAISE
 
