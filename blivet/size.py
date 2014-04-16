@@ -37,28 +37,28 @@ _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_decimalPrefix = [_Prefix(1000, N_("kilo"), N_("k")),
-                  _Prefix(1000**2, N_("mega"), N_("M")),
-                  _Prefix(1000**3, N_("giga"), N_("G")),
-                  _Prefix(1000**4, N_("tera"), N_("T")),
-                  _Prefix(1000**5, N_("peta"), N_("P")),
-                  _Prefix(1000**6, N_("exa"), N_("E")),
-                  _Prefix(1000**7, N_("zetta"), N_("Z")),
-                  _Prefix(1000**8, N_("yotta"), N_("Y"))]
+_decimalPrefixes = [_Prefix(1000, N_("kilo"), N_("k")),
+                    _Prefix(1000**2, N_("mega"), N_("M")),
+                    _Prefix(1000**3, N_("giga"), N_("G")),
+                    _Prefix(1000**4, N_("tera"), N_("T")),
+                    _Prefix(1000**5, N_("peta"), N_("P")),
+                    _Prefix(1000**6, N_("exa"), N_("E")),
+                    _Prefix(1000**7, N_("zetta"), N_("Z")),
+                    _Prefix(1000**8, N_("yotta"), N_("Y"))]
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_binaryPrefix = [_Prefix(1024, N_("kibi"), N_("Ki")),
-                 _Prefix(1024**2, N_("mebi"), N_("Mi")),
-                 _Prefix(1024**3, N_("gibi"), N_("Gi")),
-                 _Prefix(1024**4, N_("tebi"), N_("Ti")),
-                 _Prefix(1024**5, N_("pebi"), N_("Pi")),
-                 _Prefix(1024**6, N_("exbi"), N_("Ei")),
-                 _Prefix(1024**7, N_("zebi"), N_("Zi")),
-                 _Prefix(1024**8, N_("yobi"), N_("Yi"))]
+_binaryPrefixes = [_Prefix(1024, N_("kibi"), N_("Ki")),
+                   _Prefix(1024**2, N_("mebi"), N_("Mi")),
+                   _Prefix(1024**3, N_("gibi"), N_("Gi")),
+                   _Prefix(1024**4, N_("tebi"), N_("Ti")),
+                   _Prefix(1024**5, N_("pebi"), N_("Pi")),
+                   _Prefix(1024**6, N_("exbi"), N_("Ei")),
+                   _Prefix(1024**7, N_("zebi"), N_("Zi")),
+                   _Prefix(1024**8, N_("yobi"), N_("Yi"))]
 
 _bytes = [N_('B'), N_('b'), N_('byte'), N_('bytes')]
-_prefixes = _binaryPrefix + _decimalPrefix
+_prefixes = _binaryPrefixes + _decimalPrefixes
 
 # Translated versions of the byte and prefix arrays
 # All strings are decoded as utf-8 so that locale-specific upper/lower functions work
@@ -66,10 +66,17 @@ def _xlated_bytes():
     """Return a translated version of the bytes list as a list of unicode strings"""
     return [_(b).decode("utf-8") for b in _bytes]
 
+def _xlated_binary_prefixes():
+    return (_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
+            for p in _binaryPrefixes)
+
 def _xlated_prefixes():
     """Return translated prefixes as unicode strings"""
-    return [_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
-            for p in _prefixes]
+    xlated_binary = list(_xlated_binary_prefixes())
+    xlated_decimal = [_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
+                      for p in _decimalPrefixes]
+
+    return xlated_binary + xlated_decimal
 
 _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)
 def _lowerASCII(s):
@@ -173,12 +180,12 @@ class Size(Decimal):
 
     def __new__(cls, bytes=None,  spec=None):
         """ Initialize a new Size object.  Must pass either bytes or spec,
-            but not both.  The bytes parameter is a numerical value for
-            the size this object represents, in bytes.  The spec parameter
-            is a string specification of the size using any of the size
-            specifiers in the _decimalPrefix or _binaryPrefix lists combined
-            with a 'b' or 'B'.  For example, to specify 640 kilobytes, you
-            could pass any of these parameter:
+            but not both.  The bytes parameter is a numerical value for the size
+            this object represents, in bytes.  The spec parameter is a string
+            specification of the size using any of the size specifiers in the
+            _decimalPrefixes or _binaryPrefixes lists combined with a 'b' or
+            'B'.  For example, to specify 640 kilobytes, you could pass any of
+            these parameters:
 
                 spec="640kb"
                 spec="640 kb"
@@ -243,10 +250,10 @@ class Size(Decimal):
 
     def convertTo(self, spec="b"):
         """ Return the size in the units indicated by the specifier.  The
-            specifier can be prefixes from the _decimalPrefix and
-            _binaryPrefix lists combined with 'b' or 'B' for abbreviations)
-            or 'bytes' (for prefixes like kilo or mega).  The size is
-            returned as a Decimal.
+            specifier can be prefixes from the _decimalPrefixes and
+            _binaryPrefixes lists combined with 'b' or 'B' for abbreviations) or
+            'bytes' (for prefixes like kilo or mega).  The size is returned as a
+            Decimal.
         """
         spec = spec.lower()
 
@@ -277,15 +284,26 @@ class Size(Decimal):
         if abs(in_bytes) < 1000:
             return "%d %s" % (in_bytes, _("B"))
 
-        for factor, prefix, abbr in _xlated_prefixes():
+        prev_prefix = None
+        for prefix_item in _xlated_prefixes():
+            factor, prefix, abbr = prefix_item
             newcheck = super(Size, self).__div__(Decimal(factor))
 
             if abs(newcheck) < 1000:
                 # nice value, use this factor, prefix and abbr
                 break
+            prev_prefix = prefix_item
         else:
             # no nice value found, just return size in bytes
             return "%s %s" % (in_bytes, _("B"))
+
+        if abs(newcheck) < 10:
+            if prev_prefix:
+                factor, prefix, abbr = prev_prefix
+                newcheck = super(Size, self).__div__(Decimal(factor))
+            else:
+                # less than 10 KiB
+                return "%s %s" % (in_bytes, _("B"))
 
         retval = newcheck
         if places is not None:
