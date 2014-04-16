@@ -91,9 +91,9 @@ def get_mount_paths(dev):
     """ Given a device node path, return a list of all active mountpoints. """
     mounts = open("/proc/mounts").readlines()
     mount_paths = []
-    for mount in mounts:
+    for mnt in mounts:
         try:
-            (device, path, _rest) = mount.split(None, 2)
+            (device, path, _rest) = mnt.split(None, 2)
         except ValueError:
             continue
 
@@ -108,9 +108,9 @@ def get_mount_device(mountpoint):
     """ Given a mountpoint, return the device node path mounted there. """
     mounts = open("/proc/mounts").readlines()
     mount_device = None
-    for mount in mounts:
+    for mnt in mounts:
         try:
-            (device, path, _rest) = mount.split(None, 2)
+            (device, path, _rest) = mnt.split(None, 2)
         except ValueError:
             continue
 

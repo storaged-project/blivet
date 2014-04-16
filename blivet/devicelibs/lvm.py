@@ -433,7 +433,7 @@ def lvs(vg_name=None):
         args.append(vg_name)
 
     buf = util.capture_output(["lvm"] + args)
-    lvs = {}
+    logvols = {}
     for line in buf.splitlines():
         info = parse_lvm_vars(line)
         if len(info.keys()) != 6:
@@ -441,9 +441,9 @@ def lvs(vg_name=None):
             continue
 
         lv_name = "%s-%s" % (info["LVM2_VG_NAME"], info["LVM2_LV_NAME"])
-        lvs[lv_name] = info
+        logvols[lv_name] = info
 
-    return lvs
+    return logvols
 
 def lvorigin(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "origin"] + \

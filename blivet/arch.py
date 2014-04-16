@@ -359,13 +359,13 @@ def bits():
     """
     try:
         import platform
-        bits = platform.architecture()[0]
+        nbits = platform.architecture()[0]
         # the string is in the format:
         # "<number>bit"
         # so we remove the bit suffix and convert the
         # number to an integer
-        (bits, _rest) = bits.split("bit", 1)
-        return int(bits)
+        (nbits, _rest) = nbits.split("bit", 1)
+        return int(nbits)
     except Exception: # pylint: disable=broad-except
         log_exception_info(log.error, "architecture word size detection failed")
         return None

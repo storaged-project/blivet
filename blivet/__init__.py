@@ -3078,17 +3078,17 @@ def findExistingInstallations(devicetree):
             continue
 
         try:
-            (arch, product, version) = getReleaseString()
+            (architecture, product, version) = getReleaseString()
         except ValueError:
             name = _("Linux on %s") % device.name
         else:
             # I'd like to make this finer grained, but it'd be very difficult
             # to translate.
-            if not product or not version or not arch:
+            if not product or not version or not architecture:
                 name = _("Unknown Linux")
             else:
                 name = _("%(product)s Linux %(version)s for %(arch)s") % \
-                        {"product": product, "version": version, "arch": arch}
+                        {"product": product, "version": version, "arch": architecture}
 
         (mounts, swaps) = parseFSTab(devicetree, chroot=ROOT_PATH)
         device.teardown()
