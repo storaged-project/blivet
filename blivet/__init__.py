@@ -106,13 +106,13 @@ def enable_installer_mode():
     global errorHandler
     global ERROR_RAISE
 
-    from pyanaconda import isys
-    from pyanaconda.constants import ROOT_PATH
-    from pyanaconda.constants import shortProductName
-    from pyanaconda.constants import productName
-    from pyanaconda.bootloader import get_bootloader
-    from pyanaconda.errors import errorHandler
-    from pyanaconda.errors import ERROR_RAISE
+    from pyanaconda import isys # pylint: disable=redefined-outer-name
+    from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name
+    from pyanaconda.constants import shortProductName # pylint: disable=redefined-outer-name
+    from pyanaconda.constants import productName # pylint: disable=redefined-outer-name
+    from pyanaconda.bootloader import get_bootloader # pylint: disable=redefined-outer-name
+    from pyanaconda.errors import errorHandler # pylint: disable=redefined-outer-name
+    from pyanaconda.errors import ERROR_RAISE # pylint: disable=redefined-outer-name
 
     from pyanaconda.anaconda_log import program_log_lock
     util.program_log_lock = program_log_lock
