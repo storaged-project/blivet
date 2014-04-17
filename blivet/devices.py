@@ -1931,13 +1931,9 @@ class DMDevice(StorageDevice):
 
     @property
     def status(self):
-        _status = False
-        for map in block.dm.maps():
-            if map.name == self.mapName:
-                _status = map.live_table and not map.suspended
-                break
-
-        return _status
+        match = next((m for m in block.dm.maps() if m.name == self.mapName),
+           None)
+        return (match.live_table and not match.suspended) if match else False
 
     def updateSysfsPath(self):
         """ Update this device's sysfs path. """
