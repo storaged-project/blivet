@@ -528,7 +528,9 @@ class PartitionDevice(StorageDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        self.disk.format.addPartition(self.partedPartition)
+        self.disk.format.addPartition(self.partedPartition.geometry.start,
+                                      self.partedPartition.geometry.end,
+                                      self.partedPartition.type)
 
         self._wipe()
         try:
@@ -621,7 +623,10 @@ class PartitionDevice(StorageDevice):
         try:
             self.disk.originalFormat.commit()
         except errors.DiskLabelCommitError:
-            self.disk.originalFormat.addPartition(self.partedPartition)
+            self.disk.originalFormat.addPartition(
+                                        self.partedPartition.geometry.start,
+                                        self.partedPartition.geometry.end,
+                                        self.partedPartition.type)
             self.partedPartition = self.disk.originalFormat.partedDisk.getPartitionByPath(self.path)
             raise
 

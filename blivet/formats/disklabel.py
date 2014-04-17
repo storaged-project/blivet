@@ -285,28 +285,32 @@ class DiskLabel(DeviceFormat):
         else:
             self.updateOrigPartedDisk()
 
-    def addPartition(self, partition, constraint=None):
+    def addPartition(self, start, end, ptype=None):
         """ Add a partition to the disklabel.
 
-            :param partition: partition from which to get geom, type (required)
-            :type partition: parted.Partition.
-            :keyword constraint: constraint to use
-            :type constraint: parted.Constraint.
+            :param int start: start sector
+            :param int end: end sector
+            :param ptype: partition type or None
+            :type ptype: int (parted partition type constant) or NoneType
 
-            .. note::
-
-                This does not add the :class:`parted.Partition` instance you
-                pass in. The geometry and type are taken from that instance and
-                used to create a new :class:`parted.Partition` to add to the
-                disklabel.
+            Partition type will default to either PARTITION_NORMAL or
+            PARTITION_LOGICAL, depending on whether the start sector is within
+            an extended partition.
         """
-        geometry = partition.geometry
-        if not constraint:
-            constraint = parted.Constraint(exactGeom=geometry)
+        if ptype is None:
+            extended = self.extendedPartition
+            if extended and extended.geometry.contains(start):
+                ptype = parted.PARTITION_LOGICAL
+            else:
+                ptype = parted.PARTITION_NORMAL
 
+        geometry = parted.Geometry(device=self.partedDevice,
+                                   start=start, end=end)
         new_partition = parted.Partition(disk=self.partedDisk,
-                                         type=partition.type,
+                                         type=ptype,
                                          geometry=geometry)
+
+        constraint = parted.Constraint(exactGeom=geometry)
         self.partedDisk.addPartition(partition=new_partition,
                                      constraint=constraint)
 
@@ -314,13 +318,7 @@ class DiskLabel(DeviceFormat):
         """ Remove a partition from the disklabel.
 
             :param partition: the partition to remove
-            :type partition: parted.Partition.
-
-            .. note::
-
-                Unlike :meth:`addPartition`, the actual partition instance
-                passed is what will be removed from the disklabel.
-
+            :type partition: :class:`parted.Partition`
         """
         self.partedDisk.removePartition(partition)
 
