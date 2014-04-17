@@ -1,5 +1,7 @@
 import inspect
 import logging
+import sys
+import traceback
 
 log = logging.getLogger("blivet")
 log.addHandler(logging.NullHandler())
@@ -43,3 +45,29 @@ def log_method_return(d, retval):
     fmt = "%s%s.%s returned %s"
     fmt_args = (spaces, classname, methodname, retval)
     log.debug(fmt, *fmt_args)
+
+def log_exception_info(log_func=log.debug, fmt_str=None, fmt_args=None):
+    """Log detailed exception information.
+
+       :param log_func: the desired logging function
+       :param str fmt_str: a format string for any additional message
+       :param fmt_args: arguments for the format string
+       :type fmt_args: a list of str
+
+       Note: the logging function indicates the severity level of
+       this exception according to the calling function. log.debug,
+       the default, is the lowest level.
+    """
+    fmt_args = fmt_args or []
+    (_methodname, depth) = function_name_and_depth()
+    spaces = depth * ' '
+    log_func("%sCaught exception, continuing.", spaces)
+    if fmt_str:
+        fmt_str = "%sProblem description: " + fmt_str
+        log_func(fmt_str, spaces, *fmt_args)
+    log_func("%sBegin exception details.", spaces)
+    tb = traceback.format_exception(*sys.exc_info())
+    for entry in tb:
+        for line in [l for l in entry.split("\n") if l]:
+            log_func("%s    %s", spaces, line.rstrip())
+    log_func("%sEnd exception details.", spaces)
