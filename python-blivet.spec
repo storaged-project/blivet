@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.48
+Version: 0.49
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,24 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Apr 17 2014 Brian C. Lane <bcl@redhat.com> - 0.49-1
+- Slightly reduce loop and get rid of obsolete comment (amulhern)
+- Slightly rewrite loop to avoid a redefining builtin error (amulhern)
+- Simplify find_library and fix redefining built-in errors. (amulhern)
+- Make loop variables a little more descriptive (amulhern)
+- Make regular expressions raw strings. (amulhern)
+- Suppress unused variable warning and check for failure. (amulhern)
+- Add W0105 warning about attribute docstrings to false positives (amulhern)
+- Make signature of setup() in parent class same as in children (amulhern)
+- Suppress some correct pylint warnings (amulhern)
+- Get _loopMap.values() when all that's needed is the values (amulhern)
+- Obvious fix inspired by pylint E0602 error (amulhern)
+- Suppress W0631 warning for abbr and prefix. (amulhern)
+- Do not do formatting operation in the argument of the translation (amulhern)
+- Remove unnecessary global statements (amulhern)
+- Disable W0703 message in test (amulhern)
+- Explicitly set the module level platform variable (amulhern)
+
 * Thu Apr 10 2014 Brian C. Lane <bcl@redhat.com> - 0.48-1
 - Do not execute smallestMember property method twice. (amulhern)
 - Remove unnecessary function definitions in abstract properties (amulhern)

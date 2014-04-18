@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-10 17:11-0700\n"
+"POT-Creation-Date: 2014-04-17 17:20-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,116 +17,153 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1350
-msgid "You must create a new filesystem on the root device."
+#. Decimal prefixes for different size increments, along with the name
+#. and accepted abbreviation for the prefix.  These prefixes are all
+#. for 'bytes'.
+#: ../blivet/size.py:40
+msgid "kilo"
 msgstr ""
 
-#: ../blivet/__init__.py:1518
-#, python-format
-msgid "LUKS device %s has no encryption key"
+#: ../blivet/size.py:40
+msgid "k"
 msgstr ""
 
-#: ../blivet/__init__.py:1549
-#, python-format
-msgid ""
-"Your root partition is less than 250 megabytes which is usually too small to "
-"install %s."
+#: ../blivet/size.py:41
+msgid "mega"
 msgstr ""
 
-#: ../blivet/__init__.py:1554
-#, python-format
-msgid ""
-"You have not defined a root partition (/), which is required for "
-"installation of %s to continue."
+#: ../blivet/size.py:41
+msgid "M"
 msgstr ""
 
-#: ../blivet/__init__.py:1568
-msgid ""
-"This platform requires /boot on a dedicated partition or logical volume.  If "
-"you do not want a /boot volume, you must place / on a dedicated non-LVM "
-"partition."
+#: ../blivet/size.py:42
+msgid "giga"
 msgstr ""
 
-#: ../blivet/__init__.py:1578
-#, python-format
-msgid ""
-"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
-"recommended for a normal %(productName)s install."
+#: ../blivet/size.py:42
+msgid "G"
 msgstr ""
 
-#: ../blivet/__init__.py:1589
-#, python-format
-msgid ""
-"Your %(mount)s partition is too small for %(format)s formatting (allowable "
-"size is %(minSize)s to %(maxSize)s)"
+#: ../blivet/size.py:43
+msgid "tera"
 msgstr ""
 
-#: ../blivet/__init__.py:1595
-#, python-format
-msgid ""
-"Your %(mount)s partition is too large for %(format)s formatting (allowable "
-"size is %(minSize)s to %(maxSize)s)"
+#: ../blivet/size.py:43
+msgid "T"
 msgstr ""
 
-#: ../blivet/__init__.py:1604
-msgid "No valid bootloader target device found. See below for details."
+#: ../blivet/size.py:44
+msgid "peta"
 msgstr ""
 
-#: ../blivet/__init__.py:1616
-msgid "You have not created a bootable partition."
+#: ../blivet/size.py:44
+msgid "P"
 msgstr ""
 
-#: ../blivet/__init__.py:1638
-msgid ""
-"Your BIOS-based system needs a special partition to boot from a GPT disk "
-"label. To continue, please create a 1MiB 'biosboot' type partition."
+#: ../blivet/size.py:45
+msgid "exa"
 msgstr ""
 
-#: ../blivet/__init__.py:1649
-#, python-format
-msgid ""
-"You have not specified a swap partition.  %(requiredMem)s of memory is "
-"required to continue installation without a swap partition, but you only "
-"have %(installedMem)s."
+#: ../blivet/size.py:45
+msgid "E"
 msgstr ""
 
-#: ../blivet/__init__.py:1656
-msgid ""
-"You have not specified a swap partition.  Although not strictly required in "
-"all cases, it will significantly improve performance for most installations."
+#: ../blivet/size.py:46
+msgid "zetta"
 msgstr ""
 
-#: ../blivet/__init__.py:1663
-msgid ""
-"At least one of your swap devices does not have a UUID, which is common in "
-"swap space created using older versions of mkswap. These devices will be "
-"referred to by device path in /etc/fstab, which is not ideal since device "
-"paths can change under a variety of circumstances. "
+#: ../blivet/size.py:46
+msgid "Z"
 msgstr ""
 
-#: ../blivet/__init__.py:1674
-#, python-format
-msgid ""
-"This mount point is invalid.  The %s directory must be on the / file system."
+#: ../blivet/size.py:47
+msgid "yotta"
 msgstr ""
 
-#: ../blivet/__init__.py:1679
-#, python-format
-msgid "The mount point %s must be on a linux file system."
+#: ../blivet/size.py:47
+msgid "Y"
 msgstr ""
 
-#: ../blivet/__init__.py:3082
-#, python-format
-msgid "Linux on %s"
+#. Binary prefixes for the different size increments.  Same structure
+#. as the above list.
+#: ../blivet/size.py:51
+msgid "kibi"
 msgstr ""
 
-#: ../blivet/__init__.py:3087
-msgid "Unknown Linux"
+#: ../blivet/size.py:51
+msgid "Ki"
 msgstr ""
 
-#: ../blivet/__init__.py:3089
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
+#: ../blivet/size.py:52
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "Yi"
+msgstr ""
+
+#: ../blivet/size.py:60 ../blivet/size.py:286 ../blivet/size.py:323
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:60 ../blivet/size.py:93
+msgid "b"
+msgstr ""
+
+#: ../blivet/size.py:60 ../blivet/size.py:85
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:60 ../blivet/size.py:86
+msgid "bytes"
 msgstr ""
 
 #: ../blivet/partitioning.py:367
@@ -194,12 +231,12 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/devicetree.py:1245
-msgid "Invalid Disk Label"
-msgstr ""
-
 #: ../blivet/fcoe.py:108
 msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/devicetree.py:1245
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -225,7 +262,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:194 ../blivet/formats/fs.py:1056
+#: ../blivet/platform.py:194 ../blivet/formats/fs.py:1050
 msgid "EFI System Partition"
 msgstr ""
 
@@ -403,153 +440,116 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#. Decimal prefixes for different size increments, along with the name
-#. and accepted abbreviation for the prefix.  These prefixes are all
-#. for 'bytes'.
-#: ../blivet/size.py:40
-msgid "kilo"
+#: ../blivet/__init__.py:1350
+msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/size.py:40
-msgid "k"
+#: ../blivet/__init__.py:1518
+#, python-format
+msgid "LUKS device %s has no encryption key"
 msgstr ""
 
-#: ../blivet/size.py:41
-msgid "mega"
+#: ../blivet/__init__.py:1549
+#, python-format
+msgid ""
+"Your root partition is less than 250 megabytes which is usually too small to "
+"install %s."
 msgstr ""
 
-#: ../blivet/size.py:41
-msgid "M"
+#: ../blivet/__init__.py:1554
+#, python-format
+msgid ""
+"You have not defined a root partition (/), which is required for "
+"installation of %s to continue."
 msgstr ""
 
-#: ../blivet/size.py:42
-msgid "giga"
+#: ../blivet/__init__.py:1568
+msgid ""
+"This platform requires /boot on a dedicated partition or logical volume.  If "
+"you do not want a /boot volume, you must place / on a dedicated non-LVM "
+"partition."
 msgstr ""
 
-#: ../blivet/size.py:42
-msgid "G"
+#: ../blivet/__init__.py:1578
+#, python-format
+msgid ""
+"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
+"recommended for a normal %(productName)s install."
 msgstr ""
 
-#: ../blivet/size.py:43
-msgid "tera"
+#: ../blivet/__init__.py:1589
+#, python-format
+msgid ""
+"Your %(mount)s partition is too small for %(format)s formatting (allowable "
+"size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/size.py:43
-msgid "T"
+#: ../blivet/__init__.py:1595
+#, python-format
+msgid ""
+"Your %(mount)s partition is too large for %(format)s formatting (allowable "
+"size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/size.py:44
-msgid "peta"
+#: ../blivet/__init__.py:1604
+msgid "No valid bootloader target device found. See below for details."
 msgstr ""
 
-#: ../blivet/size.py:44
-msgid "P"
+#: ../blivet/__init__.py:1616
+msgid "You have not created a bootable partition."
 msgstr ""
 
-#: ../blivet/size.py:45
-msgid "exa"
+#: ../blivet/__init__.py:1638
+msgid ""
+"Your BIOS-based system needs a special partition to boot from a GPT disk "
+"label. To continue, please create a 1MiB 'biosboot' type partition."
 msgstr ""
 
-#: ../blivet/size.py:45
-msgid "E"
+#: ../blivet/__init__.py:1649
+#, python-format
+msgid ""
+"You have not specified a swap partition.  %(requiredMem)s of memory is "
+"required to continue installation without a swap partition, but you only "
+"have %(installedMem)s."
 msgstr ""
 
-#: ../blivet/size.py:46
-msgid "zetta"
+#: ../blivet/__init__.py:1656
+msgid ""
+"You have not specified a swap partition.  Although not strictly required in "
+"all cases, it will significantly improve performance for most installations."
 msgstr ""
 
-#: ../blivet/size.py:46
-msgid "Z"
+#: ../blivet/__init__.py:1663
+msgid ""
+"At least one of your swap devices does not have a UUID, which is common in "
+"swap space created using older versions of mkswap. These devices will be "
+"referred to by device path in /etc/fstab, which is not ideal since device "
+"paths can change under a variety of circumstances. "
 msgstr ""
 
-#: ../blivet/size.py:47
-msgid "yotta"
+#: ../blivet/__init__.py:1674
+#, python-format
+msgid ""
+"This mount point is invalid.  The %s directory must be on the / file system."
 msgstr ""
 
-#: ../blivet/size.py:47
-msgid "Y"
+#: ../blivet/__init__.py:1679
+#, python-format
+msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#. Binary prefixes for the different size increments.  Same structure
-#. as the above list.
-#: ../blivet/size.py:51
-msgid "kibi"
+#: ../blivet/__init__.py:3082
+#, python-format
+msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/size.py:51
-msgid "Ki"
+#: ../blivet/__init__.py:3087
+msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/size.py:52
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "Yi"
-msgstr ""
-
-#: ../blivet/size.py:60 ../blivet/size.py:286 ../blivet/size.py:322
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:60 ../blivet/size.py:93
-msgid "b"
-msgstr ""
-
-#: ../blivet/size.py:60 ../blivet/size.py:85
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:60 ../blivet/size.py:86
-msgid "bytes"
+#: ../blivet/__init__.py:3089
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/deviceaction.py:273
@@ -594,51 +594,51 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/formats/fs.py:468
+#: ../blivet/formats/fs.py:466
 #, python-format
 msgid "Unknown return code: %d."
 msgstr ""
 
-#: ../blivet/formats/fs.py:490
+#: ../blivet/formats/fs.py:488
 #, python-format
 msgid "%(type)s filesystem check failure on %(device)s: "
 msgstr ""
 
-#: ../blivet/formats/fs.py:877
+#: ../blivet/formats/fs.py:873
 msgid "File system errors left uncorrected."
 msgstr ""
 
-#: ../blivet/formats/fs.py:878
+#: ../blivet/formats/fs.py:874
 msgid "Operational error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:879
+#: ../blivet/formats/fs.py:875
 msgid "Usage or syntax error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:880
+#: ../blivet/formats/fs.py:876
 msgid "e2fsck cancelled by user request."
 msgstr ""
 
-#: ../blivet/formats/fs.py:881
+#: ../blivet/formats/fs.py:877
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1030
+#: ../blivet/formats/fs.py:1024
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1032
+#: ../blivet/formats/fs.py:1026
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1282
+#: ../blivet/formats/fs.py:1276
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1313
+#: ../blivet/formats/fs.py:1307
 msgid "Linux HFS+ ESP"
 msgstr ""
 
@@ -682,7 +682,7 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:418
+#: ../blivet/devicelibs/lvm.py:414
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""
