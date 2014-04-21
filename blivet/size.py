@@ -318,7 +318,7 @@ class Size(Decimal):
         # abbr and prefix are unicode objects so that lower/upper work correctly
         # Convert them to str before concatenating so that the return type is
         # str.
-        # pylint: disable=W0631
+        # pylint: disable=undefined-loop-variable
         if abbr:
             return retval + " " + abbr.encode("utf-8") + _("B")
         else:

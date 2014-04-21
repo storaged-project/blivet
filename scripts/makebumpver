@@ -377,7 +377,7 @@ class MakeBumpVer:
             print "!!! Failed to replace '%s' with '%s'" % (search, replace)
             sys.exit(1)
 
-        # pylint: disable=W0631
+        # pylint: disable=undefined-loop-variable
         lines[i] = re.sub(search, replace, lines[i])
 
     def _writeNewSpec(self, newVersion, rpmlog):

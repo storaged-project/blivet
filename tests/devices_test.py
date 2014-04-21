@@ -511,12 +511,12 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         """Test for method calls on initialized BTRFS Devices."""
         # volumes do not have ancestor volumes
         with self.assertRaises(AttributeError):
-            # pylint: disable=E1101,W0104
+            # pylint: disable=no-member,pointless-statement
             self.dev1.volume
 
         # subvolumes do not have default subvolumes
         with self.assertRaises(AttributeError):
-            # pylint: disable=E1101,W0104
+            # pylint: disable=no-member,pointless-statement
             self.dev2.defaultSubVolume
 
         self.assertIsNotNone(self.dev2.volume)
