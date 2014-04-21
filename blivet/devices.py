@@ -2397,10 +2397,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if not self.exists:
             self.pvCount = len(self.parents)
 
-        # Some snapshots don't have a proper LV as an origin (--vorigin).
-        # They still occupy space in the VG.
-        self.voriginSnapshots = {}
-
         # >0 is fixed
         self.size_policy = self.size
 
@@ -2611,18 +2607,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return modified
 
     @property
-    def snapshotSpace(self):
-        """ Total space used by snapshots in this volume group. """
-        used = 0
-        for lv in self.lvs:
-            used += self.align(lv.snapshotSpace, roundup=True)
-
-        for (_vname, vsize) in self.voriginSnapshots.items():
-            used += self.align(vsize, roundup=True)
-
-        return used
-
-    @property
     def reservedSpace(self):
         """ Reserved space in this VG """
         reserved = Size(0)
@@ -2665,7 +2649,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
-        used = sum(lv.vgSpaceUsed for lv in self.lvs) + self.snapshotSpace
+        used = sum(lv.vgSpaceUsed for lv in self.lvs)
         if not self.exists and raid_disks:
             # (only) we allocate (5 * num_disks) extra extents for LV metadata
             # on RAID (see the devicefactory.LVMFactory._get_total_space method)
@@ -2755,7 +2739,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     _packages = ["lvm2"]
 
     def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=0, snapshotSpace=0, segType=None,
+                 copies=1, logSize=0, segType=None,
                  fmt=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
                  singlePV=False):
@@ -2781,8 +2765,6 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type copies: int
             :keyword logSize: size of log volume (for mirrored lvs)
             :type logSize: :class:`~.size.Size`
-            :keyword snapshotSpace: sum of sizes of snapshots of this lv
-            :type snapshotSpace: :class:`~.size.Size`
             :keyword singlePV: if true, maps this lv to a single pv
             :type singlePV: bool
             :keyword segType: segment type (eg: "linear", "raid1")
@@ -2820,7 +2802,6 @@ class LVMLogicalVolumeDevice(DMDevice):
                             'size': self.size})
 
         self.uuid = uuid
-        self.snapshotSpace = snapshotSpace
         self.copies = copies
         self.logSize = logSize
         self.metaDataSize = 0
@@ -2857,11 +2838,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         s += ("  VG device = %(vgdev)r\n"
               "  segment type = %(type)s percent = %(percent)s\n"
               "  mirror copies = %(copies)d"
-              "  snapshot total =  %(snapshots)s\n"
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
                "copies": self.copies, "type": self.segType,
-               "snapshots": self.snapshotSpace, "vgspace": self.vgSpaceUsed })
+               "vgspace": self.vgSpaceUsed })
         return s
 
     @property
@@ -2869,7 +2849,6 @@ class LVMLogicalVolumeDevice(DMDevice):
         d = super(LVMLogicalVolumeDevice, self).dict
         if self.exists:
             d.update({"copies": self.copies,
-                      "snapshots": self.snapshotSpace,
                       "vgspace": self.vgSpaceUsed})
         else:
             d.update({"percent": self.req_percent})
