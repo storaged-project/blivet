@@ -41,8 +41,7 @@ class TopologicalSortTestCase(unittest.TestCase):
 
         try:
             order = blivet.tsort.tsort(graph)
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-except
             self.fail(e)
 
         # verify output list is of the correct length
