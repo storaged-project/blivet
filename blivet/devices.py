@@ -762,7 +762,10 @@ class StorageDevice(Device):
 
             Returns nothing.
         """
-        raise NotImplementedError("resize method not defined for StorageDevice")
+        if self._resizable:
+            raise NotImplementedError("method not implemented for device type %s" % self.type)
+        else:
+            raise errors.DeviceError("device type %s is not resizable" % self.type)
 
     #
     # setup
