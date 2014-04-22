@@ -67,7 +67,6 @@ def log_exception_info(log_func=log.debug, fmt_str=None, fmt_args=None):
         log_func(fmt_str, spaces, *fmt_args)
     log_func("%sBegin exception details.", spaces)
     tb = traceback.format_exception(*sys.exc_info())
-    for entry in tb:
-        for line in [l for l in entry.split("\n") if l]:
-            log_func("%s    %s", spaces, line.rstrip())
+    for line in (l.rstrip() for entry in tb for l in entry.split("\n") if l):
+        log_func("%s    %s", spaces, line)
     log_func("%sEnd exception details.", spaces)
