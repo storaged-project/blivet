@@ -3097,7 +3097,6 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Logical Volume """
     _type = "lvmthinlv"
-    _resizable = True
 
     @property
     def pool(self):
