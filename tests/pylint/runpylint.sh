@@ -95,7 +95,7 @@ if [ -z "$FILES" ]; then
     # the first line.  Scan everything except old_tests
     FILES=$(findtestfiles \( -name '*.py' -o \
                 -exec /bin/sh -c "head -1 {} | grep -q '#!/usr/bin/python'" \; \) -print | \
-            egrep -v '(|/)old_tests/')
+            egrep -v '(|/)doc/conf.py')
 fi
 
 num_cpus=$(getconf _NPROCESSORS_ONLN)
