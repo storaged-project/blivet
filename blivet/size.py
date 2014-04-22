@@ -319,6 +319,10 @@ class Size(Decimal):
                 limit = max_places
             retval = round(newcheck, limit)
 
+        if retval == int(retval):
+            # integer value, no point in showing ".0" at the end
+            retval = int(retval)
+
         # Format the value with '.' as the decimal separator
         # If necessary, substitute with a localized separator before returning
         retval_str = str(retval)
