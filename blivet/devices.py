@@ -488,10 +488,12 @@ class StorageDevice(Device):
         even present, unless the StorageDevice's setup method has been
         run.
     """
+    _resizable = False
+    """Whether this type of device is inherently resizable."""
+
     _type = "blivet"
     _devDir = "/dev"
     sysfsBlockDir = "class/block"
-    _resizable = False
     _partitionable = False
     _isDisk = False
 
