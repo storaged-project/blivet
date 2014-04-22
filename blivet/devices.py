@@ -722,7 +722,7 @@ class StorageDevice(Device):
 
     @property
     def resizable(self):
-        """ Can this type of device be resized? """
+        """ Can this device be resized? """
         return (self._resizable and self.exists and
                 (self.format.type is None or self.format.resizable or
                  not self.format.exists))
@@ -1822,7 +1822,6 @@ class PartitionDevice(StorageDevice):
 
     @property
     def resizable(self):
-        """ Can this type of device be resized? """
         return super(PartitionDevice, self).resizable and \
                self.disk.type != 'dasd'
 
