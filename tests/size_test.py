@@ -76,6 +76,31 @@ class SizeTestCase(unittest.TestCase):
         s = Size(bytes=478360371L)
         self.assertEquals(s.humanReadable(), "456.2 MiB")
 
+        # humanReable output should be the same as input for big enough sizes
+        # and enough places and integer values
+        s = Size(spec="12.68 TiB")
+        self.assertEquals(s.humanReadable(max_places=2), "12.68 TiB")
+        s = Size(spec="26.55 MiB")
+        self.assertEquals(s.humanReadable(max_places=2), "26.55 MiB")
+        s = Size(spec="300 MiB")
+        self.assertEquals(s.humanReadable(max_places=2), "300 MiB")
+
+        # smaller unit should be used for small sizes
+        s = Size(spec="9.68 TiB")
+        self.assertEquals(s.humanReadable(max_places=2), "9912.32 GiB")
+        s = Size(spec="4.29 MiB")
+        self.assertEquals(s.humanReadable(max_places=2), "4392.96 KiB")
+        s = Size(spec="7.18 KiB")
+        self.assertEquals(s.humanReadable(max_places=2), "7352 B")
+
+        # rounding should work with max_places limitted
+        s = Size(spec="12.687 TiB")
+        self.assertEquals(s.humanReadable(max_places=2), "12.69 TiB")
+        s = Size(spec="23.7874 TiB")
+        self.assertEquals(s.humanReadable(max_places=3), "23.787 TiB")
+        s = Size(spec="12.6998 TiB")
+        self.assertEquals(s.humanReadable(max_places=2), "12.7 TiB")
+
     def testNegative(self):
         s = Size(spec="-500MiB")
         self.assertEquals(s.humanReadable(), "-500 MiB")
