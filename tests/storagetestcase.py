@@ -212,15 +212,15 @@ class StorageTestCase(unittest.TestCase):
             Return the DeviceAction instance.
         """
         device = kwargs.pop("device")
-        format = kwargs.pop("format")
+        fmt = kwargs.pop("format")
         devicetree = self.storage.devicetree
 
-        self.assertNotEqual(device.format, format)
+        self.assertNotEqual(device.format, fmt)
         self.assertEqual(devicetree.getDeviceByName(device.name), device)
-        action = blivet.deviceaction.ActionCreateFormat(device, format)
+        action = blivet.deviceaction.ActionCreateFormat(device, fmt)
         devicetree.registerAction(action)
         _device = devicetree.getDeviceByName(device.name)
-        self.assertEqual(_device.format, format)
+        self.assertEqual(_device.format, fmt)
         return action
 
     def scheduleDestroyFormat(self, *args, **kwargs):
