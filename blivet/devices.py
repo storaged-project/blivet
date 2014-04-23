@@ -497,7 +497,7 @@ class StorageDevice(Device):
     _partitionable = False
     _isDisk = False
 
-    def __init__(self, name, format=None, uuid=None,
+    def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
                  sysfsPath='', parents=None, exists=False, serial=None,
                  vendor="", model="", bus=""):
@@ -510,8 +510,8 @@ class StorageDevice(Device):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword uuid: universally unique identifier (device -- not fs)
             :type uuid: str
             :keyword sysfsPath: sysfs device path
@@ -551,7 +551,7 @@ class StorageDevice(Device):
         self.protected = False
         self.controllable = not flags.testing
 
-        self.format = format
+        self.format = fmt
         self.originalFormat = copy.copy(self.format)
         self.fstabComment = ""
         self._targetSize = self._size
@@ -1094,7 +1094,7 @@ class DiskDevice(StorageDevice):
     _partitionable = True
     _isDisk = True
 
-    def __init__(self, name, format=None,
+    def __init__(self, name, fmt=None,
                  size=None, major=None, minor=None, sysfsPath='',
                  parents=None, serial=None, vendor="", model="", bus="",
                  exists=True):
@@ -1105,8 +1105,8 @@ class DiskDevice(StorageDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword uuid: universally unique identifier (device -- not fs)
             :type uuid: str
             :keyword sysfsPath: sysfs device path
@@ -1124,7 +1124,7 @@ class DiskDevice(StorageDevice):
 
             DiskDevices always exist.
         """
-        StorageDevice.__init__(self, name, format=format, size=size,
+        StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                major=major, minor=minor, exists=exists,
                                sysfsPath=sysfsPath, parents=parents,
                                serial=serial, model=model,
@@ -1181,7 +1181,7 @@ class PartitionDevice(StorageDevice):
     _resizable = True
     defaultSize = Size(spec="500MiB")
 
-    def __init__(self, name, format=None,
+    def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfsPath='', parents=None, exists=False,
@@ -1195,8 +1195,8 @@ class PartitionDevice(StorageDevice):
             :type size: :class::class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
 
             For existing partitions only:
 
@@ -1245,7 +1245,7 @@ class PartitionDevice(StorageDevice):
 
         self._bootable = False
 
-        StorageDevice.__init__(self, name, format=format, size=size,
+        StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                major=major, minor=minor, exists=exists,
                                sysfsPath=sysfsPath, parents=parents)
 
@@ -1874,7 +1874,7 @@ class DMDevice(StorageDevice):
     _type = "dm"
     _devDir = "/dev/mapper"
 
-    def __init__(self, name, format=None, size=None, dmUuid=None, uuid=None,
+    def __init__(self, name, fmt=None, size=None, dmUuid=None, uuid=None,
                  target=None, exists=False, parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -1885,8 +1885,8 @@ class DMDevice(StorageDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword dmUuid: device-mapper UUID (see note below)
@@ -1901,7 +1901,7 @@ class DMDevice(StorageDevice):
                 map name in many cases. The uuid, however, is a persistent UUID
                 stored in device metadata on disk.
         """
-        StorageDevice.__init__(self, name, format=format, size=size,
+        StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                exists=exists, uuid=uuid,
                                parents=parents, sysfsPath=sysfsPath)
         self.target = target
@@ -1996,7 +1996,7 @@ class DMLinearDevice(DMDevice):
     _partitionable = True
     _isDisk = True
 
-    def __init__(self, name, format=None, size=None, dmUuid=None,
+    def __init__(self, name, fmt=None, size=None, dmUuid=None,
                  exists=False, parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -2007,8 +2007,8 @@ class DMLinearDevice(DMDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword dmUuid: device-mapper UUID
@@ -2017,7 +2017,7 @@ class DMLinearDevice(DMDevice):
         if not parents:
             raise ValueError("DMLinearDevice requires a backing block device")
 
-        DMDevice.__init__(self, name, format=format, size=size,
+        DMDevice.__init__(self, name, fmt=fmt, size=size,
                           parents=parents, sysfsPath=sysfsPath,
                           exists=exists, target="linear", dmUuid=dmUuid)
 
@@ -2061,7 +2061,7 @@ class DMCryptDevice(DMDevice):
     """ A dm-crypt device """
     _type = "dm-crypt"
 
-    def __init__(self, name, format=None, size=None, uuid=None,
+    def __init__(self, name, fmt=None, size=None, uuid=None,
                  exists=False, sysfsPath='', parents=None):
         """
             :param name: the device name (generally a device node's basename)
@@ -2072,12 +2072,12 @@ class DMCryptDevice(DMDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
         """
-        DMDevice.__init__(self, name, format=format, size=size,
+        DMDevice.__init__(self, name, fmt=fmt, size=size,
                           parents=parents, sysfsPath=sysfsPath,
                           exists=exists, target="crypt")
 
@@ -2086,7 +2086,7 @@ class LUKSDevice(DMCryptDevice):
     _type = "luks/dm-crypt"
     _packages = ["cryptsetup"]
 
-    def __init__(self, name, format=None, size=None, uuid=None,
+    def __init__(self, name, fmt=None, size=None, uuid=None,
                  exists=False, sysfsPath='', parents=None):
         """
             :param name: the device name (generally a device node's basename)
@@ -2097,14 +2097,14 @@ class LUKSDevice(DMCryptDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword uuid: the device UUID
             :type uuid: str
         """
-        DMCryptDevice.__init__(self, name, format=format, size=size,
+        DMCryptDevice.__init__(self, name, fmt=fmt, size=size,
                                parents=parents, sysfsPath=sysfsPath,
                                uuid=None, exists=exists)
 
@@ -2647,7 +2647,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=0, snapshotSpace=0, segType=None,
-                 format=None, exists=False, sysfsPath='',
+                 fmt=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
                  singlePV=False):
         """
@@ -2659,8 +2659,8 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword uuid: the device UUID
@@ -2697,7 +2697,7 @@ class LVMLogicalVolumeDevice(DMDevice):
                     raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
             elif not isinstance(parents, LVMVolumeGroupDevice):
                 raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
-        DMDevice.__init__(self, name, size=size, format=format,
+        DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfsPath=sysfsPath, parents=parents,
                           exists=exists)
 
@@ -2981,7 +2981,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     _resizable = False
 
     def __init__(self, name, parents=None, size=None, uuid=None,
-                 format=None, exists=False, sysfsPath='',
+                 fmt=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
                  metadatasize=None, chunksize=None, segType=None):
         """
@@ -2993,8 +2993,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword uuid: the device UUID
@@ -3025,7 +3025,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
         super(LVMThinPoolDevice, self).__init__(name, parents=parents,
                                                 size=size, uuid=uuid,
-                                                format=format, exists=exists,
+                                                fmt=fmt, exists=exists,
                                                 sysfsPath=sysfsPath, grow=grow,
                                                 maxsize=maxsize,
                                                 percent=percent,
@@ -3147,7 +3147,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  memberDevices=None, totalDevices=None,
-                 uuid=None, format=None, exists=False, metadataVersion=None,
+                 uuid=None, fmt=None, exists=False, metadataVersion=None,
                  parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -3158,8 +3158,8 @@ class MDRaidArrayDevice(ContainerDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword uuid: the device UUID
@@ -3181,7 +3181,7 @@ class MDRaidArrayDevice(ContainerDevice):
         self._memberDevices = 0     # the number of active (non-spare) members
         self._totalDevices = 0      # the total number of members
 
-        super(MDRaidArrayDevice, self).__init__(name, format=format, uuid=uuid,
+        super(MDRaidArrayDevice, self).__init__(name, fmt=fmt, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
@@ -3658,7 +3658,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     _formatClassName = property(lambda s: "dmraidmember")
     _formatUUIDAttr = property(lambda s: None)
 
-    def __init__(self, name, raidSet=None, format=None,
+    def __init__(self, name, raidSet=None, fmt=None,
                  size=None, parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -3667,8 +3667,8 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword raidSet: the RaidSet object from block
@@ -3677,7 +3677,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
             DMRaidArrayDevices always exist. Blivet cannot create or destroy
             them.
         """
-        super(DMRaidArrayDevice, self).__init__(name, format=format, size=size,
+        super(DMRaidArrayDevice, self).__init__(name, fmt=fmt, size=size,
                                                 parents=parents, exists=True,
                                                 sysfsPath=sysfsPath)
 
@@ -3749,7 +3749,7 @@ class MultipathDevice(DMDevice):
     _partitionable = True
     _isDisk = True
 
-    def __init__(self, name, format=None, size=None, serial=None,
+    def __init__(self, name, fmt=None, size=None, serial=None,
                  parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -3758,8 +3758,8 @@ class MultipathDevice(DMDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
             :keyword serial: the device's serial number
@@ -3769,7 +3769,7 @@ class MultipathDevice(DMDevice):
             them.
         """
 
-        DMDevice.__init__(self, name, format=format, size=size,
+        DMDevice.__init__(self, name, fmt=fmt, size=size,
                           parents=parents, sysfsPath=sysfsPath,
                           exists=True)
 
@@ -3858,17 +3858,17 @@ class NoDevice(StorageDevice):
     """ A nodev device for nodev filesystems like tmpfs. """
     _type = "nodev"
 
-    def __init__(self, format=None):
+    def __init__(self, fmt=None):
         """
-            :keyword format: the device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: the device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
         """
-        if format:
-            name = format.device
+        if fmt:
+            name = fmt.device
         else:
             name = "none"
 
-        StorageDevice.__init__(self, name, format=format, exists=True)
+        StorageDevice.__init__(self, name, fmt=fmt, exists=True)
 
     @property
     def path(self):
@@ -3904,8 +3904,8 @@ class TmpFSDevice(NoDevice):
 
     def __init__(self, *args, **kwargs):
         """Create a tmpfs device"""
-        format = kwargs.get('format')
-        NoDevice.__init__(self, format)
+        fmt = kwargs.get('fmt')
+        NoDevice.__init__(self, fmt)
         # the tmpfs device does not exist until mounted
         self.exists = False
         self._size = kwargs["size"]
@@ -3939,7 +3939,7 @@ class FileDevice(StorageDevice):
     _type = "file"
     _devDir = ""
 
-    def __init__(self, path, format=None, size=None,
+    def __init__(self, path, fmt=None, size=None,
                  exists=False, parents=None):
         """
             :param path: full path to the file
@@ -3950,13 +3950,13 @@ class FileDevice(StorageDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
         """
         if not os.path.isabs(path):
             raise ValueError("FileDevice requires an absolute path")
 
-        StorageDevice.__init__(self, path, format=format, size=size,
+        StorageDevice.__init__(self, path, fmt=fmt, size=size,
                                exists=exists, parents=parents)
 
     @property
@@ -4046,7 +4046,7 @@ class LoopDevice(StorageDevice):
     """ A loop device. """
     _type = "loop"
 
-    def __init__(self, name=None, format=None, size=None, sysfsPath=None,
+    def __init__(self, name=None, fmt=None, size=None, sysfsPath=None,
                  exists=False, parents=None):
         """
             :param name: the device name (generally a device node's basename)
@@ -4057,8 +4057,8 @@ class LoopDevice(StorageDevice):
             :type size: :class:`~.size.Size`
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
 
             Loop devices always exist.
         """
@@ -4069,7 +4069,7 @@ class LoopDevice(StorageDevice):
             # set up a temporary name until we've activated the loop device
             name = "tmploop%d" % self.id
 
-        StorageDevice.__init__(self, name, format=format, size=size,
+        StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                exists=True, parents=parents)
 
     def updateName(self):
@@ -4274,9 +4274,9 @@ class OpticalDevice(StorageDevice):
     _type = "cdrom"
 
     def __init__(self, name, major=None, minor=None, exists=False,
-                 format=None, parents=None, sysfsPath='', vendor="",
+                 fmt=None, parents=None, sysfsPath='', vendor="",
                  model=""):
-        StorageDevice.__init__(self, name, format=format,
+        StorageDevice.__init__(self, name, fmt=fmt,
                                major=major, minor=minor, exists=True,
                                parents=parents, sysfsPath=sysfsPath,
                                vendor=vendor, model=model)
@@ -4444,17 +4444,17 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
     _type = "nfs"
     _packages = ["dracut-network"]
 
-    def __init__(self, device, format=None, parents=None):
+    def __init__(self, device, fmt=None, parents=None):
         """
             :param device: the device name (generally a device node's basename)
             :type device: str
             :keyword parents: a list of parent devices
             :type parents: list of :class:`StorageDevice`
-            :keyword format: this device's formatting
-            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
         """
         # we could make host/ip, path, &c but will anything use it?
-        StorageDevice.__init__(self, device, format=format, parents=parents)
+        StorageDevice.__init__(self, device, fmt=fmt, parents=parents)
         NetworkStorageDevice.__init__(self, device.split(":")[0])
 
     @property

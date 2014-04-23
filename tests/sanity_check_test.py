@@ -34,7 +34,7 @@ class LUKSKeyTestCase(unittest.TestCase):
         errors = []
         b = blivet.Blivet()
         b.createDevice(devices.LUKSDevice("name",
-           format=formats.luks.LUKS(),
+           fmt=formats.luks.LUKS(),
            parents=[]))
         errors += b._verifyLUKSDevicesHaveKey()
         self.assertNotEqual(errors, [])
@@ -43,7 +43,7 @@ class LUKSKeyTestCase(unittest.TestCase):
         errors = []
         b = blivet.Blivet()
         b.createDevice(devices.LUKSDevice("name",
-           format=formats.luks.LUKS(passphrase="open"),
+           fmt=formats.luks.LUKS(passphrase="open"),
            parents=[]))
         errors += b._verifyLUKSDevicesHaveKey()
         self.assertEqual(errors, [])

@@ -217,7 +217,7 @@ def _schedulePartitions(storage, disks):
                                  device=dev.path,
                                  mountpoint=request.mountpoint)
             luks_dev = LUKSDevice("luks-%s" % dev.name,
-                                  format=luks_fmt,
+                                  fmt=luks_fmt,
                                   size=dev.size,
                                   parents=dev)
             storage.createDevice(luks_dev)
@@ -259,7 +259,7 @@ def _scheduleVolumes(storage, devs):
         pvs = []
         for dev in devs:
             pv = LUKSDevice("luks-%s" % dev.name,
-                            format=getFormat(format_name, device=dev.path),
+                            fmt=getFormat(format_name, device=dev.path),
                             size=dev.size,
                             parents=dev)
             pvs.append(pv)

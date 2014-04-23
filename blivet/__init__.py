@@ -954,7 +954,7 @@ class Blivet(object):
             :class:`~.devices.PartitionDevice` constructor.
         """
         if kwargs.has_key("fmt_type"):
-            kwargs["format"] = getFormat(kwargs.pop("fmt_type"),
+            kwargs["fmt"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=kwargs.pop("mountpoint",
                                                                None),
                                          **kwargs.pop("fmt_args", {}))
@@ -965,7 +965,7 @@ class Blivet(object):
             name = "req%d" % self.nextID
 
         if "weight" not in kwargs:
-            fmt = kwargs.get("format")
+            fmt = kwargs.get("fmt")
             if fmt:
                 mountpoint = getattr(fmt, "mountpoint", None)
 
@@ -994,7 +994,7 @@ class Blivet(object):
             format type, mountpoint, hostname, and/or product name.
         """
         if kwargs.has_key("fmt_type"):
-            kwargs["format"] = getFormat(kwargs.pop("fmt_type"),
+            kwargs["fmt"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=kwargs.pop("mountpoint",
                                                                None),
                                          **kwargs.pop("fmt_args", {}))
@@ -1007,8 +1007,8 @@ class Blivet(object):
                                 safe_name, name)
                 name = safe_name
         else:
-            swap = getattr(kwargs.get("format"), "type", None) == "swap"
-            mountpoint = getattr(kwargs.get("format"), "mountpoint", None)
+            swap = getattr(kwargs.get("fmt"), "type", None) == "swap"
+            mountpoint = getattr(kwargs.get("fmt"), "mountpoint", None)
             name = self.suggestDeviceName(prefix=shortProductName,
                                           swap=swap,
                                           mountpoint=mountpoint)
@@ -1087,7 +1087,7 @@ class Blivet(object):
 
         mountpoint = kwargs.pop("mountpoint", None)
         if kwargs.has_key("fmt_type"):
-            kwargs["format"] = getFormat(kwargs.pop("fmt_type"),
+            kwargs["fmt"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=mountpoint,
                                          **kwargs.pop("fmt_args", {}))
 
@@ -1103,7 +1103,7 @@ class Blivet(object):
                                 new_name, name)
                 name = new_name
         else:
-            if kwargs.get("format") and kwargs["format"].type == "swap":
+            if kwargs.get("fmt") and kwargs["fmt"].type == "swap":
                 swap = True
             else:
                 swap = False
@@ -2353,70 +2353,54 @@ class FSSet(object):
     @property
     def sysfs(self):
         if not self._sysfs:
-            self._sysfs = NoDevice(format=getFormat("sysfs",
-                                                    device="sysfs",
-                                                    mountpoint="/sys"))
+            self._sysfs = NoDevice(fmt=getFormat("sysfs", device="sysfs", mountpoint="/sys"))
         return self._sysfs
 
     @property
     def dev(self):
         if not self._dev:
-            self._dev = DirectoryDevice("/dev", format=getFormat("bind",
-                                                                 device="/dev",
-                                                                 mountpoint="/dev",
-                                                                 exists=True),
-                                        exists=True)
+            self._dev = DirectoryDevice("/dev",
+               fmt=getFormat("bind", device="/dev", mountpoint="/dev", exists=True),
+               exists=True)
 
         return self._dev
 
     @property
     def devpts(self):
         if not self._devpts:
-            self._devpts = NoDevice(format=getFormat("devpts",
-                                                     device="devpts",
-                                                     mountpoint="/dev/pts"))
+            self._devpts = NoDevice(fmt=getFormat("devpts", device="devpts", mountpoint="/dev/pts"))
         return self._devpts
 
     @property
     def proc(self):
         if not self._proc:
-            self._proc = NoDevice(format=getFormat("proc",
-                                                   device="proc",
-                                                   mountpoint="/proc"))
+            self._proc = NoDevice(fmt=getFormat("proc", device="proc", mountpoint="/proc"))
         return self._proc
 
     @property
     def devshm(self):
         if not self._devshm:
-            self._devshm = NoDevice(format=getFormat("tmpfs",
-                                                     device="tmpfs",
-                                                     mountpoint="/dev/shm"))
+            self._devshm = NoDevice(fmt=getFormat("tmpfs", device="tmpfs", mountpoint="/dev/shm"))
         return self._devshm
 
     @property
     def usb(self):
         if not self._usb:
-            self._usb = NoDevice(format=getFormat("usbfs",
-                                                  device="usbfs",
-                                                  mountpoint="/proc/bus/usb"))
+            self._usb = NoDevice(fmt=getFormat("usbfs", device="usbfs", mountpoint="/proc/bus/usb"))
         return self._usb
 
     @property
     def selinux(self):
         if not self._selinux:
-            self._selinux = NoDevice(format=getFormat("selinuxfs",
-                                                      device="selinuxfs",
-                                                      mountpoint="/sys/fs/selinux"))
+            self._selinux = NoDevice(fmt=getFormat("selinuxfs", device="selinuxfs", mountpoint="/sys/fs/selinux"))
         return self._selinux
 
     @property
     def run(self):
         if not self._run:
-            self._run = DirectoryDevice("/run", format=getFormat("bind",
-                                                                 device="/run",
-                                                                 mountpoint="/run",
-                                                                 exists=True),
-                                        exists=True)
+            self._run = DirectoryDevice("/run",
+               fmt=getFormat("bind", device="/run", mountpoint="/run", exists=True),
+               exists=True)
 
         return self._run
 
@@ -2462,14 +2446,14 @@ class FSSet(object):
         elif ":" in devspec and fstype.startswith("nfs"):
             # NFS -- preserve but otherwise ignore
             device = NFSDevice(devspec,
-                               format=getFormat(fstype,
+                               fmt=getFormat(fstype,
                                                 exists=True,
                                                 device=devspec))
         elif devspec.startswith("/") and fstype == "swap":
             # swap file
             device = FileDevice(devspec,
                                 parents=get_containing_device(devspec, self.devicetree),
-                                format=getFormat(fstype,
+                                fmt=getFormat(fstype,
                                                  device=devspec,
                                                  exists=True),
                                 exists=True)
@@ -2497,7 +2481,7 @@ class FSSet(object):
             fmt_class = get_device_format_class("nodev")
             if devspec == "none" or \
                (fmt_class and isinstance(fmt, fmt_class)):
-                device = NoDevice(format=fmt)
+                device = NoDevice(fmt=fmt)
 
         if device is None:
             log.error("failed to resolve %s (%s) from fstab", devspec,
@@ -2739,7 +2723,7 @@ class FSSet(object):
         dev = FileDevice(filename,
                          size=size,
                          parents=[device],
-                         format=getFormat("swap", device=filename))
+                         fmt=getFormat("swap", device=filename))
         dev.create()
         dev.setup()
         dev.format.create()

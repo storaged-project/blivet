@@ -582,7 +582,7 @@ class DeviceFactory(object):
                             mountpoint=self.mountpoint,
                             **fmt_args)
             luks_device = LUKSDevice("luks-" + device.name,
-                                     parents=[device], format=fmt)
+                                     parents=[device], fmt=fmt)
             self.storage.createDevice(luks_device)
             ret = luks_device
 
@@ -660,7 +660,7 @@ class DeviceFactory(object):
             leaf_format = self.device.format
             self.storage.formatDevice(self.device, getFormat("luks"))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
-                                     format=leaf_format,
+                                     fmt=leaf_format,
                                      parents=self.device)
             self.storage.createDevice(luks_device)
             self.device = luks_device
@@ -1004,7 +1004,7 @@ class PartitionSetFactory(PartitionFactory):
                 self.storage.formatDevice(member, getFormat("luks"))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                     parents=[member],
-                                    format=getFormat(self.fstype))
+                                    fmt=getFormat(self.fstype))
                 self.storage.createDevice(luks_member)
                 members.append(luks_member)
                 if container:
@@ -1047,7 +1047,7 @@ class PartitionSetFactory(PartitionFactory):
             if self.encrypted:
                 fmt = getFormat(self.fstype)
                 member = LUKSDevice("luks-%s" % member.name,
-                                    parents=[member], format=fmt)
+                                    parents=[member], fmt=fmt)
                 self.storage.createDevice(member)
 
             members.append(member)

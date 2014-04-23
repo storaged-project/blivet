@@ -1688,7 +1688,7 @@ class DeviceTree(object):
                                 mountopts="subvol=%s" % vol_path)
                 subvol = BTRFSSubVolumeDevice(vol_path,
                                               vol_id=vol_id,
-                                              format=fmt,
+                                              fmt=fmt,
                                               parents=[parent],
                                               exists=True)
                 self._addDevice(subvol)
@@ -2629,7 +2629,7 @@ class DeviceTree(object):
 
                 # NoDevice also needs some special works since they don't have
                 # per-instance names in the kernel.
-                device = NoDevice(format=fmt)
+                device = NoDevice(fmt=fmt)
                 n = len([d for d in self.devices if d.format.type == fstype])
                 device._name += ".%d" % n
                 self._addDevice(device)

@@ -107,9 +107,9 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            memberDevices=2,
            parents=[
               MDRaidArrayDevice("parent", level="container",
-                                format=getFormat("mdmember")),
+                                fmt=getFormat("mdmember")),
               MDRaidArrayDevice("other", level=0,
-                                format=getFormat("mdmember"))],
+                                fmt=getFormat("mdmember"))],
            totalDevices=2)
 
         self.dev10 = MDRaidArrayDevice(
@@ -123,9 +123,9 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            memberDevices=2,
            parents=[
               MDRaidArrayDevice("parent", level="container",
-                                format=getFormat("mdmember")),
+                                fmt=getFormat("mdmember")),
               MDRaidArrayDevice("other", level="raid0",
-                                format=getFormat("mdmember"))],
+                                fmt=getFormat("mdmember"))],
            size=Size(spec="32 MiB"),
            totalDevices=2)
 
@@ -375,7 +375,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 MDRaidArrayDevice,
                                 "dev",
                                 parents=[StorageDevice("parent",
-                                                format=getFormat("mdmember"))])
+                                                fmt=getFormat("mdmember"))])
 
         self.assertRaisesRegexp(DeviceError,
                                 "set requires at least 2 members",
@@ -383,7 +383,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 "dev",
                                 level="raid0",
                                 parents=[StorageDevice("parent",
-                                                format=getFormat("mdmember"))])
+                                                fmt=getFormat("mdmember"))])
 
         self.assertRaisesRegexp(MDRaidError,
                                 "invalid RAID level descriptor junk",
@@ -441,12 +441,12 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         self.dev1 = BTRFSVolumeDevice("dev1",
            parents=[OpticalDevice("deva",
-              format=blivet.formats.getFormat("btrfs"))])
+              fmt=blivet.formats.getFormat("btrfs"))])
 
         self.dev2 = BTRFSSubVolumeDevice("dev2", parents=[self.dev1])
 
         dev = StorageDevice("deva",
-           format=blivet.formats.getFormat("btrfs"),
+           fmt=blivet.formats.getFormat("btrfs"),
            size=Size(spec="32 MiB"))
         self.dev3 = BTRFSVolumeDevice("dev3",
            parents=[dev])
@@ -479,7 +479,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            "dev", parents=[OpticalDevice("deva")])
 
         parents=[OpticalDevice("deva",
-           format=blivet.formats.getFormat("btrfs"))]
+           fmt=blivet.formats.getFormat("btrfs"))]
         self.assertRaisesRegexp(DeviceError,
            "btrfs subvolume.*must be a BTRFSDevice",
            BTRFSSubVolumeDevice,
