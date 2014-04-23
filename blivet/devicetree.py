@@ -1373,8 +1373,9 @@ class DeviceTree(object):
 
                 origin_device_name = "%s-%s" % (vg_name, origin_name)
                 addRequiredLV(origin_device_name, "failed to locate origin lv")
-                log.debug("adding %s to %s snapshot total",
-                            lv_sizes[index], origin.name)
+                origin = self.getDeviceByName(origin_device_name)
+                log.debug("adding %s to %s snapshot total", lv_size,
+                                                            origin.name)
                 origin.snapshotSpace += lv_size
                 return
             elif lv_attr[0] == 'v':
