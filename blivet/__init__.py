@@ -849,7 +849,7 @@ class Blivet(object):
         # create a new disklabel on the disk
         newLabel = getFormat("disklabel", device=disk.path,
                              labelType=labelType)
-        create_action = ActionCreateFormat(disk, format=newLabel)
+        create_action = ActionCreateFormat(disk, fmt=newLabel)
         self.devicetree.registerAction(create_action)
 
     def removeEmptyExtendedPartitions(self):

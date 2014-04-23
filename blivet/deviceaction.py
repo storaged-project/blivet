@@ -496,23 +496,23 @@ class ActionCreateFormat(DeviceAction):
     obj = ACTION_OBJECT_FORMAT
     typeDescStr = N_("create format")
 
-    def __init__(self, device, format=None):
+    def __init__(self, device, fmt=None):
         """
             :param device: the device on which the format will be created
             :type device: :class:`~.devices.StorageDevice`
-            :keyword format: the format to put on the device
-            :type format: :class:~.formats.DeviceFormat`
+            :keyword fmt: the format to put on the device
+            :type fmt: :class:~.formats.DeviceFormat`
 
             If no format is specified, it is assumed that the format is already
             associated with the device.
         """
         DeviceAction.__init__(self, device)
-        if format:
+        if fmt:
             self.origFormat = device.format
         else:
             self.origFormat = getFormat(None)
 
-        self._format = format or device.format
+        self._format = fmt or device.format
 
         if self._format.exists:
             raise ValueError("specified format already exists")
