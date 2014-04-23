@@ -2044,8 +2044,8 @@ class Blivet(object):
             fresh_disks = [d.name for d in self.disks if d.partitioned and
                                                          not d.format.exists]
 
-            destroy_actions = self.devicetree.findActions(type="destroy",
-                                                          object="device")
+            destroy_actions = self.devicetree.findActions(action_type="destroy",
+                                                          object_type="device")
 
             cleared_partitions = []
             partial = False

@@ -475,8 +475,8 @@ class DeviceTree(object):
         self._actions.remove(action)
         log.info("canceled action %s", action)
 
-    def findActions(self, device=None, type=None, object=None, path=None,
-                    devid=None):
+    def findActions(self, device=None, action_type=None, object_type=None,
+                    path=None, devid=None):
         """ Find all actions that match all specified parameters.
 
             A value of None for any of the keyword arguments indicates that any
@@ -484,10 +484,10 @@ class DeviceTree(object):
 
             :keyword device: device to match
             :type device: :class:`~.devices.StorageDevice` or None
-            :keyword type: action type to match (eg: "create", "destroy")
-            :type type: str or None
-            :keyword object: operand type to match (eg: "device" or "format")
-            :type object: str or None
+            :keyword action_type: action type to match (eg: "create", "destroy")
+            :type action_type: str or None
+            :keyword object_type: operand type to match (eg: "device" or "format")
+            :type object_type: str or None
             :keyword path: device path to match
             :type path: str or None
             :keyword devid: device id to match
@@ -496,13 +496,13 @@ class DeviceTree(object):
             :rtype: list of :class:`~.deviceaction.DeviceAction`
 
         """
-        if device is None and type is None and object is None and \
+        if device is None and action_type is None and object_type is None and \
            path is None and devid is None:
             return self._actions[:]
 
         # convert the string arguments to the types used in actions
-        _type = action_type_from_string(type)
-        _object = action_object_from_string(object)
+        _type = action_type_from_string(action_type)
+        _object = action_object_from_string(object_type)
 
         actions = []
         for action in self._actions:
@@ -1077,8 +1077,7 @@ class DeviceTree(object):
 
         # make sure this device was not scheduled for removal and also has not
         # been hidden
-        removed = [a.device for a in
-                    self.findActions(type="destroy", object="device")]
+        removed = [a.device for a in self.findActions(action_type="destroy", object_type="device")]
         for ignored in removed + self._hidden:
             if (sysfs_path and ignored.sysfsPath == sysfs_path) or \
                (uuid and uuid in (ignored.uuid, ignored.format.uuid)):

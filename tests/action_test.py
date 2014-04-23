@@ -630,8 +630,8 @@ class DeviceActionTestCase(StorageTestCase):
         # its PVs, and the devices that contain the PVs
         lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
-        actions = self.storage.devicetree.findActions(type="create",
-                                                      object="device",
+        actions = self.storage.devicetree.findActions(action_type="create",
+                                                      object_type="device",
                                                       device=lv_root)
         self.assertEqual(len(actions), 1,
                          "wrong number of device create actions for lv_root: "
@@ -641,8 +641,8 @@ class DeviceActionTestCase(StorageTestCase):
         vgs = [d for d in self.storage.vgs if d.name == "VolGroup"]
         self.assertNotEqual(vgs, [])
         vg = vgs[0]
-        actions = self.storage.devicetree.findActions(type="create",
-                                                      object="device",
+        actions = self.storage.devicetree.findActions(action_type="create",
+                                                      object_type="device",
                                                       device=vg)
         self.assertEqual(len(actions), 1,
                          "wrong number of device create actions for VolGroup")
@@ -655,7 +655,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(pvs, [])
         for pv in pvs:
             # include device and format create actions for each pv
-            actions = self.storage.devicetree.findActions(type="create",
+            actions = self.storage.devicetree.findActions(action_type="create",
                                                           device=pv)
             self.assertEqual(len(actions), 2,
                              "wrong number of device create actions for "
@@ -692,8 +692,8 @@ class DeviceActionTestCase(StorageTestCase):
         # require each other, regardless of the partitions' numbers
         sda1 = self.storage.devicetree.getDeviceByName("sda1")
         self.assertNotEqual(sda1, None)
-        actions = self.storage.devicetree.findActions(type="create",
-                                                      object="device",
+        actions = self.storage.devicetree.findActions(action_type="create",
+                                                      object_type="device",
                                                       device=sda1)
         self.assertEqual(len(actions), 1,
                          "wrong number of create actions found for sda1")
