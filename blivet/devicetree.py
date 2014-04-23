@@ -266,7 +266,10 @@ class DeviceTree(object):
                device.isExtended and not device.exists:
                 # don't properly register the action since the device is
                 # already in the tree
-                self._actions.append(ActionCreateDevice(device))
+                action = ActionCreateDevice(device)
+                # apply the action first in case the apply method fails
+                action.apply()
+                self._actions.append(action)
 
         for action in self._actions:
             log.debug("action: %s", action)
