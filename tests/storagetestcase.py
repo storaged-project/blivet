@@ -212,7 +212,7 @@ class StorageTestCase(unittest.TestCase):
             Return the DeviceAction instance.
         """
         device = kwargs.pop("device")
-        fmt = kwargs.pop("format")
+        fmt = kwargs.pop("fmt")
         devicetree = self.storage.devicetree
 
         self.assertNotEqual(device.format, fmt)
