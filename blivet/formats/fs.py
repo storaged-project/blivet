@@ -459,6 +459,7 @@ class FS(DeviceFormat):
         return argv
 
     def _fsckFailed(self, rc):
+        # pylint: disable=unused-argument
         return False
 
     def _fsckErrorMessage(self, rc):

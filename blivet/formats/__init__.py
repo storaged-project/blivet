@@ -244,6 +244,7 @@ class DeviceFormat(ObjectID):
            :rtype: bool
            :return: True if the format of the label is OK, otherwise False
         """
+        # pylint: disable=unused-argument
         return cls.labeling()
 
     def _setLabel(self, label):

@@ -96,6 +96,7 @@ class Platform(object):
         return d
 
     def requiredDiskLabelType(self, device_type):
+        # pylint: disable=unused-argument
         return None
 
     def bestDiskLabelType(self, device):
@@ -140,6 +141,7 @@ class Platform(object):
             for the base sorting weight.  This is used to modify the sort
             algorithm for partition requests, mainly to make sure bootable
             partitions and /boot are placed where they need to be."""
+        # pylint: disable=unused-argument
         if mountpoint == "/boot":
             return 2000
         else:
