@@ -4068,10 +4068,7 @@ class SparseFileDevice(FileDevice):
     def _create(self):
         """Create a sparse file."""
         log_method_call(self, self.name, status=self.status)
-        fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
-        os.ftruncate(fd, self.size)
-        os.close(fd)
-
+        util.create_sparse_file(self.path, self.size)
 
 class DirectoryDevice(FileDevice):
     """ A directory on a filesystem.
