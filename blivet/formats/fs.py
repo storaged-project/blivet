@@ -512,7 +512,7 @@ class FS(DeviceFormat):
         # also need to update the list of supported filesystems.
         update_kernel_filesystems()
 
-    def testMount(self, options=None):
+    def testMount(self):
         """ Try to mount the fs and return True if successful. """
         ret = False
 
