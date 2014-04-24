@@ -37,7 +37,6 @@ class Platform(object):
        during installation.  The intent is to eventually encapsulate all the
        architecture quirks in one place to avoid lots of platform checks
        throughout anaconda."""
-    _minimumSector = 0
     _packages = []
 
     # requirements for bootloader stage1 devices
@@ -123,11 +122,6 @@ class Platform(object):
                     break
 
         return labelType
-
-    @property
-    def minimumSector(self, disk):
-        """Return the minimum starting sector for the provided disk."""
-        return self._minimumSector
 
     @property
     def packages (self):
