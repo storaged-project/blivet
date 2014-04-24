@@ -301,8 +301,8 @@ class Size(Decimal):
             return "%s %s" % (in_bytes, _("B"))
 
         if abs(newcheck) < 10:
-            if prev_prefix:
-                factor, prefix, abbr = prev_prefix
+            if prev_prefix is not None:
+                factor, prefix, abbr = prev_prefix # pylint: disable=unpacking-non-sequence
                 newcheck = super(Size, self).__div__(Decimal(factor))
             else:
                 # less than 10 KiB
