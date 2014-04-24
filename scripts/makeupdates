@@ -82,7 +82,7 @@ def doGitDiff(tag, args=None):
     lines = proc[0].split('\n')
     return lines
 
-def copyUpdatedFiles(tag, updates, cwd):
+def copyUpdatedFiles(tag, updates):
     def install_to_dir(fname, relpath):
         sys.stdout.write("Including %s\n" % fname)
         outdir = os.path.join(updates, relpath)
@@ -197,7 +197,7 @@ def main(argv):
     if not os.path.isdir(updates):
         os.makedirs(updates)
 
-    copyUpdatedFiles(tag, updates, cwd)
+    copyUpdatedFiles(tag, updates)
 
     if add_rpms:
         addRpms(updates, add_rpms)
