@@ -28,7 +28,7 @@ import pprint
 import copy
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
-from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice
+from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
@@ -1730,6 +1730,8 @@ class DeviceTree(object):
             self._addDevice(btrfs_dev)
 
         if not btrfs_dev.subvolumes:
+            snapshots = btrfs_dev.listSubVolumes(snapshotsOnly=True)
+            snapshot_ids = [s["id"] for s in snapshots]
             for subvol_dict in btrfs_dev.listSubVolumes():
                 vol_id = subvol_dict["id"]
                 vol_path = subvol_dict["path"]
@@ -1753,11 +1755,16 @@ class DeviceTree(object):
                 fmt = getFormat("btrfs", device=btrfs_dev.path, exists=True,
                                 volUUID=btrfs_dev.format.volUUID,
                                 mountopts="subvol=%s" % vol_path)
-                subvol = BTRFSSubVolumeDevice(vol_path,
-                                              vol_id=vol_id,
-                                              fmt=fmt,
-                                              parents=[parent],
-                                              exists=True)
+                if vol_id in snapshot_ids:
+                    device_class = BTRFSSnapShotDevice
+                else:
+                    device_class = BTRFSSubVolumeDevice
+
+                subvol = device_class(vol_path,
+                                      vol_id=vol_id,
+                                      fmt=fmt,
+                                      parents=[parent],
+                                      exists=True)
                 self._addDevice(subvol)
 
     def handleUdevDeviceFormat(self, info, device):
