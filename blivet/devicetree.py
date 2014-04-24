@@ -1143,7 +1143,7 @@ class DeviceTree(object):
         elif udev.udev_device_is_md(info) and not udev.udev_device_get_md_container(info):
             log.info("%s is an md device", name)
             try:
-                md_uuid = udev_device_get_md_uuid(info)
+                md_uuid = udev.udev_device_get_md_uuid(info)
             except KeyError:
                 pass
             else:
