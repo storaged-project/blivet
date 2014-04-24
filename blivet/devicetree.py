@@ -1441,7 +1441,7 @@ class DeviceTree(object):
                     self.addUdevDevice(lv_info)
 
         raid = dict((n.replace("[", "").replace("]", ""),
-                     {"copies": 0, "log": Size(bytes=0), "meta": Size(bytes=0)})
+                     {"copies": 0, "log": Size(0), "meta": Size(0)})
                      for n in lv_info.keys())
         for lv in lv_info.values():
             addLV(lv)

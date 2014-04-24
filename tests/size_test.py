@@ -23,18 +23,15 @@
 
 import unittest
 
-from blivet.errors import SizeParamsError, SizePlacesError
+from blivet.errors import SizePlacesError
 from blivet.size import Size, _prefixes
 
 class SizeTestCase(unittest.TestCase):
     def testExceptions(self):
-        self.assertRaises(SizeParamsError, Size)
-        self.assertRaises(SizeParamsError, Size, bytes=500, spec="45GB")
-
-        zero = Size(bytes=0)
+        zero = Size(0)
         self.assertEqual(zero, 0.0)
 
-        s = Size(bytes=500)
+        s = Size(500)
         self.assertRaises(SizePlacesError, s.humanReadable, places=-1)
 
         self.assertEqual(s.humanReadable(places=0), "500 B")
@@ -42,23 +39,23 @@ class SizeTestCase(unittest.TestCase):
     def _prefixTestHelper(self, numbytes, factor, prefix, abbr):
         c = numbytes * factor
 
-        s = Size(bytes=c)
+        s = Size(c)
         self.assertEquals(s, c)
 
         if prefix:
             u = "%sbytes" % prefix
-            s = Size(spec="%ld %s" % (numbytes, u))
+            s = Size("%ld %s" % (numbytes, u))
             self.assertEquals(s, c)
             self.assertEquals(s.convertTo(spec=u), numbytes)
 
         if abbr:
             u = "%sb" % abbr
-            s = Size(spec="%ld %s" % (numbytes, u))
+            s = Size("%ld %s" % (numbytes, u))
             self.assertEquals(s, c)
             self.assertEquals(s.convertTo(spec=u), numbytes)
 
         if not prefix and not abbr:
-            s = Size(spec="%ld" % numbytes)
+            s = Size("%ld" % numbytes)
             self.assertEquals(s, c)
             self.assertEquals(s.convertTo(), numbytes)
 
@@ -70,46 +67,46 @@ class SizeTestCase(unittest.TestCase):
             self._prefixTestHelper(numbytes, factor, prefix, abbr)
 
     def testHumanReadable(self):
-        s = Size(bytes=58929971L)
+        s = Size(58929971L)
         self.assertEquals(s.humanReadable(), "56.2 MiB")
 
-        s = Size(bytes=478360371L)
+        s = Size(478360371L)
         self.assertEquals(s.humanReadable(), "456.2 MiB")
 
         # humanReable output should be the same as input for big enough sizes
         # and enough places and integer values
-        s = Size(spec="12.68 TiB")
+        s = Size("12.68 TiB")
         self.assertEquals(s.humanReadable(max_places=2), "12.68 TiB")
-        s = Size(spec="26.55 MiB")
+        s = Size("26.55 MiB")
         self.assertEquals(s.humanReadable(max_places=2), "26.55 MiB")
-        s = Size(spec="300 MiB")
+        s = Size("300 MiB")
         self.assertEquals(s.humanReadable(max_places=2), "300 MiB")
 
         # smaller unit should be used for small sizes
-        s = Size(spec="9.68 TiB")
+        s = Size("9.68 TiB")
         self.assertEquals(s.humanReadable(max_places=2), "9912.32 GiB")
-        s = Size(spec="4.29 MiB")
+        s = Size("4.29 MiB")
         self.assertEquals(s.humanReadable(max_places=2), "4392.96 KiB")
-        s = Size(spec="7.18 KiB")
+        s = Size("7.18 KiB")
         self.assertEquals(s.humanReadable(max_places=2), "7352 B")
 
         # rounding should work with max_places limitted
-        s = Size(spec="12.687 TiB")
+        s = Size("12.687 TiB")
         self.assertEquals(s.humanReadable(max_places=2), "12.69 TiB")
-        s = Size(spec="23.7874 TiB")
+        s = Size("23.7874 TiB")
         self.assertEquals(s.humanReadable(max_places=3), "23.787 TiB")
-        s = Size(spec="12.6998 TiB")
+        s = Size("12.6998 TiB")
         self.assertEquals(s.humanReadable(max_places=2), "12.7 TiB")
 
     def testNegative(self):
-        s = Size(spec="-500MiB")
+        s = Size("-500MiB")
         self.assertEquals(s.humanReadable(), "-500 MiB")
         self.assertEquals(s.convertTo(spec="b"), -524288000)
 
     def testPartialBytes(self):
-        self.assertEquals(Size(bytes=1024.6), Size(bytes=1024))
-        self.assertEquals(Size(spec="%s KiB" % (1/1025.0,)), Size(bytes=0))
-        self.assertEquals(Size(spec="%s KiB" % (1/1023.0,)), Size(bytes=1))
+        self.assertEquals(Size(1024.6), Size(1024))
+        self.assertEquals(Size("%s KiB" % (1/1025.0,)), Size(0))
+        self.assertEquals(Size("%s KiB" % (1/1023.0,)), Size(1))
 
     def testTranslated(self):
         import locale
@@ -125,31 +122,31 @@ class SizeTestCase(unittest.TestCase):
         #       you know, just in case
         test_langs = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
 
-        s = Size(spec="56.19 MiB")
+        s = Size("56.19 MiB")
         for lang in test_langs:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
             # Check English parsing
-            self.assertEquals(s, Size(spec="56.19 MiB"))
+            self.assertEquals(s, Size("56.19 MiB"))
 
             # Check native parsing
-            self.assertEquals(s, Size(spec="56.19 %s%s" % (_("Mi"), _("B"))))
+            self.assertEquals(s, Size("56.19 %s%s" % (_("Mi"), _("B"))))
 
             # Check native parsing, all lowercase
-            self.assertEquals(s, Size(spec=("56.19 %s%s" % (_("Mi"), _("B"))).lower()))
+            self.assertEquals(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).lower()))
 
             # Check native parsing, all uppercase
-            self.assertEquals(s, Size(spec=("56.19 %s%s" % (_("Mi"), _("B"))).upper()))
+            self.assertEquals(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).upper()))
 
             # If the radix separator is not a period, repeat the tests with the
             # native separator
             radix = locale.nl_langinfo(locale.RADIXCHAR)
             if radix != '.':
-                self.assertEquals(s, Size(spec="56%s19 MiB" % radix))
-                self.assertEquals(s, Size(spec="56%s19 %s%s" % (radix, _("Mi"), _("B"))))
-                self.assertEquals(s, Size(spec=("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
-                self.assertEquals(s, Size(spec=("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
+                self.assertEquals(s, Size("56%s19 MiB" % radix))
+                self.assertEquals(s, Size("56%s19 %s%s" % (radix, _("Mi"), _("B"))))
+                self.assertEquals(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
+                self.assertEquals(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
 
         os.environ['LANG'] = saved_lang
         locale.setlocale(locale.LC_ALL, '')

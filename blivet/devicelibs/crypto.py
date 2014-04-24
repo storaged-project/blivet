@@ -26,7 +26,7 @@ from pycryptsetup import CryptSetup
 from ..errors import CryptoError
 from ..size import Size
 
-LUKS_METADATA_SIZE = Size(spec="2 MiB")
+LUKS_METADATA_SIZE = Size("2 MiB")
 
 # Keep the character set size a power of two to make sure all characters are
 # equally likely

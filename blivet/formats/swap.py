@@ -43,7 +43,7 @@ class SwapSpace(DeviceFormat):
     _linuxNative = True                # for clearpart
 
     #see rhbz#744129 for details
-    _maxSize = Size(spec="128 GiB")
+    _maxSize = Size("128 GiB")
 
     def __init__(self, *args, **kwargs):
         """

@@ -180,9 +180,6 @@ class DasdFormatError(StorageError):
     pass
 
 # size
-class SizeParamsError(StorageError):
-    pass
-
 class SizePlacesError(StorageError):
     pass
 

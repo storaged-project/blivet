@@ -18,11 +18,11 @@ class MDFactoryTestCase(unittest.TestCase):
         self.b = blivet.Blivet()
         self.factory1 = devicefactory.get_device_factory(self.b,
            devicefactory.DEVICE_TYPE_MD,
-           Size(spec="1 GiB"))
+           Size("1 GiB"))
 
         self.factory2 = devicefactory.get_device_factory(self.b,
            devicefactory.DEVICE_TYPE_MD,
-           Size(spec="1 GiB"),
+           Size("1 GiB"),
            raid_level=0)
 
     def testMDFactory(self):

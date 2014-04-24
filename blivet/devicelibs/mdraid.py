@@ -31,8 +31,8 @@ import logging
 log = logging.getLogger("blivet")
 
 # these defaults were determined empirically
-MD_SUPERBLOCK_SIZE = Size(spec="2 MiB")
-MD_CHUNK_SIZE = Size(spec="512 KiB")
+MD_SUPERBLOCK_SIZE = Size("2 MiB")
+MD_CHUNK_SIZE = Size("512 KiB")
 
 class MDRaidLevels(raid.RAIDLevels):
     @classmethod
@@ -96,11 +96,11 @@ def get_raid_superblock_size(size, version=None):
         # MDADM: operations, but limit this to 128Meg (0.1% of 10Gig)
         # MDADM: which is plenty for efficient reshapes
         # NOTE: In the mdadm code this is in 512b sectors. Converted to use MiB
-        headroom = int(Size(spec="128 MiB"))
-        while headroom << 10 > size and headroom > Size(spec="1 MiB"):
+        headroom = int(Size("128 MiB"))
+        while headroom << 10 > size and headroom > Size("1 MiB"):
             headroom >>= 1
 
-        headroom = Size(bytes=headroom)
+        headroom = Size(headroom)
 
     log.info("Using %s superBlockSize", headroom)
     return headroom

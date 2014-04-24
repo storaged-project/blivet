@@ -28,7 +28,7 @@ from decimal import Decimal
 from decimal import InvalidOperation
 from decimal import ROUND_DOWN
 
-from .errors import SizeParamsError, SizePlacesError
+from .errors import SizePlacesError
 from .i18n import _, P_, N_
 
 # Container for size unit prefix information
@@ -181,43 +181,36 @@ class Size(Decimal):
         decimal places.
     """
 
-    def __new__(cls, bytes=None,  spec=None):
-        """ Initialize a new Size object.  Must pass either bytes or spec,
-            but not both.  The bytes parameter is a numerical value for the size
-            this object represents, in bytes.  The spec parameter is a string
+    def __new__(cls, value):
+        """ Initialize a new Size object.  Must pass a bytes or a spec value
+            for size. The bytes value is a numerical value for the size
+            this object represents, in bytes.  The spec value is a string
             specification of the size using any of the size specifiers in the
             _decimalPrefixes or _binaryPrefixes lists combined with a 'b' or
             'B'.  For example, to specify 640 kilobytes, you could pass any of
-            these parameters:
+            these spec parameters:
 
-                spec="640kb"
-                spec="640 kb"
-                spec="640KB"
-                spec="640 KB"
-                spec="640 kilobytes"
+                "640kb"
+                "640 kb"
+                "640KB"
+                "640 KB"
+                "640 kilobytes"
 
-            If you want to use spec to pass a bytes value, you can use the
-            letter 'b' or 'B' or simply leave the specifier off and bytes
-            will be assumed.
+            If you want to use a spec value to represent a bytes value,
+            you can use the letter 'b' or 'B' or omit the size specifier.
         """
-        if bytes and spec:
-            raise SizeParamsError("only specify one parameter")
-
-        if bytes is not None:
-            if isinstance(bytes, (int, long, float, Decimal)):
-                value = Decimal(bytes)
-            elif isinstance(bytes, Size):
-                value = Decimal(bytes.convertTo("b"))
-            else:
-                raise ValueError("invalid value for bytes param")
-        elif spec:
-            value = _parseSpec(spec)
+        if isinstance(value, (unicode, str)):
+            size = _parseSpec(value)
+        elif isinstance(value, (int, long, float, Decimal)):
+            size = Decimal(value)
+        elif isinstance(value, Size):
+            size = Decimal(value.convertTo("b"))
         else:
-            raise SizeParamsError("missing bytes= or spec=")
+            raise ValueError("invalid value %s for size" % value)
 
         # drop any partial byte
-        value = value.to_integral_value(rounding=ROUND_DOWN)
-        self = Decimal.__new__(cls, value=value)
+        size = size.to_integral_value(rounding=ROUND_DOWN)
+        self = Decimal.__new__(cls, value=size)
         return self
 
     def __str__(self, eng=False, context=None):
@@ -228,14 +221,14 @@ class Size(Decimal):
         return "Size('%s')" % self
 
     def __deepcopy__(self, memo):
-        return Size(bytes=self.convertTo(spec="b"))
+        return Size(self.convertTo(spec="b"))
 
     def __add__(self, other, context=None):
-        return Size(bytes=Decimal.__add__(self, other, context=context))
+        return Size(Decimal.__add__(self, other, context=context))
 
     # needed to make sum() work with Size arguments
     def __radd__(self, other, context=None):
-        return Size(bytes=Decimal.__radd__(self, other, context=context))
+        return Size(Decimal.__radd__(self, other, context=context))
 
     def __sub__(self, other, context=None):
         # subtraction is implemented using __add__ and negation, so we'll
@@ -243,13 +236,13 @@ class Size(Decimal):
         return Decimal.__sub__(self, other, context=context)
 
     def __mul__(self, other, context=None):
-        return Size(bytes=Decimal.__mul__(self, other, context=context))
+        return Size(Decimal.__mul__(self, other, context=context))
 
     def __div__(self, other, context=None):
-        return Size(bytes=Decimal.__div__(self, other, context=context))
+        return Size(Decimal.__div__(self, other, context=context))
 
     def __mod__(self, other, context=None):
-        return Size(bytes=Decimal.__mod__(self, other, context=context))
+        return Size(Decimal.__mod__(self, other, context=context))
 
     def convertTo(self, spec="b"):
         """ Return the size in the units indicated by the specifier.  The

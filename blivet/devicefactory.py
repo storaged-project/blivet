@@ -156,7 +156,7 @@ class DeviceFactory(object):
             # PVs on each of the specified disks. No free space is maintained in
             # new VGs by default.
             factory = blivet.devicefactory.LVMFactory(_blivet,
-                                                      Size(spec="10000 MB"),
+                                                      Size("10000 MB"),
                                                       disks,
                                                       fstype="xfs",
                                                       label="music",
@@ -169,7 +169,7 @@ class DeviceFactory(object):
             # Now add another LV to the "data" VG, adjusting the size of a non-
             # existent "data" VG so that it can contain the new LV.
             factory = blivet.devicefactory.LVMFactory(_blivet,
-                                                      Size(spec="20000 MB"),
+                                                      Size("20000 MB"),
                                                       disks,
                                                       fstype="xfs",
                                                       label="videos",
@@ -180,7 +180,7 @@ class DeviceFactory(object):
             # Now change the size of the "music" LV and adjust the size of the
             # "data" VG accordingly.
             factory = blivet.devicefactory.LVMFactory(_blivet,
-                                                      Size(spec="15000 MB"),
+                                                      Size("15000 MB"),
                                                       disks,
                                                       device=music_lv)
             factory.configure()
@@ -815,7 +815,7 @@ class PartitionFactory(DeviceFactory):
         if self.encrypted:
             min_format_size += getFormat("luks").minSize
 
-        return max(Size(spec="1MiB"), min_format_size)
+        return max(Size("1MiB"), min_format_size)
 
     def _get_device_size(self):
         """ Return the factory device size including container limitations. """
@@ -953,7 +953,7 @@ class PartitionSetFactory(PartitionFactory):
             add_disks = self.disks
 
         # drop any new disks that don't have free space
-        min_free = min(Size(spec="500MiB"), self.parent_factory.size)
+        min_free = min(Size("500MiB"), self.parent_factory.size)
         add_disks = [d for d in add_disks if d.partitioned and
                                              d.format.free >= min_free]
 
@@ -1135,7 +1135,7 @@ class LVMFactory(DeviceFactory):
 
     def _get_total_space(self):
         """ Total disk space requirement for this device and its container. """
-        size = Size(bytes=0)
+        size = Size(0)
         if self.container and self.container.exists:
             return size
 
@@ -1442,7 +1442,7 @@ class LVMThinPFactory(LVMFactory):
 
         log.debug("requested size is %s", self.size)
         size = self.size    # projected size for the pool (not padded)
-        free = Size(bytes=0)# total space within the vg that is available to us
+        free = Size(0)# total space within the vg that is available to us
         if self.pool:
             free += self.pool.freeSpace # pools are always auto-sized
             # pool lv sizes go toward projected pool size and vg free space
@@ -1597,7 +1597,7 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_total_space(self):
         """ Return the total space needed for the specified container. """
-        size = Size(bytes=0)
+        size = Size(0)
         if self.container and self.container.exists:
             return size
 

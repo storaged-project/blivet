@@ -13,16 +13,16 @@ class LVMTestCase(unittest.TestCase):
     def testGetPossiblePhysicalExtents(self):
         # pass
         self.assertEqual(lvm.getPossiblePhysicalExtents(),
-                         map(lambda power: Size(spec="%d KiB" % 2**power),
+                         map(lambda power: Size("%d KiB" % 2**power),
                              xrange(0, 25)))
 
     def testClampSize(self):
         # pass
-        self.assertEqual(lvm.clampSize(Size(spec="10 MiB"), Size(spec="4 MiB")),
-                         Size(spec="8 MiB"))
-        self.assertEqual(lvm.clampSize(Size(spec="10 MiB"), Size(spec="4 MiB"),
+        self.assertEqual(lvm.clampSize(Size("10 MiB"), Size("4 MiB")),
+                         Size("8 MiB"))
+        self.assertEqual(lvm.clampSize(Size("10 MiB"), Size("4 MiB"),
  True),
-                         Size(spec="12 MiB"))
+                         Size("12 MiB"))
 
 # FIXME: Some of these tests expect behavior that is not entirely correct.
 #
@@ -87,36 +87,36 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ##
         # pass
         for dev in self._loopMap.values():
-            self.assertEqual(lvm.pvresize(dev, Size(spec="50MiB")), None)
-            self.assertEqual(lvm.pvresize(dev, Size(spec="100MiB")), None)
+            self.assertEqual(lvm.pvresize(dev, Size("50MiB")), None)
+            self.assertEqual(lvm.pvresize(dev, Size("100MiB")), None)
 
         # fail
         self.assertRaisesRegexp(LVMError,
            "pvresize failed",
            lvm.pvresize,
-           "/not/existing/device", Size(spec="50MiB"))
+           "/not/existing/device", Size("50MiB"))
 
         ##
         ## vgcreate
         ##
         # pass
-        self.assertEqual(lvm.vgcreate(self._vg_name, [_LOOP_DEV0, _LOOP_DEV1], Size(spec="4MiB")), None)
+        self.assertEqual(lvm.vgcreate(self._vg_name, [_LOOP_DEV0, _LOOP_DEV1], Size("4MiB")), None)
 
         # fail
         self.assertRaisesRegexp(LVMError,
            "vgcreate failed",
            lvm.vgcreate,
-           "another-vg", ["/not/existing/device"], Size(spec="4MiB"))
+           "another-vg", ["/not/existing/device"], Size("4MiB"))
         # vg already exists
         self.assertRaisesRegexp(LVMError,
            "vgcreate failed",
            lvm.vgcreate,
-           self._vg_name, [_LOOP_DEV0], Size(spec="4MiB"))
+           self._vg_name, [_LOOP_DEV0], Size("4MiB"))
         # pe size must be power of 2
         self.assertRaisesRegexp(LVMError,
            "vgcreate failed",
            lvm.vgcreate,
-           "another-vg", [_LOOP_DEV0], Size(spec="5MiB"))
+           "another-vg", [_LOOP_DEV0], Size("5MiB"))
 
         ##
         ## vgdeactivate
@@ -169,10 +169,10 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## lvcreate
         ##
         # pass
-        self.assertEqual(lvm.lvcreate(self._vg_name, self._lv_name, Size(spec="10MiB")), None)
+        self.assertEqual(lvm.lvcreate(self._vg_name, self._lv_name, Size("10MiB")), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvcreate, "wrong-vg-name", "another-lv", Size(spec="10MiB"))
+        self.assertRaises(LVMError, lvm.lvcreate, "wrong-vg-name", "another-lv", Size("10MiB"))
 
         ##
         ## lvdeactivate
@@ -189,14 +189,14 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## lvresize
         ##
         # pass
-        self.assertEqual(lvm.lvresize(self._vg_name, self._lv_name, Size(spec="60MiB")), None)
+        self.assertEqual(lvm.lvresize(self._vg_name, self._lv_name, Size("60MiB")), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvresize, self._vg_name, "wrong-lv-name", Size(spec="80MiB"))
-        self.assertRaises(LVMError, lvm.lvresize, "wrong-vg-name", self._lv_name, Size(spec="80MiB"))
-        self.assertRaises(LVMError, lvm.lvresize, "wrong-vg-name", "wrong-lv-name", Size(spec="80MiB"))
+        self.assertRaises(LVMError, lvm.lvresize, self._vg_name, "wrong-lv-name", Size("80MiB"))
+        self.assertRaises(LVMError, lvm.lvresize, "wrong-vg-name", self._lv_name, Size("80MiB"))
+        self.assertRaises(LVMError, lvm.lvresize, "wrong-vg-name", "wrong-lv-name", Size("80MiB"))
         # changing to same size
-        self.assertRaises(LVMError, lvm.lvresize, self._vg_name, self._lv_name, Size(spec="60MiB"))
+        self.assertRaises(LVMError, lvm.lvresize, self._vg_name, self._lv_name, Size("60MiB"))
 
         ##
         ## lvactivate

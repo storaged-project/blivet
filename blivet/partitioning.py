@@ -60,7 +60,7 @@ def _getCandidateDisks(storage):
                 part = part.nextPartition()
                 continue
 
-            if Size(bytes=part.getLength(unit="B")) > PartitionDevice.defaultSize:
+            if Size(part.getLength(unit="B")) > PartitionDevice.defaultSize:
                 disks.append(disk)
                 break
 
@@ -132,9 +132,9 @@ def _schedulePartitions(storage, disks):
         log.error("no free space on disks %s", [d.name for d in disks])
         return
 
-    free = Size(bytes=all_free[0].getLength(unit="B"))
+    free = Size(all_free[0].getLength(unit="B"))
     if len(all_free) > 1:
-        free += Size(bytes=all_free[1].getLength(unit="B"))
+        free += Size(all_free[1].getLength(unit="B"))
 
     # The boot disk must be set at this point. See if any platform-specific
     # stage1 device we might allocate already exists on the boot disk.
@@ -577,7 +577,7 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
 
     for free_geom in disk.getFreeSpaceRegions():
         log.debug("checking %d-%d (%s)", free_geom.start, free_geom.end,
-                                         Size(bytes=free_geom.getLength(unit="B")))
+                                         Size(free_geom.getLength(unit="B")))
         if start is not None and not free_geom.containsSector(start):
             log.debug("free region does not contain requested start sector")
             continue
@@ -594,8 +594,8 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
             continue
 
         if boot:
-            max_boot = Size(spec="2 TiB")
-            free_start = Size(bytes=(free_geom.start * disk.device.sectorSize))
+            max_boot = Size("2 TiB")
+            free_start = Size(free_geom.start * disk.device.sectorSize)
             req_end = free_start + req_size
             if req_end > max_boot:
                 log.debug("free range position would place boot req above %s",
@@ -604,8 +604,8 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
 
         log.debug("current free range is %d-%d (%s)", free_geom.start,
                                                       free_geom.end,
-                                                      Size(bytes=free_geom.getLength(unit="B")))
-        free_size = Size(bytes=free_geom.getLength(unit="B"))
+                                                      Size(free_geom.getLength(unit="B")))
+        free_size = Size(free_geom.getLength(unit="B"))
 
         # For boot partitions, we want the first suitable region we find.
         # For growable or extended partitions, we want the largest possible
@@ -637,7 +637,7 @@ def sectorsToSize(sectors, sectorSize):
         :returns: the size
         :rtype: :class:`~.size.Size`
     """
-    return Size(bytes=(sectors * sectorSize))
+    return Size(sectors * sectorSize)
 
 def sizeToSectors(size, sectorSize):
     """ Convert size to length in sectors.
@@ -717,7 +717,7 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
             alignment unless a start sector is provided.
 
     """
-    sectorSize = Size(bytes=disklabel.partedDevice.sectorSize)
+    sectorSize = Size(disklabel.partedDevice.sectorSize)
     if start is not None:
         if end is None:
             end = start + sizeToSectors(size, sectorSize) - 1
@@ -1113,7 +1113,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
                         # grow all growable requests
                         disk_growth = 0 # in sectors
-                        disk_sector_size = Size(bytes=disklabels[disk_path].partedDevice.sectorSize)
+                        disk_sector_size = Size(disklabels[disk_path].partedDevice.sectorSize)
                         for chunk in chunks:
                             chunk.growRequests()
                             # record the growth for this layout
@@ -1162,7 +1162,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                     use_disk = _disk
                     log.debug("new free: %d-%d / %s", best.start,
                                                       best.end,
-                                                      Size(bytes=best.getLength(unit="B")))
+                                                      Size(best.getLength(unit="B")))
                     log.debug("new free allows for %d sectors of growth", growth)
                     free = best
 
@@ -1204,7 +1204,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                  _part.req_start_sector, _part.req_end_sector)
         log.debug("created partition %s of %s and added it to %s",
                 partition.getDeviceNodeName(),
-                Size(bytes=partition.getLength(unit="B")),
+                Size(partition.getLength(unit="B")),
                 disklabel.device)
 
         # this one sets the name
@@ -1265,7 +1265,7 @@ class PartitionRequest(Request):
         super(PartitionRequest, self).__init__(partition)
         self.base = partition.partedPartition.geometry.length   # base sectors
 
-        sector_size = Size(bytes=partition.partedPartition.disk.device.sectorSize)
+        sector_size = Size(partition.partedPartition.disk.device.sectorSize)
 
         if partition.req_grow:
             limits = filter(lambda l: l > 0,
@@ -1544,7 +1544,7 @@ class DiskChunk(Chunk):
 
         """
         self.geometry = geometry            # parted.Geometry
-        self.sectorSize = Size(bytes=self.geometry.device.sectorSize)
+        self.sectorSize = Size(self.geometry.device.sectorSize)
         self.path = self.geometry.device.path
         super(DiskChunk, self).__init__(self.geometry.length, requests=requests)
 
@@ -1622,7 +1622,7 @@ class DiskChunk(Chunk):
 
         # 2TB limit on bootable partitions, regardless of disklabel
         if req.device.req_bootable:
-            max_boot = sizeToSectors(Size(spec="2 TiB"), self.sectorSize)
+            max_boot = sizeToSectors(Size("2 TiB"), self.sectorSize)
             limits.append(max_boot - req_end)
 
         # request-specific maximum (see Request.__init__, above, for details)

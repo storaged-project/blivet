@@ -156,8 +156,8 @@ class DeviceFormat(ObjectID):
     _packages = []                      # required packages
     _services = []                      # required services
     _resizable = False                  # can be resized
-    _maxSize = Size(bytes=0)            # maximum size
-    _minSize = Size(bytes=0)            # minimum size
+    _maxSize = Size(0)                  # maximum size
+    _minSize = Size(0)                  # minimum size
     _dump = False
     _check = False
     _hidden = False                     # hide devices with this formatting?

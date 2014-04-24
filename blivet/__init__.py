@@ -898,11 +898,11 @@ class Blivet(object):
             should_clear = self.shouldClear(disk, clearPartType=clearPartType,
                                             clearPartDisks=[disk.name])
             if should_clear:
-                free[disk.name] = (disk.size, Size(bytes=0))
+                free[disk.name] = (disk.size, Size(0))
                 continue
 
-            disk_free = Size(bytes=0)
-            fs_free = Size(bytes=0)
+            disk_free = Size(0)
+            fs_free = Size(0)
             if disk.partitioned:
                 disk_free = disk.format.free
                 for partition in [p for p in self.partitions if p.disk == disk]:
@@ -1640,7 +1640,7 @@ class Blivet(object):
 
         if not swaps:
             installed = util.total_memory()
-            required = Size(spec="%s KiB" % isys.EARLY_SWAP_RAM)
+            required = Size("%s KiB" % isys.EARLY_SWAP_RAM)
 
             if installed < required:
                 exns.append(

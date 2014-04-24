@@ -35,14 +35,14 @@ from ..i18n import _
 MAX_LV_SLOTS = 256
 
 # some of lvm's defaults that we have no way to ask it for
-LVM_PE_START = Size(spec="1 MiB")
-LVM_PE_SIZE = Size(spec="4 MiB")
+LVM_PE_START = Size("1 MiB")
+LVM_PE_SIZE = Size("4 MiB")
 
 # thinp constants
-LVM_THINP_MIN_METADATA_SIZE = Size(spec="2 MiB")
-LVM_THINP_MAX_METADATA_SIZE = Size(spec="16 GiB")
-LVM_THINP_MIN_CHUNK_SIZE = Size(spec="64 KiB")
-LVM_THINP_MAX_CHUNK_SIZE = Size(spec="1 GiB")
+LVM_THINP_MIN_METADATA_SIZE = Size("2 MiB")
+LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
+LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
+LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 
 def has_lvm():
     if util.find_program_in_path("lvm"):
@@ -119,8 +119,8 @@ def getPossiblePhysicalExtents():
     """
 
     possiblePE = []
-    curpe = Size(spec="1 KiB")
-    while curpe <= Size(spec="16 GiB"):
+    curpe = Size("1 KiB")
+    while curpe <= Size("16 GiB"):
         possiblePE.append(curpe)
         curpe = curpe * 2
 
@@ -129,9 +129,9 @@ def getPossiblePhysicalExtents():
 def getMaxLVSize():
     """ Return the maximum size of a logical volume. """
     if arch.getArch() in ("x86_64", "ppc64", "alpha", "ia64", "s390"): #64bit architectures
-        return Size(spec="8 EiB")
+        return Size("8 EiB")
     else:
-        return Size(spec="16 TiB")
+        return Size("16 TiB")
 
 def clampSize(size, pesize, roundup=None):
     delta = size % pesize

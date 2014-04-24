@@ -539,7 +539,7 @@ class StorageDevice(Device):
         Device.__init__(self, name, parents=parents)
 
         self._format = None
-        self._size = Size(bytes=util.numeric_type(size))
+        self._size = Size(util.numeric_type(size))
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
         self.sysfsPath = sysfsPath
@@ -569,7 +569,7 @@ class StorageDevice(Device):
                 sector_size = read_int_from_sys("%s/queue/logical_block_size"
                                                 % device_root)
                 size = read_int_from_sys("%s/size" % device_root)
-                self._size = Size(bytes=(size * sector_size))
+                self._size = Size(size * sector_size)
 
     def __str__(self):
         exist = "existing"
@@ -958,7 +958,7 @@ class StorageDevice(Device):
         """
         size = 0
         if self.exists and self.partedDevice:
-            size = Size(bytes=self.partedDevice.getLength(unit="B"))
+            size = Size(self.partedDevice.getLength(unit="B"))
         elif self.exists:
             size = self._size
         return size
@@ -1179,7 +1179,7 @@ class PartitionDevice(StorageDevice):
     """
     _type = "partition"
     _resizable = True
-    defaultSize = Size(spec="500MiB")
+    defaultSize = Size("500MiB")
 
     def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
@@ -1297,7 +1297,7 @@ class PartitionDevice(StorageDevice):
             self.req_name = name
             self.req_partType = partType
             self.req_primary = primary
-            self.req_max_size = Size(bytes=util.numeric_type(maxsize))
+            self.req_max_size = Size(util.numeric_type(maxsize))
             self.req_grow = grow
             self.req_bootable = bootable
 
@@ -1582,7 +1582,7 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             return
 
-        self._size = Size(bytes=self.partedPartition.getLength(unit="B"))
+        self._size = Size(self.partedPartition.getLength(unit="B"))
         self._currentSize = self._size
         self.targetSize = self._size
 
@@ -1600,7 +1600,7 @@ class PartitionDevice(StorageDevice):
         device = self.partedPartition.geometry.device.path
 
         # Erase 1MiB or to end of partition
-        count = int(Size(spec="1 MiB") / bs)
+        count = int(Size("1 MiB") / bs)
         count = min(count, part_len)
 
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
@@ -1644,7 +1644,7 @@ class PartitionDevice(StorageDevice):
             DeviceFormat(device=self.path, exists=True).destroy()
 
         StorageDevice._postCreate(self)
-        self._currentSize = Size(bytes=self.partedPartition.getLength(unit="B"))
+        self._currentSize = Size(self.partedPartition.getLength(unit="B"))
 
     def create(self):
         """ Create the device. """
@@ -1693,7 +1693,7 @@ class PartitionDevice(StorageDevice):
                                         end=geometry.end)
 
         self.disk.format.commit()
-        self._currentSize = Size(bytes=partition.getLength(unit="B"))
+        self._currentSize = Size(partition.getLength(unit="B"))
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -1742,7 +1742,7 @@ class PartitionDevice(StorageDevice):
         """ Get the device's size. """
         size = self._size
         if self.partedPartition:
-            size = Size(bytes=self.partedPartition.getLength(unit="B"))
+            size = Size(self.partedPartition.getLength(unit="B"))
         return size
 
     def _setSize(self, newsize):
@@ -1764,7 +1764,7 @@ class PartitionDevice(StorageDevice):
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
 
-        maxAvailableSize = Size(bytes=self.partedPartition.getMaxAvailableSize(unit="B"))
+        maxAvailableSize = Size(self.partedPartition.getMaxAvailableSize(unit="B"))
 
         if newsize > maxAvailableSize:
             raise ValueError("new size is greater than available space")
@@ -1813,7 +1813,7 @@ class PartitionDevice(StorageDevice):
             pass
         else:
             if partition.type == parted.PARTITION_FREESPACE:
-                maxPartSize = self.size + Size(bytes=partition.getLength(unit="B"))
+                maxPartSize = self.size + Size(partition.getLength(unit="B"))
 
         maxFormatSize = self.format.maxSize
         return min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
@@ -2305,7 +2305,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.peCount = util.numeric_type(peCount)
         self.peFree = util.numeric_type(peFree)
         self.reserved_percent = 0
-        self.reserved_space = Size(bytes=0)
+        self.reserved_space = Size(0)
 
         # this will have to be covered by the 20% pad for non-existent pools
         self.poolMetaData = 0
@@ -2880,7 +2880,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             # nothing more can be done, we don't know the VG's free space
             return
 
-        extent_size = Size(spec=vg_info["LVM2_VG_EXTENT_SIZE"] + "MiB")
+        extent_size = Size(vg_info["LVM2_VG_EXTENT_SIZE"] + "MiB")
         extents_free = int(vg_info["LVM2_VG_FREE_COUNT"])
         can_use = extent_size * extents_free
 
@@ -3279,7 +3279,7 @@ class MDRaidArrayDevice(ContainerDevice):
                 size = 0
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
-            size = Size(bytes=self.partedDevice.getLength(unit="B"))
+            size = Size(self.partedDevice.getLength(unit="B"))
             log.debug("existing RAID %s size == %s", self.level, size)
 
         return size
@@ -3998,7 +3998,7 @@ class FileDevice(StorageDevice):
         fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
         # all this fuss is so we write the zeros 1MiB at a time
         zero = "\0"
-        MiB = Size(spec="1 MiB")
+        MiB = Size("1 MiB")
         count = int(self.size.convertTo(spec="MiB"))
         rem = self.size % MiB
 

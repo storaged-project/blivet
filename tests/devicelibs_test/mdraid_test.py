@@ -27,24 +27,24 @@ class MDRaidTestCase(unittest.TestCase):
         ##
         ## get_raid_superblock_size
         ##
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="256 GiB")),
-                         Size(spec="128 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="128 GiB")),
-                         Size(spec="128 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="64 GiB")),
-                         Size(spec="64 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="63 GiB")),
-                         Size(spec="32 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="10 GiB")),
-                         Size(spec="8 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="1 GiB")),
-                         Size(spec="1 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="1023 MiB")),
-                         Size(spec="1 MiB"))
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="512 MiB")),
-                         Size(spec="1 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("256 GiB")),
+                         Size("128 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("128 GiB")),
+                         Size("128 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("64 GiB")),
+                         Size("64 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("63 GiB")),
+                         Size("32 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("10 GiB")),
+                         Size("8 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("1 GiB")),
+                         Size("1 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("1023 MiB")),
+                         Size("1 MiB"))
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("512 MiB")),
+                         Size("1 MiB"))
 
-        self.assertEqual(mdraid.get_raid_superblock_size(Size(spec="257 MiB"),
+        self.assertEqual(mdraid.get_raid_superblock_size(Size("257 MiB"),
                                                          version="version"),
                          mdraid.MD_SUPERBLOCK_SIZE)
 

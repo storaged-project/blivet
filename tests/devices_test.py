@@ -62,7 +62,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
     def setUp(self):
         self._state_functions = {
            "createBitmap" : self.assertTrue,
-           "currentSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "currentSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "description" : self.assertIsNotNone,
            "devices" : lambda x, m: self.assertEqual(len(x), 0, m) and
                                     self.assertIsInstance(x, ParentList, m),
@@ -73,7 +73,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "isDisk" : self.assertFalse,
            "level" : self.assertIsNone,
            "major" : lambda x, m: self.assertEqual(x, 0, m),
-           "maxSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "maxSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "mediaPresent" : self.assertFalse,
            "metadataVersion" : lambda x, m: self.assertEqual(x, "default", m),
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
@@ -82,11 +82,11 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
            "partitionable" : self.assertFalse,
            "resizable" : self.assertFalse,
-           "size" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "size" : lambda x, m: self.assertEqual(x, Size(0), m),
            "spares" : lambda x, m: self.assertEqual(x, 0, m),
            "status" : self.assertFalse,
            "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
-           "targetSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "targetSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "uuid" : self.assertIsNone,
            "memberDevices" : lambda x, m: self.assertEqual(x, 0, m),
            "totalDevices" : lambda x, m: self.assertEqual(x, 0, m),
@@ -115,7 +115,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.dev10 = MDRaidArrayDevice(
            "dev10",
            level="raid0",
-           size=Size(spec="32 MiB"))
+           size=Size("32 MiB"))
 
         self.dev11 = MDRaidArrayDevice(
            "dev11",
@@ -126,7 +126,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 fmt=getFormat("mdmember")),
               MDRaidArrayDevice("other", level="raid0",
                                 fmt=getFormat("mdmember"))],
-           size=Size(spec="32 MiB"),
+           size=Size("32 MiB"),
            totalDevices=2)
 
         self.dev12 = MDRaidArrayDevice(
@@ -135,11 +135,11 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            memberDevices=2,
            parents=[
               Mock(**{"type": "mdcontainer",
-                      "size": Size(spec="4 MiB"),
+                      "size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
-           size=Size(spec="32 MiB"),
+           size=Size("32 MiB"),
            totalDevices=2)
 
         self.dev13 = MDRaidArrayDevice(
@@ -147,11 +147,11 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=0,
            memberDevices=3,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
-           size=Size(spec="32 MiB"),
+           size=Size("32 MiB"),
            totalDevices=3)
 
         self.dev14 = MDRaidArrayDevice(
@@ -159,11 +159,11 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=4,
            memberDevices=3,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
            totalDevices=3)
 
@@ -172,11 +172,11 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=5,
            memberDevices=3,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
            totalDevices=3)
 
@@ -185,13 +185,13 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=6,
            memberDevices=4,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
            totalDevices=4)
 
@@ -200,13 +200,13 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=10,
            memberDevices=4,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
            totalDevices=4)
 
@@ -215,13 +215,13 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level=10,
            memberDevices=4,
            parents=[
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="4 MiB"),
+              Mock(**{"size": Size("4 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")}),
-              Mock(**{"size": Size(spec="2 MiB"),
+              Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
            totalDevices=5)
 
@@ -282,7 +282,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.stateCheck(self.dev10,
                         createBitmap=self.assertFalse,
                         level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        targetSize=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m))
+                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m))
 
         self.stateCheck(self.dev11,
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
@@ -292,7 +292,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
-                        targetSize=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m),
+                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type=lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
@@ -304,7 +304,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
-                        targetSize=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m),
+                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
@@ -314,8 +314,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         level=lambda x, m: self.assertEqual(x.number, 0, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size(spec="3 MiB"), m),
-                        targetSize=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m),
+                        size=lambda x, m: self.assertEqual(x, Size("3 MiB"), m),
+                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev14,
@@ -323,7 +323,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         level=lambda x, m: self.assertEqual(x.number, 4, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size(spec="2 MiB"), m),
+                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev15,
@@ -331,7 +331,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         level=lambda x, m: self.assertEqual(x.number, 5, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size(spec="2 MiB"), m),
+                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev16,
@@ -339,7 +339,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         level=lambda x, m: self.assertEqual(x.number, 6, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size(spec="2 MiB"), m),
+                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
         self.stateCheck(self.dev17,
@@ -347,7 +347,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         level=lambda x, m: self.assertEqual(x.number, 10, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size(spec="2 MiB"), m),
+                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
                         totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
         self.stateCheck(self.dev18,
@@ -355,7 +355,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         level=lambda x, m: self.assertEqual(x.number, 10, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size(spec="2 MiB"), m),
+                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
                         spares=lambda x, m: self.assertEqual(x, 1, m),
                         totalDevices=lambda x, m: self.assertEqual(x, 5, m))
 
@@ -416,14 +416,14 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
     def setUp(self):
         self._state_functions = {
-           "currentSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "currentSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "exists" : self.assertFalse,
            "format" : self.assertIsNotNone,
            "formatArgs" : lambda x, m: self.assertEqual(x, [], m),
            "fstabSpec" : self.assertIsNotNone,
            "isDisk" : self.assertFalse,
            "major" : lambda x, m: self.assertEqual(x, 0, m),
-           "maxSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "maxSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "mediaPresent" : self.assertTrue,
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
            "parents" : lambda x, m: self.assertEqual(len(x), 0, m) and
@@ -431,10 +431,10 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            "partitionable" : self.assertFalse,
            "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
            "resizable" : lambda x, m: self.assertFalse,
-           "size" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "size" : lambda x, m: self.assertEqual(x, Size(0), m),
            "status" : self.assertFalse,
            "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
-           "targetSize" : lambda x, m: self.assertEqual(x, Size(bytes=0), m),
+           "targetSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "type" : lambda x, m: self.assertEqual(x, "btrfs", m),
            "uuid" : self.assertIsNone,
            "vol_id" : lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m)}
@@ -447,7 +447,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         dev = StorageDevice("deva",
            fmt=blivet.formats.getFormat("btrfs"),
-           size=Size(spec="32 MiB"))
+           size=Size("32 MiB"))
         self.dev3 = BTRFSVolumeDevice("dev3",
            parents=[dev])
 
@@ -462,10 +462,10 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            type=lambda x, m: self.assertEqual(x, "btrfs volume", m))
 
         self.stateCheck(self.dev3,
-           currentSize=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m),
-           maxSize=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m),
+           currentSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
+           maxSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
            parents=lambda x, m: self.assertEqual(len(x), 1, m),
-           size=lambda x, m: self.assertEqual(x, Size(spec="32 MiB"), m),
+           size=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
            type=lambda x, m: self.assertEqual(x, "btrfs volume", m))
 
         self.assertRaisesRegexp(ValueError,

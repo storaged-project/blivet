@@ -221,7 +221,7 @@ class DiskLabel(DeviceFormat):
         size = self._size
         if not size:
             try:
-                size = Size(bytes=self.partedDevice.getLength(unit="B"))
+                size = Size(self.partedDevice.getLength(unit="B"))
             except Exception: # pylint: disable=broad-except
                 log_exception_info()
                 size = 0
@@ -417,7 +417,7 @@ class DiskLabel(DeviceFormat):
             return int(open(path).readline().strip())
 
         try:
-            free = sum(Size(bytes=f.getLength(unit="B"))
+            free = sum(Size(f.getLength(unit="B"))
                         for f in self.partedDisk.getFreeSpacePartitions())
         except Exception: # pylint: disable=broad-except
             log_exception_info()
@@ -436,7 +436,7 @@ class DiskLabel(DeviceFormat):
                 partition_length = read_int_from_sys("%s/size" % partition_root)
                 used_sectors += partition_length
 
-            free = Size(bytes=((disk_length - used_sectors) * sector_size))
+            free = Size((disk_length - used_sectors) * sector_size)
 
         return free
 
