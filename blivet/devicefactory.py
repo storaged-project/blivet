@@ -706,7 +706,7 @@ class DeviceFactory(object):
         log.debug("child factory class: %s", self.child_factory_class)
         log.debug("child factory args: %s", args)
         log.debug("child factory kwargs: %s", kwargs)
-        factory = self.child_factory_class(*args, **kwargs)
+        factory = self.child_factory_class(*args, **kwargs) # pylint: disable=not-callable
         self.child_factory = factory
         factory.parent_factory = self
 
