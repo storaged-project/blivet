@@ -438,8 +438,6 @@ class DeviceTree(object):
             if action.device in self._devices:
                 raise DeviceTreeError("device is already in the tree")
 
-        action.apply()
-
         if action.isCreate and action.isDevice:
             self._addDevice(action.device)
         elif action.isDestroy and action.isDevice:
@@ -449,6 +447,8 @@ class DeviceTree(object):
                action.device.format.mountpoint in self.filesystems:
                 raise DeviceTreeError("mountpoint already in use")
 
+        # apply the action before adding it in case apply raises an exception
+        action.apply()
         log.info("registered action: %s", action)
         self._actions.append(action)
 
