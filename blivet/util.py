@@ -4,6 +4,8 @@ import shutil
 import selinux
 import subprocess
 import re
+import sys
+import tempfile
 from decimal import Decimal
 
 from .size import Size
@@ -353,3 +355,44 @@ class ObjectID(object):
         self = super(ObjectID, cls).__new__(cls, *args, **kwargs)
         self.id = self._newid_gen() # pylint: disable=attribute-defined-outside-init
         return self
+
+##
+## Convenience functions for examples and tests
+##
+def set_up_logging(log_file='/tmp/blivet.log'):
+    """ Configure the blivet logger to write out a log file.
+
+        :keyword str log_file: path to the log file (default: /tmp/blivet.log)
+    """
+    log.setLevel(logging.DEBUG)
+    program_log.setLevel(logging.DEBUG)
+    handler = logging.FileHandler(log_file)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    program_log.addHandler(handler)
+    log.info("sys.argv = %s", sys.argv)
+
+def create_sparse_tempfile(name, size):
+    """ Create a temporary sparse file.
+
+        :param str name: suffix for filename
+        :param :class:`~.size.Size` size: the file size
+        :returns: the path to the newly created file
+    """
+    (fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-%s" % name)
+    os.close(fd)
+    create_sparse_file(path, size)
+    return path
+
+def create_sparse_file(path, size):
+    """ Create a sparse file.
+
+        :param str path: the full path to the file
+        :param :class:`~.size.Size` size: the size of the file
+        :returns: None
+    """
+    fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+    os.ftruncate(fd, size)
+    os.close(fd)
