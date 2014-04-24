@@ -39,6 +39,7 @@ from contextlib import contextmanager
 
 @contextmanager
 def progress_report_stub(message):
+    # pylint: disable=unused-argument
     yield
 
 progress_report = progress_report_stub

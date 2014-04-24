@@ -39,6 +39,7 @@ ERROR_RAISE = 0
 
 class ErrorHandler(object):
     def cb(self, exn):
+        # pylint: disable=unused-argument
         return ERROR_RAISE
 
 errorHandler = ErrorHandler()

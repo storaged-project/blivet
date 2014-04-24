@@ -42,6 +42,7 @@ class ParentListTestCase(unittest.TestCase):
                 raise ValueError("only numbers less than 32 are allowed")
 
         def pre_remove(item):
+            # pylint: disable=unused-argument
             if len(pl) - 1 < 3:
                 raise RuntimeError("list can never have fewer than 3 items")
 
