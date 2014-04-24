@@ -29,15 +29,3 @@ def create_sparse_file(b, name, size):
     file_device = blivet.devices.SparseFileDevice(path, size=size)
     file_device.create()
     return path
-
-def tear_down_disk_images(b):
-    """ Tear down any disk image stacks. """
-    b.devicetree.teardownAll()
-    for (name, _path) in b.config.diskImages.items():
-        dm_device = b.devicetree.getDeviceByName(name)
-        if not dm_device:
-            continue
-
-        dm_device.deactivate()
-        loop_device = dm_device.parents[0]
-        loop_device.teardown()

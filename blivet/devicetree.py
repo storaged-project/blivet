@@ -2167,6 +2167,18 @@ class DeviceTree(object):
             except StorageError as e:
                 log.info("teardown of %s failed: %s", device.name, e)
 
+    def teardownDiskImages(self):
+        """ Tear down any disk image stacks. """
+        self.teardownAll()
+        for (name, _path) in self.diskImages.items():
+            dm_device = self.getDeviceByName(name)
+            if not dm_device:
+                continue
+
+            dm_device.deactivate()
+            loop_device = dm_device.parents[0]
+            loop_device.teardown()
+
     def setupAll(self):
         """ Run setup methods on all devices. """
         for device in self.leaves:
