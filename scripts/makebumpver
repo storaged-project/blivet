@@ -458,7 +458,7 @@ def usage(cmd):
     sys.stdout.write("original commit was already pushed to the central repo.\n")
 
 def main(argv):
-    prog = os.path.basename(sys.argv[0])
+    prog = os.path.basename(argv[0])
     cwd = os.getcwd()
     spec = os.path.realpath(cwd + '/python-blivet.spec')
     name, version, release = None, None, None
@@ -467,7 +467,7 @@ def main(argv):
     opts = []
 
     try:
-        opts, _args = getopt.getopt(sys.argv[1:], 'n:v:r:i:m:d?',
+        opts, _args = getopt.getopt(argv[1:], 'n:v:r:i:m:d?',
                                    ['name=', 'version=', 'release=',
                                     'ignore=', 'map=', 'debug', 'help'])
     except getopt.GetoptError:
@@ -497,7 +497,7 @@ def main(argv):
         usage(prog)
         sys.exit(0)
     elif unknown:
-        sys.stderr.write("%s: extra operand `%s'" % (prog, sys.argv[1],))
+        sys.stderr.write("%s: extra operand `%s'" % (prog, argv[1],))
         sys.stderr.write("Try `%s --help' for more information." % (prog,))
         sys.exit(1)
 

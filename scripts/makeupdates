@@ -144,7 +144,7 @@ def usage(cmd):
     sys.stdout.write("    -a, --add        Add contents of rpm to the update\n")
 
 def main(argv):
-    prog = os.path.basename(sys.argv[0])
+    prog = os.path.basename(argv[0])
     cwd = os.getcwd()
     spec = os.path.realpath(cwd + '/python-blivet.spec')
     updates = cwd + '/updates'
@@ -155,7 +155,7 @@ def main(argv):
     add_rpms = []
 
     try:
-        opts, _args = getopt.getopt(sys.argv[1:], 'a:t:o:k?',
+        opts, _args = getopt.getopt(argv[1:], 'a:t:o:k?',
                                    ['add=', 'tag=', 'offset=',
                                     'keep', 'help'])
     except getopt.GetoptError:
@@ -179,7 +179,7 @@ def main(argv):
         usage(prog)
         sys.exit(0)
     elif unknown:
-        sys.stderr.write("%s: extra operand `%s'" % (prog, sys.argv[1],))
+        sys.stderr.write("%s: extra operand `%s'" % (prog, argv[1],))
         sys.stderr.write("Try `%s --help' for more information." % (prog,))
         sys.exit(1)
 
