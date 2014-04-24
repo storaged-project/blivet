@@ -4547,7 +4547,7 @@ class BTRFSDevice(StorageDevice):
         size = sum([d.size for d in self.parents])
         return size
 
-    def _setSize(self, size):
+    def _setSize(self, newsize):
         raise RuntimeError("cannot directly set size of btrfs volume")
 
     @property
