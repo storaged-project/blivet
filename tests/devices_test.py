@@ -229,7 +229,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            totalDevices=5)
 
 
-    def testMDRaidArrayDeviceInit(self, *args, **kwargs):
+    def testMDRaidArrayDeviceInit(self):
         """Tests the state of a MDRaidArrayDevice after initialization.
            For some combinations of arguments the initializer will throw
            an exception.
@@ -421,7 +421,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 memberDevices=2)
 
 
-    def testMDRaidArrayDeviceMethods(self, *args, **kwargs):
+    def testMDRaidArrayDeviceMethods(self):
         """Test for method calls on initialized MDRaidDevices."""
         with self.assertRaisesRegexp(MDRaidError, "invalid RAID level" ):
             self.dev7.level = "junk"
@@ -473,7 +473,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         self.dev3 = BTRFSVolumeDevice("dev3",
            parents=[dev])
 
-    def testBTRFSDeviceInit(self, *args, **kwargs):
+    def testBTRFSDeviceInit(self):
         """Tests the state of a BTRFSDevice after initialization.
            For some combinations of arguments the initializer will throw
            an exception.
@@ -507,7 +507,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            BTRFSSubVolumeDevice,
            "dev1", parents=parents)
 
-    def testBTRFSDeviceMethods(self, *args, **kwargs):
+    def testBTRFSDeviceMethods(self):
         """Test for method calls on initialized BTRFS Devices."""
         # volumes do not have ancestor volumes
         with self.assertRaises(AttributeError):

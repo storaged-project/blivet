@@ -86,7 +86,7 @@ class DeviceActionTestCase(StorageTestCase):
                                         exists=True)
         self.storage.devicetree._addDevice(lv_swap)
 
-    def testActions(self, *args, **kwargs):
+    def testActions(self):
         """ Verify correct management of actions.
 
             - action creation/registration/cancellation
@@ -184,7 +184,7 @@ class DeviceActionTestCase(StorageTestCase):
         fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
         self.scheduleCreateFormat(device=sda1, format=fmt)
 
-    def testActionCreation(self, *args, **kwargs):
+    def testActionCreation(self):
         """ Verify correct operation of action class constructors. """
         # instantiation of device resize action for non-existent device should
         # fail
@@ -255,7 +255,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(lv_swap.format, new_format)
         lv_swap.format = orig_format
 
-    def testActionRegistration(self, *args, **kwargs):
+    def testActionRegistration(self):
         """ Verify correct operation of action registration and cancelling. """
         # self.setUp has just been run, so we should have something like
         # a preexisting autopart config in the devicetree.
@@ -337,7 +337,7 @@ class DeviceActionTestCase(StorageTestCase):
         sdd1 = self.storage.devicetree.getDeviceByName("sdd1")
         self.assertNotEqual(sdd1, None)
 
-    def testActionObsoletes(self, *args, **kwargs):
+    def testActionObsoletes(self):
         """ Verify correct operation of DeviceAction.obsoletes. """
         self.destroyAllDevices(disks=["sdc"])
         sdc = self.storage.devicetree.getDeviceByName("sdc")
@@ -455,7 +455,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1), False)
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1_format), False)
 
-    def testActionPruning(self, *args, **kwargs):
+    def testActionPruning(self):
         """ Verify correct functioning of action pruning. """
         self.destroyAllDevices()
 
@@ -551,7 +551,7 @@ class DeviceActionTestCase(StorageTestCase):
         sda3_actions = self.storage.devicetree.findActions(sda3.id)
         self.assertEqual(len(sda3_actions), 0)
 
-    def testActionDependencies(self, *args, **kwargs):
+    def testActionDependencies(self):
         """ Verify correct functioning of action dependencies. """
         # ActionResizeDevice
         # an action that shrinks a device should require the action that
