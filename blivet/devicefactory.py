@@ -212,6 +212,7 @@ class DeviceFactory(object):
 
     """
     child_factory_class = None
+    child_factory_fstype = None
     size_set_class = TotalSizeSet
 
     def __init__(self, storage, size, disks, fstype=None, mountpoint=None,
