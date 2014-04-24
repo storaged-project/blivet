@@ -2435,7 +2435,16 @@ class FSSet(object):
                 filesystems[device.format.mountpoint] = device
         return filesystems
 
-    def _parseOneLine(self, (devspec, mountpoint, fstype, options, dump, passno)):
+    def _parseOneLine(self, devspec, mountpoint, fstype, options, _dump="0", _passno="0"):
+        """Parse an fstab entry for a device, return the corresponding device.
+
+           The parameters correspond to the items in a single entry in the
+           order in which they occur in the entry.
+
+           :returns: the device corresponding to the entry
+           :rtype: :class:`devices.Device`
+        """
+
         # no sense in doing any legwork for a noauto entry
         if "noauto" in options.split(","):
             log.info("ignoring noauto entry")
@@ -2589,15 +2598,9 @@ class FSSet(object):
 
                 if not 4 <= len(fields) <= 6:
                     continue
-                elif len(fields) == 4:
-                    fields.extend([0, 0])
-                elif len(fields) == 5:
-                    fields.append(0)
-
-                (devspec, mountpoint, fstype, options, dump, passno) = fields
 
                 try:
-                    device = self._parseOneLine((devspec, mountpoint, fstype, options, dump, passno))
+                    device = self._parseOneLine(*fields)
                 except UnrecognizedFSTabEntryError:
                     # just write the line back out as-is after upgrade
                     self.preserveLines.append(line)
