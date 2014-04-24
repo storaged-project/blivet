@@ -129,8 +129,7 @@ def storageInitialize(storage, ksdata, protected):
     flags.update_from_anaconda_flags(anaconda_flags)
 
     # Platform class setup depends on flags, re-initialize it.
-    from . import platform
-    platform.reset_platform()
+    _platform.update_from_flags()
 
     storage.shutdown()
 

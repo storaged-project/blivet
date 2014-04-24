@@ -63,6 +63,9 @@ class Platform(object):
            returned by getPlatform below.  Not all subclasses need to provide
            all the methods in this class."""
 
+        self.update_from_flags()
+
+    def update_from_flags(self):
         if flags.gpt and "gpt" in self._disklabel_types:
             # move GPT to the top of the list
             self._disklabel_types.remove("gpt")
@@ -417,9 +420,5 @@ def getPlatform():
             return ARM()
     else:
         raise SystemError("Could not determine system architecture.")
-
-def reset_platform():
-    global platform
-    platform = getPlatform()
 
 platform = getPlatform()
