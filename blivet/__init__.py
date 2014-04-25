@@ -1760,9 +1760,8 @@ class Blivet(object):
         self.zfcp.write(_sysroot)
         write_dasd_conf(self.dasd, _sysroot)
 
-    def turnOnSwap(self, upgrading=None):
-        self.fsset.turnOnSwap(rootPath=_sysroot,
-                              upgrading=upgrading)
+    def turnOnSwap(self):
+        self.fsset.turnOnSwap(rootPath=_sysroot)
 
     def mountFilesystems(self, readOnly=None, skipRoot=False):
         self.fsset.mountFilesystems(rootPath=_sysroot,
@@ -2642,7 +2641,7 @@ class FSSet(object):
                         # just write duplicates back out post-install
                         self.preserveLines.append(line)
 
-    def turnOnSwap(self, rootPath="", upgrading=None):
+    def turnOnSwap(self, rootPath=""):
         """ Activate the system's swap space. """
         if not flags.installer_mode:
             return
