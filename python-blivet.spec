@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.49
+Version: 0.50
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,52 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Apr 24 2014 Brian C. Lane <bcl@redhat.com> - 0.50-1
+- Don't apply action until after all checks have passed. (dlehman)
+- Apply action for extended partition creation. (dlehman)
+- Fix an issue introduced in commit a210eb5c. (dlehman)
+- Move changes from action ctors into apply methods. (dlehman)
+- Tell lvm to prefer /dev/mapper/ and /dev/md/ to dm-X and mdX nodes. (dlehman)
+- Use the right md UUID when trying to look one up from addUdevDevice.
+  (dlehman)
+- Pass UUID of existing md array to superclass constructor. (dlehman)
+- Fix accounting related to addition of md member devices. (dlehman)
+- Add some more tests for the Size.humanReadable method (vpodzime)
+- If size is an integer value, show it as an integer value (vpodzime)
+- Make sure that using just k/m/g/... results in KiB/MiB/GiB/... (vpodzime)
+- Make humanReadable size use binary prefixes and nicer units (vpodzime)
+- Round sizes in humanReadable instead of flooring them (vpodzime)
+- Do not assign result of evaluating EddTestFS() to a variable (amulhern)
+- Rename bits() to numBits() (amulhern)
+- Rename to avoid conflict with name in outer scope. (amulhern)
+- Put module level code in a method (amulhern)
+- Do not use strip() incorrectly (amulhern)
+- Disable E1101 (no-member) error (amulhern)
+- Use isResize in isShrink and isGrow. (amulhern)
+- Suppress W0612 (unused-variable) false positives (amulhern)
+- Suppress W0621 warnings (amulhern)
+- Add a stub function for get_bootloader (amulhern)
+- Suppress W0602 false positives (amulhern)
+- Remove BootLoaderError definitions (amulhern)
+- Disable E1003 warning. (amulhern)
+- Do not cache the DeviceFormat object (amulhern)
+- Suppress W0201 error where attribute is set in __new__. (amulhern)
+- Add to false positives an error which is not suppressed by a pragma.
+  (amulhern)
+- Suppress W0201 errors (amulhern)
+- Make signature of Size.__str__ match signature of Decimal.__str__ (amulhern)
+- Do not evaluate %% operator in log message arguments (amulhern)
+- Remove suite() methods in tests (amulhern)
+- Remove addKeyFromFile() method (amulhern)
+- Import name 'deviceaction' where needed (amulhern)
+- Setting variables in __init__ (amulhern)
+- Log exception information and disable W0703 warning. (amulhern)
+- Disable some W0703 warnings (amulhern)
+- Disable some W0703 warnings. (amulhern)
+- Add a function that logs available exception info. (amulhern)
+- Restrict scope of pylint pragmas as much as possible (amulhern)
+- Change all pylint numeric codes to mnemonic strings. (amulhern)
+
 * Thu Apr 17 2014 Brian C. Lane <bcl@redhat.com> - 0.49-1
 - Slightly reduce loop and get rid of obsolete comment (amulhern)
 - Slightly rewrite loop to avoid a redefining builtin error (amulhern)
