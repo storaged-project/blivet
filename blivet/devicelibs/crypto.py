@@ -137,7 +137,7 @@ def luks_add_key(device,
 def luks_remove_key(device,
                     del_passphrase=None,
                     passphrase=None, key_file=None):
-
+    # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_remove_key requires passphrase")
 
