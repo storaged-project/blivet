@@ -135,7 +135,7 @@ class EddTestCase(unittest.TestCase):
 
 class EddTestFS(object):
     def __init__(self, test_case, target_module):
-        self.fs = mock.DiskIO()
+        self.fs = mock.DiskIO() # pylint: disable=no-member
         test_case.take_over_io(self.fs, target_module)
 
     def sda_vda_missing_details(self):
