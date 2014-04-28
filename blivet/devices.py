@@ -2251,11 +2251,7 @@ class ContainerDevice(StorageDevice):
             self.parents.remove(member)
 
 class LVMVolumeGroupDevice(ContainerDevice):
-    """ An LVM Volume Group
-
-        XXX Maybe this should inherit from StorageDevice instead of
-            DMDevice since there's no actual device.
-    """
+    """ An LVM Volume Group """
     _type = "lvmvg"
     _packages = ["lvm2"]
     _formatClassName = property(lambda s: "lvmpv")
