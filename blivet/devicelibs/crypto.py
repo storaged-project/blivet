@@ -48,26 +48,21 @@ def generateBackupPassphrase():
         parts.append(raw[i : i + 5])
     return "-".join(parts)
 
-def askyes(question):
-    return True
-
-def dolog(priority, text):
-    pass
-
-def askpassphrase(text):
-    return None
+yesDialog = lambda q: True
+logFunc = lambda p, t: None
+passwordDialog = lambda t: None
 
 def is_luks(device):
-    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
     return cs.isLuks()
 
 def luks_uuid(device):
-    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
     return cs.luksUUID()
 
 def luks_status(name):
     """True means active, False means inactive (or non-existent)"""
-    cs = CryptSetup(name=name, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(name=name, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
     return cs.status()
 
 def luks_format(device,
@@ -77,7 +72,7 @@ def luks_format(device,
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
 
     #None is not considered as default value and pycryptsetup doesn't accept it
     #so we need to filter out all Nones
@@ -110,14 +105,14 @@ def luks_open(device, name, passphrase=None, key_file=None):
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
 
     rc = cs.activate(passphrase=passphrase, name=name)
     if rc<0:
         raise CryptoError("luks_open failed for %s (%s) with errno %d" % (device, name, rc))
 
 def luks_close(name):
-    cs = CryptSetup(name=name, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(name=name, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
     rc = cs.deactivate()
 
     if rc:
@@ -130,7 +125,7 @@ def luks_add_key(device,
     if not passphrase:
         raise ValueError("luks_add_key requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
     rc = cs.addKeyByPassphrase(passphrase=passphrase, newPassphrase=new_passphrase)
 
     if rc<0:
@@ -143,7 +138,7 @@ def luks_remove_key(device,
     if not passphrase:
         raise ValueError("luks_remove_key requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=askyes, logFunc=dolog, passwordDialog=askpassphrase)
+    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
     rc = cs.removePassphrase(passphrase = passphrase)
 
     if rc:
