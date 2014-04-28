@@ -201,7 +201,7 @@ class StorageTestCase(unittest.TestCase):
         self.assertEqual(devicetree.getDeviceByName(device.name), None)
         return action
 
-    def scheduleCreateFormat(self, *args, **kwargs):
+    def scheduleCreateFormat(self, device, fmt):
         """ Schedule an action to write a new format to a device.
 
             Verify that the device is already in the tree, that it is not
@@ -211,8 +211,6 @@ class StorageTestCase(unittest.TestCase):
 
             Return the DeviceAction instance.
         """
-        device = kwargs.pop("device")
-        fmt = kwargs.pop("fmt")
         devicetree = self.storage.devicetree
 
         self.assertNotEqual(device.format, fmt)
