@@ -192,7 +192,7 @@ class LUKS(DeviceFormat):
                        passphrase=self.__passphrase,
                        key_file=self._key_file)
 
-    def teardown(self, *args, **kwargs):
+    def teardown(self):
         """ Close, or tear down, the format. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)

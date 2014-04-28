@@ -163,7 +163,7 @@ class SwapSpace(DeviceFormat):
         DeviceFormat.setup(self, *args, **kwargs)
         swap.swapon(self.device, priority=self.priority)
 
-    def teardown(self, *args, **kwargs):
+    def teardown(self):
         """ Close, or tear down, a device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)

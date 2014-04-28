@@ -831,8 +831,8 @@ class FS(DeviceFormat):
         """
         return self.mount(**kwargs)
 
-    def teardown(self, *args, **kwargs):
-        return self.unmount(*args, **kwargs)
+    def teardown(self):
+        return self.unmount()
 
     @property
     def status(self):

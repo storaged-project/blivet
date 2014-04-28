@@ -444,7 +444,7 @@ class DeviceFormat(ObjectID):
         if not self.device or not os.path.exists(self.device):
             raise FormatSetupError("invalid device specification")
 
-    def teardown(self, *args, **kwargs):
+    def teardown(self):
         """ Deactivate the formatting. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
