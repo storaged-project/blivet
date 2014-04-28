@@ -346,6 +346,7 @@ def doAutoPartition(storage, data):
             Clearing of partitions is handled separately, in
             :meth:`~.Blivet.clearPartitions`.
     """
+    # pylint: disable=unused-argument
     log.debug("doAutoPart: %s", storage.doAutoPart)
     log.debug("encryptedAutoPart: %s", storage.encryptedAutoPart)
     log.debug("autoPartType: %s", storage.autoPartType)
