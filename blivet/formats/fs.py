@@ -404,7 +404,7 @@ class FS(DeviceFormat):
         argv = [self.device, "%d" % (self.targetSize.convertTo("MiB"),)]
         return argv
 
-    def doResize(self, *args, **kwargs):
+    def doResize(self):
         """ Resize this filesystem based on this instance's targetSize attr.
 
             :raises: FSResizeError, FSError
