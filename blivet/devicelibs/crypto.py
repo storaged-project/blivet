@@ -73,6 +73,7 @@ def luks_status(name):
 def luks_format(device,
                 passphrase=None,
                 cipher=None, key_size=None, key_file=None):
+    # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
@@ -105,6 +106,7 @@ def luks_format(device,
 
 
 def luks_open(device, name, passphrase=None, key_file=None):
+    # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
@@ -124,7 +126,7 @@ def luks_close(name):
 def luks_add_key(device,
                  new_passphrase=None,
                  passphrase=None, key_file=None):
-
+    # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_add_key requires passphrase")
 
