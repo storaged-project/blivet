@@ -357,17 +357,15 @@ class FS(DeviceFormat):
         argv.append(self.device)
         return argv
 
-    def doFormat(self, *args, **kwargs):
+    def doFormat(self, options=None):
         """ Create the filesystem.
 
-            :keyword options: options to pass to mkfs
+            :param options: options to pass to mkfs
             :type options: list of strings
             :raises: FormatCreateError, FSError
         """
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
-
-        options = kwargs.get("options")
 
         if self.exists:
             raise FormatCreateError("filesystem already exists", self.device)
@@ -815,7 +813,7 @@ class FS(DeviceFormat):
 
         DeviceFormat.create(self, *args, **kwargs)
 
-        return self.doFormat(*args, **kwargs)
+        return self.doFormat(options=kwargs.get('options'))
 
     def setup(self, *args, **kwargs):
         """ Mount the filesystem.
