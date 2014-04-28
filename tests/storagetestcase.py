@@ -162,7 +162,7 @@ class StorageTestCase(unittest.TestCase):
 
             self.storage.destroyDevice(part)
 
-    def scheduleCreateDevice(self, *args, **kwargs):
+    def scheduleCreateDevice(self, device):
         """ Schedule an action to create the specified device.
 
             Verify that the device is not already in the tree and that the
@@ -171,7 +171,6 @@ class StorageTestCase(unittest.TestCase):
 
             Return the DeviceAction instance.
         """
-        device = kwargs.pop("device")
         if hasattr(device, "req_disks") and \
            len(device.req_disks) == 1 and \
            not device.parents:
@@ -185,7 +184,7 @@ class StorageTestCase(unittest.TestCase):
         self.assertEqual(devicetree.getDeviceByName(device.name), device)
         return action
 
-    def scheduleDestroyDevice(self, *args, **kwargs):
+    def scheduleDestroyDevice(self, device):
         """ Schedule an action to destroy the specified device.
 
             Verify that the device exists initially and that the act of
@@ -194,7 +193,6 @@ class StorageTestCase(unittest.TestCase):
 
             Return the DeviceAction instance.
         """
-        device = kwargs.pop("device")
         devicetree = self.storage.devicetree
 
         self.assertEqual(devicetree.getDeviceByName(device.name), device)
@@ -225,7 +223,7 @@ class StorageTestCase(unittest.TestCase):
         self.assertEqual(_device.format, fmt)
         return action
 
-    def scheduleDestroyFormat(self, *args, **kwargs):
+    def scheduleDestroyFormat(self, device):
         """ Schedule an action to remove a format from a device.
 
             Verify that the device is already in the tree and that the act
@@ -234,7 +232,6 @@ class StorageTestCase(unittest.TestCase):
 
             Return the DeviceAction instance.
         """
-        device = kwargs.pop("device")
         devicetree = self.storage.devicetree
 
         self.assertEqual(devicetree.getDeviceByName(device.name), device)

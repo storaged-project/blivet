@@ -128,37 +128,37 @@ class DeviceActionTestCase(StorageTestCase):
         sda1 = self.newDevice(device_class=PartitionDevice,
                               name="sda1", size=Size("500 MiB"),
                               parents=[sda])
-        self.scheduleCreateDevice(device=sda1)
+        self.scheduleCreateDevice(sda1)
 
         sda2 = self.newDevice(device_class=PartitionDevice,
                               name="sda2", size=Size("100 GiB"),
                               parents=[sda])
-        self.scheduleCreateDevice(device=sda2)
+        self.scheduleCreateDevice(sda2)
         fmt = self.newFormat("lvmpv", device=sda2.path)
         self.scheduleCreateFormat(device=sda2, fmt=fmt)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
                             name="vg", parents=[sda2])
-        self.scheduleCreateDevice(device=vg)
+        self.scheduleCreateDevice(vg)
 
         lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_root", parents=[vg],
                                  size=Size("60 GiB"))
-        self.scheduleCreateDevice(device=lv_root)
+        self.scheduleCreateDevice(lv_root)
         fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
         self.scheduleCreateFormat(device=lv_root, fmt=fmt)
 
         lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_swap", parents=[vg],
                                  size=Size("4000 MiB"))
-        self.scheduleCreateDevice(device=lv_swap)
+        self.scheduleCreateDevice(lv_swap)
         fmt = self.newFormat("swap", device=lv_swap.path)
         self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
 
         sda3 = self.newDevice(device_class=PartitionDevice,
                               name="sda3", parents=[sda],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sda3)
+        self.scheduleCreateDevice(sda3)
         fmt = self.newFormat("mdmember", device=sda3.path)
         self.scheduleCreateFormat(device=sda3, fmt=fmt)
 
@@ -168,7 +168,7 @@ class DeviceActionTestCase(StorageTestCase):
         sdb1 = self.newDevice(device_class=PartitionDevice,
                               name="sdb1", parents=[sdb],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sdb1)
+        self.scheduleCreateDevice(sdb1)
         fmt = self.newFormat("mdmember", device=sdb1.path,)
         self.scheduleCreateFormat(device=sdb1, fmt=fmt)
 
@@ -176,7 +176,7 @@ class DeviceActionTestCase(StorageTestCase):
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
                              parents=[sdb1, sda3])
-        self.scheduleCreateDevice(device=md0)
+        self.scheduleCreateDevice(md0)
 
         fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
         self.scheduleCreateFormat(device=md0, fmt=fmt)
@@ -465,30 +465,30 @@ class DeviceActionTestCase(StorageTestCase):
         sda1 = self.newDevice(device_class=PartitionDevice,
                               name="sda1", size=Size("500 MiB"),
                               parents=[sda])
-        self.scheduleCreateDevice(device=sda1)
+        self.scheduleCreateDevice(sda1)
 
         sda2 = self.newDevice(device_class=PartitionDevice,
                               name="sda2", size=Size("100 GiB"),
                               parents=[sda])
-        self.scheduleCreateDevice(device=sda2)
+        self.scheduleCreateDevice(sda2)
         fmt = self.newFormat("lvmpv", device=sda2.path)
         self.scheduleCreateFormat(device=sda2, fmt=fmt)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
                             name="vg", parents=[sda2])
-        self.scheduleCreateDevice(device=vg)
+        self.scheduleCreateDevice(vg)
 
         lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_root", parents=[vg],
                                  size=Size("60 GiB"))
-        self.scheduleCreateDevice(device=lv_root)
+        self.scheduleCreateDevice(lv_root)
         fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
         self.scheduleCreateFormat(device=lv_root, fmt=fmt)
 
         lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_swap", parents=[vg],
                                  size=Size("4 GiB"))
-        self.scheduleCreateDevice(device=lv_swap)
+        self.scheduleCreateDevice(lv_swap)
         fmt = self.newFormat("swap", device=lv_swap.path)
         self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
 
@@ -497,7 +497,7 @@ class DeviceActionTestCase(StorageTestCase):
         sda3 = self.newDevice(device_class=PartitionDevice,
                               name="sda3", parents=[sda],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sda3)
+        self.scheduleCreateDevice(sda3)
         fmt = self.newFormat("mdmember", device=sda3.path)
         self.scheduleCreateFormat(device=sda3, fmt=fmt)
 
@@ -507,7 +507,7 @@ class DeviceActionTestCase(StorageTestCase):
         sdb1 = self.newDevice(device_class=PartitionDevice,
                               name="sdb1", parents=[sdb],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sdb1)
+        self.scheduleCreateDevice(sdb1)
         fmt = self.newFormat("mdmember", device=sdb1.path,)
         self.scheduleCreateFormat(device=sdb1, fmt=fmt)
 
@@ -515,16 +515,16 @@ class DeviceActionTestCase(StorageTestCase):
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
                              parents=[sdb1, sda3])
-        self.scheduleCreateDevice(device=md0)
+        self.scheduleCreateDevice(md0)
 
         fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
         self.scheduleCreateFormat(device=md0, fmt=fmt)
 
         # now destroy the md and its components
-        self.scheduleDestroyFormat(device=md0)
-        self.scheduleDestroyDevice(device=md0)
-        self.scheduleDestroyDevice(device=sdb1)
-        self.scheduleDestroyDevice(device=sda3)
+        self.scheduleDestroyFormat(md0)
+        self.scheduleDestroyDevice(md0)
+        self.scheduleDestroyDevice(sdb1)
+        self.scheduleDestroyDevice(sda3)
 
         fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
         self.scheduleCreateFormat(device=sda1, fmt=fmt)
@@ -592,36 +592,36 @@ class DeviceActionTestCase(StorageTestCase):
                               size=Size("500 MiB"), parents=[sda])
         sda1_format = self.newFormat("ext4", mountpoint="/boot",
                                      device=sda1.path)
-        self.scheduleCreateDevice(device=sda1)
+        self.scheduleCreateDevice(sda1)
         self.scheduleCreateFormat(device=sda1, fmt=sda1_format)
 
         sda2 = self.newDevice(device_class=PartitionDevice, name="sda2",
                               size=Size("99.5 GiB"), parents=[sda])
         sda2_format = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateDevice(device=sda2)
+        self.scheduleCreateDevice(sda2)
         self.scheduleCreateFormat(device=sda2, fmt=sda2_format)
 
         sdb1 = self.newDevice(device_class=PartitionDevice, name="sdb1",
                               size=Size("100 GiB"), parents=[sdb])
         sdb1_format = self.newFormat("lvmpv", device=sdb1.path)
-        self.scheduleCreateDevice(device=sdb1)
+        self.scheduleCreateDevice(sdb1)
         self.scheduleCreateFormat(device=sdb1, fmt=sdb1_format)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
                             name="VolGroup", parents=[sda2, sdb1])
-        self.scheduleCreateDevice(device=vg)
+        self.scheduleCreateDevice(vg)
 
         lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_root", parents=[vg],
                                  size=Size("160 GiB"))
-        self.scheduleCreateDevice(device=lv_root)
+        self.scheduleCreateDevice(lv_root)
         fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
         self.scheduleCreateFormat(device=lv_root, fmt=fmt)
 
         lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                  name="lv_swap", parents=[vg],
                                  size=Size("4 GiB"))
-        self.scheduleCreateDevice(device=lv_swap)
+        self.scheduleCreateDevice(lv_swap)
         fmt = self.newFormat("swap", device=lv_swap.path)
         self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
 
@@ -676,12 +676,12 @@ class DeviceActionTestCase(StorageTestCase):
 
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               parents=[sdc], size=Size("50 GiB"))
-        create_sdc1 = self.scheduleCreateDevice(device=sdc1)
+        create_sdc1 = self.scheduleCreateDevice(sdc1)
         self.assertEqual(isinstance(create_sdc1, ActionCreateDevice), True)
 
         sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
                               parents=[sdc], size=Size("50 GiB"))
-        create_sdc2 = self.scheduleCreateDevice(device=sdc2)
+        create_sdc2 = self.scheduleCreateDevice(sdc2)
         self.assertEqual(isinstance(create_sdc2, ActionCreateDevice), True)
 
         self.assertEqual(create_sdc2.requires(create_sdc1), True)
@@ -713,13 +713,13 @@ class DeviceActionTestCase(StorageTestCase):
 
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               parents=[sdc], size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sdc1)
+        self.scheduleCreateDevice(sdc1)
         fmt = self.newFormat("mdmember", device=sdc1.path)
         self.scheduleCreateFormat(device=sdc1, fmt=fmt)
 
         sdd1 = self.newDevice(device_class=PartitionDevice, name="sdd1",
                               parents=[sdd], size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sdd1)
+        self.scheduleCreateDevice(sdd1)
         fmt = self.newFormat("mdmember", device=sdd1.path,)
         self.scheduleCreateFormat(device=sdd1, fmt=fmt)
 
@@ -727,14 +727,14 @@ class DeviceActionTestCase(StorageTestCase):
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
                              parents=[sdc1, sdd1])
-        self.scheduleCreateDevice(device=md0)
+        self.scheduleCreateDevice(md0)
         fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
         self.scheduleCreateFormat(device=md0, fmt=fmt)
 
-        destroy_md0_format = self.scheduleDestroyFormat(device=md0)
-        destroy_md0 = self.scheduleDestroyDevice(device=md0)
-        destroy_members = [self.scheduleDestroyDevice(device=sdc1)]
-        destroy_members.append(self.scheduleDestroyDevice(device=sdd1))
+        destroy_md0_format = self.scheduleDestroyFormat(md0)
+        destroy_md0 = self.scheduleDestroyDevice(md0)
+        destroy_members = [self.scheduleDestroyDevice(sdc1)]
+        destroy_members.append(self.scheduleDestroyDevice(sdd1))
 
         for member in destroy_members:
             # device and format destroy actions for md members should require
@@ -750,14 +750,14 @@ class DeviceActionTestCase(StorageTestCase):
         self.destroyAllDevices(disks=["sdc", "sdd"])
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               parents=[sdc], size=Size("50 GiB"))
-        self.scheduleCreateDevice(device=sdc1)
+        self.scheduleCreateDevice(sdc1)
 
         sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
                               parents=[sdc], size=Size("40 GiB"))
-        self.scheduleCreateDevice(device=sdc2)
+        self.scheduleCreateDevice(sdc2)
 
-        destroy_sdc1 = self.scheduleDestroyDevice(device=sdc1)
-        destroy_sdc2 = self.scheduleDestroyDevice(device=sdc2)
+        destroy_sdc1 = self.scheduleDestroyDevice(sdc1)
+        destroy_sdc2 = self.scheduleDestroyDevice(sdc2)
         self.assertEqual(destroy_sdc1.requires(destroy_sdc2), True)
         self.assertEqual(destroy_sdc2.requires(destroy_sdc1), False)
 
@@ -769,17 +769,17 @@ class DeviceActionTestCase(StorageTestCase):
 
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               parents=[sdc], size=Size("50 GiB"))
-        create_pv = self.scheduleCreateDevice(device=sdc1)
+        create_pv = self.scheduleCreateDevice(sdc1)
         fmt = self.newFormat("lvmpv", device=sdc1.path)
         create_pv_format = self.scheduleCreateFormat(device=sdc1, fmt=fmt)
 
         testvg = self.newDevice(device_class=LVMVolumeGroupDevice,
                                 name="testvg", parents=[sdc1])
-        create_vg = self.scheduleCreateDevice(device=testvg)
+        create_vg = self.scheduleCreateDevice(testvg)
         testlv = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                 name="testlv", parents=[testvg],
                                 size=Size("30 GiB"))
-        create_lv = self.scheduleCreateDevice(device=testlv)
+        create_lv = self.scheduleCreateDevice(testlv)
         fmt = self.newFormat("ext4", device=testlv.path)
         create_lv_format = self.scheduleCreateFormat(device=testlv, fmt=fmt)
 
@@ -946,7 +946,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
                               size=Size("5 GiB"), parents=[sdc])
-        create_sdc2 = self.scheduleCreateDevice(device=sdc2)
+        create_sdc2 = self.scheduleCreateDevice(sdc2)
 
         # create actions should always require destroy actions -- even for
         # unrelated devices -- since, after pruning, it should always be the
@@ -1081,7 +1081,7 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
                               size=Size("50 GiB"), parents=[sdc])
         sdc1_format = self.newFormat("lvmpv", device=sdc1.path)
-        create_sdc1 = self.scheduleCreateDevice(device=sdc1)
+        create_sdc1 = self.scheduleCreateDevice(sdc1)
         create_sdc1_format = self.scheduleCreateFormat(device=sdc1,
                                                        fmt=sdc1_format)
 
@@ -1098,7 +1098,7 @@ class DeviceActionTestCase(StorageTestCase):
         new_lv = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                 name="newlv", parents=[vg],
                                 size=Size("20 GiB"))
-        create_new_lv = self.scheduleCreateDevice(device=new_lv)
+        create_new_lv = self.scheduleCreateDevice(new_lv)
         new_lv_format = self.newFormat("xfs", device=new_lv.path)
         create_new_lv_format = self.scheduleCreateFormat(device=new_lv,
                                                          fmt=new_lv_format)
@@ -1135,7 +1135,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
                               size=Size("5 GiB"), parents=[sdc])
-        create_sdc2 = self.scheduleCreateDevice(device=sdc2)
+        create_sdc2 = self.scheduleCreateDevice(sdc2)
 
         # destroy/resize/create sequencing does not apply to container actions
         self.assertEqual(create_sdc2.requires(remove_sdc1), False)
