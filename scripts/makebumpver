@@ -36,7 +36,7 @@ import sys
 import textwrap
 
 class MakeBumpVer:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         log.debug("%s", kwargs)
         self.bzserver = 'bugzilla.redhat.com'
         self.bzurl = "https://%s/xmlrpc.cgi" % self.bzserver
