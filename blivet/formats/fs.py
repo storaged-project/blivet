@@ -535,7 +535,7 @@ class FS(DeviceFormat):
 
         return ret
 
-    def mount(self, *args, **kwargs):
+    def mount(self, options="", chroot="/", mountpoint=None):
         """ Mount this filesystem.
 
             :keyword options: mount options (overrides all other option strings)
@@ -544,10 +544,6 @@ class FS(DeviceFormat):
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
             :raises: FSError
         """
-        options = kwargs.get("options", "")
-        chroot = kwargs.get("chroot", "/")
-        mountpoint = kwargs.get("mountpoint")
-
         if not self.exists:
             raise FSError("filesystem has not been created")
 
