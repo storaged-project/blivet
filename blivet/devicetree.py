@@ -1251,6 +1251,7 @@ class DeviceTree(object):
             device.format = fmt
 
     def handleUdevLUKSFormat(self, info, device):
+        # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
         if not device.format.uuid:
             log.info("luks device %s has no uuid", device.path)
