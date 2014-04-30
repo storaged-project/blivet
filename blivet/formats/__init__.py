@@ -163,7 +163,7 @@ class DeviceFormat(ObjectID):
     _hidden = False                     # hide devices with this formatting?
     _ksMountpoint = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: The path to the device node.
             :type device: str

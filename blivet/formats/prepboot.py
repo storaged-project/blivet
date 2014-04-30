@@ -41,7 +41,7 @@ class PPCPRePBoot(DeviceFormat):
     _maxSize = Size("10 MiB")
     _minSize = Size("4 MiB")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to block device node
             :keyword exists: whether this is an existing format
@@ -55,7 +55,7 @@ class PPCPRePBoot(DeviceFormat):
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
         """
-        DeviceFormat.__init__(self, *args, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.

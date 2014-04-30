@@ -52,7 +52,7 @@ class LUKS(DeviceFormat):
     _packages = ["cryptsetup"]          # required packages
     _minSize = crypto.LUKS_METADATA_SIZE
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: the path to the underlying device
             :keyword uuid: the LUKS UUID
@@ -80,8 +80,8 @@ class LUKS(DeviceFormat):
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
         """
-        log_method_call(self, *args, **kwargs)
-        DeviceFormat.__init__(self, *args, **kwargs)
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
         self.cipher = kwargs.get("cipher")
         self.key_size = kwargs.get("key_size")
         self.mapName = kwargs.get("name")

@@ -45,7 +45,7 @@ class SwapSpace(DeviceFormat):
     #see rhbz#744129 for details
     _maxSize = Size("128 GiB")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to the block device node
             :keyword uuid: this swap space's uuid
@@ -63,8 +63,8 @@ class SwapSpace(DeviceFormat):
                 runs. You can specify the device at the last moment by via the
                 'device' kwarg to the :meth:`~.SwapSpace.create` method.
         """
-        log_method_call(self, *args, **kwargs)
-        DeviceFormat.__init__(self, *args, **kwargs)
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
 
         self.priority = kwargs.get("priority")
         self.label = kwargs.get("label")

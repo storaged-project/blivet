@@ -44,15 +44,15 @@ class MultipathMember(DeviceFormat):
     _resizable = False                  # can be resized
     _hidden = True                      # hide devices with this formatting?
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to the underlying device (required)
             :keyword uuid: this format's UUID
             :keyword exists: whether this is an existing format
             :type exists: bool
         """
-        log_method_call(self, *args, **kwargs)
-        DeviceFormat.__init__(self, *args, **kwargs)
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
 
         # Initialize the attribute that will hold the block object.
         self._member = None

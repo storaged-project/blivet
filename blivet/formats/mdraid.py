@@ -46,7 +46,7 @@ class MDRaidMember(DeviceFormat):
     _packages = ["mdadm"]               # required packages
     _ksMountpoint = "raid."
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to block device node
             :keyword uuid: this member device's uuid
@@ -58,8 +58,8 @@ class MDRaidMember(DeviceFormat):
 
                 The 'device' kwarg is required for existing formats.
         """
-        log_method_call(self, *args, **kwargs)
-        DeviceFormat.__init__(self, *args, **kwargs)
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
         self.mdUuid = kwargs.get("mdUuid")
         self.raidMinor = None
 

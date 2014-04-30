@@ -46,7 +46,7 @@ class LVMPhysicalVolume(DeviceFormat):
     _packages = ["lvm2"]                # required packages
     _ksMountpoint = "pv."
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to the block device node
             :keyword uuid: this PV's uuid (not the VG uuid)
@@ -65,8 +65,8 @@ class LVMPhysicalVolume(DeviceFormat):
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
         """
-        log_method_call(self, *args, **kwargs)
-        DeviceFormat.__init__(self, *args, **kwargs)
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
         self.vgName = kwargs.get("vgName")
         self.vgUuid = kwargs.get("vgUuid")
         # liblvm may be able to tell us this at some point, even

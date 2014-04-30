@@ -45,7 +45,7 @@ class DiskLabel(DeviceFormat):
     _formattable = True                # can be formatted
     _supported = False                 # is supported
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: full path to the block device node
             :type device: str
@@ -54,8 +54,8 @@ class DiskLabel(DeviceFormat):
             :keyword exists: whether the formatting exists
             :type exists: bool
         """
-        log_method_call(self, *args, **kwargs)
-        DeviceFormat.__init__(self, *args, **kwargs)
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
 
         if not self.exists:
             self._labelType = kwargs.get("labelType", "msdos")

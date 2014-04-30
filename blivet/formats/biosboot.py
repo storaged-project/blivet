@@ -38,7 +38,7 @@ class BIOSBoot(DeviceFormat):
     _maxSize = Size("2 MiB")
     _minSize = Size("512 KiB")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to the block device node
             :type device: str
@@ -49,7 +49,7 @@ class BIOSBoot(DeviceFormat):
 
                 The 'device' kwarg is required for existing formats.
         """
-        DeviceFormat.__init__(self, *args, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
 
     @property
     def status(self):

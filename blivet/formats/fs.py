@@ -75,7 +75,7 @@ class FS(DeviceFormat):
     _existingSizeFields = []
     _fsProfileSpecifier = None           # mkfs option specifying fsprofile
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
             :keyword device: path to the block device node (required for
                              existing filesystems)
@@ -99,7 +99,7 @@ class FS(DeviceFormat):
         if self.__class__ is FS:
             raise TypeError("FS is an abstract class.")
 
-        DeviceFormat.__init__(self, *args, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
         self.label = kwargs.get("label")
@@ -885,10 +885,10 @@ class Ext2FS(FS):
     _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.dirty = False
         self.errors = False
-        super(Ext2FS, self).__init__(*args, **kwargs)
+        super(Ext2FS, self).__init__(**kwargs)
 
     def _fsckFailed(self, rc):
         for errorCode in self._fsckErrors.keys():
@@ -1067,8 +1067,8 @@ class BTRFS(FS):
     # partition table type correctly for btrfs partitions
     # partedSystem = fileSystemType["btrfs"]
 
-    def __init__(self, *args, **kwargs):
-        super(BTRFS, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(BTRFS, self).__init__(**kwargs)
         self.volUUID = kwargs.pop("volUUID", None)
 
     def create(self, **kwargs):
@@ -1438,8 +1438,8 @@ class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
 
-    def __init__(self, *args, **kwargs):
-        FS.__init__(self, *args, **kwargs)
+    def __init__(self, **kwargs):
+        FS.__init__(self, **kwargs)
         self.exists = True
         self.device = self._type
 
@@ -1503,8 +1503,8 @@ class TmpFS(NoDevFS):
     # once mounted
     _formattable = True
 
-    def __init__(self, *args, **kwargs):
-        NoDevFS.__init__(self, *args, **kwargs)
+    def __init__(self, **kwargs):
+        NoDevFS.__init__(self, **kwargs)
         self.exists = True
         self._device = "tmpfs"
 
