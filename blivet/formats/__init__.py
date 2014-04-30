@@ -397,6 +397,7 @@ class DeviceFormat(ObjectID):
             :raises: FormatDestroyError
             :returns: None.
         """
+        # pylint: disable=unused-argument
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         try:
