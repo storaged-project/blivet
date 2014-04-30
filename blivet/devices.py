@@ -2297,7 +2297,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
             self._complete = True
 
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
-                                            uuid=uuid,
+                                            uuid=uuid, size=size,
                                             exists=exists, sysfsPath=sysfsPath)
 
         self.free = util.numeric_type(free)
