@@ -651,7 +651,6 @@ class FS(DeviceFormat):
     def writeLabel(self):
         """ Create a label for this filesystem.
 
-            :param label: the label text
             :raises: FSError
 
             If self.label is None, this means accept the default, so raise
