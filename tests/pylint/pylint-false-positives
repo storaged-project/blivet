@@ -18,5 +18,6 @@
 ^blivet/__init__.py:[[:digit:]]+: \[W0612\(unused\-variable\), enable_installer_mode\] Unused variable 'ROOT_PATH'$
 ^blivet/__init__.py:[[:digit:]]+: \[W0612\(unused\-variable\), enable_installer_mode\] Unused variable 'shortProductName'$
 ^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
+^dm.c: [[:digit:]]+: not running as root returning empty list$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value passed for parameter 'member_count' in function call$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value passed for parameter 'smallest_member_size' in function call$
