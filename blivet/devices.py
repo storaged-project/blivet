@@ -3174,6 +3174,8 @@ class MDRaidArrayDevice(ContainerDevice):
             :keyword minor: the device minor (obsolete?)
             :type minor: int
         """
+        # pylint: disable=unused-argument
+
         # These attributes are used by _addParent, so they must be initialized
         # prior to instantiating the superclass.
         self._memberDevices = 0     # the number of active (non-spare) members
