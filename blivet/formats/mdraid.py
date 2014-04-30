@@ -91,7 +91,7 @@ class MDRaidMember(DeviceFormat):
         if self.raidMinor is None:
             self.raidMinor = info['mdMinor']
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 
             :raises: FormatDestroyError

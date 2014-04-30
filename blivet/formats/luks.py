@@ -203,7 +203,7 @@ class LUKS(DeviceFormat):
             log.debug("unmapping %s", self.mapName)
             crypto.luks_close(self.mapName)
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
             :keyword device: path to device node
@@ -222,7 +222,7 @@ class LUKS(DeviceFormat):
             raise LUKSError("luks device has no key/passphrase")
 
         try:
-            DeviceFormat.create(self, *args, **kwargs)
+            DeviceFormat.create(self, **kwargs)
             crypto.luks_format(self.device,
                              passphrase=self.__passphrase,
                              key_file=self._key_file,
@@ -238,7 +238,7 @@ class LUKS(DeviceFormat):
 
             self.notifyKernel()
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 
             :raises: FormatDestroyError
@@ -247,7 +247,7 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         self.teardown()
-        DeviceFormat.destroy(self, *args, **kwargs)
+        DeviceFormat.destroy(self, **kwargs)
 
     @property
     def keyFile(self):

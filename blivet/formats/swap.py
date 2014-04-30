@@ -173,7 +173,7 @@ class SwapSpace(DeviceFormat):
         if self.status:
             swap.swapoff(self.device)
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
             :keyword device: path to device node
@@ -192,7 +192,7 @@ class SwapSpace(DeviceFormat):
             raise SwapSpaceError("format already exists")
 
         try:
-            DeviceFormat.create(self, *args, **kwargs)
+            DeviceFormat.create(self, **kwargs)
             swap.mkswap(self.device, label=self.label)
         except Exception:
             raise

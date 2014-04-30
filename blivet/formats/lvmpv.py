@@ -101,7 +101,7 @@ class LVMPhysicalVolume(DeviceFormat):
         #self.vgName = info['vg_name']
         #self.vgUuid = info['vg_uuid']
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
             :keyword device: path to device node
@@ -118,13 +118,13 @@ class LVMPhysicalVolume(DeviceFormat):
                         type=self.type, status=self.status)
 
         try:
-            DeviceFormat.create(self, *args, **kwargs)
+            DeviceFormat.create(self, **kwargs)
             # Consider use of -Z|--zero
             # -f|--force or -y|--yes may be required
 
             # lvm has issues with persistence of metadata, so here comes the
             # hammer...
-            DeviceFormat.destroy(self, *args, **kwargs)
+            DeviceFormat.destroy(self, **kwargs)
             lvm.pvscan(self.device)
             lvm.pvcreate(self.device)
         except Exception:
@@ -135,7 +135,7 @@ class LVMPhysicalVolume(DeviceFormat):
         self.exists = True
         self.notifyKernel()
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 
             :raises: FormatDestroyError
@@ -153,7 +153,7 @@ class LVMPhysicalVolume(DeviceFormat):
         try:
             lvm.pvremove(self.device)
         except LVMError:
-            DeviceFormat.destroy(self, *args, **kwargs)
+            DeviceFormat.destroy(self, **kwargs)
         finally:
             lvm.pvscan(self.device)
 

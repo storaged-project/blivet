@@ -85,12 +85,12 @@ class DMRaidMember(DeviceFormat):
     raidmem = property(lambda d: d._getRaidmem(),
                        lambda d,r: d._setRaidmem(r))
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         raise DMRaidMemberError("creation of dmraid members is non-sense")
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         raise DMRaidMemberError("destruction of dmraid members is non-sense")

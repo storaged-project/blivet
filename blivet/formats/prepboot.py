@@ -57,7 +57,7 @@ class PPCPRePBoot(DeviceFormat):
         """
         DeviceFormat.__init__(self, *args, **kwargs)
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
             :keyword device: path to device node
@@ -73,7 +73,7 @@ class PPCPRePBoot(DeviceFormat):
         if self.exists:
             raise FormatCreateError("PReP Boot format already exists")
 
-        DeviceFormat.create(self, *args, **kwargs)
+        DeviceFormat.create(self, **kwargs)
 
         try:
             fd = os.open(self.device, os.O_RDWR)

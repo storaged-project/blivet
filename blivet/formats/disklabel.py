@@ -233,7 +233,7 @@ class DiskLabel(DeviceFormat):
         """ Device status. """
         return False
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Create the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
@@ -243,7 +243,7 @@ class DiskLabel(DeviceFormat):
         if self.status:
             raise DeviceFormatError("device exists and is active")
 
-        DeviceFormat.create(self, *args, **kwargs)
+        DeviceFormat.create(self, **kwargs)
 
         # We're relying on someone having called resetPartedDisk -- we
         # could ensure a fresh disklabel by setting self._partedDisk to
@@ -252,7 +252,7 @@ class DiskLabel(DeviceFormat):
         self.commit()
         self.exists = True
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ Wipe the disklabel from the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)

@@ -368,7 +368,7 @@ class DeviceFormat(ObjectID):
             pass
         return self._majorminor
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
             :keyword device: path to device node
@@ -391,7 +391,7 @@ class DeviceFormat(ObjectID):
         if not os.path.exists(self.device):
             raise FormatCreateError("invalid device specification", self.device)
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 
             :raises: FormatDestroyError

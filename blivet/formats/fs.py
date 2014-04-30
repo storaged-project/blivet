@@ -791,7 +791,7 @@ class FS(DeviceFormat):
     # These methods just wrap filesystem-specific methods in more
     # generically named methods so filesystems and formatted devices
     # like swap and LVM physical volumes can have a common API.
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ Create the filesystem on the specified block device.
 
             :keyword device: path to device node
@@ -807,7 +807,7 @@ class FS(DeviceFormat):
         if self.exists:
             raise FSError("filesystem already exists")
 
-        DeviceFormat.create(self, *args, **kwargs)
+        DeviceFormat.create(self, **kwargs)
 
         return self.doFormat(options=kwargs.get('options'))
 
@@ -1071,11 +1071,11 @@ class BTRFS(FS):
         super(BTRFS, self).__init__(*args, **kwargs)
         self.volUUID = kwargs.pop("volUUID", None)
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         # filesystem creation is done in storage.devicelibs.btrfs.create_volume
         self.exists = True
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         # filesystem creation is done in storage.devicelibs.btrfs.delete_volume
         self.exists = False
 
@@ -1538,7 +1538,7 @@ class TmpFS(NoDevFS):
             # of system RAM by default
             self._size = util.total_memory()/2
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """
         pass
 

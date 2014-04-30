@@ -71,12 +71,12 @@ class MultipathMember(DeviceFormat):
     member = property(lambda s: s._getMember(),
                       lambda s,m: s._setMember(m))
 
-    def create(self, *args, **kwargs):
+    def create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         raise MultipathMemberError("creation of multipath members is non-sense")
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         raise MultipathMemberError("destruction of multipath members is non-sense")
