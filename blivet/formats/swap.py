@@ -139,7 +139,7 @@ class SwapSpace(DeviceFormat):
         """ Device status. """
         return self.exists and swap.swapstatus(self.device)
 
-    def setup(self, *args, **kwargs):
+    def setup(self, **kwargs):
         """ Activate the formatting.
 
             :keyword device: device node path
@@ -160,7 +160,7 @@ class SwapSpace(DeviceFormat):
         if self.status:
             return
 
-        DeviceFormat.setup(self, *args, **kwargs)
+        DeviceFormat.setup(self, **kwargs)
         swap.swapon(self.device, priority=self.priority)
 
     def teardown(self):

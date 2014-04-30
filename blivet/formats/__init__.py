@@ -414,7 +414,7 @@ class DeviceFormat(ObjectID):
 
         self.exists = False
 
-    def setup(self, *args, **kwargs):
+    def setup(self, **kwargs):
         """ Activate the formatting.
 
             :keyword device: device node path

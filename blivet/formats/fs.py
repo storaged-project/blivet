@@ -811,7 +811,7 @@ class FS(DeviceFormat):
 
         return self.doFormat(options=kwargs.get('options'))
 
-    def setup(self, *args, **kwargs):
+    def setup(self, **kwargs):
         """ Mount the filesystem.
 
             The filesystem will be mounted at the directory indicated by
@@ -1079,7 +1079,7 @@ class BTRFS(FS):
         # filesystem creation is done in storage.devicelibs.btrfs.delete_volume
         self.exists = False
 
-    def setup(self, *args, **kwargs):
+    def setup(self, **kwargs):
         """ Mount the filesystem.
 
             The filesystem will be mounted at the directory indicated by
@@ -1104,7 +1104,7 @@ class BTRFS(FS):
             # Don't try to mount it if there's no mountpoint.
             return
 
-        return self.mount(*args, **kwargs)
+        return self.mount(**kwargs)
 
     @property
     def resizeArgs(self):

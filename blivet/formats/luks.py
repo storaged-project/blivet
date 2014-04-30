@@ -166,7 +166,7 @@ class LUKS(DeviceFormat):
         """
         raise NotImplementedError("probe method not defined for LUKS")
 
-    def setup(self, *args, **kwargs):
+    def setup(self, **kwargs):
         """ Open the encrypted block device.
 
             :keyword device: device node path
@@ -187,7 +187,7 @@ class LUKS(DeviceFormat):
         if self.status:
             return
 
-        DeviceFormat.setup(self, *args, **kwargs)
+        DeviceFormat.setup(self, **kwargs)
         crypto.luks_open(self.device, self.mapName,
                        passphrase=self.__passphrase,
                        key_file=self._key_file)
