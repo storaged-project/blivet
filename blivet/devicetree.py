@@ -236,6 +236,21 @@ class DeviceTree(object):
 
     def _preProcessActions(self):
         """ Prepare the action queue for execution. """
+        for action in self._actions:
+            log.debug("action: %s", action)
+
+        log.info("pruning action queue...")
+        self.pruneActions()
+
+        problematic = self.findActiveDevicesOnActionDisks()
+        if problematic:
+            if flags.installer_mode:
+                self.teardownAll()
+            else:
+                raise RuntimeError("partitions in use on disks with changes "
+                                   "pending: %s" %
+                                   ",".join(p.name for p in problematic))
+
         log.info("resetting parted disks...")
         for device in self.devices:
             if device.partitioned:
@@ -276,12 +291,6 @@ class DeviceTree(object):
                 action.apply()
                 self._actions.append(action)
 
-        for action in self._actions:
-            log.debug("action: %s", action)
-
-        log.info("pruning action queue...")
-        self.pruneActions()
-
         log.info("sorting actions...")
         self.sortActions()
         for action in self._actions:
@@ -304,6 +313,28 @@ class DeviceTree(object):
         for partition in self.getDevicesByInstance(PartitionDevice):
             pdisk = partition.disk.format.partedDisk
             partition.partedPartition = pdisk.getPartitionByPath(partition.path)
+
+    def findActiveDevicesOnActionDisks(self):
+        """ Return a list of devices using the disks we plan to change. """
+        # Find out now if there are active devices using partitions on disks
+        # whose disklabels we are going to change. If there are, do not proceed.
+        disks = []
+        for action in self._actions:
+            disk = None
+            if action.isDevice and isinstance(action.device, PartitionDevice):
+                disk = action.device.disk
+            elif action.isFormat and action.format.type == "disklabel":
+                disk = action.device
+
+            if disk is not None and disk not in disks:
+                disks.append(disk)
+
+        active = (dev for dev in self.devices
+                        if (dev.status and
+                            (not dev.isDisk and
+                             not isinstance(dev, PartitionDevice))))
+        devices = [a.name for a in active if any(d in disks for d in a.disks)]
+        return devices
 
     def processActions(self, dryRun=None):
         """ Execute all registered actions. """
