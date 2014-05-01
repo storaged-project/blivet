@@ -346,13 +346,13 @@ class DeviceTree(object):
                 try:
                     action.execute()
                 except DiskLabelCommitError:
-                    if not flags.installer_mode:
-                        raise
-
-                    # it's likely that a previous format destroy action
+                    # it's likely that a previous action
                     # triggered setup of an lvm or md device.
-                    for dep in self.getDependentDevices(action.device.disk):
-                        dep.teardown(recursive=True)
+                    # include deps no longer in the tree due to pending removal
+                    devs = self._devices + [a.device for a in self._actions]
+                    for dep in set(devs):
+                        if dep.exists and dep.dependsOn(action.device.disk):
+                            dep.teardown(recursive=True)
 
                     action.execute()
 
