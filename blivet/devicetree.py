@@ -234,8 +234,8 @@ class DeviceTree(object):
             actions.append(self._actions[idx])
         self._actions = actions
 
-    def processActions(self, dryRun=None):
-        """ Execute all registered actions. """
+    def _preProcessActions(self):
+        """ Prepare the action queue for execution. """
         log.info("resetting parted disks...")
         for device in self.devices:
             if device.partitioned:
@@ -291,6 +291,24 @@ class DeviceTree(object):
             for device in (d for d in self._devices if d.dependsOn(action.device)):
                 lvm.lvm_cc_removeFilterRejectRegexp(device.name)
 
+    def _postProcessActions(self):
+        """ Clean up relics from action queue execution. """
+        # removal of partitions makes use of originalFormat, so it has to stay
+        # up to date in case of multiple passes through this method
+        for disk in (d for d in self.devices if d.partitioned):
+            disk.format.updateOrigPartedDisk()
+            disk.originalFormat = copy.deepcopy(disk.format)
+
+        # now we have to update the parted partitions of all devices so they
+        # match the parted disks we just updated
+        for partition in self.getDevicesByInstance(PartitionDevice):
+            pdisk = partition.disk.format.partedDisk
+            partition.partedPartition = pdisk.getPartitionByPath(partition.path)
+
+    def processActions(self, dryRun=None):
+        """ Execute all registered actions. """
+        self._preProcessActions()
+
         for action in self._actions[:]:
             log.info("executing action: %s", action)
             if not dryRun:
@@ -304,6 +322,7 @@ class DeviceTree(object):
                     # triggered setup of an lvm or md device.
                     for dep in self.getDependentDevices(action.device.disk):
                         dep.teardown(recursive=True)
+
                     action.execute()
 
                 udev.udev_settle()
@@ -315,17 +334,7 @@ class DeviceTree(object):
 
                 self._completed_actions.append(self._actions.pop(0))
 
-        # removal of partitions makes use of originalFormat, so it has to stay
-        # up to date in case of multiple passes through this method
-        for disk in (d for d in self.devices if d.partitioned):
-            disk.format.updateOrigPartedDisk()
-            disk.originalFormat = copy.deepcopy(disk.format)
-
-        # now we have to update the parted partitions of all devices so they
-        # match the parted disks we just updated
-        for partition in self.getDevicesByInstance(PartitionDevice):
-            pdisk = partition.disk.format.partedDisk
-            partition.partedPartition = pdisk.getPartitionByPath(partition.path)
+        self._postProcessActions()
 
     def _addDevice(self, newdev):
         """ Add a device to the tree.
