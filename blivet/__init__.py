@@ -1723,8 +1723,8 @@ class Blivet(object):
         self.fsset.mountFilesystems(rootPath=ROOT_PATH,
                                     readOnly=readOnly, skipRoot=skipRoot)
 
-    def umountFilesystems(self, ignoreErrors=True, swapoff=True):
-        self.fsset.umountFilesystems(ignoreErrors=ignoreErrors, swapoff=swapoff)
+    def umountFilesystems(self, swapoff=True):
+        self.fsset.umountFilesystems(swapoff=swapoff)
 
     def parseFSTab(self, chroot=None):
         self.fsset.parseFSTab(chroot=chroot)
@@ -2708,7 +2708,7 @@ class FSSet(object):
 
         self.active = True
 
-    def umountFilesystems(self, ignoreErrors=True, swapoff=True):
+    def umountFilesystems(self, swapoff=True):
         """ unmount filesystems, except swap if swapoff == False """
         devices = self.mountpoints.values() + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
