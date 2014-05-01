@@ -3948,6 +3948,7 @@ class TmpFSDevice(NoDevice):
 
     def __init__(self, *args, **kwargs):
         """Create a tmpfs device"""
+        # pylint: disable=unused-argument
         fmt = kwargs.get('fmt')
         NoDevice.__init__(self, fmt)
         # the tmpfs device does not exist until mounted
