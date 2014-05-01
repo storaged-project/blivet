@@ -258,13 +258,17 @@ class DeviceTree(object):
 
         # setup actions to create any extended partitions we added
         #
+        # If the extended partition was explicitly requested it will already
+        # have an action registered.
+        #
         # XXX At this point there can be duplicate partition paths in the
         #     tree (eg: non-existent sda6 and previous sda6 that will become
         #     sda5 in the course of partitioning), so we access the list
         #     directly here.
         for device in self._devices:
             if isinstance(device, PartitionDevice) and \
-               device.isExtended and not device.exists:
+               device.isExtended and not device.exists and \
+               not self.findActions(device=device, action_type="create"):
                 # don't properly register the action since the device is
                 # already in the tree
                 action = ActionCreateDevice(device)
