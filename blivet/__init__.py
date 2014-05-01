@@ -176,9 +176,7 @@ def turnOnFilesystems(storage, mountOnly=False):
 
         storage.turnOnSwap()
     # FIXME:  For livecd, skipRoot needs to be True.
-    storage.mountFilesystems(raiseErrors=False,
-                             readOnly=False,
-                             skipRoot=False)
+    storage.mountFilesystems()
 
     if not mountOnly:
         writeEscrowPackets(storage)
@@ -1721,9 +1719,8 @@ class Blivet(object):
         self.fsset.turnOnSwap(rootPath=ROOT_PATH,
                               upgrading=upgrading)
 
-    def mountFilesystems(self, raiseErrors=None, readOnly=None, skipRoot=False):
+    def mountFilesystems(self, readOnly=None, skipRoot=False):
         self.fsset.mountFilesystems(rootPath=ROOT_PATH,
-                                    raiseErrors=raiseErrors,
                                     readOnly=readOnly, skipRoot=skipRoot)
 
     def umountFilesystems(self, ignoreErrors=True, swapoff=True):
@@ -2645,9 +2642,14 @@ class FSSet(object):
                 else:
                     break
 
-    def mountFilesystems(self, rootPath="", readOnly=None,
-                         skipRoot=False, raiseErrors=None):
-        """ Mount the system's filesystems. """
+    def mountFilesystems(self, rootPath="", readOnly=None, skipRoot=False):
+        """ Mount the system's filesystems.
+
+            :param str rootPath: the root directory for this filesystem
+            :param readOnly: read only option str for this filesystem
+            :type readOnly: str or None
+            :param bool skipRoot: whether to skip mounting the root filesystem
+        """
         if not flags.installer_mode:
             return
 
