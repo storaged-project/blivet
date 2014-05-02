@@ -181,7 +181,7 @@ class Size(Decimal):
         decimal places.
     """
 
-    def __new__(cls, value):
+    def __new__(cls, value=0, context=None):
         """ Initialize a new Size object.  Must pass a bytes or a spec value
             for size. The bytes value is a numerical value for the size
             this object represents, in bytes.  The spec value is a string
