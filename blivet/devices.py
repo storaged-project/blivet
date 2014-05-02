@@ -29,7 +29,6 @@ from decimal import Decimal
 import re
 
 # device backend modules
-from .devicelibs import raid
 from .devicelibs import mdraid
 from .devicelibs import lvm
 from .devicelibs import dm
@@ -4760,7 +4759,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     def _removeParent(self, member):
         # btrfs won't let you degrade it
         limits = []
-        levels = raid.RAIDLevels()
+        levels = btrfs.RAID_levels
         if self.dataLevel and self.dataLevel != "single":
             limits.append(levels.raidLevel(self.dataLevel).min_members)
 

@@ -26,6 +26,7 @@ from decimal import Decimal
 import logging
 log = logging.getLogger("blivet")
 
+from . import raid
 from ..size import Size
 from .. import util
 from .. import arch
@@ -43,6 +44,8 @@ LVM_THINP_MIN_METADATA_SIZE = Size("2 MiB")
 LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
+
+RAID_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
 
 def has_lvm():
     if util.find_program_in_path("lvm"):

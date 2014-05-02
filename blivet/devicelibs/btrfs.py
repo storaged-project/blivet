@@ -23,6 +23,7 @@
 import os
 import re
 
+from . import raid
 from .. import util
 from ..errors import BTRFSError
 
@@ -31,6 +32,8 @@ log = logging.getLogger("blivet")
 
 # this is the volume id btrfs always assigns to the top-level volume/tree
 MAIN_VOLUME_ID = 5
+
+RAID_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single"])
 
 def btrfs(args, capture=False):
     if capture:
