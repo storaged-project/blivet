@@ -45,6 +45,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertIs(self.levels.raidLevel("raid4"), raid.RAID4)
         self.assertIs(self.levels.raidLevel("mirror"), raid.RAID1)
         self.assertIs(self.levels.raidLevel("stripe"), raid.RAID0)
+        self.assertIs(self.levels.raidLevel(raid.RAID0), raid.RAID0)
 
         self.assertRaises(errors.RaidError, self.levels.raidLevel, "bogus")
 

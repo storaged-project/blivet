@@ -303,11 +303,14 @@ class RAIDLevels(object):
 
            :param object descriptor: a RAID level descriptor
 
+           Note that descriptor may be any object that identifies a
+           RAID level, including the RAID object itself.
+
            Raises a RaidError if no RAID object can be found for this
            descriptor.
         """
         for level in self._raid_levels:
-            if descriptor in level.names:
+            if descriptor in level.names or descriptor is level:
                 return level
         raise RaidError("invalid RAID level descriptor %s" % descriptor)
 

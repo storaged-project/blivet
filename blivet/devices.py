@@ -3277,7 +3277,7 @@ class MDRaidArrayDevice(ContainerDevice):
             :type uuid: str
 
             :keyword level: the device's RAID level
-            :type level: str (eg: "raid1")
+            :type level: any valid RAID level descriptor
             :keyword int memberDevices: the number of active member devices
             :keyword int totalDevices: the total number of member devices
             :keyword metadataVersion: the version of the device's md metadata
