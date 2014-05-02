@@ -1205,11 +1205,10 @@ class DeviceTree(object):
         device.deviceLinks = udev.udev_device_get_symlinks(info)
 
     def handleUdevDiskLabelFormat(self, info, device):
-        disklabel_type = info.get("ID_PART_TABLE_TYPE")
+        disklabel_type = udev.udev_device_get_disklabel_type(info)
         log_method_call(self, device=device.name, label_type=disklabel_type)
         # if there is no disklabel on the device
-        if disklabel_type is None and \
-           getFormat(udev.udev_device_get_format(info)).type is not None:
+        if disklabel_type is None:
             log.debug("device %s does not contain a disklabel", device.name)
             return
 

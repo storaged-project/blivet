@@ -518,6 +518,15 @@ def udev_device_get_multipath_name(info):
         return info['ID_MPATH_NAME']
     return None
 
+def udev_device_get_disklabel_type(info):
+    """ Return the type of disklabel on the device or None. """
+    if udev_device_is_partition(info) or udev_device_is_dm_partition(info):
+        # For partitions, ID_PART_TABLE_TYPE is the disklabel type for the
+        # partition's disk. It does not mean the partition contains a disklabel.
+        return None
+
+    return info.get("ID_PART_TABLE_TYPE")
+
 # iscsi disks' ID_PATH form depends on the driver:
 # for software iscsi:
 # ip-${iscsi_address}:${iscsi_port}-iscsi-${iscsi_tgtname}-lun-${lun}
