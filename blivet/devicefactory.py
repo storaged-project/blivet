@@ -25,9 +25,7 @@ from .errors import DeviceFactoryError, StorageError
 from .devices import LUKSDevice
 from .formats import getFormat
 from .devicelibs import mdraid
-from .devicelibs.lvm import get_pv_space
-from .devicelibs.lvm import get_pool_padding
-from .devicelibs.lvm import LVM_PE_SIZE
+from .devicelibs import lvm
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
@@ -1109,7 +1107,7 @@ class LVMFactory(DeviceFactory):
             super(LVMFactory, self)._handle_no_size()
 
     def _get_device_space(self):
-        return get_pv_space(self.size, len(self._get_member_devices()))
+        return lvm.get_pv_space(self.size, len(self._get_member_devices()))
 
     def _get_device_size(self):
         size = self.size
@@ -1153,7 +1151,7 @@ class LVMFactory(DeviceFactory):
             log.debug("size bumped to %s to include free disk space", size)
         else:
             # container_size is a request for a fixed size for the container
-            size += get_pv_space(self.container_size, len(self.disks))
+            size += lvm.get_pv_space(self.container_size, len(self.disks))
 
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
@@ -1163,18 +1161,18 @@ class LVMFactory(DeviceFactory):
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
-                size -= get_pv_space(self.device.size,
+                size -= lvm.get_pv_space(self.device.size,
                    len(self.container.parents))
                 log.debug("size cut to %s to omit old device space", size)
 
         if self.container_raid_level:
             # add five extents per disk to account for md metadata
             # (it was originally one per disk but that wasn't enough for raid5)
-            size += LVM_PE_SIZE * len(self.disks) * 5
+            size += lvm.LVM_PE_SIZE * len(self.disks) * 5
 
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
-            size += LVM_PE_SIZE * len(self.disks)
+            size += lvm.LVM_PE_SIZE * len(self.disks)
 
         return size
 
@@ -1222,7 +1220,7 @@ class LVMFactory(DeviceFactory):
                                                                  SIZE_POLICY_MAX]:
             # container pushed to the limit, but we need some extra space for
             # metadata, so we need to make the LV smaller
-            extra_md_space = LVM_PE_SIZE * len(self.disks) * 5
+            extra_md_space = lvm.LVM_PE_SIZE * len(self.disks) * 5
             kwargs["size"] -= extra_md_space
         return self.storage.newLV(*args, **kwargs)
 
@@ -1348,7 +1346,7 @@ class LVMThinPFactory(LVMFactory):
     @property
     def _pesize(self):
         """ The extent size of our vg or the default if we have no vg. """
-        return getattr(self.container, "peSize", LVM_PE_SIZE)
+        return getattr(self.container, "peSize", lvm.LVM_PE_SIZE)
 
     def _get_device_space(self):
         """ Calculate and return the total disk space needed for the device.
@@ -1357,7 +1355,7 @@ class LVMThinPFactory(LVMFactory):
         """
         space = super(LVMThinPFactory, self)._get_device_space()
         log.debug("calculated total disk space prior to padding: %s", space)
-        space += get_pool_padding(space, pesize=self._pesize)
+        space += lvm.get_pool_padding(space, pesize=self._pesize)
         log.debug("total disk space needed: %s", space)
         return space
 
@@ -1375,7 +1373,7 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.pool.freeSpace
                 log.debug("size cut to %s to omit pool free space", size)
 
-                pad = get_pool_padding(self.pool.freeSpace,
+                pad = lvm.get_pool_padding(self.pool.freeSpace,
                                        pesize=self._pesize)
                 size -= pad
                 log.debug("size cut to %s to omit pool padding from free "
@@ -1387,7 +1385,7 @@ class LVMThinPFactory(LVMFactory):
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
-                pad = get_pool_padding(self.device.size,
+                pad = lvm.get_pool_padding(self.device.size,
                                        pesize=self._pesize)
                 log.debug("old device size: %s ; old pad: %s", self.device.size, pad)
                 size -= pad
@@ -1452,7 +1450,7 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.device.poolSpaceUsed   # don't count our device
 
             # increase vg free space by the size of the current pool's pad
-            pad = get_pool_padding(self.pool.size,
+            pad = lvm.get_pool_padding(self.pool.size,
                                    pesize=self._pesize)
             log.debug("increasing free by current pool pad size (%s)", pad)
             free += pad
@@ -1461,11 +1459,11 @@ class LVMThinPFactory(LVMFactory):
         free = self.container.align(free + self.container.freeSpace)
         size = self.container.align(size, roundup=True)
 
-        pad = get_pool_padding(size, pesize=self._pesize)
+        pad = lvm.get_pool_padding(size, pesize=self._pesize)
 
         log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
         if free < (size + pad):
-            pad = int(get_pool_padding(free, pesize=self._pesize, reverse=True))
+            pad = int(lvm.get_pool_padding(free, pesize=self._pesize, reverse=True))
             free = self.container.align(free - pad) # round down
             log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s", size, free, self.container.name)
