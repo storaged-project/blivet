@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.50
+Version: 0.51
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,62 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon May 05 2014 Brian C. Lane <bcl@redhat.com> - 0.51-1
+- Adjust the available size on each disk using chunk size. (amulhern)
+- Removed some now unused methods from devices (#1085474) (amulhern)
+- Rename size() method to get_size() method. (amulhern)
+- Remove unused get_size method (#1085474) (amulhern)
+- Use raid.size method to get size of device (#1085474) (amulhern)
+- Add a size() method to the raid classes (#1085474) (amulhern)
+- Move line that might throw an MDRaid exception inside try block (#1085474)
+  (amulhern)
+- Check whether type is mdbiosraidarray before checking smallest member
+  (#1085474) (amulhern)
+- Log if there was a failure to calculate the size of the MDRaidArrayDevice
+  (#1085474) (amulhern)
+- Rename get_raw_array_size to get_net_array_size (#1085474) (amulhern)
+- Rename _get_size to _trim, which describes its function better (#1085474)
+  (amulhern)
+- Improve comments on a few methods (#1085474) (amulhern)
+- Make RAIDLevels iterable (#1085474) (amulhern)
+- Update makebumpver for python-bugzilla 1.0.0 (bcl)
+- Disable unused argument warning for 'key_file' in devicelibs.crypto methods
+  (amulhern)
+- Disable unused argument warning for 'del_passphrase' in luks_remove_key
+  (amulhern)
+- Disable unused argument warning for 'data' in doAutoPartition (amulhern)
+- Disable unused argument warning for 'info' in handleUdevLuksFormat (amulhern)
+- Disable unused argument warning for 'disks' in get_pv_space. (amulhern)
+- Remove pointless parameters from unittest methods. (amulhern)
+- Disable a no member warning for EddTestFS initializer. (amulhern)
+- Get rid of unused argument 'args' in MakeBumpVer constructors (amulhern)
+- Changes to _parseOneLine() and its single invocation. (amulhern)
+- Remove obsolete comment (amulhern)
+- Rename to avoid redefining parameter built-ins (amulhern)
+- Change name to avoid redefining built-in (amulhern)
+- Remove unused parameter in makeupdates. (amulhern)
+- Removed unused argument 'options' from testMount (amulhern)
+- Make signature of _setSize match that of the method it overrrides. (amulhern)
+- Actually use argv parameter (amulhern)
+- Pass fname as first argument to shutil.copy2 (amulhern)
+- Remove minimumSector method and _minimumSector attribute (amulhern)
+- Disable not-callable pylint warning. (amulhern)
+- Set child_factory_fstype to None in DeviceFactory (amulhern)
+- Suppress unpacking-non-sequence pylint warning (amulhern)
+- Prefix name with defining package (amulhern)
+- Update Platform instance from flags instead of replacing it. (#1090646)
+  (dlehman)
+- Rename to avoid redefining built-ins where the redefinition is method local.
+  (amulhern)
+- Set device.format in else block of try/except/else. (amulhern)
+- Do not run pylint on sphinx generated conf.py (amulhern)
+- Get rid of a redefined builtin while simplifying method. (amulhern)
+- Compress loop into generator list comprehension (amulhern)
+- Rewrite resize() method to depend on _resizable. (amulhern)
+- Remove definition of LVMThinLogicalVolumeDevice._resizable (amulhern)
+- Add an attribute docstring for _resizable. (amulhern)
+- Correct comment on resizable property (amulhern)
+
 * Thu Apr 24 2014 Brian C. Lane <bcl@redhat.com> - 0.50-1
 - Don't apply action until after all checks have passed. (dlehman)
 - Apply action for extended partition creation. (dlehman)
