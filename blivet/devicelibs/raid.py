@@ -245,38 +245,24 @@ class RAIDLevels(object):
        for its RAID levels.
     """
 
-    def __init__(self, levels=True):
+    def __init__(self, levels=None):
         """Add the specified standard levels to the levels in this object.
 
-           :param levels: the standard levels to be added to this object
-           :type levels: bool or a list of valid RAID level descriptors
+           :param levels: the levels to be added to this object
+           :type levels: list of valid RAID level descriptors
 
            If levels is True, add all standard levels. Else, levels
            must be a list of valid level descriptors of standard levels.
            Duplicate descriptors are ignored.
         """
-        self._raid_levels = []
-        if levels is False:
-            pass
-        elif levels is True:
-            for l in self.standard_levels:
-                self.addRaidLevel(l)
-        else:
-            try:
-                for level in levels:
-                    matches = [l for l in self.standard_levels if level in l.names]
-                    if len(matches) != 1:
-                        raise RaidError("invalid standard RAID level descriptor %s" % level)
-                    else:
-                        self.addRaidLevel(matches[0])
-            except TypeError:
-                raise RaidError("levels must be a boolean or an iterable")
-
-
-    _standard_levels = []
-
-    standard_levels = property(lambda s: s._standard_levels,
-       doc="any standard RAID level classes defined in this package.")
+        levels = levels or []
+        self._raid_levels = set()
+        for level in levels:
+            matches = [l for l in ALL_LEVELS if level in l.names]
+            if len(matches) != 1:
+                raise RaidError("invalid standard RAID level descriptor %s" % level)
+            else:
+                self.addRaidLevel(matches[0])
 
     @classmethod
     def isRaidLevel(cls, level):
@@ -291,12 +277,11 @@ class RAIDLevels(object):
            The name property must be defined; it should be one of the
            elements in the names list.
 
-           All RAID objects in standard_levels are guaranteed to pass these
+           All RAID objects that extend RAIDlevel are guaranteed to pass these
            minimum requirements.
 
            This method should not be overridden in any subclass so that it
-           is so restrictive that a RAID object in standard_levels does
-           not satisfy it.
+           is so restrictive that a RAIDlevel object does not satisfy it.
         """
         try:
             name = level.names[0]
@@ -306,23 +291,6 @@ class RAIDLevels(object):
         except (TypeError, AttributeError, IndexError):
             return False
         return True
-
-    @classmethod
-    def addRAIDLevelToStandardLevels(cls, level):
-        """Adds this RAID level to the internal list of standard RAID levels
-           defined in this package.
-
-           :param level: an object representing a RAID level
-           :type level: object
-
-           Raises a RaidError if level is not a valid RAID level.
-
-           Does not allow duplicate level objects.
-        """
-        if not cls.isRaidLevel(level):
-            raise RaidError('level is not a valid RAID level')
-        if not level in cls._standard_levels:
-            cls._standard_levels.append(level)
 
     def raidLevel(self, descriptor):
         """Return RAID object corresponding to descriptor.
@@ -338,7 +306,7 @@ class RAIDLevels(object):
         raise RaidError("invalid RAID level descriptor %s" % descriptor)
 
     def addRaidLevel(self, level):
-        """Adds level to the list of levels if it is not already there.
+        """Adds level to levels if it is not already there.
 
            :param object level: an object representing a RAID level
 
@@ -348,11 +316,12 @@ class RAIDLevels(object):
         """
         if not self.isRaidLevel(level):
             raise RaidError("level is not a valid RAID level")
-        if not level in self._raid_levels:
-            self._raid_levels.append(level)
+        self._raid_levels.add(level)
 
     def __iter__(self):
         return iter(self._raid_levels)
+
+ALL_LEVELS = RAIDLevels()
 
 class RAID0(RAIDLevel):
 
@@ -376,7 +345,7 @@ class RAID0(RAIDLevel):
         return member_count * 16
 
 RAID0 = RAID0()
-RAIDLevels.addRAIDLevelToStandardLevels(RAID0)
+ALL_LEVELS.addRaidLevel(RAID0)
 
 class RAID1(RAIDLevel):
     level = property(lambda s: "1")
@@ -399,7 +368,7 @@ class RAID1(RAIDLevel):
         return None
 
 RAID1 = RAID1()
-RAIDLevels.addRAIDLevelToStandardLevels(RAID1)
+ALL_LEVELS.addRaidLevel(RAID1)
 
 class RAID4(RAIDLevel):
     level = property(lambda s: "4")
@@ -422,7 +391,7 @@ class RAID4(RAIDLevel):
         return (member_count - 1) * 16
 
 RAID4 = RAID4()
-RAIDLevels.addRAIDLevelToStandardLevels(RAID4)
+ALL_LEVELS.addRaidLevel(RAID4)
 
 class RAID5(RAIDLevel):
     level = property(lambda s: "5")
@@ -445,7 +414,7 @@ class RAID5(RAIDLevel):
         return (member_count - 1) * 16
 
 RAID5 = RAID5()
-RAIDLevels.addRAIDLevelToStandardLevels(RAID5)
+ALL_LEVELS.addRaidLevel(RAID5)
 
 class RAID6(RAIDLevel):
     level = property(lambda s: "6")
@@ -468,7 +437,7 @@ class RAID6(RAIDLevel):
         return None
 
 RAID6 = RAID6()
-RAIDLevels.addRAIDLevelToStandardLevels(RAID6)
+ALL_LEVELS.addRaidLevel(RAID6)
 
 class RAID10(RAIDLevel):
     level = property(lambda s: "10")
@@ -491,4 +460,4 @@ class RAID10(RAIDLevel):
         return None
 
 RAID10 = RAID10()
-RAIDLevels.addRAIDLevelToStandardLevels(RAID10)
+ALL_LEVELS.addRaidLevel(RAID10)

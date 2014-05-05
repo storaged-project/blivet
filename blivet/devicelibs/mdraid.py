@@ -44,7 +44,7 @@ class MDRaidLevels(raid.RAIDLevels):
         except AttributeError:
             return False
 
-_RAID_levels = MDRaidLevels()
+_RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
 
 class Container(object):
     name = "container"

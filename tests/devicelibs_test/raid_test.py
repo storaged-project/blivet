@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import unittest
 
+import blivet.devicelibs.mdraid as mdraid
 import blivet.devicelibs.raid as raid
 import blivet.errors as errors
 from blivet.size import Size
@@ -8,8 +9,8 @@ from blivet.size import Size
 class RaidTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.levels = raid.RAIDLevels()
-        self.levels_none = raid.RAIDLevels(False)
+        self.levels = raid.RAIDLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
+        self.levels_none = raid.RAIDLevels([])
         self.levels_some = raid.RAIDLevels(["mirror", 6])
 
     def testRaid(self):
@@ -99,7 +100,7 @@ class RaidTestCase(unittest.TestCase):
         ##
         ## size
         ##
-        for r in raid.RAIDLevels():
+        for r in (l for l in raid.ALL_LEVELS if l is not mdraid.Container):
             self.assertEqual(r.get_size([ Size("32MiB"),
                                       Size("128MiB"),
                                       Size("128MiB"),
@@ -109,7 +110,7 @@ class RaidTestCase(unittest.TestCase):
                lambda x: Size(0)),
                r.get_net_array_size(4, Size("32MiB")))
 
-        for r in raid.RAIDLevels():
+        for r in (l for l in raid.ALL_LEVELS if l is not mdraid.Container):
             self.assertEqual(r.get_size([ Size("32MiB"),
                                       Size("128MiB"),
                                       Size("128MiB"),
@@ -119,7 +120,7 @@ class RaidTestCase(unittest.TestCase):
                lambda x: Size(0)),
                r.get_net_array_size(5, Size("32MiB")))
 
-        for r in raid.RAIDLevels():
+        for r in (l for l in raid.ALL_LEVELS if l is not mdraid.Container):
             self.assertEqual(r.get_size([ Size("32MiB"),
                                       Size("128MiB"),
                                       Size("128MiB"),
@@ -129,7 +130,7 @@ class RaidTestCase(unittest.TestCase):
                lambda x: Size("32MiB")),
                0)
 
-        for r in raid.RAIDLevels():
+        for r in (l for l in raid.ALL_LEVELS if l is not mdraid.Container):
             self.assertEqual(r.get_size([ Size("32MiB"),
                                       Size("128MiB"),
                                       Size("128MiB"),
