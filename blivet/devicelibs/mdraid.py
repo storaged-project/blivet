@@ -37,12 +37,11 @@ MD_CHUNK_SIZE = Size("512 KiB")
 class MDRaidLevels(raid.RAIDLevels):
     @classmethod
     def isRaidLevel(cls, level):
-        """Every mdraid level must define min_members."""
-        try:
-            min_members = level.min_members
-            return super(MDRaidLevels, cls).isRaidLevel(level) and min_members > 0
-        except AttributeError:
-            return False
+        return super(MDRaidLevels, cls).isRaidLevel(level) and \
+           hasattr(level, 'get_max_spares') and \
+           hasattr(level, 'get_base_member_size') and \
+           hasattr(level, 'get_recommended_stride') and \
+           hasattr(level, 'get_size')
 
 _RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "container"])
 
