@@ -470,3 +470,23 @@ class RAID10(RAIDn):
 
 RAID10 = RAID10()
 ALL_LEVELS.addRaidLevel(RAID10)
+
+class Container(RAIDLevel):
+    name = "container"
+    names = [name]
+    min_members = 1
+    def get_max_spares(self, member_count):
+        # pylint: disable=unused-argument
+        raise RaidError("get_max_spares is not defined for level container")
+    def get_base_member_size(self, size, member_count):
+        # pylint: disable=unused-argument
+        raise RaidError("get_base_member_size is not defined for level container")
+    def get_recommended_stride(self, member_count):
+        # pylint: disable=unused-argument
+        raise RaidError("get_recommended_stride is not defined for level container")
+    def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
+        # pylint: disable=unused-argument
+        return sum(member_sizes)
+
+Container = Container()
+ALL_LEVELS.addRaidLevel(Container)

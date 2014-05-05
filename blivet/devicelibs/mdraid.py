@@ -44,28 +44,7 @@ class MDRaidLevels(raid.RAIDLevels):
         except AttributeError:
             return False
 
-_RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
-
-class Container(object):
-    name = "container"
-    names = [name]
-    nick = None
-    min_members = 1
-    def get_recommended_stride(self, member_devices):
-        # pylint: disable=unused-argument
-        return None
-    def get_raw_array_size(self, member_count, smallest_member_size):
-        # pylint: disable=unused-argument
-        raise MDRaidError("get_raw_array_size is not defined for level container.")
-    def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
-        # pylint: disable=unused-argument
-        return sum(member_sizes)
-
-    def __str__(self):
-        return self.name
-
-Container = Container()
-_RAID_levels.addRaidLevel(Container)
+_RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "container"])
 
 def getRaidLevel(descriptor):
     """Return an object for this raid level descriptor.
