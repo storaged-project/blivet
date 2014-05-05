@@ -14,6 +14,10 @@ class RaidTestCase(unittest.TestCase):
 
     def testRaid(self):
 
+        self.assertRaisesRegexp(TypeError,
+           "Can't instantiate abstract class",
+           raid.ErsatzRAID)
+
         ##
         ## get_min_members
         ##
@@ -23,6 +27,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID5.min_members, 3)
         self.assertEqual(raid.RAID6.min_members, 4)
         self.assertEqual(raid.RAID10.min_members, 4)
+        self.assertEqual(raid.Linear.min_members, 1)
 
         ##
         ## get_max_spares
@@ -33,6 +38,8 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID5.get_max_spares(5), 2)
         self.assertEqual(raid.RAID6.get_max_spares(5), 1)
         self.assertEqual(raid.RAID10.get_max_spares(5), 1)
+        self.assertEqual(raid.Linear.get_max_spares(5), 4)
+        self.assertEqual(raid.Single.get_max_spares(5), 4)
 
         ##
         ## raidLevel
@@ -72,6 +79,10 @@ class RaidTestCase(unittest.TestCase):
                           4, 3)
         self.assertRaises(errors.RaidError, raid.RAID10.get_base_member_size,
                           -4, 4)
+        self.assertRaisesRegexp(errors.RaidError,
+           "not defined",
+           raid.Linear.get_base_member_size,
+           4, 3)
 
         ##
         ## get_net_array_size
@@ -94,51 +105,34 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID0.get_recommended_stride(4), 64)
         self.assertEqual(raid.RAID4.get_recommended_stride(4), 48)
         self.assertEqual(raid.RAID5.get_recommended_stride(4), 48)
+        self.assertIsNone(raid.Linear.get_recommended_stride(4))
 
         self.assertRaises(errors.RaidError, raid.RAID10.get_recommended_stride, 1)
 
         ##
         ## size
         ##
+        sizes = [Size("32MiB"), Size("128MiB"), Size("128MiB"), Size("64MiB")]
         for r in (l for l in raid.ALL_LEVELS if l is not raid.Container):
-            self.assertEqual(r.get_size([ Size("32MiB"),
-                                      Size("128MiB"),
-                                      Size("128MiB"),
-                                      Size("64MiB") ],
-               4,
-               Size("1MiB"),
-               lambda x: Size(0)),
-               r.get_net_array_size(4, Size("32MiB")))
+            self.assertEqual(r.get_size(sizes, 4, Size("1MiB"), lambda x: Size(0)),
+               r.get_net_array_size(4, Size("32MiB")) if isinstance(r, raid.RAIDn) else sum(sizes))
 
         for r in (l for l in raid.ALL_LEVELS if l is not raid.Container):
-            self.assertEqual(r.get_size([ Size("32MiB"),
-                                      Size("128MiB"),
-                                      Size("128MiB"),
-                                      Size("64MiB") ],
-               5,
-               Size("1MiB"),
-               lambda x: Size(0)),
-               r.get_net_array_size(5, Size("32MiB")))
+            self.assertEqual(r.get_size(sizes, 5, Size("1MiB"), lambda x: Size(0)),
+               r.get_net_array_size(5, Size("32MiB")) if isinstance(r, raid.RAIDn) else sum(sizes))
 
         for r in (l for l in raid.ALL_LEVELS if l is not raid.Container):
-            self.assertEqual(r.get_size([ Size("32MiB"),
-                                      Size("128MiB"),
-                                      Size("128MiB"),
-                                      Size("64MiB") ],
-               4,
-               Size("1MiB"),
-               lambda x: Size("32MiB")),
-               0)
+            self.assertEqual(r.get_size(sizes, 4, Size("1MiB"), lambda x: Size("32MiB")),
+               0 if isinstance(r, raid.RAIDn) else (sum(sizes) - 4 * Size("32MiB")))
 
         for r in (l for l in raid.ALL_LEVELS if l is not raid.Container):
-            self.assertEqual(r.get_size([ Size("32MiB"),
-                                      Size("128MiB"),
-                                      Size("128MiB"),
-                                      Size("64MiB") ],
-               4,
-               Size("2MiB"),
-               lambda x: Size("31MiB")),
-               0 if r not in (raid.RAID1, raid.RAID10) else r.get_net_array_size(4, Size("1MiB")))
+            if isinstance(r, raid.RAIDn):
+                if r not in (raid.RAID1, raid.RAID10):
+                    self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), 0)
+                else:
+                    self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), r.get_net_array_size(4, Size("1MiB")))
+            else:
+                self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), sum(sizes) - 4 * Size("31MiB"))
 
         ##
         ## names

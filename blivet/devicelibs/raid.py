@@ -490,3 +490,52 @@ class Container(RAIDLevel):
 
 Container = Container()
 ALL_LEVELS.addRaidLevel(Container)
+
+class ErsatzRAID(RAIDLevel):
+    """ A superclass for a raid level which is not really a raid level at
+        all, just a bunch of block devices of possibly differing sizes
+        thrown together. This concept has different names depending on where
+        it crops up. btrfs's name is single, lvm's is linear. Consequently,
+        this abstract class implements all the functionality, but there are
+        distinct subclasses which have different names.
+    """
+    min_members = 1
+
+    def get_max_spares(self, member_count):
+        return member_count - self.min_members
+
+    def get_base_member_size(self, size, member_count):
+        # pylint: disable=unused-argument
+        raise RaidError("get_base_member_size is not defined for level linear")
+
+    def get_recommended_stride(self, member_count):
+        # pylint: disable=unused-argument
+        return None
+
+    def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
+        # pylint: disable=unused-argument
+        if not member_sizes:
+            return 0
+
+        if superblock_size_func is None:
+            raise RaidError("superblock_size_func value of None is not acceptable")
+
+        total_space = sum(member_sizes)
+        superblock_size = superblock_size_func(total_space)
+        return total_space - len(member_sizes) * superblock_size
+
+class Linear(ErsatzRAID):
+    """ subclass with canonical lvm name """
+    name = 'linear'
+    names = [name]
+
+Linear = Linear()
+ALL_LEVELS.addRaidLevel(Linear)
+
+class Single(ErsatzRAID):
+    """ subclass with canonical btrfs name. """
+    name = 'single'
+    names = [name]
+
+Single = Single()
+ALL_LEVELS.addRaidLevel(Single)
