@@ -23,7 +23,7 @@
 import os
 
 from .. import util
-from ..errors import MDRaidError, RaidError
+from ..errors import MDRaidError
 from ..size import Size
 from . import raid
 
@@ -43,16 +43,7 @@ class MDRaidLevels(raid.RAIDLevels):
            hasattr(level, 'get_recommended_stride') and \
            hasattr(level, 'get_size')
 
-_RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "container"])
-
-def getRaidLevel(descriptor):
-    """Return an object for this raid level descriptor.
-       Raises an MDRaidError if the descriptor is not valid.
-    """
-    try:
-        return _RAID_levels.raidLevel(descriptor)
-    except RaidError as e:
-        raise MDRaidError(e.message)
+RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "container"])
 
 def get_raid_superblock_size(size, version=None):
     """ mdadm has different amounts of space reserved for its use depending

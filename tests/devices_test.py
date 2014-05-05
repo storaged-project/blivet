@@ -8,7 +8,7 @@ from mock import Mock
 import blivet
 
 from blivet.errors import DeviceError
-from blivet.errors import MDRaidError
+from blivet.errors import RaidError
 
 from blivet.devices import BTRFSSubVolumeDevice
 from blivet.devices import BTRFSVolumeDevice
@@ -365,18 +365,18 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         spares=lambda x, m: self.assertEqual(x, 1, m),
                         totalDevices=lambda x, m: self.assertEqual(x, 5, m))
 
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
                                 "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev")
 
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
                                 "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev",
                                 level="raid2")
 
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
                                 "invalid RAID level",
                                 MDRaidArrayDevice,
                                 "dev",
@@ -391,7 +391,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                 parents=[StorageDevice("parent",
                                                 fmt=getFormat("mdmember"))])
 
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
                                 "invalid RAID level descriptor junk",
                                 MDRaidArrayDevice,
                                 "dev",
@@ -407,10 +407,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def testMDRaidArrayDeviceMethods(self):
         """Test for method calls on initialized MDRaidDevices."""
-        with self.assertRaisesRegexp(MDRaidError, "invalid RAID level" ):
+        with self.assertRaisesRegexp(RaidError, "invalid RAID level" ):
             self.dev7.level = "junk"
 
-        with self.assertRaisesRegexp(MDRaidError, "invalid RAID level" ):
+        with self.assertRaisesRegexp(RaidError, "invalid RAID level" ):
             self.dev7.level = None
 
 class BTRFSDeviceTestCase(DeviceStateTestCase):

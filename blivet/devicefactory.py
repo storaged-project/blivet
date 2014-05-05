@@ -758,7 +758,7 @@ class DeviceFactory(object):
             if level in [None, "single"]:
                 continue
 
-            min_disks = mdraid.getRaidLevel(level).min_members
+            min_disks = mdraid.RAID_levels.raidLevel(level).min_members
             disks = set(d for m in self._get_member_devices() for d in m.disks)
             if len(disks) < min_disks:
                 raise DeviceFactoryError("Not enough disks for %s" % level)
@@ -1535,9 +1535,8 @@ class MDFactory(DeviceFactory):
 
     def _get_device_space(self):
         member_count = len(self._get_member_devices())
-        size_per_member = mdraid.getRaidLevel(self.raid_level).get_base_member_size(
-           self.size,
-           member_count)
+        raid_level = mdraid.RAID_levels.raidLevel(self.raid_level)
+        size_per_member = raid_level.get_base_member_size(self.size, member_count)
         size_per_member += mdraid.get_raid_superblock_size(self.size)
         return size_per_member * member_count
 

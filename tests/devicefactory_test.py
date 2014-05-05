@@ -5,7 +5,7 @@ import unittest
 import blivet
 
 from blivet import devicefactory
-from blivet.errors import MDRaidError, RaidError
+from blivet.errors import RaidError
 from blivet.size import Size
 
 class MDFactoryTestCase(unittest.TestCase):
@@ -26,11 +26,11 @@ class MDFactoryTestCase(unittest.TestCase):
            raid_level=0)
 
     def testMDFactory(self):
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
            "invalid RAID level",
            self.factory1._get_device_space)
 
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
            "invalid RAID level",
            self.factory1._configure)
 
@@ -38,7 +38,7 @@ class MDFactoryTestCase(unittest.TestCase):
 
         self.assertIsNone(self.factory1.get_container())
 
-        self.assertRaisesRegexp(MDRaidError,
+        self.assertRaisesRegexp(RaidError,
            "invalid RAID level",
            self.factory1._get_new_device,
            parents=[])

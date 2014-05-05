@@ -3350,7 +3350,7 @@ class MDRaidArrayDevice(ContainerDevice):
             :param type:  a valid raid level descriptor
             :returns:     None
         """
-        self._level = mdraid.getRaidLevel(value) # pylint: disable=attribute-defined-outside-init
+        self._level = mdraid.RAID_levels.raidLevel(value) # pylint: disable=attribute-defined-outside-init
 
     @property
     def createBitmap(self):
