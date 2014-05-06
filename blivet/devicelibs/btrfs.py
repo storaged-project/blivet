@@ -35,6 +35,8 @@ MAIN_VOLUME_ID = 5
 
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single"])
 
+metadata_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single", "dup"])
+
 def btrfs(args, capture=False):
     if capture:
         exec_func = util.capture_output
@@ -54,7 +56,10 @@ def create_volume(devices, label=None, data=None, metadata=None):
        Optional arguments label, data, metadata corresponds to flags
        accepted by mkfs.btrfs.
 
-       For now, data and metadata must be strings mkfs.btrfs understands.
+       :param data: a raid level for data
+       :type data: :class:`~.devicelibs.raid.RAIDLevel`
+       :param metadata: a raid level for metadata
+       :type metadata: :class:`~.devicelibs.raid.RAIDLevel`
     """
     if not devices:
         raise ValueError("no devices specified")

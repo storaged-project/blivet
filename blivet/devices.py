@@ -35,6 +35,7 @@ from .devicelibs import dm
 from .devicelibs import loop
 from .devicelibs import btrfs
 from .devicelibs import crypto
+from .devicelibs import raid
 import parted
 import _ped
 import block
@@ -4721,10 +4722,17 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     _formatUUIDAttr = property(lambda s: "volUUID")
 
     def __init__(self, *args, **kwargs):
-        self.dataLevel = kwargs.pop("dataLevel", None)
-        self.metaDataLevel = kwargs.pop("metaDataLevel", None)
+
+        # pop these arguments before the constructor call to avoid
+        # unrecognized keyword error in superclass constructor
+        dataLevel = kwargs.pop("dataLevel", None)
+        metaDataLevel = kwargs.pop("metaDataLevel", None)
 
         super(BTRFSVolumeDevice, self).__init__(*args, **kwargs)
+
+        # assign after constructor to avoid AttributeErrors in setter functions
+        self.dataLevel = dataLevel
+        self.metaDataLevel = metaDataLevel
 
         self.subvolumes = []
         self.size_policy = self.size
@@ -4741,6 +4749,62 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         self._defaultSubVolumeID = None
 
+    @property
+    def dataLevel(self):
+        """ Return the RAID level for data.
+
+            :returns: raid level
+            :rtype: an object that represents a raid level
+        """
+        return self._dataLevel
+
+    @dataLevel.setter
+    def dataLevel(self, value):
+        """ Set the RAID level for data.
+
+            :param value: new raid level
+            :param type:  a valid raid level descriptor
+            :returns:     None
+
+            If no raid level is specified then the best choice is single
+            since it can accomodate devices of different sizes.
+        """
+        # pylint: disable=attribute-defined-outside-init
+        if value is None:
+            self._dataLevel = btrfs.RAID_levels.raidLevel("single")
+        else:
+            self._dataLevel = btrfs.RAID_levels.raidLevel(value)
+
+    @property
+    def metaDataLevel(self):
+        """ Return the RAID level for metadata.
+
+            :returns: raid level
+            :rtype: an object that represents a raid level
+        """
+        return self._metaDataLevel
+
+    @metaDataLevel.setter
+    def metaDataLevel(self, value):
+        """ Set the RAID level for metadata.
+
+            :param value: new raid level
+            :param type:  a valid raid level descriptor
+            :returns:     None
+
+            If no raid level is specified and there are multiple devices,
+            best choice is the default that mkfs.btrfs chooses, raid1.
+            If there is only one device, the best default is dup.
+        """
+        # pylint: disable=attribute-defined-outside-init
+        if value is None:
+            if len(self.parents) > 1:
+                self._metaDataLevel = btrfs.metadata_levels.raidLevel("raid1")
+            else:
+                self._metaDataLevel = btrfs.metadata_levels.raidLevel("dup")
+        else:
+            self._metaDataLevel = btrfs.RAID_levels.raidLevel(value)
+
     def _setFormat(self, fmt):
         """ Set the Device's format. """
         super(BTRFSVolumeDevice, self)._setFormat(fmt)
@@ -4751,28 +4815,24 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def _getSize(self):
         size = sum([d.size for d in self.parents])
-        if self.dataLevel in ("raid1", "raid10"):
+        if self.dataLevel in (raid.RAID1, raid.RAID10):
             size /= len(self.parents)
 
         return size
 
     def _removeParent(self, member):
-        # btrfs won't let you degrade it
-        limits = []
-        levels = btrfs.RAID_levels
-        if self.dataLevel and self.dataLevel != "single":
-            limits.append(levels.raidLevel(self.dataLevel).min_members)
+        """ Raises a DeviceError if the device has a raid level and the
+            resulting number of parents would be fewer than the minimum
+            number required by the raid level.
 
-        if self.metaDataLevel and self.metaDataLevel != "single":
-            limits.append(levels.raidLevel(self.metaDataLevel).min_members)
-
-        if limits:
-            min_members = min(limits)
-
-        if limits and len(self.parents) - 1 < min_members:
-            raise errors.DeviceError("cannot remove member due to raid level "
-                              "constraints")
-
+            Note: btrfs does not permit degrading an array.
+        """
+        levels = [l for l in [self.dataLevel, self.metaDataLevel] if l]
+        if levels:
+            min_level = min(levels, key=lambda l: l.min_members)
+            min_members = min_level.min_members
+            if len(self.parents) - 1 < min_members:
+                raise errors.DeviceError("device %s requires at least %d membersfor raid level %s" % (self.name, min_members, min_level))
         super(BTRFSVolumeDevice, self)._removeParent(member)
 
     def _addSubVolume(self, vol):
@@ -4898,8 +4958,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def populateKSData(self, data):
         super(BTRFSVolumeDevice, self).populateKSData(data)
-        data.dataLevel = self.dataLevel
-        data.metaDataLevel = self.metaDataLevel
+        data.dataLevel = self.dataLevel.name if self.dataLevel else None
+        data.metaDataLevel = self.metaDataLevel.name if self.metaDataLevel else None
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
         data.preexist = self.exists
 
