@@ -27,6 +27,7 @@ from .formats import getFormat
 from .devicelibs import btrfs
 from .devicelibs import mdraid
 from .devicelibs import lvm
+from .devicelibs import raid
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
@@ -236,8 +237,8 @@ class DeviceFactory(object):
             :keyword label: filesystem label text
             :type label: str
 
-            :keyword raid_level: raid level string, eg: "raid1"
-            :type raid_level: str
+            :keyword raid_level: raid level descriptor
+            :type raid_level: any valid RAID level descriptor
             :keyword encrypted: whether to encrypt (boolean)
             :type encrypted: bool
             :keyword name: name of requested device
@@ -255,7 +256,7 @@ class DeviceFactory(object):
             :keyword container_name: name of requested container
             :type container_name: str
             :keyword container_raid_level: raid level for container
-            :type container_raid_level: str
+            :type container_raid_level: any valid RAID level descriptor
             :keyword container_encrypted: whether to encrypt the container
             :type container_encrypted: bool
             :keyword container_size: requested container size
@@ -306,6 +307,41 @@ class DeviceFactory(object):
         self.__names = []
         self.__roots = []
 
+    @property
+    def raid_level(self):
+        return self._raid_level
+
+    @raid_level.setter
+    def raid_level(self, value):
+        """ Sets the RAID level for the factory.
+
+            :param value: new RAID level
+            :param type: a valid RAID level descriptor
+            :returns: None
+        """
+        # pylint: disable=attribute-defined-outside-init
+        if value is None:
+            self._raid_level = None
+        else:
+            self._raid_level = raid.ALL_LEVELS.raidLevel(value)
+
+    @property
+    def container_raid_level(self):
+        return self._container_raid_level
+
+    @container_raid_level.setter
+    def container_raid_level(self, value):
+        """ Sets the RAID level for the factory.
+
+            :param value: new RAID level
+            :param type: a valid RAID level descriptor
+            :returns: None
+        """
+        # pylint: disable=attribute-defined-outside-init
+        if value is None:
+            self._container_raid_level = None
+        else:
+            self._container_raid_level = raid.ALL_LEVELS.raidLevel(value)
     #
     # methods related to device size and disk space requirements
     #
@@ -758,12 +794,11 @@ class DeviceFactory(object):
         # device or container raid level.
         for level_attr in ["raid_level", "container_raid_level"]:
             level = getattr(self, level_attr, None)
-            if level in [None, "single"]:
+            if level is None:
                 continue
 
-            min_disks = mdraid.RAID_levels.raidLevel(level).min_members
             disks = set(d for m in self._get_member_devices() for d in m.disks)
-            if len(disks) < min_disks:
+            if len(disks) < level.min_members:
                 raise DeviceFactoryError("Not enough disks for %s" % level)
 
         # Configure any type-specific container device. The obvious example of
@@ -1536,10 +1571,14 @@ class MDFactory(DeviceFactory):
     child_factory_fstype = "mdmember"
     size_set_class = SameSizeSet
 
+    def __init__(self, storage, size, disks, **kwargs):
+        super(MDFactory, self).__init__(storage, size, disks, **kwargs)
+        if not self.raid_level:
+            raise DeviceFactoryError("MDFactory class must have some RAID level.")
+
     def _get_device_space(self):
         member_count = len(self._get_member_devices())
-        raid_level = mdraid.RAID_levels.raidLevel(self.raid_level)
-        size_per_member = raid_level.get_base_member_size(self.size, member_count)
+        size_per_member = self.raid_level.get_base_member_size(self.size, member_count)
         size_per_member += mdraid.get_raid_superblock_size(self.size)
         return size_per_member * member_count
 
@@ -1581,11 +1620,11 @@ class BTRFSFactory(DeviceFactory):
             log.info("overriding encryption setting for btrfs factory")
             self.encrypted = False
 
-        self.container_raid_level = self.container_raid_level or "single"
-        if self.container_raid_level == "single":
-            self.size_set_class = TotalSizeSet
-        else:
+        self.container_raid_level = self.container_raid_level or btrfs.RAID_levels.raidLevel("single")
+        if self.container_raid_level.is_uniform:
             self.size_set_class = SameSizeSet
+        else:
+            self.size_set_class = TotalSizeSet
 
     def _handle_no_size(self):
         """ Set device size so that it grows to the largest size possible. """
@@ -1620,9 +1659,9 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_device_space(self):
         # until we get/need something better
-        if self.container_raid_level in ("single", "raid0"):
+        if self.container_raid_level in (raid.Single, raid.RAID0):
             return self.size
-        elif self.container_raid_level in ("raid1", "raid10"):
+        elif self.container_raid_level in (raid.RAID1, raid.RAID10):
             return self.size * len(self._get_member_devices())
 
     @property
