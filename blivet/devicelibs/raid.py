@@ -34,17 +34,38 @@ def div_up(a,b):
     return (a + (b - 1))//b
 
 class RAIDLevel(object):
+    """An abstract class which is the parent of all classes which represent
+       a RAID level.
+
+       It ensures that RAIDLevel objects will really be singleton objects
+       by overriding copy methods.
+    """
+    __metaclass__ = abc.ABCMeta
+
+    name = abc.abstractproperty(doc="The canonical name for this level")
+    names = abc.abstractproperty(doc="List of recognized names for this level.")
+    min_members = abc.abstractproperty(doc=
+       "The minimum number of members required to make a fully functioning array.")
+
+    def __str__(self):
+        return self.name
+
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        # pylint: disable=unused-argument
+        return self
+
+class RAIDn(RAIDLevel):
 
     """An abstract class which is the parent of classes which represent a
-       RAID level. A better word would be classification, since 'level'
+       numeric RAID level. A better word would be classification, since 'level'
        implies an ordering, but level is the canonical word.
 
        The abstract properties of the class are:
 
        - level: A string containing the number that designates this level
-
-       - min_members: The minimum number of members required for this
-           level to be sensibly used.
 
        - nick: A single nickname for this level, may be None
 
@@ -66,10 +87,6 @@ class RAIDLevel(object):
 
     # ABSTRACT PROPERTIES
     level = abc.abstractproperty(doc="A code representing the level")
-
-    min_members = abc.abstractproperty(
-       doc="The minimum number of members required for this level")
-
     nick = abc.abstractproperty(doc="A nickname for this level")
 
     # PROPERTIES
@@ -234,10 +251,6 @@ class RAIDLevel(object):
         min_data_size = self._trim(min_size - superblock_size, chunk_size)
         return self.get_net_array_size(num_members, min_data_size)
 
-    def __str__(self):
-        return self.name
-
-
 class RAIDLevels(object):
     """A class which keeps track of registered RAID levels. This class
        may be extended, overriding the isRaid method to include any
@@ -283,14 +296,7 @@ class RAIDLevels(object):
            This method should not be overridden in any subclass so that it
            is so restrictive that a RAIDlevel object does not satisfy it.
         """
-        try:
-            name = level.names[0]
-            name = level.name
-            if name not in level.names:
-                return False
-        except (TypeError, AttributeError, IndexError):
-            return False
-        return True
+        return len(level.names) > 0 and level.name in level.names
 
     def raidLevel(self, descriptor):
         """Return RAID object corresponding to descriptor.
@@ -323,7 +329,7 @@ class RAIDLevels(object):
 
 ALL_LEVELS = RAIDLevels()
 
-class RAID0(RAIDLevel):
+class RAID0(RAIDn):
 
     level = property(lambda s: "0")
     min_members = property(lambda s: 2)
@@ -347,7 +353,7 @@ class RAID0(RAIDLevel):
 RAID0 = RAID0()
 ALL_LEVELS.addRaidLevel(RAID0)
 
-class RAID1(RAIDLevel):
+class RAID1(RAIDn):
     level = property(lambda s: "1")
     min_members = property(lambda s: 2)
     nick = property(lambda s: "mirror")
@@ -370,7 +376,7 @@ class RAID1(RAIDLevel):
 RAID1 = RAID1()
 ALL_LEVELS.addRaidLevel(RAID1)
 
-class RAID4(RAIDLevel):
+class RAID4(RAIDn):
     level = property(lambda s: "4")
     min_members = property(lambda s: 3)
     nick = property(lambda s: None)
@@ -393,7 +399,7 @@ class RAID4(RAIDLevel):
 RAID4 = RAID4()
 ALL_LEVELS.addRaidLevel(RAID4)
 
-class RAID5(RAIDLevel):
+class RAID5(RAIDn):
     level = property(lambda s: "5")
     min_members = property(lambda s: 3)
     nick = property(lambda s: None)
@@ -416,7 +422,7 @@ class RAID5(RAIDLevel):
 RAID5 = RAID5()
 ALL_LEVELS.addRaidLevel(RAID5)
 
-class RAID6(RAIDLevel):
+class RAID6(RAIDn):
     level = property(lambda s: "6")
     min_members = property(lambda s: 4)
     nick = property(lambda s: None)
@@ -439,7 +445,7 @@ class RAID6(RAIDLevel):
 RAID6 = RAID6()
 ALL_LEVELS.addRaidLevel(RAID6)
 
-class RAID10(RAIDLevel):
+class RAID10(RAIDn):
     level = property(lambda s: "10")
     min_members = property(lambda s: 4)
     nick = property(lambda s: None)
