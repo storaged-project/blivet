@@ -21,13 +21,13 @@
 #
 
 import os
-import copy
 
 from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
 from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
 from .. import arch
+from .. import util
 from ..flags import flags
 from ..udev import udev_settle
 from ..i18n import _, N_
@@ -78,21 +78,10 @@ class DiskLabel(DeviceFormat):
         """ Create a deep copy of a Disklabel instance.
 
             We can't do copy.deepcopy on parted objects, which is okay.
-            For these parted objects, we just do a shallow copy.
         """
-        new = self.__class__.__new__(self.__class__)
-        memo[id(self)] = new
-        shallow_copy_attrs = ('_partedDevice', '_alignment', '_endAlignment')
-        duplicate_attrs = ('_partedDisk', '_origPartedDisk')
-        for (attr, value) in self.__dict__.items():
-            if attr in shallow_copy_attrs:
-                setattr(new, attr, copy.copy(value))
-            elif attr in duplicate_attrs:
-                setattr(new, attr, value.duplicate())
-            else:
-                setattr(new, attr, copy.deepcopy(value, memo))
-
-        return new
+        return util.variable_copy(self, memo,
+           shallow=('_partedDevice', '_alignment', '_endAlignment'),
+           duplicate=('_partedDisk', '_origPartedDisk'))
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)

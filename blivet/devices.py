@@ -249,19 +249,9 @@ class Device(util.ObjectID):
             We can't do copy.deepcopy on parted objects, which is okay.
             For these parted objects, we just do a shallow copy.
         """
-        new = self.__class__.__new__(self.__class__)
-        memo[id(self)] = new
-        dont_copy_attrs = ('_raidSet', 'node')
-        shallow_copy_attrs = ('_partedDevice', '_partedPartition')
-        for (attr, value) in self.__dict__.items():
-            if attr in dont_copy_attrs:
-                setattr(new, attr, value)
-            elif attr in shallow_copy_attrs:
-                setattr(new, attr, copy.copy(value))
-            else:
-                setattr(new, attr, copy.deepcopy(value, memo))
-
-        return new
+        return util.variable_copy(self, memo,
+           omit=('_raidSet', 'node'),
+           shallow=('_partedDevice', '_partedPartition'))
 
     def __repr__(self):
         s = ("%(type)s instance (%(id)s) --\n"

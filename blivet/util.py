@@ -1,3 +1,4 @@
+import copy
 import itertools
 import os
 import shutil
@@ -396,3 +397,40 @@ def create_sparse_file(path, size):
     fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
     os.ftruncate(fd, size)
     os.close(fd)
+
+def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
+    """ A configurable copy function. Any attributes not specified in omit,
+        shallow, or duplicate are copied using copy.deepcopy().
+
+        :param object obj: a python object to be copied.
+        :param dict memo: a dictionary of already copied items
+        :param omit: a list of names of attributes not to copy
+        :type omit: iterable of str
+        :param shallow: a list of names of attributes to shallow copy
+        :type shallow: iterable of str
+        :param duplicate: a list of names of attributes to duplicate
+        :type duplicate: iterable of str
+
+        Note that all atrributes in duplicate must implement a duplicate()
+        method that does what is expected of it. Attributes with type
+        pyparted.Disk are known to do so.
+
+        A shallow copy is implemented by calling copy.copy().
+    """
+    omit = omit or []
+    shallow = shallow or []
+    duplicate = duplicate or []
+
+    new = obj.__class__.__new__(obj.__class__)
+    memo[id(obj)] = new
+    for (attr, value) in obj.__dict__.items():
+        if attr in omit or value == None:
+            setattr(new, attr, value)
+        elif attr in shallow:
+            setattr(new, attr, copy.copy(value))
+        elif attr in duplicate:
+            setattr(new, attr, value.duplicate())
+        else:
+            setattr(new, attr, copy.deepcopy(value, memo))
+
+    return new
