@@ -1734,7 +1734,10 @@ class Blivet(object):
         """ Dump the current device list to the storage shelf. """
         key = "devices.%d.%s" % (time.time(), suffix)
         with contextlib.closing(shelve.open(self._dumpFile)) as shelf:
-            shelf[key] = [d.dict for d in self.devices]
+            try:
+                shelf[key] = [d.dict for d in self.devices]
+            except AttributeError:
+                log_exception_info()
 
     @property
     def packages(self):
