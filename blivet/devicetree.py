@@ -1215,10 +1215,14 @@ class DeviceTree(object):
             log.error("Unknown block device type for: %s", name)
             return
 
+        if not device:
+            log.debug("no device obtained for %s", name)
+            return
+
         # If this device is protected, mark it as such now. Once the tree
         # has been populated, devices' protected attribute is how we will
         # identify protected devices.
-        if device and device.name in self.protectedDevNames:
+        if device.name in self.protectedDevNames:
             device.protected = True
             # if this is the live backing device we want to mark its parents
             # as protected also
@@ -1229,23 +1233,16 @@ class DeviceTree(object):
         # If we just added a multipath or fwraid disk that is in exclusiveDisks
         # we have to make sure all of its members are in the list too.
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
-        if device and device.isDisk and isinstance(device, mdclasses):
+        if device.isDisk and isinstance(device, mdclasses):
             if device.name in self.exclusiveDisks:
                 for parent in device.parents:
                     if parent.name not in self.exclusiveDisks:
                         self.exclusiveDisks.append(parent.name)
 
-        # Don't try to do format handling on drives without media or
-        # if we didn't end up with a device somehow.
-        if not device or not device.mediaPresent:
-            log.debug("no device or no media present")
-            return
+        log.info("got device: %r", device)
 
         # now handle the device's formatting
         self.handleUdevDeviceFormat(info, device)
-        log.info("got device: %r", device)
-        if device.format.type:
-            log.info("got format: %r", device.format)
         device.originalFormat = copy.copy(device.format)
         device.deviceLinks = udev.udev_device_get_symlinks(info)
 
@@ -1739,6 +1736,14 @@ class DeviceTree(object):
 
     def handleUdevDeviceFormat(self, info, device):
         log_method_call(self, name=getattr(device, "name", None))
+
+        if not info:
+            log.debug("no information for device %s", device.name)
+            return
+        if not device.mediaPresent:
+            log.debug("no media present for device %s", device.name)
+            return
+
         name = udev.udev_device_get_name(info)
         uuid = udev.udev_device_get_uuid(info)
         label = udev.udev_device_get_label(info)
@@ -1831,6 +1836,8 @@ class DeviceTree(object):
         try:
             log.info("type detected on '%s' is '%s'", name, format_type)
             device.format = formats.getFormat(*args, **kwargs)
+            if device.format.type:
+                log.info("got format: %s", device.format)
         except FSError:
             log.warning("type '%s' on '%s' invalid, assuming no format",
                       format_type, name)
@@ -1861,10 +1868,7 @@ class DeviceTree(object):
         udev.udev_settle()
         info = udev.udev_get_device(device.sysfsPath)
 
-        if info:
-            self.handleUdevDeviceFormat(info, device)
-            if device.format.type:
-                log.info("got format: %s", device.format)
+        self.handleUdevDeviceFormat(info, device)
 
     def _handleInconsistencies(self):
         for vg in [d for d in self.devices if d.type == "lvmvg"]:
