@@ -105,7 +105,7 @@ class DiskLabel(DeviceFormat):
               "  origPartedDisk = %(orig_disk)r\n"
               "  partedDevice = %(dev)s\n" %
               {"type": self.labelType, "count": len(self.partitions),
-               "sectorSize": self.partedDevice.sectorSize,
+               "sectorSize": self.sectorSize,
                "offset": self.alignment.offset,
                "grain": self.alignment.grainSize,
                "disk": self.partedDisk, "orig_disk": self._origPartedDisk,
@@ -124,7 +124,7 @@ class DiskLabel(DeviceFormat):
 
         d.update({"labelType": self.labelType,
                   "partitionCount": len(self.partitions),
-                  "sectorSize": self.partedDevice.sectorSize,
+                  "sectorSize": self.sectorSize,
                   "offset": self.alignment.offset,
                   "grainSize": self.alignment.grainSize})
         return d
@@ -211,6 +211,14 @@ class DiskLabel(DeviceFormat):
             log_exception_info()
             lt = self._labelType
         return lt
+
+    @property
+    def sectorSize(self):
+        try:
+            return self.partedDevice.sectorSize
+        except AttributeError:
+            log_exception_info()
+            return None
 
     @property
     def name(self):
