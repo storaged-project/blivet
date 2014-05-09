@@ -1,5 +1,3 @@
-^blivet/devices.py:[[:digit:]]+: \[W0105\(pointless\-string\-statement\), ParentList.__init__\] String statement has no effect$
-^blivet/devices.py:[[:digit:]]+: \[W0105\(pointless\-string\-statement\), StorageDevice] String statement has no effect$
 ^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
 ^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
 ^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$

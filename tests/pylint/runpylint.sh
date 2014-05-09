@@ -47,6 +47,7 @@ export NON_STRICT_OPTIONS="--disable=W0212"
 # E1103 - %s %r has no %r member (but some types could not be inferred)
 export DISABLED_ERR_OPTIONS="--disable=E1103"
 
+# W0105 - String statement has no effect
 # W0110 - map/filter on lambda could be replaced by comprehension
 # W0141 - Used builtin function %r
 # W0142 - Used * or ** magic
@@ -54,7 +55,7 @@ export DISABLED_ERR_OPTIONS="--disable=E1103"
 # W0603 - Using the global statement
 # W0614 - Unused import %s from wildcard import
 # I0011 - Locally disabling %s (i.e., pylint: disable)
-export DISABLED_WARN_OPTIONS="--disable=W0110,W0141,W0142,W0511,W0603,W0614,I0011"
+export DISABLED_WARN_OPTIONS="--disable=W0105,W0110,W0141,W0142,W0511,W0603,W0614,I0011"
 
 usage () {
   echo "usage: `basename $0` [--strict] [--help] [files...]"
