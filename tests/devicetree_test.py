@@ -1,5 +1,6 @@
+import unittest
 
-from imagebackedtestcase import ImageBackedTestCase
+from tests.imagebackedtestcase import ImageBackedTestCase
 
 from blivet.size import Size
 from blivet import devicelibs
@@ -20,10 +21,10 @@ def recursive_getattr(x, attr, default=None):
     """ Resolve a possibly-dot-containing attribute name. """
     val = x
     for sub_attr in attr.split("."):
-	try:
-	    val = getattr(val, sub_attr)
-	except AttributeError:
-	    return default
+        try:
+            val = getattr(val, sub_attr)
+        except AttributeError:
+            return default
 
     return val
 
@@ -51,7 +52,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
             attr_dict = {}
             device._partedDevice = None # force update from disk for size, &c
             for attr in self._validate_attrs:
-               attr_dict[attr] = recursive_getattr(device, attr)
+                attr_dict[attr] = recursive_getattr(device, attr)
 
             self.device_attr_dicts.append(attr_dict)
 
@@ -79,6 +80,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
 
     def skip_attr(self, device, attr):
         """ Return True if attr should not be checked for device. """
+        # pylint: disable=unused-argument
         return False
 
     def find_device(self, attr_dict):
@@ -153,7 +155,7 @@ class LVMRaidTestCase(BlivetResetTestCase):
                           container_size=devicefactory.SIZE_POLICY_MAX)
 
     def setUp(self):
-        super(BlivetResetTestCase, self).setUp()
+        super(BlivetResetTestCase, self).setUp() # pylint: disable=bad-super-call
         vg_name = self.blivet.vgs[0].name
         util.run_program(["lvcreate", "-n", "raid", "--type", "raid1",
                           "-L", "100%", vg_name])
