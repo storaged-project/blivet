@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.51
+Version: 0.52
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,50 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu May 08 2014 Brian C. Lane <bcl@redhat.com> - 0.52-1
+- Split ROOT_PATH usage into getTargetPhysicalRoot()/getSysroot() (walters)
+- Update and fix copyright info for docs. (dlehman)
+- Add some tests for extended partition management. (dlehman)
+- Add some tests that verify the results of DeviceTree.populate. (dlehman)
+- Add a base class for tests backed by disk image storage. (dlehman)
+- Adapt examples to examples/common.py function dispersement. (dlehman)
+- Change devices.SparseFileDevice._create to use util.create_sparse_file.
+  (dlehman)
+- Move set_up_logging and create_sparse_file into blivet.util for reuse.
+  (dlehman)
+- Make examples.common.tear_down_disk_images a DeviceTree method. (dlehman)
+- Fix handling of devices activated as a side-effect of actions. (dlehman)
+- Check for problematic active devices before processing any actions. (dlehman)
+- Split some large blocks out of DeviceTree.processActions. (dlehman)
+- Explicitly requested extended partitions already have an action. (dlehman)
+- Fix handling of extended partitions across various modes of operation.
+  (dlehman)
+- Handle the case of md arrays getting activated from outside blivet. (dlehman)
+- Make an extra effort to remove dm partition nodes that want to stay.
+  (dlehman)
+- Fix handling of clearing a partitioned disk and leaving it cleared. (dlehman)
+- Don't check for disklabels on partitions. (dlehman)
+- Update targetSize to reflect actual size after a device is created. (dlehman)
+- Remove redundant msecs from logging timestamp. (dlehman)
+- Make signature of Size.__new__ match signature of Decimal.__new__ (amulhern)
+- Change Size so that it takes a single value parameter. (amulhern)
+- Change all 'format' keyword args to 'fmt' in Device constructors (amulhern)
+- Change format keyword argument to fmt in scheduleCreateFormat (amulhern)
+- Change keyword parameters in devicetree.findActions (amulhern)
+- Change ActionCreateFormat constructor keyword argument to 'fmt' (amulhern)
+- Remove unused parameter 'ignoreErrors' from umountFilesystems() (amulhern)
+- Remove parameter 'raiseErrors' from mountFilesystems() methods. (amulhern)
+- Disable unused argument warning for 'major' and 'minor' (amulhern)
+- Set dummy functions as values rather than via function definition syntax.
+  (amulhern)
+- Pass size value to superconstructor for LVMVolumeGroupDevice. (amulhern)
+- Sort the pylint-false-positives file (amulhern)
+- Do not disable unused argument warning. (amulhern)
+- Omit pylint warning about disabled warnings or errors from pylint log.
+  (amulhern)
+- Put the pyblock warning in pylint-false-positives (amulhern)
+- Remove obsolete documentation for parameter 'label'. (amulhern)
+
 * Mon May 05 2014 Brian C. Lane <bcl@redhat.com> - 0.51-1
 - Adjust the available size on each disk using chunk size. (amulhern)
 - Removed some now unused methods from devices (#1085474) (amulhern)
