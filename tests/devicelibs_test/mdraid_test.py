@@ -3,6 +3,7 @@ import os
 import unittest
 import time
 
+import blivet.devicelibs.raid as raid
 import blivet.devicelibs.mdraid as mdraid
 from blivet.errors import MDRaidError
 from blivet.size import Size
@@ -75,12 +76,12 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         ## mdcreate
         ##
         # pass
-        self.assertEqual(mdraid.mdcreate(self._dev_name, 1, [_LOOP_DEV0, _LOOP_DEV1]), None)
+        self.assertEqual(mdraid.mdcreate(self._dev_name, raid.RAID1, [_LOOP_DEV0, _LOOP_DEV1]), None)
         # wait for raid to settle
         time.sleep(2)
 
         # fail
-        self.assertRaises(MDRaidError, mdraid.mdcreate, "/dev/md1", 1, ["/not/existing/dev0", "/not/existing/dev1"])
+        self.assertRaises(MDRaidError, mdraid.mdcreate, "/dev/md1", "raid1", ["/not/existing/dev0", "/not/existing/dev1"])
 
         ##
         ## mddeactivate

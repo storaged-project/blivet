@@ -114,6 +114,22 @@ def mdadm(args):
         raise MDRaidError("running mdadm " + " ".join(args) + " failed")
 
 def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False):
+    """ Create an mdarray from a list of devices.
+
+        :param str device: the path for the array
+        :param level: the level of the array
+        :type level: :class:`~.devicelibs.raid.RAIDLevel` or string
+        :param disks: the members of the array
+        :type disks: list of str
+        :param int spares: the number of spares in the array
+        :param str metadataVer: one of the mdadm metadata versions
+        :param bool bitmap: whether to create an internal bitmap on the device
+
+        Note that if the level is specified as a string, rather than by means
+        of a RAIDLevel object, it is not checked for validity. It is the
+        responsibility of the invoking method to verify that mdadm recognizes
+        the string.
+    """
     argv = ["--create", device, "--run", "--level=%s" % level]
     raid_devs = len(disks) - spares
     argv.append("--raid-devices=%d" % raid_devs)
