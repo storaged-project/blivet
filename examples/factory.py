@@ -10,9 +10,9 @@ set_up_logging()
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
-disk1_file = create_sparse_tempfile("disk1", Size(spec="100GiB"))
+disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
 b.config.diskImages["disk1"] = disk1_file
-disk2_file = create_sparse_tempfile("disk2", Size(spec="100GiB"))
+disk2_file = create_sparse_tempfile("disk2", Size("100GiB"))
 b.config.diskImages["disk2"] = disk2_file
 
 b.reset()
@@ -25,13 +25,13 @@ try:
 
     # create an lv named data in a vg named testvg
     device = b.factoryDevice(blivet.devicefactory.DEVICE_TYPE_LVM,
-                             Size(spec="50GiB"), disks=[disk1, disk2],
+                             Size("50GiB"), disks=[disk1, disk2],
                              fstype="xfs", mountpoint="/data")
     print_devices(b)
 
     # change testvg to have an md RAID1 pv instead of partition pvs
     device = b.factoryDevice(blivet.devicefactory.DEVICE_TYPE_LVM,
-                             Size(spec="50GiB"), disks=[disk1, disk2],
+                             Size("50GiB"), disks=[disk1, disk2],
                              fstype="xfs", mountpoint="/data",
                              container_raid_level="raid1",
                              device=device)

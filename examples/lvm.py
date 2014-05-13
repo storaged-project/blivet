@@ -10,7 +10,7 @@ set_up_logging()
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create a disk image file on which to create new devices
-disk1_file = create_sparse_tempfile("disk1", Size(spec="100GiB"))
+disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
 b.config.diskImages["disk1"] = disk1_file
 
 b.reset()
@@ -20,7 +20,7 @@ try:
 
     b.initializeDisk(disk1)
 
-    pv = b.newPartition(size=Size(spec="50GiB"), fmt_type="lvmpv")
+    pv = b.newPartition(size=Size("50GiB"), fmt_type="lvmpv")
     b.createDevice(pv)
 
     # allocate the partitions (decide where and on which disks they'll reside)
@@ -30,17 +30,17 @@ try:
     b.createDevice(vg)
 
     # new lv with base size 5GiB and unbounded growth and an ext4 filesystem
-    dev = b.newLV(fmt_type="ext4", size=Size(spec="5GiB"), grow=True,
+    dev = b.newLV(fmt_type="ext4", size=Size("5GiB"), grow=True,
                   parents=[vg], name="unbounded")
     b.createDevice(dev)
 
     # new lv with base size 5GiB and growth up to 15GiB and an ext4 filesystem
-    dev = b.newLV(fmt_type="ext4", size=Size(spec="5GiB"), grow=True,
-                  maxsize=Size(spec="15GiB"), parents=[vg], name="bounded")
+    dev = b.newLV(fmt_type="ext4", size=Size("5GiB"), grow=True,
+                  maxsize=Size("15GiB"), parents=[vg], name="bounded")
     b.createDevice(dev)
 
     # new lv with a fixed size of 2GiB formatted as swap space
-    dev = b.newLV(fmt_type="swap", size=Size(spec="2GiB"), parents=[vg])
+    dev = b.newLV(fmt_type="swap", size=Size("2GiB"), parents=[vg])
     b.createDevice(dev)
 
     # allocate the growable lvs
