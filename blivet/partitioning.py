@@ -2135,6 +2135,24 @@ def lvCompare(lv1, lv2):
 
     return ret
 
+def _apply_chunk_growth(chunk):
+    """ grow the lvs by the amounts the VGChunk calculated """
+    for req in chunk.requests:
+        if not req.device.req_grow:
+            continue
+
+        size = chunk.lengthToSize(req.base + req.growth)
+
+        # reduce the size of thin pools by the pad size
+        if hasattr(req.device, "lvs"):
+            size -= get_pool_padding(size, pesize=req.device.vg.peSize,
+                                     reverse=True)
+
+        # Base is pe, which means potentially rounded up by as much as
+        # pesize-1. As a result, you can't just add the growth to the
+        # initial size.
+        req.device.size = size
+
 def growLVM(storage):
     """ Grow LVs according to the sizes of the PVs.
 
@@ -2170,32 +2188,14 @@ def growLVM(storage):
                 # add the required padding to the requested pool size
                 lv.req_size += get_pool_padding(lv.req_size, pesize=vg.peSize)
 
-        def apply_chunk_growth(chunk):
-            """ grow the lvs by the amounts the VGChunk calculated """
-            for req in chunk.requests:
-                if not req.device.req_grow:
-                    continue
-
-                size = chunk.lengthToSize(req.base + req.growth)
-
-                # reduce the size of thin pools by the pad size
-                if hasattr(req.device, "lvs"):
-                    size -= get_pool_padding(size, pesize=req.device.vg.peSize,
-                                             reverse=True)
-
-                # Base is pe, which means potentially rounded up by as much as
-                # pesize-1. As a result, you can't just add the growth to the
-                # initial size.
-                req.device.size = size
-
         # grow regular lvs
         chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])
         chunk.growRequests()
-        apply_chunk_growth(chunk)
+        _apply_chunk_growth(chunk)
 
         # now, grow thin lv requests within their respective pools
         for pool in vg.thinpools:
             requests = [LVRequest(l) for l in pool.lvs]
             thin_chunk = ThinPoolChunk(pool, requests)
             thin_chunk.growRequests()
-            apply_chunk_growth(thin_chunk)
+            _apply_chunk_growth(thin_chunk)
