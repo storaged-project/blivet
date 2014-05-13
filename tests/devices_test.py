@@ -62,7 +62,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def setUp(self):
         self._state_functions = {
-           "createBitmap" : self.assertTrue,
+           "createBitmap" : self.assertFalse,
            "currentSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "description" : self.assertIsNotNone,
            "devices" : lambda x, m: self.assertEqual(len(x), 0, m) and
@@ -320,6 +320,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev14,
+                        createBitmap=self.assertTrue,
                         devices=lambda x, m: self.assertEqual(len(x), 3, m),
                         level=lambda x, m: self.assertEqual(x.number, 4, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
@@ -328,6 +329,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev15,
+                        createBitmap=self.assertTrue,
                         devices=lambda x, m: self.assertEqual(len(x), 3, m),
                         level=lambda x, m: self.assertEqual(x.number, 5, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 3, m),
@@ -336,6 +338,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
         self.stateCheck(self.dev16,
+                        createBitmap=self.assertTrue,
                         devices=lambda x, m: self.assertEqual(len(x), 4, m),
                         level=lambda x, m: self.assertEqual(x.number, 6, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
@@ -344,6 +347,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
         self.stateCheck(self.dev17,
+                        createBitmap=self.assertTrue,
                         devices=lambda x, m: self.assertEqual(len(x), 4, m),
                         level=lambda x, m: self.assertEqual(x.number, 10, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),
@@ -352,6 +356,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
         self.stateCheck(self.dev18,
+                        createBitmap=self.assertTrue,
                         devices=lambda x, m: self.assertEqual(len(x), 4, m),
                         level=lambda x, m: self.assertEqual(x.number, 10, m),
                         memberDevices=lambda x, m: self.assertEqual(x, 4, m),

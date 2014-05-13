@@ -3349,13 +3349,18 @@ class MDRaidArrayDevice(ContainerDevice):
             :param value: new raid level
             :param type:  a valid raid level descriptor
             :returns:     None
-
-            Sets createBitmap True unless level is 0
         """
         self._level = mdraid.getRaidLevel(value) # pylint: disable=attribute-defined-outside-init
 
-        # bitmaps are not meaningful on raid0 according to mdadm-3.0.3
-        self.createBitmap = self._level.name != "raid0" # pylint: disable=attribute-defined-outside-init
+    @property
+    def createBitmap(self):
+        """ Whether or not a bitmap should be created on the array.
+
+            If the the array is sufficiently small, a bitmap yields no benefit.
+
+            If the array has no redundancy, a bitmap is just pointless.
+        """
+        return self.level.has_redundancy and self.size >= 1000 and  self.format.type != "swap"
 
     def getSuperBlockSize(self, raw_array_size):
         """Estimate the superblock size for a member of an array,
@@ -3693,10 +3698,6 @@ class MDRaidArrayDevice(ContainerDevice):
            getattr(self.format, "mountpoint", None) == "/boot/efi" or \
            self.format.type == "prepboot":
             self.metadataVersion = "1.0"
-
-        # Bitmaps are not useful for swap and small partitions
-        if self.size < 1000 or self.format.type == "swap":
-            self.createBitmap = False # pylint: disable=attribute-defined-outside-init
 
     def _postCreate(self):
         # this is critical since our status method requires a valid sysfs path
