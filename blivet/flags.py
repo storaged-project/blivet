@@ -63,6 +63,7 @@ class Flags(object):
         self.boot_cmdline = {}
 
         self.update_from_boot_cmdline()
+        self.allow_degraded_mdraid = True
 
     def get_boot_cmdline(self):
         buf = open("/proc/cmdline").read().strip()
@@ -100,6 +101,7 @@ class Flags(object):
         self.gpt = anaconda_flags.gpt
 
         self.multipath_friendly_names = anaconda_flags.mpathFriendlyNames
+        self.allow_degraded_mdraid = anaconda_flags.rescue_mode
 
         self.ibft = anaconda_flags.ibft
         self.dmraid = anaconda_flags.dmraid
