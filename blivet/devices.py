@@ -3814,10 +3814,6 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         return self._raidSet
 
     @property
-    def members(self):
-        return self.parents
-
-    @property
     def devices(self):
         """ Return a list of this array's member device instances. """
         return self.parents
