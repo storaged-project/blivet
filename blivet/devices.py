@@ -3605,13 +3605,27 @@ class MDRaidArrayDevice(ContainerDevice):
         return rc
 
     @property
-    def complete(self):
-        if self.type == "mdbiosraidarray":
-            members = len(self.parents[0].parents)
-        else:
-            members = len(self.parents)
+    def members(self):
+        """ Returns this array's members.
 
-        return (self.memberDevices <= members) or not self.exists
+            If the array is a BIOS RAID array then its unique parent
+            is a container and its actual member devices are the
+            container's parents.
+
+            :rtype: list of :class:`StorageDevice`
+        """
+        if self.type == "mdbiosraidarray":
+            members = self.parents[0].parents
+        else:
+            members = self.parents
+        return list(members)
+
+    @property
+    def complete(self):
+        """ An MDRaidArrayDevice is complete if it has at least as many
+            component devices as its count of active devices.
+        """
+        return (self.memberDevices <= len(self.members)) or not self.exists
 
     @property
     def devices(self):
