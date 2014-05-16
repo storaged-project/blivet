@@ -8,6 +8,7 @@ from blivet import devicelibs
 from blivet import devicefactory
 from blivet import util
 from blivet.udev import udev_trigger
+from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
 
 """
     TODO:
@@ -137,6 +138,27 @@ class LVMTestCase(BlivetResetTestCase):
                                   None,
                                   disks=self.blivet.disks[:])
 
+class LVMSnapShotTestCase(BlivetResetTestCase):
+    def _set_up_storage(self):
+        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+                                  Size("1 GiB"),
+                                  label="ROOT",
+                                  disks=self.blivet.disks[:],
+                                  container_name="blivet_test",
+                                  container_size=devicefactory.SIZE_POLICY_MAX)
+
+    def setUp(self):
+        super(BlivetResetTestCase, self).setUp() # pylint: disable=bad-super-call
+        root = self.blivet.lvs[0]
+        snap = LVMSnapShotDevice("rootsnap1", parents=[root.vg], origin=root,
+                                 size=Size("768MiB"))
+        self.blivet.createDevice(snap)
+        self.blivet.doIt()
+
+        self.device_attr_dicts = []
+        self.collect_expected_data()
+
+
 class LVMThinpTestCase(BlivetResetTestCase):
     def _set_up_storage(self):
         self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
@@ -147,6 +169,25 @@ class LVMThinpTestCase(BlivetResetTestCase):
                                   None,
                                   label="ROOT",
                                   disks=self.blivet.disks[:])
+
+class LVMThinSnapShotTestCase(LVMThinpTestCase):
+    def _set_up_storage(self):
+        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM_THINP,
+                                  Size("1 GiB"),
+                                  label="ROOT",
+                                  disks=self.blivet.disks[:])
+
+    def setUp(self):
+        super(BlivetResetTestCase, self).setUp() # pylint: disable=bad-super-call
+
+        root = self.blivet.thinlvs[0]
+        snap = LVMThinSnapShotDevice("rootsnap1", parents=[root.pool],
+                                     origin=root)
+        self.blivet.createDevice(snap)
+        self.blivet.doIt()
+
+        self.device_attr_dicts = []
+        self.collect_expected_data()
 
 class LVMRaidTestCase(BlivetResetTestCase):
     def _set_up_storage(self):

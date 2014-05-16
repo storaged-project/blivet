@@ -10,8 +10,15 @@ import blivet
 from blivet.errors import DeviceError
 from blivet.errors import RaidError
 
+from blivet.devices import BTRFSSnapShotDevice
 from blivet.devices import BTRFSSubVolumeDevice
 from blivet.devices import BTRFSVolumeDevice
+from blivet.devices import LVMLogicalVolumeDevice
+from blivet.devices import LVMSnapShotDevice
+from blivet.devices import LVMThinPoolDevice
+from blivet.devices import LVMThinLogicalVolumeDevice
+from blivet.devices import LVMThinSnapShotDevice
+from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import OpticalDevice
 from blivet.devices import StorageDevice
@@ -492,6 +499,11 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            BTRFSSubVolumeDevice,
            "dev1", parents=parents)
 
+        self.assertEqual(self.dev1.isleaf, False)
+        self.assertEqual(self.dev2.isleaf, True)
+        member = self.dev1.parents[0]
+        self.assertEqual(member.isleaf, False)
+
     def testBTRFSDeviceMethods(self):
         """Test for method calls on initialized BTRFS Devices."""
         # volumes do not have ancestor volumes
@@ -508,6 +520,115 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegexp(RuntimeError,
            "cannot directly set size of btrfs volume"):
             self.dev1.size = 32
+
+    def testBTRFSSnapShotDeviceInit(self):
+        parents = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"))]
+        vol = BTRFSVolumeDevice("test", parents=parents)
+        self.assertRaisesRegexp(ValueError,
+                                "non-existent btrfs snapshots must have a source",
+                                BTRFSSnapShotDevice,
+                                "snap1", parents=[vol])
+
+        self.assertRaisesRegexp(ValueError,
+                                "btrfs snapshot source must already exist",
+                                BTRFSSnapShotDevice,
+                                "snap1", parents=[vol], source=vol)
+
+        self.assertRaisesRegexp(ValueError,
+                                "btrfs snapshot source must be a btrfs subvolume",
+                                BTRFSSnapShotDevice,
+                                "snap1", parents=[vol], source=parents[0])
+
+        parents2 = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"))]
+        vol2 = BTRFSVolumeDevice("test2", parents=parents2, exists=True)
+        self.assertRaisesRegexp(ValueError,
+                                ".*snapshot and source must be in the same volume",
+                                BTRFSSnapShotDevice,
+                                "snap1", parents=[vol], source=vol2)
+
+        vol.exists = True
+        snap = BTRFSSnapShotDevice("snap1", parents=[vol], source=vol)
+        self.assertEqual(snap.isleaf, True)
+        self.assertEqual(vol.isleaf, False)
+
+        self.assertEqual(snap.dependsOn(vol), True)
+        self.assertEqual(vol.dependsOn(snap), False)
+
+class LVMDeviceTest(unittest.TestCase):
+    def testLVMSnapShotDeviceInit(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),
+                           size=Size("1 GiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
+                                    fmt=blivet.formats.getFormat("xfs"))
+
+        self.assertRaisesRegexp(ValueError,
+                                "lvm snapshot devices require an origin lv",
+                                LVMSnapShotDevice,
+                                "snap1", parents=[vg])
+
+        self.assertRaisesRegexp(ValueError,
+                                "lvm snapshot origin volume must already exist",
+                                LVMSnapShotDevice,
+                                "snap1", parents=[vg], origin=lv)
+
+        self.assertRaisesRegexp(ValueError,
+                                "lvm snapshot origin must be a logical volume",
+                                LVMSnapShotDevice,
+                                "snap1", parents=[vg], origin=pv)
+
+        self.assertRaisesRegexp(ValueError,
+                                "only existing vorigin snapshots are supported",
+                                LVMSnapShotDevice,
+                                "snap1", parents=[vg], vorigin=True)
+
+        lv.exists = True
+        snap1 = LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
+
+        self.assertEqual(snap1.format, lv.format)
+        snap1.format = blivet.formats.getFormat("DM_snapshot_cow", exists=True)
+        self.assertEqual(snap1.format, lv.format)
+
+        self.assertEqual(snap1.isleaf, True)
+        self.assertEqual(lv.isleaf, False)
+
+        self.assertEqual(snap1.dependsOn(lv), True)
+        self.assertEqual(lv.dependsOn(snap1), False)
+
+    def testLVMThinSnapShotDeviceInit(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),
+                           size=Size("1 GiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        pool = LVMThinPoolDevice("pool1", parents=[vg], size=Size("500 MiB"))
+        thinlv = LVMThinLogicalVolumeDevice("thinlv", parents=[pool],
+                                            size=Size("200 MiB"))
+
+        self.assertRaisesRegexp(ValueError,
+                                "lvm thin snapshots require an origin",
+                                LVMThinSnapShotDevice,
+                                "snap1", parents=[pool])
+
+        self.assertRaisesRegexp(ValueError,
+                                "lvm snapshot origin volume must already exist",
+                                LVMThinSnapShotDevice,
+                                "snap1", parents=[pool], origin=thinlv)
+
+        self.assertRaisesRegexp(ValueError,
+                                "lvm snapshot origin must be a logical volume",
+                                LVMThinSnapShotDevice,
+                                "snap1", parents=[pool], origin=pv)
+
+        # now make the constructor succeed so we can test some properties
+        thinlv.exists = True
+        snap1 = LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
+        self.assertEqual(snap1.isleaf, True)
+        self.assertEqual(thinlv.isleaf, True)
+
+        self.assertEqual(snap1.dependsOn(thinlv), True)
+        self.assertEqual(thinlv.dependsOn(snap1), False)
+
+        snap1.exists = True
+        self.assertEqual(snap1.dependsOn(thinlv), False)
 
 class DeviceNameTestCase(unittest.TestCase):
     """Test device name validation"""
