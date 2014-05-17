@@ -3539,7 +3539,11 @@ class MDRaidArrayDevice(ContainerDevice):
             self.memberDevices += 1
 
     def _removeParent(self, member):
-        if self.level.name == "raid0" and self.exists and member.format.exists:
+        """ If this is a raid array that is not actually redundant and it
+            appears to have formatting and therefore probably data on it,
+            removing one of its devices is a bad idea.
+        """
+        if not self.level.has_redundancy and self.exists and member.format.exists:
             raise errors.DeviceError("cannot remove members from existing raid0")
 
         super(MDRaidArrayDevice, self)._removeParent(member)
