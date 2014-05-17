@@ -3738,10 +3738,10 @@ class MDRaidArrayDevice(ContainerDevice):
 
     def _add(self, member):
         self.setup()
-        if self.level.name == "raid0":
-            raid_devices = self.memberDevices
-        else:
+        if self.level.has_redundancy:
             raid_devices = None
+        else:
+            raid_devices = self.memberDevices
 
         mdraid.mdadd(self.path, member.path, raid_devices=raid_devices)
 
