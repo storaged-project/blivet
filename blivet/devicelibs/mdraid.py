@@ -141,8 +141,10 @@ def mdadd(array, device, incremental=False, raid_devices=None):
         :keyword bool incremental: add the device incrementally (see note below)
         :keyword int raid_devices: the number of active member devices
 
-        The raid_devices parameter is used when adding devices to a raid0 array
-        since raid0 does not allow spares.
+        The raid_devices parameter is used when adding devices to a raid
+        array that has no actual redundancy. In this case it is necessary
+        to explicitly grow the array all at once rather than manage it in
+        the sense of adding spares.
 
         Whether the new device will be added as a spare or an active member is
         decided by mdadm.
