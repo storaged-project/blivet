@@ -674,17 +674,16 @@ class DeviceFactory(object):
                                                   swap=(self.fstype == "swap"),
                                                   mountpoint=self.mountpoint)
 
-        # TODO: write a StorageDevice.name setter
         safe_new_name = self.storage.safeDeviceName(self.device_name)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
-                            self.device._name, safe_new_name)
+                            self.device.name, safe_new_name)
                 return
 
             log.debug("renaming device '%s' to '%s'",
-                        self.device._name, safe_new_name)
-            self.device._name = safe_new_name
+                        self.device.name, safe_new_name)
+            self.device.name = safe_new_name
 
     def _post_create(self):
         """ Hook for post-creation operations. """
@@ -1234,13 +1233,12 @@ class LVMFactory(DeviceFactory):
                                                   swap=(self.fstype == "swap"),
                                                   mountpoint=self.mountpoint)
 
-        # TODO: write a StorageDevice.name setter
         lvname = "%s-%s" % (self.container.name, self.device_name)
         safe_new_name = self.storage.safeDeviceName(lvname)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
-                            self.device._name, safe_new_name)
+                            self.device.name, safe_new_name)
                 return
 
             if not safe_new_name.startswith(self.container.name):
@@ -1250,8 +1248,8 @@ class LVMFactory(DeviceFactory):
             # strip off the vg name before setting
             safe_new_name = safe_new_name[len(self.container.name)+1:]
             log.debug("renaming device '%s' to '%s'",
-                        self.device._name, safe_new_name)
-            self.device._name = safe_new_name
+                        self.device.name, safe_new_name)
+            self.device.name = safe_new_name
 
     def _configure(self):
         self._set_container()

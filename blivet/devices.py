@@ -385,10 +385,15 @@ class Device(util.ObjectID):
         """ Is this device currently active and ready for use? """
         return False
 
-    @property
-    def name(self):
-        """ This device's name. """
+    def _getName(self):
         return self._name
+
+    def _setName(self, value):
+        self._name = value
+
+    name = property(lambda s: s._getName(),
+                    lambda s, v: s._setName(v),
+                    doc="This device's name")
 
     @property
     def isleaf(self):
@@ -648,6 +653,21 @@ class StorageDevice(Device):
                 pass
 
         return self._partedDevice
+
+    def _setName(self, value):
+        """Set the device's name.
+
+        :param value: the new device name
+        :raises errors.DeviceError: if the device exists
+        """
+
+        if value == self._name:
+            return
+
+        if self.exists:
+            raise errors.DeviceError("Cannot rename existing device.")
+
+        super(StorageDevice, self)._setName(value)
 
     def _getTargetSize(self):
         return self._targetSize
@@ -1483,9 +1503,9 @@ class PartitionDevice(StorageDevice):
 
     def updateName(self):
         if self.partedPartition is None:
-            self._name = self.req_name
+            self.name = self.req_name
         else:
-            self._name = \
+            self.name = \
                 devicePathToName(self.partedPartition.getDeviceNodeName())
 
     def dependsOn(self, dep):
@@ -1992,17 +2012,17 @@ class DMDevice(StorageDevice):
             if dev.startswith(prefix) and dev[len(prefix):].isdigit():
                 dm.dm_remove(dev)
 
-    def _setName(self, name):
+    def _setName(self, value):
         """ Set the device's map name. """
+        if value == self._name:
+            return
+
         log_method_call(self, self.name, status=self.status)
         if self.status:
             raise errors.DeviceError("cannot rename active device", self.name)
 
-        self._name = name
+        super(DMDevice, self)._setName(value)
         #self.sysfsPath = "/dev/disk/by-id/dm-name-%s" % self.name
-
-    name = property(lambda d: d._name,
-                    lambda d,n: d._setName(n))
 
     @property
     def slave(self):
@@ -2136,7 +2156,7 @@ class LUKSDevice(DMCryptDevice):
         return size
 
     def _postCreate(self):
-        self._name = self.slave.format.mapName
+        self.name = self.slave.format.mapName
         StorageDevice._postCreate(self)
 
     def _postTeardown(self, recursive=False):
@@ -2845,8 +2865,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return dm.dm_node_from_name(self.mapName)
 
-    @property
-    def name(self):
+    def _getName(self):
         """ This device's name. """
         return "%s-%s" % (self.vg.name, self._name)
 
@@ -4116,7 +4135,7 @@ class LoopDevice(StorageDevice):
 
         name = loop.get_loop_name(self.slave.path)
         if name.startswith("loop"):
-            self._name = name
+            self.name = name
 
         return self.name
 
@@ -4154,7 +4173,7 @@ class LoopDevice(StorageDevice):
 
     def _postTeardown(self, recursive=False):
         StorageDevice._postTeardown(self, recursive=recursive)
-        self._name = "tmploop%d" % self.id
+        self.name = "tmploop%d" % self.id
         self.sysfsPath = ''
 
     @property
@@ -4634,10 +4653,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     def _setFormat(self, fmt):
         """ Set the Device's format. """
         super(BTRFSVolumeDevice, self)._setFormat(fmt)
-        self._name = "btrfs.%d" % self.id
+        self.name = "btrfs.%d" % self.id
         label = getattr(self.format, "label", None)
         if label:
-            self._name = label
+            self.name = label
 
     def _getSize(self):
         size = sum([d.size for d in self.parents])
