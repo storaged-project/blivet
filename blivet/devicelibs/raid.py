@@ -49,6 +49,9 @@ class RAIDLevel(object):
     has_redundancy = abc.abstractproperty(doc=
        "Whether this RAID level incorporates inherent redundancy.")
 
+    is_uniform = abc.abstractproperty(doc=
+       "Whether data is uniformly distributed across all devices.")
+
     def __str__(self):
         return self.name
 
@@ -92,6 +95,8 @@ class RAIDn(RAIDLevel):
     nick = abc.abstractproperty(doc="A nickname for this level")
 
     # PROPERTIES
+    is_uniform = property(lambda s: True)
+
     number = property(lambda s : int(s.level),
        doc="A numeric code for this level")
 
@@ -484,6 +489,7 @@ class Container(RAIDLevel):
     names = [name]
     min_members = 1
     has_redundancy = property(lambda s: False)
+    is_uniform = property(lambda s: False)
 
     def get_max_spares(self, member_count):
         # pylint: disable=unused-argument
@@ -511,6 +517,7 @@ class ErsatzRAID(RAIDLevel):
     """
     min_members = 1
     has_redundancy = property(lambda s: False)
+    is_uniform = property(lambda s: False)
 
     def get_max_spares(self, member_count):
         return member_count - self.min_members
