@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.52
+Version: 0.53
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,39 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue May 20 2014 Brian C. Lane <bcl@redhat.com> - 0.53-1
+- Remove extra quotes from the xfs_db arguments. (dshea)
+- Factor duplicate code in __deepcopy__ methods into one method (#1095244)
+  (amulhern)
+- Rearrange code related to handleUdevDeviceFormat() (#1095329) (amulhern)
+- Make dumpState catch and log all AttributeErrors (#1095329) (amulhern)
+- Add sectorSize property to catch and handle missing partedDevice (#1095329)
+  (amulhern)
+- Get rid of remaining uses of spec keyword for Size() in examples directory.
+  (amulhern)
+- Generalize false positive regular expression for multiple pylint versions
+  (amulhern)
+- Do not run some tests unless running on Jenkins. (amulhern)
+- Miscellaneous pylint fixes. (amulhern)
+- Globally disable pointless string statement warning (amulhern)
+- Disable unused argument warning for 'args' in TmpFSDevice constructor
+  (amulhern)
+- Omit 'args' parameter from formats constructors (amulhern)
+- Disabled unused argument warning for kwargs in formats.destroy() (amulhern)
+- Omit *args from parameters for format.create() and formats.destroy()
+  (amulhern)
+- Omit *args from parameters in formats.setup() (amulhern)
+- Make formats.teardown() not take any extra parameters. (amulhern)
+- Make formats.mount use explicit keywords instead of kwargs. (amulhern)
+- Remove non-self params from FS.doResize method (amulhern)
+- Make doFormat use regular style keyword parameters (amulhern)
+- Do not use *args, **kwargs idiom in scheduleCreateFormat. (amulhern)
+- Do not use *args, **kwargs idiom in various schedule* auxiliary test methods.
+  (amulhern)
+- Remove upgrading param from turnOnSwap() (amulhern)
+- Disable unused-argument warning (amulhern)
+- Disable pylint unused-argument warning. (amulhern)
+
 * Thu May 08 2014 Brian C. Lane <bcl@redhat.com> - 0.52-1
 - Split ROOT_PATH usage into getTargetPhysicalRoot()/getSysroot() (walters)
 - Update and fix copyright info for docs. (dlehman)
