@@ -75,7 +75,7 @@ Next, scan the system's storage configuration and store it in the tree::
 Now, you can do some simple things like listing the devices::
 
     for device in b.devices:
-        print device
+        print(device)
 
 To make changes to the configuration you'll schedule actions, but
 :class:`~.Blivet` provides some convenience methods to hide the details. Here's an example of removing partition '/dev/sda3'::

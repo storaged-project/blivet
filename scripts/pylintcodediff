@@ -19,7 +19,7 @@
 #
 # Author: Anne Mulhern <amulhern@redhat.com>
 
-
+from __future__ import print_function
 import argparse
 import os
 import subprocess
@@ -163,7 +163,7 @@ def main():
         reset(commit)
         diff_quality(pylint_log)
     except RuntimeError as e:
-        print >> sys.stderr, "Couldn't complete testing, trying to clean up: %s." % e
+        print("Couldn't complete testing, trying to clean up: %s." % e, file=sys.stderr)
 
     try:
         checkout_branch(current_branch, force=True)

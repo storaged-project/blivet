@@ -93,11 +93,11 @@ def main():
     items = [5, 2, 3, 4, 1]
     edges = [(1, 2), (2, 4), (4, 5), (3, 2)]
 
-    print items
-    print edges
+    print(items)
+    print(edges)
 
     graph = create_graph(items, edges)
-    print tsort(graph)
+    print(tsort(graph))
 
 if __name__ == "__main__":
     main()
