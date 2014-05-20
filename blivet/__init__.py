@@ -1406,7 +1406,13 @@ class Blivet(object):
         tmp = name.strip()
         tmp = tmp.replace("/", "_")
         tmp = re.sub("[^0-9a-zA-Z._-]", "", tmp)
-        tmp = tmp.lstrip("_")
+
+        # Remove any '-' or '_' prefixes
+        tmp = re.sub("^[-_]*", "", tmp)
+
+        # If all that's left is . or .., give up
+        if tmp == "." or tmp == "..":
+            return ""
 
         if len(tmp) > max_len:
             tmp = tmp[:max_len]

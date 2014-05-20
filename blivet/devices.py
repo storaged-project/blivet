@@ -26,6 +26,7 @@ import pprint
 import tempfile
 import abc
 from decimal import Decimal
+import re
 
 # device backend modules
 from .devicelibs import raid
@@ -235,7 +236,13 @@ class Device(util.ObjectID):
         """
         util.ObjectID.__init__(self)
         self.kids = 0
+
+        # Copy only the validity check from _setName so we don't try to check a
+        # bunch of inappropriate state properties during __init__ in subclasses
+        if not self.isNameValid(name):
+            raise ValueError("%s is not a valid name for this device" % name)
         self._name = name
+
         self.parents = []
         if parents and not isinstance(parents, list):
             raise ValueError("parents must be a list of Device instances")
@@ -389,6 +396,8 @@ class Device(util.ObjectID):
         return self._name
 
     def _setName(self, value):
+        if not self.isNameValid(value):
+            raise ValueError("%s is not a valid name for this device" % value)
         self._name = value
 
     name = property(lambda s: s._getName(),
@@ -449,6 +458,13 @@ class Device(util.ObjectID):
     @property
     def mediaPresent(self):
         """ True if this device contains usable media. """
+        return True
+
+    @classmethod
+    def isNameValid(cls, name): # pylint: disable=unused-argument
+        """Is the device name valid for the device type?"""
+
+        # By default anything goes
         return True
 
 
@@ -1097,6 +1113,13 @@ class StorageDevice(Device):
 
         if data.mountpoint.endswith("."):
             data.mountpoint += str(self.id)
+
+    @classmethod
+    def isNameValid(cls, name):
+        # This device corresponds to a file in /dev, so no /'s or nulls,
+        # and the name cannot be . or ..
+        badchars = any(c in ('\x00', '/') for c in name)
+        return not(badchars or name == '.' or name == '..')
 
 class DiskDevice(StorageDevice):
     """ A local/generic disk.
@@ -2677,6 +2700,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # reserved percent/space
 
+    @classmethod
+    def isNameValid(cls, name):
+        # No . or ..
+        if name == '.' or name == '..':
+            return False
+
+        # Check that all characters are in the allowed set and that the name
+        # does not start with a -
+        if not re.match('^[a-zA-Z0-9+_.][a-zA-Z0-9+_.-]*$', name):
+            return False
+
+        # According to the LVM developers, vgname + lvname is limited to 126 characters
+        # minus the number of hyphens, and possibly minus up to another 8 characters
+        # in some unspecified set of situations. Instead of figuring all of that out,
+        # no one gets a vg or lv name longer than, let's say, 55.
+        if len(name) > 55:
+            return False
+
+        return True
 
 class LVMLogicalVolumeDevice(DMDevice):
     """ An LVM Logical Volume """
@@ -3012,6 +3054,30 @@ class LVMLogicalVolumeDevice(DMDevice):
             data.percent = self.req_percent
         elif data.resize:
             data.size = self.targetSize.convertTo(spec="MiB")
+
+    @classmethod
+    def isNameValid(cls, name):
+        # Check that the LV name is valid
+
+        # Start with the checks shared with volume groups
+        if not LVMVolumeGroupDevice.isNameValid(name):
+            return False
+
+        # And now the ridiculous ones
+        # These strings are taken from apply_lvname_restrictions in lib/misc/lvm-string.c
+        reserved_prefixes = set(['pvmove', 'snapshot'])
+        reserved_substrings = set(['_cdata', '_cmeta', '_mimage', '_mlog', '_pmspare', '_rimage',
+                                   '_rmeta', '_tdata', '_tmeta', '_vorigin'])
+
+        for prefix in reserved_prefixes:
+            if name.startswith(prefix):
+                return False
+
+        for substring in reserved_substrings:
+            if substring in name:
+                return False
+
+        return True
 
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
@@ -4070,6 +4136,10 @@ class FileDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         os.unlink(self.path)
 
+    @classmethod
+    def isNameValid(cls, name):
+        # Override StorageDevice.isNameValid to allow /
+        return not('\x00' in name or name == '.' or name == '..')
 
 class SparseFileDevice(FileDevice):
     """A sparse file on a filesystem.
