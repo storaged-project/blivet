@@ -507,6 +507,9 @@ class ActionCreateFormat(DeviceAction):
             If no format is specified, it is assumed that the format is already
             associated with the device.
         """
+        if device.formatImmutable:
+            raise ValueError("this device's formatting cannot be modified")
+
         DeviceAction.__init__(self, device)
         if fmt:
             self.origFormat = device.format
@@ -610,6 +613,9 @@ class ActionDestroyFormat(DeviceAction):
     typeDescStr = N_("destroy format")
 
     def __init__(self, device):
+        if device.formatImmutable:
+            raise ValueError("this device's formatting cannot be modified")
+
         DeviceAction.__init__(self, device)
         self.origFormat = self.device.format
 
@@ -687,6 +693,9 @@ class ActionResizeFormat(DeviceAction):
     typeDescStr = N_("resize format")
 
     def __init__(self, device, newsize):
+        if device.formatImmutable:
+            raise ValueError("this device's formatting cannot be modified")
+
         if not device.format.resizable:
             raise ValueError("format is not resizable")
 

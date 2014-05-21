@@ -1279,7 +1279,7 @@ class Blivet(object):
             :rtype: None
         """
         self.devicetree.registerAction(ActionCreateDevice(device))
-        if device.format.type:
+        if device.format.type and not device.formatImmutable:
             self.devicetree.registerAction(ActionCreateFormat(device))
 
     def destroyDevice(self, device):
@@ -1289,7 +1289,8 @@ class Blivet(object):
             :type device: :class:`~.devices.StorageDevice`
             :rtype: None
         """
-        if device.format.exists and device.format.type:
+        if device.format.exists and device.format.type and \
+           not device.formatImmutable:
             # schedule destruction of any formatting while we're at it
             self.devicetree.registerAction(ActionDestroyFormat(device))
 

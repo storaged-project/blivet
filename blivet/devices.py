@@ -507,6 +507,7 @@ class StorageDevice(Device):
     _type = "blivet"
     _devDir = "/dev"
     sysfsBlockDir = "class/block"
+    _formatImmutable = False
     _partitionable = False
     _isDisk = False
 
@@ -1054,6 +1055,11 @@ class StorageDevice(Device):
         return (self.sysfsPath and os.path.exists(devpath) and
                 os.access(remfile, os.R_OK) and
                 open(remfile).readline().strip() == "1")
+
+    @property
+    def formatImmutable(self):
+        """ Is it possible to execute format actions on this device? """
+        return self._formatImmutable or self.protected
 
     @property
     def isDisk(self):
@@ -3190,6 +3196,7 @@ class LVMSnapShotBase(object):
 class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
     """ An LVM snapshot """
     _type = "lvmsnapshot"
+    _formatImmutable = True
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=0, segType=None,
@@ -3436,6 +3443,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
     """ An LVM Thin Snapshot """
     _type = "lvmthinsnapshot"
     _resizable = False
+    _formatImmutable = True
 
     def __init__(self, name, parents=None, sysfsPath='', origin=None,
                  fmt=None, uuid=None, size=None, exists=False, segType=None):
@@ -5069,6 +5077,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         else:
             self._metaDataLevel = btrfs.RAID_levels.raidLevel(value)
 
+    @property
+    def formatImmutable(self):
+        return self.exists
+
     def _setFormat(self, fmt):
         """ Set the Device's format. """
         super(BTRFSVolumeDevice, self)._setFormat(fmt)
@@ -5231,6 +5243,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 class BTRFSSubVolumeDevice(BTRFSDevice):
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
+    _formatImmutable = True
 
     def __init__(self, *args, **kwargs):
         """
