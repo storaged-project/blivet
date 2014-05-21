@@ -504,11 +504,13 @@ def lvresize(vg_name, lv_name, size):
     except LVMError as msg:
         raise LVMError("lvresize failed for %s: %s" % (lv_name, msg))
 
-def lvactivate(vg_name, lv_name):
+def lvactivate(vg_name, lv_name, ignore_skip=False):
     # see if lvchange accepts paths of the form 'mapper/$vg-$lv'
-    args = ["lvchange", "-a", "y"] + \
-            _getConfigArgs() + \
-            ["%s/%s" % (vg_name, lv_name)]
+    args = ["lvchange", "-a", "y"]
+    if ignore_skip:
+        args.append("-K")
+
+    args += _getConfigArgs() + ["%s/%s" % (vg_name, lv_name)]
 
     try:
         lvm(args)
