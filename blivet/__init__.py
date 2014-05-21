@@ -2136,16 +2136,12 @@ class Blivet(object):
                                 for a in d.ancestors))
         devices.sort(key=lambda d: len(d.ancestors))
         for device in devices:
-            class_attr = None
-            list_attr = None
-            for cls in ksMap.iterkeys():
-                if isinstance(device, cls):
-                    class_attr, list_attr = ksMap[cls]
-                    break
-
-            if not class_attr or not list_attr:
+            cls = next((c for c in ksMap if isinstance(device, c)), None)
+            if cls is None:
                 log.info("omitting ksdata: %s", device)
                 continue
+
+            class_attr, list_attr = ksMap[cls]
 
             cls = getattr(self.ksdata, class_attr)
             data = cls()    # all defaults
