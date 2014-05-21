@@ -4742,7 +4742,18 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     _formatUUIDAttr = property(lambda s: "volUUID")
 
     def __init__(self, *args, **kwargs):
-
+        """
+            :param str name: the volume name
+            :keyword bool exists: does this device exist?
+            :keyword :class:`~.size.Size` size: the device's size
+            :keyword :class:`~.ParentList` parents: a list of parent devices
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat`
+            :keyword str uuid: UUID of top-level filesystem/volume
+            :keyword str sysfsPath: sysfs device path
+            :keyword str dataLevel: RAID level for data
+            :keyword str metaDataLevel: RAID level for metadata
+        """
         # pop these arguments before the constructor call to avoid
         # unrecognized keyword error in superclass constructor
         dataLevel = kwargs.pop("dataLevel", None)
@@ -4988,6 +4999,15 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
     _type = "btrfs subvolume"
 
     def __init__(self, *args, **kwargs):
+        """
+            :param str name: the subvolume name
+            :keyword bool exists: does this device exist?
+            :keyword :class:`~.size.Size` size: the device's size
+            :keyword :class:`~.ParentList` parents: a list of parent devices
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat`
+            :keyword str sysfsPath: sysfs device path
+        """
         self.vol_id = kwargs.pop("vol_id", None)
 
         super(BTRFSSubVolumeDevice, self).__init__(*args, **kwargs)
