@@ -2721,7 +2721,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         try:
             vg_info = lvm.vginfo(self.vg.name)
         except LVMError as lvmerr:
-            msg = "Failed to get free space for the %s VG: %s" % self.vg.name, lvmerr
+            msg = "Failed to get free space for the %s VG: %s" % (self.vg.name, lvmerr)
             log.error(msg)
             # nothing more can be done, we don't know the VG's free space
             return
