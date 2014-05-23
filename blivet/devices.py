@@ -2965,6 +2965,12 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
 
     size = property(StorageDevice._getSize, _setSize)
 
+    def _preCreate(self):
+        # skip LVMLogicalVolumeDevice's _preCreate() method as it checks for a
+        # free space in a VG which doesn't make sense for a ThinLV and causes a
+        # bug by limitting the ThinLV's size to VG free space which is nonsense
+        super(LVMLogicalVolumeDevice, self)._preCreate() # pylint: disable=bad-super-call
+
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
