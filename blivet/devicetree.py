@@ -2070,6 +2070,7 @@ class DeviceTree(object):
         except Exception:
             raise
         finally:
+            self._hideIgnoredDisks()
             self.restoreConfigs()
 
     def _populate(self):
@@ -2141,6 +2142,7 @@ class DeviceTree(object):
         if flags.installer_mode:
             self.teardownAll()
 
+    def _hideIgnoredDisks(self):
         def _is_ignored(disk):
             return ((self.ignoredDisks and disk.name in self.ignoredDisks) or
                     (self.exclusiveDisks and
