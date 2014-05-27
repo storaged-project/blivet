@@ -43,7 +43,7 @@ class MDRaidLevels(raid.RAIDLevels):
            hasattr(level, 'get_recommended_stride') and \
            hasattr(level, 'get_size')
 
-RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "container"])
+RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "container", "linear"])
 
 def get_raid_superblock_size(size, version=None):
     """ mdadm has different amounts of space reserved for its use depending
