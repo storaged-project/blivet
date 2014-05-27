@@ -87,8 +87,6 @@ def _getConfigArgs(**kwargs):
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
     config_string = " devices { %s } " % (devices_string) # strings can be added
-    if filter_string:
-        config_string += devices_string # more strings can be added.
     if read_only_locking:
         config_string += "global {locking_type=4} "
     if config_string:
