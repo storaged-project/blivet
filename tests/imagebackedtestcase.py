@@ -98,6 +98,7 @@ class ImageBackedTestCase(unittest.TestCase):
 
     def _cleanUp(self):
         """ Clean up any resources that may have been set up for a test. """
+        self.blivet.reset()
         self.blivet.devicetree.teardownDiskImages()
         for fn in self.blivet.config.diskImages.values():
             if os.path.exists(fn):
