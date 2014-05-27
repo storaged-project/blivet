@@ -557,3 +557,17 @@ class Single(ErsatzRAID):
 
 Single = Single()
 ALL_LEVELS.addRaidLevel(Single)
+
+class Dup(RAIDLevel):
+    """ A RAID level which expresses one way btrfs metadata may be distributed.
+
+        For this RAID level, duplication occurs within a single block device.
+    """
+    name = 'dup'
+    names = [name]
+    min_members = 1
+    has_redundancy = property(lambda s: True)
+    is_uniform = property(lambda s: False)
+
+Dup = Dup()
+ALL_LEVELS.addRaidLevel(Dup)
