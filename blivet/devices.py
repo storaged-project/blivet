@@ -657,17 +657,21 @@ class StorageDevice(Device):
 
         return crypted
 
+    def _getPartedDevicePath(self):
+        return self.path
+
     @property
     def partedDevice(self):
+        devicePath = self._getPartedDevicePath()
         if self.exists and self.status and not self._partedDevice:
-            log.debug("looking up parted Device: %s", self.path)
+            log.debug("looking up parted Device: %s", devicePath)
 
             # We aren't guaranteed to be able to get a device.  In
             # particular, built-in USB flash readers show up as devices but
             # do not always have any media present, so parted won't be able
             # to find a device.
             try:
-                self._partedDevice = parted.Device(path=self.path)
+                self._partedDevice = parted.Device(path=devicePath)
             except (_ped.IOException, _ped.DeviceException):
                 pass
 
@@ -3265,6 +3269,9 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         # explicitly activate or deactivate them and we have to tell lvremove
         # that it is okay to remove the active snapshot
         lvm.lvremove(self.vg.name, self._name, force=True)
+
+    def _getPartedDevicePath(self):
+        return "%s-cow" % self.path
 
     def dependsOn(self, dep):
         # pylint: disable=bad-super-call
