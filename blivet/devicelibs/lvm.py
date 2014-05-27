@@ -481,10 +481,12 @@ def lvcreate(vg_name, lv_name, size, pvs=None):
     except LVMError as msg:
         raise LVMError("lvcreate failed for %s/%s: %s" % (vg_name, lv_name, msg))
 
-def lvremove(vg_name, lv_name):
-    args = ["lvremove"] + \
-            _getConfigArgs() + \
-            ["%s/%s" % (vg_name, lv_name)]
+def lvremove(vg_name, lv_name, force=False):
+    args = ["lvremove"]
+    if force:
+        args.extend(["--force", "--yes"])
+
+    args += _getConfigArgs() + ["%s/%s" % (vg_name, lv_name)]
 
     try:
         lvm(args)
