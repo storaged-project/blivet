@@ -296,7 +296,9 @@ class Device(util.ObjectID):
             self._parents = ParentList(appendfunc=self._addParent,
                                        removefunc=self._removeParent)
 
-        for parent in self._parents:
+        # iterate over a copy of the parent list because we are altering it in
+        # the for-cycle
+        for parent in list(self._parents):
             self._parents.remove(parent)
 
     def _setParentList(self, parents):
