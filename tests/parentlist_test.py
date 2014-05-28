@@ -69,6 +69,12 @@ class ParentListTestCase(unittest.TestCase):
         dev3.parents.append(dev2)
         self.assertEqual(len(dev3.parents), 2)
 
+        dev3.parents = [dev1, dev2]
+        self.assertEqual(len(dev3.parents), 2)
+
+        dev3.parents = []
+        self.assertEqual(len(dev3.parents), 0)
+
 
 def suite():
     return unittest.TestLoader().loadTestsFromTestCase(ParentListTestCase)
