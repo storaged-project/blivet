@@ -1577,10 +1577,10 @@ class MDFactory(DeviceFactory):
             raise DeviceFactoryError("MDFactory class must have some RAID level.")
 
     def _get_device_space(self):
-        member_count = len(self._get_member_devices())
-        size_per_member = self.raid_level.get_base_member_size(self.size, member_count)
-        size_per_member += mdraid.get_raid_superblock_size(self.size)
-        return size_per_member * member_count
+        return self.raid_level.get_space(self.size,
+           len(self._get_member_devices()),
+           None,
+           mdraid.get_raid_superblock_size)
 
     def _get_total_space(self):
         return self._get_device_space()

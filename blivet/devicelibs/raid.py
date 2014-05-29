@@ -200,6 +200,21 @@ class RAIDn(RAIDLevel):
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def _pad(self, size, chunk_size):
+        """Helper function; not to be called directly.
+
+           Pads size to the smallest size greater than size that is in units
+           of chunk_size.
+
+           :param size: the size of the array
+           :type size: :class:`~.size.Size`
+           :param chunk_size: the smallest unit of size this array allows
+           :type chunk_size: :class:`~.size.Size`
+           :rtype: :class:`~.size.Size`
+        """
+        raise NotImplementedError()
+
     def get_recommended_stride(self, member_count):
         """Return a recommended stride size in blocks.
 
@@ -226,7 +241,7 @@ class RAIDn(RAIDLevel):
            :param member_size: a list of the sizes of members of this array
            :type member_size: list of :class:`~.size.Size`
            :param int num_members: the number of members in the array
-           :param chunk_size: the smallest unit of size for
+           :param chunk_size: the smallest unit of size read or written
            :type chunk_size: :class:`~.size.Size`
            :param superblock_size_func: a function that estimates the
               superblock size for this array
@@ -257,6 +272,31 @@ class RAIDn(RAIDLevel):
         superblock_size = superblock_size_func(total_space)
         min_data_size = self._trim(min_size - superblock_size, chunk_size)
         return self.get_net_array_size(num_members, min_data_size)
+
+    def get_space(self, size, num_members, chunk_size=None, superblock_size_func=None):
+        """Estimate the amount of memory required by this array, including
+           memory allocated for metadata.
+
+           :param size: the amount of data on this array
+           :type size: :class:`~.size.Size`
+           :param int num_members: the number of members in the array
+           :param chunk_size: the smallest unit of size read or written
+           :type chunk_size: :class:`~.size.Size`
+           :param superblock_size_func: a function that estimates the
+              superblock size for this array
+           :type superblock_size_func: a function from :class:`~.size.Size` to
+              :class:`~.size.Size`
+           :returns: an estimate of the memory required, including metadata
+           :rtype: :class:`~.size.Size`
+        """
+        if superblock_size_func is None:
+            raise RaidError("superblock_size_func value of None is not acceptable")
+
+        size_per_member = self.get_base_member_size(size, num_members)
+        size_per_member += superblock_size_func(size)
+        if chunk_size is not None:
+            size_per_member = self._pad(size_per_member, chunk_size)
+        return size_per_member * num_members
 
 class RAIDLevels(object):
     """A class which keeps track of registered RAID levels. This class
@@ -358,6 +398,9 @@ class RAID0(RAIDn):
     def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
+    def _pad(self, size, chunk_size):
+        return size + (chunk_size - (size % chunk_size)) % chunk_size
+
     def _get_recommended_stride(self, member_count):
         return member_count * 16
 
@@ -380,6 +423,9 @@ class RAID1(RAIDn):
         return smallest_member_size
 
     def _trim(self, size, chunk_size):
+        return size
+
+    def _pad(self, size, chunk_size):
         return size
 
     def _get_recommended_stride(self, member_count):
@@ -406,6 +452,9 @@ class RAID4(RAIDn):
     def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
+    def _pad(self, size, chunk_size):
+        return size + (chunk_size - (size % chunk_size)) % chunk_size
+
     def _get_recommended_stride(self, member_count):
         return (member_count - 1) * 16
 
@@ -429,6 +478,9 @@ class RAID5(RAIDn):
 
     def _trim(self, size, chunk_size):
         return size - size % chunk_size
+
+    def _pad(self, size, chunk_size):
+        return size + (chunk_size - (size % chunk_size)) % chunk_size
 
     def _get_recommended_stride(self, member_count):
         return (member_count - 1) * 16
@@ -454,6 +506,9 @@ class RAID6(RAIDn):
     def _trim(self, size, chunk_size):
         return size - size % chunk_size
 
+    def _pad(self, size, chunk_size):
+        return size + (chunk_size - (size % chunk_size)) % chunk_size
+
     def _get_recommended_stride(self, member_count):
         return None
 
@@ -478,6 +533,9 @@ class RAID10(RAIDn):
     def _trim(self, size, chunk_size):
         return size
 
+    def _pad(self, size, chunk_size):
+        return size + (chunk_size - (size % chunk_size)) % chunk_size
+
     def _get_recommended_stride(self, member_count):
         return None
 
@@ -494,9 +552,9 @@ class Container(RAIDLevel):
     def get_max_spares(self, member_count):
         # pylint: disable=unused-argument
         raise RaidError("get_max_spares is not defined for level container")
-    def get_base_member_size(self, size, member_count):
+    def get_space(self, size, num_members, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
-        raise RaidError("get_base_member_size is not defined for level container")
+        return size
     def get_recommended_stride(self, member_count):
         # pylint: disable=unused-argument
         raise RaidError("get_recommended_stride is not defined for level container")
@@ -522,9 +580,11 @@ class ErsatzRAID(RAIDLevel):
     def get_max_spares(self, member_count):
         return member_count - self.min_members
 
-    def get_base_member_size(self, size, member_count):
+    def get_space(self, size, num_members, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
-        raise RaidError("get_base_member_size is not defined for level linear")
+        if superblock_size_func is None:
+            raise RaidError("superblock_size_func value of None is not acceptable")
+        return size + num_members * superblock_size_func(size)
 
     def get_recommended_stride(self, member_count):
         # pylint: disable=unused-argument

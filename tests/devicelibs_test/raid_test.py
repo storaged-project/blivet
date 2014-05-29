@@ -79,10 +79,6 @@ class RaidTestCase(unittest.TestCase):
                           4, 3)
         self.assertRaises(errors.RaidError, raid.RAID10.get_base_member_size,
                           -4, 4)
-        self.assertRaisesRegexp(errors.RaidError,
-           "not defined",
-           raid.Linear.get_base_member_size,
-           4, 3)
 
         ##
         ## get_net_array_size
