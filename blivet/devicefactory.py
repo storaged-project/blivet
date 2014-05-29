@@ -79,10 +79,7 @@ def get_device_type(device):
                     "btrfs volume": DEVICE_TYPE_BTRFS,
                     "mdarray": DEVICE_TYPE_MD}
 
-    use_dev = device
-    if isinstance(device, LUKSDevice):
-        use_dev = device.slave
-
+    use_dev = device.raw_device
     if use_dev.isDisk:
         device_type = DEVICE_TYPE_DISK
     else:
@@ -536,14 +533,7 @@ class DeviceFactory(object):
     @property
     def raw_device(self):
         """ If self.device is encrypted, this is its backing device. """
-        use_dev = None
-        if self.device:
-            if isinstance(self.device, LUKSDevice):
-                use_dev = self.device.slave
-            else:
-                use_dev = self.device
-
-        return use_dev
+        return self.device.raw_device if self.device else None
 
     @property
     def devices(self):
@@ -858,7 +848,7 @@ class PartitionFactory(DeviceFactory):
 
     def _set_device_size(self):
         """ Set the size of a defined factory device. """
-        if self.device and self.size != self.raw_device.size:
+        if self.raw_device and self.size != self.raw_device.size:
             log.info("adjusting device size from %s to %s",
                             self.raw_device.size, self.size)
 
@@ -1052,8 +1042,7 @@ class PartitionSetFactory(PartitionFactory):
         ##
         base_size = self._get_base_size()
         for member in members[:]:
-            if isinstance(member, LUKSDevice):
-                member = member.slave
+            member = member.raw_device
 
             # max size is set after instantiating the SizeSet below
             member.req_base_size = base_size
@@ -1103,9 +1092,7 @@ class PartitionSetFactory(PartitionFactory):
         size_set = self.parent_factory.size_set_class(members, total_space)
         self.storage.size_sets.append(size_set)
         for member in members[:]:
-            if isinstance(member, LUKSDevice):
-                member = member.slave
-
+            member = member.raw_device
             member.req_max_size = size_set.size
 
         ##
@@ -1295,9 +1282,7 @@ class LVMFactory(DeviceFactory):
             # Likewise, if there's already a VG whose PV is an MD we need to
             # remove it completely before proceeding.
             for member in self.container.parents[:]:
-                use_dev = member
-                if isinstance(member, LUKSDevice):
-                    use_dev = member.slave
+                use_dev = member.raw_device
 
                 if ((self.container_raid_level and use_dev.type != "mdarray") or
                     (not self.container_raid_level and use_dev.type == "mdarray")):

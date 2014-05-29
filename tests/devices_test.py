@@ -82,6 +82,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                                     self.assertIsInstance(x, ParentList, m),
            "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
            "partitionable" : self.assertFalse,
+           "raw_device" : self.assertIsNotNone,
            "resizable" : self.assertFalse,
            "size" : lambda x, m: self.assertEqual(x, Size(0), m),
            "spares" : lambda x, m: self.assertEqual(x, 0, m),

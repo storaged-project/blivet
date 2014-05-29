@@ -672,6 +672,11 @@ class StorageDevice(Device):
 
         return self._partedDevice
 
+    @property
+    def raw_device(self):
+        """ The device itself, or when encrypted, the backing device. """
+        return self
+
     def _setName(self, value):
         """Set the device's name.
 
@@ -2171,6 +2176,10 @@ class LUKSDevice(DMCryptDevice):
         DMCryptDevice.__init__(self, name, fmt=fmt, size=size,
                                parents=parents, sysfsPath=sysfsPath,
                                uuid=None, exists=exists)
+
+    @property
+    def raw_device(self):
+        return self.slave
 
     @property
     def size(self):
