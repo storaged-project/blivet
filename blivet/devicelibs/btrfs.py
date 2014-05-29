@@ -149,11 +149,20 @@ def get_default_subvolume(mountpoint):
 
     return default
 
-def create_snapshot(source, dest):
+def create_snapshot(source, dest, ro=False):
+    """
+        :param str source: path to source subvolume
+        :param str dest: path to new snapshot subvolume
+        :keyword bool ro: whether to create a read-only snapshot
+    """
     if not os.path.ismount(source):
         raise ValueError("source is not a mounted subvolume")
 
-    args = ["subvol", "snapshot", source, dest]
+    args = ["subvol", "snapshot"]
+    if ro:
+        args.append("-r")
+
+    args.extend([source, dest])
     return btrfs(args)
 
 _DEVICE_REGEX_STR = r'devid[ \t]+(\d+)[ \t]+size[ \t]+(\S+)[ \t]+used[ \t]+(\S+)[ \t]+path[ \t]+(\S+)\n'

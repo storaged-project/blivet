@@ -5360,6 +5360,7 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
             :type fmt: :class:`~.formats.DeviceFormat`
             :keyword str sysfsPath: sysfs device path
             :keyword :class:`~.BTRFSDevice` source: the snapshot source
+            :keyword bool readOnly: create a read-only snapshot
 
             Snapshot source can be either a subvolume or a top-level volume.
 
@@ -5377,6 +5378,8 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
 
         self.source = source
         """ the snapshot's source subvolume """
+
+        self.readOnly = kwargs.pop("readOnly", False)
 
         super(BTRFSSnapShotDevice, self).__init__(*args, **kwargs)
 
@@ -5399,7 +5402,7 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
 
         dest_path = "%s/%s" % (mountpoint, self.name)
         try:
-            btrfs.create_snapshot(source_path, dest_path)
+            btrfs.create_snapshot(source_path, dest_path, ro=self.readOnly)
         finally:
             self.volume._undo_temp_mount()
 
