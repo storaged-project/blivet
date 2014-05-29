@@ -246,10 +246,10 @@ class IPSeriesPPC(PPC):
     _boot_stage1_max_end = Size("4 GiB")
     _boot_prep_description = N_("PReP Boot Partition")
     _boot_descriptions = {"partition": _boot_prep_description}
-    _disklabel_types = ["msdos"]
+    _disklabel_types = ["msdos", "gpt"]
     _boot_stage1_missing_error = N_("You must include a PReP Boot Partition "
-                                    "within the first 4GiB of an MBR-formatted "
-                                    "disk.")
+                                    "within the first 4GiB of an MBR- "
+                                    "or GPT-formatted disk.")
 
     def setDefaultPartitioning(self):
         ret = PPC.setDefaultPartitioning(self)
