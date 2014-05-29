@@ -1066,6 +1066,11 @@ class StorageDevice(Device):
         return self._formatImmutable or self.protected
 
     @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return self.isleaf
+
+    @property
     def isDisk(self):
         return self._isDisk
 
@@ -1580,6 +1585,11 @@ class PartitionDevice(StorageDevice):
         extended_has_logical = (self.isExtended and
                                 (disklabel and disklabel.logicalPartitions))
         return (no_kids and not extended_has_logical)
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return self.isleaf and not self.isExtended
 
     def _setFormat(self, fmt):
         """ Set the Device's format. """
@@ -2712,6 +2722,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return self._complete or not self.exists
 
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return False
+
     def populateKSData(self, data):
         super(LVMVolumeGroupDevice, self).populateKSData(data)
         data.vgname = self.name
@@ -3037,6 +3052,13 @@ class LVMLogicalVolumeDevice(DMDevice):
                                     if not isinstance(s, LVMThinSnapShotDevice))
         return (super(LVMLogicalVolumeDevice, self).isleaf and
                 not non_thin_snapshots)
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        # an LV can contain a direct filesystem if it is a leaf device or if
+        # its only dependent devices are snapshots
+        return super(LVMLogicalVolumeDevice, self).isleaf
 
     def dracutSetupArgs(self):
         # Note no mapName usage here, this is a lvm cmdline name, which
@@ -3385,6 +3407,11 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
     def dracutSetupArgs(self):
         return set()
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return False
 
     def populateKSData(self, data):
         super(LVMThinPoolDevice, self).populateKSData(data)
@@ -4974,6 +5001,11 @@ class BTRFSDevice(StorageDevice):
     @property
     def path(self):
         return self.parents[0].path if self.parents else None
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return True
 
     @property
     def fstabSpec(self):

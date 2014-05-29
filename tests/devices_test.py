@@ -500,9 +500,13 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            "dev1", parents=parents)
 
         self.assertEqual(self.dev1.isleaf, False)
+        self.assertEqual(self.dev1.direct, True)
         self.assertEqual(self.dev2.isleaf, True)
+        self.assertEqual(self.dev2.direct, True)
+
         member = self.dev1.parents[0]
         self.assertEqual(member.isleaf, False)
+        self.assertEqual(member.direct, False)
 
     def testBTRFSDeviceMethods(self):
         """Test for method calls on initialized BTRFS Devices."""
@@ -549,7 +553,9 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         vol.exists = True
         snap = BTRFSSnapShotDevice("snap1", parents=[vol], source=vol)
         self.assertEqual(snap.isleaf, True)
+        self.assertEqual(snap.direct, True)
         self.assertEqual(vol.isleaf, False)
+        self.assertEqual(vol.direct, True)
 
         self.assertEqual(snap.dependsOn(vol), True)
         self.assertEqual(vol.dependsOn(snap), False)
@@ -590,7 +596,9 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(snap1.format, lv.format)
 
         self.assertEqual(snap1.isleaf, True)
+        self.assertEqual(snap1.direct, True)
         self.assertEqual(lv.isleaf, False)
+        self.assertEqual(lv.direct, True)
 
         self.assertEqual(snap1.dependsOn(lv), True)
         self.assertEqual(lv.dependsOn(snap1), False)
@@ -622,11 +630,14 @@ class LVMDeviceTest(unittest.TestCase):
         thinlv.exists = True
         snap1 = LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
         self.assertEqual(snap1.isleaf, True)
+        self.assertEqual(snap1.direct, True)
         self.assertEqual(thinlv.isleaf, True)
+        self.assertEqual(thinlv.direct, True)
 
         self.assertEqual(snap1.dependsOn(thinlv), True)
         self.assertEqual(thinlv.dependsOn(snap1), False)
 
+        # existing thin snapshots do not depend on their origin
         snap1.exists = True
         self.assertEqual(snap1.dependsOn(thinlv), False)
 
