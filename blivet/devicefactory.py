@@ -89,24 +89,7 @@ def get_device_type(device):
 
     return device_type
 
-def get_raid_level(device):
-    # TODO: move this into StorageDevice
-    use_dev = device
-    if isinstance(device, LUKSDevice):
-        use_dev = device.slave
 
-    # TODO: lvm and perhaps pulling raid level from md pvs
-    raid_level = None
-    if hasattr(use_dev, "level"):
-        raid_level = use_dev.level.name
-    elif hasattr(use_dev, "dataLevel"):
-        raid_level = use_dev.dataLevel or "single"
-    elif hasattr(use_dev, "volume"):
-        raid_level = use_dev.volume.dataLevel or "single"
-    elif hasattr(use_dev, "lvs") and len(use_dev.parents) == 1:
-        raid_level = get_raid_level(use_dev.parents[0])
-
-    return raid_level
 
 def get_device_factory(blivet, device_type, size, **kwargs):
     """ Return a suitable DeviceFactory instance for device_type. """
