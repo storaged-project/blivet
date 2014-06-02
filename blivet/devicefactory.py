@@ -320,7 +320,7 @@ class DeviceFactory(object):
         if value is None:
             self._raid_level = None
         else:
-            self._raid_level = raid.ALL_LEVELS.raidLevel(value)
+            self._raid_level = raid.getRaidLevel(value)
 
     @property
     def container_raid_level(self):
@@ -338,7 +338,7 @@ class DeviceFactory(object):
         if value is None:
             self._container_raid_level = None
         else:
-            self._container_raid_level = raid.ALL_LEVELS.raidLevel(value)
+            self._container_raid_level = raid.getRaidLevel(value)
     #
     # methods related to device size and disk space requirements
     #

@@ -631,3 +631,17 @@ class Dup(RAIDLevel):
 
 Dup = Dup()
 ALL_LEVELS.addRaidLevel(Dup)
+
+def getRaidLevel(descriptor):
+    """ Convenience function to return a RAID level for the descriptor.
+
+        :param object descriptor: a RAID level descriptor
+        :rtype: RAIDLevel
+        :returns: The RAIDLevel object for this descriptor
+
+        Note that descriptor may be any object that identifies a
+        RAID level, including the RAID object itself.
+
+        Raises a RaidError is there is no RAID object for the descriptor.
+    """
+    return ALL_LEVELS.raidLevel(descriptor)
