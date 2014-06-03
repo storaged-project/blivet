@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.53
+Version: 0.54
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed May 28 2014 Brian C. Lane <bcl@redhat.com> - 0.54-1
+- Add tests for setting device's parent list directly (vpodzime)
+- Do not alter the ParentList being iterated over (#1083581) (vpodzime)
+- Do not limit ThinLV's size to VG's free space (vpodzime)
+- Take extra RAID metadata into account when growing LV (#1093144) (vpodzime)
+- Move apply_chunk_growth outside of a for-cycle (vpodzime)
+- Multiple arguments for string formatting need to be in parentheses (#1100263)
+  (mkolman)
+- Make print statements Python 3 compatible (mkolman)
+- Validate device names (dshea)
+- Use a setter for Device.name as foretold by the prophecy of TODO (dshea)
+
 * Tue May 20 2014 Brian C. Lane <bcl@redhat.com> - 0.53-1
 - Remove extra quotes from the xfs_db arguments. (dshea)
 - Factor duplicate code in __deepcopy__ methods into one method (#1095244)
