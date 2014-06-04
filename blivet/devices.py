@@ -1125,6 +1125,13 @@ class StorageDevice(Device):
     def isNameValid(cls, name):
         # This device corresponds to a file in /dev, so no /'s or nulls,
         # and the name cannot be . or ..
+
+        # ...except some names *do* contain directory components, for this
+        # is an imperfect world of joy and sorrow mingled. For cciss, split
+        # the path into its components and do the real check on each piece
+        if name.startswith("cciss/"):
+            return all(cls.isNameValid(n) for n in name.split('/'))
+
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
 
@@ -4633,6 +4640,10 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
 
+    @classmethod
+    def isNameValid(cls, name):
+        # Override StorageDevice.isNameValid to allow /
+        return not('\x00' in name or name == '.' or name == '..')
 
 class BTRFSDevice(StorageDevice):
     """ Base class for BTRFS volume and sub-volume devices. """
@@ -5048,3 +5059,8 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         data.subvol = True
         data.name = self.name
         data.preexist = self.exists
+
+    @classmethod
+    def isNameValid(cls, name):
+        # Override StorageDevice.isNameValid to allow /
+        return not('\x00' in name or name == '.' or name == '..')

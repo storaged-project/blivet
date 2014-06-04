@@ -512,10 +512,10 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 class DeviceNameTestCase(unittest.TestCase):
     """Test device name validation"""
 
-    def testStorageDefvice(self):
+    def testStorageDevice(self):
         # Check that / and NUL are rejected along with . and ..
-        good_names = ['sda1', '1sda', 'good-name']
-        bad_names = ['sda/1', 'sda\x00', '.', '..']
+        good_names = ['sda1', '1sda', 'good-name', 'cciss/c0d0']
+        bad_names = ['sda/1', 'sda\x00', '.', '..', 'cciss/..']
 
         for name in good_names:
             self.assertTrue(StorageDevice.isNameValid(name))
