@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.54
+Version: 0.55
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,46 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jun 06 2014 Vratislav Podzimek <vpodzime@redhat.com> - 0.55-1
+- IPSeriesPPC now supports GPT in Open Firmware (hamzy)
+- Fix device name validation for devices that can contain / (#1103751) (dshea)
+- Add a getRaidLevel() convenience method to raid.py (amulhern)
+- Make a StorageDevice.raw_device property and use it where appropriate
+  (amulhern)
+- Simplify a small chunk of Blivet.updateKSData() (amulhern)
+- Move the code for getting a space requirement from devicefactory to raid.
+  (amulhern)
+- Make all devicefactory classes uses RAID objects instead of strings.
+  (amulhern)
+- Remove devicefactory.get_raid_level from blivet (amulhern)
+- Put get_supported_raid_levels in devicefactory.py (amulhern)
+- Make BTRFS devices use RAID objects instead of strings for levels (amulhern)
+- Add lists of supported RAID levels for btrfs and lvm (amulhern)
+- Add "linear" to mdraid's list of supported raid levels. (amulhern)
+- Remove getRaidLevel() from mdraid file and make RAID_levels public (amulhern)
+- Check for required methods in MDRaidLevels.isRaidLevel. (amulhern)
+- Use has_redundancy property to decide how to add a member to an array.
+  (amulhern)
+- Update the mdraid.mdadd comments (amulhern)
+- Use has_redundancy raid property when checking whether a device is removable
+  (amulhern)
+- Make createBitmap() a property and update tests appropriately. (amulhern)
+- Add a Dup class to the various descendants of RAIDLevel. (amulhern)
+- Add an is_uniform property to the RAID levels. (amulhern)
+- Add a has_redundancy method that returns True if there is actual redundancy
+  (amulhern)
+- Add Linear and Single to the RAID classes. (amulhern)
+- Move Container class to raid package and tidy it up (amulhern)
+- Allow the RAID object itself to be a valid RAID descriptor for lookup.
+  (amulhern)
+- Adjust RaidLevel hierarchy so that all raid level objects extend RAIDLevel
+  (amulhern)
+- No longer use _standard_levels as the default set of RAID levels. (amulhern)
+- Extract selection of members in complete() into a separate method. (amulhern)
+- Remove DMRaidArrayDevice.members property. (amulhern)
+- Comment mdraid.mdcreate() and update tests appropriately. (amulhern)
+- Import name 'lvm' instead of names from lvm package. (amulhern)
+
 * Wed May 28 2014 Brian C. Lane <bcl@redhat.com> - 0.54-1
 - Add tests for setting device's parent list directly (vpodzime)
 - Do not alter the ParentList being iterated over (#1083581) (vpodzime)
