@@ -60,7 +60,6 @@ from .size import Size
 import logging
 log = logging.getLogger("blivet")
 
-
 class DeviceTree(object):
     """ A quasi-tree that represents the devices in the system.
 
@@ -2220,239 +2219,198 @@ class DeviceTree(object):
             except DeviceError as e:
                 log.error("setup of %s failed: %s", device.name, e)
 
-    def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
-        """ Return a list of devices with a matching sysfs path.
+    def _filterDevices(self, incomplete=False, hidden=False):
+        """ Return list of devices modified according to parameters.
 
-            :param path: the sysfs path to match
-            :type path: str
-            :keyword incomplete: include incomplete devices in results
-            :type incomplete: bool
-            :keyword hidden: include hidden devices in results
-            :type hidden: bool
+            :param bool incomplete: include incomplete devices in result
+            :param bool hidden: include hidden devices in result
+
+            :returns: a list of devices
+            :rtype: list of :class:`~.devices.Device`
         """
-        if not path:
-            return None
-
-        found = None
         devices = self._devices[:]
         if hidden:
             devices += self._hidden
 
-        for device in devices:
-            if not incomplete and not getattr(device, "complete", True):
-                continue
+        if not incomplete:
+            devices = (d for d in devices if getattr(d, "complete", True))
+        return devices
 
-            if device.sysfsPath == path:
-                found = device
-                break
+    def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
+        """ Return a list of devices with a matching sysfs path.
 
-        log_method_return(self, found)
-        return found
+            :param str path: the sysfs path to match
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
+        """
+        log_method_call(self, path=path, incomplete=incomplete, hidden=hidden)
+        result = None
+        if path:
+            devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+            result = next((d for d in devices if d.sysfsPath == path), None)
+        log_method_return(self, result)
+        return result
 
     def getDeviceByUuid(self, uuid, incomplete=False, hidden=False):
         """ Return a list of devices with a matching UUID.
 
-            :param uuid: the UUID to match
-            :type uuid: str
-            :keyword incomplete: include incomplete devices in results
-            :type incomplete: bool
-            :keyword hidden: include hidden devices in results
-            :type hidden: bool
+            :param str uuid: the UUID to match
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
         """
-        if not uuid:
-            return None
-
-        found = None
-        devices = self._devices[:]
-        if hidden:
-            devices += self._hidden
-
-        for device in devices:
-            if not incomplete and not getattr(device, "complete", True):
-                continue
-
-            if device.uuid == uuid:
-                found = device
-                break
-            elif device.format.uuid == uuid:
-                found = device
-                break
-
-        log_method_return(self, found)
-        return found
+        log_method_call(self, uuid=uuid, incomplete=incomplete, hidden=hidden)
+        result = None
+        if uuid:
+            devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+            result = next((d for d in devices if d.uuid == uuid or d.format.uuid == uuid), None)
+        log_method_return(self, result)
+        return result
 
     def getDevicesBySerial(self, serial, incomplete=False, hidden=False):
         """ Return a list of devices with a matching serial.
 
-            :param serial: the serial to match
-            :type serial: str
-            :keyword incomplete: include incomplete devices in results
-            :type incomplete: bool
-            :keyword hidden: include hidden devices in results
-            :type hidden: bool
+            :param str serial: the serial to match
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: all matching devices found
+            :rtype: list of :class:`~.devices.Device`
         """
-        devices = self._devices[:]
-        if hidden:
-            devices += self._hidden
-
+        log_method_call(self, serial=serial, incomplete=incomplete, hidden=hidden)
+        devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
         retval = []
         for device in devices:
-            if not incomplete and not getattr(device, "complete", True):
-                continue
-
             if not hasattr(device, "serial"):
                 log.warning("device %s has no serial attr", device.name)
                 continue
             if device.serial == serial:
                 retval.append(device)
-
         log_method_return(self, retval)
         return retval
 
     def getDeviceByLabel(self, label, incomplete=False, hidden=False):
         """ Return a device with a matching filesystem label.
 
-            :param label: the filesystem label to match
-            :type label: str
-            :keyword incomplete: search incomplete devices
-            :type incomplete: bool
-            :keyword hidden: search hidden devices
-            :type hidden: bool
+            :param str label: the filesystem label to match
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
         """
-        if not label:
-            return None
-
-        found = None
-        devices = self._devices[:]
-        if hidden:
-            devices += self._hidden
-
-        for device in devices:
-            if not incomplete and not getattr(device, "complete", True):
-                continue
-
-            _label = getattr(device.format, "label", None)
-            if not _label:
-                continue
-
-            if _label == label:
-                found = device
-                break
-
-        log_method_return(self, found)
-        return found
+        log_method_call(self, label=label, incomplete=incomplete, hidden=hidden)
+        result = None
+        if label:
+            devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+            result = next((d for d in devices if getattr(d.format, "label", None) == label), None)
+        log_method_return(self, result)
+        return result
 
     def getDeviceByName(self, name, incomplete=False, hidden=False):
         """ Return a device with a matching name.
 
-            :param name: the name to look for
-            :type name: str
-            :keyword incomplete: search incomplete devices
-            :type incomplete: bool
-            :keyword hidden: search hidden devices
-            :type hidden: bool
+            :param str name: the name to look for
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
         """
-        log_method_call(self, name=name)
-        if not name:
-            log_method_return(self, None)
-            return None
-
-        found = None
-        devices = self._devices[:]
-        if hidden:
-            devices += self._hidden
-
-        for device in devices:
-            if not incomplete and not getattr(device, "complete", True):
-                continue
-
-            if device.name == name:
-                found = device
-                break
-            elif (device.type == "lvmlv" or device.type == "lvmvg") and \
-                    device.name == name.replace("--","-"):
-                found = device
-                break
-
-        log_method_return(self, str(found))
-        return found
+        log_method_call(self, name=name, incomplete=incomplete, hidden=hidden)
+        result = None
+        if name:
+            devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+            result = next((d for d in devices if d.name == name or \
+               ((d.type == "lvmlv" or d.type == "lvmvg") and d.name == name.replace("--","-"))),
+               None)
+        log_method_return(self, result)
+        return result
 
     def getDeviceByPath(self, path, preferLeaves=True, incomplete=False, hidden=False):
         """ Return a device with a matching path.
 
-            :param path: the path to match
-            :type path: str
-            :keyword incomplete: include incomplete devices in results
-            :type incomplete: bool
-            :keyword hidden: include hidden devices in results
-            :type hidden: bool
+            :param str path: the path to match
+            :param bool preferLeaves: prefer leaf devices to internal ones
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
         """
-        log_method_call(self, path=path)
-        if not path:
-            log_method_return(self, None)
-            return None
+        log_method_call(self, path=path, preferLeaves=preferLeaves, incomplete=incomplete, hidden=hidden)
+        result = None
+        if path:
+            devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+            matching_devices = (d for d in devices if d.path == path or \
+               ((d.type == "lvmlv" or d.type == "lvmvg") and d.path == path.replace("--","-")))
 
-        found = None
-        leaf = None
-        other = None
+            leaf_device = None
+            non_leaf_device = None
 
-        devices = self._devices[:]
-        if hidden:
-            devices += self._hidden
+            for device in matching_devices:
+                if leaf_device is not None and non_leaf_device is not None:
+                    break
+                if device.isleaf:
+                    if preferLeaves:
+                        return device
+                    leaf_device = leaf_device or device
+                else:
+                    if not preferLeaves:
+                        return device
+                    non_leaf_device = non_leaf_device or device
 
-        for device in devices:
-            if not incomplete and not getattr(device, "complete", True):
-                continue
+            # This point is reached if preferLeaves is True and there are no
+            # leaf devices or if preferLeaves is False and there are no non-leaf
+            # devices. Therefore at most one of the two variables is not None.
+            result = leaf_device or non_leaf_device
 
-            if (device.path == path or
-                ((device.type == "lvmlv" or device.type == "lvmvg") and
-                 device.path == path.replace("--","-"))):
-                if device.isleaf and not leaf:
-                    leaf = device
-                elif not other:
-                    other = device
+        log_method_return(self, result)
+        return result
 
-        if preferLeaves:
-            all_devs = [leaf, other]
-        else:
-            all_devs = [other, leaf]
-        all_devs = [d for d in all_devs if d]
-        if all_devs:
-            found = all_devs[0]
-
-        log_method_return(self, str(found))
-        return found
-
-    def getDevicesByType(self, device_type):
+    def getDevicesByType(self, device_type, incomplete=False, hidden=False):
         """ Return a list of devices with a matching device type.
 
-            :param device_type: the type to match
-            :type device_type: str
+            :param str device_type: the type to match
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: all matching device found
+            :rtype: list of :class:`~.devices.Device`
         """
-        # TODO: expand this to catch device format types
-        return [d for d in self._devices if d.type == device_type]
+        log_method_call(self, device_type=device_type, incomplete=incomplete, hidden=hidden)
+        devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+        result = [d for d in devices if d.type == device_type]
+        log_method_return(self, result)
+        return result
 
-    def getDevicesByInstance(self, device_class):
+    def getDevicesByInstance(self, device_class, incomplete=False, hidden=False):
         """ Return a list of devices with a matching device class.
 
-            :param path: the device class to match
-            :type path: class
+            :param class device_class: the device class to match
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: all matching device found
+            :rtype: list of :class:`~.devices.Device`
         """
-        return [d for d in self._devices if isinstance(d, device_class)]
+        log_method_call(self, device_class=device_class, incomplete=incomplete, hidden=hidden)
+        devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+        result = [d for d in devices if isinstance(d, device_class)]
+        log_method_return(self, result)
+        return result
 
-    def getDeviceByID(self, id_num, hidden=False):
+    def getDeviceByID(self, id_num, incomplete=False, hidden=False):
         """ Return a device with specified device id.
 
             :param int id_num: the id to look for
-            :param bool hidden: if True return hidden devices 
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
         """
-        devices = self._devices[:]
-        if hidden:
-            devices += self._hidden
-
-        for device in devices:
-            if device.id == id_num:
-                return device
+        log_method_call(self, id_num=id_num, incomplete=incomplete, hidden=hidden)
+        devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
+        result = next((d for d in devices if d.id == id_num), None)
+        log_method_return(self, result)
+        return result
 
     @property
     def devices(self):
