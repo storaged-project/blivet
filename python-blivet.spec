@@ -62,7 +62,7 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
-* Fri Jun 06 2014 Vratislav Podzimek <vpodzime@redhat.com> - 0.55-1
+* Mon Jun 09 2014 Vratislav Podzimek <vpodzime@redhat.com> - 0.55-1
 - IPSeriesPPC now supports GPT in Open Firmware (hamzy)
 - Fix device name validation for devices that can contain / (#1103751) (dshea)
 - Add a getRaidLevel() convenience method to raid.py (amulhern)
@@ -101,6 +101,9 @@ make DESTDIR=%{buildroot} install
 - Remove DMRaidArrayDevice.members property. (amulhern)
 - Comment mdraid.mdcreate() and update tests appropriately. (amulhern)
 - Import name 'lvm' instead of names from lvm package. (amulhern)
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.54-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
 * Wed May 28 2014 Brian C. Lane <bcl@redhat.com> - 0.54-1
 - Add tests for setting device's parent list directly (vpodzime)
