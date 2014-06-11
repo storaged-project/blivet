@@ -1655,6 +1655,10 @@ class DeviceTree(object):
             self._addDevice(md_array)
 
     def handleUdevDMRaidMemberFormat(self, info, device):
+        # if dmraid usage is disabled skip any dmraid set activation
+        if not flags.dmraid:
+            return
+
         log_method_call(self, name=device.name, type=device.format.type)
         name = udev.udev_device_get_name(info)
         uuid = udev.udev_device_get_uuid(info)
