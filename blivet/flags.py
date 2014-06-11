@@ -101,4 +101,6 @@ class Flags(object):
 
         self.multipath_friendly_names = anaconda_flags.mpathFriendlyNames
 
+        self.ibft = anaconda_flags.ibft
+
 flags = Flags()
