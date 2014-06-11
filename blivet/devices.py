@@ -1553,6 +1553,9 @@ class PartitionDevice(StorageDevice):
         else:
             StorageDevice.updateSysfsPath(self)
 
+    def _setName(self, value):
+        self._name = value  # actual name setting is done by parted
+
     def updateName(self):
         if self.partedPartition is None:
             self.name = self.req_name
@@ -4506,6 +4509,9 @@ class LoopDevice(StorageDevice):
         StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                exists=True, parents=parents)
 
+    def _setName(self, value):
+        self._name = value  # actual name is set by losetup
+
     def updateName(self):
         """ Update this device's name. """
         if not self.slave.status:
@@ -5119,6 +5125,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     @property
     def formatImmutable(self):
         return self.exists
+
+    def _setName(self, value):
+        self._name = value  # name is not used outside of blivet
 
     def _setFormat(self, fmt):
         """ Set the Device's format. """
