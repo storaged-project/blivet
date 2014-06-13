@@ -866,7 +866,6 @@ class DeviceTree(object):
         log_method_call(self, name=name)
         sysfs_path = udev.udev_device_get_sysfs_path(info)
 
-        slaves = []
         slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
         slave_names = os.listdir(slave_dir)
         for slave_name in slave_names:
@@ -876,9 +875,7 @@ class DeviceTree(object):
             else:
                 dev_name = slave_name
             slave_dev = self.getDeviceByName(dev_name)
-            if slave_dev:
-                slaves.append(slave_dev)
-            else:
+            if not slave_dev:
                 # we haven't scanned the slave yet, so do it now
                 path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
                 new_info = udev.udev_get_block_device(os.path.realpath(path)[4:])
