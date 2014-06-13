@@ -891,7 +891,12 @@ class DeviceTree(object):
         device = self.getDeviceByName(name)
 
         if device is None:
-            device = self.getDeviceByUuid(info.get("MD_UUID"))
+            try:
+                uuid = udev.udev_device_get_md_uuid(info)
+            except KeyError:
+                log.warning("failed to obtain uuid for mdraid device")
+            else:
+                device = self.getDeviceByUuid(uuid)
 
         # if we get here, we found all of the slave devices and
         # something must be wrong -- if all of the slaves are in
@@ -1188,16 +1193,7 @@ class DeviceTree(object):
             device = self.addUdevDMDevice(info)
         elif udev.udev_device_is_md(info) and not udev.udev_device_get_md_container(info):
             log.info("%s is an md device", name)
-            try:
-                md_uuid = udev.udev_device_get_md_uuid(info)
-            except KeyError:
-                pass
-            else:
-                # try to find the device by uuid
-                device = self.getDeviceByUuid(md_uuid)
-
-            if device is None:
-                device = self.addUdevMDDevice(info)
+            device = self.addUdevMDDevice(info)
         elif udev.udev_device_is_cdrom(info):
             log.info("%s is a cdrom", name)
             device = self.addUdevOpticalDevice(info)
