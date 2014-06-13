@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.55
+Version: 0.56
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,27 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jun 12 2014 Brian C. Lane <bcl@redhat.com> - 0.56-1
+- Skip device name validation for some device types. (dlehman)
+- Add a property indicating whether a device is directly accessible. (dlehman)
+- Add support for read-only btrfs snapshots. (dlehman)
+- Add tests for snapshots. (dlehman)
+- Special treatment for getting parted device for old-style lvm snapshots.
+  (dlehman)
+- Some devices have immutable formatting. (dlehman)
+- Detect existing btrfs snapshots. (dlehman)
+- Drop special accounting for snapshot space usage in VG. (dlehman)
+- Use LVMSnapshotDevice when populating the devicetree. (dlehman)
+- Add Device classes for snapshots. (dlehman)
+- Add ignore_skip keyword arg to lvactivate. (dlehman)
+- Add optional kwarg to force removal of a logical volume. (dlehman)
+- Add backend functions for creating and managing snapshots. (dlehman)
+- Add docstrings for BTRFSVolumeDevice and BTRFSSubVolumeDevice. (dlehman)
+- Remove duplicate portion of lvm config string. (dlehman)
+- Reset the devicetree before tearing everything down in _cleanUp. (dlehman)
+- Make sure disk filters are applied even if populate fails. (dlehman)
+- Sync the spec file with downstream (vpodzime)
+
 * Mon Jun 09 2014 Vratislav Podzimek <vpodzime@redhat.com> - 0.55-1
 - IPSeriesPPC now supports GPT in Open Firmware (hamzy)
 - Fix device name validation for devices that can contain / (#1103751) (dshea)
