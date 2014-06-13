@@ -817,7 +817,6 @@ class DeviceTree(object):
         name = udev.udev_device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.udev_device_get_sysfs_path(info)
-        device = None
 
         slave_devs = []
 
@@ -848,6 +847,7 @@ class DeviceTree(object):
 
             slave_devs.append(slave_dev)
 
+        device = None
         if slave_devs:
             try:
                 serial = info["DM_UUID"].split("-", 1)[1]
@@ -865,7 +865,6 @@ class DeviceTree(object):
         name = udev.udev_device_get_md_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.udev_device_get_sysfs_path(info)
-        device = None
 
         slaves = []
         slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
@@ -919,7 +918,6 @@ class DeviceTree(object):
         name = udev.udev_device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.udev_device_get_sysfs_path(info)
-        device = None
 
         if name.startswith("md"):
             name = mdraid.name_from_md_node(name)
@@ -964,6 +962,7 @@ class DeviceTree(object):
             log.debug("ignoring partition %s on %s", name, disk.format.type)
             return
 
+        device = None
         try:
             device = PartitionDevice(name, sysfsPath=sysfs_path,
                                      major=udev.udev_device_get_major(info),
@@ -992,8 +991,6 @@ class DeviceTree(object):
         vendor = udev.udev_device_get_vendor(info)
         if not vendor:
             vendor = ""
-
-        device = None
 
         kwargs = { "serial": serial, "vendor": vendor, "bus": bus }
         if udev.udev_device_is_iscsi(info):
