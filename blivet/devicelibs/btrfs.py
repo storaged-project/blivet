@@ -53,13 +53,15 @@ def btrfs(args, capture=False):
 def create_volume(devices, label=None, data=None, metadata=None):
     """Create a btrfs filesystem on the list of devices specified by devices.
 
-       Optional arguments label, data, metadata corresponds to flags
-       accepted by mkfs.btrfs.
-
        :param data: a raid level for data
-       :type data: :class:`~.devicelibs.raid.RAIDLevel`
+       :type data: :class:`~.devicelibs.raid.RAIDLevel` or str
        :param metadata: a raid level for metadata
-       :type metadata: :class:`~.devicelibs.raid.RAIDLevel`
+       :type metadata: :class:`~.devicelibs.raid.RAIDLevel` or str
+
+       Note that if a level is specified as a string, rather than by means
+       of a RAIDLevel object, it is not checked for validity. It is the
+       responsibility of the invoking method to verify that mkfs.btrfs
+       recognizes the string.
     """
     if not devices:
         raise ValueError("no devices specified")
