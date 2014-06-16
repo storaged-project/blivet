@@ -656,8 +656,6 @@ class DeviceNameTestCase(unittest.TestCase):
             self.assertFalse(StorageDevice.isNameValid(name))
 
     def testVolumeGroup(self):
-        from blivet.devices import LVMVolumeGroupDevice
-
         good_names = ['vg00', 'group-name', 'groupname-']
         bad_names = ['-leading-hyphen', 'únicode', 'sp aces']
 
@@ -668,8 +666,6 @@ class DeviceNameTestCase(unittest.TestCase):
             self.assertFalse(LVMVolumeGroupDevice.isNameValid(name))
 
     def testLogicalVolume(self):
-        from blivet.devices import LVMLogicalVolumeDevice
-
         good_names = ['lv00', 'volume-name', 'volumename-']
         bad_names = ['-leading-hyphen', 'únicode', 'sp aces',
                      'snapshot47', 'pvmove0', 'sub_tmetastring']
