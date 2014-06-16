@@ -3,9 +3,15 @@ import os
 import subprocess
 
 
-def makeLoopDev(device_name, file_name):
+def makeLoopDev(device_name, file_name, num_blocks=102400):
+    """ Set up a loop device with a backing store.
+
+        :param str device_name: the path of the loop device
+        :param str file_name: the path of the backing file
+        :param int num_blocks: the size of file_name in number of blocks
+    """
     proc = subprocess.Popen(["dd", "if=/dev/zero", "of=%s" % file_name,
-                             "bs=1024", "count=102400"],
+                             "bs=1024", "count=%d" % num_blocks],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
         proc.communicate()
