@@ -33,9 +33,9 @@ class LVMTestCase(unittest.TestCase):
 
 class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, methodName='runTest'):
         """Set up the structure of the volume group."""
-        super(LVMAsRootTestCase, self).__init__(*args, **kwargs)
+        super(LVMAsRootTestCase, self).__init__(methodName=methodName)
         self._vg_name = "test-vg"
         self._lv_name = "test-lv"
 

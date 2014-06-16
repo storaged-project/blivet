@@ -69,8 +69,8 @@ class DevicelibsTestCase(unittest.TestCase):
 
     _LOOP_DEVICES = ["/tmp/test-virtdev0", "/tmp/test-virtdev1"]
 
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self, *args, **kwargs)
+    def __init__(self, methodName='runTest'):
+        unittest.TestCase.__init__(self, methodName=methodName)
         self._loopMap = {}
 
     def setUp(self):

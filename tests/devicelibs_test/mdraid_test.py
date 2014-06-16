@@ -51,9 +51,9 @@ class MDRaidTestCase(unittest.TestCase):
 
 class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, methodName='runTest'):
         """Set up the structure of the mdraid array."""
-        super(MDRaidAsRootTestCase, self).__init__(*args, **kwargs)
+        super(MDRaidAsRootTestCase, self).__init__(methodName=methodName)
         self._dev_name = "/dev/md0"
 
     def tearDown(self):

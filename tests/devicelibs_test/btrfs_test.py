@@ -15,8 +15,8 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
        It must create the filesystem on its chosen devices before mounting.
        It always mounts the filesystem using self.device at self.mountpoint.
     """
-    def __init__(self, *args, **kwargs):
-        baseclass.DevicelibsTestCase.__init__(self, *args, **kwargs)
+    def __init__(self, methodName='runTest'):
+        super(BTRFSMountDevice, self).__init__(methodName=methodName)
         self.device = None
         self.mountpoint = None
 

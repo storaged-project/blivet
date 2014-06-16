@@ -131,9 +131,9 @@ class CryptoTestCase(baseclass.DevicelibsTestCase):
 
 class CryptoTestCase2(baseclass.DevicelibsTestCase):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, methodName='runTest'):
         """Set up the names by which luks knows these devices."""
-        super(CryptoTestCase2, self).__init__(*args, **kwargs)
+        super(CryptoTestCase2, self).__init__(methodName=methodName)
         self._names = { self._LOOP_DEVICES[0]: "crypted",
            self._LOOP_DEVICES[1]: "encrypted" }
 
