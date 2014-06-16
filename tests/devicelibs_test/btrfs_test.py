@@ -177,5 +177,21 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         subvolumes = btrfs.list_subvolumes(self.mountpoint)
         self.assertEqual(len([v for v in subvolumes if v['path'].find("SV1.1") != -1]), 1)
 
+class BTRFSAsRootTestCase3(baseclass.DevicelibsTestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[8192])
+
+    def testSmallDevice(self):
+        """ Creation of a smallish device will result in an error if the
+            data and metadata levels are specified differently, but not if
+            they are unspecified.
+        """
+        self.assertRaises(
+           BTRFSError,
+           btrfs.create_volume,
+           self.loopDevices, data="single", metadata="dup")
+        self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
+
 if __name__ == "__main__":
     unittest.main()
