@@ -58,6 +58,7 @@ def getFreeLoopDev():
 
     return out
 
+@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class DevicelibsTestCase(unittest.TestCase):
 
     _LOOP_DEVICES = ["/tmp/test-virtdev0", "/tmp/test-virtdev1"]

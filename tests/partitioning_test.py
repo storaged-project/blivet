@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import os
 import unittest
 from mock import Mock
 
@@ -125,7 +124,6 @@ class PartitioningTestCase(unittest.TestCase):
         disk = self.getDisk(disk_type="mac")
         self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
 
-@unittest.skipUnless(os.environ.get("JENKINS_HOME"), "jenkins only test")
 class ExtendedPartitionTestCase(ImageBackedTestCase):
 
     disks = {"disk1": Size("2 GiB")}

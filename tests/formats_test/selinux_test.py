@@ -12,7 +12,6 @@ class SELinuxContextTestCase(baseclass.DevicelibsTestCase):
     """Testing SELinux contexts.
     """
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testMountingExt2FS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
 
@@ -57,7 +56,6 @@ class SELinuxContextTestCase(baseclass.DevicelibsTestCase):
         self.assertEqual(lost_and_found_selinux_context[1],
            'system_u:object_r:lost_found_t:s0')
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testMountingXFS(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
 

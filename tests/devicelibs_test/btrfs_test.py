@@ -54,7 +54,6 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
 
 class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testUnmountedBTRFS(self):
         """A series of simple tests on an unmounted file system.
 
@@ -98,7 +97,6 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
            btrfs.create_volume,
            [_LOOP_DEV0], metadata="RaID7")
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testMkfsDefaults(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
@@ -117,7 +115,6 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
 class BTRFSAsRootTestCase2(BTRFSMountDevice):
     """Tests which require mounting the device."""
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testSubvolume(self):
         """Tests which focus on subvolumes."""
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]

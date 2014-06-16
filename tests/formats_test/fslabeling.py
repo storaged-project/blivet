@@ -1,13 +1,10 @@
 #!/usr/bin/python
 
 import abc
-import os
-import unittest
 
 from tests.devicelibs_test import baseclass
 from blivet.errors import FSError
 
-@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class LabelingAsRoot(baseclass.DevicelibsTestCase):
     """Tests various aspects of labeling a filesystem where there
        is no easy way to read the filesystem's label once it has been

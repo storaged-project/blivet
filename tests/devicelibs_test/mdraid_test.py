@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import os
 import unittest
 import time
 
@@ -67,7 +66,6 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
 
         super(MDRaidAsRootTestCase, self).tearDown()
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testMDRaidAsRoot(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]

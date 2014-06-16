@@ -29,7 +29,6 @@ from tests.devicelibs_test import baseclass
 
 class CryptoTestCase(baseclass.DevicelibsTestCase):
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testCryptoMisc(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
@@ -147,7 +146,6 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
                 pass
         super(CryptoTestCase2, self).tearDown()
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testCryptoOpen(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]

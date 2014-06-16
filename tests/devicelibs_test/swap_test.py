@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import os
 import unittest
 
 import blivet.devicelibs.swap as swap
@@ -9,7 +8,6 @@ from tests.devicelibs_test import baseclass
 
 class SwapTestCase(baseclass.DevicelibsTestCase):
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testSwap(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]

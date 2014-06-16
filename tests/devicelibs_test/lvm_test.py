@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import os
 import unittest
 
 import blivet.devicelibs.lvm as lvm
@@ -67,7 +66,6 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
 
         super(LVMAsRootTestCase, self).tearDown()
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def testLVM(self):
         _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
         _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]

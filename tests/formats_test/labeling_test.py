@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import os
 import unittest
 
 from tests.devicelibs_test import baseclass
@@ -127,7 +126,6 @@ class HFSTestCase(fslabeling.LabelingAsRoot):
     def setUp(self):
         super(HFSTestCase, self).setUp()
 
-@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class LabelingSwapSpaceTestCase(baseclass.DevicelibsTestCase):
 
     def testLabeling(self):

@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from tests.imagebackedtestcase import ImageBackedTestCase
@@ -30,7 +29,6 @@ def recursive_getattr(x, attr, default=None):
 
     return val
 
-@unittest.skipUnless(os.environ.get("JENKINS_HOME"), "jenkins only test")
 class BlivetResetTestCase(ImageBackedTestCase):
     """ A class to test the results of Blivet.reset (and DeviceTree.populate).
 

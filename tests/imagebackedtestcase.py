@@ -7,6 +7,7 @@ from blivet import util
 from blivet.size import Size
 from blivet.flags import flags
 
+@unittest.skipUnless(os.environ.get("JENKINS_HOME"), "jenkins only test")
 @unittest.skipUnless(os.geteuid() == 0, "requires root access")
 class ImageBackedTestCase(unittest.TestCase):
     """ A class to encapsulate testing of blivet using block devices.
