@@ -59,7 +59,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
             pass
 
         try:
-            for dev in self._loopMap.values():
+            for dev in self.loopDevices:
                 lvm.pvremove(dev)
         except LVMError:
             pass
@@ -67,14 +67,14 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         super(LVMAsRootTestCase, self).tearDown()
 
     def testLVM(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
         ##
         ## pvcreate
         ##
         # pass
-        for dev in self._loopMap.values():
+        for dev in self.loopDevices:
             self.assertEqual(lvm.pvcreate(dev), None)
 
         # fail
@@ -84,7 +84,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvresize
         ##
         # pass
-        for dev in self._loopMap.values():
+        for dev in self.loopDevices:
             self.assertEqual(lvm.pvresize(dev, Size("50MiB")), None)
             self.assertEqual(lvm.pvresize(dev, Size("100MiB")), None)
 
@@ -98,7 +98,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## vgcreate
         ##
         # pass
-        self.assertEqual(lvm.vgcreate(self._vg_name, [_LOOP_DEV0, _LOOP_DEV1], Size("4MiB")), None)
+        self.assertEqual(lvm.vgcreate(self._vg_name, self.loopDevices, Size("4MiB")), None)
 
         # fail
         self.assertRaisesRegexp(LVMError,
@@ -256,7 +256,7 @@ class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
         ## pvremove
         ##
         # pass
-        for dev in self._loopMap.values():
+        for dev in self.loopDevices:
             self.assertEqual(lvm.pvremove(dev), None)
 
         # fail

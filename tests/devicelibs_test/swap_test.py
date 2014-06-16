@@ -9,8 +9,8 @@ from tests.devicelibs_test import baseclass
 class SwapTestCase(baseclass.DevicelibsTestCase):
 
     def testSwap(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
 
         ##

@@ -28,8 +28,8 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
         """
         baseclass.DevicelibsTestCase.setUp(self)
 
-        btrfs.create_volume(self._loopMap.values())
-        self.device = self._loopMap.values()[0]
+        btrfs.create_volume(self.loopDevices)
+        self.device = self.loopDevices[0]
 
         self.mountpoint = tempfile.mkdtemp()
         rc = subprocess.call(["mount", self.device, self.mountpoint])
@@ -59,8 +59,8 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
 
            These tests are limited to simple creating and scanning.
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
         ##
         ## create_volume
@@ -89,7 +89,7 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
            [_LOOP_DEV0], metadata="RaID7")
 
         # pass
-        self.assertEqual(btrfs.create_volume(self._loopMap.values()), 0)
+        self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
 
         # already created
         self.assertRaisesRegexp(BTRFSError,
@@ -98,10 +98,10 @@ class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
            [_LOOP_DEV0], metadata="RaID7")
 
     def testMkfsDefaults(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
-        btrfs.create_volume(self._loopMap.values())
+        btrfs.create_volume(self.loopDevices)
 
         self.assertEqual(btrfs.summarize_filesystem(_LOOP_DEV0)["label"], "none")
         self.assertEqual(btrfs.summarize_filesystem(_LOOP_DEV0)["num_devices"], "2")
@@ -117,8 +117,8 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
 
     def testSubvolume(self):
         """Tests which focus on subvolumes."""
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
         # no subvolumes yet
         self.assertEqual(btrfs.list_subvolumes(self.mountpoint), [])

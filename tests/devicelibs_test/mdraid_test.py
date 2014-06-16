@@ -59,7 +59,7 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
     def tearDown(self):
         try:
             mdraid.mddeactivate(self._dev_name)
-            for dev in self._loopMap.values():
+            for dev in self.loopDevices:
                 mdraid.mddestroy(dev)
         except MDRaidError:
             pass
@@ -67,14 +67,11 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         super(MDRaidAsRootTestCase, self).tearDown()
 
     def testMDRaidAsRoot(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
-
         ##
         ## mdcreate
         ##
         # pass
-        self.assertEqual(mdraid.mdcreate(self._dev_name, raid.RAID1, [_LOOP_DEV0, _LOOP_DEV1]), None)
+        self.assertEqual(mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices), None)
         # wait for raid to settle
         time.sleep(2)
 
@@ -110,8 +107,8 @@ class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
         ## mddestroy
         ##
         # pass
-        self.assertEqual(mdraid.mddestroy(_LOOP_DEV0), None)
-        self.assertEqual(mdraid.mddestroy(_LOOP_DEV1), None)
+        for dev in self.loopDevices:
+            self.assertEqual(mdraid.mddestroy(dev), None)
 
         # pass
         # Note that these should fail because mdadm is unable to locate the

@@ -67,18 +67,36 @@ def getFreeLoopDev():
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class DevicelibsTestCase(unittest.TestCase):
 
-    _LOOP_DEVICES = ["/tmp/test-virtdev0", "/tmp/test-virtdev1"]
+    DEFAULT_STORE_SIZE = 102400
+    _DEFAULT_DEVICE_SPEC = [DEFAULT_STORE_SIZE, DEFAULT_STORE_SIZE]
+    _STORE_FILE_TEMPLATE = 'test-virtdev%d'
+    _STORE_FILE_PATH = '/var/tmp'
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='runTest', deviceSpec=None):
+        """ DevicelibsTestCase manages loop devices.
+
+            It constructs loop devices according to loopDeviceSpec,
+            sets them up, and tears them down again.
+
+            :param deviceSpec: Specification for the loop devices.
+            :type deviceSpec: list of int
+
+            deviceSpec is currently just a list of ints corresponding
+            to the number of blocks for each backing store.
+        """
         unittest.TestCase.__init__(self, methodName=methodName)
+        self._deviceSpec = deviceSpec or self._DEFAULT_DEVICE_SPEC
         self._loopMap = {}
+        self.loopDevices = []
 
     def setUp(self):
-        for store in self._LOOP_DEVICES:
+        for index, size in enumerate(self._deviceSpec):
+            store = os.path.join(self._STORE_FILE_PATH, self._STORE_FILE_TEMPLATE % index)
             dev = getFreeLoopDev()
-            makeLoopDev(dev, store)
-            self._loopMap[store] = dev
+            makeLoopDev(dev, store, num_blocks=size)
+            self._loopMap[dev] = store
+            self.loopDevices.append(dev)
 
     def tearDown(self):
-        for (store, dev) in self._loopMap.iteritems():
+        for (dev, store) in self._loopMap.iteritems():
             removeLoopDev(dev, store)

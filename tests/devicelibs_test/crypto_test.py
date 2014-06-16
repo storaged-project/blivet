@@ -30,8 +30,8 @@ from tests.devicelibs_test import baseclass
 class CryptoTestCase(baseclass.DevicelibsTestCase):
 
     def testCryptoMisc(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
 
         ##
@@ -134,12 +134,11 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
     def __init__(self, methodName='runTest'):
         """Set up the names by which luks knows these devices."""
         super(CryptoTestCase2, self).__init__(methodName=methodName)
-        self._names = { self._LOOP_DEVICES[0]: "crypted",
-           self._LOOP_DEVICES[1]: "encrypted" }
+        self._names = ["crypted", "encrypted"]
 
     def tearDown(self):
         """Close all devices just in case they are still open."""
-        for name in self._names.values():
+        for name in self._names:
             try:
                 crypto.luks_close(name)
             except (IOError, CryptoError):
@@ -147,11 +146,11 @@ class CryptoTestCase2(baseclass.DevicelibsTestCase):
         super(CryptoTestCase2, self).tearDown()
 
     def testCryptoOpen(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-        _LOOP_DEV1 = self._loopMap[self._LOOP_DEVICES[1]]
+        _LOOP_DEV0 = self.loopDevices[0]
+        _LOOP_DEV1 = self.loopDevices[1]
 
-        _name0 = self._names[self._LOOP_DEVICES[0]]
-        _name1 = self._names[self._LOOP_DEVICES[1]]
+        _name0 = self._names[0]
+        _name1 = self._names[1]
 
         ##
         ## luks_format

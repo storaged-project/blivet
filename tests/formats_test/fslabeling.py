@@ -19,6 +19,9 @@ class LabelingAsRoot(baseclass.DevicelibsTestCase):
     _invalid_label = abc.abstractproperty(
        doc="A label which is invalid for this filesystem.")
 
+    def __init__(self, methodName='runTest'):
+        super(LabelingAsRoot, self).__init__(methodName=methodName, deviceSpec=[102400])
+
     def setUp(self):
         an_fs = self._fs_class()
         if not an_fs.utilsAvailable:
@@ -32,9 +35,7 @@ class LabelingAsRoot(baseclass.DevicelibsTestCase):
            * raise an exception when reading the filesystem
            * raise an exception when relabeling the filesystem
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label=self._invalid_label)
+        an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
         self.assertRaisesRegexp(FSError,
@@ -48,25 +49,19 @@ class LabelingAsRoot(baseclass.DevicelibsTestCase):
 
     def testCreating(self):
         """Create the filesystem when passing a valid label """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label="start")
+        an_fs = self._fs_class(device=self.loopDevices[0], label="start")
         self.assertIsNone(an_fs.create())
 
     def testCreatingNone(self):
         """Create the filesystem when passing None
            (indicates filesystem default)
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label=None)
+        an_fs = self._fs_class(device=self.loopDevices[0], label=None)
         self.assertIsNone(an_fs.create())
 
     def testCreatingEmpty(self):
         """Create the filesystem when passing the empty label."""
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label="")
+        an_fs = self._fs_class(device=self.loopDevices[0], label="")
         self.assertIsNone(an_fs.create())
 
 class LabelingWithRelabeling(LabelingAsRoot):
@@ -83,9 +78,7 @@ class LabelingWithRelabeling(LabelingAsRoot):
            * raise an exception when relabeling when None is specified
            * raise an exception when relabeling with an invalid label
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label=self._invalid_label)
+        an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
         self.assertRaisesRegexp(FSError,
@@ -125,9 +118,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
            * raise an exception when relabeling when None is specified
            * raise an exception when relabeling with an invalid label
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label=self._invalid_label)
+        an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
@@ -153,9 +144,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         """Create the filesystem when passing a valid label.
            Verify that the filesystem has that label.
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label="start")
+        an_fs = self._fs_class(device=self.loopDevices[0], label="start")
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), "start")
 
@@ -163,9 +152,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         """Create a filesystem with the label None.
            Verify that the filesystem has the default label.
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label=None)
+        an_fs = self._fs_class(device=self.loopDevices[0], label=None)
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
@@ -173,8 +160,6 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         """Create a filesystem with an empty label.
            Verify that the filesystem has the empty label.
         """
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = self._fs_class(device=_LOOP_DEV0, label="")
+        an_fs = self._fs_class(device=self.loopDevices[0], label="")
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), "")

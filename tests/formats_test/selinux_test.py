@@ -12,10 +12,11 @@ class SELinuxContextTestCase(baseclass.DevicelibsTestCase):
     """Testing SELinux contexts.
     """
 
-    def testMountingExt2FS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
+    def __init__(self, methodName='runTest'):
+        super(SELinuxContextTestCase, self).__init__(methodName=methodName, deviceSpec=[102400])
 
-        an_fs = fs.Ext2FS(device=_LOOP_DEV0, label="test")
+    def testMountingExt2FS(self):
+        an_fs = fs.Ext2FS(device=self.loopDevices[0], label="test")
         self.assertIsNone(an_fs.create())
 
         blivet.flags.installer_mode = False
@@ -57,9 +58,7 @@ class SELinuxContextTestCase(baseclass.DevicelibsTestCase):
            'system_u:object_r:lost_found_t:s0')
 
     def testMountingXFS(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        an_fs = fs.XFS(device=_LOOP_DEV0, label="test")
+        an_fs = fs.XFS(device=self.loopDevices[0], label="test")
         self.assertIsNone(an_fs.create())
 
         blivet.flags.installer_mode = False

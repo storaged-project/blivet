@@ -129,22 +129,16 @@ class HFSTestCase(fslabeling.LabelingAsRoot):
 class LabelingSwapSpaceTestCase(baseclass.DevicelibsTestCase):
 
     def testLabeling(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        swp = swap.SwapSpace(device=_LOOP_DEV0)
+        swp = swap.SwapSpace(device=self.loopDevices[0])
         swp.label = "mkswap is really pretty permissive about labels"
         self.assertIsNone(swp.create())
 
     def testCreatingSwapSpaceNone(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        swp = swap.SwapSpace(device=_LOOP_DEV0, label=None)
+        swp = swap.SwapSpace(device=self.loopDevices[0], label=None)
         self.assertIsNone(swp.create())
 
     def testCreatingSwapSpaceEmpty(self):
-        _LOOP_DEV0 = self._loopMap[self._LOOP_DEVICES[0]]
-
-        swp = swap.SwapSpace(device=_LOOP_DEV0, label="")
+        swp = swap.SwapSpace(device=self.loopDevices[0], label="")
         self.assertIsNone(swp.create())
 
 if __name__ == "__main__":
