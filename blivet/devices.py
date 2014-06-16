@@ -5037,8 +5037,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             :type fmt: :class:`~.formats.DeviceFormat`
             :keyword str uuid: UUID of top-level filesystem/volume
             :keyword str sysfsPath: sysfs device path
-            :keyword str dataLevel: RAID level for data
-            :keyword str metaDataLevel: RAID level for metadata
+            :keyword dataLevel: RAID level for data
+            :type dataLevel: any valid raid level descriptor
+            :keyword metaDataLevel: RAID level for metadata
+            :type metaDataLevel: any valid raid level descriptor
         """
         # pop these arguments before the constructor call to avoid
         # unrecognized keyword error in superclass constructor
