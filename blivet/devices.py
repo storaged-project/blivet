@@ -5084,15 +5084,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             :param value: new raid level
             :param type:  a valid raid level descriptor
             :returns:     None
-
-            If no raid level is specified then the best choice is single
-            since it can accomodate devices of different sizes.
         """
         # pylint: disable=attribute-defined-outside-init
-        if value is None:
-            self._dataLevel = btrfs.RAID_levels.raidLevel("single")
-        else:
-            self._dataLevel = btrfs.RAID_levels.raidLevel(value)
+        self._dataLevel = btrfs.RAID_levels.raidLevel(value) if value else None
 
     @property
     def metaDataLevel(self):
@@ -5110,19 +5104,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             :param value: new raid level
             :param type:  a valid raid level descriptor
             :returns:     None
-
-            If no raid level is specified and there are multiple devices,
-            best choice is the default that mkfs.btrfs chooses, raid1.
-            If there is only one device, the best default is dup.
         """
         # pylint: disable=attribute-defined-outside-init
-        if value is None:
-            if len(self.parents) > 1:
-                self._metaDataLevel = btrfs.metadata_levels.raidLevel("raid1")
-            else:
-                self._metaDataLevel = btrfs.metadata_levels.raidLevel("dup")
-        else:
-            self._metaDataLevel = btrfs.RAID_levels.raidLevel(value)
+        self._metaDataLevel = btrfs.metadata_levels.raidLevel(value) if value else None
 
     @property
     def formatImmutable(self):
