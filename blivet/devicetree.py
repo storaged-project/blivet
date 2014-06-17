@@ -2327,42 +2327,22 @@ class DeviceTree(object):
         log_method_return(self, result)
         return result
 
-    def getDeviceByPath(self, path, preferLeaves=True, incomplete=False, hidden=False):
+    def getDeviceByPath(self, path, incomplete=False, hidden=False):
         """ Return a device with a matching path.
 
             :param str path: the path to match
-            :param bool preferLeaves: prefer leaf devices to internal ones
             :param bool incomplete: include incomplete devices in search
             :param bool hidden: include hidden devices in search
             :returns: the first matching device found
             :rtype: :class:`~.devices.Device`
         """
-        log_method_call(self, path=path, preferLeaves=preferLeaves, incomplete=incomplete, hidden=hidden)
+        log_method_call(self, path=path, incomplete=incomplete, hidden=hidden)
         result = None
         if path:
             devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
-            matching_devices = (d for d in devices if d.path == path or \
-               ((d.type == "lvmlv" or d.type == "lvmvg") and d.path == path.replace("--","-")))
-
-            leaf_device = None
-            non_leaf_device = None
-
-            for device in matching_devices:
-                if leaf_device is not None and non_leaf_device is not None:
-                    break
-                if device.isleaf:
-                    if preferLeaves:
-                        return device
-                    leaf_device = leaf_device or device
-                else:
-                    if not preferLeaves:
-                        return device
-                    non_leaf_device = non_leaf_device or device
-
-            # This point is reached if preferLeaves is True and there are no
-            # leaf devices or if preferLeaves is False and there are no non-leaf
-            # devices. Therefore at most one of the two variables is not None.
-            result = leaf_device or non_leaf_device
+            result = next((d for d in devices if d.path == path or \
+               ((d.type == "lvmlv" or d.type == "lvmvg") and d.path == path.replace("--","-"))),
+               None)
 
         log_method_return(self, result)
         return result
