@@ -6,7 +6,7 @@ import os
 
 from blivet.devicelibs import crypto
 from blivet.errors import CryptoError
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 
 #FIXME: some of these tests expect behavior which is not correct
 #
@@ -27,7 +27,7 @@ from tests.devicelibs_test import baseclass
 # CryptSetup.status is informative and that it would be useful to preserve it.
 # The numeric values are enumerated in libcryptsetup.h.
 
-class CryptoTestCase(baseclass.DevicelibsTestCase):
+class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def testCryptoMisc(self):
         _LOOP_DEV0 = self.loopDevices[0]
@@ -129,7 +129,7 @@ class CryptoTestCase(baseclass.DevicelibsTestCase):
         # cleanup
         os.unlink(keyfile)
 
-class CryptoTestCase2(baseclass.DevicelibsTestCase):
+class CryptoTestCase2(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
         """Set up the names by which luks knows these devices."""

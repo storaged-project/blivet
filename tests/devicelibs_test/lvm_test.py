@@ -5,7 +5,7 @@ import blivet.devicelibs.lvm as lvm
 from blivet.size import Size
 from blivet.errors import LVMError
 
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 
 class LVMTestCase(unittest.TestCase):
 
@@ -31,7 +31,7 @@ class LVMTestCase(unittest.TestCase):
 # call if the device is non-existant, and usually that exception is caught and
 # an LVMError is then raised, but not always.
 
-class LVMAsRootTestCase(baseclass.DevicelibsTestCase):
+class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
         """Set up the structure of the volume group."""

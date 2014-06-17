@@ -4,9 +4,9 @@ import unittest
 import blivet.devicelibs.swap as swap
 from blivet.errors import SwapError
 
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 
-class SwapTestCase(baseclass.DevicelibsTestCase):
+class SwapTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def testSwap(self):
         _LOOP_DEV0 = self.loopDevices[0]

@@ -2,10 +2,10 @@
 
 import abc
 
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 from blivet.errors import FSError
 
-class LabelingAsRoot(baseclass.DevicelibsTestCase):
+class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
     """Tests various aspects of labeling a filesystem where there
        is no easy way to read the filesystem's label once it has been
        set and where the filesystem can not be relabeled.

@@ -8,9 +8,9 @@ import unittest
 import blivet.devicelibs.btrfs as btrfs
 from blivet.errors import BTRFSError
 
-import tests.devicelibs_test.baseclass as baseclass
+from tests import loopbackedtestcase
 
-class BTRFSMountDevice(baseclass.DevicelibsTestCase):
+class BTRFSMountDevice(loopbackedtestcase.LoopBackedTestCase):
     """A superclass that mounts and unmounts the filesystem.
        It must create the filesystem on its chosen devices before mounting.
        It always mounts the filesystem using self.device at self.mountpoint.
@@ -26,7 +26,7 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
 
            Chooses the device to specify to mount command arbitrarily.
         """
-        baseclass.DevicelibsTestCase.setUp(self)
+        super(BTRFSMountDevice, self).setUp()
 
         btrfs.create_volume(self.loopDevices)
         self.device = self.loopDevices[0]
@@ -50,9 +50,9 @@ class BTRFSMountDevice(baseclass.DevicelibsTestCase):
             raise OSError("failed to unmount device %s" % self.device)
 
         os.rmdir(self.mountpoint)
-        baseclass.DevicelibsTestCase.tearDown(self)
+        super(BTRFSMountDevice, self).tearDown()
 
-class BTRFSAsRootTestCase1(baseclass.DevicelibsTestCase):
+class BTRFSAsRootTestCase1(loopbackedtestcase.LoopBackedTestCase):
 
     def testUnmountedBTRFS(self):
         """A series of simple tests on an unmounted file system.
@@ -177,7 +177,7 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         subvolumes = btrfs.list_subvolumes(self.mountpoint)
         self.assertEqual(len([v for v in subvolumes if v['path'].find("SV1.1") != -1]), 1)
 
-class BTRFSAsRootTestCase3(baseclass.DevicelibsTestCase):
+class BTRFSAsRootTestCase3(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
         super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[8192])

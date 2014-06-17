@@ -5,10 +5,10 @@ import tempfile
 import unittest
 
 import blivet
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 import blivet.formats.fs as fs
 
-class SELinuxContextTestCase(baseclass.DevicelibsTestCase):
+class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
     """Testing SELinux contexts.
     """
 

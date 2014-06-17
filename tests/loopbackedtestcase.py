@@ -65,7 +65,7 @@ def getFreeLoopDev():
     return out
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-class DevicelibsTestCase(unittest.TestCase):
+class LoopBackedTestCase(unittest.TestCase):
 
     DEFAULT_STORE_SIZE = 102400
     _DEFAULT_DEVICE_SPEC = [DEFAULT_STORE_SIZE, DEFAULT_STORE_SIZE]

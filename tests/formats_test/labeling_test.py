@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import unittest
 
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 from blivet.formats import device_formats
 import blivet.formats.fs as fs
 import blivet.formats.swap as swap
@@ -126,7 +126,7 @@ class HFSTestCase(fslabeling.LabelingAsRoot):
     def setUp(self):
         super(HFSTestCase, self).setUp()
 
-class LabelingSwapSpaceTestCase(baseclass.DevicelibsTestCase):
+class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def testLabeling(self):
         swp = swap.SwapSpace(device=self.loopDevices[0])

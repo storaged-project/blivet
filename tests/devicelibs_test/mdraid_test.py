@@ -7,7 +7,7 @@ import blivet.devicelibs.mdraid as mdraid
 from blivet.errors import MDRaidError
 from blivet.size import Size
 
-from tests.devicelibs_test import baseclass
+from tests import loopbackedtestcase
 
 class MDRaidTestCase(unittest.TestCase):
 
@@ -49,7 +49,7 @@ class MDRaidTestCase(unittest.TestCase):
                          mdraid.MD_SUPERBLOCK_SIZE)
 
 
-class MDRaidAsRootTestCase(baseclass.DevicelibsTestCase):
+class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
         """Set up the structure of the mdraid array."""
