@@ -887,7 +887,7 @@ class DeviceTree(object):
                         return
 
         # try to get the device again now that we've got all the slaves
-        device = self.getDeviceByName(name)
+        device = self.getDeviceByName(name, incomplete=flags.allow_degraded_mdraid)
 
         if device is None:
             try:
@@ -895,7 +895,7 @@ class DeviceTree(object):
             except KeyError:
                 log.warning("failed to obtain uuid for mdraid device")
             else:
-                device = self.getDeviceByUuid(uuid)
+                device = self.getDeviceByUuid(uuid, incomplete=flags.allow_degraded_mdraid)
 
         # if we get here, we found all of the slave devices and
         # something must be wrong -- if all of the slaves are in
@@ -1154,7 +1154,9 @@ class DeviceTree(object):
         log.info("scanning %s (%s)...", name, sysfs_path)
         device = self.getDeviceByName(name)
         if device is None and udev.udev_device_is_md(info):
-            device = self.getDeviceByName(udev.udev_device_get_md_name(info))
+            device = self.getDeviceByName(
+               udev.udev_device_get_md_name(info),
+               incomplete=flags.allow_degraded_mdraid)
             if device and not isinstance(device, MDRaidArrayDevice):
                 # make sure any device we found is an md device
                 device = None
