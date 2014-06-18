@@ -65,10 +65,10 @@ class Platform(object):
         self.update_from_flags()
 
     def update_from_flags(self):
-        if flags.gpt and "gpt" in self._disklabel_types:
-            # move GPT to the top of the list
-            self._disklabel_types.remove("gpt")
-            self._disklabel_types.insert(0, "gpt")
+        if flags.gpt:
+            if not self.setDefaultDiskLabelType("gpt"):
+                log.warn("GPT is not a supported disklabel on this platform. Using default "
+                         "disklabel %s instead.", self.defaultDiskLabelType)
 
     def __call__(self):
         return self
@@ -82,6 +82,26 @@ class Platform(object):
     def defaultDiskLabelType(self):
         """The default disklabel type for this architecture."""
         return self.diskLabelTypes[0]
+
+    def setDefaultDiskLabelType(self, disklabel):
+        """Make the disklabel the default
+
+           :param str disklabel: The disklabel type to set as default
+           :returns: True if successful False if disklabel not supported
+
+           If the disklabel is not supported on the platform it will return
+           False and make no change to the disklabel list.
+
+           If it is supported it will move it to the start of the list,
+           making it the default.
+        """
+        if disklabel not in self._disklabel_types:
+            return False
+
+        self._disklabel_types.remove(disklabel)
+        self._disklabel_types.insert(0, disklabel)
+        log.debug("Default disklabel has been set to %s", disklabel)
+        return True
 
     @property
     def bootStage1ConstraintDict(self):
