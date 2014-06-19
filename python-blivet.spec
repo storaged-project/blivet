@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.56
+Version: 0.57
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,29 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jun 19 2014 Brian C. Lane <bcl@redhat.com> - 0.57-1
+- Make DevicelibsTestCase devices configurable. (amulhern)
+- Use correct parameters in __init__() in subclasses of unittest.TestCase.
+  (amulhern)
+- Add num_blocks parameter to makeLoopDev(). (amulhern)
+- Move skipUnless decorator to the top level class of skipped classes.
+  (amulhern)
+- Explicitly accept a string as well as a RAIDLevel object. (amulhern)
+- Update BTRFS initializer comments for level type. (amulhern)
+- Remove some extra imports. (amulhern)
+- Add method to set the default disklabel (#1078537) (bcl)
+- Do not try to activate dmraid sets if the dmraid usage flag is false
+  (mkolman)
+- Use the value of the Anaconda dmraid flag to set the Blivet dmraid flag
+  (mkolman)
+- Use the value of the Anaconda ibft flag to set the Blivet ibft flag (mkolman)
+- Ignore _build directory in doc directory. (amulhern)
+- Change intersphinx mapping to avoid linkcheck redirect errors. (amulhern)
+- Remove doctest target from Makefile. (amulhern)
+- Allow the table of contents to go one level deeper. (amulhern)
+- Automate generation of the .rst files which just set up the modules.
+  (amulhern)
+
 * Thu Jun 12 2014 Brian C. Lane <bcl@redhat.com> - 0.56-1
 - Skip device name validation for some device types. (dlehman)
 - Add a property indicating whether a device is directly accessible. (dlehman)
