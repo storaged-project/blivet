@@ -1508,7 +1508,7 @@ class Chunk(object):
             # allocate any leftovers in pool to the first partition
             # that can still grow
             for p in self.requests:
-                if p.done:
+                if p.done or p in self.skip_list:
                     continue
 
                 growth = self.pool
