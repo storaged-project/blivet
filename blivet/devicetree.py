@@ -1563,8 +1563,6 @@ class DeviceTree(object):
 
     def handleUdevMDMemberFormat(self, info, device):
         log_method_call(self, name=device.name, type=device.format.type)
-        # either look up or create the array device
-        name = udev.udev_device_get_name(info)
 
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
         if device.format.mdUuid and md_array:
@@ -1577,7 +1575,7 @@ class DeviceTree(object):
                 md_devices = int(udev.udev_device_get_md_devices(info))
                 md_uuid = udev.udev_device_get_md_uuid(info)
             except (KeyError, ValueError) as e:
-                log.warning("invalid data for %s: %s", name, e)
+                log.warning("invalid data for %s: %s", device.name, e)
                 return
 
             md_metadata = info.get("MD_METADATA")
