@@ -21,6 +21,7 @@
 #
 
 from operator import gt, lt
+from decimal import Decimal
 
 import parted
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
@@ -1488,7 +1489,7 @@ class Chunk(object):
                     # Each request is allocated free units from the pool
                     # based on the relative _base_ sizes of the remaining
                     # growable requests.
-                    share = p.base / self.base
+                    share = Decimal(p.base) / Decimal(self.base)
                     growth = int(share * last_pool) # truncate, don't round
 
                 p.growth += growth
