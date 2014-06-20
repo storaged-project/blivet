@@ -1404,7 +1404,7 @@ class Chunk(object):
     @property
     def done(self):
         """ True if we are finished growing all requests in this chunk. """
-        return self.remaining == 0
+        return self.remaining == 0 or self.pool == 0
 
     def maxGrowth(self, req):
         return req.max_growth
