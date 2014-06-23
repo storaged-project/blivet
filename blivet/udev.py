@@ -99,7 +99,9 @@ def udev_resolve_devspec(devspec):
     if not devspec:
         return None
 
-    from . import devices as _devices
+    # import devices locally to avoid cyclic import (devices <-> udev)
+    from . import devices
+
     ret = None
     for dev in udev_get_block_devices():
         if devspec.startswith("LABEL="):
@@ -110,7 +112,7 @@ def udev_resolve_devspec(devspec):
             if udev_device_get_uuid(dev) == devspec[5:]:
                 ret = dev
                 break
-        elif udev_device_get_name(dev) == _devices.devicePathToName(devspec):
+        elif udev_device_get_name(dev) == devices.devicePathToName(devspec):
             ret = dev
             break
         else:
@@ -123,7 +125,6 @@ def udev_resolve_devspec(devspec):
                     ret = dev
                     break
 
-    del _devices
     if ret:
         return udev_device_get_name(ret)
 
