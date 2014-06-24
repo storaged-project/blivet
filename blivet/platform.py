@@ -25,6 +25,7 @@ log = logging.getLogger("blivet")
 import parted
 
 from . import arch
+from . import devicelibs
 from .flags import flags
 from .partspec import PartSpec
 from .size import Size
@@ -208,8 +209,9 @@ class X86(Platform):
 class EFI(Platform):
 
     _boot_stage1_format_types = ["efi"]
-    _boot_stage1_device_types = ["partition"]
+    _boot_stage1_device_types = ["partition", "mdarray"]
     _boot_stage1_mountpoints = ["/boot/efi"]
+    _boot_stage1_raid_levels = [devicelibs.raid.RAID1]
     _boot_efi_description = N_("EFI System Partition")
     _boot_descriptions = {"partition": _boot_efi_description,
                           "mdarray": Platform._boot_raid_description}
