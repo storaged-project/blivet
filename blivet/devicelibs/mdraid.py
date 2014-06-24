@@ -21,6 +21,7 @@
 #
 
 import os
+import uuid
 
 from .. import util
 from ..errors import MDRaidError
@@ -246,6 +247,14 @@ def mdexamine(device):
 
             if name == "metadata":
                 info["MD_METADATA"] = value
+
+    # mdadm's UUIDs are actual 128 bit uuids, but it formats them strangely.
+    # This converts the uuids to canonical form.
+    # Example:
+    #     mdadm UUID: '3386ff85:f5012621:4a435f06:1eb47236'
+    # canonical UUID: '3386ff85-f501-2621-4a43-5f061eb47236'
+    for k, v in ((k,v) for (k,v) in info.iteritems() if k.endswith("UUID")):
+        info[k] = str(uuid.UUID(v.replace(':', '')))
 
     return info
 

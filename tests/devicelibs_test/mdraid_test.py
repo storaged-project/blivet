@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import unittest
 import time
+import uuid
 
 import blivet.devicelibs.raid as raid
 import blivet.devicelibs.mdraid as mdraid
@@ -119,6 +120,7 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
             Verifies that:
               - exactly the predicted names are returned by mdexamine
               - RAID level and number of devices are correct
+              - UUIDs have canonical form
         """
         level = mdraid.RAID_levels.raidLevel(level or raid.RAID1)
         mdraid.mdcreate(self._dev_name, level, self.loopDevices, metadataVer=metadataVersion)
@@ -137,6 +139,10 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         # check names with predictable values
         self.assertEqual(info['MD_DEVICES'], '2')
         self.assertEqual(info['MD_LEVEL'], str(level))
+
+        # verify that uuids are in canonical form
+        for name in (k for k in iter(info.keys()) if k.endswith('UUID')):
+            self.assertTrue(str(uuid.UUID(info[name])) == info[name])
 
     def testMDExamineContainerDefault(self):
         self._testMDExamine(self.names_container, level="container")
