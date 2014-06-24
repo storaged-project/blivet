@@ -1804,10 +1804,16 @@ class Blivet(object):
         boot_disks.sort(cmp=self.compareDisks, key=lambda d: d.name)
         self.bootloader.set_disk_list(boot_disks)
 
-    def setUpBootLoader(self):
+    def setUpBootLoader(self, early=False):
         """ Propagate ksdata into BootLoader.
 
+            :keyword bool early: Set to True to skip stage1_device setup
+
             :raises BootloaderError: if stage1 setup fails
+
+            If this needs to be run early, eg. to setup stage1_disk but
+            not stage1_device 'early' should be set True to prevent
+            it from raising BootloaderError
         """
         if not self.bootloader or not self.ksdata:
             log.warning("either ksdata or bootloader data missing")
@@ -1821,7 +1827,8 @@ class Blivet(object):
         self.ksdata.bootloader.execute(self, self.ksdata, None)
         self.bootloader.stage1_disk = self.devicetree.resolveDevice(self.ksdata.bootloader.bootDrive)
         self.bootloader.stage2_device = self.bootDevice
-        self.bootloader.set_stage1_device(self.devices)
+        if not early:
+            self.bootloader.set_stage1_device(self.devices)
 
     @property
     def bootDisk(self):
