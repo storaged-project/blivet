@@ -1823,6 +1823,11 @@ class DeviceTree(object):
                 kwargs["mdUuid"] = udev.device_get_md_uuid(info)
             except KeyError:
                 log.warning("mdraid member %s has no md uuid", name)
+
+            # attempt to reset the uuid using mdexamine info
+            # will succeed only if metadata version > 0.90
+            kwargs["uuid"] = udev.device_get_md_device_uuid(info) or kwargs["uuid"]
+
             kwargs["biosraid"] = udev.device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
