@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.57
+Version: 0.58
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,24 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jun 25 2014 Brian C. Lane <bcl@redhat.com> - 0.58-1
+- Only import ROOT_PATH if needed (bcl)
+- Add early keyword to setUpBootLoader (#1086811) (bcl)
+- Only log a warning about labeling if something is wrong (#1075136) (amulhern)
+- When adding an md array, allow adding incomplete arrays (#1090009) (amulhern)
+- Add a flag to control whether a degraded md raid array is used (#1090009)
+  (amulhern)
+- Remove preferLeaves parameter from getDeviceByPath() (amulhern)
+- Factor out commonalities among getDevice[s|]By* methods. (amulhern)
+- Omit special check for md devices in addUdevDevice(). (amulhern)
+- Remove unused 'slaves' variable. (amulhern)
+- Move down or remove assignment to device in add* methods. (amulhern)
+- Move DevicelibsTestCase up to the top level of the testing directory.
+  (amulhern)
+- Accept None for btrfs raid levels (#1109195) (amulhern)
+- Add a test for a btrfs error associated with small devices (#1109195)
+  (amulhern)
+
 * Thu Jun 19 2014 Brian C. Lane <bcl@redhat.com> - 0.57-1
 - Make DevicelibsTestCase devices configurable. (amulhern)
 - Use correct parameters in __init__() in subclasses of unittest.TestCase.
