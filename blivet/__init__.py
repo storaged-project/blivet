@@ -115,7 +115,6 @@ def enable_installer_mode():
 
     from pyanaconda import isys # pylint: disable=redefined-outer-name
     from pyanaconda import iutil # pylint: disable=redefined-outer-name
-    from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name
     from pyanaconda.constants import shortProductName # pylint: disable=redefined-outer-name
     from pyanaconda.constants import productName # pylint: disable=redefined-outer-name
     from pyanaconda.bootloader import get_bootloader # pylint: disable=redefined-outer-name
@@ -127,6 +126,7 @@ def enable_installer_mode():
         _storageRoot = iutil.getTargetPhysicalRoot()
         _sysroot = iutil.getSysroot()
     else:
+        from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name
         _storageRoot = _sysroot = ROOT_PATH
 
     from pyanaconda.anaconda_log import program_log_lock
@@ -3135,7 +3135,7 @@ def findExistingInstallations(devicetree):
                 name = _("%(product)s Linux %(version)s for %(arch)s") % \
                         {"product": product, "version": version, "arch": architecture}
 
-        (mounts, swaps) = parseFSTab(devicetree, chroot=ROOT_PATH)
+        (mounts, swaps) = parseFSTab(devicetree, chroot=_sysroot)
         device.teardown()
         if not mounts and not swaps:
             # empty /etc/fstab. weird, but I've seen it happen.
