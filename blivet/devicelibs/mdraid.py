@@ -109,7 +109,7 @@ def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False):
     if bitmap:
         argv.append("--bitmap=internal")
     argv.extend(disks)
-    
+
     try:
         mdadm(argv)
     except MDRaidError as msg:

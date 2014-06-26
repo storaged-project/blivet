@@ -83,7 +83,7 @@ def swapon(device, priority=None):
     if isinstance(priority, int) and 0 <= priority <= 32767:
         argv.extend(["-p", "%d" % priority])
     argv.append(device)
-        
+
     rc = util.run_program(["swapon"] + argv)
 
     if rc:

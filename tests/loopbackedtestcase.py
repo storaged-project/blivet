@@ -98,5 +98,5 @@ class LoopBackedTestCase(unittest.TestCase):
             self.loopDevices.append(dev)
 
     def tearDown(self):
-        for (dev, store) in self._loopMap.iteritems():
+        for (dev, store) in iter(self._loopMap.items()):
             removeLoopDev(dev, store)

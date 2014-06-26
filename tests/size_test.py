@@ -23,8 +23,13 @@
 
 import unittest
 
+import six
+
 from blivet.errors import SizePlacesError
 from blivet.size import Size, _prefixes
+
+if six.PY3:
+    long = int
 
 class SizeTestCase(unittest.TestCase):
     def testExceptions(self):
@@ -60,17 +65,17 @@ class SizeTestCase(unittest.TestCase):
             self.assertEquals(s.convertTo(), numbytes)
 
     def testPrefixes(self):
-        numbytes = 47L
+        numbytes = long(47)
         self._prefixTestHelper(numbytes, 1, None, None)
 
         for factor, prefix, abbr in _prefixes:
             self._prefixTestHelper(numbytes, factor, prefix, abbr)
 
     def testHumanReadable(self):
-        s = Size(58929971L)
+        s = Size(long(58929971))
         self.assertEquals(s.humanReadable(), "56.2 MiB")
 
-        s = Size(478360371L)
+        s = Size(long(478360371))
         self.assertEquals(s.humanReadable(), "456.2 MiB")
 
         # humanReable output should be the same as input for big enough sizes

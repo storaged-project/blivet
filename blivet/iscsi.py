@@ -117,7 +117,7 @@ class iscsi(object):
                     if logged_in]
         else:
             return [node for (node, logged_in) in
-                    itertools.chain(*self.discovered_targets.values())
+                    itertools.chain(*list(self.discovered_targets.values()))
                     if logged_in] + self.ibftNodes
 
     def _getMode(self):
@@ -213,7 +213,7 @@ class iscsi(object):
         if os.path.exists(INITIATOR_FILE):
             os.unlink(INITIATOR_FILE)
         if not os.path.isdir("/etc/iscsi"):
-            os.makedirs("/etc/iscsi", 0755)
+            os.makedirs("/etc/iscsi", 0o755)
         fd = os.open(INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
         os.write(fd, "InitiatorName=%s\n" %(self.initiator))
         os.close(fd)
@@ -222,7 +222,7 @@ class iscsi(object):
         for fulldir in (os.path.join("/var/lib/iscsi", d) for d in \
            ['ifaces','isns','nodes','send_targets','slp','static']):
             if not os.path.isdir(fulldir):
-                os.makedirs(fulldir, 0755)
+                os.makedirs(fulldir, 0o755)
 
         log.info("iSCSI startup")
         util.run_program(['modprobe', '-a'] + ISCSI_MODULES)
@@ -375,7 +375,7 @@ class iscsi(object):
                 node.setParameter("node.startup", "automatic")
 
         if not os.path.isdir(root + "/etc/iscsi"):
-            os.makedirs(root + "/etc/iscsi", 0755)
+            os.makedirs(root + "/etc/iscsi", 0o755)
         fd = os.open(root + INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
         os.write(fd, "InitiatorName=%s\n" %(self.initiator))
         os.close(fd)

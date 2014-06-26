@@ -51,11 +51,11 @@ get_bootloader = lambda: None
 ##
 
 import os
+from os import statvfs
 import time
 import stat
 import errno
 import sys
-import statvfs
 import copy
 import tempfile
 import shlex
@@ -228,9 +228,8 @@ def turnOnFilesystems(storage, mountOnly=False):
         writeEscrowPackets(storage)
 
 def writeEscrowPackets(storage):
-    escrowDevices = filter(lambda d: d.format.type == "luks" and \
-                                     d.format.escrow_cert,
-                           storage.devices)
+    escrowDevices = [d for d in storage.devices if d.format.type == 'luks' and
+                     d.format.escrow_cert]
 
     if not escrowDevices:
         return
@@ -495,7 +494,7 @@ class Blivet(object):
     def unusedDevices(self):
         used_devices = []
         for root in self.roots:
-            for device in root.mounts.values() + root.swaps:
+            for device in list(root.mounts.values()) + root.swaps:
                 if device not in self.devices:
                     continue
 
@@ -999,13 +998,13 @@ class Blivet(object):
             All other arguments are passed on to the
             :class:`~.devices.PartitionDevice` constructor.
         """
-        if kwargs.has_key("fmt_type"):
+        if 'fmt_type' in kwargs:
             kwargs["fmt"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=kwargs.pop("mountpoint",
                                                                None),
                                          **kwargs.pop("fmt_args", {}))
 
-        if kwargs.has_key("name"):
+        if 'name' in kwargs:
             name = kwargs.pop("name")
         else:
             name = "req%d" % self.nextID
@@ -1039,7 +1038,7 @@ class Blivet(object):
             If a name is not specified, one will be generated based on the
             format type, mountpoint, hostname, and/or product name.
         """
-        if kwargs.has_key("fmt_type"):
+        if 'fmt_type' in kwargs:
             kwargs["fmt"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=kwargs.pop("mountpoint",
                                                                None),
@@ -1132,7 +1131,7 @@ class Blivet(object):
             vg = vg.vg
 
         mountpoint = kwargs.pop("mountpoint", None)
-        if kwargs.has_key("fmt_type"):
+        if 'fmt_type' in kwargs:
             kwargs["fmt"] = getFormat(kwargs.pop("fmt_type"),
                                          mountpoint=mountpoint,
                                          **kwargs.pop("fmt_args", {}))
@@ -1613,7 +1612,7 @@ class Blivet(object):
         # restricted to a single PV.  The backend support is there, but there are
         # no UI hook-ups to drive that functionality, but I do not personally
         # care.  --dcantrell
-        if arch.isS390() and not self.mountpoints.has_key('/boot') and root:
+        if arch.isS390() and '/boot' not in self.mountpoints and root:
             if root.type == 'lvmlv' and not root.singlePV:
                 exns.append(
                    SanityError(_("This platform requires /boot on a dedicated "
@@ -1913,7 +1912,7 @@ class Blivet(object):
         os.symlink(target, path)
 
     def compareDisks(self, first, second):
-        if self.eddDict.has_key(first) and self.eddDict.has_key(second):
+        if first in self.eddDict and second in self.eddDict:
             one = self.eddDict[first]
             two = self.eddDict[second]
             if (one < two):
@@ -1922,9 +1921,9 @@ class Blivet(object):
                 return 1
 
         # if one is in the BIOS and the other not prefer the one in the BIOS
-        if self.eddDict.has_key(first):
+        if first in self.eddDict:
             return -1
-        if self.eddDict.has_key(second):
+        if second in self.eddDict:
             return 1
 
         if first.startswith("hd"):
@@ -2141,7 +2140,7 @@ class Blivet(object):
                  BTRFSDevice: ("BTRFSData", "btrfs")}
 
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in self.mountpoints.values() + self.swaps
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
                                 for a in d.ancestors))
         devices.sort(key=lambda d: len(d.ancestors))
         for device in devices:
@@ -2356,7 +2355,7 @@ class CryptTab(object):
                                                 entry['device'].format.uuid,
                                                 entry['keyfile'],
                                                 entry['options'])
-        return crypttab                       
+        return crypttab
 
     def __getitem__(self, key):
         return self.mappings[key]
@@ -2606,7 +2605,7 @@ class FSSet(object):
         blkidTab = BlkidTab(chroot=chroot)
         try:
             blkidTab.parse()
-            log.debug("blkid.tab devs: %s", blkidTab.devices.keys())
+            log.debug("blkid.tab devs: %s", list(blkidTab.devices.keys()))
         except Exception: # pylint: disable=broad-except
             log_exception_info(log.info, "error parsing blkid.tab")
             blkidTab = None
@@ -2614,7 +2613,7 @@ class FSSet(object):
         cryptTab = CryptTab(self.devicetree, blkidTab=blkidTab, chroot=chroot)
         try:
             cryptTab.parse(chroot=chroot)
-            log.debug("crypttab maps: %s", cryptTab.mappings.keys())
+            log.debug("crypttab maps: %s", list(cryptTab.mappings.keys()))
         except Exception: # pylint: disable=broad-except
             log_exception_info(log.info, "error parsing crypttab")
             cryptTab = None
@@ -2695,7 +2694,7 @@ class FSSet(object):
         if not flags.installer_mode:
             return
 
-        devices = self.mountpoints.values() + self.swapDevices
+        devices = list(self.mountpoints.values()) + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.selinux, self.usb, self.run])
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", None))
@@ -2752,7 +2751,7 @@ class FSSet(object):
 
     def umountFilesystems(self, swapoff=True):
         """ unmount filesystems, except swap if swapoff == False """
-        devices = self.mountpoints.values() + self.swapDevices
+        devices = list(self.mountpoints.values()) + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.usb, self.selinux, self.run])
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", None))
@@ -2794,7 +2793,7 @@ class FSSet(object):
         dev = "%s/%s" % (_sysroot, root.path)
         if not os.path.exists("%s/dev/root" %(_sysroot,)) and os.path.exists(dev):
             rdev = os.stat(dev).st_rdev
-            os.mknod("%s/dev/root" % (_sysroot,), stat.S_IFBLK | 0600, rdev)
+            os.mknod("%s/dev/root" % (_sysroot,), stat.S_IFBLK | 0o600, rdev)
 
     @property
     def swapDevices(self):
@@ -2826,7 +2825,7 @@ class FSSet(object):
         # /etc/crypttab
         crypttab_path = os.path.normpath("%s/etc/crypttab" % _sysroot)
         crypttab = self.crypttab()
-        origmask = os.umask(0077)
+        origmask = os.umask(0o077)
         open(crypttab_path, "w").write(crypttab)
         os.umask(origmask)
 
@@ -2852,7 +2851,7 @@ class FSSet(object):
             self.cryptTab = CryptTab(self.devicetree)
             self.cryptTab.populate()
 
-        devices = self.mountpoints.values() + self.swapDevices
+        devices = list(self.mountpoints.values()) + self.swapDevices
 
         # prune crypttab -- only mappings required by one or more entries
         for name in self.cryptTab.mappings.keys():
@@ -2886,7 +2885,7 @@ class FSSet(object):
         conf = "# mdadm.conf written out by anaconda\n"
         conf += "MAILADDR root\n"
         conf += "AUTO +imsm +1.x -all\n"
-        devices = self.mountpoints.values() + self.swapDevices
+        devices = list(self.mountpoints.values()) + self.swapDevices
         for array in arrays:
             for device in devices:
                 if device == array or device.dependsOn(array):
@@ -3193,7 +3192,7 @@ def parseFSTab(devicetree, chroot=None):
     blkidTab = BlkidTab(chroot=chroot)
     try:
         blkidTab.parse()
-        log.debug("blkid.tab devs: %s", blkidTab.devices.keys())
+        log.debug("blkid.tab devs: %s", list(blkidTab.devices.keys()))
     except Exception: # pylint: disable=broad-except
         log_exception_info(log.info, "error parsing blkid.tab")
         blkidTab = None
@@ -3201,7 +3200,7 @@ def parseFSTab(devicetree, chroot=None):
     cryptTab = CryptTab(devicetree, blkidTab=blkidTab, chroot=chroot)
     try:
         cryptTab.parse(chroot=chroot)
-        log.debug("crypttab maps: %s", cryptTab.mappings.keys())
+        log.debug("crypttab maps: %s", list(cryptTab.mappings.keys()))
     except Exception: # pylint: disable=broad-except
         log_exception_info(log.info, "error parsing crypttab")
         cryptTab = None

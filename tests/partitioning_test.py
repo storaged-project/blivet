@@ -29,7 +29,7 @@ class PartitioningTestCase(unittest.TestCase):
         disk.type = disk_type
         label_type_info = disklabel_types[disk_type]
         (max_primaries, supports_extended, max_logicals) = label_type_info
-        
+
         # primary partitions
         disk.primaryPartitionCount = primary_count
         disk.maxPrimaryPartitionCount = max_primaries
@@ -48,7 +48,7 @@ class PartitioningTestCase(unittest.TestCase):
         #
         # DOS
         #
-        
+
         # empty disk, any type
         disk = self.getDisk(disk_type="dos")
         self.assertEqual(getNextPartitionType(disk), parted.PARTITION_NORMAL)

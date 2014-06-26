@@ -12,8 +12,7 @@ class LVMTestCase(unittest.TestCase):
     def testGetPossiblePhysicalExtents(self):
         # pass
         self.assertEqual(lvm.getPossiblePhysicalExtents(),
-                         map(lambda power: Size("%d KiB" % 2**power),
-                             xrange(0, 25)))
+                         [Size("%d KiB" % 2**power) for power in xrange(0, 25)])
 
     def testClampSize(self):
         # pass
@@ -148,7 +147,7 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         ## pvinfo
         ##
         # pass
-        self.assertEqual(lvm.pvinfo(device=_LOOP_DEV0)[_LOOP_DEV0]["LVM2_VG_NAME"], self._vg_name) 
+        self.assertEqual(lvm.pvinfo(device=_LOOP_DEV0)[_LOOP_DEV0]["LVM2_VG_NAME"], self._vg_name)
         # no vg
         self.assertEqual(lvm.pvinfo(device=_LOOP_DEV1)[_LOOP_DEV1]["LVM2_VG_NAME"], "")
 

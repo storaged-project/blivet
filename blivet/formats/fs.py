@@ -25,6 +25,7 @@
 from decimal import Decimal
 import os
 import tempfile
+import six
 
 from . import fslabeling
 from ..errors import FormatCreateError, FSError, FSResizeError
@@ -41,6 +42,10 @@ from ..udev import udev_settle
 
 import logging
 log = logging.getLogger("blivet")
+
+if six.PY3:
+    long = int
+
 
 fs_configs = {}
 
@@ -87,7 +92,7 @@ class FS(DeviceFormat):
             :keyword size: the filesystem's size in MiB
             :keyword exists: indicates whether this is an existing filesystem
             :type exists: bool
-                
+
             .. note::
 
                 The 'device' kwarg is required for existing formats. For non-
@@ -577,7 +582,7 @@ class FS(DeviceFormat):
         if isinstance(self, BindFS):
             options = "bind," + options
 
-        try: 
+        try:
             rc = util.mount(self.device, chrootedMountpoint,
                             fstype=self.mountType,
                             options=options)
@@ -743,7 +748,7 @@ class FS(DeviceFormat):
 
         if not canmount and os.path.isdir(modpath):
             for _root, _dirs, files in os.walk(modpath):
-                have = filter(lambda x: x.startswith(modname), files)
+                have = [x for x in files if x.startswith(modname)]
                 if len(have) == 1 and have[0].startswith(modname):
                     return True
 
@@ -1411,7 +1416,7 @@ class NFS(FS):
     device = property(lambda f: f._getDevice(),
                       lambda f,d: f._setDevice(d),
                       doc="Full path the device this format occupies")
- 
+
 register_device_format(NFS)
 
 

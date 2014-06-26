@@ -115,7 +115,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
             #
             # verify that all attributes match across the reset
             #
-            for attr, expected in attr_dict.iteritems():
+            for attr, expected in iter(attr_dict.items()):
                 if self.skip_attr(device, attr):
                     continue
 

@@ -1,4 +1,5 @@
 import copy
+import functools
 import itertools
 import os
 import shutil
@@ -9,6 +10,8 @@ import sys
 import tempfile
 from decimal import Decimal
 
+import six
+
 from .size import Size
 
 import logging
@@ -18,6 +21,7 @@ program_log = logging.getLogger("program")
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
+
 
 def _run_program(argv, root='/', stdin=None, env_prune=None):
     if env_prune is None:
@@ -278,7 +282,7 @@ def find_program_in_path(prog, raise_on_error=False):
 
 def makedirs(path):
     if not os.path.isdir(path):
-        os.makedirs(path, 0755)
+        os.makedirs(path, 0o755)
 
 def copy_to_system(source):
     # do the import now because enable_installer_mode() has finally been called.
@@ -320,7 +324,7 @@ def numeric_type(num):
     """
     if num is None:
         num = 0
-    elif not isinstance(num, (int, long, float, Size, Decimal)):
+    elif not isinstance(num, (six.integer_types, float, Size, Decimal)):
         raise ValueError("value (%s) must be either a number or None" % num)
 
     return num
@@ -350,7 +354,7 @@ class ObjectID(object):
        which is unique for the object type. Subclasses can use self.id during
        __init__.
     """
-    _newid_gen = itertools.count().next
+    _newid_gen = functools.partial(next, itertools.count())
 
     def __new__(cls, *args, **kwargs):
         self = super(ObjectID, cls).__new__(cls, *args, **kwargs)

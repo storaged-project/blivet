@@ -35,7 +35,7 @@ class FormatsTestCase(unittest.TestCase):
         names = [key for key in format_pairs.keys() if format_pairs[key] is not None]
         objs = [formats.getFormat(name) for name in names]
         ids = [obj.id for obj in objs]
-        self.assertEqual(ids, range(ids[0], ids[0] + len(ids)))
+        self.assertEqual(ids, list(range(ids[0], ids[0] + len(ids))))
 
         ## Copy or deepcopy should preserve the id
         self.assertEqual(ids, [copy.copy(obj).id for obj in objs])
