@@ -12,8 +12,8 @@ class LVMTestCase(unittest.TestCase):
     def testGetPossiblePhysicalExtents(self):
         # pass
         self.assertEqual(lvm.getPossiblePhysicalExtents(),
-                         map(lambda power: Size("%d KiB" % 2**power),
-                             xrange(0, 25)))
+                         list(map(lambda power: Size("%d KiB" % 2**power),
+                             xrange(0, 25))))
 
     def testClampSize(self):
         # pass

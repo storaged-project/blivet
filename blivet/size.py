@@ -21,6 +21,7 @@
 
 import re
 import string
+import sys
 import locale
 from collections import namedtuple
 
@@ -30,6 +31,8 @@ from decimal import ROUND_DOWN
 
 from .errors import SizePlacesError
 from .i18n import _, P_, N_
+from .compat import unicode, long
+
 
 # Container for size unit prefix information
 _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])

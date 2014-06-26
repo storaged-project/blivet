@@ -5,7 +5,7 @@ from blivet.devices import Device
 
 class ParentListTestCase(unittest.TestCase):
     def testParentList(self):
-        items = range(5)
+        items = list(range(5))
         length = len(items)
         pl = ParentList(items=items)
         self.assertEqual(len(pl), length)

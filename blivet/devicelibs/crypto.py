@@ -25,6 +25,7 @@ from pycryptsetup import CryptSetup
 
 from ..errors import CryptoError
 from ..size import Size
+from ..compat import xrange
 
 LUKS_METADATA_SIZE = Size("2 MiB")
 

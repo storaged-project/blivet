@@ -163,7 +163,7 @@ class DeviceTree(object):
         """
         self.diskImages = images
         # disk image files are automatically exclusive
-        self.exclusiveDisks = self.diskImages.keys()
+        self.exclusiveDisks = list(self.diskImages.keys())
 
     def addIgnoredDisk(self, disk):
         self.ignoredDisks.append(disk)
@@ -230,7 +230,7 @@ class DeviceTree(object):
                 edges.append((action_idx, child_idx))
 
         # create a graph reflecting the ordering information we have
-        graph = tsort.create_graph(range(len(self._actions)), edges)
+        graph = tsort.create_graph(list(range(len(self._actions))), edges)
 
         # perform a topological sort based on the graph's contents
         order = tsort.tsort(graph)
@@ -1317,7 +1317,7 @@ class DeviceTree(object):
                 # passphrase has been set for a specific device without a full
                 # reset/populate, in which case the new passphrase would not be
                 # in self.__passphrases.
-                for passphrase in self.__passphrases + self.__luksDevs.values():
+                for passphrase in self.__passphrases + list(self.__luksDevs.values()):
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
@@ -1344,7 +1344,7 @@ class DeviceTree(object):
     def handleVgLvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
-        lv_info = dict((k, v) for (k, v) in self.lvInfo.iteritems()
+        lv_info = dict((k, v) for (k, v) in iter(self.lvInfo.items())
                                 if udev.udev_device_get_vg_name(v) == vg_name)
 
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
@@ -2149,7 +2149,7 @@ class DeviceTree(object):
             new_devices = udev.udev_get_block_devices()
 
             for new_device in new_devices:
-                if not old_devices.has_key(new_device['name']):
+                if new_device['name'] not in old_devices:
                     old_devices[new_device['name']] = new_device
                     devices.append(new_device)
 

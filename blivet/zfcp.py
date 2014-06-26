@@ -340,7 +340,7 @@ class ZFCP:
             log.info("no %s; not configuring zfcp", zfcpconf)
             return
 
-        lines = map(lambda x: x.strip().lower(), f.readlines())
+        lines = [x.strip().lower() for x in f.readlines()]
         f.close()
 
         for line in lines:

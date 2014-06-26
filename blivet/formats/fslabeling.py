@@ -22,12 +22,11 @@
 import abc
 
 from . import fslabel
+from ..compat import with_metaclass
 
-class FSLabeling(object):
+class FSLabeling(object, with_metaclass(abc.ABCMeta, object)):
     """An abstract class that represents filesystem labeling actions.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     default_label = abc.abstractproperty(
        doc="Default label set on this filesystem at creation.")
@@ -56,6 +55,7 @@ class FSLabeling(object):
            :rtype: list of str
         """
         raise NotImplementedError
+
 
 class Ext2FSLabeling(FSLabeling):
 

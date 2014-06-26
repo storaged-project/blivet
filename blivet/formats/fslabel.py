@@ -23,13 +23,12 @@ import abc
 import re
 
 from .. import errors
+from ..compat import with_metaclass
 
-class FSLabelApp(object):
+class FSLabelApp(object, with_metaclass(abc.ABCMeta, object)):
     """An abstract class that represents actions associated with a
        filesystem's labeling application.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     name = abc.abstractproperty(
        doc="The name of the filesystem labeling application.")
@@ -105,6 +104,7 @@ class FSLabelApp(object):
         if match is None:
             raise errors.FSError("Unknown format for application %s" % self.name)
         return match.group('label')
+
 
 class E2Label(FSLabelApp):
     """Application used by ext2 and its descendants."""

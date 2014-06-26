@@ -39,7 +39,7 @@ class ImageBackedTestCase(unittest.TestCase):
             to set the initializeDisks flag so they get a fresh disklabel when
             clearPartitions gets called from create_storage later.
         """
-        for (name, size) in self.disks.iteritems():
+        for (name, size) in iter(self.disks.items()):
             path = util.create_sparse_tempfile(name, size)
             self.blivet.config.diskImages[name] = path
 

@@ -27,6 +27,7 @@ import os
 import tempfile
 
 from . import fslabeling
+from ..compat import long
 from ..errors import FormatCreateError, FSError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
@@ -41,6 +42,7 @@ from ..udev import udev_settle
 
 import logging
 log = logging.getLogger("blivet")
+
 
 fs_configs = {}
 
@@ -743,7 +745,7 @@ class FS(DeviceFormat):
 
         if not canmount and os.path.isdir(modpath):
             for _root, _dirs, files in os.walk(modpath):
-                have = filter(lambda x: x.startswith(modname), files)
+                have = [x for x in files if x.startswith(modname)]
                 if len(have) == 1 and have[0].startswith(modname):
                     return True
 

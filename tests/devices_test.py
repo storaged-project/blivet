@@ -49,7 +49,7 @@ class DeviceStateTestCase(unittest.TestCase):
         """
         self.longMessage = True
         for k,v in self._state_functions.items():
-            if kwargs.has_key(k):
+            if k in kwargs:
                 key = kwargs[k]
                 if key is None:
                     import pdb

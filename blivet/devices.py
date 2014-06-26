@@ -43,6 +43,7 @@ import block
 from . import errors
 from . import util
 from . import arch
+from .compat import with_metaclass
 from .flags import flags
 from .storage_log import log_method_call
 from . import udev
@@ -2239,7 +2240,7 @@ class LUKSDevice(DMCryptDevice):
         data.encrypted = True
         super(LUKSDevice, self).populateKSData(data)
 
-class ContainerDevice(StorageDevice):
+class ContainerDevice(with_metaclass(abc.ABCMeta, StorageDevice)):
     """ A device that aggregates a set of member devices.
 
         The only interfaces provided by this class are for addition and removal
@@ -2255,7 +2256,6 @@ class ContainerDevice(StorageDevice):
         within :meth:`.deviceaction.ActionAddMember.execute` and
         :meth:`.deviceaction.ActionRemoveMember.execute`.
     """
-    __metaclass__ = abc.ABCMeta
 
     _formatClassName = abc.abstractproperty(lambda s: None,
         doc="The type of member devices' required format")
@@ -2352,6 +2352,9 @@ class ContainerDevice(StorageDevice):
 
         if member in self.parents:
             self.parents.remove(member)
+
+
+
 
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group """
@@ -2624,7 +2627,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def isModified(self):
         """ Return True if the VG has changes queued that LVM is unaware of. """
         modified = True
-        if self.exists and not filter(lambda d: not d.exists, self.pvs):
+        if self.exists and not [d for d in self.pvs if not d.exists]:
             modified = False
 
         return modified
@@ -2851,8 +2854,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         if self.singlePV:
             # make sure there is at least one PV that can hold this LV
-            validpvs = filter(lambda x: float(x.size) >= self.req_size,
-                              self.vg.pvs)
+            validpvs = [x for x in self.vg.pvs if float(x.size) >= self.req_size]
             if not validpvs:
                 for dev in self.parents:
                     dev.removeChild()
@@ -3026,7 +3028,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         lvm.lvremove(self.vg.name, self._name)
 
     def _getSinglePV(self):
-        validpvs = filter(lambda x: float(x.size) >= self.size, self.vg.pvs)
+        validpvs = [x for x in self.vg.pvs if float(x.size) >= self.size]
 
         if not validpvs:
             raise errors.SinglePhysicalVolumeError(self.singlePVerr)
@@ -3130,7 +3132,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
-class LVMSnapShotBase(object):
+class LVMSnapShotBase(with_metaclass(abc.ABCMeta, object)):
     """ Abstract base class for lvm snapshots
 
         This class is intended to be used with multiple inheritance in addition
@@ -3147,7 +3149,6 @@ class LVMSnapShotBase(object):
         always has the same format as its origin.
     """
     _type = "lvmsnapshotbase"
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, origin=None, vorigin=False, exists=False):
         """
@@ -3221,6 +3222,7 @@ class LVMSnapShotBase(object):
 
         udev.udev_settle()
         lvm.lvsnapshotmerge(self.vg.name, self.lvname) # pylint: disable=no-member
+
 
 class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
     """ An LVM snapshot """

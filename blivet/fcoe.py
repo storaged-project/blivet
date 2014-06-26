@@ -146,7 +146,7 @@ class fcoe(object):
             return
 
         if not os.path.isdir(root + "/etc/fcoe"):
-            os.makedirs(root + "/etc/fcoe", 0755)
+            os.makedirs(root + "/etc/fcoe", 0o755)
 
         for nic, dcb, auto_vlan in self.nics:
             fd = os.open(root + "/etc/fcoe/cfg-" + nic,
