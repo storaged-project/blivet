@@ -28,6 +28,8 @@ import abc
 from decimal import Decimal
 import re
 
+from six import with_metaclass
+
 # device backend modules
 from .devicelibs import mdraid
 from .devicelibs import lvm
@@ -43,7 +45,6 @@ import block
 from . import errors
 from . import util
 from . import arch
-from .compat import with_metaclass
 from .flags import flags
 from .storage_log import log_method_call
 from . import udev

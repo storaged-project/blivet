@@ -21,17 +21,16 @@
 
 import re
 import string
-import sys
 import locale
 from collections import namedtuple
 
 from decimal import Decimal
 from decimal import InvalidOperation
 from decimal import ROUND_DOWN
+import six
 
 from .errors import SizePlacesError
 from .i18n import _, P_, N_
-from .compat import unicode, long
 
 
 # Container for size unit prefix information
@@ -40,27 +39,27 @@ _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_decimalPrefixes = [_Prefix(1000, N_("kilo"), N_("k")),
-                    _Prefix(1000**2, N_("mega"), N_("M")),
-                    _Prefix(1000**3, N_("giga"), N_("G")),
-                    _Prefix(1000**4, N_("tera"), N_("T")),
-                    _Prefix(1000**5, N_("peta"), N_("P")),
-                    _Prefix(1000**6, N_("exa"), N_("E")),
-                    _Prefix(1000**7, N_("zetta"), N_("Z")),
-                    _Prefix(1000**8, N_("yotta"), N_("Y"))]
+_decimalPrefixes = [_Prefix(1000, N_(b"kilo"), N_(b"k")),
+                    _Prefix(1000**2, N_(b"mega"), N_(b"M")),
+                    _Prefix(1000**3, N_(b"giga"), N_(b"G")),
+                    _Prefix(1000**4, N_(b"tera"), N_(b"T")),
+                    _Prefix(1000**5, N_(b"peta"), N_(b"P")),
+                    _Prefix(1000**6, N_(b"exa"), N_(b"E")),
+                    _Prefix(1000**7, N_(b"zetta"), N_(b"Z")),
+                    _Prefix(1000**8, N_(b"yotta"), N_(b"Y"))]
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_binaryPrefixes = [_Prefix(1024, N_("kibi"), N_("Ki")),
-                   _Prefix(1024**2, N_("mebi"), N_("Mi")),
-                   _Prefix(1024**3, N_("gibi"), N_("Gi")),
-                   _Prefix(1024**4, N_("tebi"), N_("Ti")),
-                   _Prefix(1024**5, N_("pebi"), N_("Pi")),
-                   _Prefix(1024**6, N_("exbi"), N_("Ei")),
-                   _Prefix(1024**7, N_("zebi"), N_("Zi")),
-                   _Prefix(1024**8, N_("yobi"), N_("Yi"))]
+_binaryPrefixes = [_Prefix(1024, N_(b"kibi"), N_(b"Ki")),
+                   _Prefix(1024**2, N_(b"mebi"), N_(b"Mi")),
+                   _Prefix(1024**3, N_(b"gibi"), N_(b"Gi")),
+                   _Prefix(1024**4, N_(b"tebi"), N_(b"Ti")),
+                   _Prefix(1024**5, N_(b"pebi"), N_(b"Pi")),
+                   _Prefix(1024**6, N_(b"exbi"), N_(b"Ei")),
+                   _Prefix(1024**7, N_(b"zebi"), N_(b"Zi")),
+                   _Prefix(1024**8, N_(b"yobi"), N_(b"Yi"))]
 
-_bytes = [N_('B'), N_('b'), N_('byte'), N_('bytes')]
+_bytes = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
 _prefixes = _binaryPrefixes + _decimalPrefixes
 
 # Translated versions of the byte and prefix arrays
@@ -92,15 +91,15 @@ def _makeSpecs(prefix, abbr, xlate):
 
     if prefix:
         if xlate:
-            specs.append(prefix.lower() + _("byte").decode("utf-8"))
-            specs.append(prefix.lower() + _("bytes").decode("utf-8"))
+            specs.append(prefix.lower() + _(b"byte").decode("utf-8"))
+            specs.append(prefix.lower() + _(b"bytes").decode("utf-8"))
         else:
             specs.append(_lowerASCII(prefix) + "byte")
             specs.append(_lowerASCII(prefix) + "bytes")
 
     if abbr:
         if xlate:
-            specs.append(abbr.lower() + _("b").decode("utf-8"))
+            specs.append(abbr.lower() + _(b"b").decode("utf-8"))
             specs.append(abbr.lower())
         else:
             specs.append(_lowerASCII(abbr) + "b")
@@ -136,14 +135,18 @@ def _parseSpec(spec):
     try:
         # This will raise UnicodeDecodeError if specifier contains non-ascii
         # characters
-        spec_ascii = specifier.decode("ascii")
-
-        # Convert back to a str type to match the _bytes and _prefixes arrays
-        spec_ascii = str(spec_ascii)
+        if six.PY2:
+            spec_ascii = specifier.decode("ascii")
+            # Convert back to a str type to match the _bytes and _prefixes arrays
+            spec_ascii = str(spec_ascii)
+        else:
+            # This will raise UnicodeEncodeError if specifier contains any non-ascii
+            # in Python3 `bytes` are new Python2 `str`
+            spec_ascii = bytes(specifier, 'ascii')
 
         # Use the ASCII-only lowercase mapping
         spec_ascii = _lowerASCII(spec_ascii)
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError, UnicodeEncodeError):
         pass
     else:
         if spec_ascii and not spec_ascii.endswith("b"):
@@ -159,8 +162,12 @@ def _parseSpec(spec):
                 return size * factor
 
     # No English match found, try localized size specs. Accept any utf-8
-    # character and leave the result as a unicode object.
-    spec_local = specifier.decode("utf-8")
+    # character and leave the result as a (unicode object.
+    if six.PY2:
+        spec_local = specifier.decode("utf-8")
+    else:
+        # str = unicode in Python3
+        spec_local = specifier
 
     # Use the locale-specific lowercasing
     spec_local = spec_local.lower()
@@ -202,9 +209,9 @@ class Size(Decimal):
             If you want to use a spec value to represent a bytes value,
             you can use the letter 'b' or 'B' or omit the size specifier.
         """
-        if isinstance(value, (unicode, str)):
+        if isinstance(value, (six.string_types, bytes)):
             size = _parseSpec(value)
-        elif isinstance(value, (int, long, float, Decimal)):
+        elif isinstance(value, (six.integer_types, float, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):
             size = Decimal(value.convertTo("b"))

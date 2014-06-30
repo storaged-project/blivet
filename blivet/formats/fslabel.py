@@ -22,10 +22,11 @@
 import abc
 import re
 
-from .. import errors
-from ..compat import with_metaclass
+from six import with_metaclass
 
-class FSLabelApp(object, with_metaclass(abc.ABCMeta, object)):
+from .. import errors
+
+class FSLabelApp(with_metaclass(abc.ABCMeta, object)):
     """An abstract class that represents actions associated with a
        filesystem's labeling application.
     """

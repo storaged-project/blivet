@@ -10,8 +10,9 @@ import sys
 import tempfile
 from decimal import Decimal
 
+import six
+
 from .size import Size
-from .compat import long
 
 import logging
 log = logging.getLogger("blivet")
@@ -323,7 +324,7 @@ def numeric_type(num):
     """
     if num is None:
         num = 0
-    elif not isinstance(num, (int, long, float, Size, Decimal)):
+    elif not isinstance(num, (six.integer_types, float, Size, Decimal)):
         raise ValueError("value (%s) must be either a number or None" % num)
 
     return num

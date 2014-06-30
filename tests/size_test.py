@@ -23,9 +23,13 @@
 
 import unittest
 
-from blivet.compat import long
+import six
+
 from blivet.errors import SizePlacesError
 from blivet.size import Size, _prefixes
+
+if six.PY3:
+    long = int
 
 class SizeTestCase(unittest.TestCase):
     def testExceptions(self):

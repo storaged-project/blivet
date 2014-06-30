@@ -51,6 +51,7 @@ get_bootloader = lambda: None
 ##
 
 import os
+from os import statvfs
 import time
 import stat
 import errno
@@ -69,7 +70,6 @@ import parted
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
-from .compat import statvfs
 from .storage_log import log_exception_info, log_method_call
 from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
@@ -493,7 +493,7 @@ class Blivet(object):
     def unusedDevices(self):
         used_devices = []
         for root in self.roots:
-            for device in root.mounts.values() + root.swaps:
+            for device in list(root.mounts.values()) + root.swaps:
                 if device not in self.devices:
                     continue
 

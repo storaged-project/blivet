@@ -25,9 +25,9 @@
 from decimal import Decimal
 import os
 import tempfile
+import six
 
 from . import fslabeling
-from ..compat import long
 from ..errors import FormatCreateError, FSError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
@@ -42,6 +42,9 @@ from ..udev import udev_settle
 
 import logging
 log = logging.getLogger("blivet")
+
+if six.PY3:
+    long = int
 
 
 fs_configs = {}
