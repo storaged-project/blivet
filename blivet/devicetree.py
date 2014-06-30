@@ -572,7 +572,7 @@ class DeviceTree(object):
 
             if devid is not None and action.device.id != devid:
                 continue
-                
+
             actions.append(action)
 
         return actions
@@ -2570,7 +2570,7 @@ class DeviceTree(object):
 
                 if device is None and cryptTab and \
                    devspec.startswith("/dev/mapper/"):
-                    # try to use a dm-crypt mapping name to 
+                    # try to use a dm-crypt mapping name to
                     # obtain the underlying device, possibly
                     # using blkid.tab
                     cryptTabEnt = cryptTab.get(devspec.split("/")[-1])

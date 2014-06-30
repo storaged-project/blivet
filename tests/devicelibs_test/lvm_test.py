@@ -148,7 +148,7 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         ## pvinfo
         ##
         # pass
-        self.assertEqual(lvm.pvinfo(device=_LOOP_DEV0)[_LOOP_DEV0]["LVM2_VG_NAME"], self._vg_name) 
+        self.assertEqual(lvm.pvinfo(device=_LOOP_DEV0)[_LOOP_DEV0]["LVM2_VG_NAME"], self._vg_name)
         # no vg
         self.assertEqual(lvm.pvinfo(device=_LOOP_DEV1)[_LOOP_DEV1]["LVM2_VG_NAME"], "")
 

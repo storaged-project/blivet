@@ -161,7 +161,7 @@ def _parseSpec(spec):
     # No English match found, try localized size specs. Accept any utf-8
     # character and leave the result as a unicode object.
     spec_local = specifier.decode("utf-8")
-    
+
     # Use the locale-specific lowercasing
     spec_local = spec_local.lower()
 

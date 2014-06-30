@@ -63,13 +63,13 @@ def get_default_filesystem_type():
 
 def getFormat(fmt_type, *args, **kwargs):
     """ Return an instance of the appropriate DeviceFormat class.
- 
+
         :param fmt_type: The name of the formatting type
         :type fmt_type: str.
         :return: the format instance
         :rtype: :class:`DeviceFormat`
         :raises: ValueError
- 
+
         .. note::
 
             Any additional arguments will be passed on to the constructor for
@@ -455,7 +455,7 @@ class DeviceFormat(ObjectID):
         return (self.exists and
                 self.__class__ is not DeviceFormat and
                 isinstance(self.device, str) and
-                self.device and 
+                self.device and
                 os.path.exists(self.device))
 
     @property

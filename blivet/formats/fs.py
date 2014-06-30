@@ -89,7 +89,7 @@ class FS(DeviceFormat):
             :keyword size: the filesystem's size in MiB
             :keyword exists: indicates whether this is an existing filesystem
             :type exists: bool
-                
+
             .. note::
 
                 The 'device' kwarg is required for existing formats. For non-
@@ -579,7 +579,7 @@ class FS(DeviceFormat):
         if isinstance(self, BindFS):
             options = "bind," + options
 
-        try: 
+        try:
             rc = util.mount(self.device, chrootedMountpoint,
                             fstype=self.mountType,
                             options=options)
@@ -1413,7 +1413,7 @@ class NFS(FS):
     device = property(lambda f: f._getDevice(),
                       lambda f,d: f._setDevice(d),
                       doc="Full path the device this format occupies")
- 
+
 register_device_format(NFS)
 
 

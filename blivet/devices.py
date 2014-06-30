@@ -1,6 +1,6 @@
 # devices.py
 # Classes to represent various types of block devices.
-# 
+#
 # Copyright (C) 2009-2014  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
@@ -601,7 +601,7 @@ class StorageDevice(Device):
         """ List of packages required to manage devices of this type.
 
             This list includes the packages required by this device's
-            format type as well those required by all of its parent 
+            format type as well those required by all of its parent
             devices.
         """
         packages = super(StorageDevice, self).packages
@@ -2352,8 +2352,6 @@ class ContainerDevice(with_metaclass(abc.ABCMeta, StorageDevice)):
 
         if member in self.parents:
             self.parents.remove(member)
-
-
 
 
 class LVMVolumeGroupDevice(ContainerDevice):
@@ -4254,7 +4252,7 @@ class MultipathDevice(DMDevice):
             self.parents.append(parent)
 
     def deactivate(self):
-        """ 
+        """
         This is never called, included just for documentation.
 
         If we called this during teardown(), we wouldn't be able to get parted
@@ -4754,7 +4752,7 @@ class OpticalDevice(StorageDevice):
         self.teardown()
 
         try:
-            util.run_program(["eject", self.name]) 
+            util.run_program(["eject", self.name])
         except OSError as e:
             log.warning("error ejecting cdrom %s: %s", self.name, e)
 

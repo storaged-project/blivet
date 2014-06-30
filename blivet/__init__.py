@@ -2354,7 +2354,7 @@ class CryptTab(object):
                                                 entry['device'].format.uuid,
                                                 entry['keyfile'],
                                                 entry['options'])
-        return crypttab                       
+        return crypttab
 
     def __getitem__(self, key):
         return self.mappings[key]

@@ -21,7 +21,7 @@ class SwapTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         # fail
         self.assertRaises(SwapError, swap.mkswap, "/not/existing/device")
-        
+
         ##
         ## swapon
         ##
@@ -32,7 +32,7 @@ class SwapTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertRaises(SwapError, swap.swapon, "/not/existing/device")
         # not a swap partition
         self.assertRaises(SwapError, swap.swapon, _LOOP_DEV1)
-        
+
         # pass
         # make another swap
         self.assertEqual(swap.mkswap(_LOOP_DEV1, "another-swap"), None)
@@ -44,7 +44,7 @@ class SwapTestCase(loopbackedtestcase.LoopBackedTestCase):
         # pass
         self.assertEqual(swap.swapstatus(_LOOP_DEV0), True)
         self.assertEqual(swap.swapstatus(_LOOP_DEV1), True)
-        
+
         # does not fail
         self.assertEqual(swap.swapstatus("/not/existing/device"), False)
 
