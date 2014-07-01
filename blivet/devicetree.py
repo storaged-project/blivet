@@ -1044,7 +1044,7 @@ class DeviceTree(object):
 
             kwargs["parents"] = [container]
             kwargs["level"]  = udev.device_get_md_level(info)
-            kwargs["memberDevices"] = int(udev.device_get_md_devices(info))
+            kwargs["memberDevices"] = udev.device_get_md_devices(info)
             kwargs["uuid"] = udev.device_get_md_uuid(info)
             kwargs["exists"]  = True
             del kwargs["serial"]
@@ -1572,7 +1572,7 @@ class DeviceTree(object):
             try:
                 # level is reported as, eg: "raid1"
                 md_level = udev.device_get_md_level(info)
-                md_devices = int(udev.device_get_md_devices(info))
+                md_devices = udev.device_get_md_devices(info)
                 md_uuid = udev.device_get_md_uuid(info)
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
