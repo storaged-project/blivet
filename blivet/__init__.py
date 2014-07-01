@@ -122,11 +122,12 @@ def enable_installer_mode():
     from pyanaconda.errors import ERROR_RAISE # pylint: disable=redefined-outer-name
 
     if hasattr(iutil, 'getTargetPhysicalRoot'):
-        # Introduced in newer Anaconda
-        _storageRoot = iutil.getTargetPhysicalRoot()
+        # For anaconda versions > 21.43
+        _storageRoot = iutil.getTargetPhysicalRoot() # pylint: disable=no-name-in-module
         _sysroot = iutil.getSysroot()
     else:
-        from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name
+        # For prior anaconda versions
+        from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name,no-name-in-module
         _storageRoot = _sysroot = ROOT_PATH
 
     from pyanaconda.anaconda_log import program_log_lock
