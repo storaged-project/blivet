@@ -445,6 +445,18 @@ def device_get_md_metadata(info):
     #  * mdraid/mdadm (not version numbers < 1)
     return info.get("MD_METADATA")
 
+def device_get_md_device_uuid(info):
+    """ Returns the uuid of a device which is a member of an md array.
+
+        :param dict info: dictionary of name-value pairs as strings
+        :returns: the uuid of this device (which is a member of an md array)
+        :rtype: str or NoneType
+    """
+    # Value for MD_UUID known to be obtained from:
+    #  * pyudev/libudev
+    #  * mdraid/mdadm (only 1.x metadata versions)
+    return info.get('MD_DEV_UUID')
+
 def device_get_vg_name(info):
     return info['LVM2_VG_NAME']
 
