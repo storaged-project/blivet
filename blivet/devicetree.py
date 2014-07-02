@@ -1582,7 +1582,7 @@ class DeviceTree(object):
                 log.warning("invalid data for %s: no RAID level", device.name)
                 return
 
-            md_metadata = info.get("MD_METADATA")
+            md_metadata = None
             md_name = None
 
             # check the list of devices udev knows about to see if the array
@@ -1614,8 +1614,9 @@ class DeviceTree(object):
 
                     break
 
-            if not md_metadata:
-                md_metadata = info.get("METADATA", "0.90")
+            # mdexamine yields MD_METADATA only for metadata version > 0.90
+            # if MD_METADATA is missing, assume metadata version is 0.90
+            md_metadata = md_metadata or info.get("MD_METADATA", "0.90")
 
             if not md_name:
                 md_path = info.get("DEVICE", "")
