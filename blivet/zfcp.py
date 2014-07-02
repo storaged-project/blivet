@@ -74,7 +74,7 @@ class ZFCPDevice:
             return "0x" + wwpn
         return wwpn
 
-    # ZFCP LUNs are usually entered as 16 bit, sysfs accepts only 64 bit 
+    # ZFCP LUNs are usually entered as 16 bit, sysfs accepts only 64 bit
     # (#125632), expand with zeroes if necessary
     def sanitizeFCPLInput(self, lun):
         if lun is None or lun == "":
@@ -340,7 +340,7 @@ class ZFCP:
             log.info("no %s; not configuring zfcp", zfcpconf)
             return
 
-        lines = map(lambda x: x.strip().lower(), f.readlines())
+        lines = [x.strip().lower() for x in f.readlines()]
         f.close()
 
         for line in lines:

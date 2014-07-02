@@ -3,15 +3,15 @@
 import abc
 
 from tests import loopbackedtestcase
+from blivet.compat import with_metaclass
 from blivet.errors import FSError
 
-class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
+class LabelingAsRoot(with_metaclass(abc.ABCMeta, loopbackedtestcase.LoopBackedTestCase)):
     """Tests various aspects of labeling a filesystem where there
        is no easy way to read the filesystem's label once it has been
        set and where the filesystem can not be relabeled.
     """
 
-    __metaclass__ = abc.ABCMeta
 
     _fs_class = abc.abstractproperty(
        doc="The class of the filesystem being tested on.")

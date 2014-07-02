@@ -87,7 +87,7 @@ def create_graph(items, edges):
     for (_parent, child) in edges:
         graph['incoming'][child] += 1
 
-    return graph 
+    return graph
 
 def main():
     items = [5, 2, 3, 4, 1]

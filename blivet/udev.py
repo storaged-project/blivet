@@ -180,12 +180,11 @@ def __is_blacklisted_blockdev(dev_name):
     return False
 
 def udev_enumerate_block_devices():
-    return filter(lambda d: not __is_blacklisted_blockdev(os.path.basename(d)),
-                  udev_enumerate_devices(deviceClass="block"))
+    return [d for d in udev_enumerate_devices(deviceClass="block") if not __is_blacklisted_blockdev(os.path.basename(d))]
 
 def udev_get_block_device(sysfs_path):
     dev = udev_get_device(sysfs_path)
-    if not dev or not dev.has_key("name"):
+    if not dev or 'name' not in dev:
         return None
     else:
         return dev
@@ -221,7 +220,7 @@ def udev_device_get_label(udev_info):
 
 def udev_device_is_dm(info):
     """ Return True if the device is a device-mapper device. """
-    return info.has_key("DM_NAME")
+    return 'DM_NAME' in info
 
 def udev_device_is_md(info):
     """ Return True if the device is a mdraid array device. """
@@ -493,7 +492,7 @@ def udev_device_is_biosraid_member(info):
     # dmraid will be everything that is raid and not linux_raid_member
     from .formats.dmraid import DMRaidMember
     from .formats.mdraid import MDRaidMember
-    if info.has_key("ID_FS_TYPE") and \
+    if 'ID_FS_TYPE' in info and \
             (info["ID_FS_TYPE"] in DMRaidMember._udevTypes or \
              info["ID_FS_TYPE"] in MDRaidMember._udevTypes) and \
             info["ID_FS_TYPE"] != "linux_raid_member":

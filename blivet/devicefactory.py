@@ -1291,7 +1291,7 @@ class LVMFactory(DeviceFactory):
                     if member != use_dev:
                         self.storage.destroyDevice(use_dev)
 
-                    # for md pv we also need to remove the md member partitions 
+                    # for md pv we also need to remove the md member partitions
                     if not self.container_raid_level and \
                        use_dev.type == "mdarray":
                         for mdmember in use_dev.parents[:]:

@@ -22,6 +22,7 @@
 
 import random
 from pycryptsetup import CryptSetup
+from six.moves import xrange
 
 from ..errors import CryptoError
 from ..size import Size

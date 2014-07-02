@@ -185,7 +185,7 @@ class X86(Platform):
     # XXX hpfs, if reported by blkid/udev, will end up with a type of None
     _non_linux_format_types = ["vfat", "ntfs", "hpfs"]
     _boot_stage1_missing_error = N_("You must include at least one MBR- or "
-                                    "GPT-formatted disk as an install target.")    
+                                    "GPT-formatted disk as an install target.")
 
     def __init__(self):
         super(X86, self).__init__()

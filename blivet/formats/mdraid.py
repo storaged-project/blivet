@@ -45,7 +45,7 @@ class MDRaidMember(DeviceFormat):
     _linuxNative = True                 # for clearpart
     _packages = ["mdadm"]               # required packages
     _ksMountpoint = "raid."
-    
+
     def __init__(self, **kwargs):
         """
             :keyword device: path to block device node
