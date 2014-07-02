@@ -375,18 +375,62 @@ def device_get_minor(info):
     return int(info["MINOR"])
 
 def device_get_md_level(info):
+    """ Returns the RAID level of the array of which this device is a member.
+
+        :param dict info: dictionary of name-value pairs as strings
+        :returns: the RAID level of this device's md array
+        :rtype: str or NoneType
+    """
+    # Value for MD_LEVEL known to be obtained from:
+    #  * pyudev/libudev
+    #  * mdraid/mdadm (all numeric metadata versions and container default)
     return info.get("MD_LEVEL")
 
 def device_get_md_devices(info):
+    """ Returns the number of devices in this devices's array.
+
+        :param dict info: dictionary of name-value pairs as strings
+        :returns: the number of devices belonging to this device's md array
+        :rtype: int
+        :raises: KeyError, ValueError
+    """
+    # Value for MD_DEVICES known to be obtained from:
+    #  * pyudev/libudev
+    #  * mdraid/mdadm (all numeric metadata versions and container default)
     return int(info["MD_DEVICES"])
 
 def device_get_md_uuid(info):
+    """ Returns the uuid of the array of which this device is a member.
+
+        :param dict info: dictionary of name-value pairs as strings
+        :returns: the UUID of this device's md array
+        :rtype: str
+        :raises: KeyError
+    """
+    # Value for MD_UUID known to be obtained from:
+    #  * pyudev/libudev
+    #  * mdraid/mdadm (all numeric metadata versions and container default)
     return info["MD_UUID"]
 
 def device_get_md_container(info):
+    """
+        :param dict info: dictionary of name-value pairs as strings
+        :rtype: str or NoneType
+    """
+    # Value for MD_CONTAINER known to be obtained from:
+    #  * None
     return info.get("MD_CONTAINER")
 
 def device_get_md_name(info):
+    """ Returns the name of the array of which this device is a member.
+
+        :param dict info: dictionary of name-value pairs as strings
+        :returns: the name of this device's md array
+        :rtype: str or NoneType
+    """
+    # Value for MD_DEVNAME known to be obtained from:
+    #  * pyudev/libudev
+    #  * No known metadata versions for mdraid/mdadm
     return info.get("MD_DEVNAME")
 
 def device_get_vg_name(info):
