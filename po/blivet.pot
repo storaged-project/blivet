@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-26 17:16-0700\n"
+"POT-Creation-Date: 2014-07-02 17:34-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,72 +17,72 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1394
+#: ../blivet/__init__.py:1395
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:1568
+#: ../blivet/__init__.py:1569
 #, python-format
 msgid "LUKS device %s has no encryption key"
 msgstr ""
 
-#: ../blivet/__init__.py:1599
+#: ../blivet/__init__.py:1600
 #, python-format
 msgid ""
 "Your root partition is less than 250 megabytes which is usually too small to "
 "install %s."
 msgstr ""
 
-#: ../blivet/__init__.py:1604
+#: ../blivet/__init__.py:1605
 #, python-format
 msgid ""
 "You have not defined a root partition (/), which is required for "
 "installation of %s to continue."
 msgstr ""
 
-#: ../blivet/__init__.py:1618
+#: ../blivet/__init__.py:1619
 msgid ""
 "This platform requires /boot on a dedicated partition or logical volume.  If "
 "you do not want a /boot volume, you must place / on a dedicated non-LVM "
 "partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1628
+#: ../blivet/__init__.py:1629
 #, python-format
 msgid ""
 "Your %(mount)s partition is less than %(size)s megabytes which is lower than "
 "recommended for a normal %(productName)s install."
 msgstr ""
 
-#: ../blivet/__init__.py:1639
+#: ../blivet/__init__.py:1640
 #, python-format
 msgid ""
 "Your %(mount)s partition is too small for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1645
+#: ../blivet/__init__.py:1646
 #, python-format
 msgid ""
 "Your %(mount)s partition is too large for %(format)s formatting (allowable "
 "size is %(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/__init__.py:1654
+#: ../blivet/__init__.py:1655
 msgid "No valid bootloader target device found. See below for details."
 msgstr ""
 
-#: ../blivet/__init__.py:1666
+#: ../blivet/__init__.py:1667
 msgid "You have not created a bootable partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1688
+#: ../blivet/__init__.py:1689
 msgid ""
 "Your BIOS-based system needs a special partition to boot from a GPT disk "
 "label. To continue, please create a 1MiB 'biosboot' type partition."
 msgstr ""
 
-#: ../blivet/__init__.py:1699
+#: ../blivet/__init__.py:1700
 #, python-format
 msgid ""
 "You have not specified a swap partition.  %(requiredMem)s of memory is "
@@ -90,13 +90,13 @@ msgid ""
 "have %(installedMem)s."
 msgstr ""
 
-#: ../blivet/__init__.py:1706
+#: ../blivet/__init__.py:1707
 msgid ""
 "You have not specified a swap partition.  Although not strictly required in "
 "all cases, it will significantly improve performance for most installations."
 msgstr ""
 
-#: ../blivet/__init__.py:1713
+#: ../blivet/__init__.py:1714
 msgid ""
 "At least one of your swap devices does not have a UUID, which is common in "
 "swap space created using older versions of mkswap. These devices will be "
@@ -104,27 +104,27 @@ msgid ""
 "paths can change under a variety of circumstances. "
 msgstr ""
 
-#: ../blivet/__init__.py:1724
+#: ../blivet/__init__.py:1725
 #, python-format
 msgid ""
 "This mount point is invalid.  The %s directory must be on the / file system."
 msgstr ""
 
-#: ../blivet/__init__.py:1729
+#: ../blivet/__init__.py:1730
 #, python-format
 msgid "The mount point %s must be on a linux file system."
 msgstr ""
 
-#: ../blivet/__init__.py:3128
+#: ../blivet/__init__.py:3129
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3133
+#: ../blivet/__init__.py:3134
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3135
+#: ../blivet/__init__.py:3136
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -202,86 +202,86 @@ msgstr ""
 msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/platform.py:50
+#: ../blivet/platform.py:51
 msgid "bootloader device"
 msgstr ""
 
-#: ../blivet/platform.py:52
+#: ../blivet/platform.py:53
 msgid "RAID Device"
 msgstr ""
 
-#: ../blivet/platform.py:53
+#: ../blivet/platform.py:54
 msgid "First sector of boot partition"
 msgstr ""
 
-#: ../blivet/platform.py:178 ../blivet/platform.py:322
-#: ../blivet/platform.py:350
+#: ../blivet/platform.py:179 ../blivet/platform.py:324
+#: ../blivet/platform.py:352
 msgid "Master Boot Record"
 msgstr ""
 
-#: ../blivet/platform.py:186
+#: ../blivet/platform.py:187
 msgid ""
 "You must include at least one MBR- or GPT-formatted disk as an install "
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:213 ../blivet/formats/fs.py:1046
+#: ../blivet/platform.py:215 ../blivet/formats/fs.py:1046
 msgid "EFI System Partition"
 msgstr ""
 
-#: ../blivet/platform.py:220
+#: ../blivet/platform.py:222
 msgid ""
 "For a UEFI installation, you must include an EFI System Partition on a GPT-"
 "formatted disk, mounted at /boot/efi."
 msgstr ""
 
-#: ../blivet/platform.py:242
+#: ../blivet/platform.py:244
 msgid "Apple EFI Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:267
+#: ../blivet/platform.py:269
 msgid "PReP Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:270
+#: ../blivet/platform.py:272
 msgid ""
 "You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
 "GPT-formatted disk."
 msgstr ""
 
-#: ../blivet/platform.py:291
+#: ../blivet/platform.py:293
 msgid "Apple Bootstrap Partition"
 msgstr ""
 
-#: ../blivet/platform.py:295
+#: ../blivet/platform.py:297
 msgid ""
 "You must include an Apple Bootstrap Partition on an Apple Partition Map-"
 "formatted disk."
 msgstr ""
 
-#: ../blivet/platform.py:321
+#: ../blivet/platform.py:323
 msgid "DASD"
 msgstr ""
 
-#: ../blivet/platform.py:323
+#: ../blivet/platform.py:325
 msgid "zFCP"
 msgstr ""
 
-#: ../blivet/platform.py:328
+#: ../blivet/platform.py:330
 msgid ""
 "You must include at least one MBR- or DASD-formatted disk as an install "
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:355
+#: ../blivet/platform.py:357
 msgid "You must include at least one MBR-formatted disk as an install target."
 msgstr ""
 
-#: ../blivet/platform.py:377
+#: ../blivet/platform.py:379
 msgid "U-Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:379
+#: ../blivet/platform.py:381
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
