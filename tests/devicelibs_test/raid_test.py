@@ -54,6 +54,8 @@ class RaidTestCase(unittest.TestCase):
 
         with self.assertRaises(errors.RaidError):
             self.levels.raidLevel("bogus")
+        with self.assertRaises(errors.RaidError):
+            self.levels.raidLevel(None)
 
         ##
         ## get_max_spares
