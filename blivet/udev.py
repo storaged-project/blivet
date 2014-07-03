@@ -207,7 +207,12 @@ def device_get_format(udev_info):
     return udev_info.get("ID_FS_TYPE")
 
 def device_get_uuid(udev_info):
-    """ Get the UUID from the device's format as reported by udev. """
+    """ Get the UUID from the device's format as reported by udev.
+
+        :param dict udev_info: dictionary of name-value pairs as strings
+        :returns: a UUID or None
+        :rtype: str or NoneType
+    """
     md_uuid = udev_info.get("MD_UUID", '')
     uuid = udev_info.get("ID_FS_UUID", '')
     # we don't want to return the array's uuid as a member's uuid
