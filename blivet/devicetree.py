@@ -1578,6 +1578,10 @@ class DeviceTree(object):
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
 
+            if md_level is None:
+                log.warning("invalid data for %s: no RAID level", device.name)
+                return
+
             md_metadata = info.get("MD_METADATA")
             md_name = None
 
