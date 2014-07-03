@@ -22,7 +22,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 
 BuildArch: noarch
 BuildRequires: gettext
-BuildRequires: python-setuptools-devel
+BuildRequires: python-setuptools
 
 Requires: python
 Requires: pykickstart >= %{pykickstartver}
