@@ -433,6 +433,18 @@ def device_get_md_name(info):
     #  * No known metadata versions for mdraid/mdadm
     return info.get("MD_DEVNAME")
 
+def device_get_md_metadata(info):
+    """ Return the metadata version number.
+
+        :param dict info: dictionary of name-value pairs as strings
+        :returns: the metadata version number of the md array
+        :rtype: str or NoneType
+    """
+    # Value for MD_METADATA known to be obtained from:
+    #  * pyudev/libudev
+    #  * mdraid/mdadm (not version numbers < 1)
+    return info.get("MD_METADATA")
+
 def device_get_vg_name(info):
     return info['LVM2_VG_NAME']
 

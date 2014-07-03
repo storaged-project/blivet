@@ -1602,7 +1602,7 @@ class DeviceTree(object):
 
                 if dev_uuid == md_uuid and dev_level == md_level:
                     md_name = udev.device_get_md_name(dev)
-                    md_metadata = dev.get("MD_METADATA")
+                    md_metadata = udev.device_get_md_metadata(dev)
                     if not md_name:
                         # containers don't typically have names and they also
                         # don't have a symlink in /dev/md
@@ -1616,7 +1616,7 @@ class DeviceTree(object):
 
             # mdexamine yields MD_METADATA only for metadata version > 0.90
             # if MD_METADATA is missing, assume metadata version is 0.90
-            md_metadata = md_metadata or info.get("MD_METADATA", "0.90")
+            md_metadata = md_metadata or udev.device_get_md_metadata(info) or "0.90"
 
             if not md_name:
                 md_path = info.get("DEVICE", "")
