@@ -44,7 +44,7 @@ import logging
 log = logging.getLogger("blivet")
 
 if six.PY3:
-    long = int
+    long = int # pylint: disable=redefined-builtin
 
 
 fs_configs = {}
