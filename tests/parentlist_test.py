@@ -48,11 +48,13 @@ class ParentListTestCase(unittest.TestCase):
 
         pl = ParentList(items=items, appendfunc=pre_add, removefunc=pre_remove)
 
-        self.assertRaises(ValueError, pl.append, 33)
+        with self.assertRaises(ValueError):
+            pl.append(33)
 
         pl.remove(4)
         pl.remove(3)
-        self.assertRaises(RuntimeError, pl.remove, 2)
+        with self.assertRaises(RuntimeError):
+            pl.remove(2)
 
     def testDeviceParents(self):
         """ Verify that Device.parents functions as expected. """

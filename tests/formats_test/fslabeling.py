@@ -39,14 +39,12 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
-        self.assertRaisesRegexp(FSError,
-           "no application to read label",
-           an_fs.readLabel)
+        with self.assertRaisesRegexp(FSError, "no application to read label"):
+            an_fs.readLabel()
 
         an_fs.label = "an fs"
-        self.assertRaisesRegexp(FSError,
-           "no application to set label for filesystem",
-           an_fs.writeLabel)
+        with self.assertRaisesRegexp(FSError, "no application to set label for filesystem"):
+            an_fs.writeLabel()
 
     def testCreating(self):
         """Create the filesystem when passing a valid label """
@@ -82,9 +80,8 @@ class LabelingWithRelabeling(LabelingAsRoot):
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
-        self.assertRaisesRegexp(FSError,
-           "no application to read label",
-           an_fs.readLabel)
+        with self.assertRaisesRegexp(FSError, "no application to read label"):
+            an_fs.readLabel()
 
         an_fs.label = "an fs"
         self.assertIsNone(an_fs.writeLabel())
@@ -93,14 +90,12 @@ class LabelingWithRelabeling(LabelingAsRoot):
         self.assertIsNone(an_fs.writeLabel())
 
         an_fs.label = None
-        self.assertRaisesRegexp(FSError,
-            "default label",
-            an_fs.writeLabel)
+        with self.assertRaisesRegexp(FSError, "default label"):
+            an_fs.writeLabel()
 
         an_fs.label = self._invalid_label
-        self.assertRaisesRegexp(FSError,
-           "bad label format",
-           an_fs.writeLabel)
+        with self.assertRaisesRegexp(FSError, "bad label format"):
+            an_fs.writeLabel()
 
 class CompleteLabelingAsRoot(LabelingAsRoot):
     """Tests where it is possible to read the label and to relabel
@@ -132,14 +127,12 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
         an_fs.label = None
-        self.assertRaisesRegexp(FSError,
-            "default label",
-            an_fs.writeLabel)
+        with self.assertRaisesRegexp(FSError, "default label"):
+            an_fs.writeLabel()
 
         an_fs.label = "root___filesystem"
-        self.assertRaisesRegexp(FSError,
-           "bad label format",
-           an_fs.writeLabel)
+        with self.assertRaisesRegexp(FSError, "bad label format"):
+            an_fs.writeLabel()
 
     def testCreating(self):
         """Create the filesystem when passing a valid label.

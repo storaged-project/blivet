@@ -66,36 +66,27 @@ class BTRFSAsRootTestCase1(loopbackedtestcase.LoopBackedTestCase):
         ## create_volume
         ##
         # no devices specified
-        self.assertRaisesRegexp(ValueError,
-           "no devices specified",
-           btrfs.create_volume, [], data=0)
+        with self.assertRaisesRegexp(ValueError, "no devices specified"):
+            btrfs.create_volume([], data=0)
 
         # non-existant device
-        self.assertRaisesRegexp(ValueError,
-           "one or more specified devices not present",
-           btrfs.create_volume,
-           ["/not/existing/device"])
+        with self.assertRaisesRegexp(ValueError, "one or more specified devices not present"):
+            btrfs.create_volume(["/not/existing/device"])
 
         # bad data
-        self.assertRaisesRegexp(BTRFSError,
-           "1",
-           btrfs.create_volume,
-           [_LOOP_DEV0], data="RaID7")
+        with self.assertRaisesRegexp(BTRFSError, "1"):
+            btrfs.create_volume([_LOOP_DEV0], data="RaID7")
 
         # bad metadata
-        self.assertRaisesRegexp(BTRFSError,
-           "1",
-           btrfs.create_volume,
-           [_LOOP_DEV0], metadata="RaID7")
+        with self.assertRaisesRegexp(BTRFSError, "1"):
+            btrfs.create_volume([_LOOP_DEV0], metadata="RaID7")
 
         # pass
         self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
 
         # already created
-        self.assertRaisesRegexp(BTRFSError,
-           "1",
-           btrfs.create_volume,
-           [_LOOP_DEV0], metadata="RaID7")
+        with self.assertRaisesRegexp(BTRFSError, "1"):
+            btrfs.create_volume([_LOOP_DEV0], metadata="RaID7")
 
     def testMkfsDefaults(self):
         _LOOP_DEV0 = self.loopDevices[0]
@@ -156,16 +147,12 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         self.assertNotIn("SV1", [v['path'] for v in subvolumes])
 
         # if the subvolume is already gone,  an error is raised by btrfs
-        self.assertRaisesRegexp(BTRFSError,
-           "1",
-           btrfs.delete_subvolume,
-           self.mountpoint, "SV1")
+        with self.assertRaisesRegexp(BTRFSError, "1"):
+            btrfs.delete_subvolume(self.mountpoint, "SV1")
 
         # if the subvolume is already there, an error is raise by btrfs
-        self.assertRaisesRegexp(BTRFSError,
-           "1",
-           btrfs.create_subvolume,
-           self.mountpoint, "SV2")
+        with self.assertRaisesRegexp(BTRFSError, "1"):
+            btrfs.create_subvolume(self.mountpoint, "SV2")
 
         # if we create SV1 once again it's back
         self.assertEqual(btrfs.create_subvolume(self.mountpoint, "SV1"), 0)
@@ -187,10 +174,8 @@ class BTRFSAsRootTestCase3(loopbackedtestcase.LoopBackedTestCase):
             data and metadata levels are specified differently, but not if
             they are unspecified.
         """
-        self.assertRaises(
-           BTRFSError,
-           btrfs.create_volume,
-           self.loopDevices, data="single", metadata="dup")
+        with self.assertRaises(BTRFSError):
+            btrfs.create_volume(self.loopDevices, data="single", metadata="dup")
         self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
 
 if __name__ == "__main__":

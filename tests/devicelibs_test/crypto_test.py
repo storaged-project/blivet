@@ -39,10 +39,8 @@ class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
         ##
         # pass
         self.assertEqual(crypto.is_luks(_LOOP_DEV0), -22)
-        self.assertRaisesRegexp(IOError,
-            "Device cannot be opened",
-            crypto.is_luks,
-            "/not/existing/device")
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.is_luks("/not/existing/device")
 
         ##
         ## luks_format
@@ -57,22 +55,16 @@ class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
         os.close(handle)
 
         # format with key file
-        self.assertRaisesRegexp(ValueError,
-           "requires passphrase",
-           crypto.luks_format,
-           _LOOP_DEV1, key_file=keyfile)
+        with self.assertRaisesRegexp(ValueError, "requires passphrase"):
+            crypto.luks_format(_LOOP_DEV1, key_file=keyfile)
 
         # fail
-        self.assertRaisesRegexp(IOError,
-           "Device cannot be opened",
-           crypto.luks_format,
-           "/not/existing/device", passphrase="secret", cipher="aes-cbc-essiv:sha256", key_size=256)
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.luks_format("/not/existing/device", passphrase="secret", cipher="aes-cbc-essiv:sha256", key_size=256)
 
         # no passhprase or key file
-        self.assertRaisesRegexp(ValueError,
-           "requires passphrase",
-           crypto.luks_format,
-           _LOOP_DEV1, cipher="aes-cbc-essiv:sha256", key_size=256)
+        with self.assertRaisesRegexp(ValueError, "requires passphrase"):
+            crypto.luks_format(_LOOP_DEV1, cipher="aes-cbc-essiv:sha256", key_size=256)
 
         ##
         ## is_luks
@@ -88,43 +80,31 @@ class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(crypto.luks_add_key(_LOOP_DEV0, new_passphrase="another-secret", passphrase="secret"), None)
 
         # fail
-        self.assertRaisesRegexp(CryptoError,
-           "luks add key failed",
-           crypto.luks_add_key,
-           _LOOP_DEV0, new_passphrase="another-secret", passphrase="wrong-passphrase")
+        with self.assertRaisesRegexp(CryptoError, "luks add key failed"):
+            crypto.luks_add_key(_LOOP_DEV0, new_passphrase="another-secret", passphrase="wrong-passphrase")
 
         ##
         ## luks_remove_key
         ##
         # fail
-        self.assertRaisesRegexp(CryptoError,
-           "luks remove key failed",
-           crypto.luks_remove_key,
-           _LOOP_DEV0, del_passphrase="another-secret", passphrase="wrong-pasphrase")
+        with self.assertRaisesRegexp(CryptoError, "luks remove key failed"):
+            crypto.luks_remove_key(_LOOP_DEV0, del_passphrase="another-secret", passphrase="wrong-pasphrase")
 
         # pass
         self.assertEqual(crypto.luks_remove_key(_LOOP_DEV0, del_passphrase="another-secret", passphrase="secret"), None)
 
         # fail
-        self.assertRaisesRegexp(IOError,
-           "Device cannot be opened",
-           crypto.luks_open,
-           "/not/existing/device", "another-crypted", passphrase="secret")
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.luks_open("/not/existing/device", "another-crypted", passphrase="secret")
 
         # no passhprase or key file
-        self.assertRaisesRegexp(ValueError,
-           "luks_format requires passphrase",
-           crypto.luks_open,
-           _LOOP_DEV1, "another-crypted")
+        with self.assertRaisesRegexp(ValueError, "luks_format requires passphrase"):
+            crypto.luks_open(_LOOP_DEV1, "another-crypted")
 
-        self.assertRaisesRegexp(IOError,
-           "Device cannot be opened",
-           crypto.luks_status,
-           "another-crypted")
-        self.assertRaisesRegexp(IOError,
-           "Device cannot be opened",
-           crypto.luks_close,
-           "wrong-name")
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.luks_status("another-crypted")
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.luks_close("wrong-name")
 
         # cleanup
         os.unlink(keyfile)
@@ -190,14 +170,10 @@ class CryptoTestCase2(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(crypto.luks_close(_name1), None)
 
         # already closed
-        self.assertRaisesRegexp(IOError,
-           "Device cannot be opened",
-           crypto.luks_close,
-           "crypted")
-        self.assertRaisesRegexp(IOError,
-           "Device cannot be opened",
-           crypto.luks_close,
-           "encrypted")
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.luks_close("crypted")
+        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+            crypto.luks_close("encrypted")
 
 class CryptoTestCase3(unittest.TestCase):
     def testPassphrase(self):

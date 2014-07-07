@@ -37,7 +37,8 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(zero, 0.0)
 
         s = Size(500)
-        self.assertRaises(SizePlacesError, s.humanReadable, places=-1)
+        with self.assertRaises(SizePlacesError):
+            s.humanReadable(places=-1)
 
         self.assertEqual(s.humanReadable(places=0), "500 B")
 

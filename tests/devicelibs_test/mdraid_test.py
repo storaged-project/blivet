@@ -76,7 +76,8 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         time.sleep(2)
 
         # fail
-        self.assertRaises(MDRaidError, mdraid.mdcreate, "/dev/md1", "raid1", ["/not/existing/dev0", "/not/existing/dev1"])
+        with self.assertRaises(MDRaidError):
+            mdraid.mdcreate("/dev/md1", "raid1", ["/not/existing/dev0", "/not/existing/dev1"])
 
         ##
         ## mddeactivate
@@ -85,7 +86,8 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(mdraid.mddeactivate(self._dev_name), None)
 
         # fail
-        self.assertRaises(MDRaidError, mdraid.mddeactivate, "/not/existing/md")
+        with self.assertRaises(MDRaidError):
+            mdraid.mddeactivate("/not/existing/md")
 
         ##
         ## mdadd
@@ -94,14 +96,17 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         # TODO
 
         # fail
-        self.assertRaises(MDRaidError, mdraid.mdadd, self._dev_name, "/not/existing/device")
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(self._dev_name, "/not/existing/device")
 
         ##
         ## mdactivate
         ##
-        self.assertRaises(MDRaidError, mdraid.mdactivate, "/not/existing/md", array_uuid=32)
+        with self.assertRaises(MDRaidError):
+            mdraid.mdactivate("/not/existing/md", array_uuid=32)
         # requires uuid
-        self.assertRaises(MDRaidError, mdraid.mdactivate, "/dev/md1")
+        with self.assertRaises(MDRaidError):
+            mdraid.mdactivate("/dev/md1")
 
         ##
         ## mddestroy

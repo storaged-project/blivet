@@ -77,7 +77,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
             self.assertEqual(lvm.pvcreate(dev), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.pvcreate, "/not/existing/device")
+        with self.assertRaises(LVMError):
+            lvm.pvcreate("/not/existing/device")
 
         ##
         ## pvresize
@@ -88,10 +89,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
             self.assertEqual(lvm.pvresize(dev, Size("100MiB")), None)
 
         # fail
-        self.assertRaisesRegexp(LVMError,
-           "pvresize failed",
-           lvm.pvresize,
-           "/not/existing/device", Size("50MiB"))
+        with self.assertRaisesRegexp(LVMError, "pvresize failed"):
+            lvm.pvresize("/not/existing/device", Size("50MiB"))
 
         ##
         ## vgcreate
@@ -100,20 +99,14 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.vgcreate(self._vg_name, self.loopDevices, Size("4MiB")), None)
 
         # fail
-        self.assertRaisesRegexp(LVMError,
-           "vgcreate failed",
-           lvm.vgcreate,
-           "another-vg", ["/not/existing/device"], Size("4MiB"))
+        with self.assertRaisesRegexp(LVMError, "vgcreate failed"):
+            lvm.vgcreate("another-vg", ["/not/existing/device"], Size("4MiB"))
         # vg already exists
-        self.assertRaisesRegexp(LVMError,
-           "vgcreate failed",
-           lvm.vgcreate,
-           self._vg_name, [_LOOP_DEV0], Size("4MiB"))
+        with self.assertRaisesRegexp(LVMError, "vgcreate failed"):
+            lvm.vgcreate(self._vg_name, [_LOOP_DEV0], Size("4MiB"))
         # pe size must be power of 2
-        self.assertRaisesRegexp(LVMError,
-           "vgcreate failed",
-           lvm.vgcreate,
-           "another-vg", [_LOOP_DEV0], Size("5MiB"))
+        with self.assertRaisesRegexp(LVMError, "vgcreate failed"):
+            lvm.vgcreate("another-vg", [_LOOP_DEV0], Size("5MiB"))
 
         ##
         ## vgdeactivate
@@ -122,7 +115,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.vgdeactivate(self._vg_name), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.vgdeactivate, "wrong-vg-name")
+        with self.assertRaises(LVMError):
+            lvm.vgdeactivate("wrong-vg-name")
 
         ##
         ## vgreduce
@@ -131,8 +125,10 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.vgreduce(self._vg_name, _LOOP_DEV1), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.vgreduce, "wrong-vg-name", _LOOP_DEV1)
-        self.assertRaises(LVMError, lvm.vgreduce, self._vg_name, "/not/existing/device")
+        with self.assertRaises(LVMError):
+            lvm.vgreduce("wrong-vg-name", _LOOP_DEV1)
+        with self.assertRaises(LVMError):
+            lvm.vgreduce(self._vg_name, "/not/existing/device")
 
         ##
         ## vgactivate
@@ -141,7 +137,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.vgactivate(self._vg_name), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.vgactivate, "wrong-vg-name")
+        with self.assertRaises(LVMError):
+            lvm.vgactivate("wrong-vg-name")
 
         ##
         ## pvinfo
@@ -160,7 +157,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.vginfo(self._vg_name)['LVM2_PV_COUNT'], "1")
 
         # fail
-        self.assertRaises(LVMError, lvm.vginfo, "wrong-vg-name")
+        with self.assertRaises(LVMError):
+            lvm.vginfo("wrong-vg-name")
 
         ##
         ## lvcreate
@@ -169,7 +167,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.lvcreate(self._vg_name, self._lv_name, Size("10MiB")), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvcreate, "wrong-vg-name", "another-lv", Size("10MiB"))
+        with self.assertRaises(LVMError):
+            lvm.lvcreate("wrong-vg-name", "another-lv", Size("10MiB"))
 
         ##
         ## lvdeactivate
@@ -178,9 +177,12 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.lvdeactivate(self._vg_name, self._lv_name), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvdeactivate, self._vg_name, "wrong-lv-name")
-        self.assertRaises(LVMError, lvm.lvdeactivate, "wrong-vg-name", self._lv_name)
-        self.assertRaises(LVMError, lvm.lvdeactivate, "wrong-vg-name", "wrong-lv-name")
+        with self.assertRaises(LVMError):
+            lvm.lvdeactivate(self._vg_name, "wrong-lv-name")
+        with self.assertRaises(LVMError):
+            lvm.lvdeactivate("wrong-vg-name", self._lv_name)
+        with self.assertRaises(LVMError):
+            lvm.lvdeactivate("wrong-vg-name", "wrong-lv-name")
 
         ##
         ## lvresize
@@ -189,11 +191,15 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.lvresize(self._vg_name, self._lv_name, Size("60MiB")), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvresize, self._vg_name, "wrong-lv-name", Size("80MiB"))
-        self.assertRaises(LVMError, lvm.lvresize, "wrong-vg-name", self._lv_name, Size("80MiB"))
-        self.assertRaises(LVMError, lvm.lvresize, "wrong-vg-name", "wrong-lv-name", Size("80MiB"))
+        with self.assertRaises(LVMError):
+            lvm.lvresize(self._vg_name, "wrong-lv-name", Size("80MiB"))
+        with self.assertRaises(LVMError):
+            lvm.lvresize("wrong-vg-name", self._lv_name, Size("80MiB"))
+        with self.assertRaises(LVMError):
+            lvm.lvresize("wrong-vg-name", "wrong-lv-name", Size("80MiB"))
         # changing to same size
-        self.assertRaises(LVMError, lvm.lvresize, self._vg_name, self._lv_name, Size("60MiB"))
+        with self.assertRaises(LVMError):
+            lvm.lvresize(self._vg_name, self._lv_name, Size("60MiB"))
 
         ##
         ## lvactivate
@@ -202,9 +208,12 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.lvactivate(self._vg_name, self._lv_name), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvactivate, self._vg_name, "wrong-lv-name")
-        self.assertRaises(LVMError, lvm.lvactivate, "wrong-vg-name", self._lv_name)
-        self.assertRaises(LVMError, lvm.lvactivate, "wrong-vg-name", "wrong-lv-name")
+        with self.assertRaises(LVMError):
+            lvm.lvactivate(self._vg_name, "wrong-lv-name")
+        with self.assertRaises(LVMError):
+            lvm.lvactivate("wrong-vg-name", self._lv_name)
+        with self.assertRaises(LVMError):
+            lvm.lvactivate("wrong-vg-name", "wrong-lv-name")
 
         ##
         ## lvs
@@ -234,11 +243,15 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.lvremove(self._vg_name, self._lv_name), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.lvremove, self._vg_name, "wrong-lv-name")
-        self.assertRaises(LVMError, lvm.lvremove, "wrong-vg-name", self._lv_name)
-        self.assertRaises(LVMError, lvm.lvremove, "wrong-vg-name", "wrong-lv-name")
+        with self.assertRaises(LVMError):
+            lvm.lvremove(self._vg_name, "wrong-lv-name")
+        with self.assertRaises(LVMError):
+            lvm.lvremove("wrong-vg-name", self._lv_name)
+        with self.assertRaises(LVMError):
+            lvm.lvremove("wrong-vg-name", "wrong-lv-name")
         # lv already removed
-        self.assertRaises(LVMError, lvm.lvremove, self._vg_name, self._lv_name)
+        with self.assertRaises(LVMError):
+            lvm.lvremove(self._vg_name, self._lv_name)
 
         ##
         ## vgremove
@@ -247,9 +260,11 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(lvm.vgremove(self._vg_name), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.vgremove, "wrong-vg-name")
+        with self.assertRaises(LVMError):
+            lvm.vgremove("wrong-vg-name")
         # vg already removed
-        self.assertRaises(LVMError, lvm.vgremove, self._vg_name)
+        with self.assertRaises(LVMError):
+            lvm.vgremove(self._vg_name)
 
         ##
         ## pvremove
@@ -259,7 +274,8 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
             self.assertEqual(lvm.pvremove(dev), None)
 
         # fail
-        self.assertRaises(LVMError, lvm.pvremove, "/not/existing/device")
+        with self.assertRaises(LVMError):
+            lvm.pvremove("/not/existing/device")
         # pv already removed
         self.assertEqual(lvm.pvremove(_LOOP_DEV0), None)
 
