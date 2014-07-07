@@ -22,7 +22,6 @@
 
 import os
 
-from ..udev import udev_get_device
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
@@ -31,7 +30,6 @@ from ..storage_log import log_method_call
 from ..errors import DeviceFormatError, DMError, FormatCreateError, FormatDestroyError, FormatSetupError, MDRaidError, StorageError
 from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
-from ..udev import udev_device_get_major, udev_device_get_minor
 from ..i18n import _, N_
 from ..size import Size
 
@@ -185,7 +183,6 @@ class DeviceFormat(ObjectID):
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists")
         self.options = kwargs.get("options")
-        self._majorminor = None
 
         # don't worry about existence if this is a DeviceFormat instance
         #if self.__class__ is DeviceFormat:
@@ -349,25 +346,6 @@ class DeviceFormat(ObjectID):
         except (ValueError, IOError) as e:
             log.warning("failed to notify kernel of change: %s", e)
 
-    def cacheMajorminor(self):
-        """ Cache the value of self.majorminor.
-
-            Once a device node of this format's device disappears (for instance
-            after a teardown), it is no longer possible to figure out the value
-            of self.majorminor pseudo-unique string. Call this method before
-            that happens for caching this.
-        """
-        self._majorminor = None
-        try:
-            self.majorminor # this does the caching
-        except StorageError:
-            # entirely possible there's no majorminor, for instance an
-            # LVMVolumeGroup has got no device node and no sysfs path.  In this
-            # case obviously, calling majorminor of this object later raises an
-            # exception.
-            pass
-        return self._majorminor
-
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
@@ -517,28 +495,6 @@ class DeviceFormat(ObjectID):
     def hidden(self):
         """ Whether devices with this formatting should be hidden in UIs. """
         return self._hidden
-
-    @property
-    def majorminor(self):
-        """A string suitable for using as a pseudo-unique ID in kickstart."""
-        if not self._majorminor:
-            # If this is a device-mapper device, we have to get the DM node and
-            # build the sysfs path from that.
-            try:
-                device = dm_node_from_name(os.path.basename(self.device))
-            except DMError:
-                device = self.device
-
-            try:
-                sysfs_path = get_sysfs_path_by_name(device)
-            except RuntimeError:
-                raise StorageError("DeviceFormat.majorminor: "
-                                   "can not get majorminor for '%s'" % device)
-            dev = udev_get_device(sysfs_path[4:])
-
-            self._majorminor = "%03d%03d" %\
-                (udev_device_get_major(dev), udev_device_get_minor(dev))
-        return self._majorminor
 
     @property
     def ksMountpoint(self):
