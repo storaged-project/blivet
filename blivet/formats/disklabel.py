@@ -27,9 +27,9 @@ import parted
 import _ped
 from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
 from .. import arch
+from .. import udev
 from .. import util
 from ..flags import flags
-from ..udev import udev_settle
 from ..i18n import _, N_
 from . import DeviceFormat, register_device_format
 from ..size import Size
@@ -272,7 +272,7 @@ class DiskLabel(DeviceFormat):
             raise DiskLabelCommitError(msg)
         else:
             self.updateOrigPartedDisk()
-            udev_settle()
+            udev.settle()
 
     def commitToDisk(self):
         """ Commit the current partition table to disk. """

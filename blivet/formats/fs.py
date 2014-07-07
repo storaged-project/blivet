@@ -38,7 +38,7 @@ from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size
 from ..i18n import _, N_
-from ..udev import udev_settle
+from .. import udev
 
 import logging
 log = logging.getLogger("blivet")
@@ -614,7 +614,7 @@ class FS(DeviceFormat):
         if not os.path.exists(self._mountpoint):
             raise FSError("mountpoint does not exist")
 
-        udev_settle()
+        udev.settle()
         rc = util.umount(self._mountpoint)
         if rc:
             # try and catch whatever is causing the umount problem

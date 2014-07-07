@@ -33,11 +33,11 @@ global_udev = pyudev.Udev()
 import logging
 log = logging.getLogger("blivet")
 
-def udev_enumerate_devices(deviceClass="block"):
+def enumerate_devices(deviceClass="block"):
     devices = global_udev.enumerate_devices(subsystem=deviceClass)
     return [path[4:] for path in devices]
 
-def udev_get_device(sysfs_path):
+def get_device(sysfs_path):
     if not os.path.exists("/sys%s" % sysfs_path):
         log.debug("%s does not exist", sysfs_path)
         return None
@@ -51,20 +51,20 @@ def udev_get_device(sysfs_path):
         dev["sysfs_path"] = sysfs_path
 
         # now add in the contents of the uevent file since they're handy
-        dev = udev_parse_uevent_file(dev)
+        dev = parse_uevent_file(dev)
 
     return dev
 
-def udev_get_devices(deviceClass="block"):
-    udev_settle()
+def get_devices(deviceClass="block"):
+    settle()
     entries = []
-    for path in udev_enumerate_devices(deviceClass):
-        entry = udev_get_device(path)
+    for path in enumerate_devices(deviceClass):
+        entry = get_device(path)
         if entry:
             entries.append(entry)
     return entries
 
-def udev_parse_uevent_file(dev):
+def parse_uevent_file(dev):
     path = os.path.normpath("/sys/%s/uevent" % dev['sysfs_path'])
     if not os.access(path, os.R_OK):
         return dev
@@ -79,13 +79,13 @@ def udev_parse_uevent_file(dev):
 
     return dev
 
-def udev_settle():
+def settle():
     # wait maximal 300 seconds for udev to be done running blkid, lvm,
     # mdadm etc. This large timeout is needed when running on machines with
     # lots of disks, or with slow disks
     util.run_program(["udevadm", "settle", "--timeout=300"])
 
-def udev_trigger(subsystem=None, action="add", name=None):
+def trigger(subsystem=None, action="add", name=None):
     argv = ["trigger", "--action=%s" % action]
     if subsystem:
         argv.append("--subsystem-match=%s" % subsystem)
@@ -93,9 +93,9 @@ def udev_trigger(subsystem=None, action="add", name=None):
         argv.append("--sysname-match=%s" % name)
 
     util.run_program(["udevadm"] + argv)
-    udev_settle()
+    settle()
 
-def udev_resolve_devspec(devspec):
+def resolve_devspec(devspec):
     if not devspec:
         return None
 
@@ -103,16 +103,16 @@ def udev_resolve_devspec(devspec):
     from . import devices
 
     ret = None
-    for dev in udev_get_block_devices():
+    for dev in get_block_devices():
         if devspec.startswith("LABEL="):
-            if udev_device_get_label(dev) == devspec[6:]:
+            if device_get_label(dev) == devspec[6:]:
                 ret = dev
                 break
         elif devspec.startswith("UUID="):
-            if udev_device_get_uuid(dev) == devspec[5:]:
+            if device_get_uuid(dev) == devspec[5:]:
                 ret = dev
                 break
-        elif udev_device_get_name(dev) == devices.devicePathToName(devspec):
+        elif device_get_name(dev) == devices.devicePathToName(devspec):
             ret = dev
             break
         else:
@@ -126,17 +126,17 @@ def udev_resolve_devspec(devspec):
                     break
 
     if ret:
-        return udev_device_get_name(ret)
+        return device_get_name(ret)
 
-def udev_resolve_glob(glob):
+def resolve_glob(glob):
     import fnmatch
     ret = []
 
     if not glob:
         return ret
 
-    for dev in udev_get_block_devices():
-        name = udev_device_get_name(dev)
+    for dev in get_block_devices():
+        name = device_get_name(dev)
 
         if fnmatch.fnmatch(name, glob):
             ret.append(name)
@@ -147,11 +147,11 @@ def udev_resolve_glob(glob):
 
     return ret
 
-def udev_get_block_devices():
-    udev_settle()
+def get_block_devices():
+    settle()
     entries = []
-    for path in udev_enumerate_block_devices():
-        entry = udev_get_block_device(path)
+    for path in enumerate_block_devices():
+        entry = get_block_device(path)
         if entry:
             if entry["name"].startswith("md"):
                 # mdraid is really braindead, when a device is stopped
@@ -180,11 +180,11 @@ def __is_blacklisted_blockdev(dev_name):
 
     return False
 
-def udev_enumerate_block_devices():
-    return [d for d in udev_enumerate_devices(deviceClass="block") if not __is_blacklisted_blockdev(os.path.basename(d))]
+def enumerate_block_devices():
+    return [d for d in enumerate_devices(deviceClass="block") if not __is_blacklisted_blockdev(os.path.basename(d))]
 
-def udev_get_block_device(sysfs_path):
-    dev = udev_get_device(sysfs_path)
+def get_block_device(sysfs_path):
+    dev = get_device(sysfs_path)
     if not dev or 'name' not in dev:
         return None
     else:
@@ -193,7 +193,7 @@ def udev_get_block_device(sysfs_path):
 
 # These are functions for retrieving specific pieces of information from
 # udev database entries.
-def udev_device_get_name(udev_info):
+def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
     if "DM_NAME" in udev_info:
         name = udev_info["DM_NAME"]
@@ -202,11 +202,11 @@ def udev_device_get_name(udev_info):
 
     return name
 
-def udev_device_get_format(udev_info):
+def device_get_format(udev_info):
     """ Return a device's format type as reported by udev. """
     return udev_info.get("ID_FS_TYPE")
 
-def udev_device_get_uuid(udev_info):
+def device_get_uuid(udev_info):
     """ Get the UUID from the device's format as reported by udev. """
     md_uuid = udev_info.get("MD_UUID", '')
     uuid = udev_info.get("ID_FS_UUID", '')
@@ -215,30 +215,30 @@ def udev_device_get_uuid(udev_info):
             re.sub(r'\W', '', md_uuid) != re.sub(r'\W', '', uuid):
         return udev_info.get("ID_FS_UUID")
 
-def udev_device_get_label(udev_info):
+def device_get_label(udev_info):
     """ Get the label from the device's format as reported by udev. """
     return udev_info.get("ID_FS_LABEL")
 
-def udev_device_is_dm(info):
+def device_is_dm(info):
     """ Return True if the device is a device-mapper device. """
     return 'DM_NAME' in info
 
-def udev_device_is_md(info):
+def device_is_md(info):
     """ Return True if the device is a mdraid array device. """
     # Don't identify partitions on mdraid arrays as raid arrays
-    if udev_device_is_partition(info):
+    if device_is_partition(info):
         return False
 
     # The udev information keeps shifting around. Only md arrays have a
     # /sys/class/block/<name>/md/ subdirectory.
-    md_dir = "/sys" + udev_device_get_sysfs_path(info) + "/md"
+    md_dir = "/sys" + device_get_sysfs_path(info) + "/md"
     return os.path.exists(md_dir)
 
-def udev_device_is_cciss(info):
+def device_is_cciss(info):
     """ Return True if the device is a CCISS device. """
-    return udev_device_get_name(info).startswith("cciss")
+    return device_get_name(info).startswith("cciss")
 
-def udev_device_is_dasd(info):
+def device_is_dasd(info):
     """ Return True if the device is a dasd device. """
     devname = info.get("DEVNAME")
     if devname:
@@ -246,7 +246,7 @@ def udev_device_is_dasd(info):
     else:
         return False
 
-def udev_device_is_zfcp(info):
+def device_is_zfcp(info):
     """ Return True if the device is a zfcp device. """
     if info.get("DEVTYPE") != "disk":
         return False
@@ -273,10 +273,10 @@ def udev_device_is_zfcp(info):
 
     return False
 
-def udev_device_get_zfcp_attribute(info, attr=None):
+def device_get_zfcp_attribute(info, attr=None):
     """ Return the value of the specified attribute of the zfcp device. """
     if not attr:
-        log.debug("udev_device_get_zfcp_attribute() called with attr=None")
+        log.debug("device_get_zfcp_attribute() called with attr=None")
         return None
 
     attribute = "/sys%s/device/%s" % (info.get("sysfs_path"), attr,)
@@ -288,11 +288,11 @@ def udev_device_get_zfcp_attribute(info, attr=None):
 
     return open(attribute, "r").read().strip()
 
-def udev_device_get_dasd_bus_id(info):
+def device_get_dasd_bus_id(info):
     """ Return the CCW bus ID of the dasd device. """
     return info.get("sysfs_path").split("/")[-3]
 
-def udev_device_get_dasd_flag(info, flag=None):
+def device_get_dasd_flag(info, flag=None):
     """ Return the specified flag for the dasd device. """
     if flag is None:
         return None
@@ -303,137 +303,137 @@ def udev_device_get_dasd_flag(info, flag=None):
 
     return open(path, 'r').read().strip()
 
-def udev_device_is_cdrom(info):
+def device_is_cdrom(info):
     """ Return True if the device is an optical drive. """
     # FIXME: how can we differentiate USB drives from CD-ROM drives?
     #         -- USB drives also generate a sdX device.
     return info.get("ID_CDROM") == "1"
 
-def udev_device_is_disk(info):
+def device_is_disk(info):
     """ Return True is the device is a disk. """
-    if udev_device_is_cdrom(info):
+    if device_is_cdrom(info):
         return False
     has_range = os.path.exists("/sys/%s/range" % info['sysfs_path'])
     return info.get("DEVTYPE") == "disk" or has_range
 
-def udev_device_is_partition(info):
+def device_is_partition(info):
     has_start = os.path.exists("/sys/%s/start" % info['sysfs_path'])
     return info.get("DEVTYPE") == "partition" or has_start
 
-def udev_device_is_loop(info):
+def device_is_loop(info):
     """ Return True if the device is a configured loop device. """
-    return (udev_device_get_name(info).startswith("loop") and
+    return (device_get_name(info).startswith("loop") and
             os.path.isdir("/sys/%s/loop" % info['sysfs_path']))
 
-def udev_device_get_serial(udev_info):
+def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
     return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL_SHORT", udev_info.get("ID_SERIAL")))
 
-def udev_device_get_wwid(udev_info):
+def device_get_wwid(udev_info):
     """ The WWID of a device is typically just its serial number, but with
         colons in the name to make it more readable. """
-    serial = udev_device_get_serial(udev_info)
+    serial = device_get_serial(udev_info)
     return util.insert_colons(serial) if serial else ""
 
-def udev_device_get_vendor(udev_info):
+def device_get_vendor(udev_info):
     """ Get the vendor of the device as reported by udev. """
     return udev_info.get("ID_VENDOR_FROM_DATABASE", udev_info.get("ID_VENDOR"))
 
-def udev_device_get_model(udev_info):
+def device_get_model(udev_info):
     """ Get the model of the device as reported by udev. """
     return udev_info.get("ID_MODEL_FROM_DATABASE", udev_info.get("ID_MODEL"))
 
-def udev_device_get_bus(udev_info):
+def device_get_bus(udev_info):
     """ Get the bus a device is connected to the system by. """
     return udev_info.get("ID_BUS", "").upper()
 
-def udev_device_get_path(info):
+def device_get_path(info):
     return info["ID_PATH"]
 
-def udev_device_get_symlinks(info):
+def device_get_symlinks(info):
     return info.get("symlinks", [])
 
-def udev_device_get_by_path(info):
-    for link in udev_device_get_symlinks(info):
+def device_get_by_path(info):
+    for link in device_get_symlinks(info):
         if link.startswith('/dev/disk/by-path/'):
             return link
 
-    return udev_device_get_name(info)
+    return device_get_name(info)
 
-def udev_device_get_sysfs_path(info):
+def device_get_sysfs_path(info):
     return info['sysfs_path']
 
-def udev_device_get_major(info):
+def device_get_major(info):
     return int(info["MAJOR"])
 
-def udev_device_get_minor(info):
+def device_get_minor(info):
     return int(info["MINOR"])
 
-def udev_device_get_md_level(info):
+def device_get_md_level(info):
     return info.get("MD_LEVEL")
 
-def udev_device_get_md_devices(info):
+def device_get_md_devices(info):
     return int(info["MD_DEVICES"])
 
-def udev_device_get_md_uuid(info):
+def device_get_md_uuid(info):
     return info["MD_UUID"]
 
-def udev_device_get_md_container(info):
+def device_get_md_container(info):
     return info.get("MD_CONTAINER")
 
-def udev_device_get_md_name(info):
+def device_get_md_name(info):
     return info.get("MD_DEVNAME")
 
-def udev_device_get_vg_name(info):
+def device_get_vg_name(info):
     return info['LVM2_VG_NAME']
 
-def udev_device_get_lv_vg_name(info):
+def device_get_lv_vg_name(info):
     return info['DM_VG_NAME']
 
-def udev_device_get_vg_uuid(info):
+def device_get_vg_uuid(info):
     return info['LVM2_VG_UUID']
 
-def udev_device_get_vg_size(info):
+def device_get_vg_size(info):
     # lvm's decmial precision is not configurable, so we tell it to use
     # KB.
     return Size("%s KiB" % info['LVM2_VG_SIZE'])
 
-def udev_device_get_vg_free(info):
+def device_get_vg_free(info):
     # lvm's decmial precision is not configurable, so we tell it to use
     # KB.
     return Size("%s KiB" % info['LVM2_VG_FREE'])
 
-def udev_device_get_vg_extent_size(info):
+def device_get_vg_extent_size(info):
     return Size("%s KiB" % info['LVM2_VG_EXTENT_SIZE'])
 
-def udev_device_get_vg_extent_count(info):
+def device_get_vg_extent_count(info):
     return int(info['LVM2_VG_EXTENT_COUNT'])
 
-def udev_device_get_vg_free_extents(info):
+def device_get_vg_free_extents(info):
     return int(info['LVM2_VG_FREE_COUNT'])
 
-def udev_device_get_vg_pv_count(info):
+def device_get_vg_pv_count(info):
     return int(info['LVM2_PV_COUNT'])
 
-def udev_device_get_pv_pe_start(info):
+def device_get_pv_pe_start(info):
     return Size("%s KiB" % info['LVM2_PE_START'])
 
-def udev_device_get_lv_name(info):
+def device_get_lv_name(info):
     return info['LVM2_LV_NAME']
 
-def udev_device_get_lv_uuid(info):
+def device_get_lv_uuid(info):
     return info['LVM2_LV_UUID']
 
-def udev_device_get_lv_size(info):
+def device_get_lv_size(info):
     return Size("%s KiB" % info['LVM2_LV_SIZE'])
 
-def udev_device_get_lv_attr(info):
+def device_get_lv_attr(info):
     return info['LVM2_LV_ATTR']
 
-def udev_device_get_lv_type(info):
+def device_get_lv_type(info):
     return info['LVM2_SEGTYPE']
 
-def udev_device_dm_subsystem_match(info, subsystem):
+def device_dm_subsystem_match(info, subsystem):
     """ Return True if the device matches a given device-mapper subsystem. """
     uuid = info.get("DM_UUID", "")
     uuid_fields = uuid.split("-")
@@ -448,17 +448,17 @@ def udev_device_dm_subsystem_match(info, subsystem):
 
     return _subsystem.lower() == subsystem.lower()
 
-def udev_device_is_dm_lvm(info):
+def device_is_dm_lvm(info):
     """ Return True if the device is an LVM logical volume. """
-    return udev_device_dm_subsystem_match(info, "lvm")
+    return device_dm_subsystem_match(info, "lvm")
 
-def udev_device_is_dm_crypt(info):
+def device_is_dm_crypt(info):
     """ Return True if the device is a mapped dm-crypt device. """
-    return udev_device_dm_subsystem_match(info, "crypt")
+    return device_dm_subsystem_match(info, "crypt")
 
-def udev_device_is_dm_luks(info):
+def device_is_dm_luks(info):
     """ Return True if the device is a mapped LUKS device. """
-    is_crypt = udev_device_dm_subsystem_match(info, "crypt")
+    is_crypt = device_dm_subsystem_match(info, "crypt")
     try:
         _type = info.get("DM_UUID", "").split("-")[1].lower()
     except IndexError:
@@ -466,25 +466,25 @@ def udev_device_is_dm_luks(info):
 
     return is_crypt and _type.startswith("luks")
 
-def udev_device_is_dm_raid(info):
+def device_is_dm_raid(info):
     """ Return True if the device is a dmraid array device. """
-    return udev_device_dm_subsystem_match(info, "dmraid")
+    return device_dm_subsystem_match(info, "dmraid")
 
-def udev_device_is_dm_mpath(info):
+def device_is_dm_mpath(info):
     """ Return True if the device is a multipath device. """
-    return udev_device_dm_subsystem_match(info, "mpath")
+    return device_dm_subsystem_match(info, "mpath")
 
-def udev_device_is_dm_anaconda(info):
+def device_is_dm_anaconda(info):
     """ Return True if the device is an anaconda disk image. """
-    return udev_device_dm_subsystem_match(info, "anaconda")
+    return device_dm_subsystem_match(info, "anaconda")
 
-def udev_device_is_dm_livecd(info):
+def device_is_dm_livecd(info):
     """ Return True if the device is a livecd OS image. """
-    # return udev_device_dm_subsystem_match(info, "livecd")
-    return (udev_device_is_dm(info) and
-            udev_device_get_name(info).startswith("live"))
+    # return device_dm_subsystem_match(info, "livecd")
+    return (device_is_dm(info) and
+            device_get_name(info).startswith("live"))
 
-def udev_device_is_biosraid_member(info):
+def device_is_biosraid_member(info):
     # Note that this function does *not* identify raid sets.
     # Tests to see if device is part of a dmraid set.
     # dmraid and mdraid have the same ID_FS_USAGE string, ID_FS_TYPE has a
@@ -501,26 +501,26 @@ def udev_device_is_biosraid_member(info):
 
     return False
 
-def udev_device_get_dm_partition_disk(info):
-    return re.sub(r'p?\d*$', '', udev_device_get_name(info))
+def device_get_dm_partition_disk(info):
+    return re.sub(r'p?\d*$', '', device_get_name(info))
 
-def udev_device_is_dm_partition(info):
-    return (udev_device_is_dm(info) and
+def device_is_dm_partition(info):
+    return (device_is_dm(info) and
             info.get("DM_UUID", "").split("-")[0].startswith("part"))
 
-def udev_device_is_multipath_member(info):
+def device_is_multipath_member(info):
     """ Return True if the device is part of a multipath. """
     return info.get("ID_FS_TYPE") == "multipath_member"
 
-def udev_device_get_multipath_name(info):
+def device_get_multipath_name(info):
     """ Return the name of the multipath that the device is a member of. """
-    if udev_device_is_multipath_member(info):
+    if device_is_multipath_member(info):
         return info['ID_MPATH_NAME']
     return None
 
-def udev_device_get_disklabel_type(info):
+def device_get_disklabel_type(info):
     """ Return the type of disklabel on the device or None. """
-    if udev_device_is_partition(info) or udev_device_is_dm_partition(info):
+    if device_is_partition(info) or device_is_dm_partition(info):
         # For partitions, ID_PART_TABLE_TYPE is the disklabel type for the
         # partition's disk. It does not mean the partition contains a disklabel.
         return None
@@ -535,10 +535,10 @@ def udev_device_get_disklabel_type(info):
 # Note that in the case of IPV6 iscsi_address itself can contain :
 # too, but iscsi_port never contains :
 
-def udev_device_is_sw_iscsi(info):
+def device_is_sw_iscsi(info):
     # software iscsi
     try:
-        path_components = udev_device_get_path(info).split("-")
+        path_components = device_get_path(info).split("-")
 
         if info["ID_BUS"] == "scsi" and len(path_components) >= 6 and \
                 path_components[0] == "ip" and path_components[2] == "iscsi":
@@ -548,10 +548,10 @@ def udev_device_is_sw_iscsi(info):
 
     return False
 
-def udev_device_is_partoff_iscsi(info):
+def device_is_partoff_iscsi(info):
     # partial offload iscsi
     try:
-        path_components = udev_device_get_path(info).split("-")
+        path_components = device_get_path(info).split("-")
 
         if info["ID_BUS"] == "scsi" and len(path_components) >= 8 and \
                 path_components[2] == "ip" and path_components[4] == "iscsi":
@@ -561,41 +561,41 @@ def udev_device_is_partoff_iscsi(info):
 
     return False
 
-def udev_device_is_iscsi(info):
-    return udev_device_is_sw_iscsi(info) or udev_device_is_partoff_iscsi(info)
+def device_is_iscsi(info):
+    return device_is_sw_iscsi(info) or device_is_partoff_iscsi(info)
 
-def udev_device_get_iscsi_name(info):
+def device_get_iscsi_name(info):
     name_field = 3
-    if udev_device_is_partoff_iscsi(info):
+    if device_is_partoff_iscsi(info):
         name_field = 5
 
-    path_components = udev_device_get_path(info).split("-")
+    path_components = device_get_path(info).split("-")
 
     # Tricky, the name itself contains atleast 1 - char
     return "-".join(path_components[name_field:len(path_components)-2])
 
-def udev_device_get_iscsi_address(info):
+def device_get_iscsi_address(info):
     address_field = 1
-    if udev_device_is_partoff_iscsi(info):
+    if device_is_partoff_iscsi(info):
         address_field = 3
 
-    path_components = udev_device_get_path(info).split("-")
+    path_components = device_get_path(info).split("-")
 
     # IPV6 addresses contain : within the address, so take everything
     # before the last : as address
     return ":".join(path_components[address_field].split(":")[:-1])
 
-def udev_device_get_iscsi_port(info):
+def device_get_iscsi_port(info):
     address_field = 1
-    if udev_device_is_partoff_iscsi(info):
+    if device_is_partoff_iscsi(info):
         address_field = 3
 
-    path_components = udev_device_get_path(info).split("-")
+    path_components = device_get_path(info).split("-")
 
     # IPV6 contains : within the address, the part after the last : is the port
     return path_components[address_field].split(":")[-1]
 
-def udev_device_get_iscsi_session(info):
+def device_get_iscsi_session(info):
     # '/devices/pci0000:00/0000:00:02.0/0000:09:00.0/0000:0a:01.0/0000:0e:00.2/host3/session1/target3:0:0/3:0:0:0/block/sda'
     # The position of sessionX part depends on device
     # (e.g. offload vs. sw; also varies for different offload devs)
@@ -604,21 +604,21 @@ def udev_device_get_iscsi_session(info):
     if match:
         session = match.groups()[0]
     else:
-        log.error("udev_device_get_iscsi_session: session not found in %s", info)
+        log.error("device_get_iscsi_session: session not found in %s", info)
     return session
 
 
-def udev_device_get_iscsi_nic(info):
+def device_get_iscsi_nic(info):
     iface = None
-    session = udev_device_get_iscsi_session(info)
+    session = device_get_iscsi_session(info)
     if session:
         iface = open("/sys/class/iscsi_session/%s/ifacename" %
                      session).read().strip()
     return iface
 
-def udev_device_get_iscsi_initiator(info):
+def device_get_iscsi_initiator(info):
     initiator = None
-    if udev_device_is_partoff_iscsi(info):
+    if device_is_partoff_iscsi(info):
         host = re.match(r'.*/(host\d+)', info["sysfs_path"]).groups()[0]
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
@@ -629,7 +629,7 @@ def udev_device_get_iscsi_initiator(info):
                 if initiator.lstrip("(").rstrip(")").lower() == "null":
                     initiator = None
     if initiator is None:
-        session = udev_device_get_iscsi_session(info)
+        session = device_get_iscsi_session(info)
         if session:
             initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
                              session).read().strip()
@@ -671,7 +671,7 @@ def _detect_broadcom_fcoe(info):
             return (sysfs_pci, host)
     return (None, None)
 
-def udev_device_is_fcoe(info):
+def device_is_fcoe(info):
     if info.get("ID_BUS") != "scsi":
         return False
 
@@ -690,7 +690,7 @@ def udev_device_is_fcoe(info):
 
     return False
 
-def udev_device_get_fcoe_nic(info):
+def device_get_fcoe_nic(info):
     path = info.get("ID_PATH", "")
     path_components = path.split("-")
 
@@ -712,7 +712,7 @@ def udev_device_get_fcoe_nic(info):
         else:
             return iface
 
-def udev_device_get_fcoe_identifier(info):
+def device_get_fcoe_identifier(info):
     path = info.get("ID_PATH", "")
     path_components = path.split("-")
 
@@ -723,6 +723,6 @@ def udev_device_get_fcoe_identifier(info):
     if path.startswith("fc-") and "fcoe" in info["sysfs_path"]:
         return path_components[1]
 
-    if udev_device_is_fcoe(info) and len(path_components) >= 4 and \
+    if device_is_fcoe(info) and len(path_components) >= 4 and \
        path_components[2] == 'fc':
         return path_components[3]

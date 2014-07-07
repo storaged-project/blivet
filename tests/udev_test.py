@@ -22,7 +22,7 @@ class UdevTest(unittest.TestCase):
             '/sys/devices/virtual/block/dm-0',
         ]
         blivet.udev.global_udev.enumerate_devices = mock.Mock(return_value=ENUMERATE_LIST)
-        ret = blivet.udev.udev_enumerate_devices()
+        ret = blivet.udev.enumerate_devices()
         self.assertEqual(set(ret),
             set(['/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda',
             '/devices/virtual/block/loop0', '/devices/virtual/block/loop1',
@@ -60,21 +60,21 @@ class UdevTest(unittest.TestCase):
         blivet.udev.global_udev = mock.Mock()
         blivet.udev.global_udev.create_device.return_value = dev
 
-        saved = blivet.udev.udev_parse_uevent_file
-        blivet.udev.udev_parse_uevent_file = mock.Mock(return_value=dev)
+        saved = blivet.udev.parse_uevent_file
+        blivet.udev.parse_uevent_file = mock.Mock(return_value=dev)
 
-        ret = blivet.udev.udev_get_device(DEV_PATH)
+        ret = blivet.udev.get_device(DEV_PATH)
         self.assertTrue(isinstance(ret, Device))
         self.assertEqual(ret['name'], ret.sysname)
         self.assertEqual(ret['sysfs_path'], DEV_PATH)
-        self.assertTrue(blivet.udev.udev_parse_uevent_file.called)
+        self.assertTrue(blivet.udev.parse_uevent_file.called)
 
-        blivet.udev.udev_parse_uevent_file = saved
+        blivet.udev.parse_uevent_file = saved
 
     def test_udev_get_device_2(self):
         import blivet.udev
         blivet.udev.os.path.exists.return_value = False
-        ret = blivet.udev.udev_get_device('')
+        ret = blivet.udev.get_device('')
         self.assertEqual(ret, None)
 
     def test_udev_get_device_3(self):
@@ -82,23 +82,23 @@ class UdevTest(unittest.TestCase):
         blivet.udev.os.path.exists.return_value = True
         blivet.udev.global_udev = mock.Mock()
         blivet.udev.global_udev.create_device.return_value = None
-        ret = blivet.udev.udev_get_device('')
+        ret = blivet.udev.get_device('')
         self.assertEqual(ret, None)
 
     def test_udev_get_devices(self):
         import blivet.udev
-        saved = blivet.udev.udev_settle
-        blivet.udev.udev_settle = mock.Mock()
+        saved = blivet.udev.settle
+        blivet.udev.settle = mock.Mock()
         DEVS = \
             ['/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda',
             '/devices/virtual/block/loop0', '/devices/virtual/block/loop1',
             '/devices/virtual/block/ram0', '/devices/virtual/block/ram1',
             '/devices/virtual/block/dm-0']
-        blivet.udev.udev_enumerate_devices = mock.Mock(return_value=DEVS)
-        blivet.udev.udev_get_device = lambda x: x
-        ret = blivet.udev.udev_get_devices()
+        blivet.udev.enumerate_devices = mock.Mock(return_value=DEVS)
+        blivet.udev.get_device = lambda x: x
+        ret = blivet.udev.get_devices()
         self.assertEqual(ret, DEVS)
-        blivet.udev.udev_settle = saved
+        blivet.udev.settle = saved
 
     def test_udev_parse_uevent_file_1(self):
         import blivet.udev
@@ -119,7 +119,7 @@ class UdevTest(unittest.TestCase):
         blivet.udev.os.path.normpath = os.path.normpath
         blivet.udev.os.access = os.access
         blivet.udev.os.R_OK = os.R_OK
-        ret = blivet.udev.udev_parse_uevent_file(dev)
+        ret = blivet.udev.parse_uevent_file(dev)
         self.assertEqual(ret, info)
         blivet.udev.os.path.normpath = mock.Mock()
         blivet.udev.os.access = mock.Mock()
@@ -135,19 +135,19 @@ class UdevTest(unittest.TestCase):
 
         dev = {'sysfs_path': path}
 
-        ret = blivet.udev.udev_parse_uevent_file(dev)
+        ret = blivet.udev.parse_uevent_file(dev)
         self.assertEqual(ret, {'sysfs_path': '/devices/virtual/block/loop1'})
 
     def udev_settle_test(self):
         import blivet.udev
         blivet.udev.util = mock.Mock()
-        blivet.udev.udev_settle()
+        blivet.udev.settle()
         self.assertTrue(blivet.udev.util.run_program.called)
 
     def udev_trigger_test(self):
         import blivet.udev
         blivet.udev.util = mock.Mock()
-        blivet.udev.udev_trigger()
+        blivet.udev.trigger()
         self.assertTrue(blivet.udev.util.run_program.called)
 
 

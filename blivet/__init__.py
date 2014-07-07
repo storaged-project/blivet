@@ -83,7 +83,7 @@ from .devicelibs.dm import name_from_dm_node
 from .devicelibs.crypto import generateBackupPassphrase
 from .devicelibs.edd import get_edd_dict
 from .devicelibs.dasd import make_dasd_list, write_dasd_conf
-from .udev import udev_trigger
+from . import udev
 from . import iscsi
 from . import fcoe
 from . import zfcp

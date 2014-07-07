@@ -18,8 +18,8 @@
 #
 
 import os
+from . import udev
 from . import util
-from .udev import udev_settle
 #from pyanaconda import isys
 import logging
 import time
@@ -65,7 +65,7 @@ class fcoe(object):
     def _stabilize(self):
         # I have no clue how long we need to wait, this ought to do the trick
         time.sleep(10)
-        udev_settle()
+        udev.settle()
 
     def _startEDD(self):
         try:

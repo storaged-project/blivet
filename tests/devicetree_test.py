@@ -6,7 +6,7 @@ from blivet.size import Size
 from blivet import devicelibs
 from blivet import devicefactory
 from blivet import util
-from blivet.udev import udev_trigger
+from blivet.udev import trigger
 from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
 
 """
@@ -60,7 +60,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
     def setUp(self):
         super(BlivetResetTestCase, self).setUp()
 
-        udev_trigger(subsystem="block", action="change")
+        trigger(subsystem="block", action="change")
 
         self.device_attr_dicts = []
         self.collect_expected_data()

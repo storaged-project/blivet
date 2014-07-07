@@ -21,7 +21,7 @@
 
 import string
 import os
-from .udev import udev_settle
+from . import udev
 from . import util
 from .i18n import _
 
@@ -144,7 +144,7 @@ class ZFCPDevice:
                 # older zfcp sysfs interface
                 try:
                     loggedWriteLineToFile(portadd, self.wwpn)
-                    udev_settle()
+                    udev.settle()
                 except IOError as e:
                     raise ValueError(_("Could not add WWPN %(wwpn)s to zFCP "
                                         "device %(devnum)s (%(e)s).") \
@@ -166,7 +166,7 @@ class ZFCPDevice:
         if not os.path.exists(unitdir):
             try:
                 loggedWriteLineToFile(unitadd, self.fcplun)
-                udev_settle()
+                udev.settle()
             except IOError as e:
                 raise ValueError(_("Could not add LUN %(fcplun)s to WWPN "
                                     "%(wwpn)s on zFCP device %(devnum)s "
@@ -235,7 +235,7 @@ class ZFCPDevice:
                     and fcpwwpnsysfs == self.wwpn \
                     and fcplunsysfs == self.fcplun:
                 loggedWriteLineToFile(scsidel, "1")
-                udev_settle()
+                udev.settle()
                 return
 
         log.warn("no scsi device found to delete for zfcp %s %s %s",

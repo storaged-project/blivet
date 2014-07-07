@@ -107,9 +107,9 @@ def deviceNameToDiskByPath(deviceName=None):
         return ""
 
     ret = None
-    for dev in udev.udev_get_block_devices():
-        if udev.udev_device_get_name(dev) == deviceName:
-            ret = udev.udev_device_get_by_path(dev)
+    for dev in udev.get_block_devices():
+        if udev.device_get_name(dev) == deviceName:
+            ret = udev.device_get_by_path(dev)
             break
 
     if ret:
@@ -840,7 +840,7 @@ class StorageDevice(Device):
 
     def _postSetup(self):
         """ Perform post-setup operations. """
-        udev.udev_settle()
+        udev.settle()
         # we always probe since the device may not be set up when we want
         # information about it
         self._size = self.currentSize
@@ -863,7 +863,7 @@ class StorageDevice(Device):
             self.originalFormat.teardown()
         if self.format.exists:
             self.format.teardown()
-        udev.udev_settle()
+        udev.settle()
         return True
 
     def _teardown(self, recursive=None):
@@ -915,7 +915,7 @@ class StorageDevice(Device):
         self.exists = True
         self.setup()
         self.updateSysfsPath()
-        udev.udev_settle()
+        udev.settle()
 
         # make sure that targetSize is updated to reflect the actual size
         if self.resizable:
@@ -1698,7 +1698,7 @@ class PartitionDevice(StorageDevice):
             # If a udev device is created with the watch option, then
             # a change uevent is synthesized and we need to wait for
             # things to settle.
-            udev.udev_settle()
+            udev.settle()
 
     def _create(self):
         """ Create the device. """
@@ -1812,7 +1812,7 @@ class PartitionDevice(StorageDevice):
     def _postDestroy(self):
         super(PartitionDevice, self)._postDestroy()
         if isinstance(self.disk, DMDevice):
-            udev.udev_settle()
+            udev.settle()
             if self.status:
                 try:
                     dm.dm_remove(self.name)
@@ -1832,7 +1832,7 @@ class PartitionDevice(StorageDevice):
                     block.removeDeviceMap(devmap)
                 except Exception as e:
                     raise errors.DeviceTeardownError("failed to tear down device-mapper partition %s: %s" % (self.name, e))
-            udev.udev_settle()
+            udev.settle()
 
     def _getSize(self):
         """ Get the device's size. """
@@ -2060,14 +2060,14 @@ class DMDevice(StorageDevice):
         rc = util.run_program(["kpartx", "-a", "-s", self.path])
         if rc:
             raise errors.DMError("partition activation failed for '%s'" % self.name)
-        udev.udev_settle()
+        udev.settle()
 
     def teardownPartitions(self):
         log_method_call(self, name=self.name, kids=self.kids)
         rc = util.run_program(["kpartx", "-d", "-s", self.path])
         if rc:
             raise errors.DMError("partition deactivation failed for '%s'" % self.name)
-        udev.udev_settle()
+        udev.settle()
         for dev in os.listdir("/dev/mapper/"):
             prefix = self.name + "p"
             if dev.startswith(prefix) and dev[len(prefix):].isdigit():
@@ -2132,13 +2132,13 @@ class DMLinearDevice(DMDevice):
     def _postSetup(self):
         StorageDevice._postSetup(self)
         self.setupPartitions()
-        udev.udev_settle()
+        udev.settle()
 
     def _teardown(self, recursive=False):
         self.teardownPartitions()
-        udev.udev_settle()
+        udev.settle()
         dm.dm_remove(self.name)
-        udev.udev_settle()
+        udev.settle()
 
     def deactivate(self, recursive=False):
         StorageDevice.teardown(self, recursive=recursive)
@@ -3045,7 +3045,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         if self.format.exists:
             self.format.teardown()
 
-        udev.udev_settle()
+        udev.settle()
         lvm.lvresize(self.vg.name, self._name, self.size)
 
     @property
@@ -3220,7 +3220,7 @@ class LVMSnapShotBase(object):
         except errors.FSError:
             pass
 
-        udev.udev_settle()
+        udev.settle()
         lvm.lvsnapshotmerge(self.vg.name, self.lvname) # pylint: disable=no-member
 
 
@@ -3809,13 +3809,13 @@ class MDRaidArrayDevice(ContainerDevice):
         ## XXX TODO: remove this whole block of activation code
         if self.exists and member.format.exists and flags.installer_mode:
             member.setup()
-            udev.udev_settle()
+            udev.settle()
 
             if self.spares <= 0:
                 try:
                     mdraid.mdadd(None, member.path, incremental=True)
                     # mdadd causes udev events
-                    udev.udev_settle()
+                    udev.settle()
                 except errors.MDRaidError as e:
                     log.warning("failed to add member %s to md array %s: %s",
                                 member.path, self.path, e)
@@ -3863,8 +3863,8 @@ class MDRaidArrayDevice(ContainerDevice):
             self.updateSysfsPath()
 
             # make sure the active array is the one we expect
-            info = udev.udev_get_block_device(self.sysfsPath)
-            uuid = udev.udev_device_get_md_uuid(info)
+            info = udev.get_block_device(self.sysfsPath)
+            uuid = udev.device_get_md_uuid(info)
             if uuid and uuid != self.uuid:
                 log.warning("md array %s is active, but has UUID %s -- not %s",
                             self.path, uuid, self.uuid)
@@ -4008,8 +4008,8 @@ class MDRaidArrayDevice(ContainerDevice):
         StorageDevice._postCreate(self)
 
         # update our uuid attribute with the new array's UUID
-        info = udev.udev_get_block_device(self.sysfsPath)
-        self.uuid = udev.udev_device_get_md_uuid(info)
+        info = udev.get_block_device(self.sysfsPath)
+        self.uuid = udev.device_get_md_uuid(info)
         for member in self.devices:
             member.format.mdUuid = self.uuid
 
@@ -4024,7 +4024,7 @@ class MDRaidArrayDevice(ContainerDevice):
                         spares,
                         metadataVer=self.metadataVersion,
                         bitmap=self.createBitmap)
-        udev.udev_settle()
+        udev.settle()
 
     def _remove(self, member):
         self.setup()
@@ -4144,7 +4144,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         log_method_call(self, self.name, status=self.status)
         # This call already checks if the set is active.
         self._raidSet.activate(mknod=True)
-        udev.udev_settle()
+        udev.settle()
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -4280,7 +4280,7 @@ class MultipathDevice(DMDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        udev.udev_settle()
+        udev.settle()
         rc = util.run_program(["multipath", self.name])
         if rc:
             raise errors.MPathError("multipath activation failed for '%s'" %
@@ -4289,7 +4289,7 @@ class MultipathDevice(DMDevice):
     def _postSetup(self):
         StorageDevice._postSetup(self)
         self.setupPartitions()
-        udev.udev_settle()
+        udev.settle()
 
 class NoDevice(StorageDevice):
     """ A nodev device for nodev filesystems like tmpfs. """
@@ -5229,11 +5229,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def _postCreate(self):
         super(BTRFSVolumeDevice, self)._postCreate()
-        info = udev.udev_get_block_device(self.sysfsPath)
+        info = udev.get_block_device(self.sysfsPath)
         if not info:
             log.error("failed to get updated udev info for new btrfs volume")
         else:
-            self.format.volUUID = udev.udev_device_get_uuid(info)
+            self.format.volUUID = udev.device_get_uuid(info)
 
         self.format.exists = True
         self.originalFormat.exists = True

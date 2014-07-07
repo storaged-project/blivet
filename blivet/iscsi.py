@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from .udev import udev_settle
+from . import udev
 from . import util
 from .flags import flags
 from .i18n import _
@@ -172,7 +172,7 @@ class iscsi(object):
         # It is possible when we get here the events for the new devices
         # are not send yet, so sleep to make sure the events are fired
         time.sleep(2)
-        udev_settle()
+        udev.settle()
 
     def create_interfaces(self, ifaces):
         for iface in ifaces:
