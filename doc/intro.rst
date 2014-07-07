@@ -139,7 +139,7 @@ Now we're going to wipe the existing formatting from sda3::
 
 Now let's assume sda3 is larger than 10GiB and resize it to that size::
 
-    b.resizeDevice(sda3, Size(spec="10 GiB"))
+    b.resizeDevice(sda3, Size("10 GiB"))
 
 And then let's create a new ext4 filesystem there::
 
@@ -173,8 +173,8 @@ of letting Blivet handle the details of creating a partition of minimum size
 
     sdb = b.devicetree.getDeviceByName("sdb")
     sdc = b.devicetree.getDeviceByName("sdc")
-    new_part = b.newPartition(size=Size(spec="10GiB"), grow=True,
-                              maxsize=Size(spec="20GiB"),
+    new_part = b.newPartition(size=Size("10 GiB"), grow=True,
+                              maxsize=Size("20 GiB"),
                               parents=[sdb, sdc])
     b.createDevice(new_part)
     blivet.partitioning.doPartitioning(b)
