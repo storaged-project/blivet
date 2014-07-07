@@ -3952,7 +3952,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
         mdraid.mdactivate(self.path,
                           members=disks,
-                          uuid=self.uuid)
+                          array_uuid=self.uuid)
 
     def _postTeardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)

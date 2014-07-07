@@ -182,22 +182,27 @@ def mdremove(array, device, fail=False):
     except MDRaidError as msg:
         raise MDRaidError("mdremove failed for %s: %s" % (device, msg))
 
-def mdactivate(device, members=None, uuid=None):
+def mdactivate(device, members=None, array_uuid=None):
     """Assemble devices given by members into a single device.
 
-       Use uuid value to identify devices in members to include in device.
+       Use array_uuid to identify the devices in members to include in
+       the assembled array.
 
-       :param device: the device to be assembled
-       :param type: str
-       :param members: the component devices
-       :param type: list of str or NoneType
+       :param str device: the device to be assembled
+       :param members: the component devices to be considered for inclusion
+       :type members: list of str or NoneType
+       :param array_uuid: the UUID of the array
+       :type array_uuid: str or NoneType
+
+       :raises: :class:`~.errors.MDRaidError` if no array_uuid specified
+       or assembly failed
     """
     members = members or []
 
-    if not uuid:
+    if not array_uuid:
         raise MDRaidError("mdactivate requires a uuid")
 
-    identifier = "--uuid=%s" % uuid
+    identifier = "--uuid=%s" % array_uuid
 
     args = ["--assemble", device, identifier, "--run"]
     args += members

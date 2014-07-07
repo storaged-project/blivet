@@ -99,7 +99,7 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         ##
         ## mdactivate
         ##
-        self.assertRaises(MDRaidError, mdraid.mdactivate, "/not/existing/md", uuid=32)
+        self.assertRaises(MDRaidError, mdraid.mdactivate, "/not/existing/md", array_uuid=32)
         # requires uuid
         self.assertRaises(MDRaidError, mdraid.mdactivate, "/dev/md1")
 
