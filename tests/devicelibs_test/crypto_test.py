@@ -199,5 +199,11 @@ class CryptoTestCase2(loopbackedtestcase.LoopBackedTestCase):
            crypto.luks_close,
            "encrypted")
 
+class CryptoTestCase3(unittest.TestCase):
+    def testPassphrase(self):
+        exp = r"([0-9A-Za-z./]{5}-)*[0-9A-Za-z./]{0,4}"
+        bp = crypto.generateBackupPassphrase()
+        self.assertRegexpMatches(bp, exp)
+
 if __name__ == "__main__":
     unittest.main()
