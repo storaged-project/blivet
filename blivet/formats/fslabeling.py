@@ -21,11 +21,12 @@
 
 import abc
 
-from six import with_metaclass
+from six import add_metaclass
 
 from . import fslabel
 
-class FSLabeling(with_metaclass(abc.ABCMeta, object)):
+@add_metaclass(abc.ABCMeta)
+class FSLabeling(object):
     """An abstract class that represents filesystem labeling actions.
     """
 

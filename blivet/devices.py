@@ -28,7 +28,7 @@ import abc
 from decimal import Decimal
 import re
 
-from six import with_metaclass
+from six import add_metaclass
 
 # device backend modules
 from .devicelibs import mdraid
@@ -2241,7 +2241,8 @@ class LUKSDevice(DMCryptDevice):
         data.encrypted = True
         super(LUKSDevice, self).populateKSData(data)
 
-class ContainerDevice(with_metaclass(abc.ABCMeta, StorageDevice)):
+@add_metaclass(abc.ABCMeta)
+class ContainerDevice(StorageDevice):
     """ A device that aggregates a set of member devices.
 
         The only interfaces provided by this class are for addition and removal
@@ -3131,7 +3132,8 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
-class LVMSnapShotBase(with_metaclass(abc.ABCMeta, object)):
+@add_metaclass(abc.ABCMeta)
+class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
 
         This class is intended to be used with multiple inheritance in addition

@@ -23,7 +23,7 @@
 
 import abc
 
-from six import with_metaclass
+from six import add_metaclass
 
 from ..errors import RaidError
 
@@ -35,7 +35,8 @@ def div_up(a,b):
     """
     return (a + (b - 1))//b
 
-class RAIDLevel(with_metaclass(abc.ABCMeta, object)):
+@add_metaclass(abc.ABCMeta)
+class RAIDLevel(object):
     """An abstract class which is the parent of all classes which represent
        a RAID level.
 
@@ -64,7 +65,8 @@ class RAIDLevel(with_metaclass(abc.ABCMeta, object)):
         return self
 
 
-class RAIDn(with_metaclass(abc.ABCMeta, RAIDLevel)):
+@add_metaclass(abc.ABCMeta)
+class RAIDn(RAIDLevel):
 
     """An abstract class which is the parent of classes which represent a
        numeric RAID level. A better word would be classification, since 'level'
