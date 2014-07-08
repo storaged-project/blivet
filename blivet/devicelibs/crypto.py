@@ -22,7 +22,6 @@
 
 import random
 from pycryptsetup import CryptSetup
-from six.moves import xrange
 
 from ..errors import CryptoError
 from ..size import Size
@@ -39,14 +38,12 @@ GENERATED_PASSPHRASE_CHARSET = ("0123456789"
 GENERATED_PASSPHRASE_LENGTH = 20
 
 def generateBackupPassphrase():
-    raw = ""
-    for i in xrange(GENERATED_PASSPHRASE_LENGTH):
-        raw += random.choice(GENERATED_PASSPHRASE_CHARSET)
+    raw = [random.choice(GENERATED_PASSPHRASE_CHARSET) for _ in range(GENERATED_PASSPHRASE_LENGTH)]
 
-    # Make the result easier to read
+    # Insert a '-' after every five char chunk for easier reading
     parts = []
-    for i in xrange(0, len(raw), 5):
-        parts.append(raw[i : i + 5])
+    for i in range(0, GENERATED_PASSPHRASE_LENGTH, 5):
+        parts.append(''.join(raw[i : i + 5]))
     return "-".join(parts)
 
 yesDialog = lambda q: True
