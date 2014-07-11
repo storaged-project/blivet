@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Blivet</title>
+  <subtitle/>
+  <id>http://needadomain.org/blog/</id>
+  <link href="http://needadomain.org/blog/"/>
+  <link href="http://needadomain.org/blog/feed.xml" rel="self"/>
+  <updated></updated>
+  <author>
+    <name/>
+  </author>
+</feed>
