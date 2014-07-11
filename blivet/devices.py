@@ -1325,7 +1325,6 @@ class PartitionDevice(StorageDevice):
         # FIXME: Validate partType, but only if this is a new partition
         #        Otherwise, overwrite it with the partition's type.
         self._partType = None
-        self.partedFlags = {}
         self._partedPartition = None
         self._origPath = None
         self._currentSize = 0
