@@ -520,8 +520,8 @@ def main(argv):
     # Files to replace version strings in
     version_files = [(os.path.realpath(cwd+"/setup.py"), "version='%s'"),
                      (os.path.realpath(cwd+"/blivet/__init__.py"), "__version__ = '%s'"),
-                     (os.path.realpath(cwd+"/blivet/doc/conf.py"), "version = '%s'"),
-                     (os.path.realpath(cwd+"/blivet/doc/conf.py"), "release = '%s'")]
+                     (os.path.realpath(cwd+"/doc/conf.py"), "version = '%s'"),
+                     (os.path.realpath(cwd+"/doc/conf.py"), "release = '%s'")]
 
     mbv = MakeBumpVer(name=name, version=version, release=release,
                       ignore=ignore, bugmap=bugmap, spec=spec, skip_acks=skip_acks,
