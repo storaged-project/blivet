@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.60
+Version: 0.61
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -63,6 +63,36 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jul 11 2014 Brian C. Lane <bcl@redhat.com> - 0.61-1
+- Fix conf.py version bumping (bcl)
+- Add some tests for Chunk and Request class hierarchy. (dlehman)
+- Honor the skip list when allocating leftover sectors. (dlehman)
+- A Chunk is done growing when its pool is empty. (dlehman)
+- Don't use integer division to calculate a fraction. (dlehman)
+- Bump version in sphinx config from scripts/makebumpver. (dlehman)
+- Remove spec= from Size usage in intro.rst. (dlehman)
+- Attempt to reset the uuid of the mdraid member device (#1070095) (amulhern)
+- Add new method udev.device_get_md_device_uuid() method (#1070095) (amulhern)
+- Canonicalize mdadm generated UUIDS (#1070095) (amulhern)
+- Add a udev.device_get_md_metadata() method to udev and use it. (amulhern)
+- Change use of METADATA to MD_METADATA. (amulhern)
+- Check for md_level of None (amulhern)
+- Do not convert the result of udev.device_get_md_devices() to int. (amulhern)
+- Add documentation to udev.device_get_md_*() methods. (amulhern)
+- Document udev.device_get_uuid() method. (amulhern)
+- Add a few small tests for mdexamine (amulhern)
+- Add test for raid level descriptor None. (amulhern)
+- Use context manager with assertRaises*() tests. (amulhern)
+- Change uuid parameter to array_uuid (amulhern)
+- Remove udev_ prefix from udev methods. (amulhern)
+- Remove all references to DeviceFormat.majorminor (amulhern)
+- Use add_metaclass instead of with_metaclass. (amulhern)
+- Disable redefined-builtin warning. (amulhern)
+- Use range instead of xrange in generateBackupPassphrase() (amulhern)
+- Add a simple test of generateBackupPassphrase() result format (amulhern)
+- Python3 compatibility (rkuska)
+- Replace python-setuptools-devel BR with python-setuptools (bcl)
+
 * Wed Jul 02 2014 Brian C. Lane <bcl@redhat.com> - 0.60-1
 - Do not use udev info to get the name of the device. (amulhern)
 - Remove unnecessary fanciness about importing devices. (amulhern)
