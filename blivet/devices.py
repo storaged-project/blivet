@@ -3839,7 +3839,7 @@ class MDRaidArrayDevice(ContainerDevice):
             removing one of its devices is a bad idea.
         """
         if not self.level.has_redundancy and self.exists and member.format.exists:
-            raise errors.DeviceError("cannot remove members from existing raid0")
+            raise errors.DeviceError("cannot remove members from existing %s array" % self.level)
 
         super(MDRaidArrayDevice, self)._removeParent(member)
         self.memberDevices -= 1
