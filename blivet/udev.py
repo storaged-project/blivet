@@ -387,7 +387,9 @@ def device_get_md_level(info):
     return info.get("MD_LEVEL")
 
 def device_get_md_devices(info):
-    """ Returns the number of devices in this devices's array.
+    """ Returns the number of active devices in this device's array.
+
+        Active devices are devices that are not spares or failed.
 
         :param dict info: dictionary of name-value pairs as strings
         :returns: the number of devices belonging to this device's md array
