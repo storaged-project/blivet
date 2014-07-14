@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import unittest
 import time
-import uuid
 
 import blivet.devicelibs.raid as raid
 import blivet.devicelibs.mdraid as mdraid
@@ -49,149 +48,123 @@ class MDRaidTestCase(unittest.TestCase):
                                                          version="version"),
                          mdraid.MD_SUPERBLOCK_SIZE)
 
-
 class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
-    names_0 = [
-      'DEVICE',
-      'MD_DEVICES',
-      'MD_EVENTS',
-      'MD_LEVEL',
-      'MD_UPDATE_TIME',
-      'MD_UUID'
-    ]
-
-    names_1 = [
-       'DEVICE',
-       'MD_ARRAY_SIZE',
-       'MD_DEV_UUID',
-       'MD_DEVICES',
-       'MD_EVENTS',
-       'MD_LEVEL',
-       'MD_METADATA',
-       'MD_NAME',
-       'MD_UPDATE_TIME',
-       'MD_UUID'
-    ]
-
-    names_container = [
-       'MD_DEVICES',
-       'MD_LEVEL',
-       'MD_METADATA',
-       'MD_UUID'
-    ]
-
-    def __init__(self, methodName='runTest'):
-        """Set up the structure of the mdraid array."""
-        super(MDRaidAsRootTestCase, self).__init__(methodName=methodName)
+    def __init__(self, methodName='runTest', deviceSpec=None):
+        super(MDRaidAsRootTestCase, self).__init__(methodName=methodName, deviceSpec=deviceSpec)
         self._dev_name = "/dev/md0"
 
     def tearDown(self):
         try:
             mdraid.mddeactivate(self._dev_name)
             for dev in self.loopDevices:
+                mdraid.mdremove(self._dev_name, dev, fail=True)
                 mdraid.mddestroy(dev)
         except MDRaidError:
             pass
 
         super(MDRaidAsRootTestCase, self).tearDown()
 
-    def testMDExamineMDRaidArray(self):
-        mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices)
-        # wait for raid to settle
-        time.sleep(2)
+class RAID0Test(MDRaidAsRootTestCase):
 
-        # invoking mdexamine on the array itself raises an error
-        with self.assertRaisesRegexp(MDRaidError, "mdexamine failed"):
-            mdraid.mdexamine(self._dev_name)
+    def __init__(self, methodName='runTest'):
+        super(RAID0Test, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
 
-    def testMDExamineNonMDRaid(self):
-        # invoking mdexamine on any non-array member raises an error
-        with self.assertRaisesRegexp(MDRaidError, "mdexamine failed"):
-            mdraid.mdexamine(self.loopDevices[0])
+    def testGrow(self):
+        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
+        time.sleep(2) # wait for raid to settle
 
-    def _testMDExamine(self, names, metadataVersion=None, level=None):
-        """ Test mdexamine for a specified metadataVersion.
+        # it is not possible to add a managed device to a non-redundant array,
+        # but it can be grown, by specifying the desired number of members
+        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=3))
 
-            :param list names: mdexamine's expected list of names to return
-            :param str metadataVersion: the metadata version for the array
-            :param object level: any valid RAID level descriptor
+    def testGrowRAID1(self):
+        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices[:2]))
+        time.sleep(2) # wait for raid to settle
 
-            Verifies that:
-              - exactly the predicted names are returned by mdexamine
-              - RAID level and number of devices are correct
-              - UUIDs have canonical form
-        """
-        level = mdraid.RAID_levels.raidLevel(level or raid.RAID1)
-        mdraid.mdcreate(self._dev_name, level, self.loopDevices, metadataVer=metadataVersion)
-        # wait for raid to settle
-        time.sleep(2)
+        # a RAID1 array can be grown as well as a RAID0 array
+        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=3))
 
-        info = mdraid.mdexamine(self.loopDevices[0])
+    def testGrowTooBig(self):
+        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
+        time.sleep(2) # wait for raid to settle
 
-        # info contains values for exactly names
-        for n in names:
-            self.assertIn(n, info, msg="name '%s' not in info" % n)
+        # if more devices are specified than are available after the
+        # addition an error is raised
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=4)
 
-        for n in info.keys():
-            self.assertIn(n, names, msg="unexpected name '%s' in info" % n)
+    def testGrowSmaller(self):
+        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
+        time.sleep(2) # wait for raid to settle
 
-        # check names with predictable values
-        self.assertEqual(info['MD_DEVICES'], '2')
-        self.assertEqual(info['MD_LEVEL'], str(level))
+        # it is ok to grow an array smaller than its devices
+        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=2))
 
-        # verify that uuids are in canonical form
-        for name in (k for k in iter(info.keys()) if k.endswith('UUID')):
-            self.assertTrue(str(uuid.UUID(info[name])) == info[name])
+    def testGrowSimple(self):
+        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
+        time.sleep(2) # wait for raid to settle
 
-    def testMDExamineContainerDefault(self):
-        self._testMDExamine(self.names_container, level="container")
+        # try to simply add a device and things go wrong
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(self._dev_name, self.loopDevices[2])
 
-    def testMDExamineDefault(self):
-        self._testMDExamine(self.names_1)
+class SimpleRaidTest(MDRaidAsRootTestCase):
 
-    def testMDExamine0(self):
-        self._testMDExamine(self.names_0, metadataVersion='0')
-
-    def testMDExamine0_90(self):
-        self._testMDExamine(self.names_0, metadataVersion='0.90')
-
-    def testMDExamine1(self):
-        self._testMDExamine(self.names_1, metadataVersion='1')
-
-    def testMDExamine1_2(self):
-        self._testMDExamine(self.names_1, metadataVersion='1.2')
+    def __init__(self, methodName='runTest'):
+        super(SimpleRaidTest, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
 
     def testMDRaidAsRoot(self):
         ##
         ## mdcreate
         ##
         # pass
-        self.assertEqual(mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices), None)
+        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices))
+        time.sleep(2) # wait for raid to settle
 
         # fail
         with self.assertRaises(MDRaidError):
             mdraid.mdcreate("/dev/md1", "raid1", ["/not/existing/dev0", "/not/existing/dev1"])
 
+        # fail
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(self._dev_name, "/not/existing/device")
+        time.sleep(2) # wait for raid to settle
+
+        # removing and re-adding a component device should succeed
+        self.assertIsNone(mdraid.mdremove(self._dev_name, self.loopDevices[2], fail=True))
+        time.sleep(2) # wait for raid to settle
+        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2]))
+        time.sleep(3) # wait for raid to settle
+
+        # it is not possible to add a device that has already been added
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(self._dev_name, self.loopDevices[2])
+
+        self.assertIsNone(mdraid.mdremove(self._dev_name, self.loopDevices[2], fail=True))
+        time.sleep(2) # wait for raid to settle
+
+        # can not re-add incrementally, because the array is active
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(None, self.loopDevices[2], incremental=True)
+
         ##
         ## mddeactivate
         ##
         # pass
-        self.assertEqual(mdraid.mddeactivate(self._dev_name), None)
+        self.assertIsNone(mdraid.mddeactivate(self._dev_name))
+
+        # once the array is deactivated, can add incrementally
+        self.assertIsNone(mdraid.mdadd(None, self.loopDevices[2], incremental=True))
+
+        # but cannot re-add twice
+        with self.assertRaises(MDRaidError):
+            mdraid.mdadd(None, self.loopDevices[2], incremental=True)
 
         # fail
         with self.assertRaises(MDRaidError):
             mdraid.mddeactivate("/not/existing/md")
 
-        ##
-        ## mdadd
-        ##
-        # pass
-        # TODO
-
-        # fail
-        with self.assertRaises(MDRaidError):
-            mdraid.mdadd(self._dev_name, "/not/existing/device")
 
         ##
         ## mdactivate
@@ -207,7 +180,7 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         ##
         # pass
         for dev in self.loopDevices:
-            self.assertEqual(mdraid.mddestroy(dev), None)
+            self.assertIsNone(mdraid.mddestroy(dev))
 
         # pass
         # Note that these should fail because mdadm is unable to locate the
