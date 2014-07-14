@@ -552,7 +552,7 @@ class StorageDevice(Device):
 
         self.exists = exists
         self.uuid = uuid
-        Device.__init__(self, name, parents=parents)
+        super(StorageDevice, self).__init__(name, parents=parents)
 
         self._format = None
         self._size = Size(util.numeric_type(size))
