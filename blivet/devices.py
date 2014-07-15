@@ -3812,7 +3812,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
             if self.spares <= 0:
                 try:
-                    mdraid.mdadd(None, member.path, incremental=True)
+                    mdraid.mdnominate(member.path)
                     # mdadd causes udev events
                     udev.settle()
                 except errors.MDRaidError as e:
