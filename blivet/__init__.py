@@ -160,8 +160,6 @@ def setSysroot(storageRoot, sysroot=None):
     """Change the OS root path.
        :param storageRoot: The root of physical storage
        :param sysroot: An optional chroot subdirectory of storageRoot
-
-    Change the
     """
     global _storageRoot
     global _sysroot
