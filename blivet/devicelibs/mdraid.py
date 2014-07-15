@@ -135,13 +135,35 @@ def mddestroy(device):
     except MDRaidError as msg:
         raise MDRaidError("mddestroy failed for %s: %s" % (device, msg))
 
-def mdadd(array, device, incremental=False, raid_devices=None):
+def mdnominate(device):
+    """ Attempt to add a device to the array to which it belongs.
+
+        Belonging is determined by mdadm's rules.
+
+        May start the array once a sufficient number of devices are added
+        to the array.
+
+        :param str device: path to the device to add
+        :rtype: NoneType
+        :raises: MDRaidError
+
+        .. seealso:: mdadd
+    """
+    args = ['--incremental', '--quiet', device]
+
+    try:
+        mdadm(args)
+    except MDRaidError as msg:
+        raise MDRaidError("mdadd failed for %s: %s" % (device, msg))
+
+def mdadd(array, device, raid_devices=None):
     """ Add a device to an array.
 
         :param str array: path to the array to add the device to
         :param str device: path to the device to add to the array
-        :keyword bool incremental: add the device incrementally (see note below)
         :keyword int raid_devices: the number of active member devices
+        :rtype: NoneType
+        :raises: MDRaidError
 
         The raid_devices parameter is used when adding devices to a raid
         array that has no actual redundancy. In this case it is necessary
@@ -151,15 +173,9 @@ def mdadd(array, device, incremental=False, raid_devices=None):
         Whether the new device will be added as a spare or an active member is
         decided by mdadm.
 
-        .. note::
-
-            Incremental add is used during block device discovery and is a
-            different operation than changing the member set of an array.
-
+        .. seealso:: mdnominate
     """
-    if incremental:
-        args = ["--incremental", "--quiet"]
-    elif raid_devices is None:
+    if raid_devices is None:
         args = [array, "--add"]
     else:
         args = ["--grow", array, "--raid-devices", str(raid_devices), "--add"]

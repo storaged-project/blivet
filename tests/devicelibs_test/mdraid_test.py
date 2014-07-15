@@ -144,9 +144,9 @@ class SimpleRaidTest(MDRaidAsRootTestCase):
         self.assertIsNone(mdraid.mdremove(self._dev_name, self.loopDevices[2], fail=True))
         time.sleep(2) # wait for raid to settle
 
-        # can not re-add incrementally, because the array is active
+        # can not re-add in incremental mode because the array is active
         with self.assertRaises(MDRaidError):
-            mdraid.mdadd(None, self.loopDevices[2], incremental=True)
+            mdraid.mdnominate(self.loopDevices[2])
 
         ##
         ## mddeactivate
@@ -154,12 +154,12 @@ class SimpleRaidTest(MDRaidAsRootTestCase):
         # pass
         self.assertIsNone(mdraid.mddeactivate(self._dev_name))
 
-        # once the array is deactivated, can add incrementally
-        self.assertIsNone(mdraid.mdadd(None, self.loopDevices[2], incremental=True))
+        # once the array is deactivated, can add in incremental mode
+        self.assertIsNone(mdraid.mdnominate(self.loopDevices[2]))
 
         # but cannot re-add twice
         with self.assertRaises(MDRaidError):
-            mdraid.mdadd(None, self.loopDevices[2], incremental=True)
+            mdraid.mdnominate(self.loopDevices[2])
 
         # fail
         with self.assertRaises(MDRaidError):
