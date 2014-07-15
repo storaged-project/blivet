@@ -20,7 +20,6 @@
 import os
 from . import udev
 from . import util
-#from pyanaconda import isys
 import logging
 import time
 from .i18n import _
