@@ -62,7 +62,6 @@ class MDRaidMember(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
         self.mdUuid = kwargs.get("mdUuid")
 
-        #self.probe()
         self.biosraid = kwargs.get("biosraid")
 
     def __repr__(self):
@@ -76,17 +75,6 @@ class MDRaidMember(DeviceFormat):
         d = super(MDRaidMember, self).dict
         d.update({"mdUUID": self.mdUuid, "biosraid": self.biosraid})
         return d
-
-    def probe(self):
-        """ Probe for any missing information about this format. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        if not self.exists:
-            raise MDMemberError("format does not exist")
-
-        info = mdraid.mdexamine(self.device)
-        if self.uuid is None:
-            self.uuid = info['uuid']
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.

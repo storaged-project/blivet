@@ -90,17 +90,6 @@ class LVMPhysicalVolume(DeviceFormat):
                   "peStart": self.peStart})
         return d
 
-    def probe(self):
-        """ Probe for any missing information about this device. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        if not self.exists:
-            raise PhysicalVolumeError("format has not been created")
-
-        #info = lvm.pvinfo(self.device)
-        #self.vgName = info['vg_name']
-        #self.vgUuid = info['vg_uuid']
-
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 

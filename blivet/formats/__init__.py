@@ -315,10 +315,6 @@ class DeviceFormat(ObjectID):
     def type(self):
         return self._type
 
-    def probe(self):
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-
     def notifyKernel(self):
         log_method_call(self, device=self.device,
                         type=self.type)

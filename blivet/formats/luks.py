@@ -159,13 +159,6 @@ class LUKS(DeviceFormat):
             return False
         return os.path.exists("/dev/mapper/%s" % self.mapName)
 
-    def probe(self):
-        """ Probe for any missing information about this format.
-
-            cipher mode, key size
-        """
-        raise NotImplementedError("probe method not defined for LUKS")
-
     def setup(self, **kwargs):
         """ Open the encrypted block device.
 
