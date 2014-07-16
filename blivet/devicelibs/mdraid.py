@@ -222,6 +222,12 @@ def mddeactivate(device):
         raise MDRaidError("mddeactivate failed for %s: %s" % (device, msg))
 
 def mdexamine(device):
+    """ Run mdadm --examine to obtain information about an array member.
+
+        :param str device: path of the member device
+        :rtype: a dict of strings
+        :returns: a dict containing labels and values extracted from output
+    """
     _vars = util.capture_output(["mdadm",
                                  "--examine", "--export", device]).split()
     _bvars = util.capture_output(["mdadm",
