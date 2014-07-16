@@ -61,7 +61,6 @@ class MDRaidMember(DeviceFormat):
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
         self.mdUuid = kwargs.get("mdUuid")
-        self.raidMinor = None
 
         #self.probe()
         self.biosraid = kwargs.get("biosraid")
@@ -88,8 +87,6 @@ class MDRaidMember(DeviceFormat):
         info = mdraid.mdexamine(self.device)
         if self.uuid is None:
             self.uuid = info['uuid']
-        if self.raidMinor is None:
-            self.raidMinor = info['mdMinor']
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
