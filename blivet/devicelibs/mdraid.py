@@ -21,6 +21,7 @@
 #
 
 import os
+import re
 import uuid
 
 from .. import util
@@ -237,6 +238,24 @@ def canonicalize_UUID(a_uuid):
     """
     return str(uuid.UUID(a_uuid.replace(':', '')))
 
+def process_UUIDS(info, UUID_keys):
+    """ Extract and convert expected UUIDs to canonical form.
+        Reassign canonicalized UUIDs to corresponding keys.
+
+        :param dict info: a dictionary of key/value pairs
+        :param tuple UUID_keys: a list of keys known to be UUIDs
+    """
+    for k, v in ((k, info[k]) for k in UUID_keys if k in info):
+        try:
+            # extract mdadm UUID, e.g., '3386ff85:f5012621:4a435f06:1eb47236'
+            the_uuid = re.match(r"(([a-f0-9]){8}:){3}([a-f0-9]){8}", v)
+
+            info[k] = canonicalize_UUID(the_uuid.group())
+        except (ValueError, AttributeError) as e:
+            # the unlikely event that mdadm's UUIDs change their format
+            log.warning('uuid value %s could not be canonicalized: %s', v, e)
+            info[k] = v # record the value, since mdadm provided something
+
 def mdexamine(device):
     """ Run mdadm --examine to obtain information about an array member.
 
@@ -270,8 +289,7 @@ def mdexamine(device):
             if name == "metadata":
                 info["MD_METADATA"] = value
 
-    for k, v in ((k,v) for (k,v) in info.iteritems() if k.endswith("UUID")):
-        info[k] = canonicalize_UUID(v)
+    process_UUIDS(info, ('MD_UUID', 'MD_DEV_UUID'))
 
     return info
 
