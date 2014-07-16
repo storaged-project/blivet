@@ -21,6 +21,7 @@
 #
 
 import os
+import re
 import uuid
 
 from .. import util
@@ -78,10 +79,20 @@ def get_raid_superblock_size(size, version=None):
     log.info("Using %s superBlockSize", headroom)
     return headroom
 
-def mdadm(args):
-    ret = util.run_program(["mdadm"] + args)
+def mdadm(args, capture=False):
+    """ Run mdadm with specified arguments.
+
+        :param bool capture: if True, return the output of the command
+        :returns: the output of the command or None
+        :rtype: list of str or NoneType
+        :raises: MDRaidError if command fails
+    """
+    argv = ["mdadm"] + args
+    (ret, out) = util.run_program_and_capture_output(argv)
     if ret:
-        raise MDRaidError("running mdadm " + " ".join(args) + " failed")
+        raise MDRaidError(ret)
+    if capture:
+        return out
 
 def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False):
     """ Create an mdarray from a list of devices.
@@ -262,10 +273,11 @@ def mdexamine(device):
         :rtype: a dict of strings
         :returns: a dict containing labels and values extracted from output
     """
-    _vars = util.capture_output(["mdadm",
-                                 "--examine", "--export", device]).split()
-    _bvars = util.capture_output(["mdadm",
-                                 "--examine", "--brief", device]).split()
+    try:
+        _vars = mdadm(["--examine", "--export", device], capture=True).split()
+        _bvars = mdadm(["--examine", "--brief", device], capture=True).split()
+    except MDRaidError as e:
+        raise MDRaidError("mdexamine failed for %s: %s" % (device, e))
 
     info = {}
     if len(_bvars) > 1 and _bvars[1].startswith("/dev/md"):
