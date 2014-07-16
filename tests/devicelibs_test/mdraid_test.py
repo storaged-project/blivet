@@ -101,14 +101,14 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         # wait for raid to settle
         time.sleep(2)
 
-        # examining the array itself yield no data
-        info = mdraid.mdexamine(self._dev_name)
-        self.assertEqual(info, {})
+        # invoking mdexamine on the array itself raises an error
+        with self.assertRaisesRegexp(MDRaidError, "mdexamine failed"):
+            mdraid.mdexamine(self._dev_name)
 
     def testMDExamineNonMDRaid(self):
-        # invoking mdexamine on a device that is not an array member yields {}
-        info = mdraid.mdexamine(self.loopDevices[0])
-        self.assertEqual(info, {})
+        # invoking mdexamine on any non-array member raises an error
+        with self.assertRaisesRegexp(MDRaidError, "mdexamine failed"):
+            mdraid.mdexamine(self.loopDevices[0])
 
     def _testMDExamine(self, names, metadataVersion=None, level=None):
         """ Test mdexamine for a specified metadataVersion.
