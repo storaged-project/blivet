@@ -2,11 +2,60 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Blivet</title>
   <subtitle/>
-  <id>http://needadomain.org/blog/</id>
-  <link href="http://needadomain.org/blog/"/>
-  <link href="http://needadomain.org/blog/feed.xml" rel="self"/>
-  <updated></updated>
+  <id>http://dwlehman.github.io/blog/</id>
+  <link href="http://dwlehman.github.io/blog/"/>
+  <link href="http://dwlehman.github.io/blog/feed.xml" rel="self"/>
+  <updated>2014-07-16T00:00:00Z</updated>
   <author>
     <name/>
   </author>
+  <entry>
+    <title>Introduction</title>
+    <link rel="alternate" href="http://dwlehman.github.io/blivet/blog/2014/07/blivet/"/>
+    <id>http://dwlehman.github.io/blivet/blog/2014/07/blivet/</id>
+    <published>2014-07-16T00:00:00Z</published>
+    <updated>2014-07-16T19:02:31-05:00</updated>
+    <author>
+      <name>David Lehman</name>
+    </author>
+    <content type="html">&lt;p&gt;In this first post I want to give a quick introduction to Blivet. I will try to
+avoid going into too much detail.&lt;/p&gt;
+
+&lt;p&gt;Blivet is a python module for configuring storage on Linux. It is also the
+storage backend for &lt;a href="https://fedoraproject.org/wiki/Anaconda"&gt;Anaconda&lt;/a&gt; &amp;ndash;
+the &lt;a href="http://fedoraproject.org"&gt;Fedora&lt;/a&gt; OS installer. That&amp;rsquo;s where
+Blivet came from, so anything you&amp;rsquo;ve done with storage while installing
+Fedora (since Fedora 11) is something Blivet can do.&lt;/p&gt;
+
+&lt;p&gt;It can create and manage LVM (including snapshots and thin provisioning), MD,
+LUKS, BTRFS (including subvolumes, snapshots, and RAID), and a whole slew of
+other storage technologies.&lt;/p&gt;
+
+&lt;p&gt;Blivet uses a model in which changes (like creating a new device) are
+represented by actions. Once an action has been registered, Blivet&amp;rsquo;s device
+tree will reflect the change as if it were already done. That allows you to
+stack changes &amp;ndash; for example, remove existing partitions from a disk, then
+reinitialize the disk, then create a complex device stack on that disk &amp;ndash; all
+without writing any changes to the disk. You can also cancel actions at any
+time before they are executed if you change your mind about what you want to
+do. Once you are satisfied with the overall layout you can write the changes to
+disk by telling Blivet to execute the actions.&lt;/p&gt;
+
+&lt;p&gt;Blivet has powerful disk partitioning capabilities. New partitions can have a
+fixed size or a (potentially unbounded) size range. A new partition can be
+constrained to a single disk or a set of possible disks. All new partitions are
+aligned according to the information exported by the kernel. They can also be
+specified in terms of start and end sectors on a specific disk, but that
+disables automatic alignment and requires that you specify a single disk.&lt;/p&gt;
+
+&lt;p&gt;Another noteworthy feature is the device factory class hierarchy. These classes
+can create complex device stacks with a single method call, based on a top-down
+specification. You can go from an empty disk to an encrypted LVM setup using
+thin provisioning with two method calls: one to initialize the disk and one to
+create the full device stack on it.&lt;/p&gt;
+
+&lt;p&gt;This is only intended as an introduction. Future posts will go into greater
+detail about specific areas of functionality.&lt;/p&gt;
+</content>
+  </entry>
 </feed>

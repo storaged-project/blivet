@@ -9,12 +9,12 @@
 <!-- <![endif] -->
 <head>
 <title>
-News &mdash;
+Introduction &mdash;
 Blivet
 </title>
 <meta charset='utf-8'>
 <meta content='' name='description'>
-<meta content='' name='author'>
+<meta content='David Lehman' name='author'>
 <meta content='initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width' name='viewport'>
 
 <link href='/images/favicon.ico' rel='shortcut icon'>
@@ -22,14 +22,14 @@ Blivet
 <link href='/images/apple-touch-icon-57x57-precomposed.png' rel='apple-touch-icon-precomposed' sizes='57x57'>
 <link href='/images/apple-touch-icon-72x72-precomposed.png' rel='apple-touch-icon-precomposed' sizes='72x72'>
 <link href='/images/apple-touch-icon-114x114-precomposed.png' rel='apple-touch-icon-precomposed' sizes='114x114'>
-<link href="../blivet/stylesheets/application.css?1405103566" media="screen" rel="stylesheet" type="text/css" />
-<link href="../blivet/stylesheets/print.css?1405103566" media="print" rel="stylesheet" type="text/css" />
+<link href="../../../../blivet/stylesheets/application.css?1405103566" media="screen" rel="stylesheet" type="text/css" />
+<link href="../../../../blivet/stylesheets/print.css?1405103566" media="print" rel="stylesheet" type="text/css" />
 </head>
-<body class='blog blog_index source-haml'>
+<body class='blog blog_2014 blog_2014_07 blog_2014_07_blivet blog_2014_07_blivet_index source-md'>
 <header class='masthead hidden-print' id='branding' role='banner'>
 <section>
 <h1>
-<a href="/blivet/"><img id="rhlogo" class="logo" alt="Blivet" width="222" height="55" src="../blivet/images/blivet-logo.png?1405103565" />
+<a href="/blivet/"><img id="rhlogo" class="logo" alt="Blivet" width="222" height="55" src="../../../../blivet/images/blivet-logo.png?1405103565" />
 </a>
 </h1>
 <nav role='navigation'>
@@ -46,7 +46,7 @@ Blivet
 <a href='/blivet/development'>Development</a>
 </li>
 
-<li class='active' role='menuitem'>
+<li role='menuitem'>
 <a href='/blivet/blog'>Blog</a>
 </li>
 
@@ -74,43 +74,44 @@ News
 <![endif]-->
 <div class='row'>
 <div class='col-lg-10 col-lg-offset-1'>
-<section class='container blog-archive'>
-<section class='articles'>
-<article class='post hentry'>
-<header class='post-header'>
-<h2 class='post-title entry-title'>
-<a href="/blivet/blog/2014/07/blivet/">Introduction</a>
-</h2>
-<header class='post-meta'>
-<span class='byline'>
-by
-<span class='author vcard'>
-<a href="/blivet/blog/author/dlehman/">David Lehman</a>
-</span>
-</span>
-&ndash;
-<time class='published' datetime='2014-07-16T00:00:00Z'>
-Wednesday 16 July
-</time>
-</header>
-</header>
-<section class='post-content entry-content'>
 <p>In this first post I want to give a quick introduction to Blivet. I will try to
 avoid going into too much detail.</p>
 
 <p>Blivet is a python module for configuring storage on Linux. It is also the
-storage backend for <a href="https://fedoraproject.org/wiki/Anaconda">Anaconda</a> –
-the <a href="http://fedoraproject.org">Fedora</a> OS installer. That...</p>
-<a class=".more-link.read-more" href="/blivet/blog/2014/07/blivet/">Read More &raquo;</a>
-</section>
-<footer class='post-meta'>
-</footer>
-</article>
+storage backend for <a href="https://fedoraproject.org/wiki/Anaconda">Anaconda</a> &ndash;
+the <a href="http://fedoraproject.org">Fedora</a> OS installer. That&rsquo;s where
+Blivet came from, so anything you&rsquo;ve done with storage while installing
+Fedora (since Fedora 11) is something Blivet can do.</p>
 
+<p>It can create and manage LVM (including snapshots and thin provisioning), MD,
+LUKS, BTRFS (including subvolumes, snapshots, and RAID), and a whole slew of
+other storage technologies.</p>
 
-</section>
+<p>Blivet uses a model in which changes (like creating a new device) are
+represented by actions. Once an action has been registered, Blivet&rsquo;s device
+tree will reflect the change as if it were already done. That allows you to
+stack changes &ndash; for example, remove existing partitions from a disk, then
+reinitialize the disk, then create a complex device stack on that disk &ndash; all
+without writing any changes to the disk. You can also cancel actions at any
+time before they are executed if you change your mind about what you want to
+do. Once you are satisfied with the overall layout you can write the changes to
+disk by telling Blivet to execute the actions.</p>
 
-</section>
+<p>Blivet has powerful disk partitioning capabilities. New partitions can have a
+fixed size or a (potentially unbounded) size range. A new partition can be
+constrained to a single disk or a set of possible disks. All new partitions are
+aligned according to the information exported by the kernel. They can also be
+specified in terms of start and end sectors on a specific disk, but that
+disables automatic alignment and requires that you specify a single disk.</p>
+
+<p>Another noteworthy feature is the device factory class hierarchy. These classes
+can create complex device stacks with a single method call, based on a top-down
+specification. You can go from an empty disk to an encrypted LVM setup using
+thin provisioning with two method calls: one to initialize the disk and one to
+create the full device stack on it.</p>
+
+<p>This is only intended as an introduction. Future posts will go into greater
+detail about specific areas of functionality.</p>
 
 </div>
 <div class='col-sm-4'>
@@ -147,11 +148,11 @@ the <a href="http://fedoraproject.org">Fedora</a> OS installer. That...</p>
 &copy; 2014 Red Hat, Inc.
 <div class='last-modified'>
 Page last modified
-Thu 10 Jul 2014 22:33 UTC
+Wed 16 Jul 2014 21:30 UTC
 </div>
 </footer>
 
-<script src="../blivet/javascripts/application.js?1405103566" type="text/javascript"></script>
+<script src="../../../../blivet/javascripts/application.js?1405103566" type="text/javascript"></script>
 <!-- eloqua -->
 <script src='http://www.redhat.com/j/elqNow/elqCfg.js' type='text/javascript'></script>
 <script src='http://www.redhat.com/j/elqNow/elqImg.js' type='text/javascript'></script>
