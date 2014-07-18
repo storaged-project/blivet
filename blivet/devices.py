@@ -1234,6 +1234,45 @@ class DiskDevice(StorageDevice):
 
         StorageDevice._preDestroy(self)
 
+class DiskFile(DiskDevice):
+    """ This is a file that we will pretend is a disk.
+
+        This is intended only for testing purposes. The benefit of this class
+        is that you can instantiate a disk-like device with a working disklabel
+        class as a non-root user. It is not known how the system will behave if
+        partitions are committed to one of these disks.
+    """
+    _devDir = ""
+
+    def __init__(self, name, fmt=None,
+                 size=None, major=None, minor=None, sysfsPath='',
+                 parents=None, serial=None, vendor="", model="", bus="",
+                 exists=True):
+        """
+            :param str name: the full path to the backing regular file
+            :keyword :class:`~.formats.DeviceFormat` fmt: the device's format
+        """
+        _name = os.path.basename(name)
+        self._devDir = os.path.dirname(name)
+
+        super(DiskFile, self).__init__(_name, fmt=fmt, size=size,
+                            major=major, minor=minor, sysfsPath=sysfsPath,
+                            parents=parents, serial=serial, vendor=vendor,
+                            model=model, bus=bus, exists=exists)
+
+    #
+    # Regular files do not have sysfs entries.
+    #
+    @property
+    def sysfsPath(self):
+        return ""
+
+    @sysfsPath.setter
+    def sysfsPath(self, value):
+        pass
+
+    def updateSysfsPath(self):
+        pass
 
 class PartitionDevice(StorageDevice):
     """ A disk partition.
