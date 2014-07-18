@@ -125,6 +125,17 @@ class HFSLabeling(FSLabeling):
     def labelingArgs(self, label):
         return ["-l", label]
 
+class HFSPlusLabeling(FSLabeling):
+
+    default_label = property(lambda s: "Untitled")
+    label_app = property(lambda s: None)
+
+    def labelFormatOK(self, label):
+        return ':' not in label and 0 < len(label) < 129
+
+    def labelingArgs(self, label):
+        return ["-v", label]
+
 class NTFSLabeling(FSLabeling):
 
     default_label = property(lambda s: "")
