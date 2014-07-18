@@ -1857,21 +1857,6 @@ class PartitionDevice(StorageDevice):
                 except (errors.DMError, OSError):
                     pass
 
-    def deactivate(self):
-        """
-        This is never called. For instructional purposes only.
-
-        We do not want multipath partitions disappearing upon their teardown().
-        """
-        if self.parents[0].type == 'dm-multipath':
-            devmap = block.getMap(major=self.major, minor=self.minor)
-            if devmap:
-                try:
-                    block.removeDeviceMap(devmap)
-                except Exception as e:
-                    raise errors.DeviceTeardownError("failed to tear down device-mapper partition %s: %s" % (self.name, e))
-            udev.settle()
-
     def _getSize(self):
         """ Get the device's size. """
         size = self._size
@@ -4290,29 +4275,6 @@ class MultipathDevice(DMDevice):
             self.setup()
         else:
             self.parents.append(parent)
-
-    def deactivate(self):
-        """
-        This is never called, included just for documentation.
-
-        If we called this during teardown(), we wouldn't be able to get parted
-        object because /dev/mapper/mpathX wouldn't exist.
-        """
-        if self.exists and os.path.exists(self.path):
-            #self.teardownPartitions()
-            #rc = util.run_program(["multipath", '-f', self.name])
-            #if rc:
-            #    raise MPathError("multipath deactivation failed for '%s'" %
-            #                    self.name)
-            bdev = block.getDevice(self.name)
-            devmap = block.getMap(major=bdev[0], minor=bdev[1])
-            if devmap.open_count:
-                return
-            try:
-                block.removeDeviceMap(devmap)
-            except Exception as e:
-                raise errors.MPathError("failed to tear down multipath device %s: %s"
-                                % (self.name, e))
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
