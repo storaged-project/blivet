@@ -7,16 +7,23 @@ import parted
 
 from blivet.partitioning import getNextPartitionType
 from blivet.partitioning import doPartitioning
+from blivet.partitioning import allocatePartitions
+from blivet.partitioning import getFreeRegions
 from blivet.partitioning import Request
 from blivet.partitioning import Chunk
 from blivet.partitioning import LVRequest
 from blivet.partitioning import VGChunk
+from blivet.partitioning import DiskChunk
+from blivet.partitioning import PartitionRequest
 
 from blivet.devices import StorageDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
+from blivet.devices import DiskFile
+from blivet.devices import PartitionDevice
 
 from tests.imagebackedtestcase import ImageBackedTestCase
+from blivet.util import sparsetmpfile
 from blivet.formats import getFormat
 from blivet.size import Size
 from blivet.flags import flags
@@ -193,6 +200,158 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(req1.growth, 25)
         self.assertEqual(req2.growth, 0)
         self.assertEqual(req3.growth, 35)
+
+    def testDiskChunk1(self):
+        disk_size = Size("100 MiB")
+        with sparsetmpfile("chunktest", disk_size) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = getFormat("disklabel", device=disk.path, exists=False)
+
+            p1 = PartitionDevice("p1", size=Size("10 MiB"), grow=True)
+            p2 = PartitionDevice("p2", size=Size("30 MiB"), grow=True)
+
+            disks = [disk]
+            partitions = [p1, p2]
+            free = getFreeRegions([disk])
+            self.assertEquals(len(free), 1,
+                              "free region count %d not expected" % len(free))
+
+            b = Mock()
+            allocatePartitions(b, disks, partitions, free)
+
+            requests = [PartitionRequest(p) for p in partitions]
+            chunk = DiskChunk(free[0], requests=requests)
+
+            # parted reports a first free sector of 32 for disk files. whatever.
+            length_expected = 204768
+            self.assertEqual(chunk.length, length_expected)
+
+            base_expected = sum(p.partedPartition.geometry.length for p in partitions)
+            self.assertEqual(chunk.base, base_expected)
+
+            pool_expected = chunk.length - base_expected
+            self.assertEqual(chunk.pool, pool_expected)
+
+            self.assertEqual(chunk.done, False)
+            self.assertEqual(chunk.remaining, 2)
+
+            chunk.growRequests()
+
+            self.assertEqual(chunk.done, True)
+            self.assertEqual(chunk.pool, 0)
+            self.assertEqual(chunk.remaining, 2)
+
+            #
+            # validate the growth (everything in sectors)
+            #
+            # The chunk length is 204768. The base of p1 is 20480. The base of
+            # p2 is 61440. The chunk has a base of 81920 and a pool of 122848.
+            #
+            # p1 should grow by 30712 while p2 grows by 92136 since p2's base
+            # size is exactly three times that of p1.
+            self.assertEqual(requests[0].growth, 30712)
+            self.assertEqual(requests[1].growth, 92136)
+
+    def testDiskChunk2(self):
+        disk_size = Size("100 MiB")
+        with sparsetmpfile("chunktest", disk_size) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = getFormat("disklabel", device=disk.path, exists=False)
+
+            p1 = PartitionDevice("p1", size=Size("10 MiB"), grow=True)
+            p2 = PartitionDevice("p2", size=Size("30 MiB"), grow=True)
+
+            # format max size should be reflected in request max growth
+            fmt = getFormat("dummy")
+            fmt._maxSize = Size("12 MiB")
+            p3 = PartitionDevice("p3", size=Size("10 MiB"), grow=True,
+                                 fmt=fmt)
+
+            p4 = PartitionDevice("p4", size=Size("7 MiB"))
+
+            # partition max size should be reflected in request max growth
+            p5 = PartitionDevice("p5", size=Size("5 MiB"), grow=True,
+                                 maxsize=Size("6 MiB"))
+
+            disks = [disk]
+            partitions = [p1, p2, p3, p4, p5]
+            free = getFreeRegions([disk])
+            self.assertEquals(len(free), 1,
+                              "free region count %d not expected" % len(free))
+
+            b = Mock()
+            allocatePartitions(b, disks, partitions, free)
+
+            requests = [PartitionRequest(p) for p in partitions]
+            chunk = DiskChunk(free[0], requests=requests)
+
+            self.assertEqual(len(chunk.requests), len(partitions))
+
+            # parted reports a first free sector of 32 for disk files. whatever.
+            length_expected = 204768
+            self.assertEqual(chunk.length, length_expected)
+
+            growable = [p for p in partitions if p.req_grow]
+            fixed = [p for p in partitions if not p.req_grow]
+            base_expected = sum(p.partedPartition.geometry.length for p in growable)
+            self.assertEqual(chunk.base, base_expected)
+
+            base_fixed = sum(p.partedPartition.geometry.length for p in fixed)
+            pool_expected = chunk.length - base_expected - base_fixed
+            self.assertEqual(chunk.pool, pool_expected)
+
+            self.assertEqual(chunk.done, False)
+
+            # since p5 is not growable it is initially done
+            self.assertEqual(chunk.remaining, 4)
+
+            chunk.growRequests()
+
+            #
+            # validate the growth (in sectors)
+            #
+            # The chunk length is 204768.
+            # Request bases:
+            #   p1 20480
+            #   p2 61440
+            #   p3 20480
+            #   p4 14336 (not included in chunk base since it isn't growable)
+            #   p5 10240
+            #
+            # The chunk has a base 112640 and a pool of 77792.
+            #
+            # Request max growth:
+            #   p1 0
+            #   p2 0
+            #   p3 4096
+            #   p4 0
+            #   p5 2048
+            #
+            # The first round should allocate to p1, p2, p3, p5 at a ratio of
+            # 2:6:2:1, which is 14144, 42432, 14144, 7072. Due to max growth,
+            # p3 and p5 will be limited and the extra (10048, 5024) will remain
+            # in the pool. In the second round the remaining requests will be
+            # p1 and p2. They will divide up the pool of 15072 at a ratio of
+            # 1:3, which is 3768 and 11304. At this point the pool should be
+            # empty.
+            #
+            # Total growth:
+            #   p1 17912
+            #   p2 53736
+            #   p3 4096
+            #   p4 0
+            #   p5 2048
+            #
+            self.assertEqual(chunk.done, True)
+            self.assertEqual(chunk.pool, 0)
+            self.assertEqual(chunk.remaining, 2)    # p1, p2 have no max
+
+            # chunk.requests got sorted, so use the list whose order we know
+            self.assertEqual(requests[0].growth, 17912)
+            self.assertEqual(requests[1].growth, 53736)
+            self.assertEqual(requests[2].growth, 4096)
+            self.assertEqual(requests[3].growth, 0)
+            self.assertEqual(requests[4].growth, 2048)
 
     def testVGChunk(self):
         pv = StorageDevice("pv1", size=Size("40 GiB"),
