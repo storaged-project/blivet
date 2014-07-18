@@ -1293,6 +1293,7 @@ class HFSPlus(FS):
     _mkfs = "mkfs.hfsplus"
     _fsck = "fsck.hfsplus"
     _packages = ["hfsplus-tools"]
+    _labelfs = fslabeling.HFSPlusLabeling()
     _formattable = True
     _mountType = "hfsplus"
     _minSize = Size("1 MiB")
@@ -1306,6 +1307,7 @@ register_device_format(HFSPlus)
 class MacEFIFS(HFSPlus):
     _type = "macefi"
     _name = N_("Linux HFS+ ESP")
+    _labelfs = fslabeling.HFSPlusLabeling()
     _udevTypes = []
     _minSize = 50
 
@@ -1313,6 +1315,11 @@ class MacEFIFS(HFSPlus):
     def supported(self):
         return (isinstance(platform.platform, platform.MacEFI) and
                 self.utilsAvailable)
+
+    def __init__(self, **kwargs):
+        if "label" not in kwargs:
+            kwargs["label"] = self._name
+        super(MacEFIFS, self).__init__(**kwargs)
 
 register_device_format(MacEFIFS)
 
