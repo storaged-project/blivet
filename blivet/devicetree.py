@@ -1659,14 +1659,6 @@ class DeviceTree(object):
         major = udev.device_get_major(info)
         minor = udev.device_get_minor(info)
 
-        def _all_ignored(rss):
-            retval = True
-            for rs in rss:
-                if rs.name not in self.ignoredDisks:
-                    retval = False
-                    break
-            return retval
-
         # Have we already created the DMRaidArrayDevice?
         rss = block.getRaidSetFromRelatedMem(uuid=uuid, name=name,
                                             major=major, minor=minor)
