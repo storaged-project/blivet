@@ -9,6 +9,7 @@ import re
 import sys
 import tempfile
 from decimal import Decimal
+from contextlib import contextmanager
 
 import six
 
@@ -401,6 +402,21 @@ def create_sparse_file(path, size):
     fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
     os.ftruncate(fd, size)
     os.close(fd)
+
+@contextmanager
+def sparsetmpfile(name, size):
+    """ Context manager that creates a sparse tempfile and then unlinks it.
+
+        :param str name: suffix for filename
+        :param :class:`~.size.Size` size: the file size
+
+        Yields the path to the newly created file on __enter__.
+    """
+    path = create_sparse_tempfile(name, size)
+    try:
+        yield path
+    finally:
+        os.unlink(path)
 
 def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
     """ A configurable copy function. Any attributes not specified in omit,
