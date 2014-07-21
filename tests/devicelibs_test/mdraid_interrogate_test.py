@@ -174,6 +174,13 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         'WORKING DEVICES'
     ]
 
+    names_container = [
+        'RAID LEVEL',
+        'WORKING DEVICES',
+        'VERSION',
+        'TOTAL DEVICES'
+    ]
+
     def _testMDDetail(self, names, metadataVersion=None, level=None, spares=0):
         """ Test mddetail for a specified metadataVersion.
 
@@ -197,15 +204,17 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         self._matchNames(info.keys(), names, ['RESYNC STATUS'])
 
         # check names with predictable values
-        self.assertEqual(info['ACTIVE DEVICES'], str(len(self.loopDevices) - spares))
-        self.assertEqual(info['FAILED DEVICES'], '0')
         self.assertEqual(info['RAID LEVEL'], str(level))
-        self.assertEqual(info['SPARE DEVICES'], str(spares))
         self.assertEqual(info['TOTAL DEVICES'], str(len(self.loopDevices)))
         self.assertEqual(info['WORKING DEVICES'], str(len(self.loopDevices)))
 
-        # verify that uuid is in canonical form
-        self.assertEqual(str(uuid.UUID(info['UUID'])), info['UUID'])
+        if level is not raid.Container:
+            self.assertEqual(info['ACTIVE DEVICES'], str(len(self.loopDevices) - spares))
+            self.assertEqual(info['FAILED DEVICES'], '0')
+            self.assertEqual(info['SPARE DEVICES'], str(spares))
+
+            # verify that uuid is in canonical form
+            self.assertEqual(str(uuid.UUID(info['UUID'])), info['UUID'])
 
     def testMDDetail(self):
         self._testMDDetail(self.names)
@@ -223,6 +232,9 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         # invoking mddetail on a device raises an error
         with self.assertRaisesRegexp(MDRaidError, "mddetail failed"):
             mdraid.mddetail(self.loopDevices[0])
+
+    def testMDDetailContainerDefault(self):
+        self._testMDDetail(self.names_container, level="container")
 
 if __name__ == "__main__":
     unittest.main()
