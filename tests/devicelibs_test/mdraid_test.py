@@ -71,49 +71,141 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         super(MDRaidAsRootTestCase, self).tearDown()
 
-class RAID0Test(MDRaidAsRootTestCase):
+class TestCaseFactory(object):
 
-    def __init__(self, methodName='runTest'):
-        super(RAID0Test, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
+    @staticmethod
+    def _minMembersForCreation(level):
+        min_members = level.min_members
+        return min_members if min_members > 1 else 2
 
-    def testGrow(self):
-        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
-        time.sleep(2) # wait for raid to settle
+class JustAddTestCaseFactory(TestCaseFactory):
 
-        # it is not possible to add a managed device to a non-redundant array,
-        # but it can be grown, by specifying the desired number of members
-        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=3))
+    @staticmethod
+    def makeClass(name, level):
 
-    def testGrowRAID1(self):
-        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID1, self.loopDevices[:2]))
-        time.sleep(2) # wait for raid to settle
+        def __init__(self, methodName='runTest'):
+            super(self.__class__, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400, 102400, 102400])
+            self.longMessage = True
 
-        # a RAID1 array can be grown as well as a RAID0 array
-        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=3))
+        def testAdd(self):
+            """ Tests adding, not growing, a device. """
+            initial_members = TestCaseFactory._minMembersForCreation(level)
+            self.assertIsNone(mdraid.mdcreate(self._dev_name, level, self.loopDevices[:initial_members]))
+            time.sleep(2) # wait for raid to settle
 
-    def testGrowTooBig(self):
-        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
-        time.sleep(2) # wait for raid to settle
+            new_member = self.loopDevices[initial_members]
 
-        # if more devices are specified than are available after the
-        # addition an error is raised
-        with self.assertRaises(MDRaidError):
-            mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=4)
+            if level is raid.Container or level.has_redundancy():
+                info_pre = mdraid.mddetail(self._dev_name)
+                self.assertIsNone(mdraid.mdadd(self._dev_name, new_member))
+                info_post = mdraid.mddetail(self._dev_name)
+                keys = ['TOTAL DEVICES', 'WORKING DEVICES']
+                for k in keys:
+                    self.assertEqual(int(info_pre[k]) + 1, int(info_post[k]), msg="key: %s" % k)
+                if level is not raid.Container:
+                    keys = ['ACTIVE DEVICES', 'SPARE DEVICES']
+                    self.assertEqual(sum(int(info_pre[k]) for k in keys) + 1,
+                       sum(int(info_post[k]) for k in keys))
+                    self.assertEqual(info_pre['RAID DEVICES'], info_post['RAID DEVICES'])
+                    dev_info = mdraid.mdexamine(new_member)
+                    self.assertEqual(info_post['UUID'], dev_info['MD_UUID'])
+            else:
+                with self.assertRaises(MDRaidError):
+                    mdraid.mdadd(self._dev_name, new_member)
 
-    def testGrowSmaller(self):
-        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
-        time.sleep(2) # wait for raid to settle
+        return type(
+           name,
+           (MDRaidAsRootTestCase,),
+           {
+              '__init__': __init__,
+              'testAdd': testAdd,
+           })
 
-        # it is ok to grow an array smaller than its devices
-        self.assertIsNone(mdraid.mdadd(self._dev_name, self.loopDevices[2], raid_devices=2))
+class GrowTestCaseFactory(object):
 
-    def testGrowSimple(self):
-        self.assertIsNone(mdraid.mdcreate(self._dev_name, raid.RAID0, self.loopDevices[:2]))
-        time.sleep(2) # wait for raid to settle
+    @staticmethod
+    def makeClass(name, level):
 
-        # try to simply add a device and things go wrong
-        with self.assertRaises(MDRaidError):
-            mdraid.mdadd(self._dev_name, self.loopDevices[2])
+        def __init__(self, methodName='runTest'):
+            super(self.__class__, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400, 102400, 102400, 102400])
+            self.longMessage = True
+
+        def testGrow(self):
+            """ Tests growing a device by exactly 1. """
+            initial_members = TestCaseFactory._minMembersForCreation(level)
+            self.assertIsNone(mdraid.mdcreate(self._dev_name, level, self.loopDevices[:initial_members]))
+            time.sleep(3) # wait for raid to settle
+
+            new_member = self.loopDevices[initial_members]
+            info_pre = mdraid.mddetail(self._dev_name)
+
+            # for linear RAID the new number of devices must not be specified
+            # for all other levels the new number of devices must be specified
+            if level is raid.Linear:
+                with self.assertRaises(MDRaidError):
+                    mdraid.mdadd(self._dev_name, new_member, grow_mode=True, raid_devices=initial_members + 1)
+                self.assertIsNone(mdraid.mdadd(self._dev_name, new_member, grow_mode=True))
+            else:
+                with self.assertRaises(MDRaidError):
+                    mdraid.mdadd(self._dev_name, new_member, grow_mode=True)
+                self.assertIsNone(mdraid.mdadd(self._dev_name, new_member, grow_mode=True, raid_devices=initial_members + 1))
+
+            info_post = mdraid.mddetail(self._dev_name)
+            keys = ['RAID DEVICES', 'TOTAL DEVICES', 'WORKING DEVICES']
+            for k in keys:
+                self.assertEqual(int(info_pre[k]) + 1, int(info_post[k]), msg="key: %s" % k)
+            if level is not raid.Container:
+                keys = ['ACTIVE DEVICES', 'SPARE DEVICES']
+                self.assertEqual(sum(int(info_pre[k]) for k in keys) + 1,
+                   sum(int(info_post[k]) for k in keys),
+                   msg="%s" % " + ".join(keys))
+                dev_info = mdraid.mdexamine(new_member)
+                self.assertEqual(info_post['UUID'], dev_info['MD_UUID'], msg="key: UUID")
+
+        def testGrowBig(self):
+            """ Test growing a device beyond its size. """
+            initial_members = TestCaseFactory._minMembersForCreation(level)
+            self.assertIsNone(mdraid.mdcreate(self._dev_name, level, self.loopDevices[:initial_members]))
+            time.sleep(3) # wait for raid to settle
+
+            new_member = self.loopDevices[initial_members]
+            if level is raid.Linear:
+                self.assertIsNone(mdraid.mdadd(self._dev_name, new_member, grow_mode=True))
+            else:
+                with self.assertRaises(MDRaidError):
+                    mdraid.mdadd(self._dev_name, new_member, grow_mode=True, raid_devices=initial_members + 2)
+
+        def testGrowSmall(self):
+            """ Test decreasing size of device. """
+            initial_members = TestCaseFactory._minMembersForCreation(level) + 1
+            self.assertIsNone(mdraid.mdcreate(self._dev_name, level, self.loopDevices[:initial_members]))
+            time.sleep(2) # wait for raid to settle
+
+            new_member = self.loopDevices[initial_members]
+
+            with self.assertRaises(MDRaidError):
+                mdraid.mdadd(self._dev_name, new_member, grow_mode=True, raid_devices=initial_members - 1)
+
+        return type(
+           name,
+           (MDRaidAsRootTestCase,),
+           {
+              '__init__': __init__,
+              'testGrow': testGrow,
+              'testGrowBig' : testGrowBig,
+              'testGrowSmall': testGrowSmall
+           })
+
+
+# make some test cases for every RAID level
+levels = sorted(mdraid.RAID_levels, cmp=lambda x, y: cmp(x.name, y.name))
+for l in levels:
+    classname = "%sJustAddTestCase" % l
+    globals()[classname] = JustAddTestCaseFactory.makeClass(classname, l)
+
+    if l is not raid.Container:
+        classname = "%sGrowTestCase" % l
+        globals()[classname] = GrowTestCaseFactory.makeClass(classname, l)
 
 class SimpleRaidTest(MDRaidAsRootTestCase):
 
