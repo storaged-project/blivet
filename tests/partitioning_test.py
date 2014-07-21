@@ -5,6 +5,7 @@ from mock import Mock
 
 import parted
 
+from blivet.partitioning import addPartition
 from blivet.partitioning import getNextPartitionType
 from blivet.partitioning import doPartitioning
 from blivet.partitioning import allocatePartitions
@@ -138,6 +139,89 @@ class PartitioningTestCase(unittest.TestCase):
         # no_primary -> None
         disk = self.getDisk(disk_type="mac")
         self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
+
+    def testAddPartition(self):
+        with sparsetmpfile("addparttest", Size("50 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = getFormat("disklabel", device=disk.path, exists=False)
+
+            free = disk.format.partedDisk.getFreeSpaceRegions()[0]
+
+            #
+            # add a partition with an unaligned size
+            #
+            self.assertEqual(len(disk.format.partitions), 0)
+            part = addPartition(disk.format, free, parted.PARTITION_NORMAL,
+                                Size("10 MiB") - Size(37))
+            self.assertEqual(len(disk.format.partitions), 1)
+
+            # an unaligned size still yields an aligned partition
+            alignment = disk.format.alignment
+            geom = part.geometry
+            sector_size = geom.device.sectorSize
+            self.assertEqual(alignment.isAligned(free, geom.start), True)
+            self.assertEqual(alignment.isAligned(free, geom.end + 1), True)
+            self.assertEqual(part.geometry.length, Size("10 MiB") / sector_size)
+
+            disk.format.removePartition(part)
+            self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # add a partition with an unaligned start sector
+            #
+            start_sector = 5003
+            end_sector = 15001
+            part = addPartition(disk.format, free, parted.PARTITION_NORMAL,
+                                None, start_sector, end_sector)
+            self.assertEqual(len(disk.format.partitions), 1)
+
+            # start and end sectors are exactly as specified
+            self.assertEqual(part.geometry.start, start_sector)
+            self.assertEqual(part.geometry.end, end_sector)
+
+            disk.format.removePartition(part)
+            self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # fail: add a logical partition to a primary free region
+            #
+            with self.assertRaisesRegexp(parted.PartitionException,
+                                         "no extended partition"):
+                part = addPartition(disk.format, free, parted.PARTITION_LOGICAL,
+                                    Size("10 MiB"))
+
+            ## add an extended partition to the disk
+            placeholder = addPartition(disk.format, free,
+                                       parted.PARTITION_NORMAL, Size("10 MiB"))
+            all_free = disk.format.partedDisk.getFreeSpaceRegions()
+            extended = addPartition(disk.format, all_free[1],
+                                    parted.PARTITION_EXTENDED, Size("30 MiB"),
+                                    alignment.alignUp(all_free[1],
+                                                      placeholder.geometry.end))
+
+            disk.format.removePartition(placeholder)
+            self.assertEqual(len(disk.format.partitions), 1)
+            all_free = disk.format.partedDisk.getFreeSpaceRegions()
+
+            #
+            # add a logical partition to an extended free regions
+            #
+            part = addPartition(disk.format, all_free[1],
+                                parted.PARTITION_LOGICAL,
+                                Size("10 MiB"), all_free[1].start)
+            self.assertEqual(part.type, parted.PARTITION_LOGICAL)
+
+            disk.format.removePartition(part)
+            self.assertEqual(len(disk.format.partitions), 1)
+
+            #
+            # fail: add a primary partition to an extended free region
+            #
+            with self.assertRaisesRegexp(parted.PartitionException, "overlap"):
+                part = addPartition(disk.format, all_free[1],
+                                    parted.PARTITION_NORMAL,
+                                    Size("10 MiB"), all_free[1].start)
+
 
     def testChunk(self):
         dev1 = Mock()
