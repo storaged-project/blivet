@@ -57,11 +57,17 @@ class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
     def tearDown(self):
         try:
             mdraid.mddeactivate(self._dev_name)
-            for dev in self.loopDevices:
-                mdraid.mdremove(self._dev_name, dev, fail=True)
-                mdraid.mddestroy(dev)
         except MDRaidError:
             pass
+        for dev in self.loopDevices:
+            try:
+                mdraid.mdremove(self._dev_name, dev, fail=True)
+            except MDRaidError:
+                pass
+            try:
+                mdraid.mddestroy(dev)
+            except MDRaidError:
+                pass
 
         super(MDRaidAsRootTestCase, self).tearDown()
 
