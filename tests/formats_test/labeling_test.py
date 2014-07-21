@@ -41,6 +41,12 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.HFS.labelFormatOK(""))
         self.assertTrue(fs.HFS.labelFormatOK("n" * 27))
 
+        #HFSPlus has a maximum length of 128, minimum length of 1, and does not allow colons
+        self.assertFalse(fs.HFSPlus.labelFormatOK("n" * 129))
+        self.assertFalse(fs.HFSPlus.labelFormatOK("root:file"))
+        self.assertFalse(fs.HFSPlus.labelFormatOK(""))
+        self.assertTrue(fs.HFSPlus.labelFormatOK("n" * 128))
+
         # NTFS has a maximum length of 128
         self.assertFalse(fs.NTFS.labelFormatOK("n" * 129))
         self.assertTrue(fs.NTFS.labelFormatOK("n" * 128))
@@ -125,6 +131,13 @@ class HFSTestCase(fslabeling.LabelingAsRoot):
 
     def setUp(self):
         super(HFSTestCase, self).setUp()
+
+class HFSPlusTestCase(fslabeling.LabelingAsRoot):
+    _fs_class = property(lambda s: fs.HFSPlus)
+    _invalid_label = property(lambda s: "n" * 129)
+
+    def setUp(self):
+        super(HFSPlusTestCase, self).setUp()
 
 class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
 
