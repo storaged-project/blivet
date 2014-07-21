@@ -1066,7 +1066,6 @@ class BTRFS(FS):
     _modules = ["btrfs"]
     _formattable = True
     _linuxNative = True
-    _maxLabelChars = 256
     _supported = True
     _packages = ["btrfs-progs"]
     _minSize = Size("256 MiB")
@@ -1157,7 +1156,6 @@ class JFS(FS):
     _modules = ["jfs"]
     _labelfs = fslabeling.JFSLabeling()
     _defaultFormatOptions = ["-q"]
-    _maxLabelChars = 16
     _maxSize = Size("8 TiB")
     _formattable = True
     _linuxNative = True
@@ -1189,7 +1187,6 @@ class ReiserFS(FS):
     _labelfs = fslabeling.ReiserFSLabeling()
     _modules = ["reiserfs"]
     _defaultFormatOptions = ["-f", "-f"]
-    _maxLabelChars = 16
     _maxSize = Size("16 TiB")
     _formattable = True
     _linuxNative = True
@@ -1226,7 +1223,6 @@ class XFS(FS):
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
     _defaultFormatOptions = ["-f"]
-    _maxLabelChars = 16
     _maxSize = Size("16 EiB")
     _formattable = True
     _linuxNative = True
