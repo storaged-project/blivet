@@ -293,6 +293,9 @@ intersphinx_mapping = {'https://docs.python.org/2': None}
 # This was taken directly from here:
 # http://read-the-docs.readthedocs.org/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
 # I only added the __getitem__ method.
+# NOTE: this can be removed whenever we move to sphinx-1.3, at which point we'll
+#       be able to use autodoc_mock_imports (value is a list of modules to be
+#       mocked).
 class Mock(object):
 
     __all__ = []
@@ -318,6 +321,6 @@ class Mock(object):
     def __getitem__(cls, key):
 	return cls.__getattr__(key)
 
-MOCK_MODULES = ['parted', 'block', 'pycryptsetup', 'pykickstart', 'pykickstart.constants', '_ped']
+MOCK_MODULES = ['parted', 'block', 'pycryptsetup', 'pykickstart', 'pykickstart.constants', '_ped', 'selinux']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
