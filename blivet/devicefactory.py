@@ -113,7 +113,7 @@ class DeviceFactory(object):
         device stacks like lvm with md pvs.
 
         Simplified call trace for creation of a new LV in a new VG with
-        partition PVs:
+        partition PVs::
 
             LVMFactory.configure
                 PartitionSetFactory.configure   # set up PVs on partitions
@@ -122,7 +122,7 @@ class DeviceFactory(object):
 
 
         Simplified call trace for creation of a new LV in a new VG with a single
-        MD PV with member partitions on multiple disks:
+        MD PV with member partitions on multiple disks::
 
             LVMOnMDFactory.configure
                 MDFactory.configure
@@ -141,7 +141,7 @@ class DeviceFactory(object):
         "data" in the Blivet instance's device tree, that volume group will be
         used instead of creating a new one. If the already-defined "data" volume
         group exists on disk its size will not be changed, but if it has not
-        been written to disk it will be adjusted to hold the new logical volume.
+        been written to disk it will be adjusted to hold the new logical volume::
 
             import blivet
 
