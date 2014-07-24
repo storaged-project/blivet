@@ -154,7 +154,7 @@ def mdnominate(device):
     try:
         mdadm(args)
     except MDRaidError as msg:
-        raise MDRaidError("mdadd failed for %s: %s" % (device, msg))
+        raise MDRaidError("mdnominate failed for %s: %s" % (device, msg))
 
 def mdadd(array, device, raid_devices=None):
     """ Add a device to an array.
