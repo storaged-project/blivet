@@ -155,6 +155,8 @@ class SimpleRaidTest(MDRaidAsRootTestCase):
         with self.assertRaises(MDRaidError):
             mdraid.mdnominate(self.loopDevices[2])
 
+        info_pre = mdraid.mddetail(self._dev_name)
+
         ##
         ## mddeactivate
         ##
@@ -181,6 +183,23 @@ class SimpleRaidTest(MDRaidAsRootTestCase):
         # requires uuid
         with self.assertRaises(MDRaidError):
             mdraid.mdactivate("/dev/md1")
+
+        self.assertIsNone(mdraid.mdactivate(self._dev_name, array_uuid=info_pre['UUID']))
+        time.sleep(2)
+        info_post = mdraid.mddetail(self._dev_name)
+
+        # the array should remain mostly the same across activations
+        changeable_values = (
+           'ACTIVE DEVICES',
+           'STATE',
+           'TOTAL DEVICES',
+           'WORKING DEVICES'
+        )
+        for k in (k for k in info_pre.keys() if k not in changeable_values):
+            self.assertEqual(info_pre[k], info_post[k], msg="key: %s" % k)
+
+        # deactivating the array one more time
+        self.assertIsNone(mdraid.mddeactivate(self._dev_name))
 
         ##
         ## mddestroy
