@@ -179,7 +179,7 @@ def get_sysfs_attr(path, attr):
         log.debug("get_sysfs_attr() called with attr=None")
         return None
 
-    attribute = "/sys%s/%s" % (path, attr)
+    attribute = "%s/%s" % (path, attr)
     attribute = os.path.realpath(attribute)
 
     if not os.path.isfile(attribute) and not os.path.islink(attribute):

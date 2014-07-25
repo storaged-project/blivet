@@ -27,6 +27,7 @@ import tempfile
 import abc
 from decimal import Decimal
 import re
+import pyudev
 
 from six import add_metaclass
 
@@ -107,7 +108,7 @@ def deviceNameToDiskByPath(deviceName=None):
         return ""
 
     ret = None
-    for dev in udev.get_block_devices():
+    for dev in udev.get_devices():
         if udev.device_get_name(dev) == deviceName:
             ret = udev.device_get_by_path(dev)
             break
@@ -523,7 +524,6 @@ class StorageDevice(Device):
 
     _type = "blivet"
     _devDir = "/dev"
-    sysfsBlockDir = "class/block"
     _formatImmutable = False
     _partitionable = False
     _isDisk = False
@@ -789,11 +789,22 @@ class StorageDevice(Device):
 
     def updateSysfsPath(self):
         """ Update this device's sysfs path. """
-        log_method_call(self, self.name, status=self.status)
-        sysfsName = self.name.replace("/", "!")
-        path = os.path.join("/sys", self.sysfsBlockDir, sysfsName)
-        self.sysfsPath = os.path.realpath(path)[4:]
-        log.debug("%s sysfsPath set to %s", self.name, self.sysfsPath)
+        # We're using os.path.exists as a stand-in for status. We can't use
+        # the status property directly because MDRaidArrayDevice.status calls
+        # this method.
+        log_method_call(self, self.name, status=os.path.exists(self.path))
+        if not self.exists:
+            raise errors.DeviceError("device has not been created", self.name)
+
+        try:
+            udev_device = pyudev.Device.from_device_file(udev.global_udev,
+                                                         self.path)
+        except pyudev.DeviceNotFoundError as e:
+            log.error("failed to update sysfs path for %s: %s", self.name, e)
+            self.sysfsPath = ''
+        else:
+            self.sysfsPath = udev_device.sys_path
+            log.debug("%s sysfsPath set to %s", self.name, self.sysfsPath)
 
     @property
     def formatArgs(self):
@@ -818,7 +829,7 @@ class StorageDevice(Device):
             log.debug("not sending change uevent for inactive device")
             return
 
-        path = os.path.normpath("/sys/%s" % self.sysfsPath)
+        path = os.path.normpath(self.sysfsPath)
         try:
             util.notify_kernel(path, action="change")
         except (ValueError, IOError) as e:
@@ -1093,7 +1104,7 @@ class StorageDevice(Device):
 
     @property
     def removable(self):
-        devpath = os.path.normpath("/sys/%s" % self.sysfsPath)
+        devpath = os.path.normpath(self.sysfsPath)
         remfile = os.path.normpath("%s/removable" % devpath)
         return (self.sysfsPath and os.path.exists(devpath) and
                 os.access(remfile, os.R_OK) and
@@ -1668,23 +1679,6 @@ class PartitionDevice(StorageDevice):
     weight = property(lambda d: d._getWeight(),
                       lambda d,w: d._setWeight(w))
 
-    def updateSysfsPath(self):
-        """ Update this device's sysfs path. """
-        log_method_call(self, self.name, status=self.status)
-        if not self.parents:
-            self.sysfsPath = ''
-
-        elif isinstance(self.parents[0], DMDevice):
-            dm_node = dm.dm_node_from_name(self.name)
-            path = os.path.join("/sys", self.sysfsBlockDir, dm_node)
-            self.sysfsPath = os.path.realpath(path)[4:]
-        elif isinstance(self.parents[0], MDRaidArrayDevice):
-            md_node = mdraid.md_node_from_name(self.name)
-            path = os.path.join("/sys", self.sysfsBlockDir, md_node)
-            self.sysfsPath = os.path.realpath(path)[4:]
-        else:
-            StorageDevice.updateSysfsPath(self)
-
     def _setName(self, value):
         self._name = value  # actual name setting is done by parted
 
@@ -2251,19 +2245,6 @@ class DMDevice(StorageDevice):
         match = next((m for m in block.dm.maps() if m.name == self.mapName),
            None)
         return (match.live_table and not match.suspended) if match else False
-
-    def updateSysfsPath(self):
-        """ Update this device's sysfs path. """
-        log_method_call(self, self.name, status=self.status)
-        if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
-
-        if self.status:
-            dm_node = self.getDMNode()
-            path = os.path.join("/sys", self.sysfsBlockDir, dm_node)
-            self.sysfsPath = os.path.realpath(path)[4:]
-        else:
-            self.sysfsPath = ''
 
     #def getTargetType(self):
     #    return dm.getDmTarget(name=self.name)
@@ -4098,22 +4079,6 @@ class MDRaidArrayDevice(ContainerDevice):
 
     spares = property(_getSpares, _setSpares)
 
-    def updateSysfsPath(self):
-        """ Update this device's sysfs path. """
-        # don't include self.status here since this method is called by
-        # MDRaidArrayDevice.status
-        log_method_call(self, self.name)
-        if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
-
-        # We don't use self.status here because self.status requires a valid
-        # sysfs path to function correctly.
-        if os.path.exists(self.path):
-            md_node = mdraid.md_node_from_name(self.name)
-            self.sysfsPath = "/devices/virtual/block/%s" % md_node
-        else:
-            self.sysfsPath = ''
-
     def _addParent(self, member):
         super(MDRaidArrayDevice, self)._addParent(member)
 
@@ -4174,7 +4139,7 @@ class MDRaidArrayDevice(ContainerDevice):
             self.updateSysfsPath()
 
             # make sure the active array is the one we expect
-            info = udev.get_block_device(self.sysfsPath)
+            info = udev.get_device(self.sysfsPath)
             uuid = udev.device_get_md_uuid(info)
             if uuid and uuid != self.uuid:
                 log.warning("md array %s is active, but has UUID %s -- not %s",
@@ -4182,7 +4147,7 @@ class MDRaidArrayDevice(ContainerDevice):
                 self.sysfsPath = ""
                 return status
 
-        state_file = "/sys/%s/md/array_state" % self.sysfsPath
+        state_file = "%s/md/array_state" % self.sysfsPath
         try:
             state = open(state_file).read().strip()
             if state in ("clean", "active", "active-idle", "readonly", "read-auto"):
@@ -4212,7 +4177,7 @@ class MDRaidArrayDevice(ContainerDevice):
     def degraded(self):
         """ Return True if the array is running in degraded mode. """
         rc = False
-        degraded_file = "/sys/%s/md/degraded" % self.sysfsPath
+        degraded_file = "%s/md/degraded" % self.sysfsPath
         if os.access(degraded_file, os.R_OK):
             val = open(degraded_file).read().strip()
             if val == "1":
@@ -4270,7 +4235,7 @@ class MDRaidArrayDevice(ContainerDevice):
         # mdadm reuses minors indiscriminantly when there is no mdadm.conf, so
         # we need to clear the sysfs path now so our status method continues to
         # give valid results
-        self.updateSysfsPath()
+        self.sysfsPath = ''
 
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
@@ -4312,15 +4277,14 @@ class MDRaidArrayDevice(ContainerDevice):
 
     def _postCreate(self):
         # this is critical since our status method requires a valid sysfs path
-        md_node = mdraid.md_node_from_name(self.name)
-        self.sysfsPath = "/devices/virtual/block/%s" % md_node
-        self.exists = True  # I think we can remove this.
-
+        self.exists = True  # this is needed to run updateSysfsPath
+        self.updateSysfsPath()
         StorageDevice._postCreate(self)
 
         # update our uuid attribute with the new array's UUID
-        info = udev.get_block_device(self.sysfsPath)
-        self.uuid = udev.device_get_md_uuid(info)
+        # XXX this won't work for containers since no UUID is reported for them
+        info = mdraid.mddetail(self.path)
+        self.uuid = info.get("UUID")
         for member in self.devices:
             member.format.mdUuid = self.uuid
 
@@ -5568,7 +5532,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def _postCreate(self):
         super(BTRFSVolumeDevice, self)._postCreate()
-        info = udev.get_block_device(self.sysfsPath)
+        info = udev.get_device(self.sysfsPath)
         if not info:
             log.error("failed to get updated udev info for new btrfs volume")
         else:

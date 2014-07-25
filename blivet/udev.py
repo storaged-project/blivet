@@ -28,8 +28,8 @@ from . import util
 from .size import Size
 from .flags import flags
 
-from . import pyudev
-global_udev = pyudev.Udev()
+import pyudev
+global_udev = pyudev.Context()
 
 import logging
 log = logging.getLogger("blivet")
@@ -37,51 +37,19 @@ log = logging.getLogger("blivet")
 INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram')
 """ device name regexes to ignore when flags.installer_mode is True """
 
-def enumerate_devices(deviceClass="block"):
-    devices = global_udev.enumerate_devices(subsystem=deviceClass)
-    return [path[4:] for path in devices]
-
 def get_device(sysfs_path):
-    if not os.path.exists("/sys%s" % sysfs_path):
-        log.debug("%s does not exist", sysfs_path)
-        return None
-
-    # XXX we remove the /sys part when enumerating devices,
-    # so we have to prepend it when creating the device
-    dev = global_udev.create_device("/sys" + sysfs_path)
-
-    if dev:
-        dev["name"] = dev.sysname
-        dev["sysfs_path"] = sysfs_path
-
-        # now add in the contents of the uevent file since they're handy
-        dev = parse_uevent_file(dev)
+    try:
+        dev = pyudev.Device.from_sys_path(global_udev, sysfs_path)
+    except pyudev.DeviceNotFoundError as e:
+        log.error(e)
+        dev = None
 
     return dev
 
-def get_devices(deviceClass="block"):
+def get_devices(subsystem="block"):
     settle()
-    entries = []
-    for path in enumerate_devices(deviceClass):
-        entry = get_device(path)
-        if entry:
-            entries.append(entry)
-    return entries
-
-def parse_uevent_file(dev):
-    path = os.path.normpath("/sys/%s/uevent" % dev['sysfs_path'])
-    if not os.access(path, os.R_OK):
-        return dev
-
-    with open(path) as f:
-        for line in f.readlines():
-            (key, equals, value) = line.strip().partition("=")
-            if not equals:
-                continue
-
-            dev[key] = value
-
-    return dev
+    return [d for d in global_udev.list_devices(subsystem=subsystem)
+                        if not __is_blacklisted_blockdev(d.sys_name)]
 
 def settle():
     # wait maximal 300 seconds for udev to be done running blkid, lvm,
@@ -107,7 +75,7 @@ def resolve_devspec(devspec):
     from . import devices
 
     ret = None
-    for dev in get_block_devices():
+    for dev in get_devices():
         if devspec.startswith("LABEL="):
             if device_get_label(dev) == devspec[6:]:
                 ret = dev
@@ -124,7 +92,7 @@ def resolve_devspec(devspec):
             if not spec.startswith("/dev/"):
                 spec = os.path.normpath("/dev/" + spec)
 
-            for link in dev["symlinks"]:
+            for link in device_get_symlinks(dev):
                 if spec == link:
                     ret = dev
                     break
@@ -139,36 +107,17 @@ def resolve_glob(glob):
     if not glob:
         return ret
 
-    for dev in get_block_devices():
+    for dev in get_devices():
         name = device_get_name(dev)
 
         if fnmatch.fnmatch(name, glob):
             ret.append(name)
         else:
-            for link in dev["symlinks"]:
+            for link in device_get_symlinks(dev):
                 if fnmatch.fnmatch(link, glob):
                     ret.append(name)
 
     return ret
-
-def get_block_devices():
-    settle()
-    entries = []
-    for path in enumerate_block_devices():
-        entry = get_block_device(path)
-        if entry:
-            if entry["name"].startswith("md"):
-                # mdraid is really braindead, when a device is stopped
-                # it is no longer usefull in anyway (and we should not
-                # probe it) yet it still sticks around, see bug rh523387
-                state = None
-                state_file = "/sys/%s/md/array_state" % entry["sysfs_path"]
-                if os.access(state_file, os.R_OK):
-                    state = open(state_file).read().strip()
-                if state == "clear":
-                    continue
-            entries.append(entry)
-    return entries
 
 def __is_blacklisted_blockdev(dev_name):
     """Is this a blockdev we never want for an install?"""
@@ -188,17 +137,6 @@ def __is_blacklisted_blockdev(dev_name):
 
     return False
 
-def enumerate_block_devices():
-    return [d for d in enumerate_devices(deviceClass="block") if not __is_blacklisted_blockdev(os.path.basename(d))]
-
-def get_block_device(sysfs_path):
-    dev = get_device(sysfs_path)
-    if not dev or 'name' not in dev:
-        return None
-    else:
-        return dev
-
-
 # These are functions for retrieving specific pieces of information from
 # udev database entries.
 def device_get_name(udev_info):
@@ -206,7 +144,7 @@ def device_get_name(udev_info):
     if "DM_NAME" in udev_info:
         name = udev_info["DM_NAME"]
     else:
-        name = udev_info["name"]
+        name = udev_info.sys_name
 
     return name
 
@@ -245,7 +183,7 @@ def device_is_md(info):
 
     # The udev information keeps shifting around. Only md arrays have a
     # /sys/class/block/<name>/md/ subdirectory.
-    md_dir = "/sys" + device_get_sysfs_path(info) + "/md"
+    md_dir = device_get_sysfs_path(info) + "/md"
     return os.path.exists(md_dir)
 
 def device_is_cciss(info):
@@ -254,18 +192,15 @@ def device_is_cciss(info):
 
 def device_is_dasd(info):
     """ Return True if the device is a dasd device. """
-    devname = info.get("DEVNAME")
-    if devname:
-        return devname.startswith("dasd")
-    else:
-        return False
+    devname = info.get("DEVNAME", '').split("/")[-1]
+    return devname.startswith("dasd")
 
 def device_is_zfcp(info):
     """ Return True if the device is a zfcp device. """
     if info.get("DEVTYPE") != "disk":
         return False
 
-    subsystem = "/sys" + info.get("sysfs_path")
+    subsystem = device_get_sysfs_path(info)
 
     while True:
         topdir = os.path.realpath(os.path.dirname(subsystem))
@@ -293,7 +228,7 @@ def device_get_zfcp_attribute(info, attr=None):
         log.debug("device_get_zfcp_attribute() called with attr=None")
         return None
 
-    attribute = "/sys%s/device/%s" % (info.get("sysfs_path"), attr,)
+    attribute = "%s/device/%s" % (device_get_sysfs_path(info), attr)
     attribute = os.path.realpath(attribute)
 
     if not os.path.isfile(attribute):
@@ -304,14 +239,14 @@ def device_get_zfcp_attribute(info, attr=None):
 
 def device_get_dasd_bus_id(info):
     """ Return the CCW bus ID of the dasd device. """
-    return info.get("sysfs_path").split("/")[-3]
+    return device_get_sysfs_path(info).split("/")[-3]
 
 def device_get_dasd_flag(info, flag=None):
     """ Return the specified flag for the dasd device. """
     if flag is None:
         return None
 
-    path = "/sys" + info.get("sysfs_path") + "/device/" + flag
+    path = device_get_sysfs_path(info) + "/device/" + flag
     if not os.path.isfile(path):
         return None
 
@@ -327,17 +262,17 @@ def device_is_disk(info):
     """ Return True is the device is a disk. """
     if device_is_cdrom(info):
         return False
-    has_range = os.path.exists("/sys/%s/range" % info['sysfs_path'])
+    has_range = os.path.exists("%s/range" % device_get_sysfs_path(info))
     return info.get("DEVTYPE") == "disk" or has_range
 
 def device_is_partition(info):
-    has_start = os.path.exists("/sys/%s/start" % info['sysfs_path'])
+    has_start = os.path.exists("%s/start" % device_get_sysfs_path(info))
     return info.get("DEVTYPE") == "partition" or has_start
 
 def device_is_loop(info):
     """ Return True if the device is a configured loop device. """
     return (device_get_name(info).startswith("loop") and
-            os.path.isdir("/sys/%s/loop" % info['sysfs_path']))
+            os.path.isdir("%s/loop" % device_get_sysfs_path(info)))
 
 def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
@@ -365,7 +300,7 @@ def device_get_path(info):
     return info["ID_PATH"]
 
 def device_get_symlinks(info):
-    return info.get("symlinks", [])
+    return info.get("DEVLINKS", [])
 
 def device_get_by_path(info):
     for link in device_get_symlinks(info):
@@ -375,7 +310,7 @@ def device_get_by_path(info):
     return device_get_name(info)
 
 def device_get_sysfs_path(info):
-    return info['sysfs_path']
+    return info.sys_path
 
 def device_get_major(info):
     return int(info["MAJOR"])
@@ -683,7 +618,7 @@ def device_get_iscsi_session(info):
     # The position of sessionX part depends on device
     # (e.g. offload vs. sw; also varies for different offload devs)
     session = None
-    match = re.match(r'/.*/(session\d+)', info["sysfs_path"])
+    match = re.match(r'/.*/(session\d+)', device_get_sysfs_path(info))
     if match:
         session = match.groups()[0]
     else:
@@ -702,7 +637,7 @@ def device_get_iscsi_nic(info):
 def device_get_iscsi_initiator(info):
     initiator = None
     if device_is_partoff_iscsi(info):
-        host = re.match(r'.*/(host\d+)', info["sysfs_path"]).groups()[0]
+        host = re.match(r'.*/(host\d+)', device_get_sysfs_path(info)).groups()[0]
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
@@ -746,10 +681,10 @@ def device_get_iscsi_initiator(info):
 
 def _detect_broadcom_fcoe(info):
     re_pci_host=re.compile(r'/(.*)/(host\d+)')
-    match = re_pci_host.match(info["sysfs_path"])
+    match = re_pci_host.match(device_get_sysfs_path(info))
     if match:
         sysfs_pci, host = match.groups()
-        if os.access('/sys/%s/%s/fc_host' %(sysfs_pci, host), os.X_OK) and \
+        if os.access('%s/%s/fc_host' %(sysfs_pci, host), os.X_OK) and \
                 'net' in sysfs_pci:
             return (sysfs_pci, host)
     return (None, None)
@@ -765,7 +700,7 @@ def device_is_fcoe(info):
        path_components[2] == "fc":
         return True
 
-    if path.startswith("fc-") and "fcoe" in info["sysfs_path"]:
+    if path.startswith("fc-") and "fcoe" in device_get_sysfs_path(info):
         return True
 
     if _detect_broadcom_fcoe(info) != (None, None):
@@ -776,20 +711,21 @@ def device_is_fcoe(info):
 def device_get_fcoe_nic(info):
     path = info.get("ID_PATH", "")
     path_components = path.split("-")
+    sysfs_path = device_get_sysfs_path(info)
 
     if path.startswith("pci-eth") and len(path_components) >= 4 and \
        path_components[2] == "fc":
         return path_components[1]
 
-    if path.startswith("fc-") and "fcoe" in info["sysfs_path"]:
-        return info["sysfs_path"].split("/")[4].split(".")[0]
+    if path.startswith("fc-") and "fcoe" in sysfs_path:
+        return sysfs_path.split("/")[5].split(".")[0]
 
     (sysfs_pci, host) = _detect_broadcom_fcoe(info)
     if (sysfs_pci, host) != (None, None):
-        net, iface = info['sysfs_path'].split("/")[5:7]
+        net, iface = sysfs_path.split("/")[6:8]
         if net != "net":
-            log.warning("unexpected sysfs_path of bnx2fc device: %s", info['sysfs_path'])
-            match = re.compile(r'.*/net/([^/]*)').match(info['sysfs_path'])
+            log.warning("unexpected sysfs_path of bnx2fc device: %s", sysfs_path)
+            match = re.compile(r'.*/net/([^/]*)').match(sysfs_path)
             if match:
                 return match.groups()[0].split(".")[0]
         else:
@@ -803,7 +739,7 @@ def device_get_fcoe_identifier(info):
        path_components[2] == "fc":
         return path_components[3]
 
-    if path.startswith("fc-") and "fcoe" in info["sysfs_path"]:
+    if path.startswith("fc-") and "fcoe" in device_get_sysfs_path(info):
         return path_components[1]
 
     if device_is_fcoe(info) and len(path_components) >= 4 and \

@@ -645,7 +645,7 @@ class DeviceTree(object):
 
         if self.udevDeviceIsDisk(info):
             # Ignore any readonly disks
-            if util.get_sysfs_attr(info["sysfs_path"], 'ro') == '1':
+            if util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
                 log.debug("Ignoring read only device %s", name)
                 # FIXME: We have to handle this better, ie: not ignore these.
                 self.addIgnoredDisk(name)
@@ -691,10 +691,10 @@ class DeviceTree(object):
         if not device:
             # initiate detection of all PVs and hope that it leads to us having
             # the VG and LVs in the tree
-            for pv_name in os.listdir("/sys" + sysfs_path + "/slaves"):
-                link = os.readlink("/sys" + sysfs_path + "/slaves/" + pv_name)
+            for pv_name in os.listdir(sysfs_path + "/slaves"):
+                link = os.readlink(sysfs_path + "/slaves/" + pv_name)
                 pv_sysfs_path = os.path.normpath(sysfs_path + '/slaves/' + link)
-                pv_info = udev.get_block_device(pv_sysfs_path)
+                pv_info = udev.get_device(pv_sysfs_path)
                 self.addUdevDevice(pv_info)
 
         vg_name = udev.device_get_lv_vg_name(info)
@@ -737,7 +737,7 @@ class DeviceTree(object):
         if device is None:
             # we couldn't find it, so create it
             # first, get a list of the slave devs and look them up
-            slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+            slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
             slave_names = os.listdir(slave_dir)
             for slave_name in slave_names:
                 # if it's a dm-X name, resolve it to a map name first
@@ -747,7 +747,7 @@ class DeviceTree(object):
                     dev_name = slave_name.replace("!", "/") # handles cciss
                 slave_dev = self.getDeviceByName(dev_name)
                 path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
-                new_info = udev.get_block_device(os.path.realpath(path)[4:])
+                new_info = udev.get_device(os.path.realpath(path))
                 if not slave_dev:
                     # we haven't scanned the slave yet, so do it now
                     if new_info:
@@ -807,7 +807,7 @@ class DeviceTree(object):
         # TODO: look for this device by dm-uuid?
 
         # first, get a list of the slave devs and look them up
-        slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+        slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
         slave_names = os.listdir(slave_dir)
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name first
@@ -817,7 +817,7 @@ class DeviceTree(object):
                 dev_name = slave_name.replace("!", "/") # handles cciss
             slave_dev = self.getDeviceByName(dev_name)
             path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
-            new_info = udev.get_block_device(os.path.realpath(path)[4:])
+            new_info = udev.get_device(os.path.realpath(path))
             if not slave_dev:
                 # we haven't scanned the slave yet, so do it now
                 if new_info:
@@ -850,7 +850,7 @@ class DeviceTree(object):
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
 
-        slave_dir = os.path.normpath("/sys/%s/slaves" % sysfs_path)
+        slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
         slave_names = os.listdir(slave_dir)
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name
@@ -862,7 +862,7 @@ class DeviceTree(object):
             if not slave_dev:
                 # we haven't scanned the slave yet, so do it now
                 path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
-                new_info = udev.get_block_device(os.path.realpath(path)[4:])
+                new_info = udev.get_device(os.path.realpath(path))
                 if new_info:
                     self.addUdevDevice(new_info)
                     if self.getDeviceByName(dev_name) is None:
@@ -921,7 +921,7 @@ class DeviceTree(object):
 
         if disk is None:
             # create a device instance for the disk
-            new_info = udev.get_block_device(os.path.dirname(sysfs_path))
+            new_info = udev.get_device(os.path.dirname(sysfs_path))
             if new_info:
                 self.addUdevDevice(new_info)
                 disk = self.getDeviceByName(disk_name)
@@ -1018,8 +1018,8 @@ class DeviceTree(object):
             container = self.getDeviceByName(parentName)
             if not container:
                 parentSysName = mdraid.md_node_from_name(parentName)
-                container_sysfs = "/class/block/" + parentSysName
-                container_info = udev.get_block_device(container_sysfs)
+                container_sysfs = "/sys/class/block/" + parentSysName
+                container_info = udev.get_device(container_sysfs)
                 if not container_info:
                     log.error("failed to find md container %s at %s",
                                 parentName, container_sysfs)
@@ -1064,9 +1064,6 @@ class DeviceTree(object):
                           minor=udev.device_get_minor(info),
                           sysfsPath=sysfs_path, **kwargs)
 
-        if mpath.is_multipath_member(device.path):
-            info["ID_FS_TYPE"] = "multipath_member"
-
         if diskType == DASDDevice:
             self.dasd.append(device)
 
@@ -1091,7 +1088,7 @@ class DeviceTree(object):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
-        sys_file = "/sys/%s/loop/backing_file" % sysfs_path
+        sys_file = "%s/loop/backing_file" % sysfs_path
         backing_file = open(sys_file).read().strip()
         file_device = self.getDeviceByName(backing_file)
         if not file_device:
@@ -1111,7 +1108,7 @@ class DeviceTree(object):
 
     def addUdevDevice(self, info):
         name = udev.device_get_name(info)
-        log_method_call(self, name=name, info=pprint.pformat(info))
+        log_method_call(self, name=name, info=pprint.pformat(dict(info)))
         uuid = udev.device_get_uuid(info)
         sysfs_path = udev.device_get_sysfs_path(info)
 
@@ -1152,8 +1149,6 @@ class DeviceTree(object):
 
         if device and device.isDisk and \
            mpath.is_multipath_member(device.path):
-            # mark as multipath_member also when repopulating devicetree
-            info["ID_FS_TYPE"] = "multipath_member"
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
@@ -1481,7 +1476,7 @@ class DeviceTree(object):
 
                 if lv_device.status:
                     lv_device.updateSysfsPath()
-                    lv_info = udev.get_block_device(lv_device.sysfsPath)
+                    lv_info = udev.get_device(lv_device.sysfsPath)
                     if not lv_info:
                         log.error("failed to get udev data for lv %s", lv_device.name)
                         return
@@ -1578,7 +1573,7 @@ class DeviceTree(object):
 
             # check the list of devices udev knows about to see if the array
             # this device belongs to is already active
-            for dev in udev.get_block_devices():
+            for dev in udev.get_devices():
                 if not udev.device_is_md(dev):
                     continue
 
@@ -1681,13 +1676,13 @@ class DeviceTree(object):
                 self._addDevice(dm_array)
 
                 # Wait for udev to scan the just created nodes, to avoid a race
-                # with the udev.get_block_device() call below.
+                # with the udev.get_device() call below.
                 udev.settle()
 
                 # Get the DMRaidArrayDevice a DiskLabel format *now*, in case
                 # its partitions get scanned before it does.
                 dm_array.updateSysfsPath()
-                dm_array_info = udev.get_block_device(dm_array.sysfsPath)
+                dm_array_info = udev.get_device(dm_array.sysfsPath)
                 self.handleUdevDiskLabelFormat(dm_array_info, dm_array)
 
                 # Use the rs's object on the device.
@@ -1773,11 +1768,15 @@ class DeviceTree(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
+        is_multipath_member = mpath.is_multipath_member(device.path)
+        if is_multipath_member:
+            format_type = "multipath_member"
+
         # Now, if the device is a disk, see if there is a usable disklabel.
         # If not, see if the user would like to create one.
         # XXX ignore disklabels on multipath or biosraid member disks
         if not udev.device_is_biosraid_member(info) and \
-           not udev.device_is_multipath_member(info) and \
+           not is_multipath_member and \
            format_type != "iso9660":
             self.handleUdevDiskLabelFormat(info, device)
             if device.partitioned or self.isIgnored(info) or \
@@ -1890,7 +1889,7 @@ class DeviceTree(object):
     def updateDeviceFormat(self, device):
         log.info("updating format of device: %s", device)
         try:
-            util.notify_kernel("/sys%s" % device.sysfsPath)
+            util.notify_kernel(device.sysfsPath)
         except (ValueError, IOError) as e:
             log.warning("failed to notify kernel of change: %s", e)
 
@@ -2022,7 +2021,7 @@ class DeviceTree(object):
                 loop_name = loop.get_loop_name(filedev.path)
                 loop_sysfs = None
                 if loop_name:
-                    loop_sysfs = "/class/block/%s" % loop_name
+                    loop_sysfs = "/sys/class/block/%s" % loop_name
                 loopdev = LoopDevice(name=loop_name,
                                      parents=[filedev],
                                      sysfsPath=loop_sysfs,
@@ -2042,7 +2041,7 @@ class DeviceTree(object):
                 self._addDevice(filedev)
                 self._addDevice(loopdev)
                 self._addDevice(dmdev)
-                info = udev.get_block_device(dmdev.sysfsPath)
+                info = udev.get_device(dmdev.sysfsPath)
                 self.addUdevDevice(info)
 
     def backupConfigs(self, restore=False):
@@ -2156,18 +2155,19 @@ class DeviceTree(object):
         # blocks or since previous iterations.
         while True:
             devices = []
-            new_devices = udev.get_block_devices()
+            new_devices = udev.get_devices()
 
             for new_device in new_devices:
-                if new_device['name'] not in old_devices:
-                    old_devices[new_device['name']] = new_device
+                new_name = udev.device_get_name(new_device)
+                if new_name not in old_devices:
+                    old_devices[new_name] = new_device
                     devices.append(new_device)
 
             if len(devices) == 0:
                 # nothing is changing -- we are finished building devices
                 break
 
-            log.info("devices to scan: %s", [d['name'] for d in devices])
+            log.info("devices to scan: %s", [udev.device_get_name(d) for d in devices])
             for dev in devices:
                 self.addUdevDevice(dev)
 

@@ -29,6 +29,7 @@ Requires: python
 Requires: python-six
 Requires: pykickstart >= %{pykickstartver}
 Requires: util-linux >= %{utillinuxver}
+Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
 Requires: device-mapper >= %{dmver}
