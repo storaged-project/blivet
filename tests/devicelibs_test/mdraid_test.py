@@ -113,6 +113,7 @@ class SimpleRaidTest(MDRaidAsRootTestCase):
 
     def __init__(self, methodName='runTest'):
         super(SimpleRaidTest, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
+        self.longMessage = True
 
     def testMDRaidAsRoot(self):
         ##
