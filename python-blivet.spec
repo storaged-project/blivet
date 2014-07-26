@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.34
+Version: 0.18.35
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jul 25 2014 Brian C. Lane <bcl@redhat.com> - 0.18.35-1
+- Added a i18n module for gettext functions. (dshea)
+  Resolves: rhbz#1079440
+- Multiple arguments for string formatting need to be in parentheses (mkolman)
+  Resolves: rhbz#1100263
+
 * Fri Mar 21 2014 Brian C. Lane <bcl@redhat.com> - 0.18.34-1
 - Force removal of hidden devices (amulhern)
   Resolves: rhbz#1078163
