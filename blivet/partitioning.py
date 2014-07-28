@@ -26,7 +26,7 @@ from decimal import Decimal
 import parted
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
-from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError, SanityError, SanityWarning
+from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError
 from .flags import flags
 from .devices import PartitionDevice, LUKSDevice, devicePathToName
 from .formats import getFormat
@@ -401,27 +401,6 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
     # only newly added swaps should appear in the fstab
     new_swaps = (dev for dev in storage.swaps if not dev.format.exists)
     storage.setFstabSwaps(new_swaps)
-
-def sanityCheck(storage):
-    """Do a sanity check in a partitioning context.
-
-       :param storage: a :class:`~.Blivet` instance
-       :type storage: :class:`~.Blivet`
-
-       Logs all SanityErrors and SanityWarnings, SanityErrors first.
-
-       Raises a partitioning error on SanityErrors.
-    """
-    exns = storage.sanityCheck()
-    errors = [exc for exc in exns if isinstance(exc, SanityError)]
-    warnings = [exc for exc in exns if isinstance(exc, SanityWarning)]
-    for error in errors:
-        log.error("%s", error.message)
-    for warning in warnings:
-        log.warning("%s", warning.message)
-
-    if errors:
-        raise PartitioningError("\n".join(error.message for error in errors))
 
 def partitionCompare(part1, part2):
     """ More specifically defined partitions come first.
