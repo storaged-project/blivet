@@ -1580,42 +1580,10 @@ class DeviceTree(object):
                 log.warning("invalid data for %s: no RAID level", device.name)
                 return
 
-            md_metadata = None
-            md_name = None
-
-            # check the list of devices udev knows about to see if the array
-            # this device belongs to is already active
-            for dev in udev.get_devices():
-                if not udev.device_is_md(dev):
-                    continue
-
-                try:
-                    dev_uuid = udev.device_get_md_uuid(dev)
-                    dev_level = udev.device_get_md_level(dev)
-                except KeyError:
-                    continue
-
-                if dev_uuid is None or dev_level is None:
-                    continue
-
-                if dev_uuid == md_uuid and dev_level == md_level:
-                    md_name = udev.device_get_md_name(dev)
-                    md_metadata = udev.device_get_md_metadata(dev)
-                    if not md_name:
-                        # containers don't typically have names and they also
-                        # don't have a symlink in /dev/md
-                        md_name = udev.device_get_name(dev)
-                        if md_level != "container" and \
-                           re.match(r'md\d+$', md_name):
-                            # md0 -> 0
-                            md_name = md_name[2:]
-
-                    break
-
             # mdexamine yields MD_METADATA only for metadata version > 0.90
             # if MD_METADATA is missing, assume metadata version is 0.90
-            md_metadata = md_metadata or udev.device_get_md_metadata(md_info) or "0.90"
-
+            md_metadata = udev.device_get_md_metadata(md_info) or "0.90"
+            md_name = udev.device_get_md_name(md_info)
             if not md_name:
                 md_path = md_info.get("DEVICE", "")
                 if md_path:
