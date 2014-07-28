@@ -1519,11 +1519,13 @@ class DeviceTree(object):
                         lv_dev.logSize, lv_dev.vgSpaceUsed)
 
     def handleUdevLVMPVFormat(self, info, device):
+        # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
+        pv_info = self.pvInfo.get(device.path, {})
         # lookup/create the VG and LVs
         try:
-            vg_name = udev.device_get_vg_name(info)
-            vg_uuid = udev.device_get_vg_uuid(info)
+            vg_name = udev.device_get_vg_name(pv_info)
+            vg_uuid = udev.device_get_vg_uuid(pv_info)
         except KeyError:
             # no vg name means no vg -- we're done with this pv
             return
@@ -1537,12 +1539,12 @@ class DeviceTree(object):
             vg_device.parents.append(device)
         else:
             try:
-                vg_size = udev.device_get_vg_size(info)
-                vg_free = udev.device_get_vg_free(info)
-                pe_size = udev.device_get_vg_extent_size(info)
-                pe_count = udev.device_get_vg_extent_count(info)
-                pe_free = udev.device_get_vg_free_extents(info)
-                pv_count = udev.device_get_vg_pv_count(info)
+                vg_size = udev.device_get_vg_size(pv_info)
+                vg_free = udev.device_get_vg_free(pv_info)
+                pe_size = udev.device_get_vg_extent_size(pv_info)
+                pe_count = udev.device_get_vg_extent_count(pv_info)
+                pe_free = udev.device_get_vg_free_extents(pv_info)
+                pv_count = udev.device_get_vg_pv_count(pv_info)
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
@@ -1562,8 +1564,9 @@ class DeviceTree(object):
         self.handleVgLvs(vg_device)
 
     def handleUdevMDMemberFormat(self, info, device):
+        # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-
+        md_info = mdraid.mdexamine(device.path)
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
         if device.format.mdUuid and md_array:
             md_array.parents.append(device)
@@ -1571,9 +1574,9 @@ class DeviceTree(object):
             # create the array with just this one member
             try:
                 # level is reported as, eg: "raid1"
-                md_level = udev.device_get_md_level(info)
-                md_devices = udev.device_get_md_devices(info)
-                md_uuid = udev.device_get_md_uuid(info)
+                md_level = udev.device_get_md_level(md_info)
+                md_devices = udev.device_get_md_devices(md_info)
+                md_uuid = udev.device_get_md_uuid(md_info)
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
@@ -1616,10 +1619,10 @@ class DeviceTree(object):
 
             # mdexamine yields MD_METADATA only for metadata version > 0.90
             # if MD_METADATA is missing, assume metadata version is 0.90
-            md_metadata = md_metadata or udev.device_get_md_metadata(info) or "0.90"
+            md_metadata = md_metadata or udev.device_get_md_metadata(md_info) or "0.90"
 
             if not md_name:
-                md_path = info.get("DEVICE", "")
+                md_path = md_info.get("DEVICE", "")
                 if md_path:
                     md_name = devicePathToName(md_path)
                     if re.match(r'md\d+$', md_name):
@@ -1823,18 +1826,18 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev.device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            info.update(self.pvInfo.get(device.path, {}))
+            pv_info = self.pvInfo.get(device.path, {})
 
             try:
-                kwargs["vgName"] = udev.device_get_vg_name(info)
+                kwargs["vgName"] = udev.device_get_vg_name(pv_info)
             except KeyError:
                 log.warning("PV %s has no vg_name", name)
             try:
-                kwargs["vgUuid"] = udev.device_get_vg_uuid(info)
+                kwargs["vgUuid"] = udev.device_get_vg_uuid(pv_info)
             except KeyError:
                 log.warning("PV %s has no vg_uuid", name)
             try:
-                kwargs["peStart"] = udev.device_get_pv_pe_start(info)
+                kwargs["peStart"] = udev.device_get_pv_pe_start(pv_info)
             except KeyError:
                 log.warning("PV %s has no pe_start", name)
         elif format_type == "vfat":
