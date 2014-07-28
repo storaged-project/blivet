@@ -28,7 +28,6 @@ __version__ = '0.61'
 ## in question or care must be taken so they are imported only after
 ## enable_installer_mode is called.
 ##
-isys = None
 iutil = None
 ROOT_PATH = '/'
 _storageRoot = ROOT_PATH
@@ -71,7 +70,7 @@ import parted
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
 from .storage_log import log_exception_info, log_method_call
-from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
+from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError, LUKSDeviceWithoutKeyError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from .devicetree import DeviceTree
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
@@ -102,7 +101,6 @@ log = logging.getLogger("blivet")
 
 def enable_installer_mode():
     """ Configure the module for use by anaconda (OS installer). """
-    global isys
     global iutil
     global ROOT_PATH
     global _storageRoot
@@ -113,7 +111,6 @@ def enable_installer_mode():
     global errorHandler
     global ERROR_RAISE
 
-    from pyanaconda import isys # pylint: disable=redefined-outer-name
     from pyanaconda import iutil # pylint: disable=redefined-outer-name
     from pyanaconda.constants import shortProductName # pylint: disable=redefined-outer-name
     from pyanaconda.constants import productName # pylint: disable=redefined-outer-name
@@ -1564,176 +1561,6 @@ class Blivet(object):
            not d.format.exists and \
            not d.format.hasKey):
             yield LUKSDeviceWithoutKeyError(_("LUKS device %s has no encryption key") % (dev.name,))
-
-    def sanityCheck(self):
-        """ Run a series of tests to verify the storage configuration.
-
-            This is installer-specific.
-
-            This function is called at the end of partitioning so that
-            we can make sure you don't have anything silly (like no /,
-            a really small /, etc).
-
-            :rtype: a list of SanityExceptions
-            :return: a list of accumulated errors and warnings
-        """
-        exns = []
-
-        if not flags.installer_mode:
-            return exns
-
-        checkSizes = [('/usr', 250), ('/tmp', 50), ('/var', 384),
-                      ('/home', 100), ('/boot', 75)]
-        mustbeonlinuxfs = ['/', '/var', '/tmp', '/usr', '/home', '/usr/share', '/usr/lib']
-        mustbeonroot = ['/bin','/dev','/sbin','/etc','/lib','/root', '/mnt', 'lost+found', '/proc']
-
-        filesystems = self.mountpoints
-        root = self.fsset.rootDevice
-        swaps = self.fsset.swapDevices
-
-        if root:
-            if root.size < 250:
-                exns.append(
-                   SanityWarning(_("Your root partition is less than 250 "
-                                  "megabytes which is usually too small to "
-                                  "install %s.") % (productName,)))
-        else:
-            exns.append(
-               SanityError(_("You have not defined a root partition (/), "
-                            "which is required for installation of %s "
-                            "to continue.") % (productName,)))
-
-        # Prevent users from installing on s390x with (a) no /boot volume, (b) the
-        # root volume on LVM, and (c) the root volume not restricted to a single
-        # PV
-        # NOTE: There is not really a way for users to create a / volume
-        # restricted to a single PV.  The backend support is there, but there are
-        # no UI hook-ups to drive that functionality, but I do not personally
-        # care.  --dcantrell
-        if arch.isS390() and '/boot' not in self.mountpoints and root:
-            if root.type == 'lvmlv' and not root.singlePV:
-                exns.append(
-                   SanityError(_("This platform requires /boot on a dedicated "
-                                "partition or logical volume.  If you do not "
-                                "want a /boot volume, you must place / on a "
-                                "dedicated non-LVM partition.")))
-
-        # FIXME: put a check here for enough space on the filesystems. maybe?
-
-        for (mount, size) in checkSizes:
-            if mount in filesystems and filesystems[mount].size < size:
-                exns.append(
-                   SanityWarning(_("Your %(mount)s partition is less than "
-                                  "%(size)s megabytes which is lower than "
-                                  "recommended for a normal %(productName)s "
-                                  "install.")
-                                % {'mount': mount, 'size': size,
-                                   'productName': productName}))
-
-        for (mount, device) in filesystems.items():
-            problem = filesystems[mount].checkSize()
-            if problem < 0:
-                exns.append(
-                   SanityError(_("Your %(mount)s partition is too small for %(format)s formatting "
-                                "(allowable size is %(minSize)s to %(maxSize)s)")
-                              % {"mount": mount, "format": device.format.name,
-                                 "minSize": device.minSize, "maxSize": device.maxSize}))
-            elif problem > 0:
-                exns.append(
-                   SanityError(_("Your %(mount)s partition is too large for %(format)s formatting "
-                                "(allowable size is %(minSize)s to %(maxSize)s)")
-                              % {"mount":mount, "format": device.format.name,
-                                 "minSize": device.minSize, "maxSize": device.maxSize}))
-
-        if self.bootloader and not self.bootloader.skip_bootloader:
-            stage1 = self.bootloader.stage1_device
-            if not stage1:
-                exns.append(
-                   SanityError(_("No valid bootloader target device found. "
-                                "See below for details.")))
-                pe = _platform.stage1MissingError
-                if pe:
-                    exns.append(SanityError(_(pe)))
-            else:
-                self.bootloader.is_valid_stage1_device(stage1)
-                exns.extend(SanityError(msg) for msg in self.bootloader.errors)
-                exns.extend(SanityWarning(msg) for msg in self.bootloader.warnings)
-
-            stage2 = self.bootloader.stage2_device
-            if stage1 and not stage2:
-                exns.append(SanityError(_("You have not created a bootable partition.")))
-            else:
-                self.bootloader.is_valid_stage2_device(stage2)
-                exns.extend(SanityError(msg) for msg in self.bootloader.errors)
-                exns.extend(SanityWarning(msg) for msg in self.bootloader.warnings)
-                if not self.bootloader.check():
-                    exns.extend(SanityError(msg) for msg in self.bootloader.errors)
-
-            #
-            # check that GPT boot disk on BIOS system has a BIOS boot partition
-            #
-            if _platform.weight(fstype="biosboot") and \
-               stage1 and stage1.isDisk and \
-               getattr(stage1.format, "labelType", None) == "gpt":
-                missing = True
-                for part in [p for p in self.partitions if p.disk == stage1]:
-                    if part.format.type == "biosboot":
-                        missing = False
-                        break
-
-                if missing:
-                    exns.append(
-                       SanityError(_("Your BIOS-based system needs a special "
-                                    "partition to boot from a GPT disk label. "
-                                    "To continue, please create a 1MiB "
-                                    "'biosboot' type partition.")))
-
-        if not swaps:
-            installed = util.total_memory()
-            required = Size("%s KiB" % isys.EARLY_SWAP_RAM)
-
-            if installed < required:
-                exns.append(
-                   SanityError(_("You have not specified a swap partition.  "
-                                "%(requiredMem)s of memory is required to continue installation "
-                                "without a swap partition, but you only have %(installedMem)s.")
-                              % {"requiredMem": required,
-                                 "installedMem": installed}))
-            else:
-                exns.append(
-                   SanityWarning(_("You have not specified a swap partition.  "
-                                  "Although not strictly required in all cases, "
-                                  "it will significantly improve performance "
-                                  "for most installations.")))
-        no_uuid = [s for s in swaps if s.format.exists and not s.format.uuid]
-        if no_uuid:
-            exns.append(
-               SanityWarning(_("At least one of your swap devices does not have "
-                              "a UUID, which is common in swap space created "
-                              "using older versions of mkswap. These devices "
-                              "will be referred to by device path in "
-                              "/etc/fstab, which is not ideal since device "
-                              "paths can change under a variety of "
-                              "circumstances. ")))
-
-        for (mountpoint, dev) in filesystems.items():
-            if mountpoint in mustbeonroot:
-                exns.append(
-                   SanityError(_("This mount point is invalid.  The %s directory must "
-                                "be on the / file system.") % mountpoint))
-
-            if mountpoint in mustbeonlinuxfs and (not dev.format.mountable or not dev.format.linuxNative):
-                exns.append(
-                   SanityError(_("The mount point %s must be on a linux file system.") % mountpoint))
-
-        if self.rootDevice and self.rootDevice.format.exists:
-            e = self.mustFormat(self.rootDevice)
-            if e:
-                exns.append(SanityError(e))
-
-        exns += self._verifyLUKSDevicesHaveKey()
-
-        return exns
 
     def dumpState(self, suffix):
         """ Dump the current device list to the storage shelf. """

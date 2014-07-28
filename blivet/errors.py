@@ -137,6 +137,9 @@ class LVMError(StorageError):
 class CryptoError(StorageError):
     pass
 
+class LUKSDeviceWithoutKeyError(StorageError):
+    pass
+
 class MPathError(StorageError):
     pass
 
@@ -189,17 +192,4 @@ class UnknownSourceDeviceError(StorageError):
 
 # factories
 class DeviceFactoryError(StorageError):
-    pass
-
-#sanity
-class SanityException(StorageError):
-    pass
-
-class SanityError(SanityException):
-    pass
-
-class SanityWarning(SanityException):
-    pass
-
-class LUKSDeviceWithoutKeyError(SanityError):
     pass
