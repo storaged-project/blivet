@@ -1075,9 +1075,6 @@ class DeviceTree(object):
                           minor=udev.device_get_minor(info),
                           sysfsPath=sysfs_path, **kwargs)
 
-        if mpath.is_multipath_member(device.path):
-            info["ID_FS_TYPE"] = "multipath_member"
-
         if diskType == DASDDevice:
             self.dasd.append(device)
 
@@ -1163,8 +1160,6 @@ class DeviceTree(object):
 
         if device and device.isDisk and \
            mpath.is_multipath_member(device.path):
-            # mark as multipath_member also when repopulating devicetree
-            info["ID_FS_TYPE"] = "multipath_member"
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
@@ -1776,11 +1771,15 @@ class DeviceTree(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
+        is_multipath_member = mpath.is_multipath_member(device.path)
+        if is_multipath_member:
+            format_type = "multipath_member"
+
         # Now, if the device is a disk, see if there is a usable disklabel.
         # If not, see if the user would like to create one.
         # XXX ignore disklabels on multipath or biosraid member disks
         if not udev.device_is_biosraid_member(info) and \
-           not udev.device_is_multipath_member(info) and \
+           not is_multipath_member and \
            format_type != "iso9660":
             self.handleUdevDiskLabelFormat(info, device)
             if device.partitioned or self.isIgnored(info) or \
