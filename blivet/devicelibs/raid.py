@@ -48,8 +48,17 @@ class RAIDLevel(object):
     names = abc.abstractproperty(doc="List of recognized names for this level.")
     min_members = abc.abstractproperty(doc=
        "The minimum number of members required to make a fully functioning array.")
-    has_redundancy = abc.abstractproperty(doc=
-       "Whether this RAID level incorporates inherent redundancy.")
+    @abc.abstractmethod
+    def has_redundancy(self):
+        """ Whether this RAID level incorporates inherent redundancy.
+
+            Note that for some RAID levels, the notion of redundancy is
+            meaningless.
+
+            :rtype: boolean
+            :returns: True if this RAID level has inherent redundancy
+        """
+        raise NotImplementedError()
 
     is_uniform = abc.abstractproperty(doc=
        "Whether data is uniformly distributed across all devices.")
@@ -389,7 +398,9 @@ class RAID0(RAIDn):
     level = property(lambda s: "0")
     min_members = property(lambda s: 2)
     nick = property(lambda s: "stripe")
-    has_redundancy = property(lambda s: False)
+
+    def has_redundancy(self):
+        return False
 
     def _get_max_spares(self, member_count):
         return 0
@@ -416,7 +427,9 @@ class RAID1(RAIDn):
     level = property(lambda s: "1")
     min_members = property(lambda s: 2)
     nick = property(lambda s: "mirror")
-    has_redundancy = property(lambda s: True)
+
+    def has_redundancy(self):
+        return True
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -443,7 +456,9 @@ class RAID4(RAIDn):
     level = property(lambda s: "4")
     min_members = property(lambda s: 3)
     nick = property(lambda s: None)
-    has_redundancy = property(lambda s: True)
+
+    def has_redundancy(self):
+        return True
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -470,7 +485,9 @@ class RAID5(RAIDn):
     level = property(lambda s: "5")
     min_members = property(lambda s: 3)
     nick = property(lambda s: None)
-    has_redundancy = property(lambda s: True)
+
+    def has_redundancy(self):
+        return True
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -497,7 +514,9 @@ class RAID6(RAIDn):
     level = property(lambda s: "6")
     min_members = property(lambda s: 4)
     nick = property(lambda s: None)
-    has_redundancy = property(lambda s: True)
+
+    def has_redundancy(self):
+        return True
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -524,7 +543,9 @@ class RAID10(RAIDn):
     level = property(lambda s: "10")
     min_members = property(lambda s: 4)
     nick = property(lambda s: None)
-    has_redundancy = property(lambda s: True)
+
+    def has_redundancy(self):
+        return True
 
     def _get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -551,8 +572,10 @@ class Container(RAIDLevel):
     name = "container"
     names = [name]
     min_members = 1
-    has_redundancy = property(lambda s: False)
     is_uniform = property(lambda s: False)
+
+    def has_redundancy(self):
+        raise RaidError("redundancy is not a concept that applies to containers")
 
     def get_max_spares(self, member_count):
         # pylint: disable=unused-argument
@@ -579,8 +602,10 @@ class ErsatzRAID(RAIDLevel):
         distinct subclasses which have different names.
     """
     min_members = 1
-    has_redundancy = property(lambda s: False)
     is_uniform = property(lambda s: False)
+
+    def has_redundancy(self):
+        return False
 
     def get_max_spares(self, member_count):
         return member_count - self.min_members
@@ -631,8 +656,10 @@ class Dup(RAIDLevel):
     name = 'dup'
     names = [name]
     min_members = 1
-    has_redundancy = property(lambda s: True)
     is_uniform = property(lambda s: False)
+
+    def has_redundancy(self):
+        return True
 
 Dup = Dup()
 ALL_LEVELS.addRaidLevel(Dup)

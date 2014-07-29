@@ -156,31 +156,39 @@ def mdnominate(device):
     except MDRaidError as msg:
         raise MDRaidError("mdnominate failed for %s: %s" % (device, msg))
 
-def mdadd(array, device, raid_devices=None):
+def mdadd(array, device, grow_mode=False, raid_devices=None):
     """ Add a device to an array.
 
         :param str array: path to the array to add the device to
         :param str device: path to the device to add to the array
-        :keyword int raid_devices: the number of active member devices
+        :keyword bool grow_mode: use grow mode
+        :keyword int raid_devices: the intended number of active member devices
         :rtype: NoneType
         :raises: MDRaidError
 
-        The raid_devices parameter is used when adding devices to a raid
+        The grow_devices parameter is used when adding devices to a raid
         array that has no actual redundancy. In this case it is necessary
         to explicitly grow the array all at once rather than manage it in
         the sense of adding spares.
 
-        Whether the new device will be added as a spare or an active member is
-        decided by mdadm.
+        If raid_devices is set, and grow_mode is True, then the intended
+        number of devices after this device is added is specified
+        using the --raid-devices flag. If grow is not True then raid_devices
+        is ignored. For linear arrays, specifying raid_devices will result
+        in a failure.
+
+        Whether the new device will be added as a spare or an active member
+        when not in grow mode is decided by mdadm.
 
         .. seealso:: mdnominate
     """
-    if raid_devices is None:
-        args = [array, "--add"]
+    if grow_mode:
+        args = ["--grow", array]
+        if raid_devices:
+            args.extend(["--raid-devices", str(raid_devices)])
     else:
-        args = ["--grow", array, "--raid-devices", str(raid_devices), "--add"]
-
-    args.append(device)
+        args = [array]
+    args.extend(["--add", device])
 
     try:
         mdadm(args)

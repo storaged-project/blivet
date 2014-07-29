@@ -3679,7 +3679,14 @@ class MDRaidArrayDevice(ContainerDevice):
 
             If the array has no redundancy, a bitmap is just pointless.
         """
-        return self.level.has_redundancy and self.size >= 1000 and  self.format.type != "swap"
+        try:
+            return self.level.has_redundancy() and self.size >= 1000 and  self.format.type != "swap"
+        except errors.RaidError:
+            # If has_redundancy() raises an exception then this device has
+            # a level for which the redundancy question is meaningless. In
+            # that case, creating a write-intent bitmap would be a meaningless
+            # action.
+            return False
 
     def getSuperBlockSize(self, raw_array_size):
         """Estimate the superblock size for a member of an array,
@@ -3862,8 +3869,13 @@ class MDRaidArrayDevice(ContainerDevice):
             appears to have formatting and therefore probably data on it,
             removing one of its devices is a bad idea.
         """
-        if not self.level.has_redundancy and self.exists and member.format.exists:
-            raise errors.DeviceError("cannot remove members from existing %s array" % self.level)
+        try:
+            if not self.level.has_redundancy() and self.exists and member.format.exists:
+                raise errors.DeviceError("cannot remove members from existing %s array" % self.level)
+        except errors.RaidError:
+            # If the concept of redundancy is meaningless for this device's
+            # raid level, then it is OK to remove a parent device.
+            pass
 
         super(MDRaidArrayDevice, self)._removeParent(member)
         self.memberDevices -= 1
@@ -4056,13 +4068,25 @@ class MDRaidArrayDevice(ContainerDevice):
         mdraid.mdremove(self.path, member.path, fail=fail)
 
     def _add(self, member):
-        self.setup()
-        if self.level.has_redundancy:
-            raid_devices = None
-        else:
-            raid_devices = self.memberDevices
+        """ Add a member device to an array.
 
-        mdraid.mdadd(self.path, member.path, raid_devices=raid_devices)
+           :param str member: the member's path
+
+           :raises: MDRaidError
+        """
+        self.setup()
+
+        grow_mode = False
+        raid_devices = None
+        try:
+            if not self.level.has_redundancy():
+                grow_mode = True
+                if self.level is not raid.Linear:
+                    raid_devices = int(mdraid.mddetail(self.name)['RAID DEVICES']) + 1
+        except errors.RaidError:
+            pass
+
+        mdraid.mdadd(self.path, member.path, grow_mode=grow_mode, raid_devices=raid_devices)
 
     @property
     def formatArgs(self):
