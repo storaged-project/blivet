@@ -518,16 +518,6 @@ def device_is_dm_partition(info):
     return (device_is_dm(info) and
             info.get("DM_UUID", "").split("-")[0].startswith("part"))
 
-def device_is_multipath_member(info):
-    """ Return True if the device is part of a multipath. """
-    return info.get("ID_FS_TYPE") == "multipath_member"
-
-def device_get_multipath_name(info):
-    """ Return the name of the multipath that the device is a member of. """
-    if device_is_multipath_member(info):
-        return info['ID_MPATH_NAME']
-    return None
-
 def device_get_disklabel_type(info):
     """ Return the type of disklabel on the device or None. """
     if device_is_partition(info) or device_is_dm_partition(info):
