@@ -2601,12 +2601,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def _addParent(self, member):
         super(LVMVolumeGroupDevice, self)._addParent(member)
 
-        # now see if the VG can be activated
-        ## XXX TODO: remove this activation code
-        if self.exists and member.format.exists and self.complete and \
-           flags.installer_mode:
-            self.setup()
-
         if (self.exists and member.format.exists and
             len(self.parents) + 1 == self.pvCount):
             self._complete = True
@@ -3800,20 +3794,6 @@ class MDRaidArrayDevice(ContainerDevice):
 
     def _addParent(self, member):
         super(MDRaidArrayDevice, self)._addParent(member)
-
-        ## XXX TODO: remove this whole block of activation code
-        if self.exists and member.format.exists and flags.installer_mode:
-            member.setup()
-            udev.settle()
-
-            if self.spares <= 0:
-                try:
-                    mdraid.mdnominate(member.path)
-                    # mdadd causes udev events
-                    udev.settle()
-                except errors.MDRaidError as e:
-                    log.warning("failed to add member %s to md array %s: %s",
-                                member.path, self.path, e)
 
         if self.status and member.format.exists:
             # we always probe since the device may not be set up when we want
