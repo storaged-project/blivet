@@ -70,7 +70,7 @@ import parted
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
 from .storage_log import log_exception_info, log_method_call
-from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError, LUKSDeviceWithoutKeyError
+from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from .devicetree import DeviceTree
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
@@ -1572,22 +1572,6 @@ class Blivet(object):
                 free += device.size
 
         return free
-
-    def _verifyLUKSDevicesHaveKey(self):
-        """Verify that all non-existant LUKS devices have some way of obtaining
-           a key.
-
-           Note: LUKS device creation will fail without a key.
-
-           :rtype: generator of str
-           :returns: a generator of error messages, may yield no error messages
-
-        """
-        for dev in (d for d in self.devices if \
-           d.format.type == "luks" and \
-           not d.format.exists and \
-           not d.format.hasKey):
-            yield LUKSDeviceWithoutKeyError(_("LUKS device %s has no encryption key") % (dev.name,))
 
     def dumpState(self, suffix):
         """ Dump the current device list to the storage shelf. """

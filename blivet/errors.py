@@ -137,9 +137,6 @@ class LVMError(StorageError):
 class CryptoError(StorageError):
     pass
 
-class LUKSDeviceWithoutKeyError(StorageError):
-    pass
-
 class MPathError(StorageError):
     pass
 
