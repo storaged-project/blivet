@@ -33,7 +33,6 @@ ROOT_PATH = '/'
 _storageRoot = ROOT_PATH
 _sysroot = ROOT_PATH
 shortProductName = 'blivet'
-productName = 'blivet'
 ERROR_RAISE = 0
 
 class ErrorHandler(object):
@@ -50,11 +49,8 @@ get_bootloader = lambda: None
 ##
 
 import os
-from os import statvfs
 import time
 import stat
-import errno
-import sys
 import copy
 import tempfile
 import shlex
@@ -82,7 +78,6 @@ from .devicelibs.dm import name_from_dm_node
 from .devicelibs.crypto import generateBackupPassphrase
 from .devicelibs.edd import get_edd_dict
 from .devicelibs.dasd import make_dasd_list, write_dasd_conf
-from . import udev
 from . import iscsi
 from . import fcoe
 from . import zfcp
@@ -106,14 +101,12 @@ def enable_installer_mode():
     global _storageRoot
     global _sysroot
     global shortProductName
-    global productName
     global get_bootloader
     global errorHandler
     global ERROR_RAISE
 
     from pyanaconda import iutil # pylint: disable=redefined-outer-name
     from pyanaconda.constants import shortProductName # pylint: disable=redefined-outer-name
-    from pyanaconda.constants import productName # pylint: disable=redefined-outer-name
     from pyanaconda.bootloader import get_bootloader # pylint: disable=redefined-outer-name
     from pyanaconda.errors import errorHandler # pylint: disable=redefined-outer-name
     from pyanaconda.errors import ERROR_RAISE # pylint: disable=redefined-outer-name

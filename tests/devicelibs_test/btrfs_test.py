@@ -60,7 +60,6 @@ class BTRFSAsRootTestCase1(loopbackedtestcase.LoopBackedTestCase):
            These tests are limited to simple creating and scanning.
         """
         _LOOP_DEV0 = self.loopDevices[0]
-        _LOOP_DEV1 = self.loopDevices[1]
 
         ##
         ## create_volume
@@ -108,8 +107,6 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
 
     def testSubvolume(self):
         """Tests which focus on subvolumes."""
-        _LOOP_DEV0 = self.loopDevices[0]
-        _LOOP_DEV1 = self.loopDevices[1]
 
         # no subvolumes yet
         self.assertEqual(btrfs.list_subvolumes(self.mountpoint), [])

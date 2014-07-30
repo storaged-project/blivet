@@ -27,10 +27,10 @@ from ..util import get_sysfs_path_by_name
 from ..util import run_program
 from ..util import ObjectID
 from ..storage_log import log_method_call
-from ..errors import DeviceFormatError, DMError, FormatCreateError, FormatDestroyError, FormatSetupError, MDRaidError, StorageError
+from ..errors import DeviceFormatError, DMError, FormatCreateError, FormatDestroyError, FormatSetupError, MDRaidError
 from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
-from ..i18n import _, N_
+from ..i18n import N_
 from ..size import Size
 
 import logging

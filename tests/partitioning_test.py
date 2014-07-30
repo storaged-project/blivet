@@ -194,10 +194,10 @@ class PartitioningTestCase(unittest.TestCase):
             placeholder = addPartition(disk.format, free,
                                        parted.PARTITION_NORMAL, Size("10 MiB"))
             all_free = disk.format.partedDisk.getFreeSpaceRegions()
-            extended = addPartition(disk.format, all_free[1],
-                                    parted.PARTITION_EXTENDED, Size("30 MiB"),
-                                    alignment.alignUp(all_free[1],
-                                                      placeholder.geometry.end))
+            addPartition(disk.format, all_free[1],
+                         parted.PARTITION_EXTENDED, Size("30 MiB"),
+                         alignment.alignUp(all_free[1],
+                                           placeholder.geometry.end))
 
             disk.format.removePartition(placeholder)
             self.assertEqual(len(disk.format.partitions), 1)
