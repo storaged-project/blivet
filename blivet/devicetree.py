@@ -897,10 +897,16 @@ class DeviceTree(object):
             else:
                 device = self.getDeviceByUuid(uuid, incomplete=flags.allow_degraded_mdraid)
 
-        # if we get here, we found all of the slave devices and
-        # something must be wrong -- if all of the slaves are in
-        # the tree, this device should be as well
-        if device is None:
+        if device:
+            # update the device instance with the real name in case we had to
+            # look it up by something other than name
+            # XXX bypass the setter since a) the device exists and b) the name
+            #     must be valid since it is currently in use
+            device._name = name
+        else:
+            # if we get here, we found all of the slave devices and
+            # something must be wrong -- if all of the slaves are in
+            # the tree, this device should be as well
             if name is None:
                 name = udev.device_get_name(info)
                 path = "/dev/" + name
