@@ -315,6 +315,7 @@ def mdexamine(device):
 
             if name == "metadata":
                 info["MD_METADATA"] = value
+                break
 
     process_UUIDS(info, ('MD_UUID', 'MD_DEV_UUID'))
 
