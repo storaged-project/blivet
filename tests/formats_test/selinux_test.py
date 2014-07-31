@@ -33,10 +33,10 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         an_fs.unmount()
         os.rmdir(mountpoint)
 
-        self.assertEqual(root_selinux_context[1], 'system_u:object_r:file_t:s0')
+        self.assertEqual(root_selinux_context[1], 'system_u:object_r:unlabeled_t:s0')
 
         self.assertEqual(lost_and_found_selinux_context[1],
-           'system_u:object_r:file_t:s0')
+           'system_u:object_r:unlabeled_t:s0')
 
         blivet.flags.installer_mode = True
         mountpoint = tempfile.mkdtemp("test.selinux")
@@ -73,7 +73,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         an_fs.unmount()
         os.rmdir(mountpoint)
 
-        self.assertEqual(root_selinux_context[1], 'system_u:object_r:file_t:s0')
+        self.assertEqual(root_selinux_context[1], 'system_u:object_r:unlabeled_t:s0')
 
         blivet.flags.installer_mode = True
         mountpoint = tempfile.mkdtemp("test.selinux")
