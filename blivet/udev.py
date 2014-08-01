@@ -392,7 +392,9 @@ def device_get_md_device_uuid(info):
     # Value for MD_UUID known to be obtained from:
     #  * pyudev/libudev
     #  * mdraid/mdadm (only 1.x metadata versions)
-    return info.get('MD_DEV_UUID')
+    # Value for ID_FS_UUID_SUB known to be obtained from:
+    #  * pyudev/libudev
+    return info.get('ID_FS_UUID_SUB') or info.get('MD_DEV_UUID')
 
 def device_get_vg_name(info):
     return info['LVM2_VG_NAME']
