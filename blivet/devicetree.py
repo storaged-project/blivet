@@ -1810,11 +1810,10 @@ class DeviceTree(object):
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
-            info.update(mdraid.mdexamine(device.path))
-
             # mdraid
             try:
-                kwargs["mdUuid"] = udev.device_get_md_uuid(info)
+                # ID_FS_UUID contains the array UUID
+                kwargs["mdUuid"] = udev.device_get_uuid(info)
             except KeyError:
                 log.warning("mdraid member %s has no md uuid", name)
 
