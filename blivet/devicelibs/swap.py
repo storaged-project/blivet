@@ -127,13 +127,13 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
     :param hibernation: calculate swap size big enough for hibernation
     :type hibernation: bool
     :param disk_space: how much disk space is available
-    :type disk_space: int
+    :type disk_space: :class:`~.size.Size`
     :return: calculated swap size
 
     """
 
     mem = util.total_memory()
-    mem = ((mem/16)+1)*16
+    mem = ((mem / 16) + 1) * 16
     if not quiet:
         log.info("Detected %s of memory", mem)
 
