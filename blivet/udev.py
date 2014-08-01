@@ -151,12 +151,7 @@ def device_get_uuid(udev_info):
         :returns: a UUID or None
         :rtype: str or NoneType
     """
-    md_uuid = udev_info.get("MD_UUID", '')
-    uuid = udev_info.get("ID_FS_UUID", '')
-    # we don't want to return the array's uuid as a member's uuid
-    if len(uuid) > 0 and \
-            re.sub(r'\W', '', md_uuid) != re.sub(r'\W', '', uuid):
-        return udev_info.get("ID_FS_UUID")
+    return udev_info.get("ID_FS_UUID")
 
 def device_get_label(udev_info):
     """ Get the label from the device's format as reported by udev. """
