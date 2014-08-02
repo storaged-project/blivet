@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-25 17:02-0700\n"
+"POT-Creation-Date: 2014-08-01 17:21-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,157 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: ../blivet/__init__.py:966
-msgid "This partition is holding the data for the hard drive install."
-msgstr ""
-
-#. LDL formatted DASDs always have one partition, you'd have to
-#. reformat the DASD in CDL mode to get rid of it
-#: ../blivet/__init__.py:971
-msgid "You cannot delete a partition of a LDL formatted DASD."
-msgstr ""
-
-#: ../blivet/__init__.py:977
-#, python-format
-msgid "This device is part of the RAID device %s."
-msgstr ""
-
-#: ../blivet/__init__.py:980
-msgid "This device is part of a RAID device."
-msgstr ""
-
-#: ../blivet/__init__.py:983
-msgid "This device is part of an inconsistent LVM Volume Group."
-msgstr ""
-
-#: ../blivet/__init__.py:988
-#, python-format
-msgid "This device is part of the LVM volume group '%s'."
-msgstr ""
-
-#: ../blivet/__init__.py:991
-msgid "This device is part of a LVM volume group."
-msgstr ""
-
-#: ../blivet/__init__.py:1007
-msgid ""
-"This device is an extended partition which contains logical partitions that "
-"cannot be deleted:\n"
-"\n"
-msgstr ""
-
-#: ../blivet/__init__.py:1287
-msgid "You must create a new filesystem on the root device."
-msgstr ""
-
-#: ../blivet/__init__.py:1464
-#, python-format
-msgid "LUKS device %s has no encryption key"
-msgstr ""
-
-#: ../blivet/__init__.py:1497
-#, python-format
-msgid ""
-"Your root partition is less than 250 megabytes which is usually too small to "
-"install %s."
-msgstr ""
-
-#: ../blivet/__init__.py:1502
-#, python-format
-msgid ""
-"You have not defined a root partition (/), which is required for "
-"installation of %s to continue."
-msgstr ""
-
-#: ../blivet/__init__.py:1516
-msgid ""
-"This platform requires /boot on a dedicated partition or logical volume.  If "
-"you do not want a /boot volume, you must place / on a dedicated non-LVM "
-"partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1526
-#, python-format
-msgid ""
-"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
-"recommended for a normal %(productName)s install."
-msgstr ""
-
-#: ../blivet/__init__.py:1537
-#, python-format
-msgid ""
-"Your %(mount)s partition is too small for %(format)s formatting (allowable "
-"size is %(minSize)d MB to %(maxSize)d MB)"
-msgstr ""
-
-#: ../blivet/__init__.py:1543
-#, python-format
-msgid ""
-"Your %(mount)s partition is too large for %(format)s formatting (allowable "
-"size is %(minSize)d MB to %(maxSize)d MB)"
-msgstr ""
-
-#: ../blivet/__init__.py:1552
-msgid "you have not created a bootloader stage1 target device"
-msgstr ""
-
-#: ../blivet/__init__.py:1561
-msgid "You have not created a bootable partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1583
-msgid ""
-"Your BIOS-based system needs a special partition to boot from a GPT disk "
-"label. To continue, please create a 1MB 'biosboot' type partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1594
-#, python-format
-msgid ""
-"You have not specified a swap partition.  %(requiredMem)s MB of memory is "
-"required to continue installation without a swap partition, but you only "
-"have %(installedMem)s MB."
-msgstr ""
-
-#: ../blivet/__init__.py:1601
-msgid ""
-"You have not specified a swap partition.  Although not strictly required in "
-"all cases, it will significantly improve performance for most installations."
-msgstr ""
-
-#: ../blivet/__init__.py:1608
-msgid ""
-"At least one of your swap devices does not have a UUID, which is common in "
-"swap space created using older versions of mkswap. These devices will be "
-"referred to by device path in /etc/fstab, which is not ideal since device "
-"paths can change under a variety of circumstances. "
-msgstr ""
-
-#: ../blivet/__init__.py:1619
-#, python-format
-msgid ""
-"This mount point is invalid.  The %s directory must be on the / file system."
-msgstr ""
-
-#: ../blivet/__init__.py:1624
-#, python-format
-msgid "The mount point %s must be on a linux file system."
-msgstr ""
-
-#: ../blivet/__init__.py:2956
-#, python-format
-msgid "Linux on %s"
-msgstr ""
-
-#: ../blivet/__init__.py:2961
-msgid "Unknown Linux"
-msgstr ""
-
-#: ../blivet/__init__.py:2963
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
 
 #. Decimal prefixes for different size increments, along with the name
 #. and accepted abbreviation for the prefix.  These prefixes are all
@@ -297,6 +146,161 @@ msgstr ""
 msgid "B"
 msgstr ""
 
+#: ../blivet/fcoe.py:111
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/__init__.py:1008
+msgid "This partition is holding the data for the hard drive install."
+msgstr ""
+
+#. LDL formatted DASDs always have one partition, you'd have to
+#. reformat the DASD in CDL mode to get rid of it
+#: ../blivet/__init__.py:1013
+msgid "You cannot delete a partition of a LDL formatted DASD."
+msgstr ""
+
+#: ../blivet/__init__.py:1019
+#, python-format
+msgid "This device is part of the RAID device %s."
+msgstr ""
+
+#: ../blivet/__init__.py:1022
+msgid "This device is part of a RAID device."
+msgstr ""
+
+#: ../blivet/__init__.py:1025
+msgid "This device is part of an inconsistent LVM Volume Group."
+msgstr ""
+
+#: ../blivet/__init__.py:1030
+#, python-format
+msgid "This device is part of the LVM volume group '%s'."
+msgstr ""
+
+#: ../blivet/__init__.py:1033
+msgid "This device is part of a LVM volume group."
+msgstr ""
+
+#: ../blivet/__init__.py:1049
+msgid ""
+"This device is an extended partition which contains logical partitions that "
+"cannot be deleted:\n"
+"\n"
+msgstr ""
+
+#: ../blivet/__init__.py:1329
+msgid "You must create a new filesystem on the root device."
+msgstr ""
+
+#: ../blivet/__init__.py:1506
+#, python-format
+msgid "LUKS device %s has no encryption key"
+msgstr ""
+
+#: ../blivet/__init__.py:1539
+#, python-format
+msgid ""
+"Your root partition is less than 250 megabytes which is usually too small to "
+"install %s."
+msgstr ""
+
+#: ../blivet/__init__.py:1544
+#, python-format
+msgid ""
+"You have not defined a root partition (/), which is required for "
+"installation of %s to continue."
+msgstr ""
+
+#: ../blivet/__init__.py:1558
+msgid ""
+"This platform requires /boot on a dedicated partition or logical volume.  If "
+"you do not want a /boot volume, you must place / on a dedicated non-LVM "
+"partition."
+msgstr ""
+
+#: ../blivet/__init__.py:1568
+#, python-format
+msgid ""
+"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
+"recommended for a normal %(productName)s install."
+msgstr ""
+
+#: ../blivet/__init__.py:1579
+#, python-format
+msgid ""
+"Your %(mount)s partition is too small for %(format)s formatting (allowable "
+"size is %(minSize)d MB to %(maxSize)d MB)"
+msgstr ""
+
+#: ../blivet/__init__.py:1585
+#, python-format
+msgid ""
+"Your %(mount)s partition is too large for %(format)s formatting (allowable "
+"size is %(minSize)d MB to %(maxSize)d MB)"
+msgstr ""
+
+#: ../blivet/__init__.py:1594
+msgid "you have not created a bootloader stage1 target device"
+msgstr ""
+
+#: ../blivet/__init__.py:1603
+msgid "You have not created a bootable partition."
+msgstr ""
+
+#: ../blivet/__init__.py:1625
+msgid ""
+"Your BIOS-based system needs a special partition to boot from a GPT disk "
+"label. To continue, please create a 1MB 'biosboot' type partition."
+msgstr ""
+
+#: ../blivet/__init__.py:1636
+#, python-format
+msgid ""
+"You have not specified a swap partition.  %(requiredMem)s MB of memory is "
+"required to continue installation without a swap partition, but you only "
+"have %(installedMem)s MB."
+msgstr ""
+
+#: ../blivet/__init__.py:1643
+msgid ""
+"You have not specified a swap partition.  Although not strictly required in "
+"all cases, it will significantly improve performance for most installations."
+msgstr ""
+
+#: ../blivet/__init__.py:1650
+msgid ""
+"At least one of your swap devices does not have a UUID, which is common in "
+"swap space created using older versions of mkswap. These devices will be "
+"referred to by device path in /etc/fstab, which is not ideal since device "
+"paths can change under a variety of circumstances. "
+msgstr ""
+
+#: ../blivet/__init__.py:1661
+#, python-format
+msgid ""
+"This mount point is invalid.  The %s directory must be on the / file system."
+msgstr ""
+
+#: ../blivet/__init__.py:1666
+#, python-format
+msgid "The mount point %s must be on a linux file system."
+msgstr ""
+
+#: ../blivet/__init__.py:2998
+#, python-format
+msgid "Linux on %s"
+msgstr ""
+
+#: ../blivet/__init__.py:3003
+msgid "Unknown Linux"
+msgstr ""
+
+#: ../blivet/__init__.py:3005
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
 #: ../blivet/partitioning.py:306
 msgid "No usable disks selected"
 msgstr ""
@@ -360,10 +364,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:2006
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/fcoe.py:111
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51

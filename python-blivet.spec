@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.35
+Version: 0.18.36
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Aug 01 2014 Brian C. Lane <bcl@redhat.com> - 0.18.36-1
+- Do not limit ThinLV's size to VG's free space (vpodzime)
+  Resolves: rhbz#1100772
+- Split ROOT_PATH usage into getTargetPhysicalRoot()/getSysroot() (walters)
+  Related: rhbz#1113535
+
 * Fri Jul 25 2014 Brian C. Lane <bcl@redhat.com> - 0.18.35-1
 - Added a i18n module for gettext functions. (dshea)
   Resolves: rhbz#1079440
