@@ -39,7 +39,7 @@ from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
 from .devices import MultipathDevice, NoDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
-from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
+from .deviceaction import ActionCreateDevice, ActionDestroyDevice, ActionDestroyFormat, action_type_from_string, action_object_from_string
 from . import formats
 from .formats import getFormat
 from .formats.fs import nodev_filesystems
@@ -469,6 +469,37 @@ class DeviceTree(object):
             if len(devs_to_remove) == 1 and devs_to_remove[0].isExtended:
                 self._removeDevice(devs_to_remove[0], force=True, modparent=False)
                 break
+
+    def recursiveRemove(self, device):
+        """ Remove a device after removing its dependent devices.
+
+            If the device is not a leaf, all of its dependents are removed
+            recursively until it is a leaf device. At that point the device is
+            removed, unless it is a disk. If the device is a disk, its
+            formatting is removed by no attempt is made to actually remove the
+            disk device.
+        """
+        log.debug("removing %s", device.name)
+        devices = self.getDependentDevices(device)
+
+        # this isn't strictly necessary, but it makes the action list easier to
+        # read when removing logical partitions because of the automatic
+        # renumbering that happens if you remove them in ascending numerical
+        # order
+        devices.reverse()
+
+        while devices:
+            log.debug("devices to remove: %s", [d.name for d in devices])
+            leaves = [d for d in devices if d.isleaf]
+            log.debug("leaves to remove: %s", [d.name for d in leaves])
+            for leaf in leaves:
+                self.registerAction(ActionDestroyFormat(leaf))
+                self.registerAction(ActionDestroyDevice(leaf))
+                devices.remove(leaf)
+
+        self.registerAction(ActionDestroyFormat(device))
+        if not device.isDisk:
+            self.registerAction(ActionDestroyDevice(device))
 
     def registerAction(self, action):
         """ Register an action to be performed at a later time.

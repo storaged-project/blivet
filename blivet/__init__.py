@@ -793,35 +793,8 @@ class Blivet(object):
         return True
 
     def recursiveRemove(self, device):
-        """ Remove a device after removing its dependent devices.
-
-            If the device is not a leaf, all of its dependents are removed
-            recursively until it is a leaf device. At that point the device is
-            removed, unless it is a disk. If the device is a disk, its
-            formatting is removed by no attempt is made to actually remove the
-            disk device.
-        """
-        log.debug("removing %s", device.name)
-        devices = self.deviceDeps(device)
-
-        # this isn't strictly necessary, but it makes the action list easier to
-        # read when removing logical partitions because of the automatic
-        # renumbering that happens if you remove them in ascending numerical
-        # order
-        devices.reverse()
-
-        while devices:
-            log.debug("devices to remove: %s", [d.name for d in devices])
-            leaves = [d for d in devices if d.isleaf]
-            log.debug("leaves to remove: %s", [d.name for d in leaves])
-            for leaf in leaves:
-                self.destroyDevice(leaf)
-                devices.remove(leaf)
-
-        if device.isDisk:
-            self.devicetree.registerAction(ActionDestroyFormat(device))
-        else:
-            self.destroyDevice(device)
+        """ Remove a device after removing its dependent devices. """
+        self.devicetree.recursiveRemove(device)
 
     def clearPartitions(self):
         """ Clear partitions and dependent devices from disks.
