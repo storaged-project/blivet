@@ -238,8 +238,6 @@ class LUKS(DeviceFormat):
             if flags.installer_mode:
                 self.mapName = "luks-%s" % self.uuid
 
-            self.notifyKernel()
-
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 

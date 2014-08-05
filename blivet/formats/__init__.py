@@ -326,33 +326,6 @@ class DeviceFormat(ObjectID):
     def type(self):
         return self._type
 
-    def notifyKernel(self):
-        log_method_call(self, device=self.device,
-                        type=self.type)
-        if not self.device:
-            return
-
-        if self.device.startswith("/dev/mapper/"):
-            try:
-                name = dm_node_from_name(os.path.basename(self.device))
-            except DMError:
-                log.warning("failed to get dm node for %s", self.device)
-                return
-        elif self.device.startswith("/dev/md/"):
-            try:
-                name = md_node_from_name(os.path.basename(self.device))
-            except MDRaidError:
-                log.warning("failed to get md node for %s", self.device)
-                return
-        else:
-            name = self.device
-
-        path = get_sysfs_path_by_name(name)
-        try:
-            notify_kernel(path, action="change")
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
-
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 

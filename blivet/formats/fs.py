@@ -422,7 +422,6 @@ class FS(DeviceFormat):
             raise FormatCreateError("format failed: %s" % ret, self.device)
 
         self.exists = True
-        self.notifyKernel()
 
         if self.label is not None and self.relabels():
             try:
@@ -519,7 +518,6 @@ class FS(DeviceFormat):
 
         # XXX must be a smarter way to do this
         self._size = self.targetSize
-        self.notifyKernel()
 
     def _getCheckArgs(self):
         argv = []
@@ -744,8 +742,6 @@ class FS(DeviceFormat):
         rc = util.run_program(self._labelfs.label_app.setLabelCommand(self))
         if rc:
             raise FSError("label failed")
-
-        self.notifyKernel()
 
     @property
     def mkfsProg(self):

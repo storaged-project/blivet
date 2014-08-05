@@ -315,23 +315,6 @@ class StorageDevice(Device):
                 (self.format.type is None or self.format.resizable or
                  not self.format.exists))
 
-    def notifyKernel(self):
-        """ Send a 'change' uevent to the kernel for this device. """
-        log_method_call(self, self.name, status=self.status)
-        if not self.exists:
-            log.debug("not sending change uevent for non-existent device")
-            return
-
-        if not self.status:
-            log.debug("not sending change uevent for inactive device")
-            return
-
-        path = os.path.normpath(self.sysfsPath)
-        try:
-            util.notify_kernel(path, action="change")
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
-
     @property
     def fstabSpec(self):
         spec = self.path

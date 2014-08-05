@@ -195,7 +195,6 @@ class SwapSpace(DeviceFormat):
             raise
         else:
             self.exists = True
-            self.notifyKernel()
 
 register_device_format(SwapSpace)
 

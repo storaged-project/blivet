@@ -125,7 +125,6 @@ class LVMPhysicalVolume(DeviceFormat):
             lvm.pvscan(self.device)
 
         self.exists = True
-        self.notifyKernel()
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
@@ -150,7 +149,6 @@ class LVMPhysicalVolume(DeviceFormat):
             lvm.pvscan(self.device)
 
         self.exists = False
-        self.notifyKernel()
 
     @property
     def status(self):
