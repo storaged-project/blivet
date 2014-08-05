@@ -658,8 +658,10 @@ class Populator(object):
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
                 # remove children from tree so that we don't stumble upon them later
-                self.devicetree.removeChildrenFromTree(device)
-                device.format = formats.DeviceFormat()
+                for child in self.devicetree.getChildren(device):
+                    self.devicetree.recursiveRemove(child, actions=False)
+
+                device.format = None
 
         #
         # The first step is to either look up or create the device

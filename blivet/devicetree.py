@@ -27,6 +27,7 @@ from gi.repository import BlockDev as blockdev
 
 from .actionlist import ActionList
 from .errors import DeviceError, DeviceTreeError, StorageError
+from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
 from . import formats
 from .devicelibs import lvm
@@ -223,16 +224,56 @@ class DeviceTree(object):
                                                            dev.name,
                                                            dev.id)
 
-    def _removeChildrenFromTree(self, device):
-        devs_to_remove = self.getDependentDevices(device)
-        while devs_to_remove:
-            leaves = [d for d in devs_to_remove if d.isleaf]
+    def recursiveRemove(self, device, actions=True):
+        """ Remove a device after removing its dependent devices.
+
+            :param :class:`~.devices.StorageDevice` device: the device to remove
+            :keyword bool actions: whether to schedule actions for the removal
+
+            If the device is not a leaf, all of its dependents are removed
+            recursively until it is a leaf device. At that point the device is
+            removed, unless it is a disk. If the device is a disk, its
+            formatting is removed but no attempt is made to actually remove the
+            disk device.
+        """
+        log.debug("removing %s", device.name)
+        devices = self.getDependentDevices(device)
+
+        # this isn't strictly necessary, but it makes the action list easier to
+        # read when removing logical partitions because of the automatic
+        # renumbering that happens if you remove them in ascending numerical
+        # order
+        devices.reverse()
+
+        while devices:
+            log.debug("devices to remove: %s", [d.name for d in devices])
+            leaves = [d for d in devices if d.isleaf]
+            log.debug("leaves to remove: %s", [d.name for d in leaves])
             for leaf in leaves:
-                self._removeDevice(leaf, modparent=False)
-                devs_to_remove.remove(leaf)
-            if len(devs_to_remove) == 1 and devs_to_remove[0].isExtended:
-                self._removeDevice(devs_to_remove[0], force=True, modparent=False)
-                break
+                if actions:
+                    if leaf.format.exists and not leaf.protected and \
+                       not leaf.formatImmutable:
+                        self.registerAction(ActionDestroyFormat(leaf))
+
+                    self.registerAction(ActionDestroyDevice(leaf))
+                else:
+                    if not leaf.formatImmutable:
+                        leaf.format = None
+                    self._removeDevice(leaf)
+
+                devices.remove(leaf)
+
+        if not device.formatImmutable:
+            if actions:
+                self.registerAction(ActionDestroyFormat(device))
+            else:
+                device.format = None
+
+        if not device.isDisk:
+            if actions:
+                self.registerAction(ActionDestroyDevice(device))
+            else:
+                self._removeDevice(device)
 
     def registerAction(self, action):
         """ Register an action to be performed at a later time.
