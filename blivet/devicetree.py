@@ -26,6 +26,7 @@ import re
 import shutil
 import pprint
 import copy
+from six import add_metaclass
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
@@ -56,10 +57,12 @@ from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
 from .i18n import _
 from .size import Size
+from .threads import blivet_lock, SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
 
+@add_metaclass(SynchronizedMeta)
 class DeviceTree(object):
     """ A quasi-tree that represents the devices in the system.
 
@@ -79,6 +82,7 @@ class DeviceTree(object):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
+    _unsynchronized_methods = ['processActions']
 
     def __init__(self, conf=None, passphrase=None, luksDict=None,
                  iscsi=None, dasd=None):
@@ -356,7 +360,10 @@ class DeviceTree(object):
 
         for action in self._actions[:]:
             log.info("executing action: %s", action)
-            if not dryRun:
+            if dryRun:
+                continue
+
+            with blivet_lock:
                 try:
                     action.execute(callbacks)
                 except DiskLabelCommitError:

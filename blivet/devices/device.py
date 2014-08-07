@@ -21,15 +21,18 @@
 #
 
 import pprint
+from six import add_metaclass
 
 from .. import util
 from ..storage_log import log_method_call
+from ..threads import SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
 
 from .lib import ParentList
 
+@add_metaclass(SynchronizedMeta)
 class Device(util.ObjectID):
     """ A generic device.
 

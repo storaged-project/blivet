@@ -21,6 +21,7 @@
 #
 
 import os
+from six import add_metaclass
 
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
@@ -32,6 +33,7 @@ from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
 from ..i18n import N_
 from ..size import Size
+from ..threads import SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -136,6 +138,7 @@ def get_device_format_class(fmt_type):
 
     return fmt
 
+@add_metaclass(SynchronizedMeta)
 class DeviceFormat(ObjectID):
     """ Generic device format.
 

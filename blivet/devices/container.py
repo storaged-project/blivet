@@ -26,13 +26,14 @@ from six import add_metaclass
 from .. import errors
 from ..storage_log import log_method_call
 from ..formats import get_device_format_class
+from ..threads import SynchronizedABCMeta
 
 import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
-@add_metaclass(abc.ABCMeta)
+@add_metaclass(SynchronizedABCMeta)
 class ContainerDevice(StorageDevice):
     """ A device that aggregates a set of member devices.
 

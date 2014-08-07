@@ -35,6 +35,7 @@ from ..formats import getFormat
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB
+from ..threads import SynchronizedABCMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -789,7 +790,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
-@add_metaclass(abc.ABCMeta)
+@add_metaclass(SynchronizedABCMeta)
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
 
