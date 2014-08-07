@@ -422,9 +422,7 @@ def getPlatform():
     elif arch.isS390():
         return S390()
     elif arch.isEfi():
-        if arch.isMactel():
-            return MacEFI()
-        elif arch.isAARCH64():
+        if arch.isAARCH64():
             return Aarch64EFI()
         else:
             return EFI()
