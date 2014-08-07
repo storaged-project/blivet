@@ -1832,10 +1832,7 @@ class Blivet(object):
         elif mountpoint == "/boot":
             fstype = self.defaultBootFSType
         elif mountpoint == "/boot/efi":
-            if arch.isMactel():
-                fstype = "macefi"
-            else:
-                fstype = "efi"
+            fstype = "efi"
 
         return fstype
 
