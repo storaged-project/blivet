@@ -273,7 +273,7 @@ class Device(util.ObjectID):
         l = set([self])
         for p in [d for d in self.parents if d not in l]:
             l.update(set(p.ancestors))
-        return list(l)
+        return sorted(l, key=lambda d: d.id)
 
     @property
     def packages(self):
