@@ -1503,7 +1503,7 @@ class Blivet(object):
            d.format.type == "luks" and \
            not d.format.exists and \
            not d.format.hasKey):
-            yield LUKSDeviceWithoutKeyError(_("LUKS device %s has no encryption key") % (dev.name,))
+            yield LUKSDeviceWithoutKeyError(_("Encryption requested for LUKS device %s but no encryption key specified for this device.") % (dev.name,))
 
     def sanityCheck(self):
         """ Run a series of tests to verify the storage configuration.
