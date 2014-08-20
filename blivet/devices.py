@@ -3419,6 +3419,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
     def populateKSData(self, data):
         super(LVMThinPoolDevice, self).populateKSData(data)
+        data.mountpoint = "none"
         data.thin_pool = True
         data.metadata_size = self.metaDataSize
         data.chunk_size = self.chunkSize
