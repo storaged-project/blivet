@@ -1626,8 +1626,11 @@ class BTRFSFactory(DeviceFactory):
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic
             if self.container and not self.device:
-                # For new subvols the size is in addition to the volume's size.
-                size += self.container.size
+                if self.size != 0:
+                    # For new subvols the size is in addition to the volume's size.
+                    size += self.container.size
+                else:
+                    size += sum(s.req_size for s in self.container.subvolumes)
 
             size += self._get_device_space()
         elif self.container_size == SIZE_POLICY_MAX:
