@@ -151,6 +151,13 @@ def get_default_subvolume(mountpoint):
 
     return default
 
+def set_default_subvolume(mountpoint, subvol_id):
+    if not os.path.ismount(mountpoint):
+        raise ValueError("volume not mounted")
+
+    args = ["subvol", "set-default", subvol_id, mountpoint]
+    return btrfs(args)
+
 def create_snapshot(source, dest, ro=False):
     """
         :param str source: path to source subvolume
