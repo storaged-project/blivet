@@ -5299,6 +5299,23 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         self._defaultSubVolumeID = subvolid
 
+    def _setDefaultSubVolumeID(self, vol_id):
+        """ Set a new default subvolume by id.
+
+            This writes the change to the filesystem, which must be mounted.
+        """
+        try:
+            btrfs.set_default_subvolume(self.originalFormat._mountpoint, vol_id)
+        except BTRFSError as e:
+            log.error("failed to set new default subvolume id (%s): %s",
+                      vol_id, e)
+            # The only time we set a new default subvolume is so we can remove
+            # the current default. If we can't change the default, we won't be
+            # able to remove the subvolume.
+            raise
+        else:
+            self._defaultSubVolumeID = vol_id
+
     @property
     def defaultSubVolume(self):
         default = None
@@ -5448,6 +5465,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
     def _destroy(self):
         log_method_call(self, self.name, status=self.status)
         self.volume._do_temp_mount(orig=True)
+        if self.volume._defaultSubVolumeID == self.vol_id:
+            # btrfs does not allow removal of the default subvolume
+            self.volume._setDefaultSubVolumeID(self.volume.vol_id)
+
         mountpoint = self.volume.originalFormat._mountpoint
         if not mountpoint:
             raise RuntimeError("btrfs subvol destroy requires mounted volume")
