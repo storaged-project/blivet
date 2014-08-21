@@ -159,7 +159,8 @@ def device_get_label(udev_info):
 
 def device_is_dm(info):
     """ Return True if the device is a device-mapper device. """
-    return 'DM_NAME' in info
+    dm_dir = os.path.join(device_get_sysfs_path(info), "dm")
+    return 'DM_NAME' in info or os.path.exists(dm_dir)
 
 def device_is_md(info):
     """ Return True if the device is a mdraid array device. """
