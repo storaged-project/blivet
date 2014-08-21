@@ -5150,6 +5150,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         if label:
             self.name = label
 
+        if not self.exists:
+            # propagate mount options specified for members via kickstart
+            self.format.mountopts = self.parents[0].format.mountopts
+
     def _getSize(self):
         size = sum([d.size for d in self.parents])
         if self.dataLevel in (raid.RAID1, raid.RAID10):
@@ -5347,6 +5351,16 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             raise errors.DeviceError("%s %s's unique parent must be a BTRFSDevice." % (self.type, self.name))
 
         self.volume._addSubVolume(self)
+
+    def _setFormat(self, format):
+        """ Set the Device's format. """
+        super(BTRFSSubVolumeDevice, self)._setFormat(format)
+        if self.exists:
+            return
+
+        # propagate mount options specified for members via kickstart
+        opts = "%s,subvol=%s" % (self.volume.format.mountopts, self.name)
+        self.format.mountopts = opts
 
     @property
     def volume(self):
