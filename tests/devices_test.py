@@ -471,7 +471,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegexp(ValueError, "member has wrong format"):
             BTRFSVolumeDevice("dev", parents=[OpticalDevice("deva")])
 
-        with self.assertRaisesRegexp(DeviceError, "btrfs subvolume.*must be a BTRFSDevice"):
+        with self.assertRaisesRegexp(DeviceError, "btrfs subvolume.*must be a btrfs volume"):
             fmt = blivet.formats.getFormat("btrfs")
             device = OpticalDevice("deva", fmt=fmt)
             BTRFSSubVolumeDevice("dev1", parents=[device])
