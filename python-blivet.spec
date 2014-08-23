@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.18.36
+Version: 0.18.37
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Aug 22 2014 Brian C. Lane <bcl@redhat.com> - 0.18.37-1
+- Make missing encryption key error message more helpful (amulhern)
+  Resolves: rhbz#1074441
+- Only log a warning about labeling if something is wrong (amulhern)
+  Resolves: rhbz#1075136
+
 * Fri Aug 01 2014 Brian C. Lane <bcl@redhat.com> - 0.18.36-1
 - Do not limit ThinLV's size to VG's free space (vpodzime)
   Resolves: rhbz#1100772
