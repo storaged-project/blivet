@@ -342,15 +342,22 @@ class DeviceTree(object):
         devices = [a.name for a in active if any(d in disks for d in a.disks)]
         return devices
 
-    def processActions(self, dryRun=None):
-        """ Execute all registered actions. """
+    def processActions(self, callbacks=None, dryRun=None):
+        """
+        Execute all registered actions.
+
+        :param callbacks: callbacks to be invoked when actions are executed
+        :type callbacks: :class:`~.callbacks.DoItCallbacks`
+
+        """
+
         self._preProcessActions()
 
         for action in self._actions[:]:
             log.info("executing action: %s", action)
             if not dryRun:
                 try:
-                    action.execute()
+                    action.execute(callbacks)
                 except DiskLabelCommitError:
                     # it's likely that a previous action
                     # triggered setup of an lvm or md device.
@@ -360,7 +367,7 @@ class DeviceTree(object):
                         if dep.exists and dep.dependsOn(action.device.disk):
                             dep.teardown(recursive=True)
 
-                    action.execute()
+                    action.execute(callbacks)
 
                 udev.settle()
                 for device in self._devices:

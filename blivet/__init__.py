@@ -126,8 +126,6 @@ def enable_installer_mode():
     flags.installer_mode = True
 
     from . import deviceaction
-    from pyanaconda.progress import progress_report
-    deviceaction.progress_report = progress_report
 
 def getSysroot():
     """Returns the path to the target OS installation.
@@ -188,8 +186,15 @@ def storageInitialize(storage, ksdata, protected):
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
             log.debug("onlyuse is now: %s", ",".join(ksdata.ignoredisk.onlyuse))
 
-def turnOnFilesystems(storage, mountOnly=False):
-    """ Perform installer-specific activation of storage configuration. """
+def turnOnFilesystems(storage, mountOnly=False, callbacks=None):
+    """
+    Perform installer-specific activation of storage configuration.
+
+    :param callbacks: callbacks to be invoked when actions are executed
+    :type callbacks: return value of the :func:`~.callbacks.create_new_callbacks_register`
+
+    """
+
     if not flags.installer_mode:
         return
 
@@ -201,7 +206,7 @@ def turnOnFilesystems(storage, mountOnly=False):
         storage.devicetree.teardownAll()
 
         try:
-            storage.doIt()
+            storage.doIt(callbacks)
         except FSResizeError as e:
             if errorHandler.cb(e) == ERROR_RAISE:
                 raise
@@ -340,9 +345,16 @@ class Blivet(object):
         self.services = set()
         self._free_space_snapshot = None
 
-    def doIt(self):
-        """ Commit queued changes to disk. """
-        self.devicetree.processActions()
+    def doIt(self, callbacks=None):
+        """
+        Commit queued changes to disk.
+
+        :param callbacks: callbacks to be invoked when actions are executed
+        :type callbacks: return value of the :func:`~.callbacks.create_new_callbacks_register`
+
+        """
+
+        self.devicetree.processActions(callbacks)
         if not flags.installer_mode:
             return
 
