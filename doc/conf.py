@@ -321,6 +321,6 @@ class Mock(object):
     def __getitem__(cls, key):
 	return cls.__getattr__(key)
 
-MOCK_MODULES = ['parted', 'block', 'pycryptsetup', 'pykickstart', 'pykickstart.constants', '_ped', 'selinux']
+MOCK_MODULES = ['parted', 'block', 'pycryptsetup', 'pykickstart', 'pykickstart.constants', '_ped', 'selinux', 'pyudev']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
