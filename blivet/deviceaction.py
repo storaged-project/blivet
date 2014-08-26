@@ -31,18 +31,11 @@ from .formats import getFormat
 from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
+from .callbacks import CreateFormatPreData, CreateFormatPostData
+from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 
 import logging
 log = logging.getLogger("blivet")
-
-from contextlib import contextmanager
-
-@contextmanager
-def progress_report_stub(message):
-    # pylint: disable=unused-argument
-    yield
-
-progress_report = progress_report_stub
 
 # The values are just hints as to the ordering.
 # Eg: fsmod and devmod ordering depends on the mod (shrink -v- grow)
@@ -162,8 +155,15 @@ class DeviceAction(util.ObjectID):
         """ apply changes related to the action to the device(s) """
         self._applied = True
 
-    def execute(self):
-        """ perform the action """
+    def execute(self, callbacks=None):
+        """
+        Perform the action.
+
+        :param callbacks: callbacks to be run when matching actions are
+                          executed (see :meth:`~.blivet.Blivet.doIt`)
+
+        """
+        # pylint: disable=unused-argument
         if not self._applied:
             raise RuntimeError("cannot execute unapplied action")
 
@@ -288,8 +288,8 @@ class ActionCreateDevice(DeviceAction):
         # FIXME: assert device.fs is None
         DeviceAction.__init__(self, device)
 
-    def execute(self):
-        super(ActionCreateDevice, self).execute()
+    def execute(self, callbacks=None):
+        super(ActionCreateDevice, self).execute(callbacks=None)
         self.device.create()
 
     def requires(self, action):
@@ -337,8 +337,8 @@ class ActionDestroyDevice(DeviceAction):
         # XXX should we insist that device.fs be None?
         DeviceAction.__init__(self, device)
 
-    def execute(self):
-        super(ActionDestroyDevice, self).execute()
+    def execute(self, callbacks=None):
+        super(ActionDestroyDevice, self).execute(callbacks=None)
         self.device.destroy()
 
         # Make sure libparted does not keep cached info for this device
@@ -448,8 +448,8 @@ class ActionResizeDevice(DeviceAction):
         self.device.targetSize = self._targetSize
         super(ActionResizeDevice, self).apply()
 
-    def execute(self):
-        super(ActionResizeDevice, self).execute()
+    def execute(self, callbacks=None):
+        super(ActionResizeDevice, self).execute(callbacks=None)
         self.device.resize()
 
     def cancel(self):
@@ -529,43 +529,49 @@ class ActionCreateFormat(DeviceAction):
         self.device.format = self._format
         super(ActionCreateFormat, self).apply()
 
-    def execute(self):
-        super(ActionCreateFormat, self).execute()
-        msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
-        with progress_report(msg):
-            self.device.setup()
+    def execute(self, callbacks=None):
+        super(ActionCreateFormat, self).execute(callbacks=None)
+        if callbacks and callbacks.create_format_pre:
+            msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
+            callbacks.create_format_pre(CreateFormatPreData(msg))
 
-            if isinstance(self.device, PartitionDevice):
-                for flag in partitionFlag.keys():
-                    # Keep the LBA flag on pre-existing partitions
-                    if flag in [ PARTITION_LBA, self.format.partedFlag ]:
-                        continue
-                    self.device.unsetFlag(flag)
+        self.device.setup()
 
-                if self.format.partedFlag is not None:
-                    self.device.setFlag(self.format.partedFlag)
+        if isinstance(self.device, PartitionDevice):
+            for flag in partitionFlag.keys():
+                # Keep the LBA flag on pre-existing partitions
+                if flag in [ PARTITION_LBA, self.format.partedFlag ]:
+                    continue
+                self.device.unsetFlag(flag)
 
-                if self.format.partedSystem is not None:
-                    self.device.partedPartition.system = self.format.partedSystem
+            if self.format.partedFlag is not None:
+                self.device.setFlag(self.format.partedFlag)
 
-                self.device.disk.format.commitToDisk()
+            if self.format.partedSystem is not None:
+                self.device.partedPartition.system = self.format.partedSystem
 
-            self.device.format.create(device=self.device.path,
-                                      options=self.device.formatArgs)
-            # Get the UUID now that the format is created
-            udev.settle()
-            self.device.updateSysfsPath()
-            info = udev.get_block_device(self.device.sysfsPath)
-            # only do this if the format has a device known to udev
-            # (the format might not have a normal device at all)
-            if info:
-                if self.device.format.type != "btrfs":
-                    self.device.format.uuid = udev.device_get_uuid(info)
+            self.device.disk.format.commitToDisk()
 
-                self.device.deviceLinks = udev.device_get_symlinks(info)
-            elif self.device.format.type != "tmpfs":
-                # udev lookup failing is a serious issue for anything other than tmpfs
-                log.error("udev lookup failed for device: %s", self.device)
+        self.device.format.create(device=self.device.path,
+                                  options=self.device.formatArgs)
+        # Get the UUID now that the format is created
+        udev.settle()
+        self.device.updateSysfsPath()
+        info = udev.get_block_device(self.device.sysfsPath)
+        # only do this if the format has a device known to udev
+        # (the format might not have a normal device at all)
+        if info:
+            if self.device.format.type != "btrfs":
+                self.device.format.uuid = udev.device_get_uuid(info)
+
+            self.device.deviceLinks = udev.device_get_symlinks(info)
+        elif self.device.format.type != "tmpfs":
+            # udev lookup failing is a serious issue for anything other than tmpfs
+            log.error("udev lookup failed for device: %s", self.device)
+
+        if callbacks and callbacks.create_format_post:
+            msg = _("Created %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
+            callbacks.create_format_post(CreateFormatPostData(msg))
 
     def cancel(self):
         if not self._applied:
@@ -626,9 +632,9 @@ class ActionDestroyFormat(DeviceAction):
         self.device.format = None
         super(ActionDestroyFormat, self).apply()
 
-    def execute(self):
+    def execute(self, callbacks=None):
         """ wipe the filesystem signature from the device """
-        super(ActionDestroyFormat, self).execute()
+        super(ActionDestroyFormat, self).execute(callbacks=None)
         status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
@@ -730,12 +736,18 @@ class ActionResizeFormat(DeviceAction):
         self.device.format.targetSize = self._targetSize
         super(ActionResizeFormat, self).apply()
 
-    def execute(self):
-        super(ActionResizeFormat, self).execute()
-        msg = _("Resizing filesystem on %(device)s") % {"device": self.device.path}
-        with progress_report(msg):
-            self.device.setup(orig=True)
-            self.device.format.doResize()
+    def execute(self, callbacks=None):
+        super(ActionResizeFormat, self).execute(callbacks=None)
+        if callbacks and callbacks.resize_format_pre:
+            msg = _("Resizing filesystem on %(device)s") % {"device": self.device.path}
+            callbacks.resize_format_pre(ResizeFormatPreData(msg))
+
+        self.device.setup(orig=True)
+        self.device.format.doResize()
+
+        if callbacks and callbacks.resize_format_post:
+            msg = _("Resized filesystem on %(device)s") % {"device": self.device.path}
+            callbacks.resize_format_post(ResizeFormatPostData(msg))
 
     def cancel(self):
         if not self._applied:
@@ -797,8 +809,8 @@ class ActionAddMember(DeviceAction):
         self.container.parents.remove(self.device)
         super(ActionAddMember, self).cancel()
 
-    def execute(self):
-        super(ActionAddMember, self).execute()
+    def execute(self, callbacks=None):
+        super(ActionAddMember, self).execute(callbacks=None)
         self.container.add(self.device)
 
     def requires(self, action):
@@ -861,8 +873,8 @@ class ActionRemoveMember(DeviceAction):
         self.container.parents.append(self.device)
         super(ActionRemoveMember, self).cancel()
 
-    def execute(self):
-        super(ActionRemoveMember, self).execute()
+    def execute(self, callbacks=None):
+        super(ActionRemoveMember, self).execute(callbacks=None)
         self.container.remove(self.device)
 
     def requires(self, action):
