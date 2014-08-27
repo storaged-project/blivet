@@ -34,12 +34,14 @@ _CallbacksRegister = namedtuple("_CallbacksRegister",
                                 ["create_format_pre",
                                  "create_format_post",
                                  "resize_format_pre",
-                                 "resize_format_post"])
+                                 "resize_format_post",
+                                 "wait_for_entropy"])
 
 def create_new_callbacks_register(create_format_pre=None,
                                   create_format_post=None,
                                   resize_format_pre=None,
-                                  resize_format_post=None):
+                                  resize_format_post=None,
+                                  wait_for_entropy=None):
     """
     A function for creating a new opaque object holding the references to
     callbacks. The point of this function is to hide the implementation of such
@@ -49,7 +51,8 @@ def create_new_callbacks_register(create_format_pre=None,
     """
 
     return _CallbacksRegister(create_format_pre, create_format_post,
-                              resize_format_pre, resize_format_post)
+                              resize_format_pre, resize_format_post,
+                              wait_for_entropy)
 
 CreateFormatPreData = namedtuple("CreateFormatPreData",
                                  ["msg"])

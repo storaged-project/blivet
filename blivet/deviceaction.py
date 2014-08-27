@@ -24,10 +24,11 @@
 from . import util
 
 from . import udev
+from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice
 from .devices import LVMLogicalVolumeDevice
-from .formats import getFormat
+from .formats import getFormat, luks
 from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
@@ -551,6 +552,16 @@ class ActionCreateFormat(DeviceAction):
                 self.device.partedPartition.system = self.format.partedSystem
 
             self.device.disk.format.commitToDisk()
+
+        if isinstance(self.device.format, luks.LUKS):
+            # LUKS needs to wait for random data entropy if it is too low
+            min_required_entropy = self.device.format.min_luks_entropy
+            current_entropy = get_current_entropy()
+            if current_entropy < min_required_entropy:
+                if callbacks and callbacks.wait_for_entropy:
+                    msg = _("Not enough entropy to create LUKS format. "
+                            "%d bits are needed.") % min_required_entropy
+                    callbacks.wait_for_entropy(msg, min_required_entropy)
 
         self.device.format.create(device=self.device.path,
                                   options=self.device.formatArgs)
