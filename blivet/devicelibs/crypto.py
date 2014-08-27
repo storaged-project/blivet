@@ -21,12 +21,15 @@
 #
 
 import random
+import time
 from pycryptsetup import CryptSetup
 
 from ..errors import CryptoError
 from ..size import Size
+from ..util import get_current_entropy
 
 LUKS_METADATA_SIZE = Size("2 MiB")
+MIN_CREATE_ENTROPY = 256 # bits
 
 # Keep the character set size a power of two to make sure all characters are
 # equally likely
@@ -65,7 +68,8 @@ def luks_status(name):
 
 def luks_format(device,
                 passphrase=None,
-                cipher=None, key_size=None, key_file=None):
+                cipher=None, key_size=None, key_file=None,
+                min_entropy=0):
     # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
@@ -87,6 +91,12 @@ def luks_format(device,
     if cipherType: kwargs["cipher"]  = cipherType
     if cipherMode: kwargs["cipherMode"]  = cipherMode
     if   key_size: kwargs["keysize"]  = key_size
+
+    if min_entropy > 0:
+        # min_entropy == 0 means "don't care"
+        while get_current_entropy() < min_entropy:
+            # wait for entropy to become high enough
+            time.sleep(1)
 
     rc = cs.luksFormat(**kwargs)
     if rc:

@@ -69,7 +69,7 @@ def _getCandidateDisks(storage):
 
     return disks
 
-def _scheduleImplicitPartitions(storage, disks):
+def _scheduleImplicitPartitions(storage, disks, min_luks_entropy=0):
     """ Schedule creation of a lvm/btrfs member partitions for autopart.
 
         We create one such partition on each disk. They are not allocated until
@@ -79,6 +79,9 @@ def _scheduleImplicitPartitions(storage, disks):
         :type storage: :class:`~.Blivet`
         :param disks: list of partitioned disks with free space
         :type disks: list of :class:`~.devices.StorageDevice`
+        :param min_luks_entropy: minimum entropy in bits required for
+                                 luks format creation
+        :type min_luks_entropy: int
         :returns: list of newly created (unallocated) partitions
         :rtype: list of :class:`~.devices.PartitionDevice`
     """
@@ -95,7 +98,8 @@ def _scheduleImplicitPartitions(storage, disks):
             fmt_args = {"passphrase": storage.encryptionPassphrase,
                         "cipher": storage.encryptionCipher,
                         "escrow_cert": storage.autoPartEscrowCert,
-                        "add_backup_passphrase": storage.autoPartAddBackupPassphrase}
+                        "add_backup_passphrase": storage.autoPartAddBackupPassphrase,
+                        "min_luks_entropy": min_luks_entropy}
         else:
             if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
                 fmt_type = "lvmpv"
@@ -111,7 +115,7 @@ def _scheduleImplicitPartitions(storage, disks):
 
     return devs
 
-def _schedulePartitions(storage, disks):
+def _schedulePartitions(storage, disks, min_luks_entropy=0):
     """ Schedule creation of autopart partitions.
 
         This only schedules the requests for actual partitions.
@@ -120,6 +124,9 @@ def _schedulePartitions(storage, disks):
         :type storage: :class:`~.Blivet`
         :param disks: list of partitioned disks with free space
         :type disks: list of :class:`~.devices.StorageDevice`
+        :param min_luks_entropy: minimum entropy in bits required for
+                                 luks format creation
+        :type min_luks_entropy: int
         :returns: None
         :rtype: None
     """
@@ -196,7 +203,8 @@ def _schedulePartitions(storage, disks):
             fmt_args = {"passphrase": storage.encryptionPassphrase,
                         "cipher": storage.encryptionCipher,
                         "escrow_cert": storage.autoPartEscrowCert,
-                        "add_backup_passphrase": storage.autoPartAddBackupPassphrase}
+                        "add_backup_passphrase": storage.autoPartAddBackupPassphrase,
+                        "min_luks_entropy": min_luks_entropy}
         else:
             fmt_type = request.fstype
             fmt_args = {}
@@ -327,13 +335,16 @@ def _scheduleVolumes(storage, devs):
         # schedule the device for creation
         storage.createDevice(dev)
 
-def doAutoPartition(storage, data):
+def doAutoPartition(storage, data, min_luks_entropy=0):
     """ Perform automatic partitioning.
 
         :param storage: a :class:`~.Blivet` instance
         :type storage: :class:`~.Blivet`
         :param data: kickstart data
         :type data: :class:`pykickstart.BaseHandler`
+        :param min_luks_entropy: minimum entropy in bits required for
+                                 luks format creation
+        :type min_luks_entropy: int
 
         :attr:`Blivet.doAutoPart` controls whether this method creates the
         automatic partitioning layout. :attr:`Blivet.autoPartType` controls
@@ -368,7 +379,7 @@ def doAutoPartition(storage, data):
         raise NoDisksError(_("No usable disks selected"))
 
     disks = _getCandidateDisks(storage)
-    devs = _scheduleImplicitPartitions(storage, disks)
+    devs = _scheduleImplicitPartitions(storage, disks, min_luks_entropy)
     log.debug("candidate disks: %s", disks)
     log.debug("devs: %s", devs)
 
@@ -376,7 +387,7 @@ def doAutoPartition(storage, data):
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                       "automatic partitioning"))
 
-    _schedulePartitions(storage, disks)
+    _schedulePartitions(storage, disks, min_luks_entropy=min_luks_entropy)
 
     # run the autopart function to allocate and grow partitions
     doPartitioning(storage)

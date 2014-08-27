@@ -71,6 +71,9 @@ class LUKS(DeviceFormat):
             :type escrow_cert: str
             :keyword add_backup_passphrase: generate a backup passphrase?
             :type add_backup_passphrase: bool.
+            :keyword min_luks_entropy: minimum entropy in bits required for
+                                       format creation
+            :type min_luks_entropy: int
 
             .. note::
 
@@ -97,6 +100,11 @@ class LUKS(DeviceFormat):
         self._key_file = kwargs.get("key_file")
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
+        self.min_luks_entropy = kwargs.get("min_luks_entropy", 0)
+
+        if self.min_luks_entropy < 0:
+            msg = "Invalid value for minimum required entropy: %s" % self.min_luks_entropy
+            raise ValueError(msg)
 
         if not self.mapName and self.exists and self.uuid:
             self.mapName = "luks-%s" % self.uuid
@@ -220,7 +228,9 @@ class LUKS(DeviceFormat):
                              passphrase=self.__passphrase,
                              key_file=self._key_file,
                              cipher=self.cipher,
-                             key_size=self.key_size)
+                             key_size=self.key_size,
+                             min_entropy=self.min_luks_entropy)
+
         except Exception:
             raise
         else:
