@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61
+Version: 0.62
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -63,6 +63,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Aug 27 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.62-1
+- _maxLabelChars is no longer used by anything (bcl)
+- tests: Add tests for HFSPlus labels (#821201) (bcl)
+- Write a fs label for HFS+ ESP (#821201) (bcl)
+- Minor fix of a docstring. (rvykydal)
+- Get rid of partedFlags field. (amulhern)
+
 * Fri Jul 11 2014 Brian C. Lane <bcl@redhat.com> - 0.61-1
 - Fix conf.py version bumping (bcl)
 - Add some tests for Chunk and Request class hierarchy. (dlehman)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-11 18:05-0700\n"
+"POT-Creation-Date: 2014-08-27 14:44-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,206 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: ../blivet/__init__.py:1392
+msgid "You must create a new filesystem on the root device."
+msgstr ""
+
+#: ../blivet/__init__.py:1566
+#, python-format
+msgid "LUKS device %s has no encryption key"
+msgstr ""
+
+#: ../blivet/__init__.py:1597
+#, python-format
+msgid ""
+"Your root partition is less than 250 megabytes which is usually too small to "
+"install %s."
+msgstr ""
+
+#: ../blivet/__init__.py:1602
+#, python-format
+msgid ""
+"You have not defined a root partition (/), which is required for "
+"installation of %s to continue."
+msgstr ""
+
+#: ../blivet/__init__.py:1616
+msgid ""
+"This platform requires /boot on a dedicated partition or logical volume.  If "
+"you do not want a /boot volume, you must place / on a dedicated non-LVM "
+"partition."
+msgstr ""
+
+#: ../blivet/__init__.py:1626
+#, python-format
+msgid ""
+"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
+"recommended for a normal %(productName)s install."
+msgstr ""
+
+#: ../blivet/__init__.py:1637
+#, python-format
+msgid ""
+"Your %(mount)s partition is too small for %(format)s formatting (allowable "
+"size is %(minSize)s to %(maxSize)s)"
+msgstr ""
+
+#: ../blivet/__init__.py:1643
+#, python-format
+msgid ""
+"Your %(mount)s partition is too large for %(format)s formatting (allowable "
+"size is %(minSize)s to %(maxSize)s)"
+msgstr ""
+
+#: ../blivet/__init__.py:1652
+msgid "No valid bootloader target device found. See below for details."
+msgstr ""
+
+#: ../blivet/__init__.py:1664
+msgid "You have not created a bootable partition."
+msgstr ""
+
+#: ../blivet/__init__.py:1686
+msgid ""
+"Your BIOS-based system needs a special partition to boot from a GPT disk "
+"label. To continue, please create a 1MiB 'biosboot' type partition."
+msgstr ""
+
+#: ../blivet/__init__.py:1697
+#, python-format
+msgid ""
+"You have not specified a swap partition.  %(requiredMem)s of memory is "
+"required to continue installation without a swap partition, but you only "
+"have %(installedMem)s."
+msgstr ""
+
+#: ../blivet/__init__.py:1704
+msgid ""
+"You have not specified a swap partition.  Although not strictly required in "
+"all cases, it will significantly improve performance for most installations."
+msgstr ""
+
+#: ../blivet/__init__.py:1711
+msgid ""
+"At least one of your swap devices does not have a UUID, which is common in "
+"swap space created using older versions of mkswap. These devices will be "
+"referred to by device path in /etc/fstab, which is not ideal since device "
+"paths can change under a variety of circumstances. "
+msgstr ""
+
+#: ../blivet/__init__.py:1722
+#, python-format
+msgid ""
+"This mount point is invalid.  The %s directory must be on the / file system."
+msgstr ""
+
+#: ../blivet/__init__.py:1727
+#, python-format
+msgid "The mount point %s must be on a linux file system."
+msgstr ""
+
+#: ../blivet/__init__.py:3126
+#, python-format
+msgid "Linux on %s"
+msgstr ""
+
+#: ../blivet/__init__.py:3131
+msgid "Unknown Linux"
+msgstr ""
+
+#: ../blivet/__init__.py:3133
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/zfcp.py:48
+msgid "You have not specified a device number or the number is invalid"
+msgstr ""
+
+#: ../blivet/zfcp.py:50
+msgid "You have not specified a worldwide port name or the name is invalid."
+msgstr ""
+
+#: ../blivet/zfcp.py:52
+msgid "You have not specified a FCP LUN or the number is invalid."
+msgstr ""
+
+#: ../blivet/zfcp.py:128
+#, python-format
+msgid "zFCP device %s not found, not even in device ignore list."
+msgstr ""
+
+#: ../blivet/zfcp.py:138
+#, python-format
+msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:149
+#, python-format
+msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
+msgstr ""
+
+#. newer zfcp sysfs interface with auto port scan
+#: ../blivet/zfcp.py:156
+#, python-format
+msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
+msgstr ""
+
+#: ../blivet/zfcp.py:171
+#, python-format
+msgid ""
+"Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
+"(%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:177
+#, python-format
+msgid ""
+"LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
+msgstr ""
+
+#: ../blivet/zfcp.py:189
+#, python-format
+msgid ""
+"Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
+"device %(devnum)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:198
+#, python-format
+msgid ""
+"Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
+"again."
+msgstr ""
+
+#: ../blivet/zfcp.py:255
+#, python-format
+msgid ""
+"Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
+"%(fcplun)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:264
+#, python-format
+msgid ""
+"Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
+"(%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:282
+#, python-format
+msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:308
+#, python-format
+msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:370
+msgid "Error"
+msgstr ""
 
 #. Decimal prefixes for different size increments, along with the name
 #. and accepted abbreviation for the prefix.  These prefixes are all
@@ -270,206 +470,6 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/__init__.py:1394
-msgid "You must create a new filesystem on the root device."
-msgstr ""
-
-#: ../blivet/__init__.py:1568
-#, python-format
-msgid "LUKS device %s has no encryption key"
-msgstr ""
-
-#: ../blivet/__init__.py:1599
-#, python-format
-msgid ""
-"Your root partition is less than 250 megabytes which is usually too small to "
-"install %s."
-msgstr ""
-
-#: ../blivet/__init__.py:1604
-#, python-format
-msgid ""
-"You have not defined a root partition (/), which is required for "
-"installation of %s to continue."
-msgstr ""
-
-#: ../blivet/__init__.py:1618
-msgid ""
-"This platform requires /boot on a dedicated partition or logical volume.  If "
-"you do not want a /boot volume, you must place / on a dedicated non-LVM "
-"partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1628
-#, python-format
-msgid ""
-"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
-"recommended for a normal %(productName)s install."
-msgstr ""
-
-#: ../blivet/__init__.py:1639
-#, python-format
-msgid ""
-"Your %(mount)s partition is too small for %(format)s formatting (allowable "
-"size is %(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/__init__.py:1645
-#, python-format
-msgid ""
-"Your %(mount)s partition is too large for %(format)s formatting (allowable "
-"size is %(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/__init__.py:1654
-msgid "No valid bootloader target device found. See below for details."
-msgstr ""
-
-#: ../blivet/__init__.py:1666
-msgid "You have not created a bootable partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1688
-msgid ""
-"Your BIOS-based system needs a special partition to boot from a GPT disk "
-"label. To continue, please create a 1MiB 'biosboot' type partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1699
-#, python-format
-msgid ""
-"You have not specified a swap partition.  %(requiredMem)s of memory is "
-"required to continue installation without a swap partition, but you only "
-"have %(installedMem)s."
-msgstr ""
-
-#: ../blivet/__init__.py:1706
-msgid ""
-"You have not specified a swap partition.  Although not strictly required in "
-"all cases, it will significantly improve performance for most installations."
-msgstr ""
-
-#: ../blivet/__init__.py:1713
-msgid ""
-"At least one of your swap devices does not have a UUID, which is common in "
-"swap space created using older versions of mkswap. These devices will be "
-"referred to by device path in /etc/fstab, which is not ideal since device "
-"paths can change under a variety of circumstances. "
-msgstr ""
-
-#: ../blivet/__init__.py:1724
-#, python-format
-msgid ""
-"This mount point is invalid.  The %s directory must be on the / file system."
-msgstr ""
-
-#: ../blivet/__init__.py:1729
-#, python-format
-msgid "The mount point %s must be on a linux file system."
-msgstr ""
-
-#: ../blivet/__init__.py:3128
-#, python-format
-msgid "Linux on %s"
-msgstr ""
-
-#: ../blivet/__init__.py:3133
-msgid "Unknown Linux"
-msgstr ""
-
-#: ../blivet/__init__.py:3135
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/zfcp.py:48
-msgid "You have not specified a device number or the number is invalid"
-msgstr ""
-
-#: ../blivet/zfcp.py:50
-msgid "You have not specified a worldwide port name or the name is invalid."
-msgstr ""
-
-#: ../blivet/zfcp.py:52
-msgid "You have not specified a FCP LUN or the number is invalid."
-msgstr ""
-
-#: ../blivet/zfcp.py:128
-#, python-format
-msgid "zFCP device %s not found, not even in device ignore list."
-msgstr ""
-
-#: ../blivet/zfcp.py:138
-#, python-format
-msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:149
-#, python-format
-msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
-msgstr ""
-
-#. newer zfcp sysfs interface with auto port scan
-#: ../blivet/zfcp.py:156
-#, python-format
-msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
-msgstr ""
-
-#: ../blivet/zfcp.py:171
-#, python-format
-msgid ""
-"Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
-"(%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:177
-#, python-format
-msgid ""
-"LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
-msgstr ""
-
-#: ../blivet/zfcp.py:189
-#, python-format
-msgid ""
-"Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
-"device %(devnum)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:198
-#, python-format
-msgid ""
-"Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
-"again."
-msgstr ""
-
-#: ../blivet/zfcp.py:255
-#, python-format
-msgid ""
-"Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
-"%(fcplun)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:264
-#, python-format
-msgid ""
-"Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
-"(%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:282
-#, python-format
-msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:308
-#, python-format
-msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:370
-msgid "Error"
-msgstr ""
-
 #: ../blivet/platform.py:51
 msgid "bootloader device"
 msgstr ""
@@ -637,11 +637,11 @@ msgstr ""
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1277
+#: ../blivet/formats/fs.py:1273
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1308
+#: ../blivet/formats/fs.py:1305
 msgid "Linux HFS+ ESP"
 msgstr ""
 
@@ -653,12 +653,16 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
+#: ../blivet/formats/lvmpv.py:39
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:147
 msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -675,10 +679,6 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:47
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/lvmpv.py:39
-msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/mdraid.py:40
