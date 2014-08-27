@@ -458,3 +458,7 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
             setattr(new, attr, copy.deepcopy(value, memo))
 
     return new
+
+def get_current_entropy():
+    with open("/proc/sys/kernel/random/entropy_avail", "r") as fobj:
+        return int(fobj.readline())

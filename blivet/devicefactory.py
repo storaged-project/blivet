@@ -218,7 +218,7 @@ class DeviceFactory(object):
                  label=None, raid_level=None, encrypted=False,
                  container_encrypted=False, container_name=None,
                  container_raid_level=None, container_size=SIZE_POLICY_AUTO,
-                 name=None, device=None):
+                 name=None, device=None, min_luks_entropy=0):
         """
             :param storage: a Blivet instance
             :type storage: :class:`~.Blivet`
@@ -258,6 +258,9 @@ class DeviceFactory(object):
             :type container_encrypted: bool
             :keyword container_size: requested container size
             :type container_size: :class:`~.size.Size`
+            :keyword min_luks_entropy: minimum entropy in bits required for
+                                       LUKS format creation
+            :type min_luks_entropy: int
 
         """
 
@@ -297,6 +300,7 @@ class DeviceFactory(object):
 
         self.child_factory = None
         self.parent_factory = None
+        self.min_luks_entropy = min_luks_entropy
 
         # used for error recovery
         self.__devices = []
@@ -607,6 +611,7 @@ class DeviceFactory(object):
 
             fmt = getFormat(self.fstype,
                             mountpoint=self.mountpoint,
+                            min_luks_entropy=self.min_luks_entropy,
                             **fmt_args)
             luks_device = LUKSDevice("luks-" + device.name,
                                      parents=[device], fmt=fmt)
@@ -683,7 +688,8 @@ class DeviceFactory(object):
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
             orig_device = self.device
             leaf_format = self.device.format
-            self.storage.formatDevice(self.device, getFormat("luks"))
+            self.storage.formatDevice(self.device, getFormat("luks",
+                                                             min_luks_entropy=self.min_luks_entropy))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -1010,7 +1016,8 @@ class PartitionSetFactory(PartitionFactory):
 
             if not member_encrypted and self.encrypted:
                 members.remove(member)
-                self.storage.formatDevice(member, getFormat("luks"))
+                self.storage.formatDevice(member, getFormat("luks",
+                                                             min_luks_entropy=self.min_luks_entropy))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                     parents=[member],
                                     fmt=getFormat(self.fstype))
