@@ -2933,6 +2933,9 @@ def findExistingInstallations(devicetree):
             # to translate.
             if not product or not version or not architecture:
                 name = _("Unknown Linux")
+            elif "linux" in product.lower():
+                name = _("%(product)s %(version)s for %(arch)s") % \
+                        {"product": product, "version": version, "arch": architecture}
             else:
                 name = _("%(product)s Linux %(version)s for %(arch)s") % \
                         {"product": product, "version": version, "arch": architecture}
