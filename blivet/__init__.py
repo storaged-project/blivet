@@ -350,6 +350,7 @@ class Blivet(object):
         self.fsset = FSSet(self.devicetree)
         self.roots = []
         self.services = set()
+        self._free_space_snapshot = None
 
     def doIt(self):
         """ Commit queued changes to disk. """
@@ -2158,6 +2159,18 @@ class Blivet(object):
 
             parent = getattr(self.ksdata, list_attr)
             parent.dataList().append(data)
+
+    @property
+    def freeSpaceSnapshot(self):
+        # if no snapshot is available, do it now and return it
+        self._free_space_snapshot = self._free_space_snapshot or self.getFreeSpace()
+
+        return self._free_space_snapshot
+
+    def createFreeSpaceSnapshot(self):
+        self._free_space_snapshot = self.getFreeSpace()
+
+        return self._free_space_snapshot
 
     def addFstabSwap(self, device):
         """
