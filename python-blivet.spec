@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61
+Version: 0.62
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -64,6 +64,68 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Aug 28 2014 Brian C. Lane <bcl@redhat.com> - 0.62-1
+- Mock pyudev since libudev will not be on the builders. (dlehman)
+- Update selinux tests for default context of mounts under /tmp. (dlehman)
+- Clean up mocking done by udev tests when finished. (dlehman)
+- Remove unused lvm and md activation code. (dlehman)
+- Bypass size getter when mocking new devices. (dlehman)
+- Simplify udev.device_get_uuid. (dlehman)
+- Don't pass md array UUID as member format UUID. (dlehman)
+- Update md name when lookup relied on UUID. (dlehman)
+- Remove an obsolete block related to unpredictable md device names. (dlehman)
+- Get md member and array UUIDs for format ctor from udev. (dlehman)
+- Look in udev data for md member UUID. (dlehman)
+- Remove some unused multipath-specific functions from blivet.udev. (dlehman)
+- Adapt multipath detection code to external pyudev module. (dlehman)
+- Keep lvm and md metadata separate from udev info. (dlehman)
+- Replace our pyudev with the package python-pyudev. (dlehman)
+- Add a bunch of tests for mdadd. (amulhern)
+- Make has_redundancy() a method rather than a property and revise mdadd.
+  (amulhern)
+- Omit unnecessary class hierarchy related boilerplate. (amulhern)
+- Add a test for activation. (amulhern)
+- Add a test for mddetail on containers. (amulhern)
+- Still attempt to destroy even if remove failed. (amulhern)
+- Use long messages for unittest errors. (amulhern)
+- Fix mdnominate error message. (amulhern)
+- Cosmetic changes for the swapSuggestion function (vpodzime)
+- Break once metadata value is found. (amulhern)
+- Fix issues reported by pyflakes (vpodzime)
+- Remove tests for the sanityCheck (vpodzime)
+- Move _verifyLUKSDevicesHaveKey and its exception to anaconda (vpodzime)
+- Remove sanityCheck functions from blivet sources (vpodzime)
+- Remove an unused closure function (vpodzime)
+- Remove two methods that are never called (vpodzime)
+- Add some tests for blivet.partitioning.addPartition. (dlehman)
+- Add a couple of tests for blivet.partitioning.DiskChunk. (dlehman)
+- Add a DiskFile class for testing partitioning code as a non-root user.
+  (dlehman)
+- Add a contextmanager to create and remove sparse tempfiles. (dlehman)
+- Fix sphinx formatting of code blocks in devicefactory docstrings. (dlehman)
+- Mock selinux when building docs. (dlehman)
+- Include doc files when installing on readthedocs. (dlehman)
+- _maxLabelChars is no longer used by anything (bcl)
+- tests: Add tests for HFSPlus labels (#821201) (bcl)
+- Write a fs label for HFS+ ESP (#821201) (bcl)
+- Mock non-standard modules so we can generate API docs on readthedocs.
+  (dlehman)
+- Split mdadd into separate functions. (amulhern)
+- Refactor mdraid tests. (amulhern)
+- Add a method to extract information about an mdraid array (amulhern)
+- Extend mdadm() to capture output (amulhern)
+- Be more robust in the face of possible changes to mdadm's UUIDs. (amulhern)
+- Factor canonicalize_UUID() into separate method. (amulhern)
+- Add a docstring to mdraid.mdexamine (amulhern)
+- Remove DeviceFormat.probe() method (amulhern)
+- Remove all references to mdMinor in current code base. (amulhern)
+- Generalize the error message for the array level (amulhern)
+- Use super() instead of explicit parent name (amulhern)
+- Remove commented out import. (amulhern)
+- Make docstring more precise. (amulhern)
+- Minor fix of a docstring. (rvykydal)
+- Get rid of partedFlags field. (amulhern)
+
 * Fri Jul 11 2014 Brian C. Lane <bcl@redhat.com> - 0.61-1
 - Fix conf.py version bumping (bcl)
 - Add some tests for Chunk and Request class hierarchy. (dlehman)
