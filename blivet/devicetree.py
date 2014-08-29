@@ -2235,12 +2235,13 @@ class DeviceTree(object):
             :param bool incomplete: include incomplete devices in result
             :param bool hidden: include hidden devices in result
 
-            :returns: a list of devices
-            :rtype: list of :class:`~.devices.Device`
+            :returns: a generator of devices
+            :rtype: generator of :class:`~.devices.Device`
         """
-        devices = self._devices[:]
         if hidden:
-            devices += self._hidden
+            devices = (d for d in self._devices[:] + self._hidden[:])
+        else:
+            devices = (d for d in self._devices[:])
 
         if not incomplete:
             devices = (d for d in devices if getattr(d, "complete", True))
