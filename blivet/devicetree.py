@@ -2309,6 +2309,9 @@ class DeviceTree(object):
     def getDeviceByPath(self, path, incomplete=False, hidden=False):
         """ Return a device with a matching path.
 
+            If there is more than one device with a matching path,
+            prefer a leaf device to a non-leaf device.
+
             :param str path: the path to match
             :param bool incomplete: include incomplete devices in search
             :param bool hidden: include hidden devices in search
@@ -2319,7 +2322,11 @@ class DeviceTree(object):
         result = None
         if path:
             devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if d.path == path or \
+
+            # The usual order of the devices list is one where leaves are at
+            # the end. So that the search can prefer leaves to interior nodes
+            # the list that is searched is the reverse of the devices list.
+            result = next((d for d in reversed(list(devices)) if d.path == path or \
                ((d.type == "lvmlv" or d.type == "lvmvg") and d.path == path.replace("--","-"))),
                None)
 
