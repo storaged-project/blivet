@@ -25,7 +25,6 @@
 from decimal import Decimal
 import os
 import tempfile
-import six
 
 from . import fslabeling
 from ..errors import FormatCreateError, FSError, FSResizeError
@@ -42,10 +41,6 @@ from .. import udev
 
 import logging
 log = logging.getLogger("blivet")
-
-if six.PY3:
-    long = int # pylint: disable=redefined-builtin
-
 
 fs_configs = {}
 

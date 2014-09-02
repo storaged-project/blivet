@@ -22,15 +22,13 @@
 import abc
 import re
 
-from six import add_metaclass
-
 from .. import errors
 
-@add_metaclass(abc.ABCMeta)
 class FSLabelApp(object):
     """An abstract class that represents actions associated with a
        filesystem's labeling application.
     """
+    __metaclass__ = abc.ABCMeta
 
     name = abc.abstractproperty(
        doc="The name of the filesystem labeling application.")

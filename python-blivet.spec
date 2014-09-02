@@ -25,7 +25,6 @@ BuildRequires: gettext
 BuildRequires: python-setuptools
 
 Requires: python
-Requires: python-six
 Requires: pykickstart >= %{pykickstartver}
 Requires: util-linux >= %{utillinuxver}
 Requires: parted >= %{partedver}

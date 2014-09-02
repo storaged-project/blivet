@@ -23,13 +23,8 @@
 
 import unittest
 
-import six
-
 from blivet.errors import SizePlacesError
 from blivet.size import Size, _prefixes
-
-if six.PY3:
-    long = int # pylint: disable=redefined-builtin
 
 class SizeTestCase(unittest.TestCase):
     def testExceptions(self):

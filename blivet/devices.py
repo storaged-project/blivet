@@ -28,8 +28,6 @@ import abc
 from decimal import Decimal
 import re
 
-from six import add_metaclass
-
 # device backend modules
 from .devicelibs import mdraid
 from .devicelibs import lvm
@@ -2279,7 +2277,6 @@ class LUKSDevice(DMCryptDevice):
         data.encrypted = True
         super(LUKSDevice, self).populateKSData(data)
 
-@add_metaclass(abc.ABCMeta)
 class ContainerDevice(StorageDevice):
     """ A device that aggregates a set of member devices.
 
@@ -2296,6 +2293,7 @@ class ContainerDevice(StorageDevice):
         within :meth:`.deviceaction.ActionAddMember.execute` and
         :meth:`.deviceaction.ActionRemoveMember.execute`.
     """
+    __metaclass__ = abc.ABCMeta
 
     _formatClassName = abc.abstractproperty(lambda s: None,
         doc="The type of member devices' required format")
@@ -3170,7 +3168,6 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
-@add_metaclass(abc.ABCMeta)
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
 
@@ -3187,6 +3184,8 @@ class LVMSnapShotBase(object):
         It is also impossible to set the format for a snapshot explicitly as it
         always has the same format as its origin.
     """
+    __metaclass__ = abc.ABCMeta
+
     _type = "lvmsnapshotbase"
 
     def __init__(self, origin=None, vorigin=False, exists=False):
