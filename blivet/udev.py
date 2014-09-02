@@ -286,7 +286,13 @@ def device_get_path(info):
     return info["ID_PATH"]
 
 def device_get_symlinks(info):
-    return info.get("DEVLINKS", [])
+    """ Get an array of symbolic links for a device.
+
+        :param info: a :class:`pyudev.Device` instance
+        :returns: list of symbolic links
+        :rtype: list of str
+    """
+    return info.get("DEVLINKS", "").split()
 
 def device_get_by_path(info):
     for link in device_get_symlinks(info):
