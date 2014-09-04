@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.62
+Version: 0.61.1
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -63,6 +63,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Sep 04 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.1-1
+- Make prefering leaves the default in getDeviceByPath (#1122081) (amulhern)
+- Make _filterDevices() return a generator consistently (#1122081) (amulhern)
+- Don't pass md array UUID as member format UUID. (#1135670) (dlehman)
+
 * Wed Aug 27 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.62-1
 - _maxLabelChars is no longer used by anything (bcl)
 - tests: Add tests for HFSPlus labels (#821201) (bcl)
