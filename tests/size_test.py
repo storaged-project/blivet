@@ -23,6 +23,8 @@
 
 import unittest
 
+from decimal import Decimal
+
 import six
 
 from blivet.errors import SizePlacesError
@@ -38,9 +40,9 @@ class SizeTestCase(unittest.TestCase):
 
         s = Size(500)
         with self.assertRaises(SizePlacesError):
-            s.humanReadable(places=-1)
+            s.humanReadable(max_places=-1)
 
-        self.assertEqual(s.humanReadable(places=0), "500 B")
+        self.assertEqual(s.humanReadable(max_places=0), "500 B")
 
     def _prefixTestHelper(self, numbytes, factor, prefix, abbr):
         c = numbytes * factor
@@ -103,6 +105,67 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.humanReadable(max_places=3), "23.787 TiB")
         s = Size("12.6998 TiB")
         self.assertEquals(s.humanReadable(max_places=2), "12.7 TiB")
+
+        # byte values close to multiples of 2 are shown without trailing zeros
+        s = Size(0xfff)
+        self.assertEquals(s.humanReadable(max_places=2), "4095 B")
+        s = Size(8193)
+        self.assertEquals(s.humanReadable(max_places=2), "8193 B")
+
+        # a fractional quantity is shown if the value deviates
+        # from the whole number of units by more than 1%
+        s = Size(16384 - (1024/100 + 1))
+        self.assertEquals(s.humanReadable(max_places=2), "15.99 KiB")
+
+        # if max_places is set to None, all digits are displayed
+        s = Size(0xfffffffffffff)
+        self.assertEquals(s.humanReadable(max_places=None), "4095.999999999999090505298227 TiB")
+        s = Size(0x10000)
+        self.assertEquals(s.humanReadable(max_places=None), "64 KiB")
+        s = Size(0x10001)
+        self.assertEquals(s.humanReadable(max_places=None), "64.0009765625 KiB")
+
+        # test a very large quantity with no associated abbreviation or prefix
+        s = Size(1024**9)
+        self.assertEquals(s.humanReadable(max_places=2), "1024 YiB")
+        s = Size(1024**9 - 1)
+        self.assertEquals(s.humanReadable(max_places=2), "1024 YiB")
+        s = Size(1024**9 + 1)
+        self.assertEquals(s.humanReadable(max_places=2, strip=False), "1024.00 YiB")
+        s = Size(1024**10)
+        self.assertEquals(s.humanReadable(max_places=2), "1048576 YiB")
+
+    def testHumanReadableFractionalQuantities(self):
+        s = Size(0xfffffffffffff)
+        self.assertEquals(s.humanReadable(max_places=2), "4096 TiB")
+        s = Size(0xfffff)
+        self.assertEquals(s.humanReadable(max_places=2, strip=False), "1024.00 KiB")
+        s = Size(0xffff)
+        # value is not exactly 64 KiB, but w/ 2 places, value is 64.00 KiB
+        # so the trailing 0s are stripped.
+        self.assertEquals(s.humanReadable(max_places=2), "64 KiB")
+        # since all significant digits are shown, there are no trailing 0s.
+        self.assertEquals(s.humanReadable(max_places=None), "63.9990234375 KiB")
+
+        # deviation is less than 1/2 of 1% of 1024
+        s = Size(16384 - (1024/100/2))
+        self.assertEquals(s.humanReadable(max_places=2), "16 KiB")
+        # deviation is greater than 1/2 of 1% of 1024
+        s = Size(16384 - ((1024/100/2) + 1))
+        self.assertEquals(s.humanReadable(max_places=2), "15.99 KiB")
+
+        s = Size(0x10000000000000)
+        self.assertEquals(s.humanReadable(max_places=2), "4096 TiB")
+
+    def testMinValue(self):
+        s = Size("9 MiB")
+        self.assertEquals(s.humanReadable(min_value=1), "9 MiB")
+        self.assertEquals(s.humanReadable(), "9216 KiB")
+
+        s = Size("0.5 GiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=1), "512 MiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(0.1)), "0.5 GiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(1)), "512 MiB")
 
     def testConvertToPrecision(self):
         s = Size(1835008)

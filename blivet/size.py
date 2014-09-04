@@ -19,6 +19,7 @@
 #
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
+import itertools
 import re
 import string
 import locale
@@ -30,7 +31,7 @@ from decimal import ROUND_DOWN
 import six
 
 from .errors import SizePlacesError
-from .i18n import _, P_, N_
+from .i18n import _, N_
 
 
 # Container for size unit prefix information
@@ -65,6 +66,9 @@ _BINARY_PREFIXES = [
    _Prefix(_BINARY_FACTOR ** 7, N_(b"zebi"), N_(b"Zi")),
    _Prefix(_BINARY_FACTOR ** 8, N_(b"yobi"), N_(b"Yi"))
 ]
+
+# Empty prefix works both for decimal and binary
+_EMPTY_PREFIX = _Prefix(1, u"", u"")
 
 _BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
 _PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
@@ -279,70 +283,73 @@ class Size(Decimal):
 
         return None
 
-    def humanReadable(self, places=None, max_places=2):
+    def humanReadable(self, max_places=2, strip=True, min_value=10):
         """ Return a string representation of this size with appropriate
-            size specifier and in the specified number of decimal places
-            (i.e. the maximal precision is only achieved by setting both places
-            and max_places to None).
+            size specifier and in the specified number of decimal places.
+            Values are always represented using binary not decimal units.
+            For example, if the number of bytes represented by this size
+            is 65531, expect the representation to be something like
+            64.00 KiB, not 65.53 KB.
+
+            :param max_places: number of decimal places to use, default is 2
+            :type max_places: an integer type or NoneType
+            :param bool strip: True if trailing zeros are to be stripped.
+            :param min_value: Lower bound for value
+            :type min_value: A precise numeric type: int, long, or Decimal
+            :returns: a representation of the size
+            :rtype: str
+
+            If max_places is set to None, all non-zero digits will be shown.
+            Otherwise, max_places digits will be shown.
+
+            If strip is True and there is a fractional quantity, trailing
+            zeros are removed up to the decimal point.
+
+            min_value sets the smallest value allowed.
+            If min_value is 10, then single digits on the lhs of
+            the decimal will be avoided if possible. In that case,
+            9216 KiB is preferred to 9 MiB. However, 1 B has no alternative.
+            If min_value is 1, however, 9 MiB is preferred.
+            If min_value is 0.1, then 0.75 GiB is preferred to 768 MiB,
+            but 0.05 GiB is still displayed as 51.2 MiB.
+
+            humanReadable() is a function that evaluates to a number which
+            represents a range of values. For a constant choice of max_places,
+            all ranges are of equal size, and are bisected by the result. So,
+            if n.humanReadable() == x U and b is the number of bytes in 1 U,
+            and e = 1/2 * 1/(10^max_places) * b, then x - e < n < x + e.
         """
-        if places is not None and places < 0:
-            raise SizePlacesError("places= must be >=0 or None")
+        if max_places is not None and (max_places < 0 or not isinstance(max_places, six.integer_types)):
+            raise SizePlacesError("max_places must be None or an non-negative integer value")
 
-        if max_places is not None and max_places < 0:
-            raise SizePlacesError("max_places= must be >=0 or None")
+        if min_value < 0 or not isinstance(min_value, (six.integer_types, Decimal)):
+            raise ValueError("min_value must be a precise positive numeric value.")
 
-        in_bytes = int(Decimal(self))
-        if abs(in_bytes) < 1000:
-            return "%d %s" % (in_bytes, _("B"))
-
-        prev_prefix = None
-        for prefix_item in _xlated_prefixes():
-            factor, prefix, abbr = prefix_item
+        # Find the smallest prefix which will allow a number less than
+        # _BINARY_FACTOR * min_value to the left of the decimal point.
+        # If the number is so large that no prefix will satisfy this
+        # requirement use the largest prefix.
+        for factor, _prefix, abbr in itertools.chain([_EMPTY_PREFIX], _xlated_binary_prefixes()):
             newcheck = super(Size, self).__div__(Decimal(factor))
 
-            if abs(newcheck) < 1000:
+            if abs(newcheck) < _BINARY_FACTOR * min_value:
                 # nice value, use this factor, prefix and abbr
                 break
-            prev_prefix = prefix_item
-        else:
-            # no nice value found, just return size in bytes
-            return "%s %s" % (in_bytes, _("B"))
-
-        if abs(newcheck) < 10:
-            if prev_prefix is not None:
-                factor, prefix, abbr = prev_prefix # pylint: disable=unpacking-non-sequence
-                newcheck = super(Size, self).__div__(Decimal(factor))
-            else:
-                # less than 10 KiB
-                return "%s %s" % (in_bytes, _("B"))
-
-        retval = newcheck
-        if places is not None:
-            retval = round(newcheck, places)
 
         if max_places is not None:
-            if places is not None:
-                limit = min((places, max_places))
-            else:
-                limit = max_places
-            retval = round(newcheck, limit)
+            newcheck = newcheck.quantize(Decimal(10) ** -max_places)
 
-        if retval == int(retval):
-            # integer value, no point in showing ".0" at the end
-            retval = int(retval)
+        retval_str = str(newcheck)
 
-        # Format the value with '.' as the decimal separator
+        if '.' in retval_str and strip:
+            retval_str = retval_str.rstrip("0").rstrip(".")
+
         # If necessary, substitute with a localized separator before returning
-        retval_str = str(retval)
         radix = locale.nl_langinfo(locale.RADIXCHAR)
         if radix != '.':
             retval_str = retval_str.replace('.', radix)
 
-        # abbr and prefix are unicode objects so that lower/upper work correctly
-        # Convert them to str before concatenating so that the return type is
-        # str.
+        # Convert unicode objects to str before concatenating so that the
+        # resulting expression is a str.
         # pylint: disable=undefined-loop-variable
-        if abbr:
-            return retval_str + " " + abbr.encode("utf-8") + _("B")
-        else:
-            return retval_str + " " + prefix.encode("utf-8") + P_("byte", "bytes", newcheck)
+        return retval_str + " " + abbr.encode("utf-8") + _("B")
