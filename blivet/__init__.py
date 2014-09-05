@@ -2732,6 +2732,10 @@ class FSSet(object):
             devices += self.swapDevices
 
         netdevs = self.devicetree.getDevicesByInstance(NetworkStorageDevice)
+
+        rootdev = devices[0]
+        root_on_netdev = any(rootdev.dependsOn(netdev) for netdev in netdevs)
+
         for device in devices:
             # why the hell do we put swap in the fstab, anyway?
             if not device.format.mountable and device.format.type != "swap":
@@ -2758,6 +2762,8 @@ class FSSet(object):
             for netdev in netdevs:
                 if device.dependsOn(netdev):
                     options = options + ",_netdev"
+                    if root_on_netdev and mountpoint not in ["/", "/usr"]:
+                        options = options + ",x-initrd.mount"
                     break
             if device.encrypted:
                 options += ",x-systemd.device-timeout=0"
