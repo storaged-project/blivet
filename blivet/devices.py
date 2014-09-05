@@ -1210,7 +1210,8 @@ class DiskDevice(StorageDevice):
             :type sysfsPath: str
             :keyword removable: whether or not this is a removable device
             :type removable: bool
-            :keyword serial: the ID_SERIAL_SHORT for this device
+            :keyword serial: the ID_SERIAL_RAW, ID_SERIAL or ID_SERIAL_SHORT for
+                             this device (which one is available)
             :type serial: str
             :keyword vendor: the manufacturer of this Device
             :type vendor: str

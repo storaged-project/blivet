@@ -262,7 +262,7 @@ def device_is_loop(info):
 
 def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
-    return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL_SHORT", udev_info.get("ID_SERIAL")))
+    return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL", udev_info.get("ID_SERIAL_SHORT")))
 
 def device_get_wwid(udev_info):
     """ The WWID of a device is typically just its serial number, but with
