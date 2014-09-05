@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61
+Version: 0.61.0.1
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,29 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Sep 05 2014 David Lehman <dlehman@redhat.com> - 0.61.0.1-1
+- Remove dependency on python-six. (dlehman)
+  Related: rhbz#1075561
+- Update transifex config for rhel7-branch. (dlehman)
+  Related: rhbz#1075561
+- Don't pass md array UUID as member format UUID. (dlehman)
+  Related: rhbz#1075561
+- Make prefering leaves the default in getDeviceByPath (amulhern)
+  Related: rhbz#1075561
+- Make _filterDevices() return a generator consistently (amulhern)
+  Related: rhbz#1075561
+- Add some tests for blivet.partitioning.addPartition. (dlehman)
+  Related: rhbz#1075561
+- Add a couple of tests for blivet.partitioning.DiskChunk. (dlehman)
+  Related: rhbz#1075561
+- Add a DiskFile class for testing partitioning code as a non-root user.
+  (dlehman)
+  Related: rhbz#1075561
+- Add a contextmanager to create and remove sparse tempfiles. (dlehman)
+  Related: rhbz#1075561
+- Make missing encryption key error message more helpful (amulhern)
+  Resolves: rhbz#1074441
+
 * Fri Jul 11 2014 Brian C. Lane <bcl@redhat.com> - 0.61-1
 - Fix conf.py version bumping (bcl)
 - Add some tests for Chunk and Request class hierarchy. (dlehman)
