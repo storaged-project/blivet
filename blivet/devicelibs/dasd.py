@@ -153,7 +153,7 @@ def online_dasd(dev):
     online = "/sys/bus/ccw/drivers/dasd-eckd/%s/online" % (dev)
 
     if not os.path.exists(online):
-        log.info("Freeing DASD device %s" % dev)
+        log.info("Freeing DASD device %s", dev)
         util.run_program(["dasd_cio_free", "-d", dev])
 
     if not os.path.exists(online):
@@ -167,7 +167,7 @@ def online_dasd(dev):
             raise ValueError(_("Device %s is already online.") % dev)
         else:
             with open(online, "w") as f:
-                log.debug("echo %s > %s" % ("1", online))
+                log.debug("echo %s > %s", "1", online)
                 f.write("%s\n" % ("1"))
     except IOError as e:
         raise ValueError(_("Could not set DASD device %(dev)s online (%(e)s).") \
