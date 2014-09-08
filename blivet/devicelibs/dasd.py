@@ -108,6 +108,53 @@ def dasd_needs_format(dasd):
 
     return False
 
+def sanitize_dasd_dev_input(dev):
+    """ Given a user-supplied device number, make sure the input is sane, and
+        raise an error if it is not.
+
+    :param dev: string representing a DASD device number
+    """
+    if dev is None or dev == "":
+        raise ValueError(_("You have not specified a device number or the number is invalid"))
+    dev = dev.lower()
+    bus = dev[:dev.rfind(".") + 1]
+    dev = dev[dev.rfind(".") + 1:]
+
+    dev = "0" * (4 - len(dev)) + dev
+    if not bus:
+        return "0.0." + dev
+    else:
+        return bus + dev
+
+def online_dasd(dev):
+    """ Given a device number, switch the device to be online.
+
+    :param dev: string representing a DASD device number; acceptable formats
+                include 0.0.abcd, 0.0.ABCD, abcd, ABCD, where 'abcd' are
+                hexadecimal numbers.
+    """
+    online = "/sys/bus/ccw/drivers/dasd-eckd/%s/online" % (dev)
+
+    if not os.path.exists(online):
+        log.info("Freeing DASD device %s" % dev)
+        util.run_program(["dasd_cio_free", "-d", dev])
+
+    if not os.path.exists(online):
+        raise ValueError(_("DASD device %s not found, not even in device ignore list.")
+            % dev)
+
+    try:
+        with open(online, "r") as f:
+            devonline = f.readline().strip()
+        if devonline == "1":
+            raise ValueError(_("Device %s is already online.") % dev)
+        else:
+            with open(online, "w") as f:
+                log.debug("echo %s > %s" % ("1", online))
+                f.write("%s\n" % ("1"))
+    except IOError as e:
+        raise ValueError(_("Could not set DASD device %(dev)s online (%(e)s).") \
+                        % {'dev': dev, 'e': e})
 
 def write_dasd_conf(disks, root):
     """ Write /etc/dasd.conf to target system for all DASD devices
