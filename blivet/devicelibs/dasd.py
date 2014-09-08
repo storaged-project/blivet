@@ -109,29 +109,46 @@ def dasd_needs_format(dasd):
     return False
 
 def sanitize_dasd_dev_input(dev):
-    """ Given a user-supplied device number, make sure the input is sane, and
-        raise an error if it is not.
+    """ Synthesizes a complete DASD number from a possibly partial one.
 
-    :param dev: string representing a DASD device number
+        :param str dev: a possibly partial DASD device number
+        :returns: a synthesized DASD device number
+        :rtype: str
+
+        :raises: ValueError if dev is None or empty
+
+        *) Assumes that the rightmost '.' if any, separates the bus number
+           from the device number.
+        *) Pads the device number on the left with 0s to a length of four
+           characters.
+        *) If no bus number extracted from dev, uses bus number default 0.0.
+
+        A DASD number has the format n.n.hhhh, where n is any decimal
+        digit and h any hexadecimal digit, e.g., 0.0.abcd, 0.0.002A.
+
+        A properly formatted number can be synthesized from a partial number
+        if the partial number is missing hexadecimal digits, e.g., 0.0.b, or
+        missing a bus number, e.g., 0012. The minimal partial number
+        contains a single digit. For example a will be extended to 0.0.000a.
+        Wildly improper partial numbers, e.g., qu.er.ty will yield a wildly
+        improper result.
     """
     if dev is None or dev == "":
         raise ValueError(_("You have not specified a device number or the number is invalid"))
     dev = dev.lower()
-    bus = dev[:dev.rfind(".") + 1]
-    dev = dev[dev.rfind(".") + 1:]
+    (bus, _sep, dev) = dev.rpartition('.')
 
-    dev = "0" * (4 - len(dev)) + dev
-    if not bus:
-        return "0.0." + dev
-    else:
-        return bus + dev
+    padding = "0" * (4 - len(dev))
+    bus = bus or '0.0'
+    return bus + '.' + padding + dev
 
 def online_dasd(dev):
     """ Given a device number, switch the device to be online.
 
-    :param dev: string representing a DASD device number; acceptable formats
-                include 0.0.abcd, 0.0.ABCD, abcd, ABCD, where 'abcd' are
-                hexadecimal numbers.
+        :param str dev: a DASD device number
+
+        Raises a ValueError if a device with that number does not exist,
+        is already online, or can not be put online.
     """
     online = "/sys/bus/ccw/drivers/dasd-eckd/%s/online" % (dev)
 
