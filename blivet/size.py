@@ -224,7 +224,6 @@ class Size(Decimal):
         return self
 
     def __str__(self, eng=False, context=None):
-        # Convert the result of humanReadable from unicode to str
         return self.humanReadable()
 
     def __repr__(self):
