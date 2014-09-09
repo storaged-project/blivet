@@ -564,7 +564,8 @@ class StorageDevice(Device):
         self._model = model
         self.bus = bus
 
-        self.protected = False
+        self._readonly = False
+        self._protected = False
         self.controllable = not flags.testing
 
         self.format = fmt
@@ -817,6 +818,23 @@ class StorageDevice(Device):
             raise NotImplementedError("method not implemented for device type %s" % self.type)
         else:
             raise errors.DeviceError("device type %s is not resizable" % self.type)
+
+    @property
+    def readonly(self):
+        # A device is read-only if it or any parent device is read-only
+        return self._readonly or any(p.readonly for p in self.parents)
+
+    @readonly.setter
+    def readonly(self, value):
+        self._readonly = value
+
+    @property
+    def protected(self):
+        return self.readonly or self._protected
+
+    @protected.setter
+    def protected(self, value):
+        self._protected = value
 
     #
     # setup

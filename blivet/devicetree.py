@@ -658,14 +658,6 @@ class DeviceTree(object):
             # ignore loop devices unless they're backed by a file
             return (not loop.get_backing_file(name))
 
-        if self.udevDeviceIsDisk(info):
-            # Ignore any readonly disks
-            if util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
-                log.debug("Ignoring read only device %s", name)
-                # FIXME: We have to handle this better, ie: not ignore these.
-                self.addIgnoredDisk(name)
-                return True
-
         # FIXME: check for virtual devices whose slaves are on the ignore list
 
     def udevDeviceIsDisk(self, info):
@@ -1218,6 +1210,11 @@ class DeviceTree(object):
         if not device:
             log.debug("no device obtained for %s", name)
             return
+
+        # If this device is read-only, mark it as such now.
+        if self.udevDeviceIsDisk(info) and \
+                util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
+            device.readonly = True
 
         # If this device is protected, mark it as such now. Once the tree
         # has been populated, devices' protected attribute is how we will
