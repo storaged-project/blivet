@@ -1065,7 +1065,7 @@ class BTRFS(FS):
     _supported = True
     _packages = ["btrfs-progs"]
     _minSize = Size("256 MiB")
-    _maxSize = Size("16 TiB")
+    _maxSize = Size("16 EiB")
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # partedSystem = fileSystemType["btrfs"]
