@@ -5165,10 +5165,12 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         if flags.installer_mode:
             self.setup(orig=True)
 
-        try:
-            self._do_temp_mount(orig=True)
-        except errors.FSError as e:
-            log.debug("btrfs temp mount failed: %s", e)
+            try:
+                self._do_temp_mount(orig=True)
+            except errors.FSError as e:
+                log.debug("btrfs temp mount failed: %s", e)
+                return subvols
+        elif not self.originalFormat.status:
             return subvols
 
         try:
@@ -5179,7 +5181,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         else:
             self._getDefaultSubVolumeID()
         finally:
-            self._undo_temp_mount()
+            if flags.installer_mode:
+                self._undo_temp_mount()
 
         return subvols
 
