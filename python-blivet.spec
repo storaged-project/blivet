@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.1
+Version: 0.61.0.2
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,20 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 10 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.2-1
+- Condense and comment some devicelibs.dasd methods (amulhern)
+  Related: rhbz#1070115
+- Add a test file for DASD handling (amulhern)
+  Related: rhbz#1070115
+- Pylint inspired cleanup (amulhern)
+  Related: rhbz#1070115
+- Add a property for read-only devices. (dshea)
+  Resolves: rhbz#1072619
+- Allow user code creating free space snapshot (vpodzime)
+  Related: rhbz#1132436
+- Add two functions to enable manual addition of ECKD DASDs. (sbueno+anaconda)
+  Related: rhbz#1070115
+
 * Fri Sep 05 2014 David Lehman <dlehman@redhat.com> - 0.61.0.1-1
 - Remove dependency on python-six. (dlehman)
   Related: rhbz#1075561
