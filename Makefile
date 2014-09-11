@@ -58,7 +58,9 @@ tag:
 	  echo "Tagged as $$tag" ; \
 	done
 
-archive: check tag
+release: check tag archive
+
+archive: po-pull
 	@rm -f ChangeLog
 	@make ChangeLog
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) > $(PKGNAME)-$(VERSION).tar
