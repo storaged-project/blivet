@@ -374,7 +374,7 @@ class DeviceTree(object):
 
         self._postProcessActions()
 
-    def _addDevice(self, newdev):
+    def _addDevice(self, newdev, new=True):
         """ Add a device to the tree.
 
             :param newdev: the device to add
@@ -392,6 +392,7 @@ class DeviceTree(object):
             if parent not in self._devices:
                 raise DeviceTreeError("parent device not in tree")
 
+        newdev.addHook(new=new)
         self._devices.append(newdev)
 
         # don't include "req%d" partition names
@@ -404,15 +405,15 @@ class DeviceTree(object):
                                                        newdev.name,
                                                        newdev.id)
 
-    def _removeDevice(self, dev, force=None, moddisk=True):
+    def _removeDevice(self, dev, force=None, modparent=True):
         """ Remove a device from the tree.
 
             :param dev: the device to remove
             :type dev: a subclass of :class:`~.devices.StorageDevice`
             :keyword force: whether to force removal of a non-leaf device
             :type force: bool
-            :keyword moddisk: update parent disk's format (partitions only)
-            :type moddisk: bool
+            :keyword modparent: update parent device to account for removal
+            :type modparent: bool
 
             .. note::
 
@@ -425,18 +426,10 @@ class DeviceTree(object):
             log.debug("%s has %d kids", dev.name, dev.kids)
             raise ValueError("Cannot remove non-leaf device '%s'" % dev.name)
 
-        if moddisk:
+        dev.removeHook(modparent=modparent)
+        if modparent:
             # if this is a partition we need to remove it from the parted.Disk
             if isinstance(dev, PartitionDevice) and dev.disk is not None:
-                # if this partition hasn't been allocated it could not have
-                # a disk attribute
-                if dev.partedPartition.type == parted.PARTITION_EXTENDED and \
-                        len(dev.disk.format.logicalPartitions) > 0:
-                    raise ValueError("Cannot remove extended partition %s.  "
-                            "Logical partitions present." % dev.name)
-
-                dev.disk.format.removePartition(dev.partedPartition)
-
                 # adjust all other PartitionDevice instances belonging to the
                 # same disk so the device name matches the potentially altered
                 # name of the parted.Partition
@@ -444,12 +437,6 @@ class DeviceTree(object):
                     if isinstance(device, PartitionDevice) and \
                        device.disk == dev.disk:
                         device.updateName()
-            elif hasattr(dev, "pool"):
-                dev.pool._removeLogVol(dev)
-            elif hasattr(dev, "vg"):
-                dev.vg._removeLogVol(dev)
-            elif hasattr(dev, "volume"):
-                dev.volume._removeSubVolume(dev.name)
 
         self._devices.remove(dev)
         if dev.name in self.names and getattr(dev, "complete", True):
@@ -458,20 +445,15 @@ class DeviceTree(object):
                                                            dev.name,
                                                            dev.id)
 
-        for parent in dev.parents:
-            # Will this cause issues with garbage collection?
-            #   Do we care about garbage collection? At all?
-            parent.removeChild()
-
     def _removeChildrenFromTree(self, device):
         devs_to_remove = self.getDependentDevices(device)
         while devs_to_remove:
             leaves = [d for d in devs_to_remove if d.isleaf]
             for leaf in leaves:
-                self._removeDevice(leaf, moddisk=False)
+                self._removeDevice(leaf, modparent=False)
                 devs_to_remove.remove(leaf)
             if len(devs_to_remove) == 1 and devs_to_remove[0].isExtended:
-                self._removeDevice(devs_to_remove[0], force=True, moddisk=False)
+                self._removeDevice(devs_to_remove[0], force=True, modparent=False)
                 break
 
     def registerAction(self, action):
@@ -521,7 +503,7 @@ class DeviceTree(object):
             self._removeDevice(action.device)
         elif action.isDestroy and action.isDevice:
             # add the device back into the tree
-            self._addDevice(action.device)
+            self._addDevice(action.device, new=False)
 
         action.cancel()
         self._actions.remove(action)
@@ -1965,7 +1947,7 @@ class DeviceTree(object):
         if not device.exists:
             return
 
-        self._removeDevice(device, force=True, moddisk=False)
+        self._removeDevice(device, force=True, modparent=False)
 
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
@@ -1997,10 +1979,8 @@ class DeviceTree(object):
                                                           hidden.id)
                 self._hidden.remove(hidden)
                 self._devices.append(hidden)
+                hidden.addHook(new=False)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
-                for parent in hidden.parents:
-                    parent.addChild()
-
                 if isinstance(device, DASDDevice):
                     self.dasd.append(device)
 
