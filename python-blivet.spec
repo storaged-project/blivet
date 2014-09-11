@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.62
+Version: 0.63
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -64,6 +64,20 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 10 2014 Brian C. Lane <bcl@redhat.com> - 0.63-1
+- Update makebumpver to include flags on first request (bcl)
+- Condense and comment some devicelibs.dasd methods (#1070115) (amulhern)
+- Add a test file for DASD handling (#1070115) (amulhern)
+- Pylint inspired cleanup (#1070115) (amulhern)
+- Add a property for read-only devices. (dshea)
+- Get rid of misleading comment (#1066721) (amulhern)
+- Allow user code creating free space snapshot (vpodzime)
+- Add two functions to enable manual addition of ECKD DASDs. (sbueno+anaconda)
+- Make prefering leaves the default in getDeviceByPath (#1122081) (amulhern)
+- Make _filterDevices() return a generator consistently (#1122081) (amulhern)
+- Split string of symlinks into array of strings (#1136214) (amulhern)
+- Don't put "Linux" in a root's name if it's already there. (clumens)
+
 * Thu Aug 28 2014 Brian C. Lane <bcl@redhat.com> - 0.62-1
 - Mock pyudev since libudev will not be on the builders. (dlehman)
 - Update selinux tests for default context of mounts under /tmp. (dlehman)
