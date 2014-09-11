@@ -805,7 +805,7 @@ def updateExtendedPartitions(storage, disks):
                     if part.exists:
                         storage.destroyDevice(part)
                     else:
-                        storage.devicetree._removeDevice(part, moddisk=False)
+                        storage.devicetree._removeDevice(part, modparent=False)
             continue
 
         extendedName = devicePathToName(extended.getDeviceNodeName())
@@ -822,7 +822,7 @@ def updateExtendedPartitions(storage, disks):
                 if part.exists:
                     storage.destroyDevice(part)
                 else:
-                    storage.devicetree._removeDevice(part, moddisk=False)
+                    storage.devicetree._removeDevice(part, modparent=False)
 
         if device:
             continue
