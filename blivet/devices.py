@@ -2468,9 +2468,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.reserved_percent = 0
         self.reserved_space = Size(0)
 
-        # this will have to be covered by the 20% pad for non-existent pools
-        self.poolMetaData = 0
-
         # TODO: validate peSize if given
         if not self.peSize:
             self.peSize = lvm.LVM_PE_SIZE
@@ -2642,9 +2639,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         self._lvs.remove(lv)
 
-        if self.poolMetaData and not self.thinpools:
-            self.poolMetaData = 0
-
         # snapshot accounting
         origin = getattr(lv, "origin", None)
         if origin:
@@ -2737,7 +2731,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
             new_lvs = [lv for lv in self.lvs if not lv.exists]
             used += len(new_lvs) * 5 * raid_disks * self.peSize
         used += self.reservedSpace
-        used += self.poolMetaData
         free = self.size - used
         log.debug("vg %s has %s free", self.name, free)
         return free
