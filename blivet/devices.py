@@ -1152,6 +1152,33 @@ class StorageDevice(Device):
             return -1
         return 0
 
+    # pylint: disable=unused-argument
+    def removeHook(self, modparent=True):
+        """ Perform actions related to removing a device from the devicetree.
+
+            :keyword bool modparent: whether to account for removal in parents
+
+            Parent child counts are adjusted regardless of modparent's value.
+            The intended use of modparent is to prevent doing things like
+            removing a parted.Partition from the disk that contains it as part
+            of msdos extended partition management. In general, you should not
+            override the default value of modparent in new code.
+        """
+        for parent in self.parents:
+            parent.removeChild()
+
+    def addHook(self, new=True):
+        """ Perform actions related to adding a device to the devicetree.
+
+            :keyword bool new: whether this device is new to the devicetree
+
+            The only intended use case for new=False is when unhiding a device
+            from the devicetree. Additional operations are performed when new is
+            False that are normally performed as part of the device constructor.
+        """
+        if not new:
+            map(lambda p: p.addChild(), self.parents)
+
     def populateKSData(self, data):
         # the common pieces are basically the formatting
         self.format.populateKSData(data)
@@ -1708,6 +1735,43 @@ class PartitionDevice(StorageDevice):
         number = getattr(self.partedPartition, "number", -1)
         magic = self.disk.format.magicPartitionNumber
         return (number == magic)
+
+    def removeHook(self, modparent=True):
+        if modparent:
+            # if this partition hasn't been allocated it could not have
+            # a disk attribute
+            if not self.disk:
+                return
+
+            if self.partedPartition.type == parted.PARTITION_EXTENDED and \
+                    len(self.disk.format.logicalPartitions) > 0:
+                raise ValueError("Cannot remove extended partition %s.  "
+                        "Logical partitions present." % self.name)
+
+            self.disk.format.removePartition(self.partedPartition)
+
+        super(PartitionDevice, self).removeHook(modparent=modparent)
+
+    def addHook(self, new=True):
+        super(PartitionDevice, self).addHook(new=new)
+        if new:
+            return
+
+        if not self.disk or not self.partedPartition or \
+           self.partedPartition in self.disk.format.partitions:
+            return
+
+        self.disk.format.addPartition(self.partedPartition)
+
+        # Look up the path by start sector to deal with automatic renumbering of
+        # logical partitions on msdos disklabels.
+        if self.isExtended:
+            partition = self.disk.format.extendedPartition
+        else:
+            start = self.partedPartition.geometry.start
+            partition = self.disk.format.partedDisk.getPartitionBySector(start)
+
+        self.partedPartition = partition
 
     def probe(self):
         """ Probe for any missing information about this device.
@@ -3098,6 +3162,20 @@ class LVMLogicalVolumeDevice(DMDevice):
             return -1
         return 0
 
+    def removeHook(self, modparent=True):
+        if modparent:
+            self.vg._removeLogVol(self)
+
+        super(LVMLogicalVolumeDevice, self).removeHook(modparent=modparent)
+
+    def addHook(self, new=True):
+        super(LVMLogicalVolumeDevice, self).addHook(new=new)
+        if new:
+            return
+
+        if self not in self.vg.lvs:
+            self.vg._addLogVol(self)
+
     def populateKSData(self, data):
         super(LVMLogicalVolumeDevice, self).populateKSData(data)
         data.vgname = self.vg.name
@@ -3483,6 +3561,22 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         log_method_call(self, self.name, status=self.status)
         lvm.thinlvcreate(self.vg.name, self.pool.lvname, self.lvname,
                          self.size)
+
+    def removeHook(self, modparent=True):
+        if modparent:
+            self.pool._removeLogVol(self)
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeDevice, self).removeHook(modparent=modparent)
+
+    def addHook(self, new=True):
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeDevice, self).addHook(new=new)
+        if new:
+            return
+
+        if self not in self.pool.lvs:
+            self.pool._addLogVol(self)
 
     def populateKSData(self, data):
         super(LVMThinLogicalVolumeDevice, self).populateKSData(data)
@@ -5421,6 +5515,20 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             raise RuntimeError("btrfs subvol destroy requires mounted volume")
         btrfs.delete_subvolume(mountpoint, self.name)
         self.volume._undo_temp_mount()
+
+    def removeHook(self, modparent=True):
+        if modparent:
+            self.volume._removeSubVolume(self.name)
+
+        super(BTRFSSubVolumeDevice, self).removeHook(modparent=modparent)
+
+    def addHook(self, new=True):
+        super(BTRFSSubVolumeDevice, self).addHook(new=new)
+        if new:
+            return
+
+        if self not in self.volume.subvolumes:
+            self.volume._addSubVolume(self)
 
     def populateKSData(self, data):
         super(BTRFSSubVolumeDevice, self).populateKSData(data)

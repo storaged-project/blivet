@@ -869,7 +869,7 @@ class Blivet(object):
                         # We can't schedule the magic partition for removal
                         # because parted will not allow us to remove it from the
                         # disk. Still, we need it out of the devicetree.
-                        self.devicetree._removeDevice(part, moddisk=False)
+                        self.devicetree._removeDevice(part, modparent=False)
 
             if len(disk.format.partitions) > expected:
                 raise ValueError("cannot initialize a disk that has partitions")
