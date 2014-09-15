@@ -1278,6 +1278,9 @@ class Blivet(object):
             :type device: :class:`~.devices.StorageDevice`
             :rtype: None
         """
+        if device.protected:
+            raise ValueError("cannot modify protected device")
+
         if device.format.exists and device.format.type and \
            not device.formatImmutable:
             # schedule destruction of any formatting while we're at it
@@ -1300,6 +1303,9 @@ class Blivet(object):
             :class:`~.deviceaction.ActionDestroyFormat` prior to calling this
             method.
         """
+        if device.protected:
+            raise ValueError("cannot modify protected device")
+
         self.devicetree.registerAction(ActionDestroyFormat(device))
         self.devicetree.registerAction(ActionCreateFormat(device, fmt))
 
@@ -1329,6 +1335,9 @@ class Blivet(object):
             If the device has formatting that is recognized as being resizable
             an action will be scheduled to resize it as well.
         """
+        if device.protected:
+            raise ValueError("cannot modify protected device")
+
         classes = []
         if device.resizable:
             classes.append(ActionResizeDevice)
