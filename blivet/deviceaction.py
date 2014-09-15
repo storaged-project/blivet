@@ -667,18 +667,31 @@ class ActionDestroyFormat(DeviceAction):
 
             Format destroy actions obsolete the following actions:
 
-            - format actions w/ lower id on same device, including self if
-              format does not exist
+            - non-destroy format actions w/ lower id on same device, including
+              self if format does not exist
+
+            - destroy format action w/ higher id on same device
 
             - format destroy action on a non-existent format shouldn't
               obsolete a format destroy action on an existing one
         """
-        return (self.device.id == action.device.id and
-                self.obj == action.obj and
-                (self.id > action.id or
-                 (self.id == action.id and not self.format.exists)) and
-                not (action.format.exists and not self.format.exists))
+        retval = False
+        same_device = self.device.id == action.device.id
+        format_action = self.obj == action.obj
+        if same_device and format_action:
+            if action.isDestroy:
+                if self.format.exists and not action.format.exists:
+                    retval = True
+                elif not self.format.exists and action.format.exists:
+                    retval = False
+                elif self.id == action.id and not self.format.exists:
+                    retval = True
+                else:
+                    retval = self.id < action.id
+            else:
+                retval = self.id > action.id
 
+        return retval
 
 class ActionResizeFormat(DeviceAction):
     """ An action representing the resizing of an existing filesystem.
