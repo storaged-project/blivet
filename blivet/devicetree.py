@@ -1938,15 +1938,14 @@ class DeviceTree(object):
         if device in self._hidden:
             return
 
+        # cancel actions first thing so that we hide the correct set of devices
+        for action in reversed(self._actions):
+            self.cancelAction(action)
+
         for d in self.getChildren(device):
             self.hide(d)
 
-        log.info("hiding device %s %s (id %d)", device.type,
-                                                device.name,
-                                                device.id)
-
-        for action in reversed(self._actions):
-            self.cancelAction(action)
+        log.info("hiding device %s", device)
 
         if not device.exists:
             return
