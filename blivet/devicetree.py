@@ -1869,8 +1869,8 @@ class DeviceTree(object):
             :param device: the device to hide
             :type device: :class:`~.devices.StorageDevice`
 
-            Hiding a device will cancel all actions and will remove the
-            device from the device list.
+            Hiding a device will cancel all actions that involve the device and
+            will remove the device from the device list.
 
             If the device is not a leaf device, all devices that depend on it
             will be hidden leaves-first until the device is a leaf device.
@@ -1903,8 +1903,20 @@ class DeviceTree(object):
             return
 
         # cancel actions first thing so that we hide the correct set of devices
-        for action in reversed(self._actions):
-            self.cancelAction(action)
+        if device.isDisk:
+            # Cancel all actions on this disk and any disk related by way of an
+            # aggregate/container device (eg: lvm volume group).
+            disks = [device]
+            related_actions = [a for a in self._actions
+                                    if a.device.dependsOn(device)]
+            for related_device in (a.device for a in related_actions):
+                disks.extend(related_device.disks)
+
+            disks = set(disks)
+            cancel = [a for a in self._actions
+                            if set(a.device.disks).intersection(disks)]
+            for action in reversed(cancel):
+                self.cancelAction(action)
 
         for d in self.getChildren(device):
             self.hide(d)
