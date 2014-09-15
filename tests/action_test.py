@@ -413,13 +413,17 @@ class DeviceActionTestCase(StorageTestCase):
 
         # ActionDestroyFormat
         #
-        # - obsoletes all format actions w/ lower id on same device (including
+        # - obsoletes all format actions w/ higher id on same device (including
         #   self if format does not exist)
         destroy_format_1 = ActionDestroyFormat(sdc1)
         destroy_format_1.apply()
+        destroy_format_2 = ActionDestroyFormat(sdc1)
+        destroy_format_2.apply()
         self.assertEqual(destroy_format_1.obsoletes(create_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(resize_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(destroy_format_1), True)
+        self.assertEqual(destroy_format_2.obsoletes(destroy_format_1), False)
+        self.assertEqual(destroy_format_1.obsoletes(destroy_format_2), True)
 
         # ActionDestroyDevice
         #
