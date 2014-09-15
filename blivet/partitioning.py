@@ -852,7 +852,7 @@ def doPartitioning(storage):
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
     """
-    disks = storage.partitioned
+    disks = [d for d in storage.partitioned if not d.protected]
     for disk in disks:
         try:
             disk.setup()
