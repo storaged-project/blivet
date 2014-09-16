@@ -1955,7 +1955,10 @@ class PartitionDevice(StorageDevice):
             raise ValueError("new size must of type Size")
 
         if not self.exists:
-            raise errors.DeviceError("device does not exist", self.name)
+            # device does not exist (a partition request), just set basic values
+            self._size = newsize
+            self.req_size = newsize
+            self.req_base_size = newsize
 
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
