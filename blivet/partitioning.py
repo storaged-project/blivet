@@ -198,6 +198,11 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0):
                 log.debug("%s", stage1_device)
                 continue
 
+        if request.size > Size(all_free[0].getLength("B")):
+            # no big enough free space for the requested partition
+            raise NotEnoughFreeSpaceError(_("No big enough free space on disks for "
+                                            "automatic partitioning"))
+
         if request.encrypted and storage.encryptedAutoPart:
             fmt_type = "luks"
             fmt_args = {"passphrase": storage.encryptionPassphrase,
