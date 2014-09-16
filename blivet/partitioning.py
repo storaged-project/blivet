@@ -132,17 +132,17 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0):
     """
     # basis for requests with requiredSpace is the sum of the sizes of the
     # two largest free regions
-    all_free = getFreeRegions(disks)
-    all_free.sort(key=lambda f: f.length, reverse=True)
+    all_free = (Size(reg.getLength(unit="B")) for reg in getFreeRegions(disks))
+    all_free = sorted(all_free, reverse=True)
     if not all_free:
         # this should never happen since we've already filtered the disks
         # to those with at least 500MiB free
         log.error("no free space on disks %s", [d.name for d in disks])
         return
 
-    free = Size(all_free[0].getLength(unit="B"))
+    free = all_free[0]
     if len(all_free) > 1:
-        free += Size(all_free[1].getLength(unit="B"))
+        free += all_free[1]
 
     # The boot disk must be set at this point. See if any platform-specific
     # stage1 device we might allocate already exists on the boot disk.
@@ -198,7 +198,7 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0):
                 log.debug("%s", stage1_device)
                 continue
 
-        if request.size > Size(all_free[0].getLength("B")):
+        if request.size > all_free[0]:
             # no big enough free space for the requested partition
             raise NotEnoughFreeSpaceError(_("No big enough free space on disks for "
                                             "automatic partitioning"))
