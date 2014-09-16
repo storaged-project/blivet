@@ -115,7 +115,7 @@ def _scheduleImplicitPartitions(storage, disks, min_luks_entropy=0):
 
     return devs
 
-def _schedulePartitions(storage, disks, min_luks_entropy=0):
+def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0):
     """ Schedule creation of autopart partitions.
 
         This only schedules the requests for actual partitions.
@@ -236,8 +236,29 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0):
                                   parents=dev)
             storage.createDevice(luks_dev)
 
-    # make sure preexisting broken lvm/raid configs get out of the way
-    return
+        if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
+                                    AUTOPART_TYPE_BTRFS):
+            # doing LVM/BTRFS -- make sure the newly created partition fits in some
+            # free space together with one of the implicitly requested partitions
+            smallest_implicit = sorted(implicit_devices, key=lambda d: d.size)[0]
+            if (request.size + smallest_implicit.size) > all_free[0]:
+                # not enough space to allocate the smallest implicit partition
+                # and the request, make the implicit partition smaller with
+                # fixed size in order to make space for the request
+                new_size = all_free[0] - request.size
+
+                # subtract the size from the biggest free region and reorder the
+                # list
+                all_free[0] -= request.size
+                all_free.sort(reverse=True)
+
+                if new_size > Size(0):
+                    smallest_implicit.size = new_size
+                else:
+                    implicit_devices.remove(smallest_implicit)
+                    storage.destroyDevice(smallest_implicit)
+
+    return implicit_devices
 
 def _scheduleVolumes(storage, devs):
     """ Schedule creation of autopart lvm/btrfs volumes.
@@ -393,7 +414,7 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                       "automatic partitioning"))
 
-    _schedulePartitions(storage, disks, min_luks_entropy=min_luks_entropy)
+    devs = _schedulePartitions(storage, disks, devs, min_luks_entropy=min_luks_entropy)
 
     # run the autopart function to allocate and grow partitions
     doPartitioning(storage)
