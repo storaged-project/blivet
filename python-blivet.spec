@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.2
+Version: 0.61.0.3
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Sep 15 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.3-1
+- Disable MacEFI platform type and hfs+ ESP (bcl)
+  Related: rhbz#1119305
+- Prefer ID_SERIAL over ID_SERIAL_SHORT (vpodzime)
+  Resolves: rhbz#1138254
+
 * Wed Sep 10 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.2-1
 - Condense and comment some devicelibs.dasd methods (amulhern)
   Related: rhbz#1070115
