@@ -3,6 +3,7 @@ Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 0.61.1
 Release: 1%{?dist}
+Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
 %define realname blivet
