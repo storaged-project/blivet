@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.1
+Version: 0.61.2
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,9 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 17 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.2-1
+- Add an epoch to blivet. (sbueno+anaconda)
+
 * Thu Sep 04 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.1-1
 - Make prefering leaves the default in getDeviceByPath (#1122081) (amulhern)
 - Make _filterDevices() return a generator consistently (#1122081) (amulhern)
