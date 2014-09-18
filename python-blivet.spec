@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.3
+Version: 0.61.0.4
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 17 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.4-1
+- Check if device has enough members when setting RAID level (amulhern)
+  Related: rhbz#1019685
+- Add BTRFSValueError error and use in btrfs related code (amulhern)
+  Related: rhbz#1019685
+- iscsi: mount partitions in initramfs for root on iscsi (rvykydal)
+  Related: rhbz#740106
+- Remove poolMetaData (amulhern)
+  Resolves: rhbz#1021505
+
 * Mon Sep 15 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.3-1
 - Disable MacEFI platform type and hfs+ ESP (bcl)
   Related: rhbz#1119305
