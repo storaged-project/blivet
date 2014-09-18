@@ -383,6 +383,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         return default
 
+    def _preCreate(self):
+        if any(p.size < btrfs.MIN_MEMBER_SIZE for p in self.parents):
+            raise errors.DeviceCreateError("All BTRFS member devices must have size at least %s." % btrfs.MIN_MEMBER_SIZE)
+
     def _create(self):
         log_method_call(self, self.name, status=self.status)
         btrfs.create_volume(devices=[d.path for d in self.parents],

@@ -578,8 +578,9 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
     def setUp(self):
         self.dev1 = BTRFSVolumeDevice("dev1",
-           parents=[OpticalDevice("deva",
-              fmt=blivet.formats.getFormat("btrfs"))])
+           parents=[StorageDevice("deva",
+              fmt=blivet.formats.getFormat("btrfs"),
+              size=btrfs.MIN_MEMBER_SIZE)])
 
         self.dev2 = BTRFSSubVolumeDevice("dev2",
            parents=[self.dev1],
@@ -598,14 +599,20 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         """
 
         self.stateCheck(self.dev1,
+           currentSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            dataLevel=xform(self.assertIsNone),
            isleaf=xform(self.assertFalse),
+           maxSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            metaDataLevel=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           size=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
         self.stateCheck(self.dev2,
+           currentSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
+           maxSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           size=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs subvolume", m)),
            vol_id=xform(self.assertIsNone))
 
@@ -621,22 +628,22 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegexp(ValueError, "BTRFSDevice.*must have at least one parent"):
             BTRFSVolumeDevice("dev")
 
-        with self.assertRaisesRegexp(ValueError, "is not.*expected format"):
-            BTRFSVolumeDevice("dev", parents=[OpticalDevice("deva")])
+        with self.assertRaisesRegexp(ValueError, "format"):
+            BTRFSVolumeDevice("dev", parents=[StorageDevice("deva", size=btrfs.MIN_MEMBER_SIZE)])
 
         with self.assertRaisesRegexp(DeviceError, "btrfs subvolume.*must be a btrfs volume"):
             fmt = blivet.formats.getFormat("btrfs")
-            device = OpticalDevice("deva", fmt=fmt)
+            device = StorageDevice("deva", fmt=fmt, size=btrfs.MIN_MEMBER_SIZE)
             BTRFSSubVolumeDevice("dev1", parents=[device])
 
         deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs"))
         with self.assertRaisesRegexp(BTRFSValueError, "at least"):
             BTRFSVolumeDevice("dev1", dataLevel="raid1", parents=[deva])
 
-        deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs"))
+        deva = StorageDevice("deva", fmt=blivet.formats.getFormat("btrfs"), size=btrfs.MIN_MEMBER_SIZE)
         self.assertIsNotNone(BTRFSVolumeDevice("dev1", metaDataLevel="dup", parents=[deva]))
 
-        deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs"))
+        deva = StorageDevice("deva", fmt=blivet.formats.getFormat("btrfs"), size=btrfs.MIN_MEMBER_SIZE)
         with self.assertRaisesRegexp(BTRFSValueError, "invalid"):
             BTRFSVolumeDevice("dev1", dataLevel="dup", parents=[deva])
 
@@ -666,7 +673,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
             self.dev1.size = 32
 
     def testBTRFSSnapShotDeviceInit(self):
-        parents = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"))]
+        parents = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"), size=btrfs.MIN_MEMBER_SIZE)]
         vol = BTRFSVolumeDevice("test", parents=parents)
         with self.assertRaisesRegexp(ValueError, "non-existent btrfs snapshots must have a source"):
             BTRFSSnapShotDevice("snap1", parents=[vol])
@@ -677,7 +684,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegexp(ValueError, "btrfs snapshot source must be a btrfs subvolume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=parents[0])
 
-        parents2 = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"))]
+        parents2 = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"), size=btrfs.MIN_MEMBER_SIZE)]
         vol2 = BTRFSVolumeDevice("test2", parents=parents2, exists=True)
         with self.assertRaisesRegexp(ValueError, ".*snapshot and source must be in the same volume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol2)
@@ -688,15 +695,21 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            parents=[vol],
            source=vol)
         self.stateCheck(snap,
+           currentSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
+           maxSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           size=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs snapshot", m)),
            vol_id=xform(self.assertIsNone))
         self.stateCheck(vol,
+           currentSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            dataLevel=xform(self.assertIsNone),
            exists=xform(self.assertTrue),
            isleaf=xform(self.assertFalse),
+           maxSize=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            metaDataLevel=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           size=xform(lambda x, m: self.assertEqual(x, btrfs.MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
         self.assertEqual(snap.isleaf, True)

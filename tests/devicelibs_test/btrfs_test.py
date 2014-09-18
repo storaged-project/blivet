@@ -7,7 +7,6 @@ import unittest
 
 import blivet.devicelibs.btrfs as btrfs
 from blivet.errors import BTRFSError
-from blivet.size import Size
 
 from tests import loopbackedtestcase
 
@@ -165,7 +164,7 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
 class BTRFSAsRootTestCase3(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
-        super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[Size("8 MiB")])
+        super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[btrfs.MIN_MEMBER_SIZE, btrfs.MIN_MEMBER_SIZE])
 
     def testSmallDevice(self):
         """ Creation of a smallish device will result in an error if the
@@ -174,6 +173,25 @@ class BTRFSAsRootTestCase3(loopbackedtestcase.LoopBackedTestCase):
         """
         with self.assertRaises(BTRFSError):
             btrfs.create_volume(self.loopDevices, data="single", metadata="dup")
+        self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
+
+class BTRFSTooSmallDeviceTestCase(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(BTRFSTooSmallDeviceTestCase, self).__init__(methodName=methodName, deviceSpec=[btrfs.MIN_MEMBER_SIZE / 2, btrfs.MIN_MEMBER_SIZE])
+
+    def testTooSmallDevice(self):
+        """ If just one device is too small mkfs.btrfs will fail. """
+        with self.assertRaises(BTRFSError):
+            btrfs.create_volume(self.loopDevices)
+
+class BTRFSBigEnoughDeviceTestCase(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(BTRFSBigEnoughDeviceTestCase, self).__init__(methodName=methodName, deviceSpec=[btrfs.MIN_MEMBER_SIZE])
+
+    def testBigEnoughDevice(self):
+        """ If all devices are large enough, mkfs.btrfs will succeed. """
         self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
 
 if __name__ == "__main__":

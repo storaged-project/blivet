@@ -26,12 +26,16 @@ import re
 from . import raid
 from .. import util
 from ..errors import BTRFSError, BTRFSValueError
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
 
 # this is the volume id btrfs always assigns to the top-level volume/tree
 MAIN_VOLUME_ID = 5
+
+# if any component device is less than this size, mkfs.btrfs will fail
+MIN_MEMBER_SIZE = Size("16 MiB")
 
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single"])
 
