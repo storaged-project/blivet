@@ -1668,48 +1668,6 @@ class VGChunk(Chunk):
         # sort the partitions by start sector
         self.requests.sort(key=lambda r: r.device, cmp=lvCompare)
 
-    def growRequests(self, uniform=False):
-        """ Calculate growth amounts for requests in this chunk.
-
-            :keyword uniform: grow requests uniformly instead of proportionally
-            :type uniform: bool
-
-            The default mode of growth is as follows: given a total number of
-            available units, requests receive an allotment proportional to their
-            base sizes. That means a request with base size 1000 will grow four
-            times as fast as a request with base size 250.
-
-            Under uniform growth, all requests receive an equal portion of the
-            free units.
-        """
-        self.sortRequests()
-
-        # grow the percentage-based requests
-        for req in self.requests:
-            if req.done or not req.device.req_percent:
-                continue
-
-            growth = int(req.device.req_percent * 0.01 * self.length)# truncate
-            req.growth += growth
-            self.pool -= growth
-            log.debug("adding %d (%s) to %d (%s)",
-                        growth, self.lengthToSize(growth),
-                        req.device.id, req.device.name)
-
-            self.trimOverGrownRequest(req)
-            log.debug("new grow amount for request %d (%s) is %d "
-                      "units, or %s",
-                        req.device.id, req.device.name, req.growth,
-                        self.lengthToSize(req.growth))
-
-            # we're done with this request, so remove its base from the
-            # chunk's base
-            if not req.done:
-                self.base -= req.base
-                req.done = True
-
-        super(VGChunk, self).growRequests(uniform=uniform)
-
 
 class ThinPoolChunk(VGChunk):
     """ A free region in an LVM thin pool from which LVs will be allocated """
@@ -2173,6 +2131,19 @@ def growLVM(storage):
 
                 # add the required padding to the requested pool size
                 lv.req_size += get_pool_padding(lv.req_size, pesize=vg.peSize)
+
+        # establish sizes for the percentage-based requests (which are fixed)
+        percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
+        if sum(lv.req_percent for lv in percentage_based_lvs) > 100:
+            raise ValueError("sum of percentages within a vg cannot exceed 100")
+
+        percent_base = sum(vg.align(lv.req_size, roundup=False) / vg.peSize
+                            for lv in percentage_based_lvs)
+        percentage_basis = vg.freeExtents + percent_base
+        for lv in percentage_based_lvs:
+            new_extents = int(lv.req_percent * Decimal('0.01') * percentage_basis)
+            # set req_size also so the request can also be growable if desired
+            lv.size = lv.req_size = vg.peSize * new_extents
 
         # grow regular lvs
         chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])
