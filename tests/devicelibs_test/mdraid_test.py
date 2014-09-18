@@ -84,7 +84,7 @@ class JustAddTestCaseFactory(TestCaseFactory):
     def makeClass(name, level):
 
         def __init__(self, methodName='runTest'):
-            super(self.__class__, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400, 102400, 102400])
+            super(self.__class__, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB") for _ in range(5)])
             self.longMessage = True
 
         def testAdd(self):
@@ -127,7 +127,7 @@ class GrowTestCaseFactory(object):
     def makeClass(name, level):
 
         def __init__(self, methodName='runTest'):
-            super(self.__class__, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400, 102400, 102400, 102400])
+            super(self.__class__, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB") for _ in range(6)])
             self.longMessage = True
 
         def testGrow(self):
@@ -210,7 +210,7 @@ for l in levels:
 class SimpleRaidTest(MDRaidAsRootTestCase):
 
     def __init__(self, methodName='runTest'):
-        super(SimpleRaidTest, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
+        super(SimpleRaidTest, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB") for _ in range(3)])
         self.longMessage = True
 
     def testMDRaidAsRoot(self):

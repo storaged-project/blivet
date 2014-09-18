@@ -5,6 +5,7 @@ from six import add_metaclass
 
 from tests import loopbackedtestcase
 from blivet.errors import FSError
+from blivet.size import Size
 
 @add_metaclass(abc.ABCMeta)
 class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
@@ -21,7 +22,7 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
        doc="A label which is invalid for this filesystem.")
 
     def __init__(self, methodName='runTest'):
-        super(LabelingAsRoot, self).__init__(methodName=methodName, deviceSpec=[102400])
+        super(LabelingAsRoot, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB")])
 
     def setUp(self):
         an_fs = self._fs_class()

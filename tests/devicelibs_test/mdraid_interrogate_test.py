@@ -8,6 +8,7 @@ import blivet.devicelibs.mdraid as mdraid
 
 from . import mdraid_test
 from blivet.errors import MDRaidError
+from blivet.size import Size
 
 class MDRaidInterrogateTestCase(mdraid_test.MDRaidAsRootTestCase):
 
@@ -33,7 +34,7 @@ class MDRaidInterrogateTestCase(mdraid_test.MDRaidAsRootTestCase):
 class MDExamineTestCase(MDRaidInterrogateTestCase):
 
     def __init__(self, methodName='runTest'):
-        super(MDExamineTestCase, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
+        super(MDExamineTestCase, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB") for _ in range(3)])
 
     names_0 = [
       'DEVICE',
@@ -130,7 +131,7 @@ class MDExamineTestCase(MDRaidInterrogateTestCase):
 class MDDetailTestCase(MDRaidInterrogateTestCase):
 
     def __init__(self, methodName='runTest'):
-        super(MDDetailTestCase, self).__init__(methodName=methodName, deviceSpec=[102400, 102400, 102400])
+        super(MDDetailTestCase, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB") for _ in range(3)])
 
     names = [
         'ACTIVE DEVICES',

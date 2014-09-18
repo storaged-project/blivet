@@ -7,13 +7,14 @@ import unittest
 import blivet
 from tests import loopbackedtestcase
 import blivet.formats.fs as fs
+from blivet.size import Size
 
 class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
     """Testing SELinux contexts.
     """
 
     def __init__(self, methodName='runTest'):
-        super(SELinuxContextTestCase, self).__init__(methodName=methodName, deviceSpec=[102400])
+        super(SELinuxContextTestCase, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB")])
 
     def testMountingExt2FS(self):
         an_fs = fs.Ext2FS(device=self.loopDevices[0], label="test")

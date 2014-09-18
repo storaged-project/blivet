@@ -7,6 +7,7 @@ import unittest
 
 import blivet.devicelibs.btrfs as btrfs
 from blivet.errors import BTRFSError
+from blivet.size import Size
 
 from tests import loopbackedtestcase
 
@@ -164,7 +165,7 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
 class BTRFSAsRootTestCase3(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
-        super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[8192])
+        super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[Size("8 MiB")])
 
     def testSmallDevice(self):
         """ Creation of a smallish device will result in an error if the
