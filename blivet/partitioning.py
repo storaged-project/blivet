@@ -717,7 +717,7 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
         if start != free.start:
             log.debug("adjusted start sector from %d to %d", free.start, start)
 
-        if part_type == parted.PARTITION_EXTENDED:
+        if part_type == parted.PARTITION_EXTENDED and not size:
             end = free.end
             length = end - start + 1
         else:
@@ -1060,7 +1060,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                         if disk_path == _disk.path:
                             _part_type = new_part_type
                             _free = best
-                            if new_part_type == parted.PARTITION_EXTENDED:
+                            if new_part_type == parted.PARTITION_EXTENDED and \
+                               new_part_type != _part.req_partType:
                                 addPartition(disklabel, best, new_part_type,
                                              None)
 
