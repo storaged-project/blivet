@@ -5218,7 +5218,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         """
         try:
             btrfs.set_default_subvolume(self.originalFormat._mountpoint, vol_id)
-        except BTRFSError as e:
+        except errors.BTRFSError as e:
             log.error("failed to set new default subvolume id (%s): %s",
                       vol_id, e)
             # The only time we set a new default subvolume is so we can remove
@@ -5327,9 +5327,9 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
         self.volume._addSubVolume(self)
 
-    def _setFormat(self, format):
+    def _setFormat(self, fmt):
         """ Set the Device's format. """
-        super(BTRFSSubVolumeDevice, self)._setFormat(format)
+        super(BTRFSSubVolumeDevice, self)._setFormat(fmt)
         if self.exists:
             return
 
