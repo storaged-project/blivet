@@ -822,7 +822,10 @@ class Blivet(object):
             self.destroyDevice(device)
 
     def clearPartitions(self):
-        """ Clear partitions and dependent devices from disks. """
+        """ Clear partitions and dependent devices from disks.
+
+            This is also where zerombr is handled.
+        """
         # Sort partitions by descending partition number to minimize confusing
         # things like multiple "destroy sda5" actions due to parted renumbering
         # partitions. This can still happen through the UI but it makes sense to
@@ -843,12 +846,14 @@ class Blivet(object):
 
         # ensure all disks have appropriate disklabels
         for disk in self.disks:
-            if not self.shouldClear(disk):
-                continue
+            zerombr = (self.config.zeroMbr and disk.format.type is None)
+            should_clear = self.shouldClear(disk)
+            if should_clear:
+                self.recursiveRemove(disk)
 
-            log.debug("clearpart: initializing %s", disk.name)
-            self.recursiveRemove(disk)
-            self.initializeDisk(disk)
+            if zerombr or should_clear:
+                log.debug("clearpart: initializing %s", disk.name)
+                self.initializeDisk(disk)
 
         self.updateBootLoaderDiskList()
 
