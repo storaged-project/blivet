@@ -1661,7 +1661,7 @@ class VGChunk(Chunk):
         # on RAID (see the devicefactory.LVMFactory._get_total_space method)
         if not req.device.exists and req.device.vg.pvs:
             max_raid_disks = max(len(pv.disks) for pv in req.device.vg.pvs)
-            if max_raid_disks:
+            if max_raid_disks > 1:
                 self.pool -= 5 * max_raid_disks
 
         super(VGChunk, self).addRequest(req)
