@@ -3368,7 +3368,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     def __init__(self, name, parents=None, size=None, uuid=None,
                  fmt=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
-                 metadatasize=None, chunksize=None, segType=None):
+                 metadatasize=None, chunksize=None, segType=None, profile=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -3399,6 +3399,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             :type metadatasize: :class:`~.size.Size`
             :keyword chunksize: chunk size for the pool
             :type chunksize: :class:`~.size.Size`
+            :keyword profile: (allocation) profile for the pool or None (unspecified)
+            :type profile: :class:`~.devicelibs.lvm.ThPoolProfile` or NoneType
+
         """
         if metadatasize is not None and \
            not lvm.is_valid_thin_pool_metadata_size(metadatasize):
@@ -3418,6 +3421,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
         self.metaDataSize = metadatasize or 0
         self.chunkSize = chunksize or 0
+        self.profile = profile
         self._lvs = []
 
     def _addLogVol(self, lv):
@@ -3463,7 +3467,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         # TODO: chunk size, data/metadata split --> profile
         lvm.thinpoolcreate(self.vg.name, self.lvname, self.size,
                            metadatasize=self.metaDataSize,
-                           chunksize=self.chunkSize)
+                           chunksize=self.chunkSize,
+                           profile=self.profile.name)
 
     def dracutSetupArgs(self):
         return set()
@@ -3479,6 +3484,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         data.thin_pool = True
         data.metadata_size = self.metaDataSize
         data.chunk_size = self.chunkSize
+        data.profile = self.profile
 
 class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Logical Volume """
