@@ -362,13 +362,13 @@ class iscsi(object):
             return
 
         # set iscsi nodes to autostart
-        root = storage.rootDevice
+        rootdev = storage.rootDevice
         for node in self.active_nodes():
             autostart = True
             disks = self.getNodeDisks(node, storage)
             for disk in disks:
                 # nodes used for root get started by the initrd
-                if root.dependsOn(disk):
+                if rootdev.dependsOn(disk):
                     autostart = False
 
             if autostart:
