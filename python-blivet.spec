@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.4
+Version: 0.61.0.5
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,52 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Sep 19 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.5-1
+- Make sure autopart requests fit in somewhere (vpodzime)
+  Resolves: rhbz#978266
+- Work with free region sizes instead of parted.Geometry objects (vpodzime)
+  Related: rhbz#978266
+- Check that we have big enough free space for the partition request (vpodzime)
+  Related: rhbz#978266
+- Allow specifying minimum entropy when creating LUKS (vpodzime)
+  Related: rhbz#1073679
+- Allow user code provide callbacks for various actions/events (vpodzime)
+  Related: rhbz#1073679
+- Fix pylint errors from recent btrfs commits. (dlehman)
+  Related: rhbz#1015072
+  Related: rhbz#1095866
+- Only cancel actions on disks related to the one we are hiding. (dlehman)
+  Related: rhbz#1085201
+  Related: rhbz#1129595
+  Related: rhbz#1075671
+- Cancel actions before hiding descendent devices. (dlehman)
+  Related: rhbz#1085201
+  Related: rhbz#1129595
+  Related: rhbz#1075671
+- Improve handling of device removals/additions from the devicetree. (dlehman)
+  Resolves: rhbz#1077906
+  Resolves: rhbz#1085201
+  Resolves: rhbz#1129595
+  Resolves: rhbz#1075671
+- The first format destroy action should obsolete any others. (dlehman)
+  Related: rhbz#1085201
+  Related: rhbz#1075671
+- Propagate mount options for btrfs members to all volumes/subvolumes.
+  (dlehman)
+  Resolves: rhbz#1095866
+- Properly identify dm devices even when udev info is incomplete. (dlehman)
+  Resolves: rhbz#1080727
+- Do not mount btrfs to list subvolumes outside installer_mode. (dlehman)
+  Resolves: rhbz#1015072
+- Reset default subvolume prior to removing the default subvolume. (dlehman)
+  Resolves: rhbz#1076383
+- Increase max size for btrfs to 16 EiB. (dlehman)
+  Resolves: rhbz#1114435
+- Improve adjustment for removal of a subvol in BTRFSFactory. (dlehman)
+  Resolves: rhbz#1078995
+- Set dummy mountpoint in ksdata for lvm thin pools. (dlehman)
+  Resolves: rhbz#1100244
+
 * Wed Sep 17 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.4-1
 - Check if device has enough members when setting RAID level (amulhern)
   Related: rhbz#1019685
