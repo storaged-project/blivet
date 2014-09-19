@@ -404,4 +404,7 @@ class iscsi(object):
 
         return nodeDisks
 
+# Create iscsi singleton
+iscsi = iscsi()
+
 # vim:tw=78:ts=4:et:sw=4
