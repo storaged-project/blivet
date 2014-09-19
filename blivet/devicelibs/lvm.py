@@ -22,6 +22,7 @@
 
 import math
 from decimal import Decimal
+from collections import namedtuple
 
 import logging
 log = logging.getLogger("blivet")
@@ -31,7 +32,7 @@ from ..size import Size
 from .. import util
 from .. import arch
 from ..errors import LVMError
-from ..i18n import _
+from ..i18n import _, N_
 from ..flags import flags
 
 MAX_LV_SLOTS = 256
@@ -47,6 +48,10 @@ LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
+
+ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
+KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
+                         ThPoolProfile("thin-performance", N_("Performance")))
 
 def has_lvm():
     if util.find_program_in_path("lvm"):
@@ -554,7 +559,7 @@ def lvsnapshotcreate(vg_name, snap_name, size, origin_name):
     except LVMError as msg:
         raise LVMError("lvsnapshotcreate failed for %s/%s: %s" % (vg_name, snap_name, msg))
 
-def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
+def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None, profile=None):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, lv_name),
             "--size", "%dm" % size.convertTo(spec="mib")]
 
@@ -565,6 +570,9 @@ def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
     if chunksize:
         # default unit is KiB
         args += ["--chunksize", "%d" % chunksize.convertTo(spec="kib")]
+
+    if profile:
+        args += ["--profile=%s" % profile]
 
     try:
         lvm(args)
