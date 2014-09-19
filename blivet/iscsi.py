@@ -321,14 +321,47 @@ class iscsi(object):
 
         return (rc, msg)
 
-    # NOTE: the same credentials are used for discovery and login
-    #       (unlike in UI)
     def addTarget(self, ipaddr, port="3260", user=None, pw=None,
-                  user_in=None, pw_in=None, target=None, iface=None):
+                  user_in=None, pw_in=None, target=None, iface=None,
+                  discover_user=None, discover_pw=None,
+                  discover_user_in=None, discover_pw_in=None):
+        """
+        Connect to iSCSI server specified by IP address and port
+        and add all targets found on the server and authenticate if necessary.
+        If the target parameter is set, connect only to this target.
+
+        NOTE: the iSCSI target can have two sets of different authentication
+              credentials - one for discovery and one for logging into nodes
+
+        :param str ipaddr: target IP address
+        :param str port: target port
+        :param user: CHAP username for node login
+        :type user: str or NoneType
+        :param pw: CHAP password for node login
+        :type pw: str or NoneType
+        :param user_in: reverse CHAP username for node login
+        :type user: str or NoneType
+        :param pw_in: reverse CHAP password for node login
+        :type pw_in: str or NoneType
+        :param target: only add this target (if present)
+        :type target: str or NoneType
+        :param iface: interface to use
+        :type iface: str or NoneType
+        :param discover_user: CHAP username for discovery
+        :type discover_user: str or NoneType
+        :param discover_pw: CHAP password for discovery
+        :type discover_pw: str or NoneType
+        :param discover_user_in: reverse CHAP username for discovery
+        :type discover_user: str or NoneType
+        :param discover_pw_in: reverse CHAP password for discovery
+        :type discover_pw_in: str or NoneType
+        """
+
         found = 0
         logged_in = 0
 
-        found_nodes = self.discover(ipaddr, port, user, pw, user_in, pw_in)
+        found_nodes = self.discover(ipaddr, port, discover_user, discover_pw,
+                                    discover_user_in, discover_pw_in)
         if found_nodes == None:
             raise IOError(_("No iSCSI nodes discovered"))
 
