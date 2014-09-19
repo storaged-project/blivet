@@ -2916,7 +2916,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         if self.singlePV:
             # make sure there is at least one PV that can hold this LV
-            validpvs = [x for x in self.vg.pvs if float(x.size) >= self.req_size]
+            validpvs = [x for x in self.vg.pvs if x.size >= self.req_size]
             if not validpvs:
                 for dev in self.parents:
                     dev.removeChild()
@@ -3090,7 +3090,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         lvm.lvremove(self.vg.name, self._name)
 
     def _getSinglePV(self):
-        validpvs = [x for x in self.vg.pvs if float(x.size) >= self.size]
+        validpvs = [x for x in self.vg.pvs if x.size >= self.size]
 
         if not validpvs:
             raise errors.SinglePhysicalVolumeError(self.singlePVerr)
