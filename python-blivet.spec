@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.63
+Version: 0.64
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,34 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Sep 19 2014 Brian C. Lane <bcl@redhat.com> - 0.64-1
+- Fix pylint errors from recent btrfs commits. (dlehman)
+- Only cancel actions on disks related to the one we are hiding. (dlehman)
+- Cancel actions before hiding descendent devices. (dlehman)
+- Improve handling of device removals/additions from the devicetree. (dlehman)
+- The first format destroy action should obsolete any others. (dlehman)
+- Do not allow modification or removal of protected devices. (dlehman)
+- Propagate mount options for btrfs members to all volumes/subvolumes.
+  (dlehman)
+- Properly identify dm devices even when udev info is incomplete. (dlehman)
+- Do not mount btrfs to list subvolumes outside installer_mode. (dlehman)
+- Reset default subvolume prior to removing the default subvolume. (dlehman)
+- Increase max size for btrfs to 16 EiB. (#1114435) (dlehman)
+- Improve adjustment for removal of a subvol in BTRFSFactory. (dlehman)
+- Set dummy mountpoint in ksdata for lvm thin pools. (dlehman)
+- Add an epoch to blivet. (sbueno+anaconda)
+- Check if device has enough members when setting RAID level (#1019685)
+  (amulhern)
+- Add BTRFSValueError error and use in btrfs related code (#1019685) (amulhern)
+- iscsi: mount partitions in initramfs for root on iscsi (#740106) (rvykydal)
+- Remove poolMetaData (#1021505) (amulhern)
+- Revert "Allow use of a single path if multipath activation fails. (#1054806)"
+  (vpodzime)
+- Add a release make target (bcl)
+- Prefer ID_SERIAL over ID_SERIAL_SHORT (#1138254) (vpodzime)
+- Allow use of a single path if multipath activation fails. (#1054806)
+  (dlehman)
+
 * Wed Sep 10 2014 Brian C. Lane <bcl@redhat.com> - 0.63-1
 - Update makebumpver to include flags on first request (bcl)
 - Condense and comment some devicelibs.dasd methods (#1070115) (amulhern)

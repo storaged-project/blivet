@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-10 17:02-0700\n"
+"POT-Creation-Date: 2014-09-19 17:19-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,27 +17,156 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1383
-msgid "You must create a new filesystem on the root device."
+#. Decimal prefixes for different size increments, along with the name
+#. and accepted abbreviation for the prefix.  These prefixes are all
+#. for 'bytes'.
+#: ../blivet/size.py:42
+msgid "kilo"
 msgstr ""
 
-#: ../blivet/__init__.py:2943
-#, python-format
-msgid "Linux on %s"
+#: ../blivet/size.py:42
+msgid "k"
 msgstr ""
 
-#: ../blivet/__init__.py:2948
-msgid "Unknown Linux"
+#: ../blivet/size.py:43
+msgid "mega"
 msgstr ""
 
-#: ../blivet/__init__.py:2950
-#, python-format
-msgid "%(product)s %(version)s for %(arch)s"
+#: ../blivet/size.py:43
+msgid "M"
 msgstr ""
 
-#: ../blivet/__init__.py:2953
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
+#: ../blivet/size.py:44
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:49
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:49
+msgid "Y"
+msgstr ""
+
+#. Binary prefixes for the different size increments.  Same structure
+#. as the above list.
+#: ../blivet/size.py:53
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "Yi"
+msgstr ""
+
+#. no nice value found, just return size in bytes
+#. less than 10 KiB
+#: ../blivet/size.py:62 ../blivet/size.py:290 ../blivet/size.py:303
+#: ../blivet/size.py:311 ../blivet/size.py:340
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:62 ../blivet/size.py:102
+msgid "b"
+msgstr ""
+
+#: ../blivet/size.py:62 ../blivet/size.py:94
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:62 ../blivet/size.py:95
+msgid "bytes"
 msgstr ""
 
 #: ../blivet/partitioning.py:369
@@ -105,7 +234,30 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/devicetree.py:1286
+#: ../blivet/__init__.py:1392
+msgid "You must create a new filesystem on the root device."
+msgstr ""
+
+#: ../blivet/__init__.py:2958
+#, python-format
+msgid "Linux on %s"
+msgstr ""
+
+#: ../blivet/__init__.py:2963
+msgid "Unknown Linux"
+msgstr ""
+
+#: ../blivet/__init__.py:2965
+#, python-format
+msgid "%(product)s %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/__init__.py:2968
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/devicetree.py:1268
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -314,158 +466,6 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#. Decimal prefixes for different size increments, along with the name
-#. and accepted abbreviation for the prefix.  These prefixes are all
-#. for 'bytes'.
-#: ../blivet/size.py:42
-msgid "kilo"
-msgstr ""
-
-#: ../blivet/size.py:42
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "Y"
-msgstr ""
-
-#. Binary prefixes for the different size increments.  Same structure
-#. as the above list.
-#: ../blivet/size.py:53
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "Yi"
-msgstr ""
-
-#. no nice value found, just return size in bytes
-#. less than 10 KiB
-#: ../blivet/size.py:62 ../blivet/size.py:290 ../blivet/size.py:303
-#: ../blivet/size.py:311 ../blivet/size.py:340
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:62 ../blivet/size.py:102
-msgid "b"
-msgstr ""
-
-#: ../blivet/size.py:62 ../blivet/size.py:94
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:62 ../blivet/size.py:95
-msgid "bytes"
-msgstr ""
-
 #: ../blivet/deviceaction.py:282
 msgid "create device"
 msgstr ""
@@ -491,20 +491,20 @@ msgstr ""
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:691
+#: ../blivet/deviceaction.py:704
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:720
+#: ../blivet/deviceaction.py:733
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:765
+#: ../blivet/deviceaction.py:778
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:829
+#: ../blivet/deviceaction.py:842
 msgid "remove container member"
 msgstr ""
 
