@@ -53,7 +53,6 @@ from .platform import platform
 from . import tsort
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
-import parted
 from .i18n import _
 from .size import Size
 
