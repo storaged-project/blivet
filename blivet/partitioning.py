@@ -746,7 +746,7 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
             end = start + length - 1
 
         if not disklabel.endAlignment.isAligned(free, end):
-            end = disklabel.endAlignment.alignNearest(free, end)
+            end = disklabel.endAlignment.alignUp(free, end)
             log.debug("adjusted length from %d to %d", length, end - start + 1)
             if start > end:
                 raise PartitioningError(_("unable to allocate aligned partition"))
