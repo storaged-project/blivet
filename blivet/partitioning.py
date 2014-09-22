@@ -861,7 +861,7 @@ def doPartitioning(storage):
     for partition in storage.partitions:
         if not partition.exists and partition.isExtended and \
            not storage.devicetree.findActions(device=partition, action_type="create"):
-            storage.devicetree._removeDevice(partition, moddisk=False, force=True)
+            storage.devicetree._removeDevice(partition, modparent=False, force=True)
 
     partitions = storage.partitions[:]
     for part in storage.partitions:
