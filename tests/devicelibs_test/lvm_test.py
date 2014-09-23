@@ -7,6 +7,8 @@ from blivet.errors import LVMError
 
 from tests import loopbackedtestcase
 
+# TODO: test cases for lvorigin, lvsnapshot*, thin*
+
 class LVMTestCase(unittest.TestCase):
 
     def testGetPossiblePhysicalExtents(self):
@@ -30,11 +32,11 @@ class LVMTestCase(unittest.TestCase):
 # call if the device is non-existant, and usually that exception is caught and
 # an LVMError is then raised, but not always.
 
-class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
+class LVMAsRootTestCaseBase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
         """Set up the structure of the volume group."""
-        super(LVMAsRootTestCase, self).__init__(methodName=methodName)
+        super(LVMAsRootTestCaseBase, self).__init__(methodName=methodName)
         self._vg_name = "test-vg"
         self._lv_name = "test-lv"
 
@@ -57,14 +59,17 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         except LVMError:
             pass
 
-        try:
-            for dev in self.loopDevices:
+        for dev in self.loopDevices:
+            try:
                 lvm.pvremove(dev)
-        except LVMError:
-            pass
+            except LVMError:
+                pass
 
-        super(LVMAsRootTestCase, self).tearDown()
+        super(LVMAsRootTestCaseBase, self).tearDown()
 
+
+
+class LVMAsRootTestCase(LVMAsRootTestCaseBase):
     def testLVM(self):
         _LOOP_DEV0 = self.loopDevices[0]
         _LOOP_DEV1 = self.loopDevices[1]
