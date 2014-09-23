@@ -56,6 +56,10 @@ class Flags(object):
 
         self.multipath_friendly_names = True
 
+        # set to False to suppress the default LVM behavior of saving
+        # backup metadata in /etc/lvm/{archive,backup}
+        self.lvm_metadata_backup = True
+
         # whether to include nodev filesystems in the devicetree (only
         # meaningful when flags.installer_mode is False)
         self.include_nodev = False

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import unittest
+import glob
 
 import blivet.devicelibs.lvm as lvm
 from blivet.size import Size
@@ -67,6 +68,32 @@ class LVMAsRootTestCaseBase(loopbackedtestcase.LoopBackedTestCase):
 
         super(LVMAsRootTestCaseBase, self).tearDown()
 
+class LVM_Metadata_Backup_TestCase(LVMAsRootTestCaseBase):
+    def _list_backups(self):
+        return set(glob.glob("/etc/lvm/archive/%s_*" % self._vg_name))
+
+    def setUp(self):
+        super(LVM_Metadata_Backup_TestCase, self).setUp()
+        self._old_backups = self._list_backups()
+        for dev in self.loopDevices:
+            lvm.pvcreate(dev)
+
+    def test_backup_enabled(self):
+        lvm.flags.lvm_metadata_backup = True
+        lvm.vgcreate(self._vg_name, self.loopDevices, Size("4MiB"))
+
+        current_backups = self._list_backups()
+        self.assertTrue(current_backups.issuperset(self._old_backups),
+                        "old backups disappeared??")
+        self.assertTrue(current_backups.difference(self._old_backups),
+                        "lvm_metadata_backup enabled but no backups created")
+
+    def test_backup_disabled(self):
+        lvm.flags.lvm_metadata_backup = False
+        lvm.vgcreate(self._vg_name, self.loopDevices, Size("4MiB"))
+
+        self.assertEqual(self._old_backups, self._list_backups(),
+                         "lvm_metadata_backup disabled but backups created")
 
 
 class LVMAsRootTestCase(LVMAsRootTestCaseBase):

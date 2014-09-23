@@ -35,6 +35,7 @@ from .. import util
 from .. import arch
 from ..errors import LVMError
 from ..i18n import _, N_
+from ..flags import flags
 
 MAX_LV_SLOTS = 256
 
@@ -104,6 +105,8 @@ def _getConfigArgs(args):
     config_string = " devices { %s } " % (devices_string) # strings can be added
     if cmd in READONLY_COMMANDS:
         config_string += "global {locking_type=4} "
+    if not flags.lvm_metadata_backup:
+        config_string += "backup {backup=0 archive=0} "
     if config_string:
         config_args = ["--config", config_string]
     return config_args
