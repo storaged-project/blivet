@@ -63,11 +63,15 @@ def has_lvm():
 config_args_data = { "filterRejects": [],    # regular expressions to reject.
                      "filterAccepts": [] }   # regexp to accept
 
-def _getConfigArgs(**kwargs):
+def _getConfigArgs(args):
     """lvm command accepts lvm.conf type arguments preceded by --config. """
-    config_args = []
 
-    read_only_locking = kwargs.get("read_only_locking", False)
+    # These commands are read-only, so we can run them with read-only locking.
+    # (not an exhaustive list, but these are the only ones used here)
+    READONLY_COMMANDS = ('lvs', 'pvs', 'vgs')
+
+    cmd = args[0]
+    config_args = []
 
     filter_string = ""
     rejects = config_args_data["filterRejects"]
@@ -87,7 +91,7 @@ def _getConfigArgs(**kwargs):
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
     config_string = " devices { %s } " % (devices_string) # strings can be added
-    if read_only_locking:
+    if cmd in READONLY_COMMANDS:
         config_string += "global {locking_type=4} "
     if config_string:
         config_args = ["--config", config_string]
@@ -204,18 +208,26 @@ def is_valid_thin_pool_chunk_size(size, discard=False):
     else:
         return (size % LVM_THINP_MIN_CHUNK_SIZE == 0)
 
-def lvm(args):
-    ret = util.run_program(["lvm"] + args)
-    if ret:
-        raise LVMError("running lvm " + " ".join(args) + " failed")
+def lvm(args, capture=False, ignore_errors=False):
+    """ Runs lvm with specified arguments.
+
+        :param bool capture: if True, return the output of the command.
+        :param bool ignore_errors: if True, do not raise LVMError on failure
+        :returns: the output of the command or None
+        :rtype: str or NoneType
+        :raises: LVMError if command fails
+    """
+    argv = ["lvm"] + args + _getConfigArgs(args)
+    (ret, out) = util.run_program_and_capture_output(argv)
+    if ret and not ignore_errors:
+        raise LVMError("running "+ " ".join(argv) + " failed")
+    if capture:
+        return out
 
 def pvcreate(device):
     # we force dataalignment=1024k since we cannot get lvm to tell us what
     # the pe_start will be in advance
-    args = ["pvcreate"] + \
-            _getConfigArgs() + \
-            ["--dataalignment", "1024k"] + \
-            [device]
+    args = ["pvcreate", "--dataalignment", "1024k", device]
 
     try:
         lvm(args)
@@ -223,10 +235,9 @@ def pvcreate(device):
         raise LVMError("pvcreate failed for %s: %s" % (device, msg))
 
 def pvresize(device, size):
-    args = ["pvresize"] + \
-            ["--setphysicalvolumesize", ("%dm" % size.convertTo(spec="mib"))] + \
-            _getConfigArgs() + \
-            [device]
+    args = ["pvresize",
+            "--setphysicalvolumesize", ("%dm" % size.convertTo(spec="mib")),
+            device]
 
     try:
         lvm(args)
@@ -234,9 +245,7 @@ def pvresize(device, size):
         raise LVMError("pvresize failed for %s: %s" % (device, msg))
 
 def pvremove(device):
-    args = ["pvremove", "--force", "--force", "--yes"] + \
-            _getConfigArgs() + \
-            [device]
+    args = ["pvremove", "--force", "--force", "--yes", device]
 
     try:
         lvm(args)
@@ -244,9 +253,7 @@ def pvremove(device):
         raise LVMError("pvremove failed for %s: %s" % (device, msg))
 
 def pvscan(device):
-    args = ["pvscan", "--cache",] + \
-            _getConfigArgs() + \
-            [device]
+    args = ["pvscan", "--cache", device]
 
     try:
         lvm(args)
@@ -259,7 +266,7 @@ def pvmove(source, dest=None):
         :param str source: pv device path to move extents off of
         :keyword str dest: pv device path to move the extents onto
     """
-    args = ["pvmove"] + _getConfigArgs() + [source]
+    args = ["pvmove", source]
     if dest:
         args.append(dest)
 
@@ -304,13 +311,12 @@ def pvinfo(device=None):
             "--unit=k", "--nosuffix", "--nameprefixes",
             "--unquoted", "--noheadings",
             "-opv_name,pv_uuid,pe_start,vg_name,vg_uuid,vg_size,vg_free,"
-            "vg_extent_size,vg_extent_count,vg_free_count,pv_count"] + \
-            _getConfigArgs(read_only_locking=True)
+            "vg_extent_size,vg_extent_count,vg_free_count,pv_count"]
 
     if device:
         args.append(device)
 
-    buf = util.capture_output(["lvm"] + args)
+    buf = lvm(args, capture=True, ignore_errors=True)
     pvs = {}
     for line in buf.splitlines():
         info = parse_lvm_vars(line)
@@ -326,7 +332,6 @@ def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
     if pe_size:
         argv.extend(["-s", "%dm" % pe_size.convertTo(spec="mib")])
-    argv.extend(_getConfigArgs())
     argv.append(vg_name)
     argv.extend(pv_list)
 
@@ -336,9 +341,7 @@ def vgcreate(vg_name, pv_list, pe_size):
         raise LVMError("vgcreate failed for %s: %s" % (vg_name, msg))
 
 def vgremove(vg_name):
-    args = ["vgremove", "--force"] + \
-            _getConfigArgs() +\
-            [vg_name]
+    args = ["vgremove", "--force", vg_name]
 
     try:
         lvm(args)
@@ -346,9 +349,7 @@ def vgremove(vg_name):
         raise LVMError("vgremove failed for %s: %s" % (vg_name, msg))
 
 def vgactivate(vg_name):
-    args = ["vgchange", "-a", "y"] + \
-            _getConfigArgs() + \
-            [vg_name]
+    args = ["vgchange", "-a", "y", vg_name]
 
     try:
         lvm(args)
@@ -356,9 +357,7 @@ def vgactivate(vg_name):
         raise LVMError("vgactivate failed for %s: %s" % (vg_name, msg))
 
 def vgdeactivate(vg_name):
-    args = ["vgchange", "-a", "n"] + \
-            _getConfigArgs() + \
-            [vg_name]
+    args = ["vgchange", "-a", "n", vg_name]
 
     try:
         lvm(args)
@@ -380,7 +379,6 @@ def vgreduce(vg_name, pv, missing=False):
             it from the VG. You must do that first by calling :func:`.pvmove`.
     """
     args = ["vgreduce"]
-    args.extend(_getConfigArgs())
     if missing:
         args.extend(["--removemissing", "--force", vg_name])
     else:
@@ -397,7 +395,7 @@ def vgextend(vg_name, pv):
         :param str vg_name: the name of the VG
         :param str pv: device path of PV to add
     """
-    args = ["vgextend"] + _getConfigArgs() + [vg_name, pv]
+    args = ["vgextend", vg_name, pv]
 
     try:
         lvm(args)
@@ -412,10 +410,10 @@ def vginfo(vg_name):
     """
     args = ["vgs", "--noheadings", "--nosuffix", "--nameprefixes", "--unquoted",
             "--units", "m",
-            "-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count"] + \
-            _getConfigArgs(read_only_locking=True) + [vg_name]
+            "-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count",
+            vg_name]
 
-    buf = util.capture_output(["lvm"] + args)
+    buf = lvm(args, capture=True, ignore_errors=True)
     info = parse_lvm_vars(buf)
     if len(info.keys()) != 7:
         raise LVMError(_("vginfo failed for %s") % vg_name)
@@ -434,12 +432,11 @@ def lvs(vg_name=None):
     args = ["lvs",
             "-a", "--unit", "k", "--nosuffix", "--nameprefixes",
             "--unquoted", "--noheadings",
-            "-ovg_name,lv_name,lv_uuid,lv_size,lv_attr,segtype"] + \
-            _getConfigArgs(read_only_locking=True)
+            "-ovg_name,lv_name,lv_uuid,lv_size,lv_attr,segtype"]
     if vg_name:
         args.append(vg_name)
 
-    buf = util.capture_output(["lvm"] + args)
+    buf = lvm(args, capture=True, ignore_errors=True)
     logvols = {}
     for line in buf.splitlines():
         info = parse_lvm_vars(line)
@@ -454,10 +451,9 @@ def lvs(vg_name=None):
 
 def lvorigin(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "origin"] + \
-            _getConfigArgs(read_only_locking=True) + \
             ["%s/%s" % (vg_name, lv_name)]
 
-    buf = util.capture_output(["lvm"] + args)
+    buf = lvm(args, capture=True, ignore_errors=True)
 
     try:
         origin = buf.splitlines()[0].strip()
@@ -473,7 +469,6 @@ def lvcreate(vg_name, lv_name, size, pvs=None):
             ["-L", "%dm" % size.convertTo(spec="mib")] + \
             ["-n", lv_name] + \
             ["-y"] + \
-            _getConfigArgs() + \
             [vg_name] + pvs
 
     try:
@@ -486,7 +481,7 @@ def lvremove(vg_name, lv_name, force=False):
     if force:
         args.extend(["--force", "--yes"])
 
-    args += _getConfigArgs() + ["%s/%s" % (vg_name, lv_name)]
+    args += ["%s/%s" % (vg_name, lv_name)]
 
     try:
         lvm(args)
@@ -496,7 +491,6 @@ def lvremove(vg_name, lv_name, force=False):
 def lvresize(vg_name, lv_name, size):
     args = ["lvresize"] + \
             ["--force", "-L", "%dm" % size.convertTo(spec="mib")] + \
-            _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
@@ -510,7 +504,7 @@ def lvactivate(vg_name, lv_name, ignore_skip=False):
     if ignore_skip:
         args.append("-K")
 
-    args += _getConfigArgs() + ["%s/%s" % (vg_name, lv_name)]
+    args += ["%s/%s" % (vg_name, lv_name)]
 
     try:
         lvm(args)
@@ -519,7 +513,6 @@ def lvactivate(vg_name, lv_name, ignore_skip=False):
 
 def lvdeactivate(vg_name, lv_name):
     args = ["lvchange", "-a", "n"] + \
-            _getConfigArgs() + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
@@ -536,8 +529,7 @@ def lvsnapshotmerge(vg_name, lv_name):
             how merge is handled by lvm.
 
     """
-    args = ["lvconvert", "--merge", "%s/%s" % (vg_name, lv_name)]
-    args += _getConfigArgs() + [lv_name]
+    args = ["lvconvert", "--merge", "%s/%s" % (vg_name, lv_name), lv_name]
 
     try:
         lvm(args)
@@ -552,7 +544,7 @@ def lvsnapshotcreate(vg_name, snap_name, size, origin_name):
         :param str origin_name: the name of the origin logical volume
     """
     args = ["lvcreate", "-s", "-L", "%dm" % size.convertTo(spec="MiB"),
-            "-n", snap_name] + _getConfigArgs() + ["%s/%s" % (vg_name, origin_name)]
+            "-n", snap_name, "%s/%s" % (vg_name, origin_name)]
 
     try:
         lvm(args)
@@ -571,8 +563,6 @@ def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
         # default unit is KiB
         args += ["--chunksize", "%d" % chunksize.convertTo(spec="kib")]
 
-    args += _getConfigArgs()
-
     try:
         lvm(args)
     except LVMError as msg:
@@ -581,8 +571,7 @@ def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None):
 def thinlvcreate(vg_name, pool_name, lv_name, size):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, pool_name),
             "--virtualsize", "%dm" % size.convertTo(spec="MiB"),
-            "-n", lv_name] + \
-            _getConfigArgs()
+            "-n", lv_name]
 
     try:
         lvm(args)
@@ -606,10 +595,9 @@ def thinsnapshotcreate(vg_name, snap_name, origin_name, pool_name=None):
 
 def thinlvpoolname(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "pool_lv"] + \
-            _getConfigArgs(read_only_locking=True) + \
             ["%s/%s" % (vg_name, lv_name)]
 
-    buf = util.capture_output(["lvm"] + args)
+    buf = lvm(args, capture=True, ignore_errors=True)
 
     try:
         pool = buf.splitlines()[0].strip()
