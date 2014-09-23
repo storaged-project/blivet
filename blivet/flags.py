@@ -110,4 +110,9 @@ class Flags(object):
         self.ibft = anaconda_flags.ibft
         self.dmraid = anaconda_flags.dmraid
 
+        # We don't want image installs writing backups of the *image* metadata
+        # into the *host's* /etc/lvm. This can get real messy on build systems.
+        if self.image_install:
+            self.lvm_metadata_backup = False
+
 flags = Flags()
