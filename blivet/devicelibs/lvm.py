@@ -281,7 +281,7 @@ def pvmove(source, dest=None):
     """
     args = ["pvmove"] + _getConfigArgs() + [source]
     if dest:
-        args.extend(dest)
+        args.append(dest)
 
     try:
         lvm(args)
