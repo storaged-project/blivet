@@ -1521,9 +1521,16 @@ class DiskChunk(Chunk):
             :keyword requests: list of requests to add initially
             :type requests: list of :class:`PartitionRequest`
 
-            Note: We will limit partition growth based on disklabel
-            limitations for partition end sector, so a 10TB disk with an
-            msdos disklabel will be treated like a 2TB disk.
+            .. note::
+
+                We will limit partition growth based on disklabel limitations
+                for partition end sector, so a 10TB disk with an msdos disklabel
+                will be treated like a 2TiB disk.
+
+            .. note::
+
+                If you plan to allocate aligned partitions you should pass in an
+                aligned geometry instance.
 
         """
         self.geometry = geometry            # parted.Geometry
@@ -1702,8 +1709,13 @@ def getDiskChunks(disk, partitions, free):
     disk_parts = [p for p in partitions if p.disk == disk and not p.exists]
     disk_free = [f for f in free if f.device.path == disk.path]
 
-
-    chunks = [DiskChunk(f) for f in disk_free]
+    chunks = []
+    for f in disk_free:
+        # align the geometry so we have a realistic view of the free space
+        geom = parted.Geometry(device=f.device,
+                               start=disk.format.alignment.alignUp(f, f.start),
+                               end=disk.format.endAlignment.alignDown(f, f.end))
+        chunks.append(DiskChunk(geom))
 
     for p in disk_parts:
         if p.isExtended:
