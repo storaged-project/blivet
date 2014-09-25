@@ -353,20 +353,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def partitions(self):
-        try:
-            parts = self.partedDisk.partitions
-        except Exception: # pylint: disable=broad-except
-            log_exception_info()
-            parts = []
-            if flags.testing:
-                sys_block_root = "/sys/class/block/"
-
-                # FIXME: /dev/mapper/foo won't work without massaging
-                disk_name = self.device.split("/")[-1]
-
-                disk_root = sys_block_root + disk_name
-                parts = [n for n in os.listdir(disk_root) if n.startswith(disk_name)]
-        return parts
+        return self.partedDisk.partitions
 
     @property
     def alignment(self):
@@ -410,32 +397,8 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        def read_int_from_sys(path):
-            return int(open(path).readline().strip())
-
-        try:
-            free = sum(Size(f.getLength(unit="B"))
-                        for f in self.partedDisk.getFreeSpacePartitions())
-        except Exception: # pylint: disable=broad-except
-            log_exception_info()
-            sys_block_root = "/sys/class/block/"
-
-            # FIXME: /dev/mapper/foo won't work without massaging
-            disk_name = self.device.split("/")[-1]
-
-            disk_root = sys_block_root + disk_name
-            disk_length = read_int_from_sys("%s/size" % disk_root)
-            sector_size = read_int_from_sys("%s/queue/logical_block_size" % disk_root)
-            partition_names = [n for n in os.listdir(disk_root) if n.startswith(disk_name)]
-            used_sectors = 0
-            for partition_name in partition_names:
-                partition_root = sys_block_root + partition_name
-                partition_length = read_int_from_sys("%s/size" % partition_root)
-                used_sectors += partition_length
-
-            free = Size((disk_length - used_sectors) * sector_size)
-
-        return free
+        return Size(sum(f.getLength(unit="B")
+                        for f in self.partedDisk.getFreeSpacePartitions()))
 
     @property
     def magicPartitionNumber(self):
