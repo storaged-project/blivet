@@ -1959,6 +1959,7 @@ class PartitionDevice(StorageDevice):
             self._size = newsize
             self.req_size = newsize
             self.req_base_size = newsize
+            return
 
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
