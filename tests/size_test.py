@@ -104,6 +104,12 @@ class SizeTestCase(unittest.TestCase):
         s = Size("12.6998 TiB")
         self.assertEquals(s.humanReadable(max_places=2), "12.7 TiB")
 
+    def testConvertToPrecision(self):
+        s = Size(1835008)
+        self.assertEquals(s.convertTo(spec="b"), 1835008)
+        self.assertEquals(s.convertTo(spec="KiB"), 1792)
+        self.assertEquals(s.convertTo(spec="MiB"), 1.75)
+
     def testNegative(self):
         s = Size("-500MiB")
         self.assertEquals(s.humanReadable(), "-500 MiB")
