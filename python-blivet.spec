@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.5
+Version: 0.61.0.6
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,44 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Sep 25 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.6-1
+- Disable LVM autobackup when doing image installs (wwoods)
+  Resolves: rhbz#1066004
+- Add attribute 'flags.lvm_metadata_backup' (wwoods)
+  Related: rhbz#1066004
+- lvm_test: refactoring + minor fix (wwoods)
+  Related: rhbz#1066004
+- devicelibs.lvm: refactor _getConfigArgs()/lvm() (wwoods)
+  Related: rhbz#1066004
+- devicelibs.lvm: fix pvmove(src, dest=DESTPATH) (wwoods)
+  Related: rhbz#1066004
+- Align free regions used for partition growing calculations. (dlehman)
+  Resolves: rhbz#1083687
+- Try to align end sector up when aligning new partitions. (dlehman)
+  Related: rhbz#1090477
+- Remove obsolete conversion of size to float. (dlehman)
+  Resolves: rhbz#1140642
+- Honor size specified for explicit extended partition requests. (dlehman)
+  Resolves: rhbz#1077250
+- Honor zerombr regardless of clearpart setting. (dlehman)
+  Resolves: rhbz#1117946
+- Fix treatment of percent as lvm lv size spec. (dlehman)
+  Related: rhbz#1116435
+- Change variable keyword (amulhern)
+  Related: rhbz#1075671
+- Remove unused import (amulhern)
+  Related: rhbz#1075671
+- Remove unused import (amulhern)
+  Related: rhbz#1073679
+- Don't mix target and discovery credentials (mkolman)
+  Resolves: rhbz#1037564
+- Make sure /boot/efi is metadata 1.0 if it's on mdraid. (pjones)
+  Related: rhbz#788313
+- iscsi: fix root argument being overriden by local variable (rvykydal)
+  Resolves: rhbz#1144463
+- iscsi: add iscsi singleton back (rvykydal)
+  Related: rhbz#1144463
+
 * Fri Sep 19 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.5-1
 - Make sure autopart requests fit in somewhere (vpodzime)
   Resolves: rhbz#978266
