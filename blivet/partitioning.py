@@ -809,14 +809,18 @@ def getFreeRegions(disks):
     """ Return a list of free regions on the specified disks.
 
         :param disks: list of disks
-        :type disks: list of :class:`~.devices.Disks`
+        :type disks: list of :class:`~.devices.Disk`
         :returns: list of free regions
         :rtype: list of :class:`parted.Geometry`
+
+        Only free regions guaranteed to contain at least one aligned sector for
+        both the start and end alignments in the
+        :class:`~.formats.disklabel.DiskLabel` are returned.
     """
     free = []
     for disk in disks:
         for f in disk.format.partedDisk.getFreeSpaceRegions():
-            if f.length > 0:
+            if f.length >= disk.format.alignment.grainSize:
                 free.append(f)
 
     return free
@@ -1762,6 +1766,8 @@ def getDiskChunks(disk, partitions, free):
         :rtype: list of :class:`DiskChunk`
 
         Partitions and free regions not on the specified disk are ignored.
+
+        Chunks contain an aligned version of the free region's geometry.
     """
     # list of all new partitions on this disk
     disk_parts = [p for p in partitions if p.disk == disk and not p.exists]
@@ -1769,10 +1775,18 @@ def getDiskChunks(disk, partitions, free):
 
     chunks = []
     for f in disk_free:
-        # align the geometry so we have a realistic view of the free space
+        # Align the geometry so we have a realistic view of the free space.
+        # alignUp and alignDown can align in the reverse direction if the only
+        # aligned sector within the geometry is in that direction, so we have to
+        # also check that the resulting aligned geometry has a non-zero length.
+        # (It is possible that both will align to the same sector in a small
+        #  enough region.)
         geom = parted.Geometry(device=f.device,
                                start=disk.format.alignment.alignUp(f, f.start),
                                end=disk.format.endAlignment.alignDown(f, f.end))
+        if geom.length < disk.format.alignment.grainSize:
+            continue
+
         chunks.append(DiskChunk(geom))
 
     for p in disk_parts:
