@@ -21,8 +21,8 @@
 
 class PartSpec(object):
     def __init__(self, mountpoint=None, fstype=None, size=None, maxSize=None,
-                 grow=False, btr=False, lv=False, singlePV=False, thin=False,
-                 weight=0, requiredSpace=0, encrypted=False):
+                 grow=False, btr=False, lv=False, thin=False, weight=0,
+                 requiredSpace=0, encrypted=False):
         """ Create a new storage specification.  These are used to specify
             the default partitioning layout as an object before we have the
             storage system up and running.  The attributes are obvious
@@ -34,8 +34,6 @@ class PartSpec(object):
                   it will be allocated as a partition.
             thin -- Should this be allocated as a thin logical volume if it is
                     being allocated as a logical volume?
-            singlePV -- Should this logical volume map to a single physical
-                        volume in the volume group?  Implies lv=True
             weight -- An integer that modifies the sort algorithm for partition
                       requests.  A larger value means the partition will end up
                       closer to the front of the disk.  This is mainly used to
@@ -61,25 +59,21 @@ class PartSpec(object):
         self.grow = grow
         self.lv = lv
         self.btr = btr
-        self.singlePV = singlePV
         self.thin = thin
         self.weight = weight
         self.requiredSpace = requiredSpace
         self.encrypted = encrypted
 
-        if self.singlePV and not self.lv:
-            self.lv = True
-
     def __str__(self):
         s = ("%(type)s instance (%(id)s) -- \n"
-             "  mountpoint = %(mountpoint)s  lv = %(lv)s  singlePV = %(singlePV)s"
+             "  mountpoint = %(mountpoint)s  lv = %(lv)s"
              "  thin = %(thin)s  btrfs = %(btrfs)s\n"
              "  weight = %(weight)s  fstype = %(fstype)s  encrypted = %(enc)s\n"
              "  size = %(size)s  maxSize = %(maxSize)s  grow = %(grow)s\n" %
              {"type": self.__class__.__name__, "id": "%#x" % id(self),
               "mountpoint": self.mountpoint, "lv": self.lv, "btrfs": self.btr,
-              "singlePV": self.singlePV, "weight": self.weight,
-              "fstype": self.fstype, "size": self.size, "enc": self.encrypted,
-              "maxSize": self.maxSize, "grow": self.grow, "thin": self.thin})
+              "weight": self.weight, "fstype": self.fstype, "size": self.size,
+              "enc": self.encrypted, "maxSize": self.maxSize, "grow": self.grow,
+              "thin": self.thin})
 
         return s
