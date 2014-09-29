@@ -337,9 +337,7 @@ class S390(Platform):
     def setDefaultPartitioning(self):
         """Return the default platform-specific partitioning information."""
         return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
-                         weight=self.weight(mountpoint="/boot"), lv=True,
-                         singlePV=True)]
-
+                         weight=self.weight(mountpoint="/boot"), lv=False)]
     def requiredDiskLabelType(self, device_type):
         """The required disklabel type for the specified device type."""
         if device_type == parted.DEVICE_DASD:
