@@ -319,8 +319,7 @@ class ActionCreateDevice(DeviceAction):
         elif (action.isCreate and action.isDevice and
               isinstance(self.device, LVMLogicalVolumeDevice) and
               isinstance(action.device, LVMLogicalVolumeDevice) and
-              self.device.vg == action.device.vg and
-              action.device.singlePV and not self.device.singlePV):
+              self.device.vg == action.device.vg):
             rc = True
         elif (action.isAdd and action.container == self.container):
             rc = True
