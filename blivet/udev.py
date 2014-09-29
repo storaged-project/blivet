@@ -411,7 +411,7 @@ def device_get_md_uuid(info):
     # Value for MD_UUID known to be obtained from:
     #  * pyudev/libudev
     #  * mdraid/mdadm (all numeric metadata versions and container default)
-    return info["MD_UUID"]
+    return util.canonicalize_UUID(info["MD_UUID"])
 
 def device_get_md_container(info):
     """
@@ -456,7 +456,8 @@ def device_get_md_device_uuid(info):
     # Value for MD_UUID known to be obtained from:
     #  * pyudev/libudev
     #  * mdraid/mdadm (only 1.x metadata versions)
-    return info.get('MD_DEV_UUID')
+    md_device_uuid = info.get('MD_DEV_UUID')
+    return util.canonicalize_UUID(md_device_uuid) if md_device_uuid else None
 
 def device_get_vg_name(info):
     return info['LVM2_VG_NAME']

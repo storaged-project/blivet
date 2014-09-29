@@ -8,6 +8,7 @@ import subprocess
 import re
 import sys
 import tempfile
+import uuid
 from decimal import Decimal
 
 import six
@@ -360,6 +361,25 @@ class ObjectID(object):
         self = super(ObjectID, cls).__new__(cls, *args, **kwargs)
         self.id = self._newid_gen() # pylint: disable=attribute-defined-outside-init
         return self
+
+def canonicalize_UUID(a_uuid):
+    """ Converts uuids to canonical form.
+
+        :param str a_uuid: the UUID
+
+        :returns: a canonicalized UUID
+        :rtype: str
+
+        mdadm's UUIDs are actual 128 bit uuids, but it formats them strangely.
+        This converts the uuids to canonical form.
+        Example:
+            mdadm UUID: '3386ff85:f5012621:4a435f06:1eb47236'
+        canonical UUID: '3386ff85-f501-2621-4a43-5f061eb47236'
+
+        If the UUID is already in canonical form, the conversion
+        is equivalent to the identity.
+    """
+    return str(uuid.UUID(a_uuid.replace(':', '')))
 
 ##
 ## Convenience functions for examples and tests
