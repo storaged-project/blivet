@@ -316,8 +316,7 @@ def _scheduleVolumes(storage, devs):
                            "grow": request.grow,
                            "maxsize": request.maxSize,
                            "size": request.size,
-                           "thin_volume": thinlv,
-                           "singlePV": request.singlePV})
+                           "thin_volume": thinlv})
         else:
             kwargs.update({"parents": [container],
                            "size": request.size,

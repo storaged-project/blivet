@@ -2845,8 +2845,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=0, segType=None,
                  fmt=None, exists=False, sysfsPath='',
-                 grow=None, maxsize=None, percent=None,
-                 singlePV=False):
+                 grow=None, maxsize=None, percent=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -2869,8 +2868,6 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type copies: int
             :keyword logSize: size of log volume (for mirrored lvs)
             :type logSize: :class:`~.size.Size`
-            :keyword singlePV: if true, maps this lv to a single pv
-            :type singlePV: bool
             :keyword segType: segment type (eg: "linear", "raid1")
             :type segType: str
 
@@ -2896,20 +2893,10 @@ class LVMLogicalVolumeDevice(DMDevice):
                           sysfsPath=sysfsPath, parents=parents,
                           exists=exists)
 
-        self.singlePVerr = ("%(mountpoint)s is restricted to a single "
-                            "physical volume on this platform.  No physical "
-                            "volumes available in volume group %(vgname)s "
-                            "with %(size)s of available space." %
-                           {'mountpoint': getattr(self.format, "mountpoint",
-                                                  "A proposed logical volume"),
-                            'vgname': self.vg.name,
-                            'size': self.size})
-
         self.uuid = uuid
         self.copies = copies
         self.logSize = logSize
         self.metaDataSize = 0
-        self.singlePV = singlePV
         self.segType = segType or "linear"
         self.snapshots = []
 
@@ -2924,14 +2911,6 @@ class LVMLogicalVolumeDevice(DMDevice):
             # XXX should we enforce that req_size be pe-aligned?
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
-
-        if self.singlePV:
-            # make sure there is at least one PV that can hold this LV
-            validpvs = [x for x in self.vg.pvs if x.size >= self.req_size]
-            if not validpvs:
-                for dev in self.parents:
-                    dev.removeChild()
-                raise errors.SinglePhysicalVolumeError(self.singlePVerr)
 
         # here we go with the circular references
         self.parents[0]._addLogVol(self)
@@ -3084,11 +3063,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         # should we use --zero for safety's sake?
-        if self.singlePV:
-            lvm.lvcreate(self.vg.name, self._name, self.size,
-                         pvs=self._getSinglePV())
-        else:
-            lvm.lvcreate(self.vg.name, self._name, self.size)
+        lvm.lvcreate(self.vg.name, self._name, self.size)
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -3099,14 +3074,6 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         lvm.lvremove(self.vg.name, self._name)
-
-    def _getSinglePV(self):
-        validpvs = [x for x in self.vg.pvs if x.size >= self.size]
-
-        if not validpvs:
-            raise errors.SinglePhysicalVolumeError(self.singlePVerr)
-
-        return [validpvs[0].path]
 
     def resize(self):
         log_method_call(self, self.name, status=self.status)
