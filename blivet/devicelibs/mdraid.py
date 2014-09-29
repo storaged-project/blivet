@@ -22,7 +22,6 @@
 
 import os
 import re
-import uuid
 
 from .. import util
 from ..errors import MDRaidError
@@ -256,22 +255,6 @@ def mddeactivate(device):
     except MDRaidError as msg:
         raise MDRaidError("mddeactivate failed for %s: %s" % (device, msg))
 
-def canonicalize_UUID(a_uuid):
-    """ Converts uuids to canonical form.
-
-        :param str a_uuid: the UUID
-
-        :returns: a canonicalized UUID
-        :rtype: str
-
-        mdadm's UUIDs are actual 128 bit uuids, but it formats them strangely.
-        This converts the uuids to canonical form.
-        Example:
-            mdadm UUID: '3386ff85:f5012621:4a435f06:1eb47236'
-        canonical UUID: '3386ff85-f501-2621-4a43-5f061eb47236'
-    """
-    return str(uuid.UUID(a_uuid.replace(':', '')))
-
 def process_UUIDS(info, UUID_keys):
     """ Extract and convert expected UUIDs to canonical form.
         Reassign canonicalized UUIDs to corresponding keys.
@@ -284,7 +267,7 @@ def process_UUIDS(info, UUID_keys):
             # extract mdadm UUID, e.g., '3386ff85:f5012621:4a435f06:1eb47236'
             the_uuid = re.match(r"(([a-f0-9]){8}:){3}([a-f0-9]){8}", v)
 
-            info[k] = canonicalize_UUID(the_uuid.group())
+            info[k] = util.canonicalize_UUID(the_uuid.group())
         except (ValueError, AttributeError) as e:
             # the unlikely event that mdadm's UUIDs change their format
             log.warning('uuid value %s could not be canonicalized: %s', v, e)
