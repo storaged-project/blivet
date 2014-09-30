@@ -27,7 +27,6 @@ from . import udev
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice
-from .devices import LVMLogicalVolumeDevice
 from .formats import getFormat, luks
 from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
@@ -316,11 +315,6 @@ class ActionCreateDevice(DeviceAction):
             otherNum = action.device.partedPartition.number
             if selfNum > otherNum:
                 rc = True
-        elif (action.isCreate and action.isDevice and
-              isinstance(self.device, LVMLogicalVolumeDevice) and
-              isinstance(action.device, LVMLogicalVolumeDevice) and
-              self.device.vg == action.device.vg):
-            rc = True
         elif (action.isAdd and action.container == self.container):
             rc = True
 
