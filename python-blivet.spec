@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.2
+Version: 0.61.3
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,33 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Sep 30 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.3-1
+- Don't mix target and discovery credentials (#1037564) (mkolman)
+- Filter out free regions too small for alignment of partitions. (dlehman)
+- Align free regions used for partition growing calculations. (dlehman)
+- Try to align end sector up when aligning new partitions. (dlehman)
+- Remove obsolete conversion of size to float. (dlehman)
+- Honor size specified for explicit extended partition requests. (dlehman)
+- Honor zerombr regardless of clearpart setting. (dlehman)
+- Fix treatment of percent as lvm lv size spec. (#1146156) (dlehman)
+- iscsi: fix root argument being overriden by local variable (#1144463)
+  (rvykydal)
+- iscsi: add iscsi singleton back (#1144463) (rvykydal)
+- Only cancel actions on disks related to the one we are hiding. (dlehman)
+- Cancel actions before hiding descendent devices. (dlehman)
+- Improve handling of device removals/additions from the devicetree. (dlehman)
+- The first format destroy action should obsolete any others. (dlehman)
+- Do not allow modification or removal of protected devices. (dlehman)
+- Fix pylint errors from recent btrfs commits. (dlehman)
+- Propagate mount options for btrfs members to all volumes/subvolumes.
+  (dlehman)
+- Properly identify dm devices even when udev info is incomplete. (dlehman)
+- Do not mount btrfs to list subvolumes outside installer_mode. (dlehman)
+- Reset default subvolume prior to removing the default subvolume. (dlehman)
+- Increase max size for btrfs to 16 EiB. (#1114435) (dlehman)
+- Improve adjustment for removal of a subvol in BTRFSFactory. (dlehman)
+- Set dummy mountpoint in ksdata for lvm thin pools. (dlehman)
+
 * Wed Sep 17 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.2-1
 - Add an epoch to blivet. (sbueno+anaconda)
 
