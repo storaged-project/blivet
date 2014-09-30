@@ -36,28 +36,35 @@ from .i18n import _, P_, N_
 # Container for size unit prefix information
 _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 
+_DECIMAL_FACTOR = 10 ** 3
+_BINARY_FACTOR = 2 ** 10
+
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_DECIMAL_PREFIXES = [_Prefix(1000, N_(b"kilo"), N_(b"k")),
-                    _Prefix(1000**2, N_(b"mega"), N_(b"M")),
-                    _Prefix(1000**3, N_(b"giga"), N_(b"G")),
-                    _Prefix(1000**4, N_(b"tera"), N_(b"T")),
-                    _Prefix(1000**5, N_(b"peta"), N_(b"P")),
-                    _Prefix(1000**6, N_(b"exa"), N_(b"E")),
-                    _Prefix(1000**7, N_(b"zetta"), N_(b"Z")),
-                    _Prefix(1000**8, N_(b"yotta"), N_(b"Y"))]
+_DECIMAL_PREFIXES = [
+   _Prefix(_DECIMAL_FACTOR ** 1, N_(b"kilo"), N_(b"k")),
+   _Prefix(_DECIMAL_FACTOR ** 2, N_(b"mega"), N_(b"M")),
+   _Prefix(_DECIMAL_FACTOR ** 3, N_(b"giga"), N_(b"G")),
+   _Prefix(_DECIMAL_FACTOR ** 4, N_(b"tera"), N_(b"T")),
+   _Prefix(_DECIMAL_FACTOR ** 5, N_(b"peta"), N_(b"P")),
+   _Prefix(_DECIMAL_FACTOR ** 6, N_(b"exa"), N_(b"E")),
+   _Prefix(_DECIMAL_FACTOR ** 7, N_(b"zetta"), N_(b"Z")),
+   _Prefix(_DECIMAL_FACTOR ** 8, N_(b"yotta"), N_(b"Y"))
+]
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_BINARY_PREFIXES = [_Prefix(1024, N_(b"kibi"), N_(b"Ki")),
-                   _Prefix(1024**2, N_(b"mebi"), N_(b"Mi")),
-                   _Prefix(1024**3, N_(b"gibi"), N_(b"Gi")),
-                   _Prefix(1024**4, N_(b"tebi"), N_(b"Ti")),
-                   _Prefix(1024**5, N_(b"pebi"), N_(b"Pi")),
-                   _Prefix(1024**6, N_(b"exbi"), N_(b"Ei")),
-                   _Prefix(1024**7, N_(b"zebi"), N_(b"Zi")),
-                   _Prefix(1024**8, N_(b"yobi"), N_(b"Yi"))]
+_BINARY_PREFIXES = [
+   _Prefix(_BINARY_FACTOR ** 1, N_(b"kibi"), N_(b"Ki")),
+   _Prefix(_BINARY_FACTOR ** 2, N_(b"mebi"), N_(b"Mi")),
+   _Prefix(_BINARY_FACTOR ** 3, N_(b"gibi"), N_(b"Gi")),
+   _Prefix(_BINARY_FACTOR ** 4, N_(b"tebi"), N_(b"Ti")),
+   _Prefix(_BINARY_FACTOR ** 5, N_(b"pebi"), N_(b"Pi")),
+   _Prefix(_BINARY_FACTOR ** 6, N_(b"exbi"), N_(b"Ei")),
+   _Prefix(_BINARY_FACTOR ** 7, N_(b"zebi"), N_(b"Zi")),
+   _Prefix(_BINARY_FACTOR ** 8, N_(b"yobi"), N_(b"Yi"))
+]
 
 _BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
 _PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
