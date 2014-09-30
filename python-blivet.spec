@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.6
+Version: 0.61.0.7
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Sep 29 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.7-1
+- Remove all traces of singlePV. (sbueno+anaconda)
+  Related: rhbz#1147501
+- Change the default /boot part on s390x to not be lvm. (sbueno+anaconda)
+  Resolves: rhbz#1147501
+- Remove redundant check for parents in Blivet.newBTRFS. (dlehman)
+  Resolves: rhbz#1072285
+- Filter out free regions too small for alignment of partitions. (dlehman)
+  Related: rhbz#1083687
+- Return early when setting new size for non-existent partition. (dlehman)
+  Related: rhbz#978266
+
 * Thu Sep 25 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.6-1
 - Disable LVM autobackup when doing image installs (wwoods)
   Resolves: rhbz#1066004
