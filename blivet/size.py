@@ -69,23 +69,22 @@ _BINARY_PREFIXES = [
 _BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
 _PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
 
-# Translated versions of the byte and prefix arrays
+# Translated versions of the byte and prefix arrays as lazy comprehensions
 # All strings are decoded as utf-8 so that locale-specific upper/lower functions work
 def _xlated_bytes():
-    """Return a translated version of the bytes list as a list of unicode strings"""
-    return [_(b).decode("utf-8") for b in _BYTES]
+    return (_(b).decode("utf-8") for b in _BYTES)
+
+def _xlated_prefix(p):
+    return _Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8"))
 
 def _xlated_binary_prefixes():
-    return (_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
-            for p in _BINARY_PREFIXES)
+    return (_xlated_prefix(p) for p in _BINARY_PREFIXES)
+
+def _xlated_decimal_prefixes():
+    return (_xlated_prefix(p) for p in _DECIMAL_PREFIXES)
 
 def _xlated_prefixes():
-    """Return translated prefixes as unicode strings"""
-    xlated_binary = list(_xlated_binary_prefixes())
-    xlated_decimal = [_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
-                      for p in _DECIMAL_PREFIXES]
-
-    return xlated_binary + xlated_decimal
+    return itertools.chain(_xlated_binary_prefixes(), _xlated_decimal_prefixes())
 
 _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)
 def _lowerASCII(s):
