@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.64
+Version: 0.65
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,33 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Sep 30 2014 Brian C. Lane <bcl@redhat.com> - 0.65-1
+- Remove a problematic remnant of singlePV. (dlehman)
+- Remove all traces of singlePV. (sbueno+anaconda)
+- Change the default /boot part on s390x to not be lvm. (sbueno+anaconda)
+- Remove redundant check for parents in Blivet.newBTRFS. (dlehman)
+- Use Decimal for math in Size.convertTo. (dlehman)
+- Filter out free regions too small for alignment of partitions. (dlehman)
+- Disable LVM autobackup when doing image installs (#1066004) (wwoods)
+- Add attribute 'flags.lvm_metadata_backup' (wwoods)
+- lvm_test: refactoring + minor fix (wwoods)
+- devicelibs.lvm: refactor _getConfigArgs()/lvm() (wwoods)
+- devicelibs.lvm: fix pvmove(src, dest=DESTPATH) (wwoods)
+- Only pad for md metadata if pvs use multiple disks. (dlehman)
+- Align free regions used for partition growing calculations. (dlehman)
+- Try to align end sector up when aligning new partitions. (dlehman)
+- Remove obsolete conversion of size to float. (dlehman)
+- Honor size specified for explicit extended partition requests. (dlehman)
+- Honor zerombr regardless of clearpart setting. (dlehman)
+- Fix treatment of percent as lvm lv size spec. (dlehman)
+- Change variable keyword (#1075671) (amulhern)
+- Remove unused import (#1075671) (amulhern)
+- Don't mix target and discovery credentials (#1037564) (mkolman)
+- Make sure /boot/efi is metadata 1.0 if it's on mdraid. (pjones)
+- iscsi: fix root argument being overriden by local variable (#1144463)
+  (rvykydal)
+- iscsi: add iscsi singleton back (#1144463) (rvykydal)
+
 * Fri Sep 19 2014 Brian C. Lane <bcl@redhat.com> - 0.64-1
 - Fix pylint errors from recent btrfs commits. (dlehman)
 - Only cancel actions on disks related to the one we are hiding. (dlehman)
