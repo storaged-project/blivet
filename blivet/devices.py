@@ -4627,3 +4627,8 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         data.subvol = True
         data.name = self.name
         data.preexist = self.exists
+
+        if self.volume.format.label:
+            data.devices = [self.volume.format.label]
+        else:
+            log.warning("btrfs volume has no label; ksdata will be incomplete")
