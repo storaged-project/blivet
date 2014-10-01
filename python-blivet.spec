@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.7
+Version: 0.61.0.8
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Sep 30 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.8-1
+- Remove a problematic remnant of singlePV (dlehman)
+  Related: rhbz#1147501
+
 * Mon Sep 29 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.7-1
 - Remove all traces of singlePV. (sbueno+anaconda)
   Related: rhbz#1147501
