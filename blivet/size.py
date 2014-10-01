@@ -39,7 +39,7 @@ _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
 # for 'bytes'.
-_decimalPrefixes = [_Prefix(1000, N_(b"kilo"), N_(b"k")),
+_DECIMAL_PREFIXES = [_Prefix(1000, N_(b"kilo"), N_(b"k")),
                     _Prefix(1000**2, N_(b"mega"), N_(b"M")),
                     _Prefix(1000**3, N_(b"giga"), N_(b"G")),
                     _Prefix(1000**4, N_(b"tera"), N_(b"T")),
@@ -50,7 +50,7 @@ _decimalPrefixes = [_Prefix(1000, N_(b"kilo"), N_(b"k")),
 
 # Binary prefixes for the different size increments.  Same structure
 # as the above list.
-_binaryPrefixes = [_Prefix(1024, N_(b"kibi"), N_(b"Ki")),
+_BINARY_PREFIXES = [_Prefix(1024, N_(b"kibi"), N_(b"Ki")),
                    _Prefix(1024**2, N_(b"mebi"), N_(b"Mi")),
                    _Prefix(1024**3, N_(b"gibi"), N_(b"Gi")),
                    _Prefix(1024**4, N_(b"tebi"), N_(b"Ti")),
@@ -59,24 +59,24 @@ _binaryPrefixes = [_Prefix(1024, N_(b"kibi"), N_(b"Ki")),
                    _Prefix(1024**7, N_(b"zebi"), N_(b"Zi")),
                    _Prefix(1024**8, N_(b"yobi"), N_(b"Yi"))]
 
-_bytes = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
-_prefixes = _binaryPrefixes + _decimalPrefixes
+_BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
+_PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
 
 # Translated versions of the byte and prefix arrays
 # All strings are decoded as utf-8 so that locale-specific upper/lower functions work
 def _xlated_bytes():
     """Return a translated version of the bytes list as a list of unicode strings"""
-    return [_(b).decode("utf-8") for b in _bytes]
+    return [_(b).decode("utf-8") for b in _BYTES]
 
 def _xlated_binary_prefixes():
     return (_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
-            for p in _binaryPrefixes)
+            for p in _BINARY_PREFIXES)
 
 def _xlated_prefixes():
     """Return translated prefixes as unicode strings"""
     xlated_binary = list(_xlated_binary_prefixes())
     xlated_decimal = [_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
-                      for p in _decimalPrefixes]
+                      for p in _DECIMAL_PREFIXES]
 
     return xlated_binary + xlated_decimal
 
@@ -137,7 +137,7 @@ def _parseSpec(spec):
         # characters
         if six.PY2:
             spec_ascii = specifier.decode("ascii")
-            # Convert back to a str type to match the _bytes and _prefixes arrays
+            # Convert back to a str type to match the _BYTES and _PREFIXES arrays
             spec_ascii = str(spec_ascii)
         else:
             # This will raise UnicodeEncodeError if specifier contains any non-ascii
@@ -152,10 +152,10 @@ def _parseSpec(spec):
         if spec_ascii and not spec_ascii.endswith("b"):
             spec_ascii += "ib"
 
-        if spec_ascii in _bytes or not spec_ascii:
+        if spec_ascii in _BYTES or not spec_ascii:
             return size
 
-        for factor, prefix, abbr in _prefixes:
+        for factor, prefix, abbr in _PREFIXES:
             check = _makeSpecs(prefix, abbr, False)
 
             if spec_ascii in check:
@@ -196,7 +196,7 @@ class Size(Decimal):
             for size. The bytes value is a numerical value for the size
             this object represents, in bytes.  The spec value is a string
             specification of the size using any of the size specifiers in the
-            _decimalPrefixes or _binaryPrefixes lists combined with a 'b' or
+            _DECIMAL_PREFIXES or _BINARY_PREFIXES lists combined with a 'b' or
             'B'.  For example, to specify 640 kilobytes, you could pass any of
             these spec parameters:
 
@@ -255,17 +255,17 @@ class Size(Decimal):
 
     def convertTo(self, spec="b"):
         """ Return the size in the units indicated by the specifier.  The
-            specifier can be prefixes from the _decimalPrefixes and
-            _binaryPrefixes lists combined with 'b' or 'B' for abbreviations) or
-            'bytes' (for prefixes like kilo or mega).  The size is returned as a
-            Decimal.
+            specifier can be prefixes from the _DECIMAL_PREFIXES and
+            _BINARY_PREFIXES lists combined with 'b' or 'B' for abbreviations)
+            or 'bytes' (for prefixes like kilo or mega). The size is returned
+            as a Decimal.
         """
         spec = spec.lower()
 
-        if spec in _bytes:
+        if spec in _BYTES:
             return Decimal(self)
 
-        for factor, prefix, abbr in _prefixes:
+        for factor, prefix, abbr in _PREFIXES:
             check = _makeSpecs(prefix, abbr, False)
 
             if spec in check:
