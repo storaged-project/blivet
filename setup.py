@@ -6,4 +6,4 @@ setup(name='blivet', version='0.61.15',
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',
-      packages=['blivet', 'blivet.devicelibs', 'blivet.formats'])
+      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.formats'])
