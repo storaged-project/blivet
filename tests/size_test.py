@@ -90,13 +90,14 @@ class SizeTestCase(unittest.TestCase):
         s = Size("300 MiB")
         self.assertEquals(s.humanReadable(max_places=2), "300 MiB")
 
-        # smaller unit should be used for small sizes
+        # when min_value is 10 and single digit on left of decimal, display
+        # with smaller unit.
         s = Size("9.68 TiB")
-        self.assertEquals(s.humanReadable(max_places=2), "9912.32 GiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "9912.32 GiB")
         s = Size("4.29 MiB")
-        self.assertEquals(s.humanReadable(max_places=2), "4392.96 KiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "4392.96 KiB")
         s = Size("7.18 KiB")
-        self.assertEquals(s.humanReadable(max_places=2), "7352 B")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "7352 B")
 
         # rounding should work with max_places limitted
         s = Size("12.687 TiB")
@@ -107,10 +108,10 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.humanReadable(max_places=2), "12.7 TiB")
 
         # byte values close to multiples of 2 are shown without trailing zeros
-        s = Size(0xfff)
-        self.assertEquals(s.humanReadable(max_places=2), "4095 B")
+        s = Size(0xff)
+        self.assertEquals(s.humanReadable(max_places=2), "255 B")
         s = Size(8193)
-        self.assertEquals(s.humanReadable(max_places=2), "8193 B")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "8193 B")
 
         # a fractional quantity is shown if the value deviates
         # from the whole number of units by more than 1%
@@ -119,7 +120,7 @@ class SizeTestCase(unittest.TestCase):
 
         # if max_places is set to None, all digits are displayed
         s = Size(0xfffffffffffff)
-        self.assertEquals(s.humanReadable(max_places=None), "4095.999999999999090505298227 TiB")
+        self.assertEquals(s.humanReadable(max_places=None), "3.9999999999999991118215803 PiB")
         s = Size(0x10000)
         self.assertEquals(s.humanReadable(max_places=None), "64 KiB")
         s = Size(0x10001)
@@ -137,7 +138,7 @@ class SizeTestCase(unittest.TestCase):
 
     def testHumanReadableFractionalQuantities(self):
         s = Size(0xfffffffffffff)
-        self.assertEquals(s.humanReadable(max_places=2), "4096 TiB")
+        self.assertEquals(s.humanReadable(max_places=2), "4 PiB")
         s = Size(0xfffff)
         self.assertEquals(s.humanReadable(max_places=2, strip=False), "1024.00 KiB")
         s = Size(0xffff)
@@ -155,12 +156,12 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.humanReadable(max_places=2), "15.99 KiB")
 
         s = Size(0x10000000000000)
-        self.assertEquals(s.humanReadable(max_places=2), "4096 TiB")
+        self.assertEquals(s.humanReadable(max_places=2), "4 PiB")
 
     def testMinValue(self):
         s = Size("9 MiB")
-        self.assertEquals(s.humanReadable(min_value=1), "9 MiB")
-        self.assertEquals(s.humanReadable(), "9216 KiB")
+        self.assertEquals(s.humanReadable(), "9 MiB")
+        self.assertEquals(s.humanReadable(min_value=10), "9216 KiB")
 
         s = Size("0.5 GiB")
         self.assertEquals(s.humanReadable(max_places=2, min_value=1), "512 MiB")

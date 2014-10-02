@@ -283,7 +283,7 @@ class Size(Decimal):
 
         return None
 
-    def humanReadable(self, max_places=2, strip=True, min_value=10):
+    def humanReadable(self, max_places=2, strip=True, min_value=1):
         """ Return a string representation of this size with appropriate
             size specifier and in the specified number of decimal places.
             Values are always represented using binary not decimal units.
@@ -294,7 +294,7 @@ class Size(Decimal):
             :param max_places: number of decimal places to use, default is 2
             :type max_places: an integer type or NoneType
             :param bool strip: True if trailing zeros are to be stripped.
-            :param min_value: Lower bound for value
+            :param min_value: Lower bound for value, default is 1.
             :type min_value: A precise numeric type: int, long, or Decimal
             :returns: a representation of the size
             :rtype: str
