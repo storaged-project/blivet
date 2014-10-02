@@ -940,6 +940,10 @@ class DeviceTree(object):
             #  - devices that do not have a usable disklabel
             #  - devices that contain disklabels made by isohybrid
             #
+            if (disk.partitionable and not
+                (disk.format.type == "iso9660" or disk.format.hidden)):
+                raise DeviceTreeError("failed to scan disk %s" % disk.name)
+
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
             # active and lvm should therefore know to ignore them
