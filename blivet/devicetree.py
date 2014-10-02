@@ -1233,7 +1233,9 @@ class DeviceTree(object):
         disklabel_type = udev.device_get_disklabel_type(info)
         log_method_call(self, device=device.name, label_type=disklabel_type)
         # if there is no disklabel on the device
-        if disklabel_type is None:
+        # blkid doesn't understand dasd disklabels, so bypass for dasd
+        if disklabel_type is None and not \
+           (device.isDisk and udev.device_is_dasd(info)):
             log.debug("device %s does not contain a disklabel", device.name)
             return
 
