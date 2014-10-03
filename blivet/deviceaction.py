@@ -559,7 +559,7 @@ class ActionCreateFormat(DeviceAction):
         # Get the UUID now that the format is created
         udev.settle()
         self.device.updateSysfsPath()
-        info = udev.get_block_device(self.device.sysfsPath)
+        info = udev.get_device(self.device.sysfsPath)
         # only do this if the format has a device known to udev
         # (the format might not have a normal device at all)
         if info:
