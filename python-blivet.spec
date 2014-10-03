@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.8
+Version: 0.61.0.9
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Oct 02 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.9-1
+- Allow specifying thin pool profiles (vpodzime)
+  Related: rhbz#869456
+
 * Tue Sep 30 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.8-1
 - Remove a problematic remnant of singlePV (dlehman)
   Related: rhbz#1147501
