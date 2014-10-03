@@ -1,3 +1,4 @@
+^blivet/arch.py:[[:digit:]]+: \[F0401\(import\-error\), numBits\] Unable to import 'platform'$
 ^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
 ^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
 ^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
