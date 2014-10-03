@@ -13,6 +13,7 @@ from blivet.errors import RaidError
 from blivet.devices import BTRFSSnapShotDevice
 from blivet.devices import BTRFSSubVolumeDevice
 from blivet.devices import BTRFSVolumeDevice
+from blivet.devices import DiskDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import LVMSnapShotDevice
 from blivet.devices import LVMThinPoolDevice
@@ -101,40 +102,117 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "totalDevices" : lambda x, m: self.assertEqual(x, 0, m),
            "type" : lambda x, m: self.assertEqual(x, "mdarray", m) }
 
-        self.dev1 = MDRaidArrayDevice("dev1", level="container")
-        self.dev2 = MDRaidArrayDevice("dev2", level="raid0")
-        self.dev3 = MDRaidArrayDevice("dev3", level="raid1")
-        self.dev4 = MDRaidArrayDevice("dev4", level="raid4")
-        self.dev5 = MDRaidArrayDevice("dev5", level="raid5")
-        self.dev6 = MDRaidArrayDevice("dev6", level="raid6")
-        self.dev7 = MDRaidArrayDevice("dev7", level="raid10")
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember"))
+        ]
+        self.dev1 = MDRaidArrayDevice("dev1", level="container", parents=parents)
+
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember"))
+        ]
+        self.dev2 = MDRaidArrayDevice("dev2", level="raid0", parents=parents)
+
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember"))
+        ]
+        self.dev3 = MDRaidArrayDevice("dev3", level="raid1", parents=parents)
+
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember")),
+           DiskDevice("name3", fmt=getFormat("mdmember"))
+        ]
+        self.dev4 = MDRaidArrayDevice("dev4", level="raid4", parents=parents)
+
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember")),
+           DiskDevice("name3", fmt=getFormat("mdmember"))
+        ]
+        self.dev5 = MDRaidArrayDevice("dev5", level="raid5", parents=parents)
+
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember")),
+           DiskDevice("name3", fmt=getFormat("mdmember")),
+           DiskDevice("name4", fmt=getFormat("mdmember"))
+        ]
+        self.dev6 = MDRaidArrayDevice("dev6", level="raid6", parents=parents)
+
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember")),
+           DiskDevice("name3", fmt=getFormat("mdmember")),
+           DiskDevice("name4", fmt=getFormat("mdmember"))
+        ]
+        self.dev7 = MDRaidArrayDevice("dev7", level="raid10", parents=parents)
 
         self.dev8 = MDRaidArrayDevice("dev8", level=1, exists=True)
+
+
+        parents_1 = [
+           DiskDevice("name1", fmt=getFormat("mdmember"))
+        ]
+        dev_1 = MDRaidArrayDevice(
+           "parent",
+           level="container",
+           fmt=getFormat("mdmember"),
+           parents=parents_1
+        )
+        parents_2 = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember"))
+        ]
+        dev_2 = MDRaidArrayDevice(
+           "other",
+           level=0,
+           fmt=getFormat("mdmember"),
+           parents=parents_2
+        )
         self.dev9 = MDRaidArrayDevice(
            "dev9",
            level="raid0",
            memberDevices=2,
-           parents=[
-              MDRaidArrayDevice("parent", level="container",
-                                fmt=getFormat("mdmember")),
-              MDRaidArrayDevice("other", level=0,
-                                fmt=getFormat("mdmember"))],
-           totalDevices=2)
+           parents=[dev_1, dev_2],
+           totalDevices=2
+        )
 
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember"))
+        ]
         self.dev10 = MDRaidArrayDevice(
            "dev10",
            level="raid0",
+           parents=parents,
            size=Size("32 MiB"))
 
+        parents_1 = [
+           DiskDevice("name1", fmt=getFormat("mdmember"))
+        ]
+        dev_1 = MDRaidArrayDevice(
+           "parent",
+           level="container",
+           fmt=getFormat("mdmember"),
+           parents=parents
+        )
+        parents_2 = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember"))
+        ]
+        dev_2 = MDRaidArrayDevice(
+           "other",
+           level=0,
+           fmt=getFormat("mdmember"),
+           parents=parents_2
+        )
         self.dev11 = MDRaidArrayDevice(
            "dev11",
            level=1,
            memberDevices=2,
-           parents=[
-              MDRaidArrayDevice("parent", level="container",
-                                fmt=getFormat("mdmember")),
-              MDRaidArrayDevice("other", level="raid0",
-                                fmt=getFormat("mdmember"))],
+           parents=[dev_1, dev_2],
            size=Size("32 MiB"),
            totalDevices=2)
 
@@ -245,21 +323,35 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ## level tests
         ##
         self.stateCheck(self.dev1,
+                        devices=lambda x, m: self.assertEqual(len(x), 1, m),
                         level=lambda x, m: self.assertEqual(x.name, "container", m),
+                        parents=lambda x, m: self.assertEqual(len(x), 1, m),
                         type=lambda x, m: self.assertEqual(x, "mdcontainer", m))
         self.stateCheck(self.dev2,
                         createBitmap=self.assertFalse,
-                        level=lambda x, m: self.assertEqual(x.number, 0, m))
+                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
+                        level=lambda x, m: self.assertEqual(x.number, 0, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 2, m))
         self.stateCheck(self.dev3,
-                        level=lambda x, m: self.assertEqual(x.number, 1, m))
+                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
+                        level=lambda x, m: self.assertEqual(x.number, 1, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 2, m))
         self.stateCheck(self.dev4,
-                        level=lambda x, m: self.assertEqual(x.number, 4, m))
+                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
+                        level=lambda x, m: self.assertEqual(x.number, 4, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 3, m))
         self.stateCheck(self.dev5,
-                        level=lambda x, m: self.assertEqual(x.number, 5, m))
+                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
+                        level=lambda x, m: self.assertEqual(x.number, 5, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 3, m))
         self.stateCheck(self.dev6,
-                        level=lambda x, m: self.assertEqual(x.number, 6, m))
+                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
+                        level=lambda x, m: self.assertEqual(x.number, 6, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 4, m))
         self.stateCheck(self.dev7,
-                        level=lambda x, m: self.assertEqual(x.number, 10, m))
+                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
+                        level=lambda x, m: self.assertEqual(x.number, 10, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 4, m))
 
         ##
         ## existing device tests
@@ -290,7 +382,9 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         self.stateCheck(self.dev10,
                         createBitmap=self.assertFalse,
+                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         level=lambda x, m: self.assertEqual(x.number, 0, m),
+                        parents=lambda x, m: self.assertEqual(len(x), 2, m),
                         targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m))
 
         self.stateCheck(self.dev11,

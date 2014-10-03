@@ -6,7 +6,9 @@ import blivet
 
 from blivet import devicefactory
 from blivet.devicelibs import raid
+from blivet.devices import DiskDevice
 from blivet.errors import RaidError
+from blivet.formats import getFormat
 from blivet.size import Size
 
 class MDFactoryTestCase(unittest.TestCase):
@@ -44,7 +46,11 @@ class MDFactoryTestCase(unittest.TestCase):
 
         self.assertIsNone(self.factory1.get_container())
 
-        self.assertIsNotNone(self.factory1._get_new_device(parents=[]))
+        parents = [
+           DiskDevice("name1", fmt=getFormat("mdmember")),
+           DiskDevice("name2", fmt=getFormat("mdmember"))
+        ]
+        self.assertIsNotNone(self.factory1._get_new_device(parents=parents))
 
         with self.assertRaisesRegexp(RaidError, "requires at least"):
             self.factory2._get_device_space()
