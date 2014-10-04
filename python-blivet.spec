@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.9
+Version: 0.61.0.10
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Oct 03 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.10-1
+- Raise an exception when we find orphan partitions. (dlehman)
+  Related: rhbz#1144410
+- Fall back to parted to detect dasd disklabels. (dlehman)
+  Resolves: rhbz#1144410
+
 * Thu Oct 02 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.9-1
 - Allow specifying thin pool profiles (vpodzime)
   Related: rhbz#869456
