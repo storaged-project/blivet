@@ -84,12 +84,10 @@ class Device(util.ObjectID):
             raise ValueError("%s is not a valid name for this device" % name)
         self._name = name
 
-        self.parents = []
-        if parents and not isinstance(parents, list):
+        if parents is not None and not isinstance(parents, list):
             raise ValueError("parents must be a list of Device instances")
 
-        if parents:
-            self.parents = parents
+        self.parents = parents or []
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Device instance.
