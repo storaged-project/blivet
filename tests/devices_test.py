@@ -50,10 +50,12 @@ class DeviceStateTestCase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         self._state_functions = {
            "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "direct" : xform(self.assertTrue),
            "exists" : xform(self.assertFalse),
            "format" : xform(self.assertIsNotNone),
            "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
            "isDisk" : xform(self.assertFalse),
+           "isleaf" : xform(self.assertTrue),
            "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
            "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "mediaPresent" : xform(self.assertFalse),
@@ -538,7 +540,9 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
            parents=[OpticalDevice("deva",
               fmt=blivet.formats.getFormat("btrfs"))])
 
-        self.dev2 = BTRFSSubVolumeDevice("dev2", parents=[self.dev1])
+        self.dev2 = BTRFSSubVolumeDevice("dev2",
+           parents=[self.dev1],
+           fmt=blivet.formats.getFormat("btrfs"))
 
         dev = StorageDevice("deva",
            fmt=blivet.formats.getFormat("btrfs"),
@@ -553,8 +557,14 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         """
 
         self.stateCheck(self.dev1,
+           isleaf=xform(self.assertFalse),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
+
+        self.stateCheck(self.dev2,
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           type=xform(lambda x, m: self.assertEqual(x, "btrfs subvolume", m)),
+           vol_id=xform(self.assertIsNone))
 
         self.stateCheck(self.dev3,
            currentSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
@@ -617,7 +627,22 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol2)
 
         vol.exists = True
-        snap = BTRFSSnapShotDevice("snap1", parents=[vol], source=vol)
+        snap = BTRFSSnapShotDevice("snap1",
+           fmt=blivet.formats.getFormat("btrfs"),
+           parents=[vol],
+           source=vol)
+        self.stateCheck(snap,
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           type=xform(lambda x, m: self.assertEqual(x, "btrfs snapshot", m)),
+           vol_id=xform(self.assertIsNone))
+        self.stateCheck(vol,
+           dataLevel=xform(self.assertIsNone),
+           exists=xform(self.assertTrue),
+           isleaf=xform(self.assertFalse),
+           metaDataLevel=xform(self.assertIsNone),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
+
         self.assertEqual(snap.isleaf, True)
         self.assertEqual(snap.direct, True)
         self.assertEqual(vol.isleaf, False)
