@@ -28,6 +28,20 @@ from blivet.size import Size
 
 from blivet.formats import getFormat
 
+def xform(func):
+    """ Simple wrapper function that transforms a function that takes
+        a precalculated value and a message to a function that takes
+        a device and an attribute name, evaluates the attribute, and
+        passes the value and the attribute name as the message to the
+        original function.
+
+        :param func: The function to be transformed.
+        :type func: (object * str) -> None
+        :returns: a function that gets the attribute and passes it to func
+        :rtype: (object * str) -> None
+    """
+    return lambda d, a: func(getattr(d, a), a)
+
 class DeviceStateTestCase(unittest.TestCase):
     """A class which implements a simple method of checking the state
        of a device object.
@@ -50,15 +64,15 @@ class DeviceStateTestCase(unittest.TestCase):
         self.longMessage = True
         for k,v in self._state_functions.items():
             if k in kwargs:
-                key = kwargs[k]
-                if key is None:
+                test_func = kwargs[k]
+                if test_func is None:
                     import pdb
                     pdb.set_trace()
                     getattr(device, k)
                 else:
-                    kwargs[k](getattr(device, k), k)
+                    test_func(device, k)
             else:
-                v(getattr(device, k), k)
+                v(device, k)
 
 class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
     """Note that these tests postdate the code that they test.
@@ -69,37 +83,37 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def setUp(self):
         self._state_functions = {
-           "createBitmap" : self.assertFalse,
-           "currentSize" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "description" : self.assertIsNotNone,
-           "devices" : lambda x, m: self.assertEqual(len(x), 0, m) and
-                                    self.assertIsInstance(x, ParentList, m),
-           "exists" : self.assertFalse,
-           "format" : self.assertIsNotNone,
-           "formatArgs" : lambda x, m: self.assertEqual(x, [], m),
-           "formatClass" : self.assertIsNotNone,
-           "isDisk" : self.assertFalse,
-           "level" : self.assertIsNone,
-           "major" : lambda x, m: self.assertEqual(x, 0, m),
-           "maxSize" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "mediaPresent" : self.assertFalse,
-           "metadataVersion" : lambda x, m: self.assertEqual(x, "default", m),
-           "minor" : lambda x, m: self.assertEqual(x, 0, m),
-           "parents" : lambda x, m: self.assertEqual(len(x), 0, m) and
-                                    self.assertIsInstance(x, ParentList, m),
-           "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
-           "partitionable" : self.assertFalse,
-           "raw_device" : self.assertIsNotNone,
-           "resizable" : self.assertFalse,
-           "size" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "spares" : lambda x, m: self.assertEqual(x, 0, m),
-           "status" : self.assertFalse,
-           "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
-           "targetSize" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "uuid" : self.assertIsNone,
-           "memberDevices" : lambda x, m: self.assertEqual(x, 0, m),
-           "totalDevices" : lambda x, m: self.assertEqual(x, 0, m),
-           "type" : lambda x, m: self.assertEqual(x, "mdarray", m) }
+           "createBitmap" : xform(lambda d, a: self.assertFalse),
+           "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "description" : xform(self.assertIsNotNone),
+           "devices" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m)),
+           "exists" : xform(self.assertFalse),
+           "format" : xform(self.assertIsNotNone),
+           "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
+           "formatClass" : xform(self.assertIsNotNone),
+           "isDisk" : xform(self.assertFalse),
+           "level" : xform(self.assertIsNone),
+           "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "mediaPresent" : xform(self.assertFalse),
+           "metadataVersion" : xform(lambda x, m: self.assertEqual(x, "default", m)),
+           "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m)),
+           "path" : xform(lambda x, m: self.assertRegexpMatches(x, "^/dev", m)),
+           "partitionable" : xform(self.assertFalse),
+           "raw_device" : xform(self.assertIsNotNone),
+           "resizable" : xform(self.assertFalse),
+           "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "spares" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "status" : xform(self.assertFalse),
+           "sysfsPath" : xform(lambda x, m: self.assertEqual(x, "", m)),
+           "targetSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "uuid" : xform(self.assertIsNone),
+           "memberDevices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "totalDevices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "type" : xform(lambda x, m: self.assertEqual(x, "mdarray", m))}
 
         parents = [
            DiskDevice("name1", fmt=getFormat("mdmember"))
@@ -322,149 +336,149 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ## level tests
         ##
         self.stateCheck(self.dev1,
-                        devices=lambda x, m: self.assertEqual(len(x), 1, m),
-                        level=lambda x, m: self.assertEqual(x.name, "container", m),
-                        parents=lambda x, m: self.assertEqual(len(x), 1, m),
-                        type=lambda x, m: self.assertEqual(x, "mdcontainer", m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           level=xform(lambda x, m: self.assertEqual(x.name, "container", m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           type=xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
         self.stateCheck(self.dev2,
-                        createBitmap=self.assertFalse,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 2, m))
+           createBitmap=xform(self.assertFalse),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)))
         self.stateCheck(self.dev3,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 2, m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)))
         self.stateCheck(self.dev4,
-                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x.number, 4, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 3, m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 4, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 3, m)))
         self.stateCheck(self.dev5,
-                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x.number, 5, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 3, m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 5, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 3, m)))
         self.stateCheck(self.dev6,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 6, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 4, m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 6, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
         self.stateCheck(self.dev7,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 10, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 4, m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
 
         ##
         ## existing device tests
         ##
         self.stateCheck(self.dev8,
-                        exists=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        metadataVersion=self.assertIsNone)
+           exists=xform(self.assertTrue),
+           level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
+           metadataVersion=xform(self.assertIsNone))
 
 
         ##
         ## mdbiosraidarray tests
         ##
         self.stateCheck(self.dev9,
-                        createBitmap=self.assertFalse,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        mediaPresent=self.assertTrue,
-                        memberDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        partitionable=self.assertTrue,
-                        totalDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
+           createBitmap=xform(self.assertFalse),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           isDisk=xform(self.assertTrue),
+           level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
+           mediaPresent=xform(self.assertTrue),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           partitionable=xform(self.assertTrue),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           type = xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
         ##
         ## size tests
         ##
         self.stateCheck(self.dev10,
-                        createBitmap=self.assertFalse,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        parents=lambda x, m: self.assertEqual(len(x), 2, m),
-                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m))
+           createBitmap=xform(self.assertFalse),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)))
 
         self.stateCheck(self.dev11,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        mediaPresent=self.assertTrue,
-                        memberDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        partitionable=self.assertTrue,
-                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        type=lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           isDisk=xform(self.assertTrue),
+           level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
+           mediaPresent=xform(self.assertTrue),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           partitionable=xform(self.assertTrue),
+           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           type=xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
         self.stateCheck(self.dev12,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        mediaPresent=self.assertTrue,
-                        memberDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        partitionable=self.assertTrue,
-                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           isDisk=xform(self.assertTrue),
+           level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
+           mediaPresent=xform(self.assertTrue),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           partitionable=xform(self.assertTrue),
+           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           type = xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
         self.stateCheck(self.dev13,
-                        createBitmap=self.assertFalse,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 3, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("3 MiB"), m),
-                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 3, m))
+           createBitmap=xform(self.assertFalse),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("3 MiB"), m)),
+           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
         self.stateCheck(self.dev14,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x.number, 4, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 3, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 3, m))
+           createBitmap=xform(self.assertTrue),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 4, m)),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
         self.stateCheck(self.dev15,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x.number, 5, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 3, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 3, m))
+           createBitmap=xform(self.assertTrue),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 5, m)),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
         self.stateCheck(self.dev16,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 6, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 4, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 4, m))
+           createBitmap=xform(self.assertTrue),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 6, m)),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 4, m)))
 
         self.stateCheck(self.dev17,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 10, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 4, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 4, m))
+           createBitmap=xform(self.assertTrue),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 4, m)))
 
         self.stateCheck(self.dev18,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 10, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 4, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        spares=lambda x, m: self.assertEqual(x, 1, m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 5, m))
+           createBitmap=xform(self.assertTrue),
+           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
+           level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
+           spares=xform(lambda x, m: self.assertEqual(x, 1, m)),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 5, m)))
 
         with self.assertRaisesRegexp(DeviceError, "invalid"):
             MDRaidArrayDevice("dev")
@@ -506,28 +520,28 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
     def setUp(self):
         self._state_functions = {
-           "currentSize" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "exists" : self.assertFalse,
-           "format" : self.assertIsNotNone,
-           "formatArgs" : lambda x, m: self.assertEqual(x, [], m),
-           "fstabSpec" : self.assertIsNotNone,
-           "isDisk" : self.assertFalse,
-           "major" : lambda x, m: self.assertEqual(x, 0, m),
-           "maxSize" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "mediaPresent" : self.assertTrue,
-           "minor" : lambda x, m: self.assertEqual(x, 0, m),
-           "parents" : lambda x, m: self.assertEqual(len(x), 0, m) and
-                                    self.assertIsInstance(x, ParentList, m),
-           "partitionable" : self.assertFalse,
-           "path" : lambda x, m: self.assertRegexpMatches(x, "^/dev", m),
-           "resizable" : lambda x, m: self.assertFalse,
-           "size" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "status" : self.assertFalse,
-           "sysfsPath" : lambda x, m: self.assertEqual(x, "", m),
-           "targetSize" : lambda x, m: self.assertEqual(x, Size(0), m),
-           "type" : lambda x, m: self.assertEqual(x, "btrfs", m),
-           "uuid" : self.assertIsNone,
-           "vol_id" : lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m)}
+           "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "exists" : xform(self.assertFalse),
+           "format" : xform(self.assertIsNotNone),
+           "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
+           "fstabSpec" : xform(self.assertIsNotNone),
+           "isDisk" : xform(self.assertFalse),
+           "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "mediaPresent" : xform(self.assertTrue),
+           "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m)),
+           "partitionable" : xform(self.assertFalse),
+           "path" : xform(lambda x, m: self.assertRegexpMatches(x, "^/dev", m)),
+           "resizable" : xform(lambda x, m: self.assertFalse),
+           "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "status" : xform(self.assertFalse),
+           "sysfsPath" : xform(lambda x, m: self.assertEqual(x, "", m)),
+           "targetSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "type" : xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
+           "uuid" : xform(self.assertIsNone),
+           "vol_id" : xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
 
         self.dev1 = BTRFSVolumeDevice("dev1",
            parents=[OpticalDevice("deva",
@@ -548,15 +562,15 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         """
 
         self.stateCheck(self.dev1,
-           parents=lambda x, m: self.assertEqual(len(x), 1, m),
-           type=lambda x, m: self.assertEqual(x, "btrfs volume", m))
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
         self.stateCheck(self.dev3,
-           currentSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-           maxSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-           parents=lambda x, m: self.assertEqual(len(x), 1, m),
-           size=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-           type=lambda x, m: self.assertEqual(x, "btrfs volume", m))
+           currentSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           maxSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
+           size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
         with self.assertRaisesRegexp(ValueError, "BTRFSDevice.*must have at least one parent"):
             BTRFSVolumeDevice("dev")
