@@ -37,6 +37,7 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 from .container import ContainerDevice
+from .raid import RaidDevice
 
 class BTRFSDevice(StorageDevice):
     """ Base class for BTRFS volume and sub-volume devices. """
@@ -133,7 +134,7 @@ class BTRFSDevice(StorageDevice):
             spec = super(BTRFSDevice, self).fstabSpec
         return spec
 
-class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
+class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     _type = "btrfs volume"
     vol_id = btrfs.MAIN_VOLUME_ID
     _formatClassName = property(lambda s: "btrfs")
@@ -165,8 +166,15 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         self._dataLevel = self._metaDataLevel = None
 
         # assign after constructor to avoid AttributeErrors in setter functions
-        self.dataLevel = dataLevel
-        self.metaDataLevel = metaDataLevel
+        try:
+            self.dataLevel = dataLevel
+            self.metaDataLevel = metaDataLevel
+        except errors.BTRFSValueError as e:
+            # Could not set the levels, so set loose the parents that were
+            # added in superclass constructor.
+            for dev in self.parents:
+                dev.removeChild()
+            raise e
 
         self.subvolumes = []
         self.size_policy = self.size
@@ -183,19 +191,6 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         self._defaultSubVolumeID = None
 
-    def _validateRaidLevel(self, level):
-        """ Returns an error message if the RAID level is invalid for this
-            device, otherwise None.
-
-            :param level: a RAID level
-            :type level: :class:`~.devicelibs.raid.RAIDLevel`
-            :returns: an error message if the RAID level is invalid, else None
-            :rtype: str or NoneType
-        """
-        if not self.exists and len(self.parents) < level.min_members:
-            return "RAID level %s requires that device have at least %d members, but device has only %d members." % (level, level.min_members, len(self.parents))
-        return None
-
     def _setLevel(self, value, data):
         """ Sets a valid level for this device and level type.
 
@@ -205,21 +200,16 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             :returns: a valid level for value, if any, else None
             :rtype: :class:`~.devicelibs.raid.RAIDLevel` or NoneType
 
-            :raises: :class:`~.errors.BTRFSValueError` if value represents
+            :raises :class:`~.errors.BTRFSValueError`: if value represents
             an invalid level.
         """
         level = None
         if value:
+            levels = btrfs.RAID_levels if data else btrfs.metadata_levels
             try:
-                levels = btrfs.RAID_levels if data else btrfs.metadata_levels
-                level = levels.raidLevel(value)
-            except errors.RaidError:
-                data_type_str = "data" if data else "metadata"
-                raise errors.BTRFSValueError("%s is an invalid value for %s RAID level." % (value, data_type_str))
-
-            error_msg = self._validateRaidLevel(level)
-            if error_msg:
-                raise errors.BTRFSValueError(error_msg)
+                level = self._getLevel(value, levels)
+            except ValueError as e:
+                raise errors.BTRFSValueError(e)
 
         if data:
             self._dataLevel = level
@@ -241,7 +231,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
             :param object value: new raid level
             :returns: None
-            :raises: :class:`~.errors.BTRFSValueError`
+            :raises :class:`~.errors.BTRFSValueError`: if value represents
+            an invalid level.
         """
         self._setLevel(value, True)
 
@@ -260,7 +251,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
             :param object value: new raid level
             :returns: None
-            :raises: :class:`~.errors.BTRFSValueError`
+            :raises :class:`~.errors.BTRFSValueError`: if value represents
+            an invalid level.
         """
         self._setLevel(value, False)
 
@@ -291,18 +283,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         return size
 
     def _removeParent(self, member):
-        """ Raises a DeviceError if the device has a raid level and the
-            resulting number of parents would be fewer than the minimum
-            number required by the raid level.
-
-            Note: btrfs does not permit degrading an array.
-        """
-        levels = [l for l in [self.dataLevel, self.metaDataLevel] if l]
-        if levels:
-            min_level = min(levels, key=lambda l: l.min_members)
-            min_members = min_level.min_members
-            if len(self.parents) - 1 < min_members:
-                raise errors.DeviceError("device %s requires at least %d membersfor raid level %s" % (self.name, min_members, min_level))
+        levels = (l for l in (self.dataLevel, self.metaDataLevel) if l)
+        for l in levels:
+            error_msg = self._validateParentRemoval(l, member)
+            if error_msg:
+                raise errors.DeviceError(error_msg)
         super(BTRFSVolumeDevice, self)._removeParent(member)
 
     def _addSubVolume(self, vol):
@@ -454,7 +439,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
         data.preexist = self.exists
 
-class BTRFSSubVolumeDevice(BTRFSDevice):
+class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
     _formatImmutable = True

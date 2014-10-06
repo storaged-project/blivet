@@ -29,15 +29,15 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
-from ..i18n import P_
 
 import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 from .container import ContainerDevice
+from .raid import RaidDevice
 
-class MDRaidArrayDevice(ContainerDevice):
+class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     """ An mdraid (Linux RAID) device. """
     _type = "mdarray"
     _packages = ["mdadm"]
@@ -88,16 +88,18 @@ class MDRaidArrayDevice(ContainerDevice):
 
         if level == "container":
             self._type = "mdcontainer"
-        self.level = level
 
-        # For new arrays check if we have enough members
-        if (not exists and parents and len(parents) < self.level.min_members):
+        # avoid attribute-defined-outside-init pylint warning
+        self._level = None
+
+        try:
+            self.level = level
+        except errors.DeviceError as e:
+            # Could not set the level, so set loose the parents that were
+            # added in superclass constructor.
             for dev in self.parents:
                 dev.removeChild()
-            raise errors.DeviceError(P_("A %(raidLevel)s set requires at least %(minMembers)d member",
-                                 "A %(raidLevel)s set requires at least %(minMembers)d members",
-                                 self.level.min_members) % \
-                                 {"raidLevel": self.level, "minMembers": self.level.min_members})
+            raise e
 
         self.uuid = uuid
         self._totalDevices = util.numeric_type(totalDevices)
@@ -136,10 +138,17 @@ class MDRaidArrayDevice(ContainerDevice):
         """ Set the RAID level and enforce restrictions based on it.
 
             :param value: new raid level
-            :param type:  a valid raid level descriptor
+            :param type:  object
+            :raises :class:`~.errors.DeviceError`: if value does not describe
+            a valid RAID level
             :returns:     None
         """
-        self._level = mdraid.RAID_levels.raidLevel(value) # pylint: disable=attribute-defined-outside-init
+        try:
+            level = self._getLevel(value, mdraid.RAID_levels)
+        except ValueError as e:
+            raise errors.DeviceError(e)
+
+        self._level = level
 
     @property
     def createBitmap(self):
@@ -305,17 +314,9 @@ class MDRaidArrayDevice(ContainerDevice):
             self.memberDevices += 1
 
     def _removeParent(self, member):
-        """ If this is a raid array that is not actually redundant and it
-            appears to have formatting and therefore probably data on it,
-            removing one of its devices is a bad idea.
-        """
-        try:
-            if not self.level.has_redundancy() and self.exists and member.format.exists:
-                raise errors.DeviceError("cannot remove members from existing %s array" % self.level)
-        except errors.RaidError:
-            # If the concept of redundancy is meaningless for this device's
-            # raid level, then it is OK to remove a parent device.
-            pass
+        error_msg = self._validateParentRemoval(self.level, member)
+        if error_msg:
+            raise errors.DeviceError(error_msg)
 
         super(MDRaidArrayDevice, self)._removeParent(member)
         self.memberDevices -= 1
