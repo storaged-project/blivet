@@ -984,21 +984,13 @@ class PartitionSetFactory(PartitionFactory):
         log.debug("remove_disks: %s", [d.name for d in remove_disks])
 
         ##
-        ## Remove members from dropped disks.
+        ## Make a list of members we'll later remove from dropped disks.
         ##
+        removed = []
         for member in members[:]:
             if any([d in remove_disks for d in member.disks]):
-                if container:
-                    container.parents.remove(member)
-
-                if isinstance(member, LUKSDevice):
-                    self.storage.destroyDevice(member)
-                    members.remove(member)
-                    member = member.slave
-                else:
-                    members.remove(member)
-
-                self.storage.destroyDevice(member)
+                removed.append(member)  # remove them after adding new ones
+                members.remove(member)
 
         ##
         ## Handle toggling of member encryption.
@@ -1070,6 +1062,21 @@ class PartitionSetFactory(PartitionFactory):
             new_members.append(member)
             if container:
                 container.parents.append(member)
+
+        ##
+        ## Remove members from dropped disks.
+        ##
+        # Do this last to prevent tripping raid level constraints on the number
+        # of members.
+        for member in removed:
+            if container:
+                container.parents.remove(member)
+
+            if isinstance(member, LUKSDevice):
+                self.storage.destroyDevice(member)
+                member = member.slave
+
+            self.storage.destroyDevice(member)
 
         ##
         ## Determine target container size.
