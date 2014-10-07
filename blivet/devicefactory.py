@@ -677,18 +677,16 @@ class DeviceFactory(object):
         # toggle encryption of the leaf device as needed
         parent_container = getattr(self.parent_factory, "container", None)
         if isinstance(self.device, LUKSDevice) and not self.encrypted:
+            orig_device = self.device
             raw_device = self.raw_device
             leaf_format = self.device.format
-            if parent_container:
-                parent_container.parents.remove(self.device)
             self.storage.destroyDevice(self.device)
             self.storage.formatDevice(self.raw_device, leaf_format)
             self.device = raw_device
             if parent_container:
-                parent_container.parents.append(self.device)
+                parent_container.parents.replace(orig_device, self.device)
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
-            if parent_container:
-                parent_container.parents.remove(self.device)
+            orig_device = self.device
             leaf_format = self.device.format
             self.storage.formatDevice(self.device, getFormat("luks",
                                                              min_luks_entropy=self.min_luks_entropy))
@@ -698,7 +696,7 @@ class DeviceFactory(object):
             self.storage.createDevice(luks_device)
             self.device = luks_device
             if parent_container:
-                parent_container.parents.append(self.device)
+                parent_container.parents.replace(orig_device, self.device)
 
     def _set_name(self):
         if not self.device_name:
@@ -1014,24 +1012,18 @@ class PartitionSetFactory(PartitionFactory):
         for member in members[:]:
             member_encrypted = isinstance(member, LUKSDevice)
             if member_encrypted and not self.encrypted:
-                if container:
-                    container.parents.remove(member)
-
                 self.storage.destroyDevice(member)
                 members.remove(member)
                 self.storage.formatDevice(member.slave,
                                           getFormat(self.fstype))
                 members.append(member.slave)
                 if container:
-                    container.parents.append(member.slave)
+                    container.parents.replace(member, member.slave)
 
                 continue
 
             if not member_encrypted and self.encrypted:
                 members.remove(member)
-                if container:
-                    container.parents.remove(member)
-
                 self.storage.formatDevice(member, getFormat("luks",
                                                              min_luks_entropy=self.min_luks_entropy))
                 luks_member = LUKSDevice("luks-%s" % member.name,
@@ -1040,7 +1032,7 @@ class PartitionSetFactory(PartitionFactory):
                 self.storage.createDevice(luks_member)
                 members.append(luks_member)
                 if container:
-                    container.parents.append(luks_member)
+                    container.parents.replace(member, luks_member)
 
                 continue
 
