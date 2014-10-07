@@ -7,6 +7,7 @@ from mock import Mock
 
 import blivet
 
+from blivet.errors import BTRFSValueError
 from blivet.errors import DeviceError
 
 from blivet.devices import BTRFSSnapShotDevice
@@ -589,6 +590,17 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
             fmt = blivet.formats.getFormat("btrfs")
             device = OpticalDevice("deva", fmt=fmt)
             BTRFSSubVolumeDevice("dev1", parents=[device])
+
+        deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs"))
+        with self.assertRaisesRegexp(BTRFSValueError, "at least"):
+            BTRFSVolumeDevice("dev1", dataLevel="raid1", parents=[deva])
+
+        deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs"))
+        self.assertIsNotNone(BTRFSVolumeDevice("dev1", metaDataLevel="dup", parents=[deva]))
+
+        deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs"))
+        with self.assertRaisesRegexp(BTRFSValueError, "invalid"):
+            BTRFSVolumeDevice("dev1", dataLevel="dup", parents=[deva])
 
         self.assertEqual(self.dev1.isleaf, False)
         self.assertEqual(self.dev1.direct, True)
