@@ -529,8 +529,10 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
     def __init__(self, methodName='runTest'):
         super(BTRFSDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {
+           "dataLevel" : lambda d, a: self.assertFalse(hasattr(d,a)),
            "fstabSpec" : xform(self.assertIsNotNone),
            "mediaPresent" : xform(self.assertTrue),
+           "metaDataLevel" : lambda d, a: self.assertFalse(hasattr(d, a)),
            "type" : xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
            "vol_id" : xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
         self._state_functions.update(state_functions)
@@ -557,7 +559,9 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         """
 
         self.stateCheck(self.dev1,
+           dataLevel=xform(self.assertIsNone),
            isleaf=xform(self.assertFalse),
+           metaDataLevel=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
@@ -568,7 +572,9 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         self.stateCheck(self.dev3,
            currentSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           dataLevel=xform(self.assertIsNone),
            maxSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           metaDataLevel=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
