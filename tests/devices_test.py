@@ -47,8 +47,31 @@ class DeviceStateTestCase(unittest.TestCase):
        of a device object.
     """
 
-    def setUp(self):
-        self._state_functions = {}
+    def __init__(self, methodName='runTest'):
+        self._state_functions = {
+           "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "exists" : xform(self.assertFalse),
+           "format" : xform(self.assertIsNotNone),
+           "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
+           "isDisk" : xform(self.assertFalse),
+           "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "mediaPresent" : xform(self.assertFalse),
+           "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, ParentList, m)),
+           "partitionable" : xform(self.assertFalse),
+           "path" : xform(lambda x, m: self.assertRegexpMatches(x, "^/dev", m)),
+           "raw_device" : xform(self.assertIsNotNone),
+           "resizable" : xform(self.assertFalse),
+           "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "status" : xform(self.assertFalse),
+           "sysfsPath" : xform(lambda x, m: self.assertEqual(x, "", m)),
+           "targetSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "type" : xform(lambda x, m: self.assertEqual(x, "mdarray", m)),
+           "uuid" : xform(self.assertIsNone)
+        }
+        super(DeviceStateTestCase, self).__init__(methodName=methodName)
 
     def stateCheck(self, device, **kwargs):
         """Checks the current state of a device by means of its
@@ -81,40 +104,23 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
        commit message for this file for further details.
     """
 
-    def setUp(self):
-        self._state_functions = {
+    def __init__(self, methodName='runTest'):
+        super(MDRaidArrayDeviceTestCase, self).__init__(methodName=methodName)
+        state_functions = {
            "createBitmap" : xform(lambda d, a: self.assertFalse),
-           "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "description" : xform(self.assertIsNotNone),
            "devices" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                                     self.assertIsInstance(x, ParentList, m)),
-           "exists" : xform(self.assertFalse),
-           "format" : xform(self.assertIsNotNone),
-           "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
            "formatClass" : xform(self.assertIsNotNone),
-           "isDisk" : xform(self.assertFalse),
            "level" : xform(self.assertIsNone),
-           "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "mediaPresent" : xform(self.assertFalse),
-           "metadataVersion" : xform(lambda x, m: self.assertEqual(x, "default", m)),
-           "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
-                                    self.assertIsInstance(x, ParentList, m)),
-           "path" : xform(lambda x, m: self.assertRegexpMatches(x, "^/dev", m)),
-           "partitionable" : xform(self.assertFalse),
-           "raw_device" : xform(self.assertIsNotNone),
-           "resizable" : xform(self.assertFalse),
-           "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "spares" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "status" : xform(self.assertFalse),
-           "sysfsPath" : xform(lambda x, m: self.assertEqual(x, "", m)),
-           "targetSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "uuid" : xform(self.assertIsNone),
            "memberDevices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "totalDevices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "type" : xform(lambda x, m: self.assertEqual(x, "mdarray", m))}
+           "metadataVersion" : xform(lambda x, m: self.assertEqual(x, "default", m)),
+           "spares" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "totalDevices" : xform(lambda x, m: self.assertEqual(x, 0, m))
+        }
+        self._state_functions.update(state_functions)
 
+    def setUp(self):
         parents = [
            DiskDevice("name1", fmt=getFormat("mdmember"))
         ]
@@ -518,31 +524,16 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
        commit message for this file for further details.
     """
 
-    def setUp(self):
-        self._state_functions = {
-           "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "exists" : xform(self.assertFalse),
-           "format" : xform(self.assertIsNotNone),
-           "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
+    def __init__(self, methodName='runTest'):
+        super(BTRFSDeviceTestCase, self).__init__(methodName=methodName)
+        state_functions = {
            "fstabSpec" : xform(self.assertIsNotNone),
-           "isDisk" : xform(self.assertFalse),
-           "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "mediaPresent" : xform(self.assertTrue),
-           "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
-                                    self.assertIsInstance(x, ParentList, m)),
-           "partitionable" : xform(self.assertFalse),
-           "path" : xform(lambda x, m: self.assertRegexpMatches(x, "^/dev", m)),
-           "resizable" : xform(lambda x, m: self.assertFalse),
-           "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "status" : xform(self.assertFalse),
-           "sysfsPath" : xform(lambda x, m: self.assertEqual(x, "", m)),
-           "targetSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "type" : xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
-           "uuid" : xform(self.assertIsNone),
            "vol_id" : xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
+        self._state_functions.update(state_functions)
 
+    def setUp(self):
         self.dev1 = BTRFSVolumeDevice("dev1",
            parents=[OpticalDevice("deva",
               fmt=blivet.formats.getFormat("btrfs"))])
