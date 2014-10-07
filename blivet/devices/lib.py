@@ -154,3 +154,18 @@ class ParentList(object):
 
         self.removefunc(y)
         self.items.remove(y)
+
+    def replace(self, x, y):
+        """ Replace the first instance of x with y, bypassing callbacks.
+
+            .. note::
+
+                It is usually a bad idea to bypass the callbacks. This is
+                intended for specific circumstances like toggling encryption of
+                container member devices in the devicefactory classes.
+        """
+        if x not in self.items:
+            raise ValueError("item to be replaced is not in the list")
+
+        idx = self.items.index(x)
+        self.items[idx] = y
