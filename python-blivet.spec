@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.3
+Version: 0.61.4
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,32 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 08 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.4-1
+- Canonicalize MD_UUID* values in udev.py (#1147087) (amulhern)
+- Add a test for activation. (amulhern)
+- Add a test for mddetail on containers. (amulhern)
+- Still attempt to destroy even if remove failed. (amulhern)
+- Use long messages for unittest errors. (amulhern)
+- Fix mdnominate error message. (amulhern)
+- Break once metadata value is found. (amulhern)
+- Split mdadd into separate functions. (amulhern)
+- Refactor mdraid tests. (amulhern)
+- Add a method to extract information about an mdraid array (amulhern)
+- Extend mdadm() to capture output (amulhern)
+- Be more robust in the face of possible changes to mdadm's UUIDs. (amulhern)
+- Factor canonicalize_UUID() into separate method. (amulhern)
+- Add a docstring to mdraid.mdexamine (amulhern)
+- Omit pylint false positive (amulhern)
+- Pylint inspired cleanup (#1070115) (amulhern)
+- Raise an exception when we find orphan partitions. (dlehman)
+- Fall back to parted to detect dasd disklabels. (dlehman)
+- Remove a problematic remnant of singlePV. (dlehman)
+- Remove all traces of singlePV. (sbueno+anaconda)
+- Change the default /boot part on s390x to not be lvm. (sbueno+anaconda)
+- Condense and comment some devicelibs.dasd methods (#1070115) (amulhern)
+- Add a test file for DASD handling (#1070115) (amulhern)
+- Add two functions to enable manual addition of ECKD DASDs. (sbueno+anaconda)
+
 * Tue Sep 30 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.3-1
 - Don't mix target and discovery credentials (#1037564) (mkolman)
 - Filter out free regions too small for alignment of partitions. (dlehman)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-30 14:26-0400\n"
+"POT-Creation-Date: 2014-10-08 11:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,7 +129,7 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/zfcp.py:48
+#: ../blivet/zfcp.py:48 ../blivet/devicelibs/dasd.py:137
 msgid "You have not specified a device number or the number is invalid"
 msgstr ""
 
@@ -369,68 +369,68 @@ msgstr ""
 msgid "bytes"
 msgstr ""
 
-#: ../blivet/partitioning.py:369
+#: ../blivet/partitioning.py:368
 msgid "No usable disks selected"
 msgstr ""
 
-#: ../blivet/partitioning.py:377
+#: ../blivet/partitioning.py:376
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/partitioning.py:752
+#: ../blivet/partitioning.py:751
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:760
+#: ../blivet/partitioning.py:759
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:865
+#: ../blivet/partitioning.py:864
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:922
+#: ../blivet/partitioning.py:921
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:927
+#: ../blivet/partitioning.py:926
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:1186
+#: ../blivet/partitioning.py:1185
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:1209
+#: ../blivet/partitioning.py:1208
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1381
+#: ../blivet/partitioning.py:1380
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1586
+#: ../blivet/partitioning.py:1585
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1599
+#: ../blivet/partitioning.py:1598
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1682
+#: ../blivet/partitioning.py:1681
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2164
+#: ../blivet/partitioning.py:2163
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -438,7 +438,7 @@ msgstr ""
 msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/devicetree.py:1270
+#: ../blivet/devicetree.py:1276
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -483,7 +483,7 @@ msgid "First sector of boot partition"
 msgstr ""
 
 #: ../blivet/platform.py:179 ../blivet/platform.py:324
-#: ../blivet/platform.py:352
+#: ../blivet/platform.py:350
 msgid "Master Boot Record"
 msgstr ""
 
@@ -541,59 +541,59 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:357
+#: ../blivet/platform.py:355
 msgid "You must include at least one MBR-formatted disk as an install target."
 msgstr ""
 
-#: ../blivet/platform.py:379
+#: ../blivet/platform.py:377
 msgid "U-Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:381
+#: ../blivet/platform.py:379
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/deviceaction.py:282
+#: ../blivet/deviceaction.py:281
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:334
+#: ../blivet/deviceaction.py:327
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:416
+#: ../blivet/deviceaction.py:409
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:498
+#: ../blivet/deviceaction.py:491
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:534
+#: ../blivet/deviceaction.py:527
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:613
+#: ../blivet/deviceaction.py:606
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:706
+#: ../blivet/deviceaction.py:699
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:735
+#: ../blivet/deviceaction.py:728
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:780
+#: ../blivet/deviceaction.py:773
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:844
+#: ../blivet/deviceaction.py:837
 msgid "remove container member"
 msgstr ""
 
@@ -688,4 +688,19 @@ msgstr ""
 #: ../blivet/devicelibs/lvm.py:421
 #, python-format
 msgid "vginfo failed for %s"
+msgstr ""
+
+#: ../blivet/devicelibs/dasd.py:160
+#, python-format
+msgid "DASD device %s not found, not even in device ignore list."
+msgstr ""
+
+#: ../blivet/devicelibs/dasd.py:167
+#, python-format
+msgid "Device %s is already online."
+msgstr ""
+
+#: ../blivet/devicelibs/dasd.py:173
+#, python-format
+msgid "Could not set DASD device %(dev)s online (%(e)s)."
 msgstr ""
