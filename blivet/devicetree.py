@@ -642,6 +642,10 @@ class DeviceTree(object):
         if name.startswith("mtd"):
             return True
 
+        # These eMMC HW-level partitions aren't intended for generic user data
+        if re.match("mmcblk\d+(boot\d+|rpmb)", name):
+            return True
+
         if name.startswith("loop"):
             # ignore loop devices unless they're backed by a file
             return (not loop.get_backing_file(name))
