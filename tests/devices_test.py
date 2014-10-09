@@ -180,7 +180,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         dev_1 = MDRaidArrayDevice(
            "parent",
            level="container",
-           fmt=getFormat("mdmember"),
            parents=parents_1
         )
         parents_2 = [
@@ -217,7 +216,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         dev_1 = MDRaidArrayDevice(
            "parent",
            level="container",
-           fmt=getFormat("mdmember"),
            parents=parents
         )
         parents_2 = [
@@ -245,7 +243,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            parents=[
               Mock(**{"type": "mdcontainer",
                       "size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": getFormat(None)}),
               Mock(**{"size": Size("2 MiB"),
                       "format": getFormat("mdmember")})],
            size=Size("32 MiB"),
@@ -583,7 +581,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegexp(ValueError, "BTRFSDevice.*must have at least one parent"):
             BTRFSVolumeDevice("dev")
 
-        with self.assertRaisesRegexp(ValueError, "member has wrong format"):
+        with self.assertRaisesRegexp(ValueError, "is not.*expected format"):
             BTRFSVolumeDevice("dev", parents=[OpticalDevice("deva")])
 
         with self.assertRaisesRegexp(DeviceError, "btrfs subvolume.*must be a btrfs volume"):
