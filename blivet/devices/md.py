@@ -124,6 +124,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             open("/etc/mdadm.conf", "a").write("ARRAY %s UUID=%s\n"
                                                 % (self.path, self.uuid))
 
+    def _verifyMemberFormat(self, member):
+        if member.type == "mdcontainer":
+            return None
+
+        return super(MDRaidArrayDevice, self)._verifyMemberFormat(member)
+
     @property
     def level(self):
         """ Return the raid level
