@@ -473,7 +473,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
             return
 
         # propagate mount options specified for members via kickstart
-        opts = "%s,subvol=%s" % (self.volume.format.mountopts, self.name)
+        opts = "subvol=%s" % self.name
+        if self.volume.format.mountopts:
+            opts = "%s,%s" % (self.volume.format.mountopts, opts)
+
         self.format.mountopts = opts
 
     @property
