@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.65
+Version: 0.66
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,32 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 08 2014 Brian C. Lane <bcl@redhat.com> - 0.66-1
+- Organize installer block device name blacklist. (#1148923) (dlehman)
+- Add likely to be raised exceptions to catch block (#1150174) (amulhern)
+- Canonicalize MD_UUID* values in udev.py (#1147087) (amulhern)
+- Split up devices.py. (dlehman)
+- Fix some pylint errors introduced in recent commits. (dlehman)
+- Return early when setting new size for non-existent partition. (dlehman)
+- Raise an exception when we find orphan partitions. (dlehman)
+- Fall back to parted to detect dasd disklabels. (dlehman)
+- Omit pylint false positive (amulhern)
+- Revert "pylint hack" (amulhern)
+- Remove unused import (amulhern)
+- Remove unused import (amulhern)
+- pylint hack (amulhern)
+- Make sure autopart requests fit in somewhere (#978266) (vpodzime)
+- Work with free region sizes instead of parted.Geometry objects (vpodzime)
+- Check that we have big enough free space for the partition request (vpodzime)
+- Allow specifying thin pool profiles (vpodzime)
+- Allow specifying minimum entropy when creating LUKS (vpodzime)
+- Allow user code provide callbacks for various actions/events (vpodzime)
+- Change default min_value from 10 to 1 in humanReadable() (amulhern)
+- Rewrite of Size.humanReadable() method (amulhern)
+- Factor out commonalities in xlated_*_prefix() methods. (amulhern)
+- Use named constants for binary and decimal factors. (amulhern)
+- Use UPPER_CASE for constants (amulhern)
+
 * Tue Sep 30 2014 Brian C. Lane <bcl@redhat.com> - 0.65-1
 - Remove a problematic remnant of singlePV. (dlehman)
 - Remove all traces of singlePV. (sbueno+anaconda)
