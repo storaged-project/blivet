@@ -2409,6 +2409,18 @@ class ContainerDevice(StorageDevice):
 
         super(ContainerDevice, self).__init__(*args, **kwargs)
 
+    def _verifyMemberFormat(self, member):
+        """ Whether the member has the format expected by the device.
+
+            :param member: the member device to add
+            :type member: :class:`.StorageDevice`
+            :returns: error msg if the member has incorrect format, else None
+            :rtype: str or NoneType
+        """
+        if not isinstance(member.format, self.formatClass):
+            return "Member format %(format)s is not a subtype of expected format %(expected)s." % {'format' : member.format, 'expected' : self.formatClass}
+        return None
+
     def _addParent(self, member):
         """ Add a member device to the container.
 
@@ -2419,8 +2431,10 @@ class ContainerDevice(StorageDevice):
             contents at all.
         """
         log_method_call(self, self.name, member=member.name)
-        if not isinstance(member.format, self.formatClass):
-            raise ValueError("member has wrong format")
+
+        error = self._verifyMemberFormat(member)
+        if error:
+            raise ValueError(error)
 
         if member.format.exists and self.uuid and self._formatUUIDAttr and \
            getattr(member.format, self._formatUUIDAttr) != self.uuid:
@@ -3765,6 +3779,12 @@ class MDRaidArrayDevice(ContainerDevice):
             # really high minors to arrays it has no config entry for
             open("/etc/mdadm.conf", "a").write("ARRAY %s UUID=%s\n"
                                                 % (self.path, self.uuid))
+
+    def _verifyMemberFormat(self, member):
+        if member.type == "mdcontainer":
+            return None
+
+        return super(MDRaidArrayDevice, self)._verifyMemberFormat(member)
 
     @property
     def level(self):
