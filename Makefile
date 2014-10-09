@@ -5,7 +5,7 @@ RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g'
 RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-TX_PULL_ARGS = -a --disable-overwrite
+TX_PULL_ARGS = -a
 TX_PUSH_ARGS = -s
 
 all:
