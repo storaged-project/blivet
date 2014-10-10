@@ -14,7 +14,7 @@ class FormatsTestCase(unittest.TestCase):
         ## get_device_format_class
         ##
         format_pairs = {
-           None : None,
+           None : formats.DeviceFormat,
            "bogus" : None,
            "biosboot" : formats.biosboot.BIOSBoot,
            "BIOS Boot" : formats.biosboot.BIOSBoot,
