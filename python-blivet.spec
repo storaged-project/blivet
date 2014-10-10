@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.66
+Version: 0.67
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,22 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Oct 09 2014 Brian C. Lane <bcl@redhat.com> - 0.67-1
+- Don't pass --disable-overwrite to tx pull. (dlehman)
+- Avoid unneccesarily tripping raid-level member count checks. (dlehman)
+- Allow toggling encryption of raid container members. (#1148373) (dlehman)
+- Include the new blivet.devices submodule in the built package. (clumens)
+- Add a few test for setting dataLevel and metaDataLevel in BTRFS (amulhern)
+- Add dataLevel and metaDataLevel attributes for testing. (amulhern)
+- Add isleaf and direct to _state_functions (amulhern)
+- Refactor setup of _state_functions into __init__() methods (amulhern)
+- Move getting the attribute into the check methods. (amulhern)
+- Adjust detection of exceptions raised. (amulhern)
+- Update test setup so that it obeys RAID level requirements. (amulhern)
+- Use new RaidDevice class in appropriate Device subclasses. (amulhern)
+- Add new RaidDevice class for handling RAID aspects of devices. (amulhern)
+- Do not set parents attribute if parents param is bad. (amulhern)
+
 * Wed Oct 08 2014 Brian C. Lane <bcl@redhat.com> - 0.66-1
 - Organize installer block device name blacklist. (#1148923) (dlehman)
 - Add likely to be raised exceptions to catch block (#1150174) (amulhern)
