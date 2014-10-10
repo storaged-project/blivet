@@ -501,4 +501,6 @@ class DeviceFormat(ObjectID):
         data.fstype = self.type
         data.mountpoint = self.ksMountpoint
 
+register_device_format(DeviceFormat)
+
 collect_device_format_classes()
