@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.10
+Version: 0.61.0.11
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Oct 10 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.11-1
+- Convert int to str before passing it to run_program (#1151129)
+  Related: rhbz#1076383
+- Avoid unneccesarily tripping raid-level member count checks. (dlehman)
+  Related: rhbz#1148980
+- Allow toggling encryption of raid container members. (dlehman)
+  Related: rhbz#1148980
+
 * Fri Oct 03 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.10-1
 - Raise an exception when we find orphan partitions. (dlehman)
   Related: rhbz#1144410
