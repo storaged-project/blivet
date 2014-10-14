@@ -21,8 +21,32 @@
 
 __all__ = ["_", "N_", "P_"]
 
-import gettext
+import gettext, locale
+import six
 
-_ = lambda x: gettext.ldgettext("blivet", x)
+# Create and cache a translations object for the current LC_MESSAGES value
+_cached_translations = {}
+def _get_translations():
+    # Use setlocale instead of getlocale even though that looks like it makes no sense,
+    # since this way we're just reading environment variables instead of mandating some
+    # sequence of setlocale calls or whatever, since this is also how the gettext functions
+    # behave. This differs from the behavior of gettext.find if $LANGUAGE is being used, but
+    # on the other hand no one uses $LANGUAGE.
+    lc_messages = locale.setlocale(locale.LC_MESSAGES, None)
+    if lc_messages not in _cached_translations:
+        _cached_translations[lc_messages] = gettext.translation("blivet", fallback=True)
+    return _cached_translations[lc_messages]
+
+
 N_ = lambda x: x
-P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
+
+# In Python 2, return the translated strings as unicode objects.
+# yes, pylint, the lambdas are necessary, because I want _get_translations()
+# evaluated on every call.
+# pylint: disable=unnecessary-lambda
+if six.PY2:
+    _ = lambda x: _get_translations().ugettext(x)
+    P_ = lambda x, y, z: _get_translations().ungettext(x, y, z)
+else:
+    _ = lambda x: _get_translations().gettext(x)
+    P_ = lambda x, y, z: _get_translations().ngettext(x, y, z)
