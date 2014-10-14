@@ -28,9 +28,7 @@ from blivet import arch
 import logging
 log = logging.getLogger("blivet")
 
-import gettext
-_ = lambda x: gettext.ldgettext("blivet", x)
-P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
+from blivet.i18n import _
 
 def get_dasd_ports():
     """ Return comma delimited string of valid DASD ports. """
