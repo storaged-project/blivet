@@ -16,7 +16,6 @@ class MDRaidTestCase(unittest.TestCase):
         ##
         ## level lookup
         ##
-        self.assertEqual(mdraid.RAID_levels.raidLevel("container").name, "container")
         self.assertEqual(mdraid.RAID_levels.raidLevel("stripe").name, "raid0")
         self.assertEqual(mdraid.RAID_levels.raidLevel("mirror").name, "raid1")
         self.assertEqual(mdraid.RAID_levels.raidLevel("4").name, "raid4")

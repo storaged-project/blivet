@@ -86,9 +86,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
 
-        if level == "container":
-            self._type = "mdcontainer"
-
         # avoid attribute-defined-outside-init pylint warning
         self._level = None
 
@@ -112,23 +109,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         else:
             self.metadataVersion = metadataVersion
 
-        # For container members probe size now, as we cannot determine it
-        # when teared down.
-        if self.parents and self.parents[0].type == "mdcontainer":
-            self._size = self.currentSize
-            self._type = "mdbiosraidarray"
+        if self.parents and self.parents[0].type == "mdcontainer" and self.type != "mdbiosraidarray":
+            raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
 
         if self.exists and self.mdadmFormatUUID and not flags.testing:
             # this is a hack to work around mdadm's insistence on giving
             # really high minors to arrays it has no config entry for
             with open("/etc/mdadm.conf", "a") as c:
                 c.write("ARRAY %s UUID=%s\n" % (self.path, self.mdadmFormatUUID))
-
-    def _verifyMemberFormat(self, member):
-        if member.type == "mdcontainer":
-            return None
-
-        return super(MDRaidArrayDevice, self)._verifyMemberFormat(member)
 
     @property
     def mdadmFormatUUID(self):
@@ -156,6 +144,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         return self._level
 
+    @property
+    def _levels(self):
+        """ Allowed RAID level for this type of device."""
+        return mdraid.RAID_levels
+
     @level.setter
     def level(self, value):
         """ Set the RAID level and enforce restrictions based on it.
@@ -167,7 +160,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             :returns:     None
         """
         try:
-            level = self._getLevel(value, mdraid.RAID_levels)
+            level = self._getLevel(value, self._levels)
         except ValueError as e:
             raise errors.DeviceError(e)
 
@@ -207,11 +200,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """Returns the actual or estimated size depending on whether or
            not the array exists.
         """
-        # For container members return probed size, as we cannot determine it
-        # when teared down.
-        if self.type == "mdbiosraidarray":
-            return self._size
-
         if not self.exists or not self.partedDevice:
             try:
                 size = self.level.get_size([d.size for d in self.devices],
@@ -230,14 +218,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     @property
     def description(self):
-        if self.type == "mdcontainer":
-            return "BIOS RAID container"
-        else:
-            levelstr = self.level.nick if self.level.nick else self.level.name
-            if self.type == "mdbiosraidarray":
-                return "BIOS RAID set (%s)" % levelstr
-            else:
-                return "MDRAID set (%s)" % levelstr
+        levelstr = self.level.nick if self.level.nick else self.level.name
+        return "MDRAID set (%s)" % levelstr
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
@@ -263,16 +245,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     @property
     def mdadmConfEntry(self):
         """ This array's mdadm.conf entry. """
-        if self.memberDevices is None or not self.mdadmFormatUUID:
+        uuid = self.mdadmFormatUUID
+        if self.memberDevices is None or not uuid:
             raise errors.DeviceError("array is not fully defined", self.name)
 
-        # containers and the sets within must only have a UUID= parameter
-        if self.type == "mdcontainer" or self.type == "mdbiosraidarray":
-            fmt = "ARRAY %s UUID=%s\n"
-            return fmt % (self.path, self.mdadmFormatUUID)
-
         fmt = "ARRAY %s level=%s num-devices=%d UUID=%s\n"
-        return fmt % (self.path, self.level, self.memberDevices, self.mdadmFormatUUID)
+        return fmt % (self.path, self.level, self.memberDevices, uuid)
 
     @property
     def totalDevices(self):
@@ -345,6 +323,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self.memberDevices -= 1
 
     @property
+    def _trueStatusStrings(self):
+        """ Strings in state file for which status() should return True."""
+        return ("clean", "active", "active-idle", "readonly", "read-auto")
+
+    @property
     def status(self):
         """ This device's status.
 
@@ -373,10 +356,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         state_file = "%s/md/array_state" % self.sysfsPath
         try:
             state = open(state_file).read().strip()
-            if state in ("clean", "active", "active-idle", "readonly", "read-auto"):
-                status = True
-            # mdcontainers have state inactive when started (clear if stopped)
-            if self.type == "mdcontainer" and state == "inactive":
+            if state in self._trueStatusStrings:
                 status = True
         except IOError:
             status = False
@@ -412,17 +392,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     def members(self):
         """ Returns this array's members.
 
-            If the array is a BIOS RAID array then its unique parent
-            is a container and its actual member devices are the
-            container's parents.
-
             :rtype: list of :class:`StorageDevice`
         """
-        if self.type == "mdbiosraidarray":
-            members = self.parents[0].parents
-        else:
-            members = self.parents
-        return list(members)
+        return list(self.parents)
 
     @property
     def complete(self):
@@ -467,12 +439,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # we don't really care about the return value of _preTeardown here.
         # see comment just above mddeactivate call
         self._preTeardown(recursive=recursive)
-
-        # Since BIOS RAID sets (containers in mdraid terminology) never change
-        # there is no need to stop them and later restart them. Not stopping
-        # (and thus also not starting) them also works around bug 523334
-        if self.type == "mdcontainer" or self.type == "mdbiosraidarray":
-            return
 
         # We don't really care what the array's state is. If the device
         # file exists, we want to deactivate it. mdraid has too many
@@ -562,14 +528,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     @property
     def mediaPresent(self):
-        # Containers should not get any format handling done
-        # (the device node does not allow read / write calls)
-        if self.type == "mdcontainer":
-            return False
-        # BIOS RAID sets should show as present even when teared down
-        elif self.type == "mdbiosraidarray":
-            return True
-        elif flags.testing:
+        if flags.testing:
             return True
         else:
             return self.partedDevice is not None
@@ -577,14 +536,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     @property
     def model(self):
         return self.description
-
-    @property
-    def partitionable(self):
-        return self.type == "mdbiosraidarray"
-
-    @property
-    def isDisk(self):
-        return self.type == "mdbiosraidarray"
 
     def dracutSetupArgs(self):
         return set(["rd.md.uuid=%s" % self.mdadmFormatUUID])
@@ -599,3 +550,106 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         data.members = ["raid.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         data.device = self.name
+
+class MDContainerDevice(MDRaidArrayDevice):
+
+    _type = "mdcontainer"
+
+    def __init__(self, name, **kwargs):
+        kwargs['level'] = raid.Container
+        super(MDContainerDevice, self).__init__(name, **kwargs)
+
+    @property
+    def _levels(self):
+        return mdraid.MDRaidLevels(["container"])
+
+    @property
+    def description(self):
+        return "BIOS RAID container"
+
+    @property
+    def mdadmConfEntry(self):
+        uuid = self.mdadmFormatUUID
+        if not uuid:
+            raise errors.DeviceError("array is not fully defined", self.name)
+
+        return "ARRAY %s UUID=%s\n" % (self.path, uuid)
+
+    @property
+    def _trueStatusStrings(self):
+        return ("clean", "active", "active-idle", "readonly", "read-auto", "inactive")
+
+    def teardown(self, recursive=None):
+        log_method_call(self, self.name, status=self.status,
+                        controllable=self.controllable)
+        # we don't really care about the return value of _preTeardown here.
+        # see comment just above mddeactivate call
+        self._preTeardown(recursive=recursive)
+
+        # Since BIOS RAID sets (containers in mdraid terminology) never change
+        # there is no need to stop them and later restart them. Not stopping
+        # (and thus also not starting) them also works around bug 523334
+        return
+
+    @property
+    def mediaPresent(self):
+        # Containers should not get any format handling done
+        # (the device node does not allow read / write calls)
+        return False
+
+class MDBiosRaidArrayDevice(MDRaidArrayDevice):
+
+    _type = "mdbiosraidarray"
+    _formatClassName = property(lambda s: None)
+    _isDisk = True
+    _partitionable = True
+
+    def __init__(self, name, **kwargs):
+        super(MDBiosRaidArrayDevice, self).__init__(name, **kwargs)
+
+        # For container members probe size now, as we cannot determine it
+        # when teared down.
+        self._size = self.currentSize
+
+    @property
+    def size(self):
+        # For container members return probed size, as we cannot determine it
+        # when teared down.
+        return self._size
+
+    @property
+    def description(self):
+        levelstr = self.level.nick if self.level.nick else self.level.name
+        return "BIOS RAID set (%s)" % levelstr
+
+    @property
+    def mdadmConfEntry(self):
+        uuid = self.mdadmFormatUUID
+        if not uuid:
+            raise errors.DeviceError("array is not fully defined", self.name)
+
+        return "ARRAY %s UUID=%s\n" % (self.path, uuid)
+
+    @property
+    def members(self):
+        # If the array is a BIOS RAID array then its unique parent
+        # is a container and its actual member devices are the
+        # container's parents.
+        return list(self.parents[0].parents)
+
+    def teardown(self, recursive=None):
+        log_method_call(self, self.name, status=self.status,
+                        controllable=self.controllable)
+        # we don't really care about the return value of _preTeardown here.
+        # see comment just above mddeactivate call
+        self._preTeardown(recursive=recursive)
+
+        # Since BIOS RAID sets (containers in mdraid terminology) never change
+        # there is no need to stop them and later restart them. Not stopping
+        # (and thus also not starting) them also works around bug 523334
+        return
+
+    @property
+    def mediaPresent(self):
+        # BIOS RAID sets should show as present even when teared down
+        return True

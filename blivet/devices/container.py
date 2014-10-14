@@ -62,18 +62,6 @@ class ContainerDevice(StorageDevice):
 
         super(ContainerDevice, self).__init__(*args, **kwargs)
 
-    def _verifyMemberFormat(self, member):
-        """ Whether the member has the format expected by the device.
-
-            :param member: the member device to add
-            :type member: :class:`.StorageDevice`
-            :returns: error msg if the member has incorrect format, else None
-            :rtype: str or NoneType
-        """
-        if not isinstance(member.format, self.formatClass):
-            return "Member format %(format)s is not a subtype of expected format %(expected)s." % {'format' : member.format, 'expected' : self.formatClass}
-        return None
-
     def _verifyMemberUuid(self, member, expect_equality=True, require_existence=True):
         """ Whether the member's array UUID has the proper relationship
             with its array's UUID.
@@ -126,10 +114,8 @@ class ContainerDevice(StorageDevice):
             contents at all.
         """
         log_method_call(self, self.name, member=member.name)
-
-        error = self._verifyMemberFormat(member)
-        if error:
-            raise ValueError(error)
+        if not isinstance(member.format, self.formatClass):
+            raise ValueError("member has wrong format")
 
         error = self._verifyMemberUuid(member)
         if error:

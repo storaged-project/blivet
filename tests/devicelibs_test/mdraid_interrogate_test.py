@@ -91,7 +91,7 @@ class MDExamineTestCase(MDRaidInterrogateTestCase):
               - RAID level and number of devices are correct
               - UUIDs have canonical form
         """
-        level = mdraid.RAID_levels.raidLevel(level or raid.RAID1)
+        level = raid.getRaidLevel(level or raid.RAID1)
         mdraid.mdcreate(self._dev_name, level, self.loopDevices, metadataVer=metadataVersion, spares=spares)
         time.sleep(2) # wait for raid to settle
 
@@ -194,7 +194,7 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
               - exactly the predicted names are returned by mddetail
               - UUIDs have canonical form
         """
-        level = mdraid.RAID_levels.raidLevel(level) if level is not None else raid.RAID1
+        level = raid.getRaidLevel(level) if level is not None else raid.RAID1
 
         mdraid.mdcreate(self._dev_name, level, self.loopDevices, metadataVer=metadataVersion, spares=spares)
         time.sleep(2) # wait for raid to settle

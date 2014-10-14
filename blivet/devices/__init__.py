@@ -27,7 +27,7 @@ from .partition import PartitionDevice
 from .dm import DMDevice, DMLinearDevice, DMCryptDevice
 from .luks import LUKSDevice
 from .lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMSnapShotDevice, LVMThinPoolDevice, LVMThinLogicalVolumeDevice, LVMThinSnapShotDevice
-from .md import MDRaidArrayDevice
+from .md import MDBiosRaidArrayDevice, MDContainerDevice, MDRaidArrayDevice
 from .btrfs import BTRFSDevice, BTRFSVolumeDevice, BTRFSSubVolumeDevice, BTRFSSnapShotDevice
 from .file import FileDevice, DirectoryDevice, SparseFileDevice
 from .loop import LoopDevice

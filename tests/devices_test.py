@@ -22,6 +22,8 @@ from blivet.devices import LVMThinPoolDevice
 from blivet.devices import LVMThinLogicalVolumeDevice
 from blivet.devices import LVMThinSnapShotDevice
 from blivet.devices import LVMVolumeGroupDevice
+from blivet.devices import MDBiosRaidArrayDevice
+from blivet.devices import MDContainerDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import OpticalDevice
 from blivet.devices import PartitionDevice
@@ -133,7 +135,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         parents = [
            DiskDevice("name1", fmt=getFormat("mdmember"))
         ]
-        self.dev1 = MDRaidArrayDevice("dev1", level="container", parents=parents)
+        self.dev1 = MDContainerDevice("dev1", level="container", parents=parents)
 
         parents = [
            DiskDevice("name1", fmt=getFormat("mdmember")),
@@ -183,7 +185,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         parents_1 = [
            DiskDevice("name1", fmt=getFormat("mdmember"))
         ]
-        dev_1 = MDRaidArrayDevice(
+        dev_1 = MDContainerDevice(
            "parent",
            level="container",
            parents=parents_1
@@ -198,7 +200,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            fmt=getFormat("mdmember"),
            parents=parents_2
         )
-        self.dev9 = MDRaidArrayDevice(
+        self.dev9 = MDBiosRaidArrayDevice(
            "dev9",
            level="raid0",
            memberDevices=2,
@@ -219,7 +221,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         parents_1 = [
            DiskDevice("name1", fmt=getFormat("mdmember"))
         ]
-        dev_1 = MDRaidArrayDevice(
+        dev_1 = MDContainerDevice(
            "parent",
            level="container",
            parents=parents
@@ -234,7 +236,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            fmt=getFormat("mdmember"),
            parents=parents_2
         )
-        self.dev11 = MDRaidArrayDevice(
+        self.dev11 = MDBiosRaidArrayDevice(
            "dev11",
            level=1,
            memberDevices=2,
@@ -242,7 +244,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            size=Size("32 MiB"),
            totalDevices=2)
 
-        self.dev12 = MDRaidArrayDevice(
+        self.dev12 = MDBiosRaidArrayDevice(
            "dev12",
            level=1,
            memberDevices=2,
