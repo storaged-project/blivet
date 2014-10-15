@@ -24,6 +24,7 @@ import os
 from . import udev
 from . import util
 from .i18n import _
+from .util import stringize, unicodeize
 
 import logging
 log = logging.getLogger("blivet")
@@ -51,8 +52,15 @@ class ZFCPDevice:
         if not self.checkValidFCPLun(self.fcplun):
             raise ValueError(_("You have not specified a FCP LUN or the number is invalid."))
 
-    def __str__(self):
+    # Force str and unicode types in case any of the properties are unicode
+    def _toString(self):
         return "%s %s %s" %(self.devnum, self.wwpn, self.fcplun)
+
+    def __str__(self):
+        return stringize(self._toString())
+
+    def __unicode__(self):
+        return unicodeize(self._toString())
 
     def sanitizeDeviceInput(self, dev):
         if dev is None or dev == "":

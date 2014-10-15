@@ -32,6 +32,7 @@ import six
 
 from .errors import SizePlacesError
 from .i18n import _, N_
+from .util import stringize, unicodeize
 
 
 # Container for size unit prefix information
@@ -233,8 +234,15 @@ class Size(Decimal):
         self = Decimal.__new__(cls, value=size)
         return self
 
-    def __str__(self, eng=False, context=None):
+    # Force str and unicode types since the translated sizespec may be unicode
+    def _toString(self):
         return self.humanReadable()
+
+    def __str__(self, eng=False, context=None):
+        return stringize(self._toString())
+
+    def __unicode__(self):
+        return unicodeize(self._toString())
 
     def __repr__(self):
         return "Size('%s')" % self

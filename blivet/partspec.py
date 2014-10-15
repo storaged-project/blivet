@@ -19,6 +19,8 @@
 # Red Hat Author(s): Chris Lumens <clumens@redhat.com>
 #
 
+from .util import stringize, unicodeize
+
 class PartSpec(object):
     def __init__(self, mountpoint=None, fstype=None, size=None, maxSize=None,
                  grow=False, btr=False, lv=False, thin=False, weight=0,
@@ -64,7 +66,8 @@ class PartSpec(object):
         self.requiredSpace = requiredSpace
         self.encrypted = encrypted
 
-    def __str__(self):
+    # Force str and unicode types in case any of the properties are unicode
+    def _toString(self):
         s = ("%(type)s instance (%(id)s) -- \n"
              "  mountpoint = %(mountpoint)s  lv = %(lv)s"
              "  thin = %(thin)s  btrfs = %(btrfs)s\n"
@@ -77,3 +80,9 @@ class PartSpec(object):
               "thin": self.thin})
 
         return s
+
+    def __str__(self):
+        return stringize(self._toString())
+
+    def __unicode__(self):
+        return unicodeize(self._toString())

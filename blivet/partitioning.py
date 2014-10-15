@@ -33,6 +33,7 @@ from .formats import getFormat
 from .devicelibs.lvm import get_pool_padding
 from .size import Size
 from .i18n import _
+from .util import stringize, unicodeize
 
 import logging
 log = logging.getLogger("blivet")
@@ -1361,9 +1362,16 @@ class Chunk(object):
 
         return s
 
-    def __str__(self):
+    # Force str and unicode types in case path is unicode
+    def _toString(self):
         s = "%d on %s" % (self.length, self.path)
         return s
+
+    def __str__(self):
+        return stringize(self._toString())
+
+    def __unicode__(self):
+        return unicodeize(self._toString())
 
     def addRequest(self, req):
         """ Add a request to this chunk.
@@ -1586,10 +1594,17 @@ class DiskChunk(Chunk):
                "sectorSize": self.sectorSize})
         return s
 
-    def __str__(self):
+    # Force str and unicode types in case path is unicode
+    def _toString(self):
         s = "%d (%d-%d) on %s" % (self.length, self.geometry.start,
                                   self.geometry.end, self.path)
         return s
+
+    def __str__(self):
+        return stringize(self._toString())
+
+    def __unicode__(self):
+        return unicodeize(self._toString())
 
     def addRequest(self, req):
         """ Add a request to this chunk.

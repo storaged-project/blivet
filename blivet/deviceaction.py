@@ -248,7 +248,9 @@ class DeviceAction(util.ObjectID):
     def typeDesc(self):
         return _(self.typeDescStr)
 
-    def __str__(self):
+    # Force str and unicode types since there's a good chance that the self.device.*
+    # strings are unicode.
+    def _toString(self):
         s = "[%d] %s" % (self.id, self.typeDescStr)
         if self.isResize:
             s += " (%s)" % self.resizeString
@@ -257,6 +259,12 @@ class DeviceAction(util.ObjectID):
         s += " %s %s (id %d)" % (self.device.type, self.device.name,
                                  self.device.id)
         return s
+
+    def __str__(self):
+        return util.stringize(self._toString())
+
+    def __unicode__(self):
+        return util.unicodeize(self._toString())
 
     def requires(self, action):
         """ Return True if self requires action. """

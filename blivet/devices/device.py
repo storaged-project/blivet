@@ -110,9 +110,16 @@ class Device(util.ObjectID):
               "parents": pprint.pformat([str(p) for p in self.parents])})
         return s
 
-    def __str__(self):
+    # Force str and unicode types in case type or name is unicode
+    def _toString(self):
         s = "%s %s (%d)" % (self.type, self.name, self.id)
         return s
+
+    def __str__(self):
+        return util.stringize(self._toString())
+
+    def __unicode__(self):
+        return util.unicodeize(self._toString())
 
     def _addParent(self, parent):
         """ Called before adding a parent to this device.
