@@ -2360,6 +2360,48 @@ class ContainerDevice(StorageDevice):
             return "Member format %(format)s is not a subtype of expected format %(expected)s." % {'format' : member.format, 'expected' : self.formatClass}
         return None
 
+    def _verifyMemberUuid(self, member, expect_equality=True, require_existence=True):
+        """ Whether the member's array UUID has the proper relationship
+            with its array's UUID.
+
+            :param member: the member device to add
+            :type member: :class:`.StorageDevice`
+            :param bool expect_equality: if True, expect UUIDs to be equal, otherwise, expect them to be unequal
+            :param bool require_existence: if True, checking UUIDs is only meaningful if member format exists
+            :returns: error msg if the UUIDs lack the correct relationship
+            :rtype: str or NoneType
+        """
+        if not self._formatUUIDAttr:
+            log.info("No attribute name corresponding to member's array UUID.")
+            return None
+
+        if not hasattr(member.format, self._formatUUIDAttr):
+            log.warning("Attribute name (%s) which specifies member format's array UUID does not exist for this object (%s).", self._formatUUIDAttr, member)
+            return None
+
+        member_fmt_uuid = getattr(member.format, self._formatUUIDAttr)
+
+        # If either UUID can not be obtained, nothing to check.
+        if not member_fmt_uuid or not self.uuid:
+            log.warning("At least one UUID missing.")
+            return None
+
+        # Below this line, the data obtained is considered to be correct.
+
+        # If existence is required and not present, nothing to check
+        if require_existence and not member.format.exists:
+            return None
+
+        uuids_equal = member_fmt_uuid == self.uuid
+
+        if expect_equality and not uuids_equal:
+            return "Member format's UUID %s does not match expected UUID %s." % (member_fmt_uuid, self.uuid)
+
+        if not expect_equality and uuids_equal:
+            return "Member format's UUID %s matches expected UUID %s." % (member_fmt_uuid, self.uuid)
+
+        return None
+
     def _addParent(self, member):
         """ Add a member device to the container.
 
@@ -2375,8 +2417,8 @@ class ContainerDevice(StorageDevice):
         if error:
             raise ValueError(error)
 
-        if member.format.exists and self.uuid and self._formatUUIDAttr and \
-           getattr(member.format, self._formatUUIDAttr) != self.uuid:
+        error = self._verifyMemberUuid(member)
+        if error:
             raise ValueError("cannot add member with mismatched UUID")
 
         super(ContainerDevice, self)._addParent(member)
@@ -2403,9 +2445,9 @@ class ContainerDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        if member.format.exists and self.uuid and self._formatUUIDAttr and \
-           getattr(member.format, self._formatUUIDAttr) == self.uuid:
-            log.error("cannot re-add member: %s", member)
+        error = self._verifyMemberUuid(member, expect_equality=False)
+        if error:
+            log.error("cannot re-add member: %s (%s)", member, error)
             raise ValueError("cannot add members that are already part of the container")
 
         self._add(member)
@@ -2436,9 +2478,10 @@ class ContainerDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        if self._formatUUIDAttr and self.uuid and \
-           getattr(member.format, self._formatUUIDAttr) != self.uuid:
-            log.error("cannot remove non-member: %s (%s/%s)", member, getattr(member.format, self._formatUUIDAttr), self.uuid)
+
+        error = self._verifyMemberUuid(member, require_existence=False)
+        if error:
+            log.error("cannot remove non-member: %s (%s)", member, error)
             raise ValueError("cannot remove members that are not part of the container")
 
         self._remove(member)
