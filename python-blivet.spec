@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.4
+Version: 0.61.5
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,26 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Oct 14 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.5-1
+- Branch transifex for the f21-branch (#1151750) (vpodzime)
+- Remove unused import introduced by porting patches (vpodzime)
+- Allow specifying thin pool profiles (vpodzime)
+- Remove tests for the sanityCheck (vpodzime)
+- Move _verifyLUKSDevicesHaveKey and its exception to anaconda (vpodzime)
+- Remove sanityCheck functions from blivet sources (vpodzime)
+- Allow specifying minimum entropy when creating LUKS (vpodzime)
+- Allow user code provide callbacks for various actions/events (vpodzime)
+- Allow user code creating free space snapshot (vpodzime)
+- Update tests to bring into line w/ previous commit (#1150147) (amulhern)
+- Abstract ContainerDevice member format check into a method (#1150147)
+  (amulhern)
+- Register DeviceFormat class (#1150147) (amulhern)
+- Don't append btrfs mount options to None (#1150872) (dshea)
+- Convert int to str before passing it to run_program (#1151129) (amulhern)
+- Avoid unneccesarily tripping raid-level member count checks. (dlehman)
+- Allow toggling encryption of raid container members. (#1148373) (dlehman)
+- Organize installer block device name blacklist. (#1148923) (dlehman)
+
 * Wed Oct 08 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.4-1
 - Canonicalize MD_UUID* values in udev.py (#1147087) (amulhern)
 - Add a test for activation. (amulhern)
