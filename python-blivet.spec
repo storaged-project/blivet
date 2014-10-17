@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.11
+Version: 0.61.0.12
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,44 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Oct 16 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.12-1
+- Take care when checking relationship of parent and child UUIDs (amulhern)
+  Related: rhbz#1151649
+- Canonicalize MD_UUID* values in udev.py (amulhern)
+  Resolves: rhbz#1153096
+- Add a test for activation (amulhern)
+  Related: rhbz#1153096
+- Add a test for mddetail on containers (amulhern)
+  Related: rhbz#1153096
+- Still attempt to destroy even if remove failed (amulhern)
+  Related: rhbz#1153096
+- Use long messages for unittest errors (amulhern)
+  Related: rhbz#1153096
+- Fix mdnominate error message (amulhern)
+  Related: rhbz#1153096
+- Break once metadata value is found (amulhern)
+  Related: rhbz#1153096
+- Split mdadd into separate functions (amulhern)
+  Related: rhbz#1153096
+- Refactor mdraid tests (amulhern)
+  Related: rhbz#1153096
+- Add a method to extract information about an mdraid array (amulhern)
+  Related: rhbz#1153096
+- Extend mdadm() to capture output (amulhern)
+  Related: rhbz#1153096
+- Be more robust in the face of possible changes to mdadm's UUIDs (amulhern)
+  Related: rhbz#1153096
+- Factor canonicalize_UUID() into separate method (amulhern)
+  Related: rhbz#1153096
+- Add a docstring to mdraid.mdexamine (amulhern)
+  Related: rhbz#1153096
+- Update tests to bring into line w/ previous commit (amulhern)
+  Related: rhbz#1151649
+- Abstract ContainerDevice member format check into a method (amulhern)
+  Resolves: rhbz#1151649
+- Register DeviceFormat class (amulhern)
+  Related: rhbz#1151649
+
 * Fri Oct 10 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.11-1
 - Convert int to str before passing it to run_program (#1151129)
   Related: rhbz#1076383
