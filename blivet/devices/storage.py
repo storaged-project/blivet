@@ -96,13 +96,17 @@ class StorageDevice(Device):
 
         self.exists = exists
         self.uuid = uuid
+
+        # Set sysfsPath before super call as MDRaidArrayDevice._addParent()
+        # reads sysfsPath.
+        self.sysfsPath = sysfsPath
+
         super(StorageDevice, self).__init__(name, parents=parents)
 
         self._format = None
         self._size = Size(util.numeric_type(size))
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
-        self.sysfsPath = sysfsPath
         self._serial = serial
         self._vendor = vendor
         self._model = model
