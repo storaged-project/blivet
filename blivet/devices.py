@@ -568,9 +568,10 @@ class StorageDevice(Device):
         self.exists = exists
         self.uuid = uuid
 
-        # Set sysfsPath before super call as MDRaidArrayDevice._addParent()
-        # reads sysfsPath.
+        # Set these fields before super call as MDRaidArrayDevice._addParent()
+        # reads them, through calls to status() and partedDevice().
         self.sysfsPath = sysfsPath
+        self._partedDevice = None
 
         Device.__init__(self, name, parents=parents)
 
@@ -590,8 +591,6 @@ class StorageDevice(Device):
         self.originalFormat = copy.copy(self.format)
         self.fstabComment = ""
         self._targetSize = self._size
-
-        self._partedDevice = None
 
         self.deviceLinks = []
 
