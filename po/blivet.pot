@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-08 11:19-0400\n"
+"POT-Creation-Date: 2014-10-20 13:43-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,114 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1406
+#: ../blivet/__init__.py:1416
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:1580
-#, python-format
-msgid "LUKS device %s has no encryption key"
-msgstr ""
-
-#: ../blivet/__init__.py:1611
-#, python-format
-msgid ""
-"Your root partition is less than 250 megabytes which is usually too small to "
-"install %s."
-msgstr ""
-
-#: ../blivet/__init__.py:1616
-#, python-format
-msgid ""
-"You have not defined a root partition (/), which is required for "
-"installation of %s to continue."
-msgstr ""
-
-#: ../blivet/__init__.py:1630
-msgid ""
-"This platform requires /boot on a dedicated partition or logical volume.  If "
-"you do not want a /boot volume, you must place / on a dedicated non-LVM "
-"partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1640
-#, python-format
-msgid ""
-"Your %(mount)s partition is less than %(size)s megabytes which is lower than "
-"recommended for a normal %(productName)s install."
-msgstr ""
-
-#: ../blivet/__init__.py:1651
-#, python-format
-msgid ""
-"Your %(mount)s partition is too small for %(format)s formatting (allowable "
-"size is %(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/__init__.py:1657
-#, python-format
-msgid ""
-"Your %(mount)s partition is too large for %(format)s formatting (allowable "
-"size is %(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/__init__.py:1666
-msgid "No valid bootloader target device found. See below for details."
-msgstr ""
-
-#: ../blivet/__init__.py:1678
-msgid "You have not created a bootable partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1700
-msgid ""
-"Your BIOS-based system needs a special partition to boot from a GPT disk "
-"label. To continue, please create a 1MiB 'biosboot' type partition."
-msgstr ""
-
-#: ../blivet/__init__.py:1711
-#, python-format
-msgid ""
-"You have not specified a swap partition.  %(requiredMem)s of memory is "
-"required to continue installation without a swap partition, but you only "
-"have %(installedMem)s."
-msgstr ""
-
-#: ../blivet/__init__.py:1718
-msgid ""
-"You have not specified a swap partition.  Although not strictly required in "
-"all cases, it will significantly improve performance for most installations."
-msgstr ""
-
-#: ../blivet/__init__.py:1725
-msgid ""
-"At least one of your swap devices does not have a UUID, which is common in "
-"swap space created using older versions of mkswap. These devices will be "
-"referred to by device path in /etc/fstab, which is not ideal since device "
-"paths can change under a variety of circumstances. "
-msgstr ""
-
-#: ../blivet/__init__.py:1736
-#, python-format
-msgid ""
-"This mount point is invalid.  The %s directory must be on the / file system."
-msgstr ""
-
-#: ../blivet/__init__.py:1741
-#, python-format
-msgid "The mount point %s must be on a linux file system."
-msgstr ""
-
-#: ../blivet/__init__.py:3140
+#: ../blivet/__init__.py:2976
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3145
+#: ../blivet/__init__.py:2981
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3147
+#: ../blivet/__init__.py:2983
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -215,6 +121,107 @@ msgstr ""
 
 #: ../blivet/zfcp.py:370
 msgid "Error"
+msgstr ""
+
+#: ../blivet/partitioning.py:379
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/partitioning.py:387
+msgid "Not enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/partitioning.py:741
+msgid "unable to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:749
+msgid "requested size exceeds maximum allowed"
+msgstr ""
+
+#: ../blivet/partitioning.py:854
+#, python-format
+msgid "disk %s inaccessible"
+msgstr ""
+
+#: ../blivet/partitioning.py:911
+#, python-format
+msgid ""
+"partition is too small for %(format)s formatting (allowable size is "
+"%(minSize)s to %(maxSize)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:916
+#, python-format
+msgid ""
+"partition is too large for %(format)s formatting (allowable size is "
+"%(minSize)s to %(maxSize)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:1175
+msgid "Unable to allocate requested partition scheme."
+msgstr ""
+
+#: ../blivet/partitioning.py:1198
+msgid "not enough free space after creating extended partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:1370
+msgid "cannot reclaim more than request has grown"
+msgstr ""
+
+#: ../blivet/partitioning.py:1575
+msgid "DiskChunk requests must be of type PartitionRequest"
+msgstr ""
+
+#: ../blivet/partitioning.py:1588
+msgid "partitions allocated outside disklabel limits"
+msgstr ""
+
+#: ../blivet/partitioning.py:1671
+msgid "VGChunk requests must be of type LVRequest"
+msgstr ""
+
+#. by now we have allocated the PVs so if there isn't enough
+#. space in the VG we have a real problem
+#: ../blivet/partitioning.py:2153
+msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/devicetree.py:1279
+msgid "Invalid Disk Label"
+msgstr ""
+
+#: ../blivet/iscsi.py:105
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:107
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:263
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:265
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:366
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:386
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:389
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #. Decimal prefixes for different size increments, along with the name
@@ -369,107 +376,6 @@ msgstr ""
 msgid "bytes"
 msgstr ""
 
-#: ../blivet/partitioning.py:368
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/partitioning.py:376
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/partitioning.py:751
-msgid "unable to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:759
-msgid "requested size exceeds maximum allowed"
-msgstr ""
-
-#: ../blivet/partitioning.py:864
-#, python-format
-msgid "disk %s inaccessible"
-msgstr ""
-
-#: ../blivet/partitioning.py:921
-#, python-format
-msgid ""
-"partition is too small for %(format)s formatting (allowable size is "
-"%(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:926
-#, python-format
-msgid ""
-"partition is too large for %(format)s formatting (allowable size is "
-"%(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:1185
-msgid "Unable to allocate requested partition scheme."
-msgstr ""
-
-#: ../blivet/partitioning.py:1208
-msgid "not enough free space after creating extended partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:1380
-msgid "cannot reclaim more than request has grown"
-msgstr ""
-
-#: ../blivet/partitioning.py:1585
-msgid "DiskChunk requests must be of type PartitionRequest"
-msgstr ""
-
-#: ../blivet/partitioning.py:1598
-msgid "partitions allocated outside disklabel limits"
-msgstr ""
-
-#: ../blivet/partitioning.py:1681
-msgid "VGChunk requests must be of type LVRequest"
-msgstr ""
-
-#. by now we have allocated the PVs so if there isn't enough
-#. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2163
-msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/devicetree.py:1276
-msgid "Invalid Disk Label"
-msgstr ""
-
-#: ../blivet/iscsi.py:105
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:107
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:263
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:265
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:366
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:386
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:389
-msgid "Could not log in to any of the discovered nodes"
-msgstr ""
-
 #: ../blivet/platform.py:51
 msgid "bootloader device"
 msgstr ""
@@ -555,45 +461,60 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/deviceaction.py:281
+#: ../blivet/deviceaction.py:282
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:327
+#: ../blivet/deviceaction.py:328
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:409
+#: ../blivet/deviceaction.py:410
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:491
+#: ../blivet/deviceaction.py:492
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:527
+#: ../blivet/deviceaction.py:529
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:606
+#: ../blivet/deviceaction.py:555
+#, python-format
+msgid "Not enough entropy to create LUKS format. %d bits are needed."
+msgstr ""
+
+#: ../blivet/deviceaction.py:575
+#, python-format
+msgid "Created %(type)s on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:621
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:699
+#: ../blivet/deviceaction.py:714
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:728
+#: ../blivet/deviceaction.py:744
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:773
+#: ../blivet/deviceaction.py:751
+#, python-format
+msgid "Resized filesystem on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:794
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:837
+#: ../blivet/deviceaction.py:858
 msgid "remove container member"
 msgstr ""
 
@@ -685,7 +606,15 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:421
+#: ../blivet/devicelibs/lvm.py:52
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:53
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:426
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""

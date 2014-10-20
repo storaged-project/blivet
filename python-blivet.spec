@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.5
+Version: 0.61.6
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Oct 20 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.6-1
+- Let udev settle between writing partition flags and formatting. (#1109244)
+  (dlehman)
+- Set _partedDevice attribute before calling device constructor (#1150147)
+  (amulhern)
+- Change variable keyword (#1154050) (amulhern)
+- Set sysfsPath attribute before calling Device constructor (#1150147)
+  (amulhern)
+- Take care when checking relationship of parent and child UUIDs (#1150147)
+  (amulhern)
+- Specify file type in transifex config file. (sbueno+anaconda)
+
 * Tue Oct 14 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.5-1
 - Branch transifex for the f21-branch (#1151750) (vpodzime)
 - Remove unused import introduced by porting patches (vpodzime)
