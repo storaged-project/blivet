@@ -446,7 +446,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     _packages = ["lvm2"]
 
     def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=0, segType=None,
+                 copies=1, logSize=None, segType=None,
                  fmt=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None):
         """
@@ -498,8 +498,8 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         self.uuid = uuid
         self.copies = copies
-        self.logSize = logSize
-        self.metaDataSize = 0
+        self.logSize = logSize or Size(0)
+        self.metaDataSize = Size(0)
         self.segType = segType or "linear"
         self.snapshots = []
 
@@ -888,7 +888,7 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
     _formatImmutable = True
 
     def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=0, segType=None,
+                 copies=1, logSize=None, segType=None,
                  fmt=None, exists=False, sysfsPath='',
                  grow=None, maxsize=None, percent=None,
                  origin=None, vorigin=False):
@@ -1022,8 +1022,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                 percent=percent,
                                                 segType=segType)
 
-        self.metaDataSize = metadatasize or 0
-        self.chunkSize = chunksize or 0
+        self.metaDataSize = metadatasize or Size(0)
+        self.chunkSize = chunksize or Size(0)
         self.profile = profile
         self._lvs = []
 
@@ -1089,8 +1089,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         super(LVMThinPoolDevice, self).populateKSData(data)
         data.mountpoint = "none"
         data.thin_pool = True
-        data.metadata_size = self.metaDataSize
-        data.chunk_size = self.chunkSize
+        data.metadata_size = self.metaDataSize.convertTo(spec="MiB")
+        data.chunk_size = self.chunkSize.convertTo(spec="KiB")
         if self.profile:
             data.profile = self.profile.name
 
