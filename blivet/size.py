@@ -75,12 +75,11 @@ _BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
 _PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
 
 # Translated versions of the byte and prefix arrays as lazy comprehensions
-# All strings are decoded as utf-8 so that locale-specific upper/lower functions work
 def _xlated_bytes():
-    return (_(b).decode("utf-8") for b in _BYTES)
+    return (_(b) for b in _BYTES)
 
 def _xlated_prefix(p):
-    return _Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8"))
+    return _Prefix(p.factor, _(p.prefix), _(p.abbr))
 
 def _xlated_binary_prefixes():
     return (_xlated_prefix(p) for p in _BINARY_PREFIXES)
@@ -102,15 +101,15 @@ def _makeSpecs(prefix, abbr, xlate):
 
     if prefix:
         if xlate:
-            specs.append(prefix.lower() + _(b"byte").decode("utf-8"))
-            specs.append(prefix.lower() + _(b"bytes").decode("utf-8"))
+            specs.append(prefix.lower() + _(b"byte"))
+            specs.append(prefix.lower() + _(b"bytes"))
         else:
             specs.append(_lowerASCII(prefix) + "byte")
             specs.append(_lowerASCII(prefix) + "bytes")
 
     if abbr:
         if xlate:
-            specs.append(abbr.lower() + _(b"b").decode("utf-8"))
+            specs.append(abbr.lower() + _(b"b"))
             specs.append(abbr.lower())
         else:
             specs.append(_lowerASCII(abbr) + "b")
@@ -148,7 +147,7 @@ def _parseSpec(spec):
         # characters
         if six.PY2:
             spec_ascii = specifier.decode("ascii")
-            # Convert back to a str type to match the _BYTES and _PREFIXES arrays
+            # Convert back to a str type for use with _lowerASCII
             spec_ascii = str(spec_ascii)
         else:
             # This will raise UnicodeEncodeError if specifier contains any non-ascii
@@ -172,10 +171,13 @@ def _parseSpec(spec):
             if spec_ascii in check:
                 return size * factor
 
-    # No English match found, try localized size specs. Accept any utf-8
-    # character and leave the result as a (unicode object.
+    # No English match found, try localized size specs. Convert the
+    # specifier to a unicode string if it's not one already.
     if six.PY2:
-        spec_local = specifier.decode("utf-8")
+        if isinstance(specifier, unicode):
+            spec_local = specifier
+        else:
+            spec_local = specifier.decode("utf-8")
     else:
         # str = unicode in Python3
         spec_local = specifier
@@ -357,7 +359,5 @@ class Size(Decimal):
         if radix != '.':
             retval_str = retval_str.replace('.', radix)
 
-        # Convert unicode objects to str before concatenating so that the
-        # resulting expression is a str.
         # pylint: disable=undefined-loop-variable
-        return retval_str + " " + abbr.encode("utf-8") + _("B")
+        return retval_str + " " + abbr + _("B")
