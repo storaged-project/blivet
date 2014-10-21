@@ -36,7 +36,9 @@ class StorageTestCase(unittest.TestCase):
         # prevent PartitionDevice from trying to dig around in the partition's
         # geometry
         blivet.devices.PartitionDevice._setTargetSize = StorageDevice._setTargetSize
+        blivet.devices.PartitionDevice.alignTargetSize = StorageDevice.alignTargetSize
         blivet.devices.PartitionDevice.maxSize = StorageDevice.maxSize
+        blivet.devices.PartitionDevice.minSize = StorageDevice.minSize
 
         def partition_probe(device):
             if isinstance(device._partedPartition, Mock):

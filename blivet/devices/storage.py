@@ -238,6 +238,16 @@ class StorageDevice(Device):
 
         super(StorageDevice, self)._setName(value)
 
+    def alignTargetSize(self, newsize):
+        """ Return a proposed target size adjusted for device specifics.
+
+            :param :class:`~.Size` newsize: the proposed/unaligned target size
+            :returns: newsize modified to yield an aligned device
+            :rtype: :class:`~.Size`
+        """
+
+        return newsize
+
     def _getTargetSize(self):
         return self._targetSize
 
@@ -253,6 +263,9 @@ class StorageDevice(Device):
             log.error("requested size %s is smaller than minimum %s",
                       newsize, self.minSize)
             raise ValueError("size is smaller than the minimum for this device")
+
+        if self.alignTargetSize(newsize) != newsize:
+            raise ValueError("new size would violate alignment requirements")
 
         self._targetSize = newsize
 
@@ -586,12 +599,12 @@ class StorageDevice(Device):
     @property
     def minSize(self):
         """ The minimum size this device can be. """
-        return self.format.minSize if self.resizable else self.currentSize
+        return self.alignTargetSize(self.format.minSize) if self.resizable else self.currentSize
 
     @property
     def maxSize(self):
         """ The maximum size this device can be. """
-        return self.format.maxSize if self.resizable else self.currentSize
+        return self.alignTargetSize(self.format.maxSize) if self.resizable else self.currentSize
 
     @property
     def status(self):
