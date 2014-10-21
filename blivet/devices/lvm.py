@@ -1067,11 +1067,15 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
+        if self.profile:
+            profile_name = self.profile_name
+        else:
+            profile_name = ""
         # TODO: chunk size, data/metadata split --> profile
         lvm.thinpoolcreate(self.vg.name, self.lvname, self.size,
                            metadatasize=self.metaDataSize,
                            chunksize=self.chunkSize,
-                           profile=self.profile.name)
+                           profile=profile_name)
 
     def dracutSetupArgs(self):
         return set()
@@ -1087,7 +1091,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         data.thin_pool = True
         data.metadata_size = self.metaDataSize
         data.chunk_size = self.chunkSize
-        data.profile = self.profile
+        if self.profile:
+            data.profile = self.profile.name
 
 class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Logical Volume """
