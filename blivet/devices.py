@@ -717,6 +717,16 @@ class StorageDevice(Device):
 
         super(StorageDevice, self)._setName(value)
 
+    def alignTargetSize(self, newsize):
+        """ Return a proposed target size adjusted for device specifics.
+
+            :param :class:`~.Size` newsize: the proposed/unaligned target size
+            :returns: newsize modified to yield an aligned device
+            :rtype: :class:`~.Size`
+        """
+
+        return newsize
+
     def _getTargetSize(self):
         return self._targetSize
 
@@ -732,6 +742,9 @@ class StorageDevice(Device):
             log.error("requested size %s is smaller than minimum %s",
                       newsize, self.minSize)
             raise ValueError("size is smaller than the minimum for this device")
+
+        if self.alignTargetSize(newsize) != newsize:
+            raise ValueError("new size would violate alignment requirements")
 
         self._targetSize = newsize
 
@@ -1032,12 +1045,12 @@ class StorageDevice(Device):
     @property
     def minSize(self):
         """ The minimum size this device can be. """
-        return self.format.minSize if self.resizable else self.currentSize
+        return self.alignTargetSize(self.format.minSize) if self.resizable else self.currentSize
 
     @property
     def maxSize(self):
         """ The maximum size this device can be. """
-        return self.format.maxSize if self.resizable else self.currentSize
+        return self.alignTargetSize(self.format.maxSize) if self.resizable else self.currentSize
 
     @property
     def status(self):
@@ -1506,11 +1519,36 @@ class PartitionDevice(StorageDevice):
                       "flags": self.partedPartition.getFlagsAsString()})
         return d
 
+    def alignTargetSize(self, newsize):
+        """ Return newsize adjusted to allow for an end-aligned partition.
+
+            :param :class:`~.Size` newsize: proposed/unaligned target size
+            :raises _ped.CreateException: if the size extends beyond the end of
+                                          the disk
+            :returns: newsize modified to yield an end-aligned partition
+            :rtype: :class:`~.Size`
+        """
+        if newsize == Size(0):
+            return newsize
+
+        (_constraint, geometry) = self._computeResize(self.partedPartition,
+                                                      newsize=newsize)
+        return Size(geometry.getLength(unit="B"))
+
     def _setTargetSize(self, newsize):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
         if newsize != self.size:
+            try:
+                aligned = self.alignTargetSize(newsize)
+            except _ped.CreateException:
+                # this gets handled in superclass setter, below
+                aligned = newsize
+
+            if aligned != newsize:
+                raise ValueError("new size will not yield an aligned partition")
+
             # change this partition's geometry in-memory so that other
             # partitioning operations can complete (e.g., autopart)
             super(PartitionDevice, self)._setTargetSize(newsize)
@@ -2047,7 +2085,10 @@ class PartitionDevice(StorageDevice):
 
     @property
     def _unalignedMaxPartSize(self):
-        """ Maximum size partition can grow to with unchanged start sector. """
+        """ Maximum size partition can grow to with unchanged start sector.
+
+            :rtype: :class:`~.size.Size`
+        """
         # XXX Only allow growth up to the amount of free space following this
         #     partition on disk. We don't care about leading free space --
         #     a filesystem cannot be relocated, so if you want to use space
@@ -2060,16 +2101,33 @@ class PartitionDevice(StorageDevice):
             pass
         else:
             if partition.type == parted.PARTITION_FREESPACE:
-                maxPartSize = self.size + Size(partition.getLength(unit="B"))
+                maxPartSize += Size(partition.getLength(unit="B"))
 
         return maxPartSize
+
+    @property
+    def minSize(self):
+        min_size = super(PartitionDevice, self).minSize
+        if self.resizable and min_size:
+            # Adjust the min size as needed so that aligning the end sector
+            # won't drive the actual size below the formatting's minimum.
+            # align the end sector (up, if possible)
+            aligned = self.alignTargetSize(min_size)
+            if aligned < min_size:
+                # If it aligned down, that must mean it cannot align up. Just
+                # return our current size.
+                log.debug("failed to align min size up; returning current size")
+                min_size = self.currentSize
+
+        return min_size
 
     @property
     def maxSize(self):
         """ The maximum size this partition can be. """
         maxPartSize = self._unalignedMaxPartSize
         maxFormatSize = self.format.maxSize
-        return min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
+        unalignedMax = min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
+        return self.alignTargetSize(unalignedMax)
 
     @property
     def currentSize(self):
