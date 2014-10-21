@@ -1386,8 +1386,7 @@ class NTFS(FS):
     def resizeArgs(self):
         # You must supply at least two '-f' options to ntfsresize or
         # the proceed question will be presented to you.
-        # ntfsresize uses SI unit prefixes
-        argv = ["-ff", "-s", "%dM" % self.targetSize.convertTo(spec="mb"),
+        argv = ["-ff", "-s", "%d" % self.targetSize.convertTo(spec="b"),
                 self.device]
         return argv
 
