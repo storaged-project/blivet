@@ -401,7 +401,7 @@ class FS(DeviceFormat):
         self.exists = True
         self.notifyKernel()
 
-        if self.label is not None or not self.relabels():
+        if self.label is not None and self.relabels():
             try:
                 self.writeLabel()
             except FSError as e:
@@ -637,7 +637,7 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        if not self._labelfs or not self._labelfs.label_app or not self._labelfs.label_app.reads:
+        if not self.relabels() or not self._labelfs.label_app.reads:
             raise FSError("no application to read label for filesystem %s" % self.type)
 
         (rc, out) = util.run_program_and_capture_output(self._labelfs.label_app.readLabelCommand(self))
@@ -667,7 +667,7 @@ class FS(DeviceFormat):
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        if not self._labelfs or not self._labelfs.label_app:
+        if not self.relabels():
             raise FSError("no application to set label for filesystem %s" % self.type)
 
         if not self.labelFormatOK(self.label):
