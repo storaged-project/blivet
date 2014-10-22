@@ -1872,13 +1872,27 @@ class PartitionDevice(StorageDevice):
         else:
             self._postCreate()
 
-    def _computeResize(self, partition):
+    def _computeResize(self, partition, newsize=None):
+        """ Return a new constraint and end-aligned geometry for new size.
+
+            :param :class:`parted.Partition` partition: the current partition
+            :keyword :class:`~.size.Size` newsize: new partition size
+            :return: a 2-tuple of constraint and geometry
+            :raises _ped.CreateException: if the size extends beyond the end of
+                                          the disk
+            :raises _ped.CreateException: if newsize is 0
+
+            If newsize is not specified, the current target size will be used.
+        """
         log_method_call(self, self.name, status=self.status)
+
+        if newsize is None:
+            newsize = self.targetSize
 
         # compute new size for partition
         currentGeom = partition.geometry
         currentDev = currentGeom.device
-        newLen = int(self.targetSize) / currentDev.sectorSize
+        newLen = int(newsize) / currentDev.sectorSize
         newGeometry = parted.Geometry(device=currentDev,
                                       start=currentGeom.start,
                                       length=newLen)
