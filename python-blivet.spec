@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.13
+Version: 0.61.0.14
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 22 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.14-1
+- Don't try to get no profile's name (vpodzime)
+  Resolves: rhbz#1151458
+
 * Mon Oct 20 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.13-1
 - Set _partedDevice attribute before calling device constructor (amulhern)
   Related: rhbz#1151649
