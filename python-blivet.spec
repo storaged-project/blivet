@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.67
+Version: 0.68
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,33 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 22 2014 Brian C. Lane <bcl@redhat.com> - 0.68-1
+- Only write label if there is a label AND labeling application. (amulhern)
+- Handle unicode strings in Size spec parsing. (dshea)
+- Fix typo in getting Thin Pool profile's name (vpodzime)
+- Don't try to get no profile's name (#1151458) (vpodzime)
+- Change signature of DiskLabel.addPartition to be more useful. (dlehman)
+- Remove unused fallback code from DiskLabel. (dlehman)
+- Let udev settle between writing partition flags and formatting. (#1109244)
+  (dlehman)
+- Set _partedDevice attribute before calling device constructor (#1150147)
+  (amulhern)
+- Fixed wrong Runtime Error raise in _preProcessActions (vtrefny)
+- Set sysfsPath attribute before calling Device constructor (#1150147)
+  (amulhern)
+- Return all translated strings as unicode (#1144314) (dshea)
+- Force __str__ to return str. (dshea)
+- Use the i18n module instead of creating new gettext methods (dshea)
+- Take care when checking relationship of parent and child UUIDs (#1151649)
+  (amulhern)
+- Further abstract loopbackedtestcase on block_size. (amulhern)
+- Update tests to bring into line w/ previous commit (#1150147) (amulhern)
+- Abstract ContainerDevice member format check into a method (#1150147)
+  (amulhern)
+- Register DeviceFormat class (#1150147) (amulhern)
+- Don't append btrfs mount options to None (#1150872) (dshea)
+- Convert int to str before passing it to run_program (#1151129) (amulhern)
+
 * Thu Oct 09 2014 Brian C. Lane <bcl@redhat.com> - 0.67-1
 - Don't pass --disable-overwrite to tx pull. (dlehman)
 - Avoid unneccesarily tripping raid-level member count checks. (dlehman)
