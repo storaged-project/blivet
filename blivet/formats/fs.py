@@ -1391,6 +1391,10 @@ class NTFS(FS):
                 self.device]
         return argv
 
+    @property
+    def resizable(self):
+        return not flags.installer_mode and super(NTFS, self).resizable
+
 
 register_device_format(NTFS)
 
