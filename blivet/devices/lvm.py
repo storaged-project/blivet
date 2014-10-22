@@ -1068,7 +1068,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         if self.profile:
-            profile_name = self.profile_name
+            profile_name = self.profile.name
         else:
             profile_name = ""
         # TODO: chunk size, data/metadata split --> profile
