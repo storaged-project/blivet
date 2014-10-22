@@ -3771,17 +3771,34 @@ class MDRaidArrayDevice(ContainerDevice):
             self._size = self.currentSize
             self._type = "mdbiosraidarray"
 
-        if self.exists and self.uuid and not flags.testing:
+        if self.exists and self.mdadmFormatUUID and not flags.testing:
             # this is a hack to work around mdadm's insistence on giving
             # really high minors to arrays it has no config entry for
-            open("/etc/mdadm.conf", "a").write("ARRAY %s UUID=%s\n"
-                                                % (self.path, self.uuid))
+            with open("/etc/mdadm.conf", "a") as c:
+                c.write("ARRAY %s UUID=%s\n" % (self.path, self.mdadmFormatUUID))
 
     def _verifyMemberFormat(self, member):
         if member.type == "mdcontainer":
             return None
 
         return super(MDRaidArrayDevice, self)._verifyMemberFormat(member)
+
+    @property
+    def mdadmFormatUUID(self):
+        """ This array's UUID, formatted for external use.
+
+            :returns: the array's UUID in mdadm format, if available
+            :rtype: str or NoneType
+        """
+        formatted_uuid = None
+
+        if self.uuid is not None:
+            try:
+                formatted_uuid = mdraid.mduuid_from_canonical(self.uuid)
+            except errors.MDRaidError:
+                pass
+
+        return formatted_uuid
 
     @property
     def level(self):
@@ -3885,16 +3902,16 @@ class MDRaidArrayDevice(ContainerDevice):
     @property
     def mdadmConfEntry(self):
         """ This array's mdadm.conf entry. """
-        if self.memberDevices is None or not self.uuid:
+        if self.memberDevices is None or not self.mdadmFormatUUID:
             raise errors.DeviceError("array is not fully defined", self.name)
 
         # containers and the sets within must only have a UUID= parameter
         if self.type == "mdcontainer" or self.type == "mdbiosraidarray":
             fmt = "ARRAY %s UUID=%s\n"
-            return fmt % (self.path, self.uuid)
+            return fmt % (self.path, self.mdadmFormatUUID)
 
         fmt = "ARRAY %s level=%s num-devices=%d UUID=%s\n"
-        return fmt % (self.path, self.level, self.memberDevices, self.uuid)
+        return fmt % (self.path, self.level, self.memberDevices, self.mdadmFormatUUID)
 
     @property
     def totalDevices(self):
@@ -4106,7 +4123,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
         mdraid.mdactivate(self.path,
                           members=disks,
-                          array_uuid=self.uuid)
+                          array_uuid=self.mdadmFormatUUID)
 
     def _postTeardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)
@@ -4231,7 +4248,7 @@ class MDRaidArrayDevice(ContainerDevice):
         return self.type == "mdbiosraidarray"
 
     def dracutSetupArgs(self):
-        return set(["rd.md.uuid=%s" % self.uuid])
+        return set(["rd.md.uuid=%s" % self.mdadmFormatUUID])
 
     def populateKSData(self, data):
         if self.isDisk:
