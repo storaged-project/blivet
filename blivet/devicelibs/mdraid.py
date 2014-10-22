@@ -22,6 +22,7 @@
 
 import os
 import re
+import string
 
 from .. import util
 from ..errors import MDRaidError
@@ -368,3 +369,31 @@ def name_from_md_node(node):
 
     log.debug("returning %s", name)
     return name
+
+def mduuid_from_canonical(a_uuid):
+    """ Change a canonicalized uuid to mdadm's preferred format.
+
+        :param str a_uuid: a string representing a UUID.
+
+        :returns: a UUID in mdadm's preferred format
+        :rtype: str
+
+        :raises MDRaidError: if it can not do the conversion
+
+        mdadm's UUIDs are actual 128 bit uuids, but it formats them strangely.
+        This converts a uuid from canonical form to mdadm's form.
+        Example:
+            mdadm UUID: '3386ff85:f5012621:4a435f06:1eb47236'
+        canonical UUID: '3386ff85-f501-2621-4a43-5f061eb47236'
+    """
+    NUM_DIGITS = 32
+    a_uuid = a_uuid.replace('-', '')
+
+    if len(a_uuid) != NUM_DIGITS:
+        raise MDRaidError("Missing digits in stripped UUID %s." % a_uuid)
+
+    if any(c not in string.hexdigits for c in a_uuid):
+        raise MDRaidError("Non-hex digits in stripped UUID %s." % a_uuid)
+
+    CHUNK_LEN = 8
+    return ":".join(a_uuid[n:n+CHUNK_LEN] for n in range(0, NUM_DIGITS, CHUNK_LEN))
