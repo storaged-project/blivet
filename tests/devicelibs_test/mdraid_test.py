@@ -48,6 +48,13 @@ class MDRaidTestCase(unittest.TestCase):
                                                          version="version"),
                          mdraid.MD_SUPERBLOCK_SIZE)
 
+    def testMisc(self):
+        """ Miscellaneous testing. """
+        self.assertEqual(
+           mdraid.mduuid_from_canonical('3386ff85-f501-2621-4a43-5f061eb47236'),
+          '3386ff85:f5012621:4a435f06:1eb47236'
+        )
+
 class MDRaidAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest', deviceSpec=None):
@@ -184,7 +191,7 @@ class SimpleRaidTest(MDRaidAsRootTestCase):
         with self.assertRaises(MDRaidError):
             mdraid.mdactivate("/dev/md1")
 
-        self.assertIsNone(mdraid.mdactivate(self._dev_name, array_uuid=info_pre['UUID']))
+        self.assertIsNone(mdraid.mdactivate(self._dev_name, array_uuid=mdraid.mduuid_from_canonical(info_pre['UUID'])))
         time.sleep(2)
         info_post = mdraid.mddetail(self._dev_name)
 
