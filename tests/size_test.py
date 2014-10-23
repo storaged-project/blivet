@@ -21,19 +21,24 @@
 #
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
+import locale
+import os
 import unittest
 
 from decimal import Decimal
 
 import six
 
+from blivet.i18n import _
 from blivet.errors import SizePlacesError
+from blivet import size
 from blivet.size import Size, _EMPTY_PREFIX, _BINARY_PREFIXES, _DECIMAL_PREFIXES
 
 if six.PY3:
     long = int # pylint: disable=redefined-builtin
 
 class SizeTestCase(unittest.TestCase):
+
     def testExceptions(self):
         zero = Size(0)
         self.assertEqual(zero, 0.0)
@@ -158,6 +163,7 @@ class SizeTestCase(unittest.TestCase):
         s = Size(0x10000000000000)
         self.assertEquals(s.humanReadable(max_places=2), "4 PiB")
 
+
     def testMinValue(self):
         s = Size("9 MiB")
         self.assertEquals(s.humanReadable(), "9 MiB")
@@ -170,6 +176,7 @@ class SizeTestCase(unittest.TestCase):
 
     def testConvertToPrecision(self):
         s = Size(1835008)
+        self.assertEquals(s.convertTo(spec=""), 1835008)
         self.assertEquals(s.convertTo(spec="b"), 1835008)
         self.assertEquals(s.convertTo(spec="KiB"), 1792)
         self.assertEquals(s.convertTo(spec="MiB"), 1.75)
@@ -184,22 +191,80 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(Size("%s KiB" % (1/1025.0,)), Size(0))
         self.assertEquals(Size("%s KiB" % (1/1023.0,)), Size(1))
 
-    def testTranslated(self):
-        import locale
-        import os
-        from blivet.i18n import _
+class TranslationTestCase(unittest.TestCase):
 
-        saved_lang = os.environ.get('LANG', None)
+    def __init__(self, methodName='runTest'):
+        super(TranslationTestCase, self).__init__(methodName=methodName)
 
         # es_ES uses latin-characters but a comma as the radix separator
         # kk_KZ uses non-latin characters and is case-sensitive
-        # te_IN uses a lot of non-letter modifier characters
+        # ml_IN uses a lot of non-letter modifier characters
         # fa_IR uses non-ascii digits, or would if python supported that, but
         #       you know, just in case
-        test_langs = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
+        self.TEST_LANGS = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
 
+    def setUp(self):
+        self.saved_lang = os.environ.get('LANG', None)
+
+    def tearDown(self):
+        os.environ['LANG'] = self.saved_lang
+        locale.setlocale(locale.LC_ALL, '')
+
+    def testMakeSpec(self):
+        """ Tests for _makeSpecs(). """
+        for lang in  self.TEST_LANGS:
+            os.environ['LANG'] = lang
+            locale.setlocale(locale.LC_ALL, '')
+
+            # untranslated specs
+            self.assertEqual(size._makeSpec(b"", b"BYTES", False), b"bytes")
+            self.assertEqual(size._makeSpec(b"Mi", b"b", False), b"mib")
+
+            # un-lower-cased specs
+            self.assertEqual(size._makeSpec(b"", b"BYTES", False, False), b"BYTES")
+            self.assertEqual(size._makeSpec(b"Mi", b"b", False, False), b"Mib")
+            self.assertEqual(size._makeSpec(b"Mi", b"B", False, False), b"MiB")
+
+            # translated specs
+            res = size._makeSpec(b"", b"bytes", True)
+
+            # Note that exp != _(b"bytes").lower() as one might expect
+            exp = (_(b"") + _(b"bytes")).lower()
+            self.assertEqual(res, exp)
+
+    def testParseSpec(self):
+        """ Tests for _parseSpec(). """
+        for lang in  self.TEST_LANGS:
+            os.environ['LANG'] = lang
+            locale.setlocale(locale.LC_ALL, '')
+
+            # Test parsing English spec in foreign locales
+            self.assertEqual(size._parseSpec("1 kibibytes"), Decimal(1024))
+            self.assertEqual(size._parseSpec("2 kibibyte"), Decimal(2048))
+            self.assertEqual(size._parseSpec("2 kilobyte"), Decimal(2000))
+            self.assertEqual(size._parseSpec("2 kilobytes"), Decimal(2000))
+            self.assertEqual(size._parseSpec("2 KB"), Decimal(2000))
+            self.assertEqual(size._parseSpec("2 K"), Decimal(2048))
+            self.assertEqual(size._parseSpec("2 k"), Decimal(2048))
+            self.assertEqual(size._parseSpec("2 Ki"), Decimal(2048))
+            self.assertEqual(size._parseSpec("2 g"), Decimal(2 * 1024 ** 3))
+            self.assertEqual(size._parseSpec("2 G"), Decimal(2 * 1024 ** 3))
+
+            # Test parsing foreign spec
+            self.assertEqual(size._parseSpec("1 %s%s" % (_("kibi"), _("bytes"))), Decimal(1024))
+
+            # Can't parse a valueless number
+            with self.assertRaises(ValueError):
+                size._parseSpec("Ki")
+
+            self.assertEqual(size._parseSpec("2 %s" % _("K")), Decimal(2048))
+            self.assertEqual(size._parseSpec("2 %s" % _("Ki")), Decimal(2048))
+            self.assertEqual(size._parseSpec("2 %s" % _("g")), Decimal(2 * 1024 ** 3))
+            self.assertEqual(size._parseSpec("2 %s" % _("G")), Decimal(2 * 1024 ** 3))
+
+    def testTranslated(self):
         s = Size("56.19 MiB")
-        for lang in test_langs:
+        for lang in  self.TEST_LANGS:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
@@ -224,8 +289,22 @@ class SizeTestCase(unittest.TestCase):
                 self.assertEquals(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
                 self.assertEquals(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
 
-        os.environ['LANG'] = saved_lang
-        locale.setlocale(locale.LC_ALL, '')
+    def testHumanReadableTranslation(self):
+        s = Size("56.19 MiB")
+        size_str = s.humanReadable()
+        for lang in self.TEST_LANGS:
+
+            os.environ['LANG'] = lang
+            locale.setlocale(locale.LC_ALL, '')
+            self.assertTrue(s.humanReadable().endswith("%s%s" % (_("Mi"), _("B"))))
+            self.assertEqual(s.humanReadable(xlate=False), size_str)
+
+class UtilityMethodsTestCase(unittest.TestCase):
+
+    def testLowerASCII(self):
+        """ Tests for _lowerASCII. """
+        self.assertEqual(size._lowerASCII(b""), b"")
+        self.assertEqual(size._lowerASCII(b"B"), b"b")
 
 if __name__ == "__main__":
     unittest.main()
