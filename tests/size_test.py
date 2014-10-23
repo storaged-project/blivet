@@ -28,7 +28,7 @@ from decimal import Decimal
 import six
 
 from blivet.errors import SizePlacesError
-from blivet.size import Size, _PREFIXES
+from blivet.size import Size, _EMPTY_PREFIX, _BINARY_PREFIXES, _DECIMAL_PREFIXES
 
 if six.PY3:
     long = int # pylint: disable=redefined-builtin
@@ -71,7 +71,7 @@ class SizeTestCase(unittest.TestCase):
         numbytes = long(47)
         self._prefixTestHelper(numbytes, 1, None, None)
 
-        for factor, prefix, abbr in _PREFIXES:
+        for factor, prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
             self._prefixTestHelper(numbytes, factor, prefix, abbr)
 
     def testHumanReadable(self):

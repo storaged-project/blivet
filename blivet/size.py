@@ -19,7 +19,6 @@
 #
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
-import itertools
 import re
 import string
 import locale
@@ -40,6 +39,9 @@ _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 
 _DECIMAL_FACTOR = 10 ** 3
 _BINARY_FACTOR = 2 ** 10
+
+_BYTES_SYMBOL = N_(b"B")
+_BYTES_WORDS = (N_(b"bytes"), N_(b"byte"))
 
 # Decimal prefixes for different size increments, along with the name
 # and accepted abbreviation for the prefix.  These prefixes are all
@@ -71,25 +73,6 @@ _BINARY_PREFIXES = [
 # Empty prefix works both for decimal and binary
 _EMPTY_PREFIX = _Prefix(1, b"", b"")
 
-_BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
-_PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
-
-# Translated versions of the byte and prefix arrays as lazy comprehensions
-def _xlated_bytes():
-    return (_(b) for b in _BYTES)
-
-def _xlated_prefix(p):
-    return _Prefix(p.factor, _(p.prefix), _(p.abbr))
-
-def _xlated_binary_prefixes():
-    return (_xlated_prefix(p) for p in _BINARY_PREFIXES)
-
-def _xlated_decimal_prefixes():
-    return (_xlated_prefix(p) for p in _DECIMAL_PREFIXES)
-
-def _xlated_prefixes():
-    return itertools.chain(_xlated_binary_prefixes(), _xlated_decimal_prefixes())
-
 if six.PY2:
     _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
 else:
@@ -107,30 +90,74 @@ def _lowerASCII(s):
     else:
         return str.translate(s, _ASCIIlower_table) # pylint: disable=no-member
 
-def _makeSpecs(prefix, abbr, xlate):
-    """ Internal method used to generate a list of specifiers. """
-    specs = []
+def _makeSpec(prefix, suffix, xlate, lowercase=True):
+    """ Synthesizes a whole word from prefix and suffix.
 
-    if prefix:
-        if xlate:
-            specs.append(prefix.lower() + _(b"byte"))
-            specs.append(prefix.lower() + _(b"bytes"))
-        else:
-            specs.append(_lowerASCII(prefix) + "byte")
-            specs.append(_lowerASCII(prefix) + "bytes")
+        :param str prefix: a prefix
+        :param str suffixes: a suffix
+        :param bool xlate: if True, treat as locale specific
+        :param bool lowercase: if True, make all lowercase
 
-    if abbr:
-        if xlate:
-            specs.append(abbr.lower() + _(b"b"))
-            specs.append(abbr.lower())
-        else:
-            specs.append(_lowerASCII(abbr) + "b")
-            specs.append(_lowerASCII(abbr))
+        :returns:  whole word
+        :rtype: str
+    """
+    if xlate:
+        word = (_(prefix) + _(suffix))
+        return word.lower() if lowercase else word
+    else:
+        word = prefix + suffix
+        return _lowerASCII(word) if lowercase else word
 
-    return specs
+def _parseUnits(units, xlate):
+    """ Parse a unit specification and return corresponding factor.
+
+        :param units: a units specifier
+        :type units: any type of string like object
+        :param bool xlate: if True, assume locale specific
+
+        :returns: a numeric factor corresponding to the units, if found
+        :rtype: int or NoneType
+
+        Looks first for exact matches for a specifier, but, failing that,
+        searches for partial matches for abbreviations.
+
+        Normalizes units to lowercase, e.g., MiB and mib are treated the same.
+    """
+    if units == "":
+        return 1
+
+    if xlate:
+        units = units.lower()
+    else:
+        units = _lowerASCII(units)
+
+    # Search for complete matches
+    for factor, prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
+        if units == _makeSpec(abbr, _BYTES_SYMBOL, xlate) or \
+           units in (_makeSpec(prefix, s, xlate) for s in _BYTES_WORDS):
+            return factor
+
+    # Search for unambiguous partial match among binary abbreviations
+    matches = [p for p in _BINARY_PREFIXES if _makeSpec(p.abbr, "", xlate).startswith(units)]
+    if len(matches) == 1:
+        return matches[0].factor
+
+    return None
 
 def _parseSpec(spec):
-    """ Parse string representation of size. """
+    """ Parse string representation of size.
+
+        :param spec: the specification of a size with, optionally, units
+        :type spec: any type of string like object
+        :returns: numeric value of the specification in bytes
+        :rtype: Decimal
+
+        :raises ValueError: if spec is unparseable
+
+        Tries to parse the spec first as English, if that fails, as
+        a locale specific string.
+    """
+
     if not spec:
         raise ValueError("invalid size specification", spec)
 
@@ -153,58 +180,32 @@ def _parseSpec(spec):
 
     specifier = m.groups()[1]
 
-    # Only attempt to parse as English if all characters are ASCII
+    # First try to parse as English.
     try:
-        # This will raise UnicodeDecodeError if specifier contains non-ascii
-        # characters
         if six.PY2:
-            spec_ascii = specifier.decode("ascii")
-            # Convert back to a str type for use with _lowerASCII
-            spec_ascii = str(spec_ascii)
+            spec_ascii = str(specifier.decode("ascii"))
         else:
-            # This will raise UnicodeEncodeError if specifier contains any non-ascii
-            # in Python3 `bytes` are new Python2 `str`
             spec_ascii = bytes(specifier, 'ascii')
-
-        # Use the ASCII-only lowercase mapping
-        spec_ascii = _lowerASCII(spec_ascii)
     except (UnicodeDecodeError, UnicodeEncodeError):
+        # String contains non-ascii characters, so can not be English.
         pass
     else:
-        if spec_ascii and not spec_ascii.endswith("b"):
-            spec_ascii += "ib"
+        factor = _parseUnits(spec_ascii, False)
+        if factor is not None:
+            return size * factor
 
-        if spec_ascii in _BYTES or not spec_ascii:
-            return size
-
-        for factor, prefix, abbr in _PREFIXES:
-            check = _makeSpecs(prefix, abbr, False)
-
-            if spec_ascii in check:
-                return size * factor
-
-    # No English match found, try localized size specs. Convert the
-    # specifier to a unicode string if it's not one already.
+    # No English match found, try localized size specs.
     if six.PY2:
         if isinstance(specifier, unicode):
             spec_local = specifier
         else:
             spec_local = specifier.decode("utf-8")
     else:
-        # str = unicode in Python3
         spec_local = specifier
 
-    # Use the locale-specific lowercasing
-    spec_local = spec_local.lower()
-
-    if spec_local in _xlated_bytes():
-        return size
-
-    for factor, prefix, abbr in _xlated_prefixes():
-        check  = _makeSpecs(prefix, abbr, True)
-
-        if spec_local in check:
-            return size * factor
+    factor = _parseUnits(spec_local, True)
+    if factor is not None:
+        return size * factor
 
     raise ValueError("invalid size specification", spec)
 
@@ -239,7 +240,7 @@ class Size(Decimal):
         elif isinstance(value, (six.integer_types, float, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):
-            size = Decimal(value.convertTo("b"))
+            size = Decimal(value.convertTo())
         else:
             raise ValueError("invalid value %s for size" % value)
 
@@ -262,7 +263,7 @@ class Size(Decimal):
         return "Size('%s')" % self
 
     def __deepcopy__(self, memo):
-        return Size(self.convertTo(spec="b"))
+        return Size(self.convertTo())
 
     def __add__(self, other, context=None):
         return Size(Decimal.__add__(self, other, context=context))
@@ -285,23 +286,16 @@ class Size(Decimal):
     def __mod__(self, other, context=None):
         return Size(Decimal.__mod__(self, other, context=context))
 
-    def convertTo(self, spec="b"):
-        """ Return the size in the units indicated by the specifier.  The
-            specifier can be prefixes from the _DECIMAL_PREFIXES and
-            _BINARY_PREFIXES lists combined with 'b' or 'B' for abbreviations)
-            or 'bytes' (for prefixes like kilo or mega). The size is returned
-            as a Decimal.
+    def convertTo(self, spec="", xlate=False):
+        """ Return the size in the units indicated by the specifier.
+
+            :param str spec: a units specifier
+            :returns: a numeric value in the units indicated by the specifier
+            :rtype: Decimal
         """
-        spec = spec.lower()
-
-        if spec in _BYTES:
-            return Decimal(self)
-
-        for factor, prefix, abbr in _PREFIXES:
-            check = _makeSpecs(prefix, abbr, False)
-
-            if spec in check:
-                return Decimal(self) / Decimal(factor)
+        divisor = _parseUnits(spec, xlate)
+        if divisor:
+            return Decimal(self) / Decimal(divisor)
 
         return None
 
