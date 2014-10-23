@@ -24,6 +24,7 @@ from blivet.devices import OpticalDevice
 from blivet.devices import StorageDevice
 from blivet.devices import ParentList
 from blivet.devicelibs import btrfs
+from blivet.devicelibs import mdraid
 from blivet.size import Size
 
 from blivet.formats import getFormat
@@ -82,6 +83,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "level" : self.assertIsNone,
            "major" : lambda x, m: self.assertEqual(x, 0, m),
            "maxSize" : lambda x, m: self.assertEqual(x, Size(0), m),
+           "mdadmFormatUUID" : self.assertIsNone,
            "mediaPresent" : self.assertFalse,
            "metadataVersion" : lambda x, m: self.assertEqual(x, "default", m),
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
@@ -232,6 +234,18 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                       "format": getFormat("mdmember")})],
            totalDevices=5)
 
+        self.dev19 = MDRaidArrayDevice(
+           "dev19",
+           level="raid1",
+           uuid='3386ff85-f501-2621-4a43-5f061eb47236'
+        )
+
+        self.dev20 = MDRaidArrayDevice(
+           "dev20",
+           level="raid1",
+           uuid='Just-pretending'
+        )
+
 
     def testMDRaidArrayDeviceInit(self):
         """Tests the state of a MDRaidArrayDevice after initialization.
@@ -370,6 +384,15 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
                         spares=lambda x, m: self.assertEqual(x, 1, m),
                         totalDevices=lambda x, m: self.assertEqual(x, 5, m))
+
+        self.stateCheck(self.dev19,
+                        level=lambda x, m: self.assertEqual(x.number, 1, m),
+                        mdadmFormatUUID=lambda x, m: self.assertEqual(x, mdraid.mduuid_from_canonical(self.dev19.uuid), m),
+                        uuid=lambda x, m: self.assertEqual(x, self.dev19.uuid, m))
+
+        self.stateCheck(self.dev20,
+                        level=lambda x, m: self.assertEqual(x.number, 1, m),
+                        uuid=lambda x, m: self.assertEqual(x, self.dev20.uuid, m))
 
         with self.assertRaisesRegexp(RaidError, "invalid RAID level"):
             MDRaidArrayDevice("dev")
