@@ -2046,8 +2046,8 @@ class PartitionDevice(StorageDevice):
     disk = property(lambda p: p._getDisk(), lambda p,d: p._setDisk(d))
 
     @property
-    def maxSize(self):
-        """ The maximum size this partition can be. """
+    def _unalignedMaxPartSize(self):
+        """ Maximum size partition can grow to with unchanged start sector. """
         # XXX Only allow growth up to the amount of free space following this
         #     partition on disk. We don't care about leading free space --
         #     a filesystem cannot be relocated, so if you want to use space
@@ -2062,6 +2062,12 @@ class PartitionDevice(StorageDevice):
             if partition.type == parted.PARTITION_FREESPACE:
                 maxPartSize = self.size + Size(partition.getLength(unit="B"))
 
+        return maxPartSize
+
+    @property
+    def maxSize(self):
+        """ The maximum size this partition can be. """
+        maxPartSize = self._unalignedMaxPartSize
         maxFormatSize = self.format.maxSize
         return min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
 
