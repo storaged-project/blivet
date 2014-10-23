@@ -69,7 +69,7 @@ _BINARY_PREFIXES = [
 ]
 
 # Empty prefix works both for decimal and binary
-_EMPTY_PREFIX = _Prefix(1, u"", u"")
+_EMPTY_PREFIX = _Prefix(1, b"", b"")
 
 _BYTES = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
 _PREFIXES = _BINARY_PREFIXES + _DECIMAL_PREFIXES
