@@ -90,10 +90,22 @@ def _xlated_decimal_prefixes():
 def _xlated_prefixes():
     return itertools.chain(_xlated_binary_prefixes(), _xlated_decimal_prefixes())
 
-_ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)
+if six.PY2:
+    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+else:
+    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+
 def _lowerASCII(s):
-    """Convert a string to lowercase using only ASCII character definitions."""
-    return string.translate(s, _ASCIIlower_table)
+    """Convert a string to lowercase using only ASCII character definitions.
+
+       :param str s: string to convert
+       :returns: lower-cased string
+       :rtype: str
+    """
+    if six.PY2:
+        return string.translate(s, _ASCIIlower_table) # pylint: disable=no-member
+    else:
+        return str.translate(s, _ASCIIlower_table) # pylint: disable=no-member
 
 def _makeSpecs(prefix, abbr, xlate):
     """ Internal method used to generate a list of specifiers. """
