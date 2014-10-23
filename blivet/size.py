@@ -299,7 +299,7 @@ class Size(Decimal):
 
         return None
 
-    def humanReadable(self, max_places=2, strip=True, min_value=1):
+    def humanReadable(self, max_places=2, strip=True, min_value=1, xlate=True):
         """ Return a string representation of this size with appropriate
             size specifier and in the specified number of decimal places.
             Values are always represented using binary not decimal units.
@@ -312,6 +312,7 @@ class Size(Decimal):
             :param bool strip: True if trailing zeros are to be stripped.
             :param min_value: Lower bound for value, default is 1.
             :type min_value: A precise numeric type: int, long, or Decimal
+            :param bool xlate: If True, translate for current locale
             :returns: a representation of the size
             :rtype: str
 
@@ -345,7 +346,7 @@ class Size(Decimal):
         # _BINARY_FACTOR * min_value to the left of the decimal point.
         # If the number is so large that no prefix will satisfy this
         # requirement use the largest prefix.
-        for factor, _prefix, abbr in itertools.chain([_EMPTY_PREFIX], _xlated_binary_prefixes()):
+        for factor, _prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
             newcheck = super(Size, self).__div__(Decimal(factor))
 
             if abs(newcheck) < _BINARY_FACTOR * min_value:
@@ -360,10 +361,10 @@ class Size(Decimal):
         if '.' in retval_str and strip:
             retval_str = retval_str.rstrip("0").rstrip(".")
 
-        # If necessary, substitute with a localized separator before returning
-        radix = locale.nl_langinfo(locale.RADIXCHAR)
-        if radix != '.':
-            retval_str = retval_str.replace('.', radix)
+        if xlate:
+            radix = locale.nl_langinfo(locale.RADIXCHAR)
+            if radix != '.':
+                retval_str = retval_str.replace('.', radix)
 
         # pylint: disable=undefined-loop-variable
-        return retval_str + " " + abbr + _("B")
+        return retval_str + " " + _makeSpec(abbr, _BYTES_SYMBOL, xlate, lowercase=False)
