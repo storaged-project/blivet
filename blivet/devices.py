@@ -728,6 +728,10 @@ class StorageDevice(Device):
             log.error("requested size %s is larger than maximum %s",
                       newsize, self.maxSize)
             raise ValueError("size is larger than the maximum for this device")
+        elif self.minSize and newsize < self.minSize:
+            log.error("requested size %s is smaller than minimum %s",
+                      newsize, self.minSize)
+            raise ValueError("size is smaller than the minimum for this device")
 
         self._targetSize = newsize
 
