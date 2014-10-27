@@ -209,6 +209,15 @@ def is_valid_thin_pool_chunk_size(size, discard=False):
     else:
         return (size % LVM_THINP_MIN_CHUNK_SIZE == 0)
 
+def strip_lvm_warnings(buf):
+    """ Strip out lvm warning lines
+
+    :param str buf: A string returned from lvm
+    :returns: A list of strings with warning lines stripped
+    :rtype: list of strings
+    """
+    return [l for l in buf.splitlines() if l and not l.lstrip().startswith("WARNING:")]
+
 def lvm(args):
     ret = util.run_program(["lvm"] + args)
     if ret:
@@ -463,9 +472,9 @@ def lvorigin(vg_name, lv_name):
             ["%s/%s" % (vg_name, lv_name)]
 
     buf = util.capture_output(["lvm"] + args)
-
+    lines = strip_lvm_warnings(buf)
     try:
-        origin = buf.splitlines()[0].strip()
+        origin = lines[0].strip()
     except IndexError:
         origin = ''
 
@@ -618,9 +627,9 @@ def thinlvpoolname(vg_name, lv_name):
             ["%s/%s" % (vg_name, lv_name)]
 
     buf = util.capture_output(["lvm"] + args)
-
+    lines = strip_lvm_warnings(buf)
     try:
-        pool = buf.splitlines()[0].strip()
+        pool = lines[0].strip()
     except IndexError:
         pool = ''
 
