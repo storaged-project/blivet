@@ -216,13 +216,22 @@ def is_valid_thin_pool_chunk_size(size, discard=False):
     else:
         return (size % LVM_THINP_MIN_CHUNK_SIZE == 0)
 
+def strip_lvm_warnings(buf):
+    """ Strip out lvm warning lines
+
+    :param str buf: A string returned from lvm
+    :returns: A list of strings with warning lines stripped
+    :rtype: list of str
+    """
+    return [l for l in buf.splitlines() if l and not l.lstrip().startswith("WARNING:")]
+
 def lvm(args, capture=False, ignore_errors=False):
     """ Runs lvm with specified arguments.
 
         :param bool capture: if True, return the output of the command.
         :param bool ignore_errors: if True, do not raise LVMError on failure
-        :returns: the output of the command or None
-        :rtype: str or NoneType
+        :returns: list of strings from the output of the command or None
+        :rtype: list or NoneType
         :raises: LVMError if command fails
     """
     argv = ["lvm"] + args + _getConfigArgs(args)
@@ -230,7 +239,7 @@ def lvm(args, capture=False, ignore_errors=False):
     if ret and not ignore_errors:
         raise LVMError("running "+ " ".join(argv) + " failed")
     if capture:
-        return out
+        return strip_lvm_warnings(out)
 
 def pvcreate(device):
     # we force dataalignment=1024k since we cannot get lvm to tell us what
@@ -324,9 +333,9 @@ def pvinfo(device=None):
     if device:
         args.append(device)
 
-    buf = lvm(args, capture=True, ignore_errors=True)
+    lines = lvm(args, capture=True, ignore_errors=True)
     pvs = {}
-    for line in buf.splitlines():
+    for line in lines:
         info = parse_lvm_vars(line)
         if len(info.keys()) != 11:
             log.warning("ignoring pvs output line: %s", line)
@@ -421,8 +430,12 @@ def vginfo(vg_name):
             "-o", "uuid,size,free,extent_size,extent_count,free_count,pv_count",
             vg_name]
 
-    buf = lvm(args, capture=True, ignore_errors=True)
-    info = parse_lvm_vars(buf)
+    lines = lvm(args, capture=True, ignore_errors=True)
+    try:
+        info = parse_lvm_vars(lines[0])
+    except IndexError:
+        info = {}
+
     if len(info.keys()) != 7:
         raise LVMError(_("vginfo failed for %s") % vg_name)
 
@@ -444,9 +457,9 @@ def lvs(vg_name=None):
     if vg_name:
         args.append(vg_name)
 
-    buf = lvm(args, capture=True, ignore_errors=True)
+    lines = lvm(args, capture=True, ignore_errors=True)
     logvols = {}
-    for line in buf.splitlines():
+    for line in lines:
         info = parse_lvm_vars(line)
         if len(info.keys()) != 6:
             log.debug("ignoring lvs output line: %s", line)
@@ -461,10 +474,9 @@ def lvorigin(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "origin"] + \
             ["%s/%s" % (vg_name, lv_name)]
 
-    buf = lvm(args, capture=True, ignore_errors=True)
-
+    lines = lvm(args, capture=True, ignore_errors=True)
     try:
-        origin = buf.splitlines()[0].strip()
+        origin = lines[0].strip()
     except IndexError:
         origin = ''
 
@@ -608,10 +620,9 @@ def thinlvpoolname(vg_name, lv_name):
     args = ["lvs", "--noheadings", "-o", "pool_lv"] + \
             ["%s/%s" % (vg_name, lv_name)]
 
-    buf = lvm(args, capture=True, ignore_errors=True)
-
+    lines = lvm(args, capture=True, ignore_errors=True)
     try:
-        pool = buf.splitlines()[0].strip()
+        pool = lines[0].strip()
     except IndexError:
         pool = ''
 
