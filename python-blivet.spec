@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.14
+Version: 0.61.0.15
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Oct 27 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.15-1
+- Add testing for MDRaidArrayDevice.mdadmFormatUUID (amulhern)
+  Related: rhbz#1155151
+- Give mdadm format uuids to the outside world (amulhern)
+  Resolves: rhbz#1155151
+
 * Wed Oct 22 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.14-1
 - Don't try to get no profile's name (vpodzime)
   Resolves: rhbz#1151458
