@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.7
+Version: 0.61.8
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Oct 28 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.8-1
+- Strip lvm WARNING: lines from output (#1157864) (bcl)
+- Wait for udev to settle before collecting UUID for new filesystems. (dlehman)
+
 * Thu Oct 23 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.7-1
 - Don't try to get no profile's name (#1155014) (vpodzime)
 - Disable resize of ntfs during OS installation. (#1120964) (dlehman)
