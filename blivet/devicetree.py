@@ -943,8 +943,10 @@ class DeviceTree(object):
             #  - devices that do not have a usable disklabel
             #  - devices that contain disklabels made by isohybrid
             #
-            if (disk.partitionable and not
-                (disk.format.type == "iso9660" or disk.format.hidden)):
+            if disk.partitionable and \
+               disk.format.type != "iso9660" and \
+               not disk.format.hidden and \
+               not self._isIgnoredDisk(disk):
                 raise DeviceTreeError("failed to scan disk %s" % disk.name)
 
             # there's no need to filter partitions on members of multipaths or
@@ -2176,22 +2178,22 @@ class DeviceTree(object):
         if flags.installer_mode:
             self.teardownAll()
 
-    def _hideIgnoredDisks(self):
-        def _is_ignored(disk):
-            return ((self.ignoredDisks and disk.name in self.ignoredDisks) or
-                    (self.exclusiveDisks and
-                     disk.name not in self.exclusiveDisks))
+    def _isIgnoredDisk(self, disk):
+        return ((self.ignoredDisks and disk.name in self.ignoredDisks) or
+                (self.exclusiveDisks and
+                 disk.name not in self.exclusiveDisks))
 
+    def _hideIgnoredDisks(self):
         # hide any subtrees that begin with an ignored disk
         for disk in [d for d in self._devices if d.isDisk]:
-            if _is_ignored(disk):
+            if self._isIgnoredDisk(disk):
                 ignored = True
                 # If the filter allows all members of a fwraid or mpath, the
                 # fwraid or mpath itself is implicitly allowed as well. I don't
                 # like this very much but we have supported this usage in the
                 # past, so I guess we will support it forever.
                 if disk.parents and all(p.format.hidden for p in disk.parents):
-                    ignored = any(_is_ignored(d) for d in disk.parents)
+                    ignored = any(self._isIgnoredDisk(d) for d in disk.parents)
 
                 if ignored:
                     self.hide(disk)
