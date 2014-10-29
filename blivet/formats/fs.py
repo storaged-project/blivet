@@ -1378,7 +1378,6 @@ class NTFS(FS):
 
     @property
     def minSize(self):
-        """ The minimum filesystem size. """
         return self._minInstanceSize
 
     @property
@@ -1582,7 +1581,6 @@ class TmpFS(NoDevFS):
 
     @property
     def minSize(self):
-        """ The minimum filesystem size in megabytes. """
         return self._minInstanceSize
 
     @property

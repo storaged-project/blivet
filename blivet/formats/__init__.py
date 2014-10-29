@@ -484,7 +484,13 @@ class DeviceFormat(ObjectID):
 
     @property
     def minSize(self):
-        """ Minimum size for this format type. """
+        """ Minimum size for this format instance.
+
+            :returns: the minimum size for this format instance
+            :rtype: :class:`~.size.Size`
+
+            A value of 0 indicates an unknown size.
+        """
         return self._minSize
 
     @property
