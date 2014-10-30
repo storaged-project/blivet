@@ -333,6 +333,7 @@ class Blivet(object):
         self.__luksDevs = {}
         self.size_sets = []
         self.setDefaultFSType(get_default_filesystem_type())
+        self._defaultBootFSType = None
 
         self.iscsi = iscsi.iscsi()
         self.fcoe = fcoe.fcoe()
@@ -1696,10 +1697,39 @@ class Blivet(object):
     @property
     def defaultBootFSType(self):
         """The default filesystem type for the boot partition."""
+        if self._defaultBootFSType:
+            return self._defaultBootFSType
+
         fstype = None
         if self.bootloader:
             fstype = self.bootFSTypes[0]
         return fstype
+
+    def _check_valid_fstype(self, newtype):
+        """ Check the fstype to see if it is valid
+
+            Raise ValueError on invalid input.
+        """
+        fmt = getFormat(newtype)
+        if fmt.type is None:
+            raise ValueError("unrecognized value %s for new default fs type" % newtype)
+
+        if (not fmt.mountable or not fmt.formattable or not fmt.supported or
+            not fmt.linuxNative):
+            log.debug("invalid default fstype: %r", fmt)
+            raise ValueError("new value %s is not valid as a default fs type" % fmt)
+
+        self._defaultFSType = newtype # pylint: disable=attribute-defined-outside-init
+
+    def setDefaultBootFSType(self, newtype):
+        """ Set the default /boot fstype for this instance.
+
+            Raise ValueError on invalid input.
+        """
+        log.debug("trying to set new default /boot fstype to '%s'", newtype)
+        # This will raise ValueError if it isn't valid
+        self._check_valid_fstype(newtype)
+        self._defaultBootFSType = newtype
 
     @property
     def defaultFSType(self):
@@ -1711,15 +1741,8 @@ class Blivet(object):
             Raise ValueError on invalid input.
         """
         log.debug("trying to set new default fstype to '%s'", newtype)
-        fmt = getFormat(newtype)
-        if fmt.type is None:
-            raise ValueError("unrecognized value %s for new default fs type" % newtype)
-
-        if (not fmt.mountable or not fmt.formattable or not fmt.supported or
-            not fmt.linuxNative):
-            log.debug("invalid default fstype: %r", fmt)
-            raise ValueError("new value %s is not valid as a default fs type" % fmt)
-
+        # This will raise ValueError if it isn't valid
+        self._check_valid_fstype(newtype)
         self._defaultFSType = newtype # pylint: disable=attribute-defined-outside-init
 
     @property
