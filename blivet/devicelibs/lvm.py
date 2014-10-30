@@ -20,7 +20,6 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import math
 from decimal import Decimal
 from collections import namedtuple
 
@@ -212,7 +211,7 @@ def is_valid_thin_pool_chunk_size(size, discard=False):
         return False
 
     if discard:
-        return (math.log(size, 2) % 1.0 == 0)
+        return util.power_of_two(int(size))
     else:
         return (size % LVM_THINP_MIN_CHUNK_SIZE == Size(0))
 

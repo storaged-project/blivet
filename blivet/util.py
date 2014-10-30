@@ -524,3 +524,31 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
 def get_current_entropy():
     with open("/proc/sys/kernel/random/entropy_avail", "r") as fobj:
         return int(fobj.readline())
+
+def power_of_two(value):
+    """ Checks whether value is a power of 2 greater than 1.
+
+        :param any value: a value
+        :returns: True if the value is a power of 2
+        :rtype: bool
+    """
+    try:
+        int_value = int(value)
+    except (ValueError, TypeError):
+        return False
+
+    if int_value != value:
+        return False
+
+    value = int_value
+
+    if value < 2:
+        return False
+
+    (q, r) = (value, 0)
+    while q != 0:
+        if r != 0:
+            return False
+        (q, r) = divmod(q, 2)
+
+    return True
