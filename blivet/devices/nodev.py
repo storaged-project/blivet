@@ -24,6 +24,7 @@ from ..storage_log import log_method_call
 import logging
 log = logging.getLogger("blivet")
 
+from ..size import Size
 from .storage import StorageDevice
 
 class NoDevice(StorageDevice):
@@ -91,7 +92,7 @@ class TmpFSDevice(NoDevice):
         elif self.format:
             return self.format.size
         else:
-            return 0
+            return Size(0)
 
     @property
     def fstabSpec(self):

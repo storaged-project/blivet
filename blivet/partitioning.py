@@ -666,8 +666,7 @@ def sizeToSectors(size, sectorSize):
         :returns: sector count
         :rtype: int
     """
-    sectors = int(size / sectorSize)
-    return sectors
+    return int(size // sectorSize)
 
 def removeNewPartitions(disks, remove, all_partitions):
     """ Remove newly added partitions from disks.
@@ -1315,12 +1314,12 @@ class LVRequest(Request):
 
         # Round up to nearest pe. For growable requests this will mean that
         # first growth is to fill the remainder of any unused extent.
-        self.base = int(lv.vg.align(lv.req_size, roundup=True) / lv.vg.peSize)
+        self.base = int(lv.vg.align(lv.req_size, roundup=True) // lv.vg.peSize)
 
         if lv.req_grow:
-            limits = [int(l / lv.vg.peSize) for l in
-                        [lv.vg.align(lv.req_max_size),
-                         lv.vg.align(lv.format.maxSize)] if l > 0]
+            limits = [int(l // lv.vg.peSize) for l in
+                        (lv.vg.align(lv.req_max_size),
+                         lv.vg.align(lv.format.maxSize)) if l > Size(0)]
 
             if limits:
                 max_units = min(limits)
@@ -1821,7 +1820,7 @@ class TotalSizeSet(object):
 
         self.requests = []
 
-        self.allocated = sum([d.req_base_size for d in self.devices])
+        self.allocated = sum((d.req_base_size for d in self.devices), Size(0))
         log.debug("set.allocated = %d", self.allocated)
 
     def allocate(self, amount):

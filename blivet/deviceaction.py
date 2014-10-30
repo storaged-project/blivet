@@ -34,6 +34,7 @@ from .i18n import _, N_
 from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 from .callbacks import WaitForEntropyData
+from .size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -436,7 +437,7 @@ class ActionResizeDevice(DeviceAction):
             self.dir = RESIZE_GROW
         else:
             self.dir = RESIZE_SHRINK
-        if device.targetSize > 0:
+        if device.targetSize > Size(0):
             self.origsize = device.targetSize
         else:
             self.origsize = device.size

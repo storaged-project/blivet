@@ -315,7 +315,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         reserved = Size(0)
         if self.reserved_percent > 0:
             reserved = self.reserved_percent * Decimal('0.01') * self.size
-        elif self.reserved_space > 0:
+        elif self.reserved_space > Size(0):
             reserved = self.reserved_space
 
         return self.align(reserved, roundup=True)
@@ -326,11 +326,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # TODO: just ask lvm if isModified returns False
 
         # sum up the sizes of the PVs and align to pesize
-        size = 0
-        for pv in self.pvs:
-            size += max(0, self.align(pv.size - pv.format.peStart))
-
-        return size
+        return sum((max(Size(0), self.align(pv.size - pv.format.peStart)) for pv in self.pvs), Size(0))
 
     @property
     def extents(self):
@@ -352,7 +348,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
-        used = sum(lv.vgSpaceUsed for lv in self.lvs)
+        used = sum((lv.vgSpaceUsed for lv in self.lvs), Size(0))
         if not self.exists and raid_disks:
             # (only) we allocate (5 * num_disks) extra extents for LV metadata
             # on RAID (see the devicefactory.LVMFactory._get_total_space method)
@@ -1058,7 +1054,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
     @property
     def usedSpace(self):
-        return sum(l.poolSpaceUsed for l in self.lvs)
+        return sum((l.poolSpaceUsed for l in self.lvs), Size(0))
 
     @property
     def freeSpace(self):
@@ -1118,7 +1114,7 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
 
     @property
     def vgSpaceUsed(self):
-        return 0    # the pool's size is already accounted for in the vg
+        return Size(0)    # the pool's size is already accounted for in the vg
 
     def _setSize(self, size):
         if not isinstance(size, Size):

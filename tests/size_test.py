@@ -41,7 +41,7 @@ class SizeTestCase(unittest.TestCase):
 
     def testExceptions(self):
         zero = Size(0)
-        self.assertEqual(zero, 0.0)
+        self.assertEqual(zero, Size(0.0))
 
         s = Size(500)
         with self.assertRaises(SizePlacesError):
@@ -53,7 +53,7 @@ class SizeTestCase(unittest.TestCase):
         c = numbytes * factor
 
         s = Size(c)
-        self.assertEquals(s, c)
+        self.assertEquals(s, Size(c))
 
         if prefix:
             u = "%sbytes" % prefix

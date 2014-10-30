@@ -26,6 +26,7 @@ import abc
 from six import add_metaclass
 
 from ..errors import RaidError
+from ..size import Size
 
 def div_up(a,b):
     """Rounds up integer division.  For example, div_up(3, 2) is 2.
@@ -188,7 +189,7 @@ class RAIDn(RAIDLevel):
         """
         if member_count < self.min_members:
             raise RaidError("%s requires at least %d disks" % (self.name, self.min_members))
-        if smallest_member_size < 0:
+        if smallest_member_size < Size(0):
             raise RaidError("size is a negative number")
         return self._get_net_array_size(member_count, smallest_member_size)
 
@@ -268,12 +269,12 @@ class RAIDn(RAIDLevel):
            under construction.
         """
         if not member_sizes:
-            return 0
+            return Size(0)
 
         if num_members is None:
             num_members = len(member_sizes)
 
-        if chunk_size is None or chunk_size == 0:
+        if chunk_size is None or chunk_size == Size(0):
             raise RaidError("chunk_size parameter value %s is not acceptable")
 
         if superblock_size_func is None:
@@ -588,7 +589,7 @@ class Container(RAIDLevel):
         raise RaidError("get_recommended_stride is not defined for level container")
     def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
-        return sum(member_sizes)
+        return sum(member_sizes, Size(0))
 
 Container = Container()
 ALL_LEVELS.addRaidLevel(Container)
@@ -623,12 +624,12 @@ class ErsatzRAID(RAIDLevel):
     def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
         if not member_sizes:
-            return 0
+            return Size(0)
 
         if superblock_size_func is None:
             raise RaidError("superblock_size_func value of None is not acceptable")
 
-        total_space = sum(member_sizes)
+        total_space = sum(member_sizes, Size(0))
         superblock_size = superblock_size_func(total_space)
         return total_space - len(member_sizes) * superblock_size
 

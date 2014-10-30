@@ -556,7 +556,7 @@ class StorageDevice(Device):
     def _getSize(self):
         """ Get the device's size, accounting for pending changes. """
         if self.exists and not self.mediaPresent:
-            return 0
+            return Size(0)
 
         if self.exists and self.partedDevice:
             self._size = self.currentSize
@@ -589,7 +589,7 @@ class StorageDevice(Device):
 
             If the device does not exist, then the actual size is 0.
         """
-        size = 0
+        size = Size(0)
         if self.exists and self.partedDevice:
             size = Size(self.partedDevice.getLength(unit="B"))
         elif self.exists:

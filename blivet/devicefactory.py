@@ -549,7 +549,7 @@ class DeviceFactory(object):
     #
     def _create_device(self):
         """ Create the factory device. """
-        if self.size == 0:
+        if self.size == Size(0):
             # A factory with a size of zero means you're adjusting a container
             # after removing a device from it.
             return
@@ -573,7 +573,7 @@ class DeviceFactory(object):
         # this gets us a size value that takes into account the actual size of
         # the container
         size = self._get_device_size()
-        if size <= 0:
+        if size <= Size(0):
             raise DeviceFactoryError("not enough free space for new device")
 
         parents = self._get_parent_devices()
@@ -1511,11 +1511,11 @@ class LVMThinPFactory(LVMFactory):
 
     def _create_pool(self):
         """ Create a pool large enough to contain the new device. """
-        if self.size == 0:
+        if self.size == Size(0):
             return
 
         size = self._get_pool_size()
-        if size == 0:
+        if size == Size(0):
             raise DeviceFactoryError("not enough free space for thin pool")
 
         self.pool = self._get_new_pool(size=size, parents=[self.container])
@@ -1632,11 +1632,11 @@ class BTRFSFactory(DeviceFactory):
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic
             if self.container and not self.device:
-                if self.size != 0:
+                if self.size != Size(0):
                     # For new subvols the size is in addition to the volume's size.
                     size += self.container.size
                 else:
-                    size += sum(s.req_size for s in self.container.subvolumes)
+                    size += sum((s.req_size for s in self.container.subvolumes), Size(0))
 
             size += self._get_device_space()
         elif self.container_size == SIZE_POLICY_MAX:

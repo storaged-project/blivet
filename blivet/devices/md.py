@@ -182,7 +182,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             If the array has no redundancy, a bitmap is just pointless.
         """
         try:
-            return self.level.has_redundancy() and self.size >= 1000 and  self.format.type != "swap"
+            return self.level.has_redundancy() and self.size >= Size(1000) and  self.format.type != "swap"
         except errors.RaidError:
             # If has_redundancy() raises an exception then this device has
             # a level for which the redundancy question is meaningless. In
@@ -220,7 +220,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                     self.getSuperBlockSize)
             except (errors.MDRaidError, errors.RaidError) as e:
                 log.info("could not calculate size of device %s for raid level %s: %s", self.name, self.level, e)
-                size = 0
+                size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
             size = Size(self.partedDevice.getLength(unit="B"))

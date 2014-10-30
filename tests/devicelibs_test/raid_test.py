@@ -86,13 +86,13 @@ class RaidTestCase(unittest.TestCase):
         ##
         ## get_net_array_size
         ##
-        self.assertEqual(raid.RAID0.get_net_array_size(4, 2), 8)
-        self.assertEqual(raid.RAID1.get_net_array_size(4, 2), 2)
-        self.assertEqual(raid.RAID4.get_net_array_size(4, 2), 6)
-        self.assertEqual(raid.RAID5.get_net_array_size(4, 2), 6)
-        self.assertEqual(raid.RAID6.get_net_array_size(4, 2), 4)
-        self.assertEqual(raid.RAID10.get_net_array_size(4, 2), 4)
-        self.assertEqual(raid.RAID10.get_net_array_size(5, 2), 4)
+        self.assertEqual(raid.RAID0.get_net_array_size(4, Size(2)), Size(8))
+        self.assertEqual(raid.RAID1.get_net_array_size(4, Size(2)), Size(2))
+        self.assertEqual(raid.RAID4.get_net_array_size(4, Size(2)), Size(6))
+        self.assertEqual(raid.RAID5.get_net_array_size(4, Size(2)), Size(6))
+        self.assertEqual(raid.RAID6.get_net_array_size(4, Size(2)), Size(4))
+        self.assertEqual(raid.RAID10.get_net_array_size(4, Size(2)), Size(4))
+        self.assertEqual(raid.RAID10.get_net_array_size(5, Size(2)), Size(4))
 
         ##
         ## get_recommended_stride
@@ -115,24 +115,24 @@ class RaidTestCase(unittest.TestCase):
         sizes = [Size("32MiB"), Size("128MiB"), Size("128MiB"), Size("64MiB")]
         for r in (l for l in raid.ALL_LEVELS if l not in (raid.Container, raid.Dup)):
             self.assertEqual(r.get_size(sizes, 4, Size("1MiB"), lambda x: Size(0)),
-               r.get_net_array_size(4, Size("32MiB")) if isinstance(r, raid.RAIDn) else sum(sizes))
+               r.get_net_array_size(4, Size("32MiB")) if isinstance(r, raid.RAIDn) else sum(sizes, Size(0)))
 
         for r in (l for l in raid.ALL_LEVELS if l not in (raid.Container, raid.Dup)):
             self.assertEqual(r.get_size(sizes, 5, Size("1MiB"), lambda x: Size(0)),
-               r.get_net_array_size(5, Size("32MiB")) if isinstance(r, raid.RAIDn) else sum(sizes))
+               r.get_net_array_size(5, Size("32MiB")) if isinstance(r, raid.RAIDn) else sum(sizes, Size(0)))
 
         for r in (l for l in raid.ALL_LEVELS if l not in (raid.Container, raid.Dup)):
             self.assertEqual(r.get_size(sizes, 4, Size("1MiB"), lambda x: Size("32MiB")),
-               0 if isinstance(r, raid.RAIDn) else (sum(sizes) - 4 * Size("32MiB")))
+               Size(0) if isinstance(r, raid.RAIDn) else (sum(sizes, Size(0)) - 4 * Size("32MiB")))
 
         for r in (l for l in raid.ALL_LEVELS if l not in (raid.Container, raid.Dup)):
             if isinstance(r, raid.RAIDn):
                 if r not in (raid.RAID1, raid.RAID10):
-                    self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), 0)
+                    self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), Size(0))
                 else:
                     self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), r.get_net_array_size(4, Size("1MiB")))
             else:
-                self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), sum(sizes) - 4 * Size("31MiB"))
+                self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), sum(sizes, Size(0)) - 4 * Size("31MiB"))
 
         ##
         ## names

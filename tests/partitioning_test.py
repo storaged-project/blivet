@@ -158,10 +158,10 @@ class PartitioningTestCase(unittest.TestCase):
             # an unaligned size still yields an aligned partition
             alignment = disk.format.alignment
             geom = part.geometry
-            sector_size = geom.device.sectorSize
+            sector_size = Size(geom.device.sectorSize)
             self.assertEqual(alignment.isAligned(free, geom.start), True)
             self.assertEqual(alignment.isAligned(free, geom.end + 1), True)
-            self.assertEqual(part.geometry.length, Size("10 MiB") / sector_size)
+            self.assertEqual(part.geometry.length, int(Size("10 MiB") // sector_size))
 
             disk.format.removePartition(part)
             self.assertEqual(len(disk.format.partitions), 0)
@@ -456,7 +456,7 @@ class PartitioningTestCase(unittest.TestCase):
 
         self.assertEqual(chunk.length, vg.extents)
         self.assertEqual(chunk.pool, vg.freeExtents)
-        base_size = vg.align(sum(lv.size for lv in vg.lvs), roundup=True)
+        base_size = vg.align(sum((lv.size for lv in vg.lvs), Size(0)), roundup=True)
         base = base_size / vg.peSize
         self.assertEqual(chunk.base, base)
 

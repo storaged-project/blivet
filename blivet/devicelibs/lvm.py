@@ -164,8 +164,8 @@ def get_pv_space(size, disks, pesize=LVM_PE_SIZE):
     # TODO: handle striped and mirrored
     # this is adding one extent for the lv's metadata
     # pylint: disable=unused-argument
-    if size == 0:
-        return size
+    if size == Size(0):
+        return Size(0)
 
     space = clampSize(size, pesize, roundup=True) + pesize
     return space
@@ -214,7 +214,7 @@ def is_valid_thin_pool_chunk_size(size, discard=False):
     if discard:
         return (math.log(size, 2) % 1.0 == 0)
     else:
-        return (size % LVM_THINP_MIN_CHUNK_SIZE == 0)
+        return (size % LVM_THINP_MIN_CHUNK_SIZE == Size(0))
 
 def strip_lvm_warnings(buf):
     """ Strip out lvm warning lines

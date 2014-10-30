@@ -204,7 +204,7 @@ class DiskLabel(DeviceFormat):
     @property
     def sectorSize(self):
         try:
-            return self.partedDevice.sectorSize
+            return Size(self.partedDevice.sectorSize)
         except AttributeError:
             log_exception_info()
             return None
@@ -221,7 +221,7 @@ class DiskLabel(DeviceFormat):
                 size = Size(self.partedDevice.getLength(unit="B"))
             except Exception: # pylint: disable=broad-except
                 log_exception_info()
-                size = 0
+                size = Size(0)
 
         return size
 
@@ -395,8 +395,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        return Size(sum(f.getLength(unit="B")
-                        for f in self.partedDisk.getFreeSpacePartitions()))
+        return sum((Size(f.getLength(unit="B")) for f in self.partedDisk.getFreeSpacePartitions()), Size(0))
 
     @property
     def magicPartitionNumber(self):

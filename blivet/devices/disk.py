@@ -27,6 +27,7 @@ from .. import util
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
+from ..size import Size
 
 from ..fcoe import fcoe
 
@@ -103,7 +104,7 @@ class DiskDevice(StorageDevice):
         # Some drivers (cpqarray <blegh>) make block device nodes for
         # controllers with no disks attached and then report a 0 size,
         # treat this as no media present
-        return self.partedDevice.getLength(unit="B") != 0
+        return Size(self.partedDevice.getLength(unit="B")) != Size(0)
 
     @property
     def description(self):

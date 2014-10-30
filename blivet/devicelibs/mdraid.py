@@ -70,8 +70,9 @@ def get_raid_superblock_size(size, version=None):
         # MDADM: operations, but limit this to 128Meg (0.1% of 10Gig)
         # MDADM: which is plenty for efficient reshapes
         # NOTE: In the mdadm code this is in 512b sectors. Converted to use MiB
+        MIN_HEADROOM = Size("1 MiB")
         headroom = int(Size("128 MiB"))
-        while headroom << 10 > size and headroom > Size("1 MiB"):
+        while Size(headroom << 10) > size and Size(headroom) > MIN_HEADROOM:
             headroom >>= 1
 
         headroom = Size(headroom)

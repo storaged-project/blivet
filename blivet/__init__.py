@@ -1538,7 +1538,7 @@ class Blivet(object):
     def fileSystemFreeSpace(self):
         """ Combined free space in / and /usr as :class:`~.size.Size`. """
         mountpoints = ["/", "/usr"]
-        free = 0
+        free = Size(0)
         btrfs_volumes = []
         for mountpoint in mountpoints:
             device = self.mountpoints.get(mountpoint)

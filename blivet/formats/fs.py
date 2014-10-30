@@ -310,7 +310,7 @@ class FS(DeviceFormat):
                         break
 
                 if len(values) != len(self._existingSizeFields):
-                    return 0
+                    return Size(0)
 
                 size = 1
                 for value in values:
@@ -332,11 +332,10 @@ class FS(DeviceFormat):
 
     @property
     def free(self):
-        free = 0
+        free = Size(0)
         if self.exists:
-            if self.currentSize and self.minSize and \
-               self.currentSize != self.minSize:
-                free = int(max(0, self.currentSize - self.minSize)) # truncate
+            if self.currentSize and self.minSize:
+                free = max(Size(0), self.currentSize - self.minSize)
 
         return free
 
@@ -1304,7 +1303,7 @@ class MacEFIFS(HFSPlus):
     _name = N_("Linux HFS+ ESP")
     _labelfs = fslabeling.HFSPlusLabeling()
     _udevTypes = []
-    _minSize = 50
+    _minSize = Size("50 MiB")
 
     @property
     def supported(self):
@@ -1585,7 +1584,6 @@ class TmpFS(NoDevFS):
 
     @property
     def free(self):
-        free_space = 0
         if self._mountpoint:
             # If self._mountpoint is defined, it means this tmpfs mount
             # has been mounted and there is a path we can use as a handle to

@@ -133,7 +133,7 @@ class PartitionDevice(StorageDevice):
         self._partType = None
         self._partedPartition = None
         self._origPath = None
-        self._currentSize = 0
+        self._currentSize = Size(0)
 
         # FIXME: Validate size, but only if this is a new partition.
         #        For existing partitions we will get the size from
@@ -162,7 +162,7 @@ class PartitionDevice(StorageDevice):
             #     for new partitions.
             if not self._size:
                 if start is not None and end is not None:
-                    self._size = 0
+                    self._size = Size(0)
                 else:
                     # default size for new partition requests
                     self._size = self.defaultSize
@@ -531,12 +531,11 @@ class PartitionDevice(StorageDevice):
 
         start = self.partedPartition.geometry.start
         part_len = self.partedPartition.geometry.end - start
-        bs = self.partedPartition.geometry.device.sectorSize
+        bs = Size(self.partedPartition.geometry.device.sectorSize)
         device = self.partedPartition.geometry.device.path
 
         # Erase 1MiB or to end of partition
-        count = int(Size("1 MiB") / bs)
-        count = min(count, part_len)
+        count = min(int(Size("1 MiB") // bs), part_len)
 
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
                "seek=%s" % start, "count=%s" % count]
@@ -616,7 +615,7 @@ class PartitionDevice(StorageDevice):
         # compute new size for partition
         currentGeom = partition.geometry
         currentDev = currentGeom.device
-        newLen = int(newsize) / currentDev.sectorSize
+        newLen = int(newsize // Size(currentDev.sectorSize))
         newGeometry = parted.Geometry(device=currentDev,
                                       start=currentGeom.start,
                                       length=newLen)
@@ -809,7 +808,7 @@ class PartitionDevice(StorageDevice):
         if self.exists:
             return self._currentSize
         else:
-            return 0
+            return Size(0)
 
     @property
     def resizable(self):

@@ -31,6 +31,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import getFormat, DeviceFormat
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -73,8 +74,7 @@ class BTRFSDevice(StorageDevice):
         self.setupParents(orig=True)
 
     def _getSize(self):
-        size = sum([d.size for d in self.parents])
-        return size
+        return sum((d.size for d in self.parents), Size(0))
 
     def _setSize(self, newsize):
         raise RuntimeError("cannot directly set size of btrfs volume")
@@ -276,7 +276,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             self.format.mountopts = self.parents[0].format.mountopts
 
     def _getSize(self):
-        size = sum([d.size for d in self.parents])
+        size = sum((d.size for d in self.parents), Size(0))
         if self.dataLevel in (raid.RAID1, raid.RAID10):
             size /= len(self.parents)
 
