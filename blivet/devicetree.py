@@ -2263,7 +2263,7 @@ class DeviceTree(object):
                 continue
             if device.serial == serial:
                 retval.append(device)
-        log_method_return(self, retval)
+        log_method_return(self, [r.name for r in retval])
         return retval
 
     def getDeviceByLabel(self, label, incomplete=False, hidden=False):
@@ -2341,7 +2341,7 @@ class DeviceTree(object):
         log_method_call(self, device_type=device_type, incomplete=incomplete, hidden=hidden)
         devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
         result = [d for d in devices if d.type == device_type]
-        log_method_return(self, result)
+        log_method_return(self, [r.name for r in result])
         return result
 
     def getDevicesByInstance(self, device_class, incomplete=False, hidden=False):
@@ -2356,7 +2356,7 @@ class DeviceTree(object):
         log_method_call(self, device_class=device_class, incomplete=incomplete, hidden=hidden)
         devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
         result = [d for d in devices if isinstance(d, device_class)]
-        log_method_return(self, result)
+        log_method_return(self, [r.name for r in result])
         return result
 
     def getDeviceByID(self, id_num, incomplete=False, hidden=False):
