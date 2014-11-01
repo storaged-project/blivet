@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.15
+Version: 0.61.0.16
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Oct 31 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.16-1
+- Add ability to set a default fstype for the boot partition (bcl)
+  Related: rhbz#1112697
+- Pass a list of string items to log_method_return. (sbueno+anaconda)
+  Resolves: rhbz#1155984
+
 * Mon Oct 27 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.15-1
 - Add testing for MDRaidArrayDevice.mdadmFormatUUID (amulhern)
   Related: rhbz#1155151
