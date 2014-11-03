@@ -163,5 +163,34 @@ class SizeTestCase(unittest.TestCase):
         os.environ['LANG'] = saved_lang
         locale.setlocale(locale.LC_ALL, '')
 
+    def testArithmetic(self):
+        from decimal import Decimal
+        s = Size("2GiB")
+
+        # Make sure arithmatic operations with Size always result in the expected type
+        self.assertIsInstance(s+s, Size)
+        self.assertIsInstance(s-s, Size)
+        self.assertIsInstance(s*s, Size)
+        self.assertIsInstance(s/s, Size)
+        self.assertIsInstance(s**Size(2), Decimal)
+        self.assertIsInstance(s % Size(7), Size)
+
+
+        # Make sure operations with non-Size on the right result in the expected type
+        self.assertIsInstance(s+2, Size)
+        self.assertIsInstance(s-2, Size)
+        self.assertIsInstance(s*2, Size)
+        self.assertIsInstance(s/2, Size)
+        self.assertIsInstance(s**2, Decimal)
+        self.assertIsInstance(s % 127, Size)
+
+        # Make sure operations with non-Size on the left result in the expected type
+        self.assertIsInstance(2+s, Size)
+        self.assertIsInstance(2-s, Decimal)
+        self.assertIsInstance(2*s, Size)
+        self.assertIsInstance(2/s, Decimal)
+        self.assertIsInstance(2**Size(2), Decimal)
+        self.assertIsInstance(1024 % Size(127), Decimal)
+
 if __name__ == "__main__":
     unittest.main()
