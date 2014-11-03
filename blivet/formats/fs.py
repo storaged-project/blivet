@@ -112,7 +112,7 @@ class FS(DeviceFormat):
 
         # filesystem size does not necessarily equal device size
         self._size = kwargs.get("size", Size(0))
-        self._minInstanceSize = None    # min size of this FS instance
+        self._minInstanceSize = Size(0)    # min size of this FS instance
         self._mountpoint = None     # the current mountpoint when mounted
 
         if flags.installer_mode:
@@ -439,7 +439,7 @@ class FS(DeviceFormat):
         # properly unmounted. After doCheck the minimum size will be correct
         # so run the check one last time and bump up the size if it was too
         # small.
-        self._minInstanceSize = None
+        self._minInstanceSize = Size(0)
         if self.targetSize < self.minSize:
             self.targetSize = self.minSize
             log.info("Minimum size changed, setting targetSize on %s to %s",
@@ -1504,8 +1504,6 @@ class TmpFS(NoDevFS):
     # as tmpfs is part of the Linux kernel,
     # it is Linux-native
     _linuxNative = True
-    # empty tmpfs has zero overhead
-    _minInstanceSize = 0
     # tmpfs really does not occupy any space by itself
     _minSize = 0
     # in a sense, I guess tmpfs is formattable
