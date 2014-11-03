@@ -551,13 +551,22 @@ class ActionCreateFormat(DeviceAction):
             min_required_entropy = self.device.format.min_luks_entropy
             current_entropy = get_current_entropy()
             if current_entropy < min_required_entropy:
+                force_cont = False
                 if callbacks and callbacks.wait_for_entropy:
                     msg = _("Not enough entropy to create LUKS format. "
                             "%d bits are needed.") % min_required_entropy
-                    callbacks.wait_for_entropy(msg, min_required_entropy)
+                    force_cont = callbacks.wait_for_entropy(msg, min_required_entropy)
+
+                if force_cont:
+                    # log warning and set format's required entropy to 0
+                    log.warning("Forcing LUKS creation regardless of enough "
+                                "random data entropy (%d/%d)",
+                                get_current_entropy(), min_required_entropy)
+                    self.device.format.min_luks_entropy = 0
 
         self.device.format.create(device=self.device.path,
                                   options=self.device.formatArgs)
+
         # Get the UUID now that the format is created
         udev.settle()
         self.device.updateSysfsPath()

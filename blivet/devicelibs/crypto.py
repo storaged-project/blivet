@@ -70,6 +70,23 @@ def luks_format(device,
                 passphrase=None,
                 cipher=None, key_size=None, key_file=None,
                 min_entropy=0):
+    """
+    Format device as LUKS with the specified parameters.
+
+    :param str device: device to format
+    :param str passphrase: passphrase to add to the new LUKS device
+    :param str cipher: cipher mode to use
+    :param int keysize: keysize to use
+    :param str key_file: key file to use
+    :param int min_entropy: minimum random data entropy level required for LUKS
+                            format creation (0 means entropy level is not checked)
+
+    note::
+              If some minimum entropy is required (min_entropy > 0), the
+              function waits for enough entropy to be gathered by the kernel
+              which may potentially take very long time or even forever.
+    """
+
     # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
