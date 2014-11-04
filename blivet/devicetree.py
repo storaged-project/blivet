@@ -27,7 +27,7 @@ import shutil
 import pprint
 import copy
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -944,7 +944,12 @@ class DeviceTree(object):
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
                not self._isIgnoredDisk(disk):
-                raise DeviceTreeError("failed to scan disk %s" % disk.name)
+                if info.get("ID_PART_TABLE_TYPE") == "gpt":
+                    msg = "corrupt gpt disklabel on disk %s" % disk.name
+                else:
+                    msg = "failed to scan disk %s" % disk.name
+
+                raise UnusableConfigurationError(msg)
 
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
@@ -1527,6 +1532,12 @@ class DeviceTree(object):
         if vg_device:
             vg_device.parents.append(device)
         else:
+            same_name = self.getDeviceByName(vg_name)
+            if isinstance(same_name, LVMVolumeGroupDevice) and \
+               not (all(self._isIgnoredDisk(d) for d in same_name.disks) or
+                    all(self._isIgnoredDisk(d) for d in device.disks)):
+                raise UnusableConfigurationError("multiple LVM volume groups with the same name")
+
             try:
                 vg_size = udev.device_get_vg_size(pv_info)
                 vg_free = udev.device_get_vg_free(pv_info)
