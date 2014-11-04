@@ -151,6 +151,10 @@ class DeviceTreeError(StorageError):
 class DeviceNotFoundError(StorageError):
     pass
 
+class UnusableConfigurationError(StorageError):
+    """ User has an unusable initial storage configuration. """
+    pass
+
 # DeviceAction
 class DeviceActionError(StorageError):
     pass
