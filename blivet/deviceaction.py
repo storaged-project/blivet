@@ -33,6 +33,7 @@ from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
 from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
+from .callbacks import WaitForEntropyData
 
 import logging
 log = logging.getLogger("blivet")
@@ -562,7 +563,7 @@ class ActionCreateFormat(DeviceAction):
                 if callbacks and callbacks.wait_for_entropy:
                     msg = _("Not enough entropy to create LUKS format. "
                             "%d bits are needed.") % min_required_entropy
-                    force_cont = callbacks.wait_for_entropy(msg, min_required_entropy)
+                    force_cont = callbacks.wait_for_entropy(WaitForEntropyData(msg, min_required_entropy))
 
                 if force_cont:
                     # log warning and set format's required entropy to 0
