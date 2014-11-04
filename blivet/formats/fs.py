@@ -882,7 +882,6 @@ class Ext2FS(FS):
     _resizable = True
     _linuxNative = True
     _maxSize = Size("8 TiB")
-    _minSize = Size(0)
     _defaultMountOptions = ["defaults"]
     _defaultCheckOptions = ["-f", "-p", "-C", "0"]
     _dump = True
@@ -1504,8 +1503,6 @@ class TmpFS(NoDevFS):
     # as tmpfs is part of the Linux kernel,
     # it is Linux-native
     _linuxNative = True
-    # tmpfs really does not occupy any space by itself
-    _minSize = 0
     # in a sense, I guess tmpfs is formattable
     # in the regard that the format is automatically created
     # once mounted
