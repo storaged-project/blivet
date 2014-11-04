@@ -48,6 +48,15 @@ def create_new_callbacks_register(create_format_pre=None,
     object and to provide default values for non-specified fields (e.g. newly
     added callbacks).
 
+    :type create_format_pre: :class:`.CreateFormatPreData` -> NoneType
+    :type create_format_post: :class:`.CreateFormatPostData` -> NoneType
+    :type resize_format_pre: :class:`.ResizeFormatPreData` -> NoneType
+    :type resize_format_post: :class:`.ResizeFormatPostData` -> NoneType
+    :param wait_for_entropy: callback for waiting for enough entropy whose return
+                             value indicates whether continuing regardless of
+                             available entropy should be forced (True) or not (False)
+    :type wait_for_entropy: :class:`.WaitForEntropyData` -> bool
+
     """
 
     return _CallbacksRegister(create_format_pre, create_format_post,
@@ -62,3 +71,5 @@ ResizeFormatPreData = namedtuple("ResizeFormatPreData",
                                  ["msg"])
 ResizeFormatPostData = namedtuple("ResizeFormatPostData",
                                   ["msg"])
+WaitForEntropyData = namedtuple("WaitForEntropyData",
+                                ["msg", "min_entropy"])
