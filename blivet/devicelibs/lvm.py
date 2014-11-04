@@ -141,7 +141,7 @@ def getPossiblePhysicalExtents():
 
 def getMaxLVSize():
     """ Return the maximum size of a logical volume. """
-    if arch.getArch() in ("x86_64", "ppc64", "alpha", "ia64", "s390"): #64bit architectures
+    if arch.getArch() in ("x86_64", "ppc64", "ppc64le", "alpha", "ia64", "s390"): #64bit architectures
         return Size("8 EiB")
     else:
         return Size("16 TiB")
