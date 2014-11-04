@@ -338,7 +338,8 @@ def getArch():
     elif isPPC(bits=32):
         return 'ppc'
     elif isPPC(bits=64):
-        return 'ppc64'
+        # ppc64 and ppc64le are distinct architectures
+        return os.uname()[4]
     elif isAARCH64():
         return 'aarch64'
     elif isAlpha():
