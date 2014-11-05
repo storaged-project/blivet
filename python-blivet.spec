@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.68
+Version: 0.69
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,30 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Nov 04 2014 Brian C. Lane <bcl@redhat.com> - 0.69-1
+- Increase max depth of sphinx toc to show subpackage names. (dlehman)
+- Temporarily disable the md devicetree tests due to mdadm issues. (dlehman)
+- Add ability to set a default fstype for the boot partition (#1112697) (bcl)
+- Pass a list of string items to log_method_return. (sbueno+anaconda)
+- Require resize target sizes to yield aligned partitions. (#1120964) (dlehman)
+- Split out code to determine max unaligned partition size to a property.
+  (dlehman)
+- Allow generating aligned geometry for arbitrary target size. (dlehman)
+- Align end sector in the appropriate direction for resize. (#1120964)
+  (dlehman)
+- Specify ntfs resize target in bytes. (#1120964) (dlehman)
+- Check new target size against min size and max size. (dlehman)
+- Add a number of new tests. (amulhern)
+- Add xlate parameter to humanReadable(). (amulhern)
+- Rewrite _parseSpec() and convertTo() (amulhern)
+- Make _lowerASCII() python 3 compatible and add a method header. (amulhern)
+- Use b"", not u"", for _EMPTY_PREFIX. (amulhern)
+- Strip lvm WARNING: lines from output (#1157864) (bcl)
+- Add testing for MDRaidArrayDevice.mdadmFormatUUID (#1155151) (amulhern)
+- Give mdadm format uuids to the outside world (#1155151) (amulhern)
+- Make logSize, metaDataSize, and chunkSize always consistently Size objects.
+  (amulhern)
+
 * Wed Oct 22 2014 Brian C. Lane <bcl@redhat.com> - 0.68-1
 - Only write label if there is a label AND labeling application. (amulhern)
 - Handle unicode strings in Size spec parsing. (dshea)

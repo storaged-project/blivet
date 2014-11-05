@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-22 16:27-0700\n"
+"POT-Creation-Date: 2014-11-04 17:01-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,27 +17,167 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1402
+#: ../blivet/__init__.py:1403
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:2968
+#: ../blivet/__init__.py:2991
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2973
+#: ../blivet/__init__.py:2996
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2975
+#: ../blivet/__init__.py:2998
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/__init__.py:2978
+#: ../blivet/__init__.py:3001
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "bytes"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:50
+msgid "kilo"
+msgstr ""
+
+#: ../blivet/size.py:50
+msgid "k"
+msgstr ""
+
+#: ../blivet/size.py:51
+msgid "mega"
+msgstr ""
+
+#: ../blivet/size.py:51
+msgid "M"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Y"
+msgstr ""
+
+#: ../blivet/size.py:63
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:63
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:64
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:64
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:65
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:65
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:66
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:66
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:67
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:67
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:68
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:68
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:69
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:69
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:70
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:70
+msgid "Yi"
 msgstr ""
 
 #. no big enough free space for the requested partition
@@ -319,151 +459,6 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/size.py:48
-msgid "kilo"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:50
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:50
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:51
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:51
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "Y"
-msgstr ""
-
-#: ../blivet/size.py:61
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:61
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:62
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:62
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:64
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:64
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:65
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:65
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:66
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:66
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:67
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:67
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:68
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:68
-msgid "Yi"
-msgstr ""
-
-#. pylint: disable=undefined-loop-variable
-#: ../blivet/size.py:74 ../blivet/size.py:363
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:74 ../blivet/size.py:112
-msgid "b"
-msgstr ""
-
-#: ../blivet/size.py:74 ../blivet/size.py:104
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:74 ../blivet/size.py:105
-msgid "bytes"
-msgstr ""
-
 #: ../blivet/deviceaction.py:290
 msgid "create device"
 msgstr ""
@@ -588,12 +583,16 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
+#: ../blivet/formats/lvmpv.py:39
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:147
 msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -612,10 +611,6 @@ msgstr ""
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:39
-msgid "physical volume (LVM)"
-msgstr ""
-
 #: ../blivet/formats/mdraid.py:40
 msgid "software RAID"
 msgstr ""
@@ -628,7 +623,7 @@ msgstr ""
 msgid "Performance"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:427
+#: ../blivet/devicelibs/lvm.py:440
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""
