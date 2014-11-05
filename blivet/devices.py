@@ -2212,7 +2212,7 @@ class DMDevice(StorageDevice):
                 map name in many cases. The uuid, however, is a persistent UUID
                 stored in device metadata on disk.
         """
-        StorageDevice.__init__(self, name, fmt=fmt, size=size,
+        super(DMDevice, self).__init__(name, fmt=fmt, size=size,
                                exists=exists, uuid=uuid,
                                parents=parents, sysfsPath=sysfsPath)
         self.target = target
