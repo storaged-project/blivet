@@ -137,11 +137,7 @@ class DMDevice(StorageDevice):
             return
 
         log_method_call(self, self.name, status=self.status)
-        if self.status:
-            raise errors.DeviceError("cannot rename active device", self.name)
-
         super(DMDevice, self)._setName(value)
-        #self.sysfsPath = "/dev/disk/by-id/dm-name-%s" % self.name
 
     @property
     def slave(self):

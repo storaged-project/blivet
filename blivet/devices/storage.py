@@ -206,10 +206,11 @@ class StorageDevice(Device):
         if value == self._name:
             return
 
-        if self.exists:
-            raise errors.DeviceError("Cannot rename existing device.")
-
         super(StorageDevice, self)._setName(value)
+
+        # update our format's path
+        if hasattr(self, "_format") and self.format.device:
+            self.format.device = self.path
 
     def alignTargetSize(self, newsize):
         """ Return a proposed target size adjusted for device specifics.

@@ -854,9 +854,7 @@ class DeviceTree(object):
         if device:
             # update the device instance with the real name in case we had to
             # look it up by something other than name
-            # XXX bypass the setter since a) the device exists and b) the name
-            #     must be valid since it is currently in use
-            device._name = name
+            device.name = name
         else:
             # if we get here, we found all of the slave devices and
             # something must be wrong -- if all of the slaves are in
