@@ -85,7 +85,7 @@ class BTRFSDevice(StorageDevice):
 
     @property
     def status(self):
-        return not any([not d.status for d in self.parents])
+        return self.exists and all(d.status for d in self.parents)
 
     @property
     def _temp_dir_prefix(self):
