@@ -1067,6 +1067,7 @@ class DeviceTree(object):
         device = diskType(name,
                           major=udev.device_get_major(info),
                           minor=udev.device_get_minor(info),
+                          model=udev.device_get_model(info),
                           sysfsPath=sysfs_path, **kwargs)
 
         if diskType == DASDDevice:
@@ -1186,8 +1187,7 @@ class DeviceTree(object):
         #
         if device:
             # we successfully looked up the device. skip to format handling.
-            # first, grab the parted.Device while it's active
-            _unused = device.partedDevice
+            pass
         elif udev.device_is_loop(info):
             log.info("%s is a loop device", name)
             device = self.addUdevLoopDevice(info)
@@ -1226,6 +1226,9 @@ class DeviceTree(object):
         if not device:
             log.debug("no device obtained for %s", name)
             return
+
+        # first, update the size since the device is active now
+        device.updateSize()
 
         # If this device is read-only, mark it as such now.
         if self.udevDeviceIsDisk(info) and \

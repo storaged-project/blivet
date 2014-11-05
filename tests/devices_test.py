@@ -967,7 +967,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             free = disk.format.partedDisk.getFreeSpaceRegions()[-1]
             raw_start = int(Size("9 MiB") / sector_size)
             start = disk.format.alignment.alignUp(free, raw_start) + 3
-            disk.format.addPartition(start, disk.partedDevice.length - 1)
+            disk.format.addPartition(start, disk.format.partedDevice.length - 1)
 
             # Verify the end of the free region immediately following the first
             # partition is unaligned.

@@ -97,7 +97,7 @@ class Device(util.ObjectID):
         """
         return util.variable_copy(self, memo,
            omit=('_raidSet', 'node'),
-           shallow=('_partedDevice', '_partedPartition'))
+           shallow=('_partedPartition'))
 
     def __repr__(self):
         s = ("%(type)s instance (%(id)s) --\n"

@@ -22,8 +22,6 @@
 # device backend modules
 from ..devicelibs import crypto
 
-from ..size import Size
-
 import logging
 log = logging.getLogger("blivet")
 
@@ -63,10 +61,10 @@ class LUKSDevice(DMCryptDevice):
 
     @property
     def size(self):
-        if not self.exists or not self.partedDevice:
+        if not self.exists:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
         else:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = self.currentSize
         return size
 
     def _postCreate(self):

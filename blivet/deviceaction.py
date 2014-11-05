@@ -28,7 +28,6 @@ from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice
 from .formats import getFormat, luks
-from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
 from .callbacks import CreateFormatPreData, CreateFormatPostData
@@ -344,14 +343,6 @@ class ActionDestroyDevice(DeviceAction):
     def execute(self, callbacks=None):
         super(ActionDestroyDevice, self).execute(callbacks=None)
         self.device.destroy()
-
-        # Make sure libparted does not keep cached info for this device
-        # and returns it when we create a new device with the same name
-        if self.device.partedDevice:
-            try:
-                self.device.partedDevice.removeFromCache()
-            except Exception: # pylint: disable=broad-except
-                log_exception_info(fmt_str="failed to remove info for device %s from libparted cache", fmt_args=[self.device])
 
     def requires(self, action):
         """ Return True if self requires action.

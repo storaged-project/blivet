@@ -21,9 +21,11 @@
 #
 
 import os
+import stat
 
 from .. import util
 from ..storage_log import log_method_call
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -78,6 +80,14 @@ class FileDevice(StorageDevice):
                 root = root[:-len(mountpoint)]
 
         return os.path.normpath("%s%s" % (root, self.name))
+
+    def _getSize(self):
+        size = self._size
+        if self.exists:
+            st = os.stat(self.path)
+            size = Size(st[stat.ST_SIZE])
+
+        return size
 
     def _preSetup(self, orig=False):
         if self.format and self.format.exists and not self.format.status:

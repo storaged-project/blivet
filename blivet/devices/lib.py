@@ -22,6 +22,9 @@ import os
 
 from .. import errors
 from .. import udev
+from ..size import Size
+
+LINUX_SECTOR_SIZE = Size(512)
 
 def get_device_majors():
     majors = {}
