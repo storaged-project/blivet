@@ -970,3 +970,22 @@ class DeviceTree(object):
                 device.format.mountpoint = mountpoint   # for future mounts
                 device.format._mountpoint = mountpoint  # active mountpoint
                 device.format.mountopts = options
+
+    def __str__(self):
+        done = []
+        def show_subtree(root, depth):
+            abbreviate_subtree = root in done
+            s = "%s%s\n" % ("  " * depth, root)
+            done.append(root)
+            if abbreviate_subtree:
+                s += "%s...\n" % ("  " * (depth+1),)
+            else:
+                for child in self.getChildren(root):
+                    s += show_subtree(child, depth + 1)
+            return s
+
+        roots = [d for d in self._devices if not d.parents]
+        tree = ""
+        for root in roots:
+            tree += show_subtree(root, 0)
+        return tree
