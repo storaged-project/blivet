@@ -125,6 +125,12 @@ class PartitionDevice(StorageDevice):
 
         self._bootable = False
 
+        # FIXME: Validate partType, but only if this is a new partition
+        #        Otherwise, overwrite it with the partition's type.
+        self._partType = None
+        self._partedPartition = None
+        self._origPath = None
+
         StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                major=major, minor=minor, exists=exists,
                                sysfsPath=sysfsPath, parents=parents)
@@ -133,13 +139,6 @@ class PartitionDevice(StorageDevice):
             # this is a request, not a partition -- it has no parents
             self.req_disks = list(self.parents)
             self.parents = []
-
-        # FIXME: Validate partType, but only if this is a new partition
-        #        Otherwise, overwrite it with the partition's type.
-        self._partType = None
-        self._partedPartition = None
-        self._origPath = None
-        self._currentSize = Size(0)
 
         # FIXME: Validate size, but only if this is a new partition.
         #        For existing partitions we will get the size from
@@ -520,7 +519,6 @@ class PartitionDevice(StorageDevice):
             return
 
         self._size = Size(self.partedPartition.getLength(unit="B"))
-        self._currentSize = self._size
         self.targetSize = self._size
 
         self._partType = self.partedPartition.type
@@ -595,7 +593,6 @@ class PartitionDevice(StorageDevice):
             DeviceFormat(device=self.path, exists=True).destroy()
 
         StorageDevice._postCreate(self)
-        self._currentSize = Size(self.partedPartition.getLength(unit="B"))
 
     def _computeResize(self, partition, newsize=None):
         """ Return a new constraint and end-aligned geometry for new size.
@@ -651,7 +648,7 @@ class PartitionDevice(StorageDevice):
                                         end=geometry.end)
 
         self.disk.format.commit()
-        self._currentSize = Size(partition.getLength(unit="B"))
+        self.updateSize()
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -704,25 +701,35 @@ class PartitionDevice(StorageDevice):
         return size
 
     def _setSize(self, newsize):
-        """ Set the device's size (for resize, not creation).
+        """ Set the device's size.
 
-            Arguments:
+            Most devices have two scenarios for setting a size:
 
-                newsize -- the new size
+                1) set actual/current size
+                2) set target for resize
 
+            Partitions have a third scenario:
+
+                3) update size of an allocated-but-non-existent partition
         """
         log_method_call(self, self.name,
                         status=self.status, size=self._size, newsize=newsize)
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if not self.exists:
+        if not self.exists and not self.partedPartition:
             # device does not exist (a partition request), just set basic value
             self._size = newsize
             self.req_size = newsize
             self.req_base_size = newsize
             return
 
+        if self.exists:
+            super(PartitionDevice, self)._setSize(newsize)
+            return
+
+        # the rest is for changing the size of an allocated-but-not-existing
+        # partition, which I'm not sure is advisable
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
 
@@ -805,13 +812,6 @@ class PartitionDevice(StorageDevice):
         maxFormatSize = self.format.maxSize
         unalignedMax = min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
         return self.alignTargetSize(unalignedMax)
-
-    @property
-    def currentSize(self):
-        if self.exists:
-            return self._currentSize
-        else:
-            return Size(0)
 
     @property
     def resizable(self):

@@ -12,8 +12,6 @@ from blivet.formats import getFormat
 from blivet.devices import StorageDevice
 from blivet.devices import PartitionDevice
 
-from blivet.size import B
-
 class StorageTestCase(unittest.TestCase):
     """ StorageTestCase
 
@@ -94,10 +92,7 @@ class StorageTestCase(unittest.TestCase):
         device = device_class(*args, **kwargs)
 
         if exists:
-            # set up mock parted.Device w/ correct size
-            device._partedDevice = Mock()
-            device._partedDevice.getLength = Mock(return_value=int(device._size.convertTo(B)))
-            device._partedDevice.sectorSize = 512
+            device._currentSize = kwargs.get("size")
 
         if isinstance(device, blivet.devices.PartitionDevice):
             #if exists:

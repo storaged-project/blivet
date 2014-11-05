@@ -125,10 +125,12 @@ class Platform(object):
         if flags.testing:
             return self.defaultDiskLabelType
 
+        parted_device = parted.Device(path=device.path)
+
         # if there's a required type for this device type, use that
-        labelType = self.requiredDiskLabelType(device.partedDevice.type)
+        labelType = self.requiredDiskLabelType(parted_device.type)
         log.debug("required disklabel type for %s (%s) is %s",
-                  device.name, device.partedDevice.type, labelType)
+                  device.name, parted_device.type, labelType)
         if not labelType:
             # otherwise, use the first supported type for this platform
             # that is large enough to address the whole device
@@ -136,8 +138,8 @@ class Platform(object):
             log.debug("default disklabel type for %s is %s", device.name,
                                                              labelType)
             for lt in self.diskLabelTypes:
-                l = parted.freshDisk(device=device.partedDevice, ty=lt)
-                if l.maxPartitionStartSector > device.partedDevice.length:
+                l = parted.freshDisk(device=parted_device, ty=lt)
+                if l.maxPartitionStartSector > parted_device.length:
                     labelType = lt
                     log.debug("selecting %s disklabel for %s based on size",
                               labelType, device.name)

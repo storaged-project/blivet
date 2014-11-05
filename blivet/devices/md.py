@@ -204,7 +204,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """Returns the actual or estimated size depending on whether or
            not the array exists.
         """
-        if not self.exists or not self.partedDevice:
+        if not self.exists or not self.mediaPresent:
             try:
                 size = self.level.get_size([d.size for d in self.devices],
                     self.memberDevices,
@@ -215,10 +215,13 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = self.currentSize
             log.debug("existing RAID %s size == %s", self.level, size)
 
         return size
+
+    def updateSize(self):
+        super(ContainerDevice, self).updateSize()
 
     @property
     def description(self):
@@ -531,7 +534,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         if flags.testing:
             return True
         else:
-            return self.partedDevice is not None
+            return super(MDRaidArrayDevice, self).mediaPresent
 
     @property
     def model(self):

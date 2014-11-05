@@ -187,3 +187,6 @@ class ContainerDevice(StorageDevice):
 
         if member in self.parents:
             self.parents.remove(member)
+
+    def updateSize(self):
+        pass
