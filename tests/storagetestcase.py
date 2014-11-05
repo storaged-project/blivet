@@ -66,10 +66,7 @@ class StorageTestCase(unittest.TestCase):
         device = device_class(*args, **kwargs)
 
         if exists:
-            # set up mock parted.Device w/ correct size
-            device._partedDevice = Mock()
-            device._partedDevice.getLength = Mock(return_value=int(device.size.convertTo(spec="B")))
-            device._partedDevice.sectorSize = 512
+            device._currentSize = kwargs.get("size")
 
         if isinstance(device, blivet.devices.PartitionDevice):
             #if exists:

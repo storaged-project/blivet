@@ -69,6 +69,8 @@ class NoDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         self._preDestroy()
 
+    def udpateSize(self):
+        pass
 
 class TmpFSDevice(NoDevice):
     """ A nodev device for a tmpfs filesystem. """

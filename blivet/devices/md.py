@@ -28,7 +28,6 @@ from .. import util
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
-from ..size import Size
 from ..i18n import P_
 
 import logging
@@ -81,14 +80,14 @@ class MDRaidArrayDevice(ContainerDevice):
         self._memberDevices = 0     # the number of active (non-spare) members
         self._totalDevices = 0      # the total number of members
 
+        if level == "container":
+            self._type = "mdcontainer"
+        self.level = level
+
         super(MDRaidArrayDevice, self).__init__(name, fmt=fmt, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
-
-        if level == "container":
-            self._type = "mdcontainer"
-        self.level = level
 
         # For new arrays check if we have enough members
         if (not exists and parents and len(parents) < self.level.min_members):
@@ -196,7 +195,7 @@ class MDRaidArrayDevice(ContainerDevice):
         if self.type == "mdbiosraidarray":
             return self._size
 
-        if not self.exists or not self.partedDevice:
+        if not self.exists or not self.mediaPresent:
             try:
                 size = self.level.get_size([d.size for d in self.devices],
                     self.memberDevices,
@@ -207,10 +206,14 @@ class MDRaidArrayDevice(ContainerDevice):
                 size = 0
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = self.currentSize
             log.debug("existing RAID %s size == %s", self.level, size)
 
         return size
+
+    def updateSize(self):
+        # pylint: disable=bad-super-call
+        super(ContainerDevice, self).updateSize()
 
     @property
     def description(self):
@@ -561,7 +564,7 @@ class MDRaidArrayDevice(ContainerDevice):
         elif flags.testing:
             return True
         else:
-            return self.partedDevice is not None
+            return super(MDRaidArrayDevice, self).mediaPresent
 
     @property
     def model(self):

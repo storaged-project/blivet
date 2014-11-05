@@ -27,6 +27,7 @@ import block
 from .. import errors
 from .. import util
 from ..flags import flags
+from ..size import Size
 from ..storage_log import log_method_call
 from .. import udev
 
@@ -89,8 +90,7 @@ class DiskDevice(StorageDevice):
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
-        s += ("  removable = %(removable)s  partedDevice = %(partedDevice)r" %
-              {"removable": self.removable, "partedDevice": self.partedDevice})
+        s += ("  removable = %(removable)s" % {"removable": self.removable})
         return s
 
     @property
@@ -98,22 +98,14 @@ class DiskDevice(StorageDevice):
         if flags.testing:
             return True
 
-        if not self.partedDevice:
-            return False
-
         # Some drivers (cpqarray <blegh>) make block device nodes for
         # controllers with no disks attached and then report a 0 size,
         # treat this as no media present
-        return self.partedDevice.getLength(unit="B") != 0
+        return self.exists and self.currentSize > Size(0)
 
     @property
     def description(self):
         return self.model
-
-    @property
-    def size(self):
-        """ The disk's size """
-        return super(DiskDevice, self).size
 
     def _preDestroy(self):
         """ Destroy the device. """
