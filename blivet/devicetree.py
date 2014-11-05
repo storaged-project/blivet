@@ -27,6 +27,7 @@ import shutil
 import pprint
 import copy
 from six import add_metaclass
+import pyudev
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
@@ -151,6 +152,9 @@ class DeviceTree(object):
         lvm.lvm_cc_resetFilter()
 
         self._cleanup = False
+
+        self.ueventNotifyCB = None
+        self._pyudev_observer = None
 
     def setDiskImages(self, images):
         """ Set the disk images and reflect them in exclusiveDisks.
@@ -386,6 +390,170 @@ class DeviceTree(object):
                 self._completed_actions.append(self._actions.pop(0))
 
         self._postProcessActions()
+
+    ##
+    ## uevent handling
+    ##
+    def ueventCB(self, action, info):
+        print action, udev.device_get_name(info)
+        notify = False
+        device = None
+        if event.action == "add":
+            self.deviceAddedCB(event.info)
+        elif event.action == "remove":
+            self.deviceRemovedCB(event.info)
+        elif event.action == "change":
+            self.deviceChangedCB(event.info)
+        else:
+            log.info("unknown uevent action: %s (%s)", action, info.sys_name)
+
+        if notify and self.ueventNotifyCB:
+            self.ueventNotifyCB(action, device)
+
+    def enableUeventMonitoring(self):
+        """ Enable monitoring and handling of block device uevents. """
+        monitor = pyudev.Monitor.from_netlink(udev.global_udev)
+        monitor.filter_by("block")
+        self._pyudev_observer = pyudev.MonitorObserver(monitor, self.ueventCB)
+        self._pyudev_observer.start()
+
+    def disableUeventMonitoring(self):
+        """ Disable monitoring and handling of block device uevents. """
+        if self._pyudev_observer:
+            self._pyudev_observer.stop()
+            self._pyudev_observer = None
+
+    def registerUeventNotifyCB(self, cb):
+        """ Register a uevent notification callback.
+
+            The callback will be run after processing the uevent, and will be
+            passed the action string and the StorageDevice instance that was
+            operated on.
+
+            Note that in the event of a remove action the returned device will
+            no longer be in the devicetree. Also, it is possible that the the
+            device will be hidden in the event of an add or remove action,
+            depending on the disk filtering settings of the devicetree.
+        """
+        if not callable(cb) or cb.func_code.co_argcount < 2:
+            raise ValueError("callback function must accept at least two args")
+
+        self.ueventNotifyCB = cb
+
+    def deviceAddedCB(self, info, force=False):
+        """ Handle an "add" uevent on a block device.
+
+            The device could be newly created or newly activated.
+        """
+        sysfs_path = udev.device_get_sysfs_path(info)
+        log.debug("device added: %s", sysfs_path)
+        if info.subsystem != "block":
+            return
+
+        # add events are usually not meaningful for dm and md devices, but the
+        # change event handler calls this method when a change event for such a
+        # device appears to signal an addition
+        if not force and (udev.device_is_md(info) or
+                          (udev.device_is_dm(info) or
+                           re.match(r'/dev/dm-\d+$', info['DEVNAME']))):
+            log.debug("ignoring add event for %s", sysfs_path)
+            return
+
+        if not info or not info.is_initialized:
+            log.debug("new device not initialized -- not processing it")
+            return
+
+    def deviceChangedCB(self, info):
+        """ Handle a "changed" uevent on a block device. """
+        log.debug("device changed: %s", udev.device_get_sysfs_path(info))
+        if info.subsystem != "block":
+            return
+
+        sysfs_path = udev.device_get_sysfs_path(info)
+        if not info:
+            log.warning("failed to look up changed info")
+            return
+
+        # Would a lookup by UUID be more robust here?
+        device = self.getDeviceBySysfsPath(sysfs_path, hidden=True)
+        if (not device and
+            (udev.device_is_md(info) or udev.device_is_dm(info))):
+            return self.deviceAddedCB(info, force=True)
+
+        if not device:
+            log.warning("device not found: %s", udev.device_get_name(info))
+            return
+
+        if not device.exists:
+            #
+            # A policy must be decided upon for external events that conflict
+            # with scheduled actions.
+            #
+            log.warning("ignoring change uevent on non-existent device")
+            return
+
+        #
+        # Check for changes to the device itself.
+        #
+
+        # rename
+        name = info.get("DM_LV_NAME", udev.device_get_name(info))
+        if getattr(device, "lvname", "name") != name:
+            device.name = name
+
+        # resize
+        # FIXME: only do this if the size seems to have changed
+        device.updateSize()
+
+        if not device.format.exists:
+            #
+            # A policy must be decided upon for external events that conflict
+            # with scheduled actions.
+            #
+            log.warning("ignoring change uevent on device with non-existent format")
+            return
+
+        #
+        # Handle changes to the data it contains.
+        #
+        uuid = udev.device_get_uuid(info)
+        label = udev.device_get_label(info)
+
+        # FIXME: set an attr name in the conditional and calculate only once
+        if device.format.type != "btrfs":
+            uuid_changed = device.format.uuid and (device.format.uuid != uuid)
+        else:
+            uuid_changed = device.format.volUUID and (device.format.volUUID != uuid)
+
+        partitioned = (device.partitionable and
+                       info.get("ID_PART_TABLE_TYPE"))
+        new_type = getFormat(udev.device_get_format(info)).type
+        type_changed = (new_type != device.format.type and
+                        not
+                        (device.format.type == "disklabel" and partitioned))
+
+        if not type_changed and not uuid_changed:
+            # update filesystem label, &c in case they were changed
+            device.format.uuid = uuid
+
+            if hasattr(device.format, "label"):
+                device.format.label = label
+
+        return device
+
+    def deviceRemovedCB(self, info):
+        """ Handle a "remove" uevent on a block device.
+
+            This is generally going to be interpreted as a deactivation as
+            opposed to a removal since there is no consistent way to determine
+            which it is from the information given.
+
+            It seems sensible to interpret remove events as deactivations and
+            handle destruction via change events on parent devices.
+        """
+        log.debug("device removed: %s", udev.device_get_sysfs_path(info))
+        if info.subsystem != "block":
+            return
 
     def _addDevice(self, newdev, new=True):
         """ Add a device to the tree.
@@ -1334,6 +1502,11 @@ class DeviceTree(object):
                                 if udev.device_get_vg_name(v) == vg_name)
 
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
+
+        for lv_device in vg_device.lvs[:]:
+            if lv_device.name not in lv_info:
+                log.info("lv %s seems to have been removed", lv_device.name)
+                self.recursiveRemove(lv_device)
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s", vg_name)
@@ -2662,6 +2835,9 @@ class DeviceTree(object):
                 device.format.mountpoint = mountpoint   # for future mounts
                 device.format._mountpoint = mountpoint  # active mountpoint
                 device.format.mountopts = options
+
+    def __deepcopy__(self, memo):
+        return util.variable_copy(self, memo, shallow=('_pyudev_observer'))
 
     def __str__(self):
         done = []
