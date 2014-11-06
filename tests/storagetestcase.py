@@ -26,6 +26,12 @@ class StorageTestCase(unittest.TestCase):
         self.storage = blivet.Blivet()
 
         # device status
+        self.storage_status = blivet.devices.StorageDevice.status
+        self.dm_status = blivet.devices.DMDevice.status
+        self.luks_status = blivet.devices.LUKSDevice.status
+        self.vg_status = blivet.devices.LVMVolumeGroupDevice.status
+        self.md_status = blivet.devices.MDRaidArrayDevice.status
+        self.file_status = blivet.devices.FileDevice.status
         blivet.devices.StorageDevice.status = False
         blivet.devices.DMDevice.status = False
         blivet.devices.LUKSDevice.status = False
@@ -35,6 +41,10 @@ class StorageTestCase(unittest.TestCase):
 
         # prevent PartitionDevice from trying to dig around in the partition's
         # geometry
+        self.partition_set_target = PartitionDevice._setTargetSize
+        self.partition_align_target = PartitionDevice.alignTargetSize
+        self.partition_max = PartitionDevice.maxSize
+        self.partition_min = PartitionDevice.minSize
         blivet.devices.PartitionDevice._setTargetSize = StorageDevice._setTargetSize
         blivet.devices.PartitionDevice.alignTargetSize = StorageDevice.alignTargetSize
         blivet.devices.PartitionDevice.maxSize = StorageDevice.maxSize
@@ -56,7 +66,23 @@ class StorageTestCase(unittest.TestCase):
             device._partType = parted.PARTITION_NORMAL
             device._bootable = False
 
+        self.partition_probe = PartitionDevice.probe
         PartitionDevice.probe = partition_probe
+
+    def tearDown(self):
+        blivet.devices.StorageDevice.status = self.storage_status
+        blivet.devices.DMDevice.status = self.dm_status
+        blivet.devices.LUKSDevice.status = self.luks_status
+        blivet.devices.LVMVolumeGroupDevice.status = self.vg_status
+        blivet.devices.MDRaidArrayDevice.status = self.md_status
+        blivet.devices.FileDevice.status = self.file_status
+
+        blivet.devices.PartitionDevice._setTargetSize = self.partition_set_target
+        blivet.devices.PartitionDevice.alignTargetSize = self.partition_align_target
+        blivet.devices.PartitionDevice.maxSize = self.partition_max
+        blivet.devices.PartitionDevice.minSize = self.partition_min
+
+        blivet.devices.PartitionDevice.probe = self.partition_probe
 
     def newDevice(self, *args, **kwargs):
         """ Return a new Device instance suitable for testing. """
