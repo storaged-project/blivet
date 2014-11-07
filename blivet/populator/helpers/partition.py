@@ -105,6 +105,7 @@ class PartitionDevicePopulator(DevicePopulator):
         device = None
         try:
             device = PartitionDevice(name, sysfs_path=sysfs_path,
+                                     uuid=udev.device_get_partition_uuid(self.data),
                                      major=udev.device_get_major(self.data),
                                      minor=udev.device_get_minor(self.data),
                                      exists=True, parents=[disk])

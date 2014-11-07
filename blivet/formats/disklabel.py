@@ -49,6 +49,7 @@ class DiskLabel(DeviceFormat):
         """
             :keyword device: full path to the block device node
             :type device: str
+            :keyword str uuid: disklabel UUID
             :keyword label_type: type of disklabel to create
             :type label_type: str
             :keyword exists: whether the formatting exists

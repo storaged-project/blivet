@@ -91,6 +91,7 @@ class DiskLabelFormatPopulator(FormatPopulator):
         try:
             fmt = formats.get_format("disklabel",
                                      device=self.device.path,
+                                     uuid=udev.device_get_disklabel_uuid(self.data),
                                      exists=True)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", self.device.name)

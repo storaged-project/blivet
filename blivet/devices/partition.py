@@ -66,7 +66,7 @@ class PartitionDevice(StorageDevice):
     _resizable = True
     default_size = DEFAULT_PART_SIZE
 
-    def __init__(self, name, fmt=None,
+    def __init__(self, name, fmt=None, uuid=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
@@ -85,6 +85,7 @@ class PartitionDevice(StorageDevice):
 
             For existing partitions only:
 
+            :keyword str uuid: partition UUID (not filesystem UUID)
             :keyword major: the device major
             :type major: long
             :keyword minor: the device minor
@@ -142,7 +143,7 @@ class PartitionDevice(StorageDevice):
             else:
                 size = self.default_size
 
-        StorageDevice.__init__(self, name, fmt=fmt, size=size,
+        StorageDevice.__init__(self, name, fmt=fmt, uuid=uuid, size=size,
                                major=major, minor=minor, exists=exists,
                                sysfs_path=sysfs_path, parents=parents)
 
