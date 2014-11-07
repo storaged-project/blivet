@@ -51,7 +51,6 @@ from .devicelibs import loop
 from .devicelibs import edd
 from . import udev
 from . import util
-from .platform import platform
 from . import tsort
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
@@ -875,7 +874,8 @@ class DeviceTree(object):
 
     def addUdevPartitionDevice(self, info, disk=None):
         name = udev.device_get_name(info)
-        log_method_call(self, name=name)
+        uuid = udev.device_get_partition_uuid(info)
+        log_method_call(self, name=name, uuid=uuid)
         sysfs_path = udev.device_get_sysfs_path(info)
 
         if name.startswith("md"):
@@ -935,6 +935,7 @@ class DeviceTree(object):
         device = None
         try:
             device = PartitionDevice(name, sysfsPath=sysfs_path,
+                                     uuid=uuid,
                                      major=udev.device_get_major(info),
                                      minor=udev.device_get_minor(info),
                                      exists=True, parents=[disk])
@@ -1232,6 +1233,7 @@ class DeviceTree(object):
 
     def handleUdevDiskLabelFormat(self, info, device):
         disklabel_type = udev.device_get_disklabel_type(info)
+        disklabel_uuid = udev.device_get_disklabel_uuid(info)
         log_method_call(self, device=device.name, label_type=disklabel_type)
         # if there is no disklabel on the device
         # blkid doesn't understand dasd disklabels, so bypass for dasd
@@ -1262,12 +1264,9 @@ class DeviceTree(object):
                 device.format = fmt
             return
 
-        # we're going to pass the "best" disklabel type into the DiskLabel
-        # constructor, but it only has meaning for non-existent disklabels.
-        labelType = platform.bestDiskLabelType(device)
-
         try:
-            fmt = getFormat("disklabel", device=device.path, labelType=labelType, exists=True)
+            fmt = getFormat("disklabel", uuid=disklabel_uuid,
+                            device=device.path, exists=True)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", device.name)
             if disklabel_type == "gpt":

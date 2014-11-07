@@ -545,6 +545,12 @@ def device_get_disklabel_type(info):
 
     return info.get("ID_PART_TABLE_TYPE")
 
+def device_get_disklabel_uuid(info):
+    return info.get("ID_PART_TABLE_UUID")
+
+def device_get_partition_uuid(info):
+    return info.get("ID_PART_ENTRY_UUID")
+
 # iscsi disks' ID_PATH form depends on the driver:
 # for software iscsi:
 # ip-${iscsi_address}:${iscsi_port}-iscsi-${iscsi_tgtname}-lun-${lun}
