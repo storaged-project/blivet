@@ -117,6 +117,11 @@ class DiskLabel(DeviceFormat):
                   "grainSize": self.alignment.grainSize})
         return d
 
+    def updatePartedDisk(self):
+        """ re-read the disklabel from the device """
+        self._partedDisk = None
+        self.updateOrigPartedDisk()
+
     def updateOrigPartedDisk(self):
         self._origPartedDisk = self.partedDisk.duplicate()
 
