@@ -530,13 +530,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return formatArgs
 
     @property
-    def mediaPresent(self):
-        if flags.testing:
-            return True
-        else:
-            return super(MDRaidArrayDevice, self).mediaPresent
-
-    @property
     def model(self):
         return self.description
 
@@ -651,8 +644,3 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         # there is no need to stop them and later restart them. Not stopping
         # (and thus also not starting) them also works around bug 523334
         return
-
-    @property
-    def mediaPresent(self):
-        # BIOS RAID sets should show as present even when teared down
-        return True
