@@ -303,11 +303,6 @@ class Device(util.ObjectID):
 
         return services
 
-    @property
-    def mediaPresent(self):
-        """ True if this device contains usable media. """
-        return True
-
     @classmethod
     def isNameValid(cls, name): # pylint: disable=unused-argument
         """Is the device name valid for the device type?"""

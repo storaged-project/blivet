@@ -598,6 +598,11 @@ class StorageDevice(Device):
         return self.alignTargetSize(self.format.maxSize) if self.resizable else self.currentSize
 
     @property
+    def mediaPresent(self):
+        """ True if this device contains usable media. """
+        return True
+
+    @property
     def status(self):
         """ This device's status.
 
