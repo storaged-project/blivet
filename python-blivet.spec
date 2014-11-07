@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.16
+Version: 0.61.0.17
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Nov 06 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.17-1
+- getArch should return ppc64 or ppc64le (bcl)
+  Resolves: rhbz#1159271
+- Pack data for the wait_for_entropy callback (vpodzime)
+  Related: rhbz#1073679
+- Allow the wait_for_entropy callback enforce continue (vpodzime)
+  Related: rhbz#1073679
+
 * Fri Oct 31 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.16-1
 - Add ability to set a default fstype for the boot partition (bcl)
   Related: rhbz#1112697
