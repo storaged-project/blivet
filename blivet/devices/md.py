@@ -558,11 +558,6 @@ class MDRaidArrayDevice(ContainerDevice):
         # (the device node does not allow read / write calls)
         if self.type == "mdcontainer":
             return False
-        # BIOS RAID sets should show as present even when teared down
-        elif self.type == "mdbiosraidarray":
-            return True
-        elif flags.testing:
-            return True
         else:
             return super(MDRaidArrayDevice, self).mediaPresent
 
