@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.69
+Version: 0.70
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,19 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Nov 06 2014 Brian C. Lane <bcl@redhat.com> - 0.70-1
+- Add a method that determines whether a number is an exact power of 2.
+  (amulhern)
+- Put size values in Size universe eagerly. (amulhern)
+- Update minSize method headers. (amulhern)
+- Remove _minSize assignment to 0 where it's inherited from superclass.
+  (amulhern)
+- Make _minInstanceSize, a source of minSize() value, always a Size. (amulhern)
+- Fix int * Size operation and add tests (#1158792) (bcl)
+- getArch should return ppc64 or ppc64le (#1159271) (bcl)
+- Pack data for the wait_for_entropy callback (vpodzime)
+- Allow the wait_for_entropy callback enforce continue (vpodzime)
+
 * Tue Nov 04 2014 Brian C. Lane <bcl@redhat.com> - 0.69-1
 - Increase max depth of sphinx toc to show subpackage names. (dlehman)
 - Temporarily disable the md devicetree tests due to mdadm issues. (dlehman)
