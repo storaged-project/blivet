@@ -128,6 +128,8 @@ class StorageTestCase(unittest.TestCase):
             fmt._partedDisk.configure_mock(**attrs)
 
         fmt.exists = exists
+        if exists:
+            fmt._resizable = fmt.__class__._resizable
 
         if fmt.resizable and device_instance:
             fmt._size = device_instance.currentSize

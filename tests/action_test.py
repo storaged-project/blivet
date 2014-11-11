@@ -285,7 +285,7 @@ class DeviceActionTestCase(StorageTestCase):
                               create_sdc1_format)
 
         sdc1_format.exists = True
-
+        sdc1_format._resizable = True
         resize_sdc1_format = ActionResizeFormat(sdc1,
                                                 sdc1.size - Size("10 GiB"))
         resize_sdc1_format.apply()
@@ -376,6 +376,7 @@ class DeviceActionTestCase(StorageTestCase):
         #   device
         sdc1.exists = True
         sdc1.format.exists = True
+        sdc1.format._resizable = True
         resize_format_1 = ActionResizeFormat(sdc1, sdc1.size - Size("1000 MiB"))
         resize_format_1.apply()
         resize_format_2 = ActionResizeFormat(sdc1, sdc1.size - Size("5000 MiB"))
@@ -400,6 +401,7 @@ class DeviceActionTestCase(StorageTestCase):
         #   device
         sdc1.exists = True
         sdc1.format.exists = True
+        sdc1.format._resizable = True
         resize_device_1 = ActionResizeDevice(sdc1,
                                              sdc1.size + Size("10 GiB"))
         resize_device_1.apply()
@@ -445,6 +447,7 @@ class DeviceActionTestCase(StorageTestCase):
         # sda1 exists
         sda1 = self.storage.devicetree.getDeviceByName("sda1")
         self.assertNotEqual(sda1, None)
+        #sda1.format._resizable = True
         resize_sda1_format = ActionResizeFormat(sda1,
                                                 sda1.size - Size("50 MiB"))
         resize_sda1_format.apply()
@@ -564,6 +567,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(lv_root, None)
         lv_root.format._minInstanceSize = Size("10 MiB")
         lv_root.format._targetSize = lv_root.format._minInstanceSize
+        #lv_root.format._resizable = True
         shrink_format = ActionResizeFormat(lv_root,
                                            lv_root.size - Size("5 GiB"))
         shrink_format.apply()
@@ -970,6 +974,7 @@ class DeviceActionTestCase(StorageTestCase):
         lv_root.format._targetSize = lv_root.size
         original_format_size = lv_root.format.currentSize
         target_size = lv_root.size - Size("1 GiB")
+        #lv_root.format._resizable = True
         action = ActionResizeFormat(lv_root, target_size)
         self.assertEqual(lv_root.format.size, original_format_size)
         action.apply()

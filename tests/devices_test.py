@@ -632,6 +632,7 @@ class LVMDeviceTest(unittest.TestCase):
         min_size = Size("200 MiB")
         lv.format.exists = True
         lv.format._minInstanceSize = min_size
+        lv.format._resizable = True
 
         # Make sure things are as expected to begin with.
         self.assertEqual(lv.minSize, min_size)
@@ -691,6 +692,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             device.format.exists = True
             # grain size should be 1 MiB
             device.format._minInstanceSize = Size("2 MiB") + (grain_size / 2)
+            device.format._resizable = True
 
             # Make sure things are as expected to begin with.
             self.assertEqual(device.size, orig_size)
@@ -762,6 +764,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             device.format = getFormat("ext4", device=device.path)
             device.format.exists = True
             device.format._minInstanceSize = Size("2 MiB") + (grain_size / 2)
+            device.format._resizable = True
 
             ##
             ## minSize
