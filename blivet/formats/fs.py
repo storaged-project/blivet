@@ -681,10 +681,6 @@ class FS(DeviceFormat):
 
         self.notifyKernel()
 
-    def _getRandomUUID(self):
-        uuid = util.capture_output(["uuidgen"]).strip()
-        return uuid
-
     @property
     def needsFSCheck(self):
         return False
