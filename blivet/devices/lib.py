@@ -18,6 +18,8 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
+import os
+
 from .. import errors
 from .. import udev
 
@@ -56,6 +58,9 @@ def devicePathToName(devicePath):
 
     if name.startswith("md/"):
         name = name[3:]
+
+    if name.startswith("/"):
+        name = os.path.basename(name)
 
     return name
 
