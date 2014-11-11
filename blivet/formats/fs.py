@@ -1579,10 +1579,6 @@ class TmpFS(NoDevFS):
         return self._size
 
     @property
-    def minSize(self):
-        return self._minInstanceSize
-
-    @property
     def free(self):
         if self._mountpoint:
             # If self._mountpoint is defined, it means this tmpfs mount
