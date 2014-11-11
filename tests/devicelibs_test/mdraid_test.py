@@ -214,6 +214,7 @@ for l in levels:
         classname = "%sGrowTestCase" % l
         globals()[classname] = GrowTestCaseFactory.makeClass(classname, l)
 
+@unittest.skip("temporarily disabled due to bug 1162823")
 class SimpleRaidTest(MDRaidAsRootTestCase):
 
     def __init__(self, methodName='runTest'):
