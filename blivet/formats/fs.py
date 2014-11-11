@@ -115,6 +115,9 @@ class FS(DeviceFormat):
         self._minInstanceSize = Size(0)    # min size of this FS instance
         self._mountpoint = None     # the current mountpoint when mounted
 
+        # Resize operations are limited to error-free filesystems whose current
+        # size is known.
+        self._resizable = False
         if flags.installer_mode:
             # if you want current/min size you have to call updateSizeInfo
             try:
@@ -122,7 +125,6 @@ class FS(DeviceFormat):
             except FSError:
                 log.warning("%s filesystem on %s needs repair", self.type,
                                                                 self.device)
-                self._resizable = False
 
         self._targetSize = self._size
 
@@ -225,15 +227,30 @@ class FS(DeviceFormat):
         if not self.exists:
             return
 
+        self._size = Size(0)
+        self._minSize = self.__class__._minSize
+        self._minInstanceSize = Size(0)
+        self._resizable = self.__class__._resizable
+
+        # We can't allow resize if the filesystem has errors.
         try:
             self.doCheck()
         except FSError:
+            errors = True
             raise
+        else:
+            errors = False
         finally:
             # try to gather current size info anyway
             info = self._getFSInfo()
             self._size = self._getExistingSize(info=info)
             self._minSize = self._size # default to current size
+            # We absolutely need a current size to enable resize. To shrink the
+            # filesystem we need a real minimum size provided by the resize
+            # tool. Failing that, we can default to the current size,
+            # effectively disabling shrink.
+            if errors or self._size == Size(0):
+                self._resizable = False
 
         self._getMinSize(info=info)   # force calculation of minimum size
 
@@ -449,7 +466,6 @@ class FS(DeviceFormat):
         # properly unmounted. After doCheck the minimum size will be correct
         # so run the check one last time and bump up the size if it was too
         # small.
-        self._minInstanceSize = Size(0)
         self.updateSizeInfo()
         if self.targetSize < self.minSize:
             self.targetSize = self.minSize
