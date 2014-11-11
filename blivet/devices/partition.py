@@ -19,6 +19,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import os
 import parted
 import _ped
 
@@ -687,7 +688,8 @@ class PartitionDevice(StorageDevice):
         super(PartitionDevice, self)._postDestroy()
         if isinstance(self.disk, DMDevice):
             udev.settle()
-            if self.status:
+            # self.exists has been unset, so don't use self.status
+            if os.path.exists(self.path):
                 try:
                     dm.dm_remove(self.name)
                 except (errors.DMError, OSError):
