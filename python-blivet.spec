@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.8
+Version: 0.61.9
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,33 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Nov 11 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.9-1
+- Device status can never be True for non-existent devices. (#1156058)
+  (dlehman)
+- Use super to get much-needed MRO magic in constructor. (#1158968) (dlehman)
+- Fix int * Size operation and add tests (#1158792) (bcl)
+- getArch should return ppc64 or ppc64le (#1159271) (bcl)
+- Pack data for the wait_for_entropy callback (vpodzime)
+- Allow the wait_for_entropy callback enforce continue (vpodzime)
+- Revert "Disable resize of ntfs during OS installation. (#1120964)" (dlehman)
+- Require resize target sizes to yield aligned partitions. (#1120964) (dlehman)
+- Split out code to determine max unaligned partition size to a property.
+  (dlehman)
+- Allow generating aligned geometry for arbitrary target size. (dlehman)
+- Align end sector in the appropriate direction for resize. (#1120964)
+  (dlehman)
+- Specify ntfs resize target in bytes. (#1120964) (dlehman)
+- Check new target size against min size and max size. (dlehman)
+- Use Decimal for math in Size.convertTo. (#1120964) (dlehman)
+- Change signature of DiskLabel.addPartition to be more useful. (dlehman)
+- Add a contextmanager to create and remove sparse tempfiles. (dlehman)
+- Add a DiskFile class for testing partitioning code as a non-root user.
+  (dlehman)
+- Add ability to set a default fstype for the boot partition (#1112697) (bcl)
+- Pass a list of string items to log_method_return. (sbueno+anaconda)
+- Add testing for MDRaidArrayDevice.mdadmFormatUUID (#1156202) (amulhern)
+- Give mdadm format uuids to the outside world (#1156202) (amulhern)
+
 * Tue Oct 28 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.8-1
 - Strip lvm WARNING: lines from output (#1157864) (bcl)
 - Wait for udev to settle before collecting UUID for new filesystems. (dlehman)

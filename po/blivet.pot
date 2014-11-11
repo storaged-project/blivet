@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-28 13:23-0400\n"
+"POT-Creation-Date: 2014-11-11 15:01-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1416
+#: ../blivet/__init__.py:1417
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:2976
+#: ../blivet/__init__.py:2999
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:2981
+#: ../blivet/__init__.py:3004
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:2983
+#: ../blivet/__init__.py:3006
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -359,8 +359,8 @@ msgstr ""
 
 #. no nice value found, just return size in bytes
 #. less than 10 KiB
-#: ../blivet/size.py:62 ../blivet/size.py:291 ../blivet/size.py:304
-#: ../blivet/size.py:312 ../blivet/size.py:341
+#: ../blivet/size.py:62 ../blivet/size.py:292 ../blivet/size.py:305
+#: ../blivet/size.py:313 ../blivet/size.py:342
 msgid "B"
 msgstr ""
 
@@ -461,60 +461,60 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/deviceaction.py:282
+#: ../blivet/deviceaction.py:283
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:328
+#: ../blivet/deviceaction.py:329
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:410
+#: ../blivet/deviceaction.py:411
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:492
+#: ../blivet/deviceaction.py:493
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:529
+#: ../blivet/deviceaction.py:530
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:555
+#: ../blivet/deviceaction.py:557
 #, python-format
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:576
+#: ../blivet/deviceaction.py:585
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:622
+#: ../blivet/deviceaction.py:631
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:715
+#: ../blivet/deviceaction.py:724
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:745
+#: ../blivet/deviceaction.py:754
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:752
+#: ../blivet/deviceaction.py:761
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:795
+#: ../blivet/deviceaction.py:804
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:859
+#: ../blivet/deviceaction.py:868
 msgid "remove container member"
 msgstr ""
 
