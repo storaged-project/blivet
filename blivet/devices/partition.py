@@ -375,8 +375,7 @@ class PartitionDevice(StorageDevice):
         if self.partedPartition is None:
             self.name = self.req_name
         else:
-            self.name = \
-                devicePathToName(self.partedPartition.getDeviceNodeName())
+            self.name = devicePathToName(self.partedPartition.path)
 
     def dependsOn(self, dep):
         """ Return True if this device depends on dep. """
