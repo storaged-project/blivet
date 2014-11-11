@@ -117,7 +117,12 @@ class FS(DeviceFormat):
 
         if flags.installer_mode:
             # if you want current/min size you have to call updateSizeInfo
-            self.updateSizeInfo()
+            try:
+                self.updateSizeInfo()
+            except FSError:
+                log.warning("%s filesystem on %s needs repair", self.type,
+                                                                self.device)
+                self._resizable = False
 
         self._targetSize = self._size
 
@@ -220,8 +225,16 @@ class FS(DeviceFormat):
         if not self.exists:
             return
 
-        info = self._getFSInfo()
-        self._size = self._getExistingSize(info=info)
+        try:
+            self.doCheck()
+        except FSError:
+            raise
+        finally:
+            # try to gather current size info anyway
+            info = self._getFSInfo()
+            self._size = self._getExistingSize(info=info)
+            self._minSize = self._size # default to current size
+
         self._getMinSize(info=info)   # force calculation of minimum size
 
     def _getMinSize(self, info=None):
@@ -433,13 +446,12 @@ class FS(DeviceFormat):
         if not self.device == "tmpfs" and not os.path.exists(self.device):
             raise FSResizeError("device does not exist", self.device)
 
-        self.doCheck()
-
         # The first minimum size can be incorrect if the fs was not
         # properly unmounted. After doCheck the minimum size will be correct
         # so run the check one last time and bump up the size if it was too
         # small.
         self._minInstanceSize = None
+        self.updateSizeInfo()
         if self.targetSize < self.minSize:
             self.targetSize = self.minSize
             log.info("Minimum size changed, setting targetSize on %s to %s",
@@ -943,6 +955,7 @@ class Ext2FS(FS):
             # get minimum size according to resize2fs
             buf = util.capture_output([self.resizefsProg,
                                        "-P", self.device])
+            _size = None
             for line in buf.splitlines():
                 # line will look like:
                 # Estimated minimum size of the filesystem: 1148649
@@ -952,13 +965,14 @@ class Ext2FS(FS):
                 minSize = minSize.strip()
                 if not minSize:
                     break
-                size = Size(long(minSize) * blockSize)
+                _size = Size(long(minSize) * blockSize)
                 break
 
-            if size is None:
+            if not _size:
                 log.warning("failed to get minimum size for %s filesystem "
                             "on %s", self.mountType, self.device)
             else:
+                size = _size
                 orig_size = size
                 log.debug("size=%s, current=%s", size, self.currentSize)
                 size = min(size * Decimal('1.1'), size + 500, self.currentSize)
