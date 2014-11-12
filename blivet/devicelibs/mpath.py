@@ -25,5 +25,7 @@ def set_friendly_names(enabled=True):
     else:
         val = "n"
 
-    cmd = ["mpathconf", "--user_friendly_names", val, "--with_multipathd", "y"]
+    # --find_multipaths is important to keep multipath from making up multipath devices
+    # that aren't really multipath
+    cmd = ["mpathconf", "--find_multipaths", "y", "--user_friendly_names", val, "--with_multipathd", "y"]
     return (util.run_program(cmd) == 0)
