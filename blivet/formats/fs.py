@@ -1421,7 +1421,6 @@ register_device_format(NFSv4)
 class Iso9660FS(FS):
     """ ISO9660 filesystem. """
     _type = "iso9660"
-    _formattable = False
     _supported = True
     _resizable = False
     _linuxNative = False
