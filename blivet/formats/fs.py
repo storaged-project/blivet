@@ -1107,11 +1107,6 @@ class BTRFS(FS):
 
         return self.mount(**kwargs)
 
-    @property
-    def resizeArgs(self):
-        argv = ["-r", "%dm" % (self.targetSize.convertTo(spec="MiB"),), self.device]
-        return argv
-
 register_device_format(BTRFS)
 
 
