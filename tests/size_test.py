@@ -26,7 +26,7 @@ import unittest
 import six
 
 from blivet.errors import SizePlacesError
-from blivet.size import Size, _prefixes
+from blivet.size import Size, _prefixes, ROUND_UP, ROUND_DOWN, ROUND_DEFAULT, ROUND_HALF_UP
 
 if six.PY3:
     long = int # pylint: disable=redefined-builtin
@@ -162,6 +162,46 @@ class SizeTestCase(unittest.TestCase):
 
         os.environ['LANG'] = saved_lang
         locale.setlocale(locale.LC_ALL, '')
+
+    def testRoundToNearest(self):
+        self.assertEqual(ROUND_DEFAULT, ROUND_HALF_UP)
+
+        s = Size("10.3 GiB")
+        self.assertEqual(s.roundToNearest("GiB"), Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=ROUND_DEFAULT),
+                         Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=ROUND_DOWN),
+                         Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=ROUND_UP),
+                         Size("11 GiB"))
+        # >>> Size("10.3 GiB").convertTo("MiB")
+        # Decimal('10547.19999980926513671875')
+        self.assertEqual(s.roundToNearest("MiB"), Size("10547 MiB"))
+        self.assertEqual(s.roundToNearest("MiB", rounding=ROUND_UP),
+                         Size("10548 MiB"))
+        self.assertIsInstance(s.roundToNearest("MiB"), Size)
+        with self.assertRaises(ValueError):
+            s.roundToNearest("MiB", rounding='abc')
+
+        # arbitrary decimal rounding constants are not allowed
+        from decimal import ROUND_HALF_DOWN
+        with self.assertRaises(ValueError):
+            s.roundToNearest("MiB", rounding=ROUND_HALF_DOWN)
+
+        s = Size("10.51 GiB")
+        self.assertEqual(s.roundToNearest("GiB"), Size("11 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=ROUND_DEFAULT),
+                         Size("11 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=ROUND_DOWN),
+                         Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=ROUND_UP),
+                         Size("11 GiB"))
+
+        s = Size("513 GiB")
+        self.assertEqual(s.roundToNearest("GiB"), s)
+        self.assertEqual(s.roundToNearest("TiB"), Size("1 TiB"))
+        self.assertEqual(s.roundToNearest("TiB", rounding=ROUND_DOWN),
+                         Size(0))
 
     def testArithmetic(self):
         from decimal import Decimal
