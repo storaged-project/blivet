@@ -26,13 +26,14 @@ from collections import namedtuple
 
 from decimal import Decimal
 from decimal import InvalidOperation
-from decimal import ROUND_DOWN
+from decimal import ROUND_DOWN, ROUND_UP, ROUND_HALF_UP
 import six
 
 from .errors import SizePlacesError
 from .i18n import _, N_
 from .util import stringize, unicodeize
 
+ROUND_DEFAULT = ROUND_HALF_UP
 
 # Container for size unit prefix information
 _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
@@ -369,3 +370,17 @@ class Size(Decimal):
 
         # pylint: disable=undefined-loop-variable
         return retval_str + " " + _makeSpec(abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+
+    def roundToNearest(self, unit, rounding=ROUND_DEFAULT):
+        """
+            :param str unit: a unit specifier
+            :keyword rounding: which direction to round
+            :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_DEFAULT
+            :returns: Size rounded to nearest whole specified unit
+            :rtype: :class:`Size`
+        """
+        if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_DEFAULT):
+            raise ValueError("invalid rounding specifier")
+
+        rounded = self.convertTo(unit).to_integral_value(rounding=rounding)
+        return Size("%s %s" % (rounded, unit))

@@ -299,6 +299,46 @@ class TranslationTestCase(unittest.TestCase):
             self.assertTrue(s.humanReadable().endswith("%s%s" % (_("Mi"), _("B"))))
             self.assertEqual(s.humanReadable(xlate=False), size_str)
 
+    def testRoundToNearest(self):
+        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_HALF_UP)
+
+        s = Size("10.3 GiB")
+        self.assertEqual(s.roundToNearest("GiB"), Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DEFAULT),
+                         Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DOWN),
+                         Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_UP),
+                         Size("11 GiB"))
+        # >>> Size("10.3 GiB").convertTo("MiB")
+        # Decimal('10547.19999980926513671875')
+        self.assertEqual(s.roundToNearest("MiB"), Size("10547 MiB"))
+        self.assertEqual(s.roundToNearest("MiB", rounding=size.ROUND_UP),
+                         Size("10548 MiB"))
+        self.assertIsInstance(s.roundToNearest("MiB"), Size)
+        with self.assertRaises(ValueError):
+            s.roundToNearest("MiB", rounding='abc')
+
+        # arbitrary decimal rounding constants are not allowed
+        from decimal import ROUND_HALF_DOWN
+        with self.assertRaises(ValueError):
+            s.roundToNearest("MiB", rounding=ROUND_HALF_DOWN)
+
+        s = Size("10.51 GiB")
+        self.assertEqual(s.roundToNearest("GiB"), Size("11 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DEFAULT),
+                         Size("11 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DOWN),
+                         Size("10 GiB"))
+        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_UP),
+                         Size("11 GiB"))
+
+        s = Size("513 GiB")
+        self.assertEqual(s.roundToNearest("GiB"), s)
+        self.assertEqual(s.roundToNearest("TiB"), Size("1 TiB"))
+        self.assertEqual(s.roundToNearest("TiB", rounding=size.ROUND_DOWN),
+                         Size(0))
+
 class UtilityMethodsTestCase(unittest.TestCase):
 
     def testLowerASCII(self):
