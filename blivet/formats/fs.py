@@ -36,7 +36,7 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
-from ..size import Size
+from ..size import Size, ROUND_UP, ROUND_DOWN
 from ..i18n import _, N_
 from .. import udev
 
@@ -78,6 +78,7 @@ class FS(DeviceFormat):
     _defaultCheckOptions = []
     _defaultInfoOptions = []
     _existingSizeFields = []
+    _resizefsUnit = None
     _fsProfileSpecifier = None           # mkfs option specifying fsprofile
 
     def __init__(self, **kwargs):
@@ -472,6 +473,37 @@ class FS(DeviceFormat):
             self.targetSize = self.minSize
             log.info("Minimum size changed, setting targetSize on %s to %s",
                      self.device, self.targetSize)
+
+        # Bump target size to nearest whole number of the resize tool's units.
+        # We always round down because the fs has to fit on whatever device
+        # contains it. To round up would risk quietly setting a target size too
+        # large for the device to hold.
+        rounded = self.targetSize.roundToNearest(self._resizefsUnit,
+                                                 rounding=ROUND_DOWN)
+
+        # 1. target size was between the min size and max size values prior to
+        #    rounding (see _setTargetSize)
+        # 2. we've just rounded the target size down (or not at all)
+        # 3. the minimum size is already either rounded (see _getMinSize) or is
+        #    equal to the current size (see updateSizeInfo)
+        # 5. the minimum size is less than or equal to the current size (see
+        #    _getMinSize)
+        #
+        # This, I think, is sufficient to guarantee that the rounded target size
+        # is greater than or equal to the minimum size.
+
+        # It is possible that rounding down a target size greater than the
+        # current size would move it below the current size, thus changing the
+        # direction of the resize. That means the target size was less than one
+        # unit larger than the current size, and we should do nothing and return
+        # early.
+        if self.targetSize > self.currentSize and rounded < self.currentSize:
+            log.info("rounding target size down to next %s obviated resize of "
+                     "filesystem on %s", self._resizefsUnit, self.device)
+            return
+        else:
+            self.targetSize = rounded
+
         try:
             ret = util.run_program([self.resizefsProg] + self.resizeArgs)
         except OSError as e:
@@ -918,6 +950,7 @@ class Ext2FS(FS):
     _infofs = "dumpe2fs"
     _defaultInfoOptions = ["-h"]
     _existingSizeFields = ["Block count:", "Block size:"]
+    _resizefsUnit = "MiB"
     _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
 
@@ -991,8 +1024,13 @@ class Ext2FS(FS):
                 size = _size
                 orig_size = size
                 log.debug("size=%s, current=%s", size, self.currentSize)
+                # add some padding
                 size = min(size * Decimal('1.1'),
-                           size + Size("500 MiB"),
+                           size + Size("500 MiB"))
+                # make sure that the padded and rounded min size is not larger
+                # than the current size
+                size = min(size.roundToNearest(self._resizefsUnit,
+                                               rounding=ROUND_UP),
                            self.currentSize)
                 if orig_size < size:
                     log.debug("padding min size from %s up to %s", orig_size, size)
@@ -1368,6 +1406,7 @@ class NTFS(FS):
     _infofs = "ntfsinfo"
     _defaultInfoOptions = ["-m"]
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
+    _resizefsUnit = "B"
     partedSystem = fileSystemType["ntfs"]
 
     def _fsckFailed(self, rc):
@@ -1401,8 +1440,13 @@ class NTFS(FS):
                 log.warning("Unable to discover minimum size of filesystem "
                             "on %s", self.device)
             else:
+                # add some padding to the min size
                 size = min(minSize * Decimal('1.1'),
-                           minSize + Size("500 MiB"),
+                           minSize + Size("500 MiB"))
+                # make sure the padded and rounded min size is not larger than
+                # the current size
+                size = min(size.roundToNearest(self._resizefsUnit,
+                                               rounding=ROUND_UP),
                            self.currentSize)
                 if minSize < size:
                     log.debug("padding min size from %s up to %s", minSize, size)
