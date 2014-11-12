@@ -987,11 +987,13 @@ class Ext2FS(FS):
                 size = _size
                 orig_size = size
                 log.debug("size=%s, current=%s", size, self.currentSize)
-                size = min(size * Decimal('1.1'), size + 500, self.currentSize)
+                size = min(size * Decimal('1.1'),
+                           size + Size("500 MiB"),
+                           self.currentSize)
                 if orig_size < size:
-                    log.debug("padding min size from %d up to %d", orig_size, size)
+                    log.debug("padding min size from %s up to %s", orig_size, size)
                 else:
-                    log.debug("using current size %d as min size", size)
+                    log.debug("using current size %s as min size", size)
 
         self._minInstanceSize = size
 
@@ -1390,11 +1392,13 @@ class NTFS(FS):
                 log.warning("Unable to discover minimum size of filesystem "
                             "on %s", self.device)
             else:
-                size = min(minSize * Decimal('1.1'), minSize + 500, self.currentSize)
+                size = min(minSize * Decimal('1.1'),
+                           minSize + Size("500 MiB"),
+                           self.currentSize)
                 if minSize < size:
-                    log.debug("padding min size from %d up to %d", minSize, size)
+                    log.debug("padding min size from %s up to %s", minSize, size)
                 else:
-                    log.debug("using current size %d as min size", size)
+                    log.debug("using current size %s as min size", size)
 
         self._minInstanceSize = size
 
