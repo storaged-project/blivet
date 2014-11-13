@@ -18,6 +18,11 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         super(SELinuxContextTestCase, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB")])
 
     def testMountingExt2FS(self):
+        """ Test that lost+found directory gets assigned correct SELinux
+            context if installer_mode is True, and retains some random old
+            context if installer_mode is False.
+        """
+        LOST_AND_FOUND_CONTEXT = 'system_u:object_r:lost_found_t:s0'
         an_fs = fs.Ext2FS(device=self.loopDevices[0], label="test")
         self.assertIsNone(an_fs.create())
 
@@ -25,8 +30,6 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
-        root_selinux_context = selinux.getfilecon(mountpoint)
-
         lost_and_found = os.path.join(mountpoint, "lost+found")
         self.assertTrue(os.path.exists(lost_and_found))
 
@@ -35,17 +38,12 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         an_fs.unmount()
         os.rmdir(mountpoint)
 
-        self.assertEqual(root_selinux_context[1], 'system_u:object_r:unlabeled_t:s0')
-
-        self.assertEqual(lost_and_found_selinux_context[1],
-           'system_u:object_r:unlabeled_t:s0')
+        self.assertNotEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
 
         blivet.flags.installer_mode = True
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
-        root_selinux_context = selinux.getfilecon(mountpoint)
-
         lost_and_found = os.path.join(mountpoint, "lost+found")
         self.assertTrue(os.path.exists(lost_and_found))
 
@@ -54,12 +52,10 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         an_fs.unmount()
         os.rmdir(mountpoint)
 
-        self.assertEqual(root_selinux_context[1], 'system_u:object_r:file_t:s0')
-
-        self.assertEqual(lost_and_found_selinux_context[1],
-           'system_u:object_r:lost_found_t:s0')
+        self.assertEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
 
     def testMountingXFS(self):
+        """ XFS does not have a lost+found directory. """
         an_fs = fs.XFS(device=self.loopDevices[0], label="test")
         self.assertIsNone(an_fs.create())
 
@@ -67,29 +63,21 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
-        root_selinux_context = selinux.getfilecon(mountpoint)
-
         lost_and_found = os.path.join(mountpoint, "lost+found")
         self.assertFalse(os.path.exists(lost_and_found))
 
         an_fs.unmount()
         os.rmdir(mountpoint)
-
-        self.assertEqual(root_selinux_context[1], 'system_u:object_r:unlabeled_t:s0')
 
         blivet.flags.installer_mode = True
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
-        root_selinux_context = selinux.getfilecon(mountpoint)
-
         lost_and_found = os.path.join(mountpoint, "lost+found")
         self.assertFalse(os.path.exists(lost_and_found))
 
         an_fs.unmount()
         os.rmdir(mountpoint)
-
-        self.assertEqual(root_selinux_context[1], 'system_u:object_r:file_t:s0')
 
 if __name__ == "__main__":
     unittest.main()
