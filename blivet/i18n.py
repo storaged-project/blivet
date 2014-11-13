@@ -23,6 +23,6 @@ __all__ = ["_", "N_", "P_"]
 
 import gettext
 
-_ = lambda x: gettext.ldgettext("blivet", x)
+_ = lambda x: gettext.ldgettext("blivet", x) if x != "" else ""
 N_ = lambda x: x
 P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
