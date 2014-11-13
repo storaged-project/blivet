@@ -45,8 +45,8 @@ N_ = lambda x: x
 # evaluated on every call.
 # pylint: disable=unnecessary-lambda
 if six.PY2:
-    _ = lambda x: _get_translations().ugettext(x)
+    _ = lambda x: _get_translations().ugettext(x) if x != "" else u""
     P_ = lambda x, y, z: _get_translations().ungettext(x, y, z)
 else:
-    _ = lambda x: _get_translations().gettext(x)
+    _ = lambda x: _get_translations().gettext(x) if x != "" else ""
     P_ = lambda x, y, z: _get_translations().ngettext(x, y, z)
