@@ -1975,6 +1975,13 @@ class DeviceTree(object):
         """ Set up devices to represent the disk image files. """
         for (name, path) in self.diskImages.items():
             log.info("setting up disk image file '%s' as '%s'", path, name)
+            dmdev = self.getDeviceByName(name)
+            if dmdev and isinstance(dmdev, DMLinearDevice) and \
+               path in (d.path for d in dmdev.ancestors):
+                log.debug("using %s", dmdev)
+                dmdev.setup()
+                continue
+
             try:
                 filedev = FileDevice(path, exists=True)
                 filedev.setup()
