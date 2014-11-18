@@ -285,7 +285,7 @@ def isPPC(bits=None):
         if arch in ('ppc', 'ppc64', 'ppc64le'):
             return True
     elif bits == 32:
-        if arch in ('ppc'):
+        if arch == 'ppc':
             return True
     elif bits == 64:
         if arch in ('ppc64', 'ppc64le'):
