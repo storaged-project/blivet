@@ -347,7 +347,6 @@ class UtilityMethodsTestCase(unittest.TestCase):
         self.assertEqual(size._lowerASCII(b"B"), b"b")
 
     def testArithmetic(self):
-        from decimal import Decimal
         s = Size("2GiB")
 
         # Make sure arithmatic operations with Size always result in the expected type
