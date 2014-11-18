@@ -2530,6 +2530,8 @@ class DeviceTree(object):
                     break
         elif options and "nodev" in options.split(","):
             device = self.getDeviceByName(devspec)
+            if not device:
+                device = self.getDeviceByPath(devspec)
         else:
             if not devspec.startswith("/dev/"):
                 device = self.getDeviceByName(devspec)
