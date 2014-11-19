@@ -16,7 +16,7 @@ pylint_output="$(pylint \
     --dummy-variables-rgx=_ \
     --ignored-classes=Popen,TransactionSet \
     --defining-attr-methods=__init__,_grabObjects,initialize,reset,start,setUp \
-    --load-plugins=intl \
+    --load-plugins=intl,pointless-override \
     $DISABLED_WARN_OPTIONS \
     $DISABLED_ERR_OPTIONS \
     $NON_STRICT_OPTIONS "$@" 2>&1 | \
