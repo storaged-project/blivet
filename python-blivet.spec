@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.9
+Version: 0.61.10
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,17 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Nov 18 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.10-1
+- Round filesystem target size to whole resize tool units. (#1163410) (dlehman)
+- New method to round a Size to a whole number of a specified unit. (dlehman)
+- Fix units for fs min size padding. (dlehman)
+- Disable resize operations on filesystems whose current size is unknown.
+  (dlehman)
+- Run fsck before obtaining minimum filesystem size. (#1162215) (dlehman)
+- Do not translate empty strings, gettext translates them into system
+  information (vtrefny)
+- Add more arguments to mpathconf (#1154347) (dshea)
+
 * Tue Nov 11 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.9-1
 - Device status can never be True for non-existent devices. (#1156058)
   (dlehman)
