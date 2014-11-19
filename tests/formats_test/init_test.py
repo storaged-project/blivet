@@ -6,9 +6,6 @@ import blivet.formats as formats
 
 class FormatsTestCase(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
     def testFormatsMethods(self):
         ##
         ## get_device_format_class

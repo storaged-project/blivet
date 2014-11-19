@@ -939,7 +939,6 @@ class Ext2FS(FS):
     _resizable = True
     _linuxNative = True
     _maxSize = Size("8 TiB")
-    _defaultMountOptions = ["defaults"]
     _defaultCheckOptions = ["-f", "-p", "-C", "0"]
     _dump = True
     _check = True
@@ -1114,7 +1113,6 @@ register_device_format(FATFS)
 class EFIFS(FATFS):
     _type = "efi"
     _mountType = "vfat"
-    _modules = ["vfat"]
     _name = N_("EFI System Partition")
     _minSize = Size("50 MiB")
 
@@ -1191,7 +1189,6 @@ class GFS2(FS):
     _formattable = True
     _defaultFormatOptions = ["-j", "1", "-p", "lock_nolock", "-O"]
     _linuxNative = True
-    _supported = False
     _dump = True
     _check = True
     _packages = ["gfs2-utils"]
@@ -1221,7 +1218,6 @@ class JFS(FS):
     _maxSize = Size("8 TiB")
     _formattable = True
     _linuxNative = True
-    _supported = False
     _dump = True
     _check = True
     _infofs = "jfs_tune"
@@ -1252,12 +1248,10 @@ class ReiserFS(FS):
     _maxSize = Size("16 TiB")
     _formattable = True
     _linuxNative = True
-    _supported = False
     _dump = True
     _check = True
     _packages = ["reiserfs-utils"]
     _infofs = "debugreiserfs"
-    _defaultInfoOptions = []
     _existingSizeFields = ["Count of blocks on the device:", "Blocksize:"]
     partedSystem = fileSystemType["reiserfs"]
 
@@ -1503,10 +1497,6 @@ class Iso9660FS(FS):
     """ ISO9660 filesystem. """
     _type = "iso9660"
     _supported = True
-    _resizable = False
-    _linuxNative = False
-    _dump = False
-    _check = False
     _defaultMountOptions = ["ro"]
 
 register_device_format(Iso9660FS)

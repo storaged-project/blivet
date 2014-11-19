@@ -47,7 +47,6 @@ class LUKS(DeviceFormat):
     _lockedName = N_("Encrypted")
     _udevTypes = ["crypto_LUKS"]
     _formattable = True                 # can be formatted
-    _supported = False                  # is supported
     _linuxNative = True                 # for clearpart
     _packages = ["cryptsetup"]          # required packages
     _minSize = crypto.LUKS_METADATA_SIZE

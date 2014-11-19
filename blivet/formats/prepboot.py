@@ -34,7 +34,6 @@ class PPCPRePBoot(DeviceFormat):
     """ Generic device format. """
     _type = "prepboot"
     _name = N_("PPC PReP Boot")
-    _udevTypes = []
     partedFlag = PARTITION_PREP
     _formattable = True                 # can be formatted
     _linuxNative = True                 # for clearpart

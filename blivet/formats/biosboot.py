@@ -31,7 +31,6 @@ class BIOSBoot(DeviceFormat):
     """ BIOS boot partition for GPT disklabels. """
     _type = "biosboot"
     _name = N_("BIOS Boot")
-    _udevTypes = []
     partedFlag = PARTITION_BIOS_GRUB
     _formattable = True                 # can be formatted
     _linuxNative = True                 # for clearpart

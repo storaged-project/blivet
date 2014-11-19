@@ -43,7 +43,6 @@ class DiskLabel(DeviceFormat):
     _type = "disklabel"
     _name = N_("partition table")
     _formattable = True                # can be formatted
-    _supported = False                 # is supported
 
     def __init__(self, **kwargs):
         """

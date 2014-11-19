@@ -48,11 +48,8 @@ class DMRaidMember(DeviceFormat):
                  "jmicron_raid_member", "lsi_mega_raid_member",
                  "nvidia_raid_member", "promise_fasttrack_raid_member",
                  "silicon_medley_raid_member", "via_raid_member"]
-    _formattable = False                # can be formatted
     _supported = True                   # is supported
-    _linuxNative = False                # for clearpart
     _packages = ["dmraid"]              # required packages
-    _resizable = False                  # can be resized
     _hidden = True                      # hide devices with this formatting?
 
     def __init__(self, **kwargs):

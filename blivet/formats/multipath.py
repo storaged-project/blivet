@@ -37,11 +37,8 @@ class MultipathMember(DeviceFormat):
     _type = "multipath_member"
     _name = N_("multipath member device")
     _udev_types = ["multipath_member"]
-    _formattable = False                # can be formatted
     _supported = True                   # is supported
-    _linuxNative = False                # for clearpart
     _packages = ["device-mapper-multipath"] # required packages
-    _resizable = False                  # can be resized
     _hidden = True                      # hide devices with this formatting?
 
     def __init__(self, **kwargs):
