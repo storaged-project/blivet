@@ -196,6 +196,9 @@ class FS(DeviceFormat):
         if not self.exists:
             raise FSError("filesystem has not been created")
 
+        if not self.resizable:
+            raise FSError("filesystem is not resizable")
+
         if newsize is None:
             # unset any outstanding resize request
             self._targetSize = self._size
