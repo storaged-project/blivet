@@ -181,7 +181,7 @@ class DeviceFormat(ObjectID):
         ObjectID.__init__(self)
         self.device = kwargs.get("device")
         self.uuid = kwargs.get("uuid")
-        self.exists = kwargs.get("exists")
+        self.exists = kwargs.get("exists", False)
         self.options = kwargs.get("options")
 
         # don't worry about existence if this is a DeviceFormat instance
