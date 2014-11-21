@@ -218,10 +218,7 @@ class FS(DeviceFormat):
 
     def _getSize(self):
         """ Get this filesystem's size. """
-        size = self._size
-        if self.resizable and self.targetSize != size:
-            size = self.targetSize
-        return size
+        return self.targetSize if self.resizable else self._size
 
     size = property(_getSize, doc="This filesystem's size, accounting "
                                   "for pending changes")
@@ -359,10 +356,7 @@ class FS(DeviceFormat):
     @property
     def currentSize(self):
         """ The filesystem's current actual size. """
-        size = Size(0)
-        if self.exists:
-            size = self._size
-        return size
+        return self._size if self.exists else Size(0)
 
     @property
     def free(self):
