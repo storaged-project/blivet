@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.17
+Version: 0.61.0.18
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Nov 21 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.18-1
+- Don't append btrfs mount options to None (dshea)
+  Resolves: rhbz#1164259
+
 * Thu Nov 06 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.17-1
 - getArch should return ppc64 or ppc64le (bcl)
   Resolves: rhbz#1159271
