@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.70
+Version: 0.71
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,36 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Nov 21 2014 Brian C. Lane <bcl@redhat.com> - 0.71-1
+- Remove redundant import. (amulhern)
+- Change inclusion to equality. (amulhern)
+- Round filesystem target size to whole resize tool units. (#1163410) (dlehman)
+- New method to round a Size to a whole number of a specified unit. (dlehman)
+- Fix units for fs min size padding. (dlehman)
+- Disable resize operations on filesystems whose current size is unknown.
+  (dlehman)
+- Run fsck before obtaining minimum filesystem size. (#1162215) (dlehman)
+- Fix setupDiskImages when the devices are already in the tree. (dlehman)
+- Make logging a little less verbose and more useful in FS.mount() (amulhern)
+- Make selinux test less precise. (amulhern)
+- Do not translate empty strings, gettext translates them into system
+  information (vtrefny)
+- Add a tearDown method to StorageTestCase. (dlehman)
+- Remove pointless assignment to _formattable in Iso9660FS. (amulhern)
+- Remove BTRFS._resizeArgs() (amulhern)
+- Add more arguments to mpathconf (#1154347) (dshea)
+- Check the minimum member size for BtrfsVolumeDevices. (amulhern)
+- Get rid of FS._getRandomUUID() method. (amulhern)
+- Eliminate TmpFS.minSize() (amulhern)
+- Don't run selinux context tests when selinux is disabled. (dlehman)
+- Temporarily disable a test that isn't working. (dlehman)
+- Pass a path (not a name) to devicePathToName. (dlehman)
+- devicePathToName should default to returning a basename. (dlehman)
+- Fix test that guards forcible removal of dm partition nodes. (dlehman)
+- Device status can never be True for non-existent devices. (#1156058)
+  (dlehman)
+- Use super to get much-needed MRO magic in constructor. (#1158968) (dlehman)
+
 * Thu Nov 06 2014 Brian C. Lane <bcl@redhat.com> - 0.70-1
 - Add a method that determines whether a number is an exact power of 2.
   (amulhern)

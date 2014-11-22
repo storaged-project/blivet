@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-06 17:17-0800\n"
+"POT-Creation-Date: 2014-11-21 17:25-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,6 +38,146 @@ msgstr ""
 #: ../blivet/__init__.py:3001
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "bytes"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:51
+msgid "kilo"
+msgstr ""
+
+#: ../blivet/size.py:51
+msgid "k"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "mega"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "M"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "Y"
+msgstr ""
+
+#: ../blivet/size.py:64
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:64
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:65
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:65
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:66
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:66
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:67
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:67
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:68
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:68
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:69
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:69
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:70
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:70
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:71
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:71
+msgid "Yi"
 msgstr ""
 
 #. no big enough free space for the requested partition
@@ -110,12 +250,12 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/devicetree.py:1276
-msgid "Invalid Disk Label"
-msgstr ""
-
 #: ../blivet/fcoe.py:107
 msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/devicetree.py:1276
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -141,7 +281,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:216 ../blivet/formats/fs.py:1049
+#: ../blivet/platform.py:216 ../blivet/formats/fs.py:1117
 msgid "EFI System Partition"
 msgstr ""
 
@@ -319,146 +459,6 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/size.py:43
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "bytes"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:50
-msgid "kilo"
-msgstr ""
-
-#: ../blivet/size.py:50
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:51
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:51
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Y"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:64
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:64
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:65
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:65
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:66
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:66
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:67
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:67
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:68
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:68
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:69
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:69
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:70
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:70
-msgid "Yi"
-msgstr ""
-
 #: ../blivet/deviceaction.py:292
 msgid "create device"
 msgstr ""
@@ -527,51 +527,51 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:471
+#: ../blivet/formats/fs.py:531
 #, python-format
 msgid "Unknown return code: %d."
 msgstr ""
 
-#: ../blivet/formats/fs.py:493
+#: ../blivet/formats/fs.py:553
 #, python-format
 msgid "%(type)s filesystem check failure on %(device)s: "
 msgstr ""
 
-#: ../blivet/formats/fs.py:873
+#: ../blivet/formats/fs.py:931
 msgid "File system errors left uncorrected."
 msgstr ""
 
-#: ../blivet/formats/fs.py:874
+#: ../blivet/formats/fs.py:932
 msgid "Operational error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:875
+#: ../blivet/formats/fs.py:933
 msgid "Usage or syntax error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:876
+#: ../blivet/formats/fs.py:934
 msgid "e2fsck cancelled by user request."
 msgstr ""
 
-#: ../blivet/formats/fs.py:877
+#: ../blivet/formats/fs.py:935
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1023
+#: ../blivet/formats/fs.py:1091
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1025
+#: ../blivet/formats/fs.py:1093
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1271
+#: ../blivet/formats/fs.py:1334
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1303
+#: ../blivet/formats/fs.py:1366
 msgid "Linux HFS+ ESP"
 msgstr ""
 
