@@ -496,7 +496,9 @@ class PartitionDevice(StorageDevice):
            self.partedPartition in self.disk.format.partitions:
             return
 
-        self.disk.format.addPartition(self.partedPartition)
+        self.disk.format.addPartition(self.partedPartition.geometry.start,
+                                      self.partedPartition.geometry.end,
+                                      self.partedPartition.type)
 
         # Look up the path by start sector to deal with automatic renumbering of
         # logical partitions on msdos disklabels.
