@@ -119,7 +119,7 @@ class FS(DeviceFormat):
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
         self._resizable = False
-        if flags.installer_mode:
+        if flags.installer_mode and self.resizefsProg:
             # if you want current/min size you have to call updateSizeInfo
             try:
                 self.updateSizeInfo()
@@ -1100,6 +1100,7 @@ class FATFS(FS):
     _maxSize = Size("1 TiB")
     _packages = [ "dosfstools" ]
     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
+    _defaultCheckOptions = ["-n"]
     # FIXME this should be fat32 in some cases
     partedSystem = fileSystemType["fat16"]
 
