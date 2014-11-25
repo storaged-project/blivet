@@ -312,6 +312,8 @@ class FS(DeviceFormat):
         size = self._size
 
         if self.exists and not size:
+            if not self._existingSizeFields:
+                return Size(0)
             if info is None:
                 info = self._getFSInfo()
 
