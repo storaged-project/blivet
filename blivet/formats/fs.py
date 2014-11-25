@@ -465,6 +465,11 @@ class FS(DeviceFormat):
         # so run the check one last time and bump up the size if it was too
         # small.
         self.updateSizeInfo()
+
+        # Check again if resizable is True, as updateSizeInfo() can change that
+        if not self.resizable:
+            raise FSResizeError("filesystem not resizable", self.device)
+
         if self.targetSize < self.minSize:
             self.targetSize = self.minSize
             log.info("Minimum size changed, setting targetSize on %s to %s",
