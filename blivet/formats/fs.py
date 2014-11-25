@@ -25,7 +25,6 @@
 from decimal import Decimal
 import os
 import tempfile
-import six
 
 from . import fslabeling
 from ..errors import FormatCreateError, FSError, FSResizeError
@@ -42,10 +41,6 @@ from .. import udev
 
 import logging
 log = logging.getLogger("blivet")
-
-if six.PY3:
-    long = int # pylint: disable=redefined-builtin
-
 
 fs_configs = {}
 
@@ -288,7 +283,7 @@ class FS(DeviceFormat):
                        c) If line begins with any of the strings in
                           _existingSizeFields, start at the end of
                           fields and take the first one that converts
-                          to a long.  Store this in the values list.
+                          to an int.  Store this in the values list.
                        d) Repeat until the values list length equals
                           the _existingSizeFields length.
                 3) If the length of the values list equals the length
@@ -330,7 +325,7 @@ class FS(DeviceFormat):
                         if line.startswith(field):
                             for subfield in tmp:
                                 try:
-                                    values.append(long(subfield))
+                                    values.append(int(subfield))
                                     found = True
                                     break
                                 except ValueError:
@@ -1011,7 +1006,7 @@ class Ext2FS(FS):
                 minSize = minSize.strip()
                 if not minSize:
                     break
-                _size = Size(long(minSize) * blockSize)
+                _size = Size(int(minSize) * blockSize)
                 break
 
             if not _size:
