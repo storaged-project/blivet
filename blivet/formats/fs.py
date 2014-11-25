@@ -1219,7 +1219,7 @@ class JFS(FS):
     _check = True
     _infofs = "jfs_tune"
     _defaultInfoOptions = ["-l"]
-    _existingSizeFields = ["Aggregate block size:", "Aggregate size:"]
+    _existingSizeFields = ["Physical block size:", "Aggregate size:"]
     partedSystem = fileSystemType["jfs"]
 
     @property
