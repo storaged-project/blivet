@@ -362,12 +362,10 @@ class FS(DeviceFormat):
 
     @property
     def free(self):
-        free = Size(0)
-        if self.exists:
-            if self.currentSize and self.minSize:
-                free = max(Size(0), self.currentSize - self.minSize)
-
-        return free
+        """ The amount of space that can be gained by resizing this
+            filesystem to its minimum size.
+        """
+        return max(Size(0), self.currentSize - self.minSize)
 
     def _getFormatOptions(self, options=None, do_labeling=False):
         """Get a list of format options to be used when creating the
