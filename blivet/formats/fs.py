@@ -321,7 +321,7 @@ class FS(DeviceFormat):
                     found = False
 
                     line = line.strip()
-                    tmp = line.split(' ')
+                    tmp = line.split()
                     tmp.reverse()
 
                     for field in self._existingSizeFields:
