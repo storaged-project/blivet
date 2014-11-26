@@ -311,8 +311,30 @@ class DiskLabel(DeviceFormat):
                                          geometry=geometry)
 
         constraint = parted.Constraint(exactGeom=geometry)
-        self.partedDisk.addPartition(partition=new_partition,
-                                     constraint=constraint)
+
+        # adding a partition the start of which is before some already added
+        # partition requires change of partitions' order because parted just
+        # increments the number while partitions are added
+        if any(part.geometry.start > start for part in self.partedDisk.partitions):
+            parts = self.partedDisk.partitions[:]
+
+            # first remove all partitions
+            for part in parts:
+                self.partedDisk.removePartition(part)
+
+            # then add them back sorted together with the new one
+            parts.append(new_partition)
+            parts.sort(key=lambda p: p.geometry.start)
+            for part in parts:
+                # reset the partition's number so that it gets a new one when
+                # added to partedDisk
+                part.resetNumber()
+                constr = parted.Constraint(exactGeom=part.geometry)
+                self.partedDisk.addPartition(partition=part,
+                                             constraint=constr)
+        else:
+            self.partedDisk.addPartition(partition=new_partition,
+                                         constraint=constraint)
 
     def removePartition(self, partition):
         """ Remove a partition from the disklabel.
