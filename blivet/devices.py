@@ -605,6 +605,8 @@ class StorageDevice(Device):
                 size = read_int_from_sys("%s/size" % device_root)
                 self._size = Size(size * sector_size)
 
+        self._orig_size = self._size
+
     def __str__(self):
         exist = "existing"
         if not self.exists:
@@ -743,7 +745,8 @@ class StorageDevice(Device):
                       newsize, self.minSize)
             raise ValueError("size is smaller than the minimum for this device")
 
-        if self.alignTargetSize(newsize) != newsize:
+        # reverting to unaligned original size is not an issue
+        if self.alignTargetSize(newsize) != newsize and newsize != self._orig_size:
             raise ValueError("new size would violate alignment requirements")
 
         self._targetSize = newsize
@@ -1480,6 +1483,8 @@ class PartitionDevice(StorageDevice):
             self.req_start_sector = start
             self.req_end_sector = end
 
+        self._orig_size = self._size
+
     def __repr__(self):
         s = StorageDevice.__repr__(self)
         s += ("  grow = %(grow)s  max size = %(maxsize)s  bootable = %(bootable)s\n"
@@ -1546,7 +1551,8 @@ class PartitionDevice(StorageDevice):
                 # this gets handled in superclass setter, below
                 aligned = newsize
 
-            if aligned != newsize:
+            # reverting to unaligned original size is not an issue
+            if aligned != newsize and newsize != self._orig_size:
                 raise ValueError("new size will not yield an aligned partition")
 
             # change this partition's geometry in-memory so that other
