@@ -234,41 +234,55 @@ class FS(DeviceFormat):
         self._resizable = self.__class__._resizable
 
         # We can't allow resize if the filesystem has errors.
-        try:
-            self.doCheck()
-        except FSError:
-            errors = True
-            raise
-        else:
-            errors = False
-        finally:
-            # try to gather current size info anyway
-            info = self._getFSInfo()
-            self._size = self._getExistingSize(info=info)
-            self._minSize = self._size # default to current size
-            # We absolutely need a current size to enable resize. To shrink the
-            # filesystem we need a real minimum size provided by the resize
-            # tool. Failing that, we can default to the current size,
-            # effectively disabling shrink.
-            if errors or self._size == Size(0):
-                self._resizable = False
+        errors = False
+        ret, info = self._getFSInfo()
+        if ret != 0:
+            try:
+                self.doCheck()
+            except FSError:
+                errors = True
+                raise
+            else:
+                errors = False
+            finally:
+                # try to gather current size info anyway
+                info = self._getFSInfo()[1]
 
-        self._getMinSize(info=info)   # force calculation of minimum size
+        self._size = self._getExistingSize(info=info)
+        self._minSize = self._size # default to current size
+        # We absolutely need a current size to enable resize. To shrink the
+        # filesystem we need a real minimum size provided by the resize
+        # tool. Failing that, we can default to the current size,
+        # effectively disabling shrink.
+        if errors or self._size == Size(0):
+            self._resizable = False
+
+        try:
+            self._getMinSize(info=info)   # force calculation of minimum size
+        except FSError:
+            # if failed, try to check filesystem first
+            try:
+                self.doCheck()
+            except FSError:
+                errors = True
+                raise
+            self._getMinSize(info=info)
 
     def _getMinSize(self, info=None):
         pass
 
     def _getFSInfo(self):
         buf = ""
+        ret = 0
         if self.infofsProg and self.exists and \
            util.find_program_in_path(self.infofsProg):
             argv = self._defaultInfoOptions + [ self.device ]
             try:
-                buf = util.capture_output([self.infofsProg] + argv)
+                ret, buf = util.run_program_and_capture_output([self.infofsProg] + argv)
             except OSError as e:
                 log.error("failed to gather fs info: %s", e)
 
-        return buf
+        return ret, buf
 
     def _getExistingSize(self, info=None):
         """ Determine the size of this filesystem.
@@ -313,7 +327,7 @@ class FS(DeviceFormat):
 
         if self.exists and not size:
             if info is None:
-                info = self._getFSInfo()
+                info = self._getFSInfo()[1]
 
             try:
                 values = []
@@ -987,7 +1001,7 @@ class Ext2FS(FS):
         if self.exists and os.path.exists(self.device):
             if info is None:
                 # get block size
-                info = self._getFSInfo()
+                info = self._getFSInfo()[1]
 
             for line in info.splitlines():
                 if line.startswith("Block size:"):
@@ -1002,8 +1016,11 @@ class Ext2FS(FS):
                               "on %s" % (self.mountType, self.device))
 
             # get minimum size according to resize2fs
-            buf = util.capture_output([self.resizefsProg,
-                                       "-P", self.device])
+            ret, buf = util.run_program_and_capture_output([self.resizefsProg,
+                                                            "-P", self.device])
+            if ret != 0:
+                raise FSError("failed to get filesystem's minimum size")
+
             _size = None
             for line in buf.splitlines():
                 # line will look like:
@@ -1426,7 +1443,9 @@ class NTFS(FS):
         if self.exists and os.path.exists(self.device) and \
            util.find_program_in_path(self.resizefsProg):
             minSize = None
-            buf = util.capture_output([self.resizefsProg, "-m", self.device])
+            ret, buf = util.run_program_and_capture_output([self.resizefsProg, "-m", self.device])
+            if ret != 0:
+                raise FSError("Failed to get filesystem's minimal size")
             for l in buf.split("\n"):
                 if not l.startswith("Minsize"):
                     continue
