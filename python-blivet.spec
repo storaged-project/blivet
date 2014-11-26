@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.10
+Version: 0.61.11
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Nov 26 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.11-1
+- Update partitions' numbers and names when adding new partition (#1166598)
+  (vpodzime)
+- Return device's children sorted by name (vpodzime)
+- Run dosfsck in non-interactive mode (#1167959) (bcl)
+
 * Tue Nov 18 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.10-1
 - Round filesystem target size to whole resize tool units. (#1163410) (dlehman)
 - New method to round a Size to a whole number of a specified unit. (dlehman)
