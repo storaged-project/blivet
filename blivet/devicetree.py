@@ -1956,6 +1956,7 @@ class DeviceTree(object):
         if device in self._hidden:
             return
 
+        self.pruneActions()
         # cancel actions first thing so that we hide the correct set of devices
         if device.isDisk:
             # Cancel all actions on this disk and any disk related by way of an
