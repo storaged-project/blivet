@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.11
+Version: 0.61.12
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Nov 27 2014 Vratislav Podzimek <vpodzime@redhat.com> - 0.61.12-1
+- Prune actions before cancelling them (vpodzime)
+- Try to get FS info first before doing an FS check (vpodzime)
+- Reverting partition's size shouldn't require it to be aligned (#1165714)
+  (vpodzime)
+
 * Wed Nov 26 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.11-1
 - Update partitions' numbers and names when adding new partition (#1166598)
   (vpodzime)
