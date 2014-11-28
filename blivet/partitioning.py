@@ -1773,9 +1773,13 @@ def getDiskChunks(disk, partitions, free):
         # also check that the resulting aligned geometry has a non-zero length.
         # (It is possible that both will align to the same sector in a small
         #  enough region.)
+        al_start = disk.format.alignment.alignUp(f, f.start)
+        al_end = disk.format.endAlignment.alignDown(f, f.end)
+        if al_start >= al_end:
+            continue
         geom = parted.Geometry(device=f.device,
-                               start=disk.format.alignment.alignUp(f, f.start),
-                               end=disk.format.endAlignment.alignDown(f, f.end))
+                               start=al_start,
+                               end=al_end)
         if geom.length < disk.format.alignment.grainSize:
             continue
 
