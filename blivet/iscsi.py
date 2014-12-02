@@ -216,8 +216,9 @@ class iscsi(object):
                     node.name, node.address, node.port, node.iface)
                 self.ibftNodes.append(node)
             except IOError as e:
-                log.error("Could not log into ibft iscsi target %s: %s",
-                          node.name, str(e))
+                log.error("iSCSI: could not log into ibft %s at %s:%s through %s: %s",
+                         node.name, node.address, node.port, node.iface,
+                         str(e))
 
         self.stabilize()
 
@@ -365,7 +366,8 @@ class iscsi(object):
             self.discovered_targets[(ipaddr, port)] = []
             for node in found_nodes:
                 self.discovered_targets[(ipaddr, port)].append([node, False])
-                log.debug("discovered iSCSI node: %s", node.name)
+                log.debug("discovered iSCSI node: %s, %s:%s, %s",
+                          node.name, node.address, node.port, node.iface)
 
         # only return the nodes we are not logged into yet
         return [node for (node, logged_in) in
@@ -397,7 +399,8 @@ class iscsi(object):
                 log.error("iSCSI: node not found among discovered")
         except (IOError, ValueError) as e:
             msg = str(e)
-            log.warning("iSCSI: could not log into %s: %s", node.name, msg)
+            log.warning("iSCSI: could not log into %s at %s:%s through %s: %s",
+                         node.name, node.address, node.port, node.iface, msg)
 
         return (rc, msg)
 
