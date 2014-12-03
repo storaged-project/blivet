@@ -26,7 +26,6 @@ import re
 import shutil
 import pprint
 import copy
-import itertools
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
@@ -402,14 +401,6 @@ class DeviceTree(object):
 
         newdev.addHook(new=new)
         self._devices.append(newdev)
-
-        # adding a partition may change partedPartition's paths which are used
-        # to construct names which thus should be updated
-        if isinstance(newdev, PartitionDevice):
-            sibling_parts_lists = [self.getChildren(parent) for parent in newdev.parents]
-            sibling_parts = itertools.chain(*sibling_parts_lists)
-            for part in sibling_parts:
-                part.updateName()
 
         # don't include "req%d" partition names
         if ((newdev.type != "partition" or
