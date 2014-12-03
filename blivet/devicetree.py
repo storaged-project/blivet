@@ -2493,7 +2493,7 @@ class DeviceTree(object):
 
     def getChildren(self, device):
         """ Return a list of a device's children. """
-        return sorted((c for c in self._devices if device in c.parents), key=lambda c:c.name)
+        return [c for c in self._devices if device in c.parents]
 
     def resolveDevice(self, devspec, blkidTab=None, cryptTab=None, options=None):
         """ Return the device matching the provided device specification.
