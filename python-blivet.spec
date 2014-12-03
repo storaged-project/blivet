@@ -14,7 +14,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define dmver 1.02.17-6
 %define pykickstartver 1.99.22
 %define partedver 1.8.1
-%define pypartedver 2.5-2
+%define pypartedver 1:3.9.5
 %define pythonpyblockver 0.45
 %define e2fsver 1.41.0
 %define pythoncryptsetupver 0.1.1
