@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.71
+Version: 0.72
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,21 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Dec 04 2014 Brian C. Lane <bcl@redhat.com> - 0.72-1
+- Add a bunch of simple tests for filesystem formats. (amulhern)
+- Get rid of long() related code. (amulhern)
+- Add another check for resizable in FS.doResize() (amulhern)
+- Simplify FS.free(). (amulhern)
+- Make an early exit if self._existingSizeFields is [] (amulhern)
+- Change "Aggregate block size:" to "Physical block size:" for JFS. (amulhern)
+- Split output from infofs program for size on whitespace. (amulhern)
+- Simplify _getSize() and currentSize(). (amulhern)
+- Check resizable when assigning a new target size. (amulhern)
+- Make default exists value a boolean in DeviceFormat.__init__. (amulhern)
+- Remove pointless overrides. (amulhern)
+- Add a simple pylint checker for pointless overrides. (amulhern)
+- Run dosfsck in non-interactive mode (#1167959) (bcl)
+
 * Fri Nov 21 2014 Brian C. Lane <bcl@redhat.com> - 0.71-1
 - Remove redundant import. (amulhern)
 - Change inclusion to equality. (amulhern)
