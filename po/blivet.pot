@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-21 17:03-0800\n"
+"POT-Creation-Date: 2014-12-04 17:22-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -535,23 +535,23 @@ msgstr ""
 msgid "Must provide an iSCSI initiator name"
 msgstr ""
 
-#: ../blivet/iscsi.py:263
+#: ../blivet/iscsi.py:264
 msgid "iSCSI not available"
 msgstr ""
 
-#: ../blivet/iscsi.py:265
+#: ../blivet/iscsi.py:266
 msgid "No initiator name set"
 msgstr ""
 
-#: ../blivet/iscsi.py:366
+#: ../blivet/iscsi.py:369
 msgid "No iSCSI nodes discovered"
 msgstr ""
 
-#: ../blivet/iscsi.py:386
+#: ../blivet/iscsi.py:389
 msgid "No new iSCSI nodes discovered"
 msgstr ""
 
-#: ../blivet/iscsi.py:389
+#: ../blivet/iscsi.py:392
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
@@ -700,19 +700,6 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:53
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:54
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:427
-#, python-format
-msgid "vginfo failed for %s"
-msgstr ""
-
 #: ../blivet/devicelibs/dasd.py:160
 #, python-format
 msgid "DASD device %s not found, not even in device ignore list."
@@ -726,4 +713,17 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:173
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:53
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:54
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:427
+#, python-format
+msgid "vginfo failed for %s"
 msgstr ""
