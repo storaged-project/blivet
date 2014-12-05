@@ -12,24 +12,16 @@ from blivet.size import Size
 
 class MDRaidInterrogateTestCase(mdraid_test.MDRaidAsRootTestCase):
 
-    def _matchNames(self, found, expected, transient=None):
+    def _matchNames(self, found, expected):
         """ Match names found against expected names.
 
             :param found: a list of names found in result
             :type found: list of str
             :param expected: a list of expected names
             :type expected: list of str
-            :param transient: a list of names that only sometimes appear
-            :type transient: list of str
         """
-        transient = transient or []
-
-        for n in (n for n in expected if n not in transient):
+        for n in expected:
             self.assertIn(n, found, msg="name '%s' not in info" % n)
-
-        for n in (n for n in found if n not in transient):
-            self.assertIn(n, expected, msg="unexpected name '%s' in info" % n)
-
 
 class MDExamineTestCase(MDRaidInterrogateTestCase):
 
@@ -87,7 +79,7 @@ class MDExamineTestCase(MDRaidInterrogateTestCase):
             :param int spares: the number of spares in this array
 
             Verifies that:
-              - exactly the predicted names are returned by mdexamine
+              - at least the predicted names are returned by mdexamine
               - RAID level and number of devices are correct
               - UUIDs have canonical form
         """
@@ -143,7 +135,6 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         'PERSISTENCE',
         'RAID DEVICES',
         'RAID LEVEL',
-        'RESYNC STATUS',
         'SPARE DEVICES',
         'STATE',
         'TOTAL DEVICES',
@@ -164,7 +155,6 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         'PREFERRED MINOR',
         'RAID DEVICES',
         'RAID LEVEL',
-        'RESYNC STATUS',
         'SPARE DEVICES',
         'STATE',
         'TOTAL DEVICES',
@@ -191,7 +181,7 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
             :param int spares: the number of spares for this array
 
             Verifies that:
-              - exactly the predicted names are returned by mddetail
+              - at least the predicted names are returned by mddetail
               - UUIDs have canonical form
         """
         level = raid.getRaidLevel(level) if level is not None else raid.RAID1
@@ -202,7 +192,7 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         info = mdraid.mddetail(self._dev_name)
 
         # info contains values for exactly names
-        self._matchNames(info.keys(), names, ['RESYNC STATUS'])
+        self._matchNames(info.keys(), names)
 
         # check names with predictable values
         self.assertEqual(info['RAID LEVEL'], str(level))
