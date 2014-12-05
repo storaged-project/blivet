@@ -111,10 +111,10 @@ class FSLabelApp(object):
 class E2Label(FSLabelApp):
     """Application used by ext2 and its descendants."""
 
-    name = property(lambda s: "e2label")
-    reads = property(lambda s: True)
+    name = "e2label"
+    reads = True
 
-    _label_regex = property(lambda s: r'(?P<label>.*)')
+    _label_regex = r'(?P<label>.*)'
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
@@ -127,10 +127,10 @@ E2Label = E2Label()
 class DosFsLabel(FSLabelApp):
     """Application used by FATFS."""
 
-    name = property(lambda s: "dosfslabel")
-    reads = property(lambda s: True)
+    name = "dosfslabel"
+    reads = True
 
-    _label_regex = property(lambda s: r'(?P<label>.*)')
+    _label_regex = r'(?P<label>.*)'
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
@@ -143,8 +143,8 @@ DosFsLabel = DosFsLabel()
 class JFSTune(FSLabelApp):
     """Application used by JFS."""
 
-    name = property(lambda s: "jfs_tune")
-    reads = property(lambda s: False)
+    name = "jfs_tune"
+    reads = False
 
     _label_regex = property(lambda s: None)
 
@@ -159,10 +159,10 @@ JFSTune = JFSTune()
 class ReiserFSTune(FSLabelApp):
     """Application used by ReiserFS."""
 
-    name = property(lambda s: "reiserfstune")
-    reads = property(lambda s: False)
+    name = "reiserfstune"
+    reads = False
 
-    _label_regex = property(lambda s: None)
+    _label_regex = None
 
     def _writeLabelArgs(self, fs):
         return ["-l", fs.label, fs.device]
@@ -175,10 +175,10 @@ ReiserFSTune = ReiserFSTune()
 class XFSAdmin(FSLabelApp):
     """Application used by XFS."""
 
-    name = property(lambda s: "xfs_admin")
-    reads = property(lambda s: True)
+    name = "xfs_admin"
+    reads = True
 
-    _label_regex = property(lambda s: r'label = "(?P<label>.*)"')
+    _label_regex = r'label = "(?P<label>.*)"'
 
     def _writeLabelArgs(self, fs):
         return ["-L", fs.label if fs.label != "" else "--", fs.device]
@@ -191,10 +191,10 @@ XFSAdmin = XFSAdmin()
 class NTFSLabel(FSLabelApp):
     """Application used by NTFS."""
 
-    name = property(lambda s: "ntfslabel")
-    reads = property(lambda s: True)
+    name = "ntfslabel"
+    reads = True
 
-    _label_regex = property(lambda s: r'label = "(?P<label>.*)"')
+    _label_regex = r'label = "(?P<label>.*)"'
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
