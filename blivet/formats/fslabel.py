@@ -194,7 +194,7 @@ class NTFSLabel(FSLabelApp):
     name = "ntfslabel"
     reads = True
 
-    _label_regex = r'label = "(?P<label>.*)"'
+    _label_regex = r'(?P<label>.*)'
 
     def _writeLabelArgs(self, fs):
         return [fs.device, fs.label]
