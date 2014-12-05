@@ -91,32 +91,37 @@ class MethodsTestCase(unittest.TestCase):
                 self.assertEqual(klass(device="/dev", label=label).label, label, msg=name)
 
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
-    _fs_class = property(lambda s: fs.XFS)
-    _invalid_label = property(lambda s: "root filesystem")
+    _fs_class = fs.XFS
+    _invalid_label = "root filesystem"
 
 class FATFSTestCase(fslabeling.CompleteLabelingAsRoot):
-    _fs_class = property(lambda s: fs.FATFS)
-    _invalid_label = property(lambda s: "root___filesystem")
+    _fs_class = fs.FATFS
+    _invalid_label = "root___filesystem"
 
 class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
-    _fs_class = property(lambda s: fs.Ext2FS)
-    _invalid_label = property(lambda s: "root___filesystem")
+    _fs_class = fs.Ext2FS
+    _invalid_label = "root___filesystem"
 
 class JFSTestCase(fslabeling.LabelingWithRelabeling):
-    _fs_class = property(lambda s: fs.JFS)
-    _invalid_label = property(lambda s: "root___filesystem")
+    _fs_class = fs.JFS
+    _invalid_label = "root___filesystem"
 
 class ReiserFSTestCase(fslabeling.LabelingWithRelabeling):
-    _fs_class = property(lambda s: fs.ReiserFS)
-    _invalid_label = property(lambda s: "root___filesystem")
+    _fs_class = fs.ReiserFS
+    _invalid_label = "root___filesystem"
 
 class HFSTestCase(fslabeling.LabelingAsRoot):
-    _fs_class = property(lambda s: fs.HFS)
-    _invalid_label = property(lambda s: "n" * 28)
+    _fs_class = fs.HFS
+    _invalid_label = "n" * 28
 
 class HFSPlusTestCase(fslabeling.LabelingAsRoot):
-    _fs_class = property(lambda s: fs.HFSPlus)
-    _invalid_label = property(lambda s: "n" * 129)
+    _fs_class = fs.HFSPlus
+    _invalid_label = "n" * 129
+
+@unittest.skip("Unable to create NTFS filesystem.")
+class NTFSTestCase(fslabeling.CompleteLabelingAsRoot):
+    _fs_class = fs.NTFS
+    _invalid_label = "n" * 129
 
 class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
 
