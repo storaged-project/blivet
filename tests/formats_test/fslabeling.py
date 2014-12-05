@@ -131,7 +131,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         with self.assertRaisesRegexp(FSError, "default label"):
             an_fs.writeLabel()
 
-        an_fs.label = "root___filesystem"
+        an_fs.label = "n" * 129
         with self.assertRaisesRegexp(FSError, "bad label format"):
             an_fs.writeLabel()
 
