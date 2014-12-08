@@ -92,14 +92,18 @@ class BTRFSDevice(StorageDevice):
         return "btrfs-tmp.%s" % self.id
 
     def _do_temp_mount(self, orig=False):
-        if self.format.status or not self.exists:
+        if not self.exists:
             return
 
-        tmpdir = tempfile.mkdtemp(prefix=self._temp_dir_prefix)
         if orig:
             fmt = self.originalFormat
         else:
             fmt = self.format
+
+        if fmt.status:
+            return
+
+        tmpdir = tempfile.mkdtemp(prefix=self._temp_dir_prefix)
 
         fmt.mount(mountpoint=tmpdir)
 
