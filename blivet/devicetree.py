@@ -1709,8 +1709,9 @@ class DeviceTree(object):
                 break
 
         if btrfs_dev:
-            log.info("found btrfs volume %s", btrfs_dev.name)
-            btrfs_dev.parents.append(device)
+            if device not in btrfs_dev.parents:
+                log.info("found btrfs volume %s", btrfs_dev.name)
+                btrfs_dev.parents.append(device)
         else:
             label = udev.device_get_label(info)
             log.info("creating btrfs volume btrfs.%s", label)
@@ -1788,7 +1789,8 @@ class DeviceTree(object):
                 # we fall through to handle that.
                 return
 
-        if (not device) or (not format_type) or device.format.type:
+        if (not device) or (not format_type) or \
+            device.format.type not in [None, "btrfs"]:
             # this device has no formatting or it has already been set up
             # FIXME: this probably needs something special for disklabels
             log.debug("no type or existing type for %s, bailing", name)
