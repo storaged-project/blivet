@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-04 17:22-0800\n"
+"POT-Creation-Date: 2014-12-09 16:40-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -124,156 +124,12 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#. Decimal prefixes for different size increments, along with the name
-#. and accepted abbreviation for the prefix.  These prefixes are all
-#. for 'bytes'.
-#: ../blivet/size.py:41
-msgid "kilo"
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/size.py:41
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:42
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:42
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "Y"
-msgstr ""
-
-#. Binary prefixes for the different size increments.  Same structure
-#. as the above list.
-#: ../blivet/size.py:52
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "Yi"
-msgstr ""
-
-#. no nice value found, just return size in bytes
-#. less than 10 KiB
-#: ../blivet/size.py:61 ../blivet/size.py:281 ../blivet/size.py:294
-#: ../blivet/size.py:302 ../blivet/size.py:331
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:61 ../blivet/size.py:101
-msgid "b"
-msgstr ""
-
-#: ../blivet/size.py:61 ../blivet/size.py:93
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:61 ../blivet/size.py:94
-msgid "bytes"
+#: ../blivet/devicetree.py:1278
+msgid "Invalid Disk Label"
 msgstr ""
 
 #. no big enough free space for the requested partition
@@ -344,14 +200,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:2200
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/devicetree.py:1278
-msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -555,6 +403,158 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
+#. Decimal prefixes for different size increments, along with the name
+#. and accepted abbreviation for the prefix.  These prefixes are all
+#. for 'bytes'.
+#: ../blivet/size.py:41
+msgid "kilo"
+msgstr ""
+
+#: ../blivet/size.py:41
+msgid "k"
+msgstr ""
+
+#: ../blivet/size.py:42
+msgid "mega"
+msgstr ""
+
+#: ../blivet/size.py:42
+msgid "M"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "Y"
+msgstr ""
+
+#. Binary prefixes for the different size increments.  Same structure
+#. as the above list.
+#: ../blivet/size.py:52
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "Yi"
+msgstr ""
+
+#. no nice value found, just return size in bytes
+#. less than 10 KiB
+#: ../blivet/size.py:61 ../blivet/size.py:281 ../blivet/size.py:294
+#: ../blivet/size.py:302 ../blivet/size.py:331
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:61 ../blivet/size.py:101
+msgid "b"
+msgstr ""
+
+#: ../blivet/size.py:61 ../blivet/size.py:93
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:61 ../blivet/size.py:94
+msgid "bytes"
+msgstr ""
+
 #: ../blivet/deviceaction.py:283
 msgid "create device"
 msgstr ""
@@ -668,12 +668,16 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
+#: ../blivet/formats/lvmpv.py:39
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:147
 msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -690,10 +694,6 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:47
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/lvmpv.py:39
-msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/mdraid.py:40

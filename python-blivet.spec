@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.19
+Version: 0.61.0.20
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Dec 09 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.20-1
+- Use super to get much-needed MRO magic in constructor. (dlehman)
+  Resolves: rhbz#1169229
+
 * Thu Dec 04 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.19-1
 - iscsi: improve logging of failed logins (rvykydal)
   Related: rhbz#1114820
