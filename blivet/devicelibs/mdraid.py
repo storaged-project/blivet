@@ -248,6 +248,20 @@ def mddeactivate(device):
     except MDRaidError as msg:
         raise MDRaidError("mddeactivate failed for %s: %s" % (device, msg))
 
+def mdrun(device):
+    """Start a possibly degraded array.
+
+       :param str device: the device to be started
+
+       :raises :class:`~.errors.MDRaidError`: on failure
+    """
+    args = ["--run", device]
+
+    try:
+        mdadm(args)
+    except MDRaidError as msg:
+        raise MDRaidError("mdrun failed for %s: %s" % (device, msg))
+
 def process_UUIDS(info, UUID_keys):
     """ Extract and convert expected UUIDs to canonical form.
         Reassign canonicalized UUIDs to corresponding keys.
