@@ -1138,11 +1138,31 @@ class DeviceTree(object):
         log.info("scanning %s (%s)...", name, sysfs_path)
         device = self.getDeviceByName(name)
         if device is None and udev.device_is_md(info):
-            device = self.getDeviceByName(
-               udev.device_get_md_name(info),
-               incomplete=flags.allow_imperfect_devices)
+
+            # If the md name is None, then some udev info is missing. Likely,
+            # this is because the array is degraded, and mdadm has deactivated
+            # it. Try to activate it and re-get the udev info.
+            if flags.allow_imperfect_devices and udev.device_get_md_name(info) is None:
+                devname = udev.device_get_devname(info)
+                if devname:
+                    try:
+                        mdraid.mdrun(devname)
+                    except MDRaidError as e:
+                        log.warning("Failed to start possibly degraded md array: %s", e)
+                    else:
+                        udev.settle()
+                        info = udev.get_device(sysfs_path)
+                else:
+                    log.warning("Failed to get devname for possibly degraded md array.")
+
+            md_name = udev.device_get_md_name(info)
+            if md_name is None:
+                log.warning("No name for possibly degraded md array.")
+            else:
+                device = self.getDeviceByName(md_name, incomplete=flags.allow_imperfect_devices)
+
             if device and not isinstance(device, MDRaidArrayDevice):
-                # make sure any device we found is an md device
+                log.warning("Found device %s, but it turns out not be an md array device after all.", device.name)
                 device = None
 
         if device and device.isDisk and \
