@@ -1760,7 +1760,7 @@ class DeviceTree(object):
             return
 
         # set up the common arguments for the format constructor
-        args = [format_type]
+        format_designator = format_type
         kwargs = {"uuid": uuid,
                   "label": label,
                   "device": device.path,
@@ -1805,19 +1805,19 @@ class DeviceTree(object):
             if isinstance(device, PartitionDevice) and device.bootable:
                 efi = formats.getFormat("efi")
                 if efi.minSize <= device.size <= efi.maxSize:
-                    args[0] = "efi"
+                    format_designator = "efi"
         elif format_type == "hfsplus":
             if isinstance(device, PartitionDevice):
                 macefi = formats.getFormat("macefi")
                 if macefi.minSize <= device.size <= macefi.maxSize and \
                    device.partedPartition.name == macefi.name:
-                    args[0] = "macefi"
+                    format_designator = "macefi"
         elif format_type == "hfs":
             # apple bootstrap magic
             if isinstance(device, PartitionDevice) and device.bootable:
                 apple = formats.getFormat("appleboot")
                 if apple.minSize <= device.size <= apple.maxSize:
-                    args[0] = "appleboot"
+                    format_designator = "appleboot"
         elif format_type == "btrfs":
             # the format's uuid attr will contain the UUID_SUB, while the
             # overarching volume UUID will be stored as volUUID
@@ -1825,13 +1825,13 @@ class DeviceTree(object):
             kwargs["volUUID"] = uuid
 
         try:
-            log.info("type detected on '%s' is '%s'", name, format_type)
-            device.format = formats.getFormat(*args, **kwargs)
+            log.info("type detected on '%s' is '%s'", name, format_designator)
+            device.format = formats.getFormat(format_designator, **kwargs)
             if device.format.type:
                 log.info("got format: %s", device.format)
         except FSError:
             log.warning("type '%s' on '%s' invalid, assuming no format",
-                      format_type, name)
+                      format_designator, name)
             device.format = formats.DeviceFormat()
             return
 
