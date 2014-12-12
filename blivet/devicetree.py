@@ -34,7 +34,8 @@ from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
 from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice
-from .devices import MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice
+from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
+from .devices import MultipathDevice, NoDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
 from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
@@ -1009,7 +1010,7 @@ class DeviceTree(object):
             log.info("%s is an fcoe disk", name)
         elif udev.device_get_md_container(info):
             name = udev.device_get_md_name(info)
-            diskType = MDRaidArrayDevice
+            diskType = MDBiosRaidArrayDevice
             parentPath = udev.device_get_md_container(info)
             parentName = devicePathToName(parentPath)
             container = self.getDeviceByName(parentName)
