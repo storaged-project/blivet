@@ -61,8 +61,8 @@ class FSLabeling(object):
 
 class Ext2FSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "")
-    label_app = property(lambda s: fslabel.E2Label)
+    default_label = ""
+    label_app = fslabel.E2Label
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -72,8 +72,8 @@ class Ext2FSLabeling(FSLabeling):
 
 class FATFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "NO NAME")
-    label_app = property(lambda s: fslabel.DosFsLabel)
+    default_label = "NO NAME"
+    label_app = fslabel.DosFsLabel
 
     def labelFormatOK(self, label):
         return len(label) < 12
@@ -83,8 +83,8 @@ class FATFSLabeling(FSLabeling):
 
 class JFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "")
-    label_app = property(lambda s: fslabel.JFSTune)
+    default_label = ""
+    label_app = fslabel.JFSTune
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -94,8 +94,8 @@ class JFSLabeling(FSLabeling):
 
 class ReiserFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "")
-    label_app = property(lambda s: fslabel.ReiserFSTune)
+    default_label = ""
+    label_app = fslabel.ReiserFSTune
 
     def labelFormatOK(self, label):
         return len(label) < 17
@@ -105,8 +105,8 @@ class ReiserFSLabeling(FSLabeling):
 
 class XFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "")
-    label_app = property(lambda s: fslabel.XFSAdmin)
+    default_label = ""
+    label_app = fslabel.XFSAdmin
 
     def labelFormatOK(self, label):
         return ' ' not in label and len(label) < 13
@@ -116,8 +116,8 @@ class XFSLabeling(FSLabeling):
 
 class HFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "Untitled")
-    label_app = property(lambda s: None)
+    default_label = "Untitled"
+    label_app = None
 
     def labelFormatOK(self, label):
         return ':' not in label and len(label) < 28 and len(label) > 0
@@ -127,8 +127,8 @@ class HFSLabeling(FSLabeling):
 
 class HFSPlusLabeling(FSLabeling):
 
-    default_label = property(lambda s: "Untitled")
-    label_app = property(lambda s: None)
+    default_label = "Untitled"
+    label_app = None
 
     def labelFormatOK(self, label):
         return ':' not in label and 0 < len(label) < 129
@@ -138,8 +138,8 @@ class HFSPlusLabeling(FSLabeling):
 
 class NTFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "")
-    label_app = property(lambda s: fslabel.NTFSLabel)
+    default_label = ""
+    label_app = fslabel.NTFSLabel
 
     def labelFormatOK(self, label):
         return len(label) < 129
