@@ -64,7 +64,7 @@ class FSLabelApp(object):
            Raises an exception if fs.label is None.
         """
         if fs.label is None:
-            raise fs.FSError("makes no sense to write a label when accepting default label")
+            raise errors.FSError("makes no sense to write a label when accepting default label")
         return [self.name] + self._writeLabelArgs(fs)
 
     @abc.abstractmethod
