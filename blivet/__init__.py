@@ -2778,7 +2778,6 @@ class FSSet(object):
             options = options or "defaults"
             for netdev in netdevs:
                 if device.dependsOn(netdev):
-                    options = options + ",_netdev"
                     if root_on_netdev and mountpoint not in ["/", "/usr"]:
                         options = options + ",x-initrd.mount"
                     break

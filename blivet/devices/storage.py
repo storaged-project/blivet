@@ -38,6 +38,7 @@ import logging
 log = logging.getLogger("blivet")
 
 from .device import Device
+from .network import NetworkStorageDevice
 
 class StorageDevice(Device):
     """ A generic storage device.
@@ -511,6 +512,8 @@ class StorageDevice(Device):
             self._partedDevice = None
             self._targetSize = self.currentSize
 
+        self._updateNetDevMountOption()
+
     #
     # destroy
     #
@@ -630,6 +633,24 @@ class StorageDevice(Device):
 
         self._format = fmt
         self._format.device = self.path
+        self._updateNetDevMountOption()
+
+    def _updateNetDevMountOption(self):
+        """ Fix mount options to include or exclude _netdev as appropriate. """
+        if not hasattr(self._format, "mountpoint"):
+            return
+
+        netdev_option = "_netdev"
+        option_list = self._format.options.split(",")
+        is_netdev = any(isinstance(a, NetworkStorageDevice)
+                        for a in self.ancestors)
+        has_netdev_option = netdev_option in option_list
+        if not is_netdev and has_netdev_option:
+            option_list.remove(netdev_option)
+            self._format.options = ",".join(option_list)
+        elif is_netdev and not has_netdev_option:
+            option_list.append(netdev_option)
+            self._format.options = ",".join(option_list)
 
     def _getFormat(self):
         return self._format

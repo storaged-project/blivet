@@ -25,6 +25,7 @@ from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import MDBiosRaidArrayDevice
 from blivet.devices import MDContainerDevice
 from blivet.devices import MDRaidArrayDevice
+from blivet.devices import NetworkStorageDevice
 from blivet.devices import OpticalDevice
 from blivet.devices import PartitionDevice
 from blivet.devices import StorageDevice
@@ -1015,6 +1016,35 @@ class DeviceNameTestCase(unittest.TestCase):
 
         for name in bad_names:
             self.assertFalse(LVMLogicalVolumeDevice.isNameValid(name))
+
+class FakeNetDev(StorageDevice, NetworkStorageDevice):
+    _type = "fakenetdev"
+
+class NetDevMountOptionTestCase(unittest.TestCase):
+    def testNetDevSetting(self):
+        """ Verify netdev mount option setting after format assignment. """
+        netdev = FakeNetDev("net1")
+        dev = StorageDevice("dev1", fmt=getFormat("ext4"))
+        self.assertFalse("_netdev" in dev.format.options.split(","))
+
+        dev.parents.append(netdev)
+        dev.format = getFormat("ext4")
+        self.assertTrue("_netdev" in dev.format.options.split(","))
+
+    def testNetDevUpdate(self):
+        """ Verify netdev mount option setting after device creation. """
+        netdev = FakeNetDev("net1")
+        dev = StorageDevice("dev1", fmt=getFormat("ext4"))
+        self.assertFalse("_netdev" in dev.format.options.split(","))
+
+        dev.parents.append(netdev)
+
+        # these create methods shouldn't write anything to disk
+        netdev.create()
+        dev.create()
+
+        self.assertTrue("_netdev" in dev.format.options.split(","))
+
 
 if __name__ == "__main__":
     unittest.main()
