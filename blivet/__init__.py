@@ -66,7 +66,7 @@ import parted
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
 from .storage_log import log_exception_info, log_method_call
-from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError
+from .errors import DeviceError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from .devicetree import DeviceTree
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
@@ -2050,7 +2050,7 @@ class Blivet(object):
 
         self.fsset.setFstabSwaps(devices)
 
-def mountExistingSystem(fsset, rootDevice, allowDirty=None, readOnly=None):
+def mountExistingSystem(fsset, rootDevice, readOnly=None):
     """ Mount filesystems specified in rootDevice's /etc/fstab file. """
     rootPath = _sysroot
 
@@ -2071,27 +2071,6 @@ def mountExistingSystem(fsset, rootDevice, allowDirty=None, readOnly=None):
                                 options=readOnly)
 
     fsset.parseFSTab()
-
-    # check for dirty filesystems
-    dirtyDevs = []
-    for device in fsset.mountpoints.values():
-        if not hasattr(device.format, "needsFSCheck"):
-            continue
-
-        try:
-            device.setup()
-        except DeviceError:
-            # we'll catch this in the main loop
-            continue
-
-        if device.format.needsFSCheck:
-            log.info("%s contains a dirty %s filesystem", device.path,
-                                                          device.format.type)
-            dirtyDevs.append(device.path)
-
-    if dirtyDevs and not allowDirty:
-        raise DirtyFSError(dirtyDevs)
-
     fsset.mountFilesystems(rootPath=_sysroot, readOnly=readOnly, skipRoot=True)
 
 
