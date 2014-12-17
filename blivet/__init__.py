@@ -2050,13 +2050,9 @@ class Blivet(object):
 
         self.fsset.setFstabSwaps(devices)
 
-def mountExistingSystem(fsset, rootDevice,
-                        allowDirty=None, dirtyCB=None,
-                        readOnly=None):
+def mountExistingSystem(fsset, rootDevice, allowDirty=None, readOnly=None):
     """ Mount filesystems specified in rootDevice's /etc/fstab file. """
     rootPath = _sysroot
-    if dirtyCB is None:
-        dirtyCB = lambda l: False
 
     if readOnly:
         readOnly = "ro"
@@ -2093,7 +2089,7 @@ def mountExistingSystem(fsset, rootDevice,
                                                           device.format.type)
             dirtyDevs.append(device.path)
 
-    if dirtyDevs and (not allowDirty or dirtyCB(dirtyDevs)):
+    if dirtyDevs and not allowDirty:
         raise DirtyFSError(dirtyDevs)
 
     fsset.mountFilesystems(rootPath=_sysroot, readOnly=readOnly, skipRoot=True)
