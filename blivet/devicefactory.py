@@ -1134,6 +1134,9 @@ class LVMFactory(DeviceFactory):
 
             if self.device:
                 self.size += self.device.size
+
+            if self.size == Size(0):
+                raise DeviceFactoryError("not enough free space for new device")
         else:
             super(LVMFactory, self)._handle_no_size()
 
