@@ -38,6 +38,7 @@ log = logging.getLogger("blivet")
 
 from .device import Device
 from .lib import LINUX_SECTOR_SIZE
+from .network import NetworkStorageDevice
 
 # openlmi-storage was using StorageDevice.partedDevice, which I invited by
 # naming it as a public attribute. We have removed it, and aren't bringing it
@@ -498,6 +499,8 @@ class StorageDevice(Device):
         # make sure that targetSize is updated to reflect the actual size
         self.updateSize()
 
+        self._updateNetDevMountOption()
+
     #
     # destroy
     #
@@ -686,6 +689,24 @@ class StorageDevice(Device):
 
         self._format = fmt
         self._format.device = self.path
+        self._updateNetDevMountOption()
+
+    def _updateNetDevMountOption(self):
+        """ Fix mount options to include or exclude _netdev as appropriate. """
+        if not hasattr(self._format, "mountpoint"):
+            return
+
+        netdev_option = "_netdev"
+        option_list = self._format.options.split(",")
+        is_netdev = any(isinstance(a, NetworkStorageDevice)
+                        for a in self.ancestors)
+        has_netdev_option = netdev_option in option_list
+        if not is_netdev and has_netdev_option:
+            option_list.remove(netdev_option)
+            self._format.options = ",".join(option_list)
+        elif is_netdev and not has_netdev_option:
+            option_list.append(netdev_option)
+            self._format.options = ",".join(option_list)
 
     def _getFormat(self):
         return self._format
