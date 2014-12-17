@@ -741,10 +741,6 @@ class FS(DeviceFormat):
         self.notifyKernel()
 
     @property
-    def needsFSCheck(self):
-        return False
-
-    @property
     def mkfsProg(self):
         """ Program used to create filesystems of this type. """
         return self._mkfs
@@ -946,11 +942,6 @@ class Ext2FS(FS):
     _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
 
-    def __init__(self, **kwargs):
-        self.dirty = False
-        self.errors = False
-        super(Ext2FS, self).__init__(**kwargs)
-
     def _fsckFailed(self, rc):
         for errorCode in self._fsckErrors.keys():
             if rc & errorCode:
@@ -984,10 +975,6 @@ class Ext2FS(FS):
             for line in info.splitlines():
                 if line.startswith("Block size:"):
                     blockSize = int(line.split(" ")[-1])
-
-                if line.startswith("Filesystem state:"):
-                    self.dirty = "not clean" in line
-                    self.errors = "with errors" in line
 
             if blockSize is None:
                 raise FSError("failed to get block size for %s filesystem "
@@ -1036,10 +1023,6 @@ class Ext2FS(FS):
         return self._minInstanceSize
 
     @property
-    def needsFSCheck(self):
-        return self.dirty or self.errors
-
-    @property
     def resizeArgs(self):
         argv = ["-p", self.device, "%dM" % (self.targetSize.convertTo("MiB"))]
         return argv
@@ -1059,10 +1042,6 @@ class Ext3FS(Ext2FS):
     # with regard to this maximum filesystem size, but if they're doing such
     # things they should know the implications of their chosen block size.
     _maxSize = Size("16 TiB")
-
-    @property
-    def needsFSCheck(self):
-        return self.errors
 
 register_device_format(Ext3FS)
 

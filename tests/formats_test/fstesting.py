@@ -197,7 +197,6 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
             self._test_sizes(an_fs)
 
         # and no errors should occur when checking
-        self.assertFalse(an_fs.needsFSCheck)
         self.assertIsNone(an_fs.doCheck())
 
     def testNoExplicitTargetSize(self):
