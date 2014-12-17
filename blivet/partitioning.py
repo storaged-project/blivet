@@ -1122,12 +1122,18 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
                                     continue
 
-                            temp_part = addPartition(disklabel,
-                                                     _free,
-                                                     _part_type,
-                                                     _part.req_size,
-                                                     _part.req_start_sector,
-                                                     _part.req_end_sector)
+                            try:
+                                temp_part = addPartition(disklabel,
+                                                         _free,
+                                                         _part_type,
+                                                         _part.req_size,
+                                                         _part.req_start_sector,
+                                                         _part.req_end_sector)
+                            except ArithmeticError as e:
+                                log.debug("failed to allocate aligned partition "
+                                         "for growth test")
+                                continue
+
                             _part.partedPartition = temp_part
                             _part.disk = _disk
                             temp_parts.append(_part)
