@@ -1380,6 +1380,7 @@ class NTFS(FS):
     _resizefs = "ntfsresize"
     _labelfs = fslabeling.NTFSLabeling()
     _fsck = "ntfsresize"
+    _formattable = True
     _resizable = True
     _minSize = Size("1 MiB")
     _maxSize = Size("16 TiB")
