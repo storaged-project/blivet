@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.72
+Version: 0.73
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,23 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Dec 19 2014 Brian C. Lane <bcl@redhat.com> - 0.73-1
+- Mountpoint detection for removable devices (vtrefny)
+- Fix adding partition after ActionDestroyDevice canceling (vtrefny)
+- Avoid exception when aligned start and end are crossed over (exclusion)
+- Substitute simple value for single element array. (amulhern)
+- Change _matchNames so that it is less restrictive (amulhern)
+- Change MDRaidArrayDevice to MDBiosRaidArrayDevice. (amulhern)
+- Factor out MDRaidArrayDevice w/ type in ("mdcontainer", "mdbiosraidarray")
+  (amulhern)
+- Make it possible for NTFS to recognize the label it reads. (amulhern)
+- Make unnecessarily verbose properties into simple class attributes.
+  (amulhern)
+- Change the generic badly formatted label to one that's bad for all.
+  (amulhern)
+- Don't make overridden values actual properties. (amulhern)
+- Check the status of the format being mounted. (amulhern)
+
 * Thu Dec 04 2014 Brian C. Lane <bcl@redhat.com> - 0.72-1
 - Add a bunch of simple tests for filesystem formats. (amulhern)
 - Get rid of long() related code. (amulhern)
