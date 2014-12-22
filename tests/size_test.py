@@ -44,28 +44,28 @@ class SizeTestCase(unittest.TestCase):
 
         self.assertEqual(s.humanReadable(max_places=0), "500 B")
 
-    def _prefixTestHelper(self, numbytes, factor, prefix, abbr):
-        c = numbytes * factor
+    def _prefixTestHelper(self, numunits, factor, prefix, abbr):
+        """ Test that units and prefix or abbreviation agree.
+
+            :param int numunits: this value times factor yields number of bytes
+            :param int factor: this value times numunits yields number of bytes
+            :param str prefix: the prefix used to specify the units
+            :param str abbr: the abbreviation used to specify the units
+        """
+        c = numunits * factor
 
         s = Size(c)
         self.assertEquals(s, Size(c))
 
-        if prefix:
-            u = "%sbytes" % prefix
-            s = Size("%ld %s" % (numbytes, u))
-            self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(spec=u), numbytes)
+        u = size._makeSpec(prefix, size._BYTES_WORDS[0], False)
+        s = Size("%ld %s" % (numunits, u))
+        self.assertEquals(s, c)
+        self.assertEquals(s.convertTo(spec=u), numunits)
 
-        if abbr:
-            u = "%sb" % abbr
-            s = Size("%ld %s" % (numbytes, u))
-            self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(spec=u), numbytes)
-
-        if not prefix and not abbr:
-            s = Size("%ld" % numbytes)
-            self.assertEquals(s, c)
-            self.assertEquals(s.convertTo(), numbytes)
+        u = size._makeSpec(abbr, size._BYTES_SYMBOL, False)
+        s = Size("%ld %s" % (numunits, u))
+        self.assertEquals(s, c)
+        self.assertEquals(s.convertTo(spec=u), numunits)
 
     def testPrefixes(self):
         numbytes = 47
