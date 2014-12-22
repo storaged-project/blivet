@@ -31,6 +31,7 @@ from blivet.i18n import _
 from blivet.errors import SizePlacesError
 from blivet import size
 from blivet.size import Size, _EMPTY_PREFIX, _BINARY_PREFIXES, _DECIMAL_PREFIXES
+from blivet.size import B, KiB, MiB, GiB, TiB
 
 class SizeTestCase(unittest.TestCase):
 
@@ -44,34 +45,32 @@ class SizeTestCase(unittest.TestCase):
 
         self.assertEqual(s.humanReadable(max_places=0), "500 B")
 
-    def _prefixTestHelper(self, numunits, factor, prefix, abbr):
+    def _prefixTestHelper(self, numunits, unit):
         """ Test that units and prefix or abbreviation agree.
 
             :param int numunits: this value times factor yields number of bytes
-            :param int factor: this value times numunits yields number of bytes
-            :param str prefix: the prefix used to specify the units
-            :param str abbr: the abbreviation used to specify the units
+            :param unit: a unit specifier
         """
-        c = numunits * factor
+        c = numunits * unit.factor
 
         s = Size(c)
         self.assertEquals(s, Size(c))
 
-        u = size._makeSpec(prefix, size._BYTES_WORDS[0], False)
+        u = size._makeSpec(unit.prefix, size._BYTES_WORDS[0], False)
         s = Size("%ld %s" % (numunits, u))
         self.assertEquals(s, c)
-        self.assertEquals(s.convertTo(spec=u), numunits)
+        self.assertEquals(s.convertTo(unit), numunits)
 
-        u = size._makeSpec(abbr, size._BYTES_SYMBOL, False)
+        u = size._makeSpec(unit.abbr, size._BYTES_SYMBOL, False)
         s = Size("%ld %s" % (numunits, u))
         self.assertEquals(s, c)
-        self.assertEquals(s.convertTo(spec=u), numunits)
+        self.assertEquals(s.convertTo(unit), numunits)
 
     def testPrefixes(self):
         numbytes = 47
 
-        for factor, prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
-            self._prefixTestHelper(numbytes, factor, prefix, abbr)
+        for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
+            self._prefixTestHelper(numbytes, unit)
 
     def testHumanReadable(self):
         s = Size(58929971)
@@ -170,15 +169,15 @@ class SizeTestCase(unittest.TestCase):
 
     def testConvertToPrecision(self):
         s = Size(1835008)
-        self.assertEquals(s.convertTo(spec=""), 1835008)
-        self.assertEquals(s.convertTo(spec="b"), 1835008)
-        self.assertEquals(s.convertTo(spec="KiB"), 1792)
-        self.assertEquals(s.convertTo(spec="MiB"), 1.75)
+        self.assertEquals(s.convertTo(None), 1835008)
+        self.assertEquals(s.convertTo(B), 1835008)
+        self.assertEquals(s.convertTo(KiB), 1792)
+        self.assertEquals(s.convertTo(MiB), 1.75)
 
     def testNegative(self):
         s = Size("-500MiB")
         self.assertEquals(s.humanReadable(), "-500 MiB")
-        self.assertEquals(s.convertTo(spec="b"), -524288000)
+        self.assertEquals(s.convertTo(B), -524288000)
 
     def testPartialBytes(self):
         self.assertEquals(Size(1024.6), Size(1024))
@@ -297,40 +296,40 @@ class TranslationTestCase(unittest.TestCase):
         self.assertEqual(size.ROUND_DEFAULT, size.ROUND_HALF_UP)
 
         s = Size("10.3 GiB")
-        self.assertEqual(s.roundToNearest("GiB"), Size("10 GiB"))
-        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DEFAULT),
+        self.assertEqual(s.roundToNearest(GiB), Size("10 GiB"))
+        self.assertEqual(s.roundToNearest(GiB, rounding=size.ROUND_DEFAULT),
                          Size("10 GiB"))
-        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DOWN),
+        self.assertEqual(s.roundToNearest(GiB, rounding=size.ROUND_DOWN),
                          Size("10 GiB"))
-        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_UP),
+        self.assertEqual(s.roundToNearest(GiB, rounding=size.ROUND_UP),
                          Size("11 GiB"))
-        # >>> Size("10.3 GiB").convertTo("MiB")
+        # >>> Size("10.3 GiB").convertTo(MiB)
         # Decimal('10547.19999980926513671875')
-        self.assertEqual(s.roundToNearest("MiB"), Size("10547 MiB"))
-        self.assertEqual(s.roundToNearest("MiB", rounding=size.ROUND_UP),
+        self.assertEqual(s.roundToNearest(MiB), Size("10547 MiB"))
+        self.assertEqual(s.roundToNearest(MiB, rounding=size.ROUND_UP),
                          Size("10548 MiB"))
-        self.assertIsInstance(s.roundToNearest("MiB"), Size)
+        self.assertIsInstance(s.roundToNearest(MiB), Size)
         with self.assertRaises(ValueError):
-            s.roundToNearest("MiB", rounding='abc')
+            s.roundToNearest(MiB, rounding='abc')
 
         # arbitrary decimal rounding constants are not allowed
         from decimal import ROUND_HALF_DOWN
         with self.assertRaises(ValueError):
-            s.roundToNearest("MiB", rounding=ROUND_HALF_DOWN)
+            s.roundToNearest(MiB, rounding=ROUND_HALF_DOWN)
 
         s = Size("10.51 GiB")
-        self.assertEqual(s.roundToNearest("GiB"), Size("11 GiB"))
-        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DEFAULT),
+        self.assertEqual(s.roundToNearest(GiB), Size("11 GiB"))
+        self.assertEqual(s.roundToNearest(GiB, rounding=size.ROUND_DEFAULT),
                          Size("11 GiB"))
-        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_DOWN),
+        self.assertEqual(s.roundToNearest(GiB, rounding=size.ROUND_DOWN),
                          Size("10 GiB"))
-        self.assertEqual(s.roundToNearest("GiB", rounding=size.ROUND_UP),
+        self.assertEqual(s.roundToNearest(GiB, rounding=size.ROUND_UP),
                          Size("11 GiB"))
 
         s = Size("513 GiB")
-        self.assertEqual(s.roundToNearest("GiB"), s)
-        self.assertEqual(s.roundToNearest("TiB"), Size("1 TiB"))
-        self.assertEqual(s.roundToNearest("TiB", rounding=size.ROUND_DOWN),
+        self.assertEqual(s.roundToNearest(GiB), s)
+        self.assertEqual(s.roundToNearest(TiB), Size("1 TiB"))
+        self.assertEqual(s.roundToNearest(TiB, rounding=size.ROUND_DOWN),
                          Size(0))
 
 class UtilityMethodsTestCase(unittest.TestCase):

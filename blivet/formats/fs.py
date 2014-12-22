@@ -35,7 +35,7 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
-from ..size import Size, ROUND_UP, ROUND_DOWN
+from ..size import Size, ROUND_UP, ROUND_DOWN, MiB, B, unitStr
 from ..i18n import _, N_
 from .. import udev
 
@@ -431,7 +431,7 @@ class FS(DeviceFormat):
 
     @property
     def resizeArgs(self):
-        argv = [self.device, "%d" % (self.targetSize.convertTo("MiB"),)]
+        argv = [self.device, "%d" % (self.targetSize.convertTo(MiB),)]
         return argv
 
     def doResize(self):
@@ -495,7 +495,7 @@ class FS(DeviceFormat):
         # early.
         if self.targetSize > self.currentSize and rounded < self.currentSize:
             log.info("rounding target size down to next %s obviated resize of "
-                     "filesystem on %s", self._resizefsUnit, self.device)
+                     "filesystem on %s", unitStr(self._resizefsUnit), self.device)
             return
         else:
             self.targetSize = rounded
@@ -938,7 +938,7 @@ class Ext2FS(FS):
     _infofs = "dumpe2fs"
     _defaultInfoOptions = ["-h"]
     _existingSizeFields = ["Block count:", "Block size:"]
-    _resizefsUnit = "MiB"
+    _resizefsUnit = MiB
     _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
 
@@ -1024,7 +1024,7 @@ class Ext2FS(FS):
 
     @property
     def resizeArgs(self):
-        argv = ["-p", self.device, "%dM" % (self.targetSize.convertTo("MiB"))]
+        argv = ["-p", self.device, "%dM" % (self.targetSize.convertTo(MiB))]
         return argv
 
 register_device_format(Ext2FS)
@@ -1362,7 +1362,7 @@ class NTFS(FS):
     _infofs = "ntfsinfo"
     _defaultInfoOptions = ["-m"]
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
-    _resizefsUnit = "B"
+    _resizefsUnit = B
     partedSystem = fileSystemType["ntfs"]
 
     def _fsckFailed(self, rc):
@@ -1419,7 +1419,7 @@ class NTFS(FS):
     def resizeArgs(self):
         # You must supply at least two '-f' options to ntfsresize or
         # the proceed question will be presented to you.
-        argv = ["-ff", "-s", "%d" % self.targetSize.convertTo(spec="b"),
+        argv = ["-ff", "-s", "%d" % self.targetSize.convertTo(B),
                 self.device]
         return argv
 
@@ -1566,7 +1566,7 @@ class TmpFS(NoDevFS):
             self._options = fsoptions
         if self._size:
             # absolute size for the tmpfs mount has been specified
-            self._size_option = "size=%dm" % self._size.convertTo(spec="MiB")
+            self._size_option = "size=%dm" % self._size.convertTo(MiB)
         else:
             # if no size option is specified, the tmpfs mount size will be 50%
             # of system RAM by default
@@ -1648,7 +1648,7 @@ class TmpFS(NoDevFS):
         # the mount command
 
         # add the remount flag, size and any options
-        remount_options = 'remount,size=%dm' % self.targetSize.convertTo(spec="MiB")
+        remount_options = 'remount,size=%dm' % self.targetSize.convertTo(MiB)
         # if any mount options are defined, append them
         if self._options:
             remount_options = "%s,%s" % (remount_options, self._options)
@@ -1668,7 +1668,7 @@ class TmpFS(NoDevFS):
             # update the size option string
             # -> please note that resizing always sets the
             # size of this tmpfs mount to an absolute value
-            self._size_option = "size=%dm" % self._size.convertTo(spec="MiB")
+            self._size_option = "size=%dm" % self._size.convertTo(MiB)
 
 register_device_format(TmpFS)
 

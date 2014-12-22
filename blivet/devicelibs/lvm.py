@@ -27,7 +27,7 @@ import logging
 log = logging.getLogger("blivet")
 
 from . import raid
-from ..size import Size
+from ..size import Size, KiB, MiB
 from .. import util
 from .. import arch
 from ..errors import LVMError
@@ -245,7 +245,7 @@ def pvcreate(device):
 
 def pvresize(device, size):
     args = ["pvresize",
-            "--setphysicalvolumesize", ("%dm" % size.convertTo(spec="mib")),
+            "--setphysicalvolumesize", ("%dm" % size.convertTo(MiB)),
             device]
 
     try:
@@ -340,7 +340,7 @@ def pvinfo(device=None):
 def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
     if pe_size:
-        argv.extend(["-s", "%dm" % pe_size.convertTo(spec="mib")])
+        argv.extend(["-s", "%dm" % pe_size.convertTo(MiB)])
     argv.append(vg_name)
     argv.extend(pv_list)
 
@@ -478,7 +478,7 @@ def lvcreate(vg_name, lv_name, size, pvs=None):
     pvs = pvs or []
 
     args = ["lvcreate"] + \
-            ["-L", "%dm" % size.convertTo(spec="mib")] + \
+            ["-L", "%dm" % size.convertTo(MiB)] + \
             ["-n", lv_name] + \
             ["-y"] + \
             [vg_name] + pvs
@@ -502,7 +502,7 @@ def lvremove(vg_name, lv_name, force=False):
 
 def lvresize(vg_name, lv_name, size):
     args = ["lvresize"] + \
-            ["--force", "-L", "%dm" % size.convertTo(spec="mib")] + \
+            ["--force", "-L", "%dm" % size.convertTo(MiB)] + \
             ["%s/%s" % (vg_name, lv_name)]
 
     try:
@@ -555,7 +555,7 @@ def lvsnapshotcreate(vg_name, snap_name, size, origin_name):
         :param :class:`~.size.Size` size: the snapshot's size
         :param str origin_name: the name of the origin logical volume
     """
-    args = ["lvcreate", "-s", "-L", "%dm" % size.convertTo(spec="MiB"),
+    args = ["lvcreate", "-s", "-L", "%dm" % size.convertTo(MiB),
             "-n", snap_name, "%s/%s" % (vg_name, origin_name)]
 
     try:
@@ -565,15 +565,15 @@ def lvsnapshotcreate(vg_name, snap_name, size, origin_name):
 
 def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None, profile=None):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, lv_name),
-            "--size", "%dm" % size.convertTo(spec="mib")]
+            "--size", "%dm" % size.convertTo(MiB)]
 
     if metadatasize:
         # default unit is MiB
-        args += ["--poolmetadatasize", "%d" % metadatasize.convertTo(spec="mib")]
+        args += ["--poolmetadatasize", "%d" % metadatasize.convertTo(MiB)]
 
     if chunksize:
         # default unit is KiB
-        args += ["--chunksize", "%d" % chunksize.convertTo(spec="kib")]
+        args += ["--chunksize", "%d" % chunksize.convertTo(KiB)]
 
     if profile:
         args += ["--profile=%s" % profile]
@@ -585,7 +585,7 @@ def thinpoolcreate(vg_name, lv_name, size, metadatasize=None, chunksize=None, pr
 
 def thinlvcreate(vg_name, pool_name, lv_name, size):
     args = ["lvcreate", "--thinpool", "%s/%s" % (vg_name, pool_name),
-            "--virtualsize", "%dm" % size.convertTo(spec="MiB"),
+            "--virtualsize", "%dm" % size.convertTo(MiB),
             "-n", lv_name]
 
     try:

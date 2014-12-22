@@ -34,7 +34,7 @@ from .. import util
 from ..formats import getFormat
 from ..storage_log import log_method_call
 from .. import udev
-from ..size import Size
+from ..size import Size, KiB, MiB
 
 import logging
 log = logging.getLogger("blivet")
@@ -411,7 +411,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         data.physvols = ["pv.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         if not self.exists:
-            data.pesize = self.peSize.convertTo(spec="KiB")
+            data.pesize = self.peSize.convertTo(KiB)
 
         # reserved percent/space
 
@@ -752,14 +752,14 @@ class LVMLogicalVolumeDevice(DMDevice):
         if not self.exists:
             data.grow = self.req_grow
             if self.req_grow:
-                data.size = self.req_size.convertTo(spec="MiB")
-                data.maxSizeMB = self.req_max_size.convertTo(spec="MiB")
+                data.size = self.req_size.convertTo(MiB)
+                data.maxSizeMB = self.req_max_size.convertTo(MiB)
             else:
-                data.size = self.size.convertTo(spec="MiB")
+                data.size = self.size.convertTo(MiB)
 
             data.percent = self.req_percent
         elif data.resize:
-            data.size = self.targetSize.convertTo(spec="MiB")
+            data.size = self.targetSize.convertTo(MiB)
 
     @classmethod
     def isNameValid(cls, name):
@@ -1085,8 +1085,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         super(LVMThinPoolDevice, self).populateKSData(data)
         data.mountpoint = "none"
         data.thin_pool = True
-        data.metadata_size = self.metaDataSize.convertTo(spec="MiB")
-        data.chunk_size = self.chunkSize.convertTo(spec="KiB")
+        data.metadata_size = self.metaDataSize.convertTo(MiB)
+        data.chunk_size = self.chunkSize.convertTo(KiB)
         if self.profile:
             data.profile = self.profile.name
 

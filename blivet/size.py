@@ -294,18 +294,14 @@ class Size(Decimal):
     def __mod__(self, other, context=None):
         return Size(Decimal.__mod__(self, other, context=context))
 
-    def convertTo(self, spec="", xlate=False):
+    def convertTo(self, spec=None):
         """ Return the size in the units indicated by the specifier.
 
-            :param str spec: a units specifier
+            :param spec: a units specifier
             :returns: a numeric value in the units indicated by the specifier
             :rtype: Decimal
         """
-        unit = _parseUnits(spec, xlate)
-        if unit:
-            return Decimal(self) / Decimal(unit.factor)
-
-        return None
+        return Decimal(self) / Decimal((spec or B).factor)
 
     def humanReadable(self, max_places=2, strip=True, min_value=1, xlate=True):
         """ Return a string representation of this size with appropriate
@@ -379,7 +375,7 @@ class Size(Decimal):
 
     def roundToNearest(self, unit, rounding=ROUND_DEFAULT):
         """
-            :param str unit: a unit specifier
+            :param unit: a unit specifier, a named constant like KiB
             :keyword rounding: which direction to round
             :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_DEFAULT
             :returns: Size rounded to nearest whole specified unit
@@ -389,4 +385,4 @@ class Size(Decimal):
             raise ValueError("invalid rounding specifier")
 
         rounded = self.convertTo(unit).to_integral_value(rounding=rounding)
-        return Size("%s %s" % (rounded, unit))
+        return Size(rounded * unit.factor)
