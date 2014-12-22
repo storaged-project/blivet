@@ -1217,7 +1217,6 @@ class ReiserFS(FS):
     """ reiserfs filesystem """
     _type = "reiserfs"
     _mkfs = "mkreiserfs"
-    _resizefs = "resize_reiserfs"
     _labelfs = fslabeling.ReiserFSLabeling()
     _modules = ["reiserfs"]
     _defaultFormatOptions = ["-f", "-f"]
@@ -1239,11 +1238,6 @@ class ReiserFS(FS):
             supported = self.utilsAvailable
 
         return supported
-
-    @property
-    def resizeArgs(self):
-        argv = ["-s", "%dM" % (self.targetSize.convertTo(spec="MiB"),), self.device]
-        return argv
 
 register_device_format(ReiserFS)
 
