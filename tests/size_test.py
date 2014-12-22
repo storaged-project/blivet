@@ -27,15 +27,10 @@ import unittest
 
 from decimal import Decimal
 
-import six
-
 from blivet.i18n import _
 from blivet.errors import SizePlacesError
 from blivet import size
 from blivet.size import Size, _EMPTY_PREFIX, _BINARY_PREFIXES, _DECIMAL_PREFIXES
-
-if six.PY3:
-    long = int # pylint: disable=redefined-builtin
 
 class SizeTestCase(unittest.TestCase):
 
@@ -73,17 +68,17 @@ class SizeTestCase(unittest.TestCase):
             self.assertEquals(s.convertTo(), numbytes)
 
     def testPrefixes(self):
-        numbytes = long(47)
+        numbytes = 47
         self._prefixTestHelper(numbytes, 1, None, None)
 
         for factor, prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
             self._prefixTestHelper(numbytes, factor, prefix, abbr)
 
     def testHumanReadable(self):
-        s = Size(long(58929971))
+        s = Size(58929971)
         self.assertEquals(s.humanReadable(), "56.2 MiB")
 
-        s = Size(long(478360371))
+        s = Size(478360371)
         self.assertEquals(s.humanReadable(), "456.2 MiB")
 
         # humanReable output should be the same as input for big enough sizes
