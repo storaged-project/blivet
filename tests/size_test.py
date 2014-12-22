@@ -69,7 +69,6 @@ class SizeTestCase(unittest.TestCase):
 
     def testPrefixes(self):
         numbytes = 47
-        self._prefixTestHelper(numbytes, 1, None, None)
 
         for factor, prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
             self._prefixTestHelper(numbytes, factor, prefix, abbr)
