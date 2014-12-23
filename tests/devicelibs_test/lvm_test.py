@@ -12,11 +12,6 @@ from tests import loopbackedtestcase
 
 class LVMTestCase(unittest.TestCase):
 
-    def testGetPossiblePhysicalExtents(self):
-        # pass
-        self.assertEqual(lvm.getPossiblePhysicalExtents(),
-                         [Size("%d KiB" % 2**power) for power in xrange(0, 25)])
-
     def testClampSize(self):
         # pass
         self.assertEqual(lvm.clampSize(Size("10 MiB"), Size("4 MiB")),

@@ -129,14 +129,7 @@ def getPossiblePhysicalExtents():
         :returns: list of possible extent sizes (:class:`~.size.Size`)
         :rtype: list
     """
-
-    possiblePE = []
-    curpe = Size("1 KiB")
-    while curpe <= Size("16 GiB"):
-        possiblePE.append(curpe)
-        curpe = curpe * 2
-
-    return possiblePE
+    return [Size(1024 * (2 ** n)) for n in range(25)]
 
 def getMaxLVSize():
     """ Return the maximum size of a logical volume. """
