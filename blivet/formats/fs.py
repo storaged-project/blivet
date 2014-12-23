@@ -35,7 +35,8 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
-from ..size import Size, ROUND_UP, ROUND_DOWN, MiB, B, unitStr
+from ..size import Size, ROUND_UP, ROUND_DOWN, unitStr
+from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..i18n import _, N_
 from .. import udev
 
@@ -1030,8 +1031,10 @@ class Ext2FS(FS):
 
     @property
     def resizeArgs(self):
-        argv = ["-p", self.device, "%dM" % (self.targetSize.convertTo(MiB))]
-        return argv
+        # No unit specifier is interpreted not as bytes, but block size.
+        FMT = {KiB: "%dK", MiB: "%dM", GiB: "%dG"}[self._resizefsUnit]
+        size_spec = FMT % self.targetSize.convertTo(self._resizefsUnit)
+        return ["-p", self.device, size_spec]
 
 register_device_format(Ext2FS)
 
@@ -1423,11 +1426,12 @@ class NTFS(FS):
 
     @property
     def resizeArgs(self):
+        FMT = {B: "%d", KB: "%dK", MB: "%dM", GB: "%dG"}[self._resizefsUnit]
+        size_spec = FMT % self.targetSize.convertTo(self._resizefsUnit)
+
         # You must supply at least two '-f' options to ntfsresize or
         # the proceed question will be presented to you.
-        argv = ["-ff", "-s", "%d" % self.targetSize.convertTo(B),
-                self.device]
-        return argv
+        return ["-ff", "-s", size_spec, self.device]
 
 
 register_device_format(NTFS)
