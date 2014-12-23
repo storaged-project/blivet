@@ -348,10 +348,11 @@ class Size(Decimal):
         # _BINARY_FACTOR * min_value to the left of the decimal point.
         # If the number is so large that no prefix will satisfy this
         # requirement use the largest prefix.
+        limit = _BINARY_FACTOR * min_value
         for factor, _prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
             newcheck = super(Size, self).__div__(Decimal(factor))
 
-            if abs(newcheck) < _BINARY_FACTOR * min_value:
+            if abs(newcheck) < limit:
                 # nice value, use this factor, prefix and abbr
                 break
 
