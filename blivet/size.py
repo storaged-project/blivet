@@ -115,39 +115,39 @@ def unitStr(unit, xlate=False):
     """
     return _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
 
-def _parseUnits(units, xlate):
+def _parseUnits(spec, xlate):
     """ Parse a unit specification and return corresponding factor.
 
-        :param units: a units specifier
-        :type units: any type of string like object
+        :param spec: a units specifier
+        :type spec: any type of string like object
         :param bool xlate: if True, assume locale specific
 
-        :returns: a numeric factor corresponding to the units, if found
-        :rtype: int or NoneType
+        :returns: a named constant corresponding to spec, if found
+        :rtype: _Prefix or NoneType
 
         Looks first for exact matches for a specifier, but, failing that,
         searches for partial matches for abbreviations.
 
         Normalizes units to lowercase, e.g., MiB and mib are treated the same.
     """
-    if units == "":
-        return 1
+    if spec == "":
+        return B
 
     if xlate:
-        units = units.lower()
+        spec = spec.lower()
     else:
-        units = _lowerASCII(units)
+        spec = _lowerASCII(spec)
 
     # Search for complete matches
-    for factor, prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
-        if units == _makeSpec(abbr, _BYTES_SYMBOL, xlate) or \
-           units in (_makeSpec(prefix, s, xlate) for s in _BYTES_WORDS):
-            return factor
+    for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
+        if spec == _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate) or \
+           spec in (_makeSpec(unit.prefix, s, xlate) for s in _BYTES_WORDS):
+            return unit
 
     # Search for unambiguous partial match among binary abbreviations
-    matches = [p for p in _BINARY_PREFIXES if _makeSpec(p.abbr, "", xlate).startswith(units)]
+    matches = [p for p in _BINARY_PREFIXES if _makeSpec(p.abbr, "", xlate).startswith(spec)]
     if len(matches) == 1:
-        return matches[0].factor
+        return matches[0]
 
     return None
 
@@ -197,9 +197,9 @@ def _parseSpec(spec):
         # String contains non-ascii characters, so can not be English.
         pass
     else:
-        factor = _parseUnits(spec_ascii, False)
-        if factor is not None:
-            return size * factor
+        unit = _parseUnits(spec_ascii, False)
+        if unit is not None:
+            return size * unit.factor
 
     # No English match found, try localized size specs.
     if six.PY2:
@@ -210,9 +210,9 @@ def _parseSpec(spec):
     else:
         spec_local = specifier
 
-    factor = _parseUnits(spec_local, True)
-    if factor is not None:
-        return size * factor
+    unit = _parseUnits(spec_local, True)
+    if unit is not None:
+        return size * unit.factor
 
     raise ValueError("invalid size specification", spec)
 
@@ -301,9 +301,9 @@ class Size(Decimal):
             :returns: a numeric value in the units indicated by the specifier
             :rtype: Decimal
         """
-        divisor = _parseUnits(spec, xlate)
-        if divisor:
-            return Decimal(self) / Decimal(divisor)
+        unit = _parseUnits(spec, xlate)
+        if unit:
+            return Decimal(self) / Decimal(unit.factor)
 
         return None
 
