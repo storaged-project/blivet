@@ -137,23 +137,26 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
     if not quiet:
         log.info("Detected %s of memory", mem)
 
-    two_GiB = Size("2GiB")
-    four_GiB = Size("4GiB")
-    eight_GiB = Size("8GiB")
     sixtyfour_GiB = Size("64 GiB")
 
-    #chart suggested in the discussion with other teams
-    if mem < two_GiB:
+    # the succeeding if-statement implements the following formula for
+    # suggested swap size.
+    #
+    # swap(mem) = 2 * mem, if mem < 2 GiB
+    #           = mem,     if 2 GiB <= mem < 8 GiB
+    #           = mem / 2, if 8 GIB <= mem < 64 GiB
+    #           = 4 GiB,   if mem >= 64 GiB
+    if mem < Size("2 GiB"):
         swap = 2 * mem
 
-    elif two_GiB <= mem < eight_GiB:
+    elif mem < Size("8 GiB"):
         swap = mem
 
-    elif eight_GiB <= mem < sixtyfour_GiB:
+    elif mem < sixtyfour_GiB:
         swap = mem / 2
 
     else:
-        swap = four_GiB
+        swap = Size("4 GiB")
 
     if hibernation:
         if mem <= sixtyfour_GiB:
