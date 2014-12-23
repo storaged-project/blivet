@@ -352,7 +352,7 @@ class Size(Decimal):
         # requirement use the largest prefix.
         limit = _BINARY_FACTOR * min_value
         for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
-            newcheck = super(Size, self).__div__(Decimal(unit.factor))
+            newcheck = self.convertTo(unit)
 
             if abs(newcheck) < limit:
                 break
