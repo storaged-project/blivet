@@ -44,35 +44,31 @@ _BINARY_FACTOR = 2 ** 10
 _BYTES_SYMBOL = N_(b"B")
 _BYTES_WORDS = (N_(b"bytes"), N_(b"byte"))
 
-# Decimal prefixes for different size increments, along with the name
-# and accepted abbreviation for the prefix.  These prefixes are all
-# for 'bytes'.
-_DECIMAL_PREFIXES = [
-   _Prefix(_DECIMAL_FACTOR ** 1, N_(b"kilo"), N_(b"k")),
-   _Prefix(_DECIMAL_FACTOR ** 2, N_(b"mega"), N_(b"M")),
-   _Prefix(_DECIMAL_FACTOR ** 3, N_(b"giga"), N_(b"G")),
-   _Prefix(_DECIMAL_FACTOR ** 4, N_(b"tera"), N_(b"T")),
-   _Prefix(_DECIMAL_FACTOR ** 5, N_(b"peta"), N_(b"P")),
-   _Prefix(_DECIMAL_FACTOR ** 6, N_(b"exa"), N_(b"E")),
-   _Prefix(_DECIMAL_FACTOR ** 7, N_(b"zetta"), N_(b"Z")),
-   _Prefix(_DECIMAL_FACTOR ** 8, N_(b"yotta"), N_(b"Y"))
-]
+# Symbolic constants for units
+B = _Prefix(1, b"", b"")
 
-# Binary prefixes for the different size increments.  Same structure
-# as the above list.
-_BINARY_PREFIXES = [
-   _Prefix(_BINARY_FACTOR ** 1, N_(b"kibi"), N_(b"Ki")),
-   _Prefix(_BINARY_FACTOR ** 2, N_(b"mebi"), N_(b"Mi")),
-   _Prefix(_BINARY_FACTOR ** 3, N_(b"gibi"), N_(b"Gi")),
-   _Prefix(_BINARY_FACTOR ** 4, N_(b"tebi"), N_(b"Ti")),
-   _Prefix(_BINARY_FACTOR ** 5, N_(b"pebi"), N_(b"Pi")),
-   _Prefix(_BINARY_FACTOR ** 6, N_(b"exbi"), N_(b"Ei")),
-   _Prefix(_BINARY_FACTOR ** 7, N_(b"zebi"), N_(b"Zi")),
-   _Prefix(_BINARY_FACTOR ** 8, N_(b"yobi"), N_(b"Yi"))
-]
+KB = _Prefix(_DECIMAL_FACTOR ** 1, N_(b"kilo"), N_(b"k"))
+MB = _Prefix(_DECIMAL_FACTOR ** 2, N_(b"mega"), N_(b"M"))
+GB = _Prefix(_DECIMAL_FACTOR ** 3, N_(b"giga"), N_(b"G"))
+TB = _Prefix(_DECIMAL_FACTOR ** 4, N_(b"tera"), N_(b"T"))
+PB = _Prefix(_DECIMAL_FACTOR ** 5, N_(b"peta"), N_(b"P"))
+EB = _Prefix(_DECIMAL_FACTOR ** 6, N_(b"exa"), N_(b"E"))
+ZB = _Prefix(_DECIMAL_FACTOR ** 7, N_(b"zetta"), N_(b"Z"))
+YB = _Prefix(_DECIMAL_FACTOR ** 8, N_(b"yotta"), N_(b"Y"))
 
-# Empty prefix works both for decimal and binary
-_EMPTY_PREFIX = _Prefix(1, b"", b"")
+KiB = _Prefix(_BINARY_FACTOR ** 1, N_(b"kibi"), N_(b"Ki"))
+MiB = _Prefix(_BINARY_FACTOR ** 2, N_(b"mebi"), N_(b"Mi"))
+GiB = _Prefix(_BINARY_FACTOR ** 3, N_(b"gibi"), N_(b"Gi"))
+TiB = _Prefix(_BINARY_FACTOR ** 4, N_(b"tebi"), N_(b"Ti"))
+PiB = _Prefix(_BINARY_FACTOR ** 5, N_(b"pebi"), N_(b"Pi"))
+EiB = _Prefix(_BINARY_FACTOR ** 6, N_(b"exbi"), N_(b"Ei"))
+ZiB = _Prefix(_BINARY_FACTOR ** 7, N_(b"zebi"), N_(b"Zi"))
+YiB = _Prefix(_BINARY_FACTOR ** 8, N_(b"yobi"), N_(b"Yi"))
+
+# Categories of symbolic constants
+_DECIMAL_PREFIXES = [KB, MB, GB, TB, PB, EB, ZB, YB]
+_BINARY_PREFIXES = [KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB]
+_EMPTY_PREFIX = B
 
 if six.PY2:
     _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
