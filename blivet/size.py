@@ -105,6 +105,16 @@ def _makeSpec(prefix, suffix, xlate, lowercase=True):
         word = prefix + suffix
         return _lowerASCII(word) if lowercase else word
 
+def unitStr(unit, xlate=False):
+    """ Return a string representation of unit.
+
+        :param unit: a named unit, e.g., KiB
+        :param bool xlate: if True, translate to current locale
+        :rtype: some kind of string type
+        :returns: string representation of unit
+    """
+    return _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+
 def _parseUnits(units, xlate):
     """ Parse a unit specification and return corresponding factor.
 
