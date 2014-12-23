@@ -24,7 +24,6 @@ import os
 
 from .. import util
 from ..storage_log import log_method_call
-from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -98,12 +97,12 @@ class FileDevice(StorageDevice):
         fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
         # all this fuss is so we write the zeros 1MiB at a time
         zero = "\0"
-        MiB = Size("1 MiB")
-        count = int(self.size.convertTo(spec="MiB"))
-        rem = self.size % MiB
+        block_size = 1024 ** 2
+        (count, rem) = divmod(int(self.size), block_size)
 
+        zeros = zero * block_size
         for _n in range(count):
-            os.write(fd, zero * MiB)
+            os.write(fd, zeros)
 
         if rem:
             # write out however many more zeros it takes to hit our size target
