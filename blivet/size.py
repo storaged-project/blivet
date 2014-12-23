@@ -355,11 +355,10 @@ class Size(Decimal):
         # If the number is so large that no prefix will satisfy this
         # requirement use the largest prefix.
         limit = _BINARY_FACTOR * min_value
-        for factor, _prefix, abbr in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
-            newcheck = super(Size, self).__div__(Decimal(factor))
+        for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
+            newcheck = super(Size, self).__div__(Decimal(unit.factor))
 
             if abs(newcheck) < limit:
-                # nice value, use this factor, prefix and abbr
                 break
 
         if max_places is not None:
@@ -376,7 +375,7 @@ class Size(Decimal):
                 retval_str = retval_str.replace('.', radix)
 
         # pylint: disable=undefined-loop-variable
-        return retval_str + " " + _makeSpec(abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+        return retval_str + " " + _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
 
     def roundToNearest(self, unit, rounding=ROUND_DEFAULT):
         """
