@@ -431,8 +431,14 @@ class FS(DeviceFormat):
 
     @property
     def resizeArgs(self):
-        argv = [self.device, "%d" % (self.targetSize.convertTo(MiB),)]
-        return argv
+        """ Returns the arguments for resizing the filesystem.
+
+            Must be overridden by every class that has non-None _resizefs.
+
+            :returns: arguments for resizing a filesystem.
+            :rtype: list of str
+        """
+        return []
 
     def doResize(self):
         """ Resize this filesystem based on this instance's targetSize attr.
