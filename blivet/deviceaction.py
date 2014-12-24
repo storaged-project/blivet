@@ -736,7 +736,7 @@ class ActionResizeFormat(DeviceAction):
         if device.formatImmutable:
             raise ValueError("this device's formatting cannot be modified")
 
-        if not device.format.resizable:
+        if not device.format.resizeSupported:
             raise ValueError("format is not resizable")
 
         if device.format.currentSize == newsize:

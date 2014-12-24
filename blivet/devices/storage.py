@@ -338,7 +338,7 @@ class StorageDevice(Device):
     def resizable(self):
         """ Can this device be resized? """
         return (self._resizable and self.exists and
-                (self.format.type is None or self.format.resizable or
+                (self.format.type is None or self.format.resizeSupported or
                  not self.format.exists))
 
     def notifyKernel(self):
