@@ -835,11 +835,7 @@ class FS(DeviceFormat):
         return self._defaultCheckOptions[:]
 
     def _getOptions(self):
-        options = ",".join(self.defaultMountOptions)
-        if self.mountopts:
-            # XXX should we clobber or append?
-            options = self.mountopts
-        return options
+        return self.mountopts or ",".join(self.defaultMountOptions)
 
     def _setOptions(self, options):
         self.mountopts = options
