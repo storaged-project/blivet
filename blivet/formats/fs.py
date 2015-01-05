@@ -1544,22 +1544,9 @@ class TmpFS(NoDevFS):
         # just use the default maxsize, which is 0, this disables
         # resizing but other operations such as mounting should work fine
 
-        # check if fixed filesystem size has been specified,
-        # if no size is specified, tmpfs will by default
-        # be limited to half of the system RAM
-        # (sizes of all tmpfs mounts are independent)
-        fsoptions = kwargs.get("mountopts")
-        self._size_option = ""
-        if fsoptions:
-            # some mount options were specified, replace the default value
-            self._options = fsoptions
-        if self._size:
-            # absolute size for the tmpfs mount has been specified
-            self._size_option = "size=%dm" % self._size.convertTo(MiB)
-        else:
-            # if no size option is specified, the tmpfs mount size will be 50%
-            # of system RAM by default
-            self._size = util.total_memory()/2
+        # if the size is 0, which is probably not set, accept the default
+        # size when mounting.
+        self._accept_default_size = not(self._size)
 
     def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """
@@ -1600,19 +1587,32 @@ class TmpFS(NoDevFS):
     def mountable(self):
         return True
 
-    def _getOptions(self):
-        # if the size option string is defined,
-        # append it to options
-        # (we need to separate the size option string
-        # from the other options, as the size might change
-        # when the filesystem is resized;
-        # replacing the size option in the otherwise free-form
-        # options string would get messy fast)
-        opts = ",".join([o for o in [self._options, self._size_option] if o])
-        return opts or "defaults"
+    def _sizeOption(self, size):
+        """ Returns a size option string appropriate for mounting tmpfs.
 
-    def _setOptions(self, options):
-        self._options = options
+            :param Size size: any size
+            :returns: size option
+            :rtype: str
+
+            This option should be appended to other mount options, in
+            case the regular mountopts also contain a size option.
+            This is not impossible, since a special option for mounting
+            is size=<percentage>%.
+        """
+        return "size=%dm" % size.convertTo(MiB)
+
+    def _getOptions(self):
+        # Returns the regular mount options with the special size option,
+        # if any, appended.
+        # The size option should be last, as the regular mount options may
+        # also contain a size option, but the later size option supercedes
+        # the earlier one.
+        opts = super(TmpFS, self)._getOptions()
+        if self._accept_default_size:
+            size_opt = None
+        else:
+            size_opt = self._sizeOption(self._size)
+        return ",".join(o for o in (opts, size_opt) if o)
 
     @property
     def free(self):
@@ -1647,31 +1647,16 @@ class TmpFS(NoDevFS):
 
     @property
     def resizeArgs(self):
-        # a live tmpfs mount can be resized by remounting it with
-        # the mount command
-
-        # add the remount flag, size and any options
-        remount_options = 'remount,size=%dm' % self.targetSize.convertTo(MiB)
-        # if any mount options are defined, append them
-        if self._options:
-            remount_options = "%s,%s" % (remount_options, self._options)
-        return ['-o', remount_options, self._type, self._mountpoint]
+        opts = super(TmpFS, self)._getOptions()
+        options = ("remount", opts, self._sizeOption(self.targetSize))
+        return ['-o', ",".join(options), self._type, self._mountpoint]
 
     def doResize(self):
-        # we need to override doResize, because the
-        # self._size_option string needs to be updated in case
-        # the tmpfs mount is successfully resized, using the new
-        # self._size value
+        # Override superclass method to record whether mount options
+        # should include an explicit size specification.
         original_size = self._size
         FS.doResize(self)
-        # after a successful resize, self._size
-        # is set to be equal to self.targetSize,
-        # so it can be used to check if resize took place
-        if original_size != self._size:
-            # update the size option string
-            # -> please note that resizing always sets the
-            # size of this tmpfs mount to an absolute value
-            self._size_option = "size=%dm" % self._size.convertTo(MiB)
+        self._accept_default_size = self._accept_default_size and original_size == self._size
 
 register_device_format(TmpFS)
 
