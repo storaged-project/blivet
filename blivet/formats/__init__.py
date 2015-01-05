@@ -293,7 +293,11 @@ class DeviceFormat(ObjectID):
     def _getOptions(self):
         return self._options
 
-    options = property(_getOptions, _setOptions)
+    options = property(
+       lambda s: s._getOptions(),
+       lambda s,v: s._setOptions(v),
+       doc="fstab entry option string"
+    )
 
     def _setDevice(self, devspec):
         if devspec and not devspec.startswith("/"):

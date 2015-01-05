@@ -842,8 +842,6 @@ class FS(DeviceFormat):
     def _setOptions(self, options):
         self.mountopts = options
 
-    options = property(_getOptions, _setOptions)
-
     @property
     def mountType(self):
         if not self._mountType:
@@ -1603,11 +1601,6 @@ class TmpFS(NoDevFS):
 
     def _setOptions(self, options):
         self._options = options
-
-    # override the options property
-    # so that the size and other options
-    # are correctly added to fstab
-    options = property(_getOptions, _setOptions)
 
     @property
     def free(self):

@@ -131,9 +131,6 @@ class SwapSpace(DeviceFormat):
                 except ValueError:
                     log.info("invalid value for swap priority: %s", arg)
 
-    options = property(_getOptions, _setOptions,
-                       doc="The swap device's fstab options string")
-
     @property
     def status(self):
         """ Device status. """
