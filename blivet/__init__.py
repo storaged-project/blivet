@@ -2170,9 +2170,7 @@ class CryptTab(object):
             if not key_file:
                 key_file = "none"
 
-            options = device.format.options
-            if not options:
-                options = ""
+            options = device.format.options or ""
 
             self.mappings[device.format.mapName] = {"device": device,
                                                     "keyfile": key_file,
