@@ -2398,7 +2398,7 @@ class FSSet(object):
         del ftype
         del dtype
 
-        if device.format.mountable:
+        if hasattr(device.format, "mountpoint"):
             device.format.mountpoint = mountpoint
 
         device.format.options = options
