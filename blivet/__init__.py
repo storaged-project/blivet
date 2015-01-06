@@ -2400,13 +2400,8 @@ class FSSet(object):
 
         if device.format.mountable:
             device.format.mountpoint = mountpoint
-            device.format.mountopts = options
 
-        # is this useful?
-        try:
-            device.format.options = options
-        except AttributeError:
-            pass
+        device.format.options = options
 
         return device
 
