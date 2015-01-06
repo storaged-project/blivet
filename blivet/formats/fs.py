@@ -1610,10 +1610,6 @@ class TmpFS(NoDevFS):
     options = property(_getOptions, _setOptions)
 
     @property
-    def size(self):
-        return self._size
-
-    @property
     def free(self):
         if self._mountpoint:
             # If self._mountpoint is defined, it means this tmpfs mount
