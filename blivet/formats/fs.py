@@ -800,14 +800,16 @@ class FS(DeviceFormat):
     def mountable(self):
         canmount = (self.mountType in kernel_filesystems) or \
                    (os.access("/sbin/mount.%s" % (self.mountType,), os.X_OK))
-        modpath = os.path.realpath(os.path.join("/lib/modules", os.uname()[2]))
-        modname = "%s.ko" % self.mountType
 
-        if not canmount and os.path.isdir(modpath):
-            for _root, _dirs, files in os.walk(modpath):
-                have = [x for x in files if x.startswith(modname)]
-                if len(have) == 1 and have[0].startswith(modname):
-                    return True
+        # Still consider the filesystem type mountable if there exists
+        # an appropriate filesystem driver in the kernel modules directory.
+        if not canmount:
+            modpath = os.path.realpath(os.path.join("/lib/modules", os.uname()[2]))
+            if os.path.isdir(modpath):
+                modname = "%s.ko" % self.mountType
+                for _root, _dirs, files in os.walk(modpath):
+                    if any(x.startswith(modname) for x in files):
+                        return True
 
         return canmount
 
