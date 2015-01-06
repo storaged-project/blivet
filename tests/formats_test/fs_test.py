@@ -3,6 +3,8 @@ import unittest
 
 import blivet.formats.fs as fs
 
+from tests import loopbackedtestcase
+
 from . import fstesting
 
 class Ext2FSTestCase(fstesting.FSAsRoot):
@@ -100,6 +102,19 @@ class USBFSTestCase(NoDevFSTestCase):
 class BindFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BindFS
     _resizable = False
+
+class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(SimpleTmpFSTestCase, self).__init__(methodName=methodName)
+
+    def testSimple(self):
+        an_fs = fs.TmpFS()
+
+        # a nodev fs need not have been created to exist
+        self.assertTrue(an_fs.exists)
+        self.assertEqual(an_fs.device, "tmpfs")
+        self.assertTrue(an_fs.testMount())
 
 if __name__ == "__main__":
     unittest.main()
