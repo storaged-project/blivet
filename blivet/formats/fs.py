@@ -1519,6 +1519,7 @@ class TmpFS(NoDevFS):
     # remounting can be used to change
     # the size of a live tmpfs mount
     _resizefs = "mount"
+    _resizefsUnit = MiB
     # as tmpfs is part of the Linux kernel,
     # it is Linux-native
     _linuxNative = True
@@ -1599,7 +1600,8 @@ class TmpFS(NoDevFS):
             This is not impossible, since a special option for mounting
             is size=<percentage>%.
         """
-        return "size=%dm" % size.convertTo(MiB)
+        FMT = {KiB: "%dk", MiB: "%dm", GiB: "%dg"}[self._resizefsUnit]
+        return "size=%s" % (FMT % size.convertTo(self._resizefsUnit))
 
     def _getOptions(self):
         # Returns the regular mount options with the special size option,
