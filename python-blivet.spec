@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.20
+Version: 0.61.0.21
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,25 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jan 08 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.21-1
+- Use _netdev mount option as needed. (dlehman)
+  Resolves: rhbz#1166509
+- Don't crash when a free region is too small for an aligned partition.
+  (dlehman)
+  Resolves: rhbz#1167292
+- Avoid exception when aligned start and end are crossed over (exclusion)
+  Resolves: rhbz#1167233
+- Multiple loops shouldn't be fatal (bcl)
+  Resolves: rhbz#980510
+- If allowing degraded array, attempt to start it (amulhern)
+  Resolves: rhbz#1090009
+- Add a method that looks at DEVNAME (amulhern)
+  Related: rhbz#1090009
+- Add mdrun method to just start, not assemble, an array. (amulhern)
+  Related: rhbz#1090009
+- Change allow_degraded_mdraid flag to allow_imperfect_devices (amulhern)
+  Related: rhbz#1090009
+
 * Tue Dec 09 2014 Brian C. Lane <bcl@redhat.com> - 0.61.0.20-1
 - Use super to get much-needed MRO magic in constructor. (dlehman)
   Resolves: rhbz#1169229
