@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.73
+Version: 0.74
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,39 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 09 2015 Brian C. Lane <bcl@redhat.com> - 0.74-1
+- Use _resizefsUnit in resizeArgs() method implementations. (amulhern)
+- Do not supply a default implementation for the resizeArgs() method.
+  (amulhern)
+- Use convertTo in humanReadable(). (amulhern)
+- Change convertTo() and roundToNearest() so each takes a units specifier.
+  (amulhern)
+- Do not even pretend that ReiserFS is resizable. (amulhern)
+- Get whole unit tuple in loop when searching for correct units. (amulhern)
+- Make _parseUnits() return a unit constant, rather than a number. (amulhern)
+- Add unitStr() method. (amulhern)
+- Make _Prefix entries named constants. (amulhern)
+- Hoist _BINARY_FACTOR * min_value calculation out of loop. (amulhern)
+- Comment _prefixTestHelper() and eliminate some redundancies. (amulhern)
+- Eliminate redundant test. (amulhern)
+- Avoid using Size constant in FileDevice._create(). (amulhern)
+- Do not compare the same two values twice. (amulhern)
+- Make possiblePhysicalExtents() a bit more direct. (amulhern)
+- Get rid of unnecessary use of long. (amulhern)
+- Use _netdev mount option as needed. (#1166509) (dlehman)
+- Don't crash when a free region is too small for an aligned partition.
+  (dlehman)
+- Multiple loops shouldn't be fatal (#980510) (bcl)
+- If allowing degraded array, attempt to start it (#1090009) (amulhern)
+- Add a method that looks at DEVNAME (#1090009) (amulhern)
+- Add mdrun method to just start, not assemble, an array. (#1090009) (amulhern)
+- Change allow_degraded_mdraid flag to allow_imperfect_devices (#1090009)
+  (amulhern)
+- Remove needsFSCheck() and what only it depends on. (amulhern)
+- Remove allowDirty parameter and code that depends on it. (amulhern)
+- Eliminate dirtyCB parameter from mountExistingSystem() params. (amulhern)
+- Use correct package for FSError. (amulhern)
+
 * Fri Dec 19 2014 Brian C. Lane <bcl@redhat.com> - 0.73-1
 - Mountpoint detection for removable devices (vtrefny)
 - Fix adding partition after ActionDestroyDevice canceling (vtrefny)
