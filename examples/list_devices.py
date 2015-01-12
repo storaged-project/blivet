@@ -1,4 +1,4 @@
-from common import print_devices
+from examples.common import print_devices
 
 import blivet
 from blivet.util import set_up_logging

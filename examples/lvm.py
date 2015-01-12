@@ -1,6 +1,6 @@
 import os
 
-from common import print_devices
+from examples.common import print_devices
 
 import blivet
 from blivet.size import Size
