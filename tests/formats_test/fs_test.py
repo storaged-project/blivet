@@ -1,7 +1,10 @@
 #!/usr/bin/python
+import os
+import tempfile
 import unittest
 
 import blivet.formats.fs as fs
+from blivet.size import Size, ROUND_DOWN
 
 from tests import loopbackedtestcase
 
@@ -115,6 +118,40 @@ class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertTrue(an_fs.exists)
         self.assertEqual(an_fs.device, "tmpfs")
         self.assertTrue(an_fs.testMount())
+
+class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(ResizeTmpFSTestCase, self).__init__(methodName=methodName)
+        self.an_fs = fs.TmpFS()
+        self.mountpoint = None
+
+    def setUp(self):
+        self.mountpoint = tempfile.mkdtemp()
+        self.an_fs.mountpoint = self.mountpoint
+        self.an_fs.mount()
+
+    def testResize(self):
+        self.an_fs.updateSizeInfo()
+        newsize = self.an_fs.currentSize * 2
+        self.an_fs.targetSize = newsize
+        self.assertIsNone(self.an_fs.doResize())
+        self.assertEqual(self.an_fs.size, newsize.roundToNearest(self.an_fs._resizefsUnit, rounding=ROUND_DOWN))
+
+    def testShrink(self):
+        # Can not shrink tmpfs, because its minimum size is its current size
+        self.an_fs.updateSizeInfo()
+        newsize = Size("2 MiB")
+        self.assertTrue(newsize < self.an_fs.currentSize)
+        with self.assertRaises(ValueError):
+            self.an_fs.targetSize = newsize
+
+    def teardown(self):
+        try:
+            self.an_fs.unmount()
+        except Exception: # pylint: disable=broad-except
+            pass
+        os.rmdir(self.mountpoint)
 
 if __name__ == "__main__":
     unittest.main()
