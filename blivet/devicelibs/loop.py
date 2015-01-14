@@ -57,7 +57,7 @@ def get_loop_name(path):
 
     entries = buf.splitlines()
     if not entries:
-        raise LoopError("No loop associated with %s" % (path))
+        return ""
 
     first_entry = entries[0]
     if len(entries) > 1:
