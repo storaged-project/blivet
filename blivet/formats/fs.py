@@ -1494,10 +1494,7 @@ class NoDevFS(FS):
 
     @property
     def type(self):
-        if self.device != self._type:
-            return self.device
-        else:
-            return self._type
+        return self.device
 
     @property
     def mountType(self):
