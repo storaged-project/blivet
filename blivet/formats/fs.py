@@ -1488,9 +1488,6 @@ class NoDevFS(FS):
     def mountType(self):
         return self.device  # this is probably set to the real/specific fstype
 
-    def _getExistingSize(self, info=None):
-        pass
-
 register_device_format(NoDevFS)
 
 
@@ -1660,9 +1657,6 @@ class BindFS(FS):
     @property
     def mountable(self):
         return True
-
-    def _getExistingSize(self, info=None):
-        pass
 
 register_device_format(BindFS)
 
