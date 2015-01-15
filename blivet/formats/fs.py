@@ -1519,7 +1519,6 @@ register_device_format(SysFS)
 class TmpFS(NoDevFS):
     _type = "tmpfs"
     _supported = True
-    _resizable = True
     # remounting can be used to change
     # the size of a live tmpfs mount
     _resizefs = "mount"

@@ -124,6 +124,7 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
     def __init__(self, methodName='runTest'):
         super(ResizeTmpFSTestCase, self).__init__(methodName=methodName)
         self.an_fs = fs.TmpFS()
+        self.an_fs.__class__._resizable = True
         self.mountpoint = None
 
     def setUp(self):
