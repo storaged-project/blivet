@@ -232,9 +232,7 @@ def lvm(args, capture=False, ignore_errors=False):
         return strip_lvm_warnings(out)
 
 def pvcreate(device):
-    # we force dataalignment=1024k since we cannot get lvm to tell us what
-    # the pe_start will be in advance
-    args = ["pvcreate", "--dataalignment", "1024k", device]
+    args = ["pvcreate", device]
 
     try:
         lvm(args)
