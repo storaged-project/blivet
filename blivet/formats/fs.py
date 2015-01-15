@@ -1544,7 +1544,6 @@ class TmpFS(NoDevFS):
 
     def __init__(self, **kwargs):
         NoDevFS.__init__(self, **kwargs)
-        self.exists = True
         self._device = "tmpfs"
 
         # according to the following Kernel ML thread:
