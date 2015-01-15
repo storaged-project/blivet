@@ -30,6 +30,13 @@ log = logging.getLogger("blivet")
 
 
 def losetup(args, capture=False):
+    """ run losetup
+
+    :param list args: Arguments to pass to losetup
+    :param bool capture: When True the output is captured and returned
+    :returns: returncode when capture is False (default) or output when it is True.
+    :raises: LoopError if there is an OSError running losetup
+    """
     if capture:
         exec_func = util.capture_output
     else:
@@ -44,6 +51,11 @@ def losetup(args, capture=False):
     return ret
 
 def get_backing_file(name):
+    """ Get the backing file for a loop device
+
+    :param str name: Name of loop device (loop0, loop1, etc.)
+    :returns: path of the backing file or ""
+    """
     path = ""
     sys_path  = "/sys/class/block/%s/loop/backing_file" % name
     if os.access(sys_path, os.R_OK):
@@ -52,6 +64,13 @@ def get_backing_file(name):
     return path
 
 def get_loop_name(path):
+    """ Get the name of the loop device associated with a file
+
+    :param str path: Path to the file
+    :returns: First loop device or ""
+
+    If multiple loop devices are associated with path this will return the first one.
+    """
     args = ["-j", path]
     buf = losetup(args, capture=True)
 
@@ -68,6 +87,11 @@ def get_loop_name(path):
     return name
 
 def loop_setup(path):
+    """ Setup a loop device backed by a file
+
+    :param str path: Path to the file to setup the loop device on
+    :raises: LoopError if there was an error setting up the loop device
+    """
     args = ["-f", path]
     msg = None
     try:
@@ -79,6 +103,11 @@ def loop_setup(path):
         raise LoopError("failed to set up loop for %s: %s" % (path, msg))
 
 def loop_teardown(path):
+    """ Teardown the loop device associated with a file
+
+    :param str path: Path to the loop device
+    :raises: LoopError if there was an error tearing down the loop device
+    """
     args = ["-d", path]
     msg = None
     try:
