@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.21
+Version: 0.61.0.22
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jan 14 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.22-1
+- get_loop_name shoud return an empty name if it isn't found (bcl)
+  Related: rhbz#980510
+
 * Thu Jan 08 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.21-1
 - Use _netdev mount option as needed. (dlehman)
   Resolves: rhbz#1166509
