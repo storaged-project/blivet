@@ -305,11 +305,11 @@ class FS(DeviceFormat):
             :returns: size of existing fs in MiB.
             :rtype: float.
         """
-        size = self._size
+        if not self._existingSizeFields:
+            return Size(0)
 
-        if self.exists and not size:
-            if not self._existingSizeFields:
-                return Size(0)
+        size = Size(0)
+        if self.exists:
             if info is None:
                 info = self._getFSInfo()
 
