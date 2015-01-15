@@ -201,7 +201,7 @@ class FS(DeviceFormat):
             return
 
         if not self.minSize <= newsize < self.maxSize:
-            raise ValueError("invalid target size request")
+            raise ValueError("requested size %s must fall between minimum size %s and maximum size %s" % (newsize, self.minSize, self.maxSize))
 
         self._targetSize = newsize
 
