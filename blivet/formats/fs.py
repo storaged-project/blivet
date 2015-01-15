@@ -1571,6 +1571,31 @@ class TmpFS(NoDevFS):
         """
         pass
 
+    def _getExistingSize(self, info=None):
+        """ Get current size of tmpfs filesystem using df.
+
+            :param NoneType info: a dummy parameter
+            :rtype: Size
+            :returns: the current size of the filesystem, 0 if not found.
+        """
+        if not self.status:
+            return Size(0)
+
+        df = ["df", self._mountpoint, "--output=size"]
+        try:
+            (ret, out) = util.run_program_and_capture_output(df)
+        except OSError:
+            return Size(0)
+
+        if ret:
+            return Size(0)
+
+        lines = out.split()
+        if len(lines) != 2 or lines[0] != "1K-blocks":
+            return Size(0)
+
+        return Size("%s KiB" % lines[1])
+
     @property
     def mountable(self):
         return True
