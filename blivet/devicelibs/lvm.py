@@ -223,10 +223,13 @@ def lvm(args):
     if ret:
         raise LVMError("running lvm " + " ".join(args) + " failed")
 
-def pvcreate(device):
+def pvcreate(device, data_alignment=None):
     args = ["pvcreate"] + \
-            _getConfigArgs() + \
-            [device]
+            _getConfigArgs()
+
+    if data_alignment is not None:
+        args.extend(["--dataalignment", "%dk" % data_alignment.convertTo(spec="KiB")])
+    args.append(device)
 
     try:
         lvm(args)

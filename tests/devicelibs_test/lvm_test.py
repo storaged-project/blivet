@@ -279,5 +279,39 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         # pv already removed
         self.assertEqual(lvm.pvremove(_LOOP_DEV0), None)
 
+class LVMAsNonRootTestCase(unittest.TestCase):
+    # pylint: disable=unused-argument
+    def lvm_passthrough_args(self, args, *other_args, **kwargs):
+        """ Just return args as passed so tests can validate them. """
+        # pylint: disable=attribute-defined-outside-init
+        self.lvm_argv = args
+
+    def setUp(self):
+        self.orig_lvm_func = lvm.lvm
+        lvm.lvm = self.lvm_passthrough_args
+
+    def tearDown(self):
+        lvm.lvm = self.orig_lvm_func
+
+    def testLVM(self):
+        #
+        # verify we pass appropriate args for various data alignment values
+        #
+
+        # default => do not specify a data alignment
+        lvm.pvcreate('/dev/placeholder')
+        argv = self.lvm_argv
+        self.assertEqual(any(a.startswith('--dataalignment') for a in argv),
+                         False)
+
+        # sizes get specified in KiB
+        lvm.pvcreate('/dev/placeholder', data_alignment=Size('1 MiB'))
+        argv = self.lvm_argv
+        self.assertEqual("--dataalignment 1024k" in " ".join(argv), True)
+
+        lvm.pvcreate('/dev/placeholder', data_alignment=Size(1023))
+        argv = self.lvm_argv
+        self.assertEqual("--dataalignment 0k" in " ".join(argv), True)
+
 if __name__ == "__main__":
     unittest.main()

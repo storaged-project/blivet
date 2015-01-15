@@ -56,6 +56,8 @@ class LVMPhysicalVolume(DeviceFormat):
             :keyword vgUuid: the UUID of the VG this PV belongs to
             :keyword peStart: offset of first physical extent
             :type peStart: :class:`~.size.Size`
+            :keyword dataAlignment: data alignment (for non-existent PVs)
+            :type dataAlignment: :class:`~.size.Size`
 
             .. note::
 
@@ -72,22 +74,23 @@ class LVMPhysicalVolume(DeviceFormat):
         # liblvm may be able to tell us this at some point, even
         # for not-yet-created devices
         self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)
+        self.dataAlignment = kwargs.get("dataAlignment")
 
         self.inconsistentVG = False
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         s += ("  vgName = %(vgName)s  vgUUID = %(vgUUID)s"
-              "  peStart = %(peStart)s" %
+              "  peStart = %(peStart)s  dataAlignment = %(dataAlignment)s" %
               {"vgName": self.vgName, "vgUUID": self.vgUuid,
-               "peStart": self.peStart})
+               "peStart": self.peStart, "dataAlignment": self.dataAlignment})
         return s
 
     @property
     def dict(self):
         d = super(LVMPhysicalVolume, self).dict
         d.update({"vgName": self.vgName, "vgUUID": self.vgUuid,
-                  "peStart": self.peStart})
+                  "peStart": self.peStart, "dataAlignment": self.dataAlignment})
         return d
 
     def probe(self):
@@ -126,7 +129,7 @@ class LVMPhysicalVolume(DeviceFormat):
             # hammer...
             DeviceFormat.destroy(self, **kwargs)
             lvm.pvscan(self.device)
-            lvm.pvcreate(self.device)
+            lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
         except Exception:
             raise
         finally:
