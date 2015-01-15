@@ -224,11 +224,8 @@ def lvm(args):
         raise LVMError("running lvm " + " ".join(args) + " failed")
 
 def pvcreate(device):
-    # we force dataalignment=1024k since we cannot get lvm to tell us what
-    # the pe_start will be in advance
     args = ["pvcreate"] + \
             _getConfigArgs() + \
-            ["--dataalignment", "1024k"] + \
             [device]
 
     try:
