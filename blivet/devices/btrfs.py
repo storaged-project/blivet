@@ -138,6 +138,11 @@ class BTRFSDevice(StorageDevice):
             spec = super(BTRFSDevice, self).fstabSpec
         return spec
 
+    @classmethod
+    def isNameValid(cls, name):
+        # Override StorageDevice.isNameValid to allow pretty much anything
+        return not('\x00' in name)
+
 class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     _type = "btrfs volume"
     vol_id = btrfs.MAIN_VOLUME_ID
@@ -566,11 +571,6 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
         data.subvol = True
         data.name = self.name
         data.preexist = self.exists
-
-    @classmethod
-    def isNameValid(cls, name):
-        # Override StorageDevice.isNameValid to allow /
-        return not('\x00' in name or name == '.' or name == '..')
 
 class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
     """ A btrfs snapshot pseudo-device.
