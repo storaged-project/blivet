@@ -1,9 +1,9 @@
 [main]
 host = https://www.transifex.com
 
-[blivet.blivetpot]
+[blivet-1.master]
 file_filter = po/<lang>.po
-host = https://www.transifex.com
 source_file = po/blivet.pot
 source_lang = en
+type = PO
 
