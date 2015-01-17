@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.74
+Version: 0.75
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -65,6 +65,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jan 16 2015 Brian C. Lane <bcl@redhat.com> - 0.75-1
+- Switch to temporary transifex project (bcl)
+- Add docstrings to the methods in loop.py (bcl)
+- get_loop_name should return an empty name if it isn't found (#980510) (bcl)
+- Use dict() instead of dict comprehension. (riehecky)
+- Fix the pylint errors in the examples directory. (amulhern)
+- Add __init__ file to examples directory. (amulhern)
+
 * Fri Jan 09 2015 Brian C. Lane <bcl@redhat.com> - 0.74-1
 - Use _resizefsUnit in resizeArgs() method implementations. (amulhern)
 - Do not supply a default implementation for the resizeArgs() method.

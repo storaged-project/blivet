@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-09 17:07-0800\n"
+"POT-Creation-Date: 2015-01-16 17:12-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,146 +38,6 @@ msgstr ""
 #: ../blivet/__init__.py:2975
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "bytes"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:50
-msgid "kilo"
-msgstr ""
-
-#: ../blivet/size.py:50
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:51
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:51
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:52
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Y"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:61
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:61
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:62
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:62
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:64
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:64
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:65
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:65
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:66
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:66
-msgid "Yi"
 msgstr ""
 
 #. no big enough free space for the requested partition
@@ -250,12 +110,12 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:107
-msgid "FCoE not available"
-msgstr ""
-
 #: ../blivet/devicetree.py:1297
 msgid "Invalid Disk Label"
+msgstr ""
+
+#: ../blivet/fcoe.py:107
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -459,6 +319,146 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
+#: ../blivet/size.py:44
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "bytes"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:50
+msgid "kilo"
+msgstr ""
+
+#: ../blivet/size.py:50
+msgid "k"
+msgstr ""
+
+#: ../blivet/size.py:51
+msgid "mega"
+msgstr ""
+
+#: ../blivet/size.py:51
+msgid "M"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:52
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Y"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:61
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:61
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:62
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:62
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:63
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:63
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:64
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:64
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:65
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:65
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:66
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:66
+msgid "Yi"
+msgstr ""
+
 #: ../blivet/deviceaction.py:292
 msgid "create device"
 msgstr ""
@@ -615,19 +615,6 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:52
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:53
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:432
-#, python-format
-msgid "vginfo failed for %s"
-msgstr ""
-
 #: ../blivet/devicelibs/dasd.py:158
 #, python-format
 msgid "DASD device %s not found, not even in device ignore list."
@@ -641,4 +628,17 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:171
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:52
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:53
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:432
+#, python-format
+msgid "vginfo failed for %s"
 msgstr ""
