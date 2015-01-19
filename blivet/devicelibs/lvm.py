@@ -34,8 +34,6 @@ from ..errors import LVMError
 from ..i18n import _, N_
 from ..flags import flags
 
-MAX_LV_SLOTS = 256
-
 # some of lvm's defaults that we have no way to ask it for
 LVM_PE_START = Size("1 MiB")
 LVM_PE_SIZE = Size("4 MiB")
