@@ -944,7 +944,12 @@ class DeviceTree(object):
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
                not self._isIgnoredDisk(disk):
-                raise DeviceTreeError("failed to scan disk %s" % disk.name)
+                if info.get("ID_PART_TABLE_TYPE") == "gpt":
+                    msg = "corrupt gpt disklabel on disk %s" % disk.name
+                else:
+                    msg = "failed to scan disk %s" % disk.name
+
+                raise DeviceTreeError(msg)
 
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
