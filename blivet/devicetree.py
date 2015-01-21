@@ -172,14 +172,14 @@ class DeviceTree(object):
     @property
     def pvInfo(self):
         if self._pvInfo is None:
-            self._pvInfo = lvm.pvinfo()
+            self._pvInfo = lvm.pvinfo() # pylint: disable=attribute-defined-outside-init
 
         return self._pvInfo
 
     @property
     def lvInfo(self):
         if self._lvInfo is None:
-            self._lvInfo = lvm.lvs()
+            self._lvInfo = lvm.lvs() # pylint: disable=attribute-defined-outside-init
 
         return self._lvInfo
 
