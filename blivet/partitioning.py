@@ -29,6 +29,7 @@ from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPA
 from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError
 from .flags import flags
 from .devices import PartitionDevice, LUKSDevice, devicePathToName
+from .devices.partition import FALLBACK_DEFAULT_PART_SIZE
 from .formats import getFormat
 from .devicelibs.lvm import get_pool_padding
 from .size import Size
@@ -249,20 +250,10 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
             smallest_implicit = sorted(implicit_devices, key=lambda d: d.size)[0]
             if (request.size + smallest_implicit.size) > all_free[0]:
                 # not enough space to allocate the smallest implicit partition
-                # and the request, make the implicit partition smaller with
-                # fixed size in order to make space for the request
-                new_size = all_free[0] - request.size
-
-                # subtract the size from the biggest free region and reorder the
-                # list
-                all_free[0] -= request.size
-                all_free.sort(reverse=True)
-
-                if new_size > Size(0):
-                    smallest_implicit.size = new_size
-                else:
-                    implicit_devices.remove(smallest_implicit)
-                    storage.destroyDevice(smallest_implicit)
+                # and the request, make the implicit partitions smaller in
+                # attempt to make space for the request
+                for implicit_req in implicit_devices:
+                    implicit_req.size = FALLBACK_DEFAULT_PART_SIZE
 
     return implicit_devices
 
