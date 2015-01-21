@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.22
+Version: 0.61.0.23
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jan 20 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.23-1
+- Raise a more descriptive exception for corrupt gpt disklabels. (dlehman)
+  Resolves: rhbz#1123450
+- Don't raise an exception for failure to scan an ignored disk. (dlehman)
+  Related: rhbz#1123450
+- Try to deactivate lvm on corrupted gpt disks. (dlehman)
+  Related: rhbz#1123450
+
 * Wed Jan 14 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.22-1
 - get_loop_name shoud return an empty name if it isn't found (bcl)
   Related: rhbz#980510
