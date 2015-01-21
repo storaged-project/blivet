@@ -50,14 +50,6 @@ ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
 KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
                          ThPoolProfile("thin-performance", N_("Performance")))
 
-def has_lvm():
-    if util.find_program_in_path("lvm"):
-        for line in open("/proc/devices").readlines():
-            if "device-mapper" in line.split():
-                return True
-
-    return False
-
 # Start config_args handling code
 #
 # Theoretically we can handle all that can be handled with the LVM --config

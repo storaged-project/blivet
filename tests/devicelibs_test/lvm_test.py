@@ -254,15 +254,6 @@ class LVMAsRootTestCase(LVMAsRootTestCaseBase):
         self.assertEqual(lvm.lvs(vg_name="wrong-vg-name"), {})
 
         ##
-        ## has_lvm
-        ##
-        # pass
-        self.assertEqual(lvm.has_lvm(), True)
-
-        # fail
-        # TODO
-
-        ##
         ## lvremove
         ##
         # pass
