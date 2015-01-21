@@ -45,7 +45,7 @@ from .lib import devicePathToName, deviceNameToDiskByPath
 DEFAULT_PART_SIZE = Size("500MiB")
 
 # in case the default partition size doesn't fit
-FALLBACK_DEFAULT_PART_SIZE = Size("10MiB")
+FALLBACK_DEFAULT_PART_SIZE = Size("256MiB")
 
 class PartitionDevice(StorageDevice):
     """ A disk partition.
