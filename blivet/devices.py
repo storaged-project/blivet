@@ -5485,16 +5485,18 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
             except errors.FSError as e:
                 log.debug("btrfs temp mount failed: %s", e)
                 return subvols
-        elif not self.originalFormat.status:
+        elif not (self.originalFormat.status or self.format.status):
             return subvols
 
         try:
-            subvols = btrfs.list_subvolumes(self.originalFormat._mountpoint,
+            mountpoint = (self.originalFormat._mountpoint or
+                          self.format._mountpoint)
+            subvols = btrfs.list_subvolumes(mountpoint,
                                             snapshots_only=snapshotsOnly)
         except errors.BTRFSError as e:
             log.debug("failed to list subvolumes: %s", e)
         else:
-            self._getDefaultSubVolumeID()
+            self._getDefaultSubVolumeID(mountpoint)
         finally:
             if flags.installer_mode:
                 self._undo_temp_mount()
@@ -5513,10 +5515,12 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     def removeSubVolume(self, name):
         raise NotImplementedError()
 
-    def _getDefaultSubVolumeID(self):
+    def _getDefaultSubVolumeID(self, mountpoint=None):
         subvolid = None
+        if not mountpoint:
+            mountpoint = self.originalFormat._mountpoint
         try:
-            subvolid = btrfs.get_default_subvolume(self.originalFormat._mountpoint)
+            subvolid = btrfs.get_default_subvolume(mountpoint)
         except errors.BTRFSError as e:
             log.debug("failed to get default subvolume id: %s", e)
 
