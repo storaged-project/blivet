@@ -240,8 +240,9 @@ class MakeBumpVer:
                        proc[0].strip('\n').split('\n'))
 
         if self.ignore and self.ignore != '':
+            startswith_commit = lambda x: not x.startswith(commit)
             for commit in self.ignore.split(','):
-                lines = filter(lambda x: not x.startswith(commit), lines)
+                lines = filter(startswith_commit, lines)
 
         rpm_log = []
         bad_bump = False
