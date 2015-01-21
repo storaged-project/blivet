@@ -179,6 +179,10 @@ class DeviceFormat(ObjectID):
                 it via the 'device' kwarg to the :meth:`create` method.
         """
         ObjectID.__init__(self)
+        self._label = None
+        self._options = None
+        self._device = None
+
         self.device = kwargs.get("device")
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists", False)
@@ -271,7 +275,7 @@ class DeviceFormat(ObjectID):
 
            This method is not intended to be overridden.
         """
-        self._label = label # pylint: disable=attribute-defined-outside-init
+        self._label = label
 
     def _getLabel(self):
         """The label for this filesystem.
@@ -284,7 +288,7 @@ class DeviceFormat(ObjectID):
         return self._label
 
     def _setOptions(self, options):
-        self._options = options # pylint: disable=attribute-defined-outside-init
+        self._options = options
 
     def _getOptions(self):
         return self._options
@@ -294,7 +298,7 @@ class DeviceFormat(ObjectID):
     def _setDevice(self, devspec):
         if devspec and not devspec.startswith("/"):
             raise ValueError("device must be a fully qualified path")
-        self._device = devspec # pylint: disable=attribute-defined-outside-init
+        self._device = devspec
 
     def _getDevice(self):
         return self._device
