@@ -53,6 +53,11 @@ from .i18n import P_
 import logging
 log = logging.getLogger("blivet")
 
+DEFAULT_PART_SIZE = Size("500MiB")
+
+# in case the default partition size doesn't fit
+FALLBACK_DEFAULT_PART_SIZE = Size("10MiB")
+
 def get_device_majors():
     majors = {}
     for line in open("/proc/devices").readlines():
@@ -1368,7 +1373,7 @@ class PartitionDevice(StorageDevice):
     """
     _type = "partition"
     _resizable = True
-    defaultSize = Size("500MiB")
+    defaultSize = DEFAULT_PART_SIZE
 
     def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
