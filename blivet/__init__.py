@@ -1369,7 +1369,7 @@ class Blivet(object):
     def formatByDefault(self, device):
         """Return whether the device should be reformatted by default."""
         formatlist = ['/boot', '/var', '/tmp', '/usr']
-        exceptlist = ['/home', '/usr/local', '/opt', '/var/www']
+        exceptlist = ['/usr/local', '/var/www']
 
         if not device.format.linuxNative:
             return False
