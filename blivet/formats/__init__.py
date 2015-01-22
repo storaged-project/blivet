@@ -300,9 +300,22 @@ class DeviceFormat(ObjectID):
        doc="fstab entry option string"
     )
 
-    def _setDevice(self, devspec):
+    def _deviceCheck(self, devspec):
+        """ Verifies that device spec has a proper format.
+
+            :param devspec: the device spec
+            :type devspec: str or NoneType
+            :rtype: str or NoneType
+            :returns: an explanatory message if devspec fails check, else None
+        """
         if devspec and not devspec.startswith("/"):
-            raise ValueError("device must be a fully qualified path")
+            return "device must be a fully qualified path"
+        return None
+
+    def _setDevice(self, devspec):
+        error_msg = self._deviceCheck(devspec)
+        if error_msg:
+            raise ValueError(error_msg)
         self._device = devspec
 
     def _getDevice(self):

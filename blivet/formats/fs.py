@@ -1441,22 +1441,12 @@ class NFS(FS):
 
     def _deviceCheck(self, devspec):
         if devspec is not None and ":" not in devspec:
-            raise ValueError("device must be of the form <host>:<path>")
+            return "device must be of the form <host>:<path>"
+        return None
 
     @property
     def mountable(self):
         return False
-
-    def _setDevice(self, devspec):
-        self._deviceCheck(devspec)
-        self._device = devspec
-
-    def _getDevice(self):
-        return self._device
-
-    device = property(lambda f: f._getDevice(),
-                      lambda f,d: f._setDevice(d),
-                      doc="Full path the device this format occupies")
 
 register_device_format(NFS)
 
@@ -1487,8 +1477,8 @@ class NoDevFS(FS):
         self.exists = True
         self.device = self._type
 
-    def _setDevice(self, devspec):
-        self._device = devspec
+    def _deviceCheck(self, devspec):
+        return None
 
     @property
     def type(self):
@@ -1632,8 +1622,6 @@ class TmpFS(NoDevFS):
         # device property, but as the device is always the
         # same, nothing actually needs to be set
         pass
-
-    device = property(_getDevice, _setDevice)
 
     @property
     def resizeArgs(self):
