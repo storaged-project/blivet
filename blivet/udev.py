@@ -528,7 +528,7 @@ def device_is_biosraid_member(info):
     return False
 
 def device_get_dm_partition_disk(info):
-    return re.sub(r'p?\d*$', '', device_get_name(info))
+    return os.path.basename(os.path.dirname(device_get_sysfs_path(info)))
 
 def device_is_dm_partition(info):
     return (device_is_dm(info) and
