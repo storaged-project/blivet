@@ -23,7 +23,7 @@ from threading import Lock
 program_log_lock = Lock()
 
 
-def _run_program(argv, root='/', stdin=None, env_prune=None):
+def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False):
     if env_prune is None:
         env_prune = []
 
@@ -40,17 +40,28 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
         for var in env_prune:
             env.pop(var, None)
 
+        if stderr_to_stdout:
+            stderr_dir = subprocess.STDOUT
+        else:
+            stderr_dir = subprocess.PIPE
         try:
             proc = subprocess.Popen(argv,
                                     stdin=stdin,
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
+                                    stderr=stderr_dir,
                                     close_fds=True,
                                     preexec_fn=chroot, cwd=root, env=env)
 
-            out = proc.communicate()[0]
+            out, err = proc.communicate()
             if out:
+                if not stderr_to_stdout:
+                    program_log.info("stdout:")
                 for line in out.splitlines():
+                    program_log.info("%s", line)
+
+            if not stderr_to_stdout and err:
+                program_log.info("stderr:")
+                for line in err.splitlines():
                     program_log.info("%s", line)
 
         except OSError as e:

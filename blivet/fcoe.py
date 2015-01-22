@@ -119,13 +119,13 @@ class fcoe(object):
             util.run_program(["dcbtool", "sc", nic, "app:fcoe",
                                                 "e:1", "a:1", "w:1"])
             rc, out = util.run_program_and_capture_output(["fipvlan", "-c", "-s", "-f",
-                                               "-fcoe", nic])
+                                               "-fcoe", nic], stderr_to_stdout=True)
         else:
             if auto_vlan:
                 # certain network configrations require the VLAN layer module:
                 util.run_program(["modprobe", "8021q"])
                 rc, out = util.run_program_and_capture_output(["fipvlan", '-c', '-s', '-f',
-                                                   "-fcoe",  nic])
+                                                   "-fcoe",  nic], stderr_to_stdout=True)
             else:
                 f = open("/sys/module/libfcoe/parameters/create", "w")
                 f.write(nic)
