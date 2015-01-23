@@ -1122,6 +1122,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
                                     continue
 
+                            temp_part = None
                             try:
                                 temp_part = addPartition(disklabel,
                                                          _free,
@@ -1164,7 +1165,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                         sectorsToSize(disk_growth,
                                                       disk_sector_size))
 
-                    disklabel.partedDisk.removePartition(temp_part)
+                    if temp_part:
+                        disklabel.partedDisk.removePartition(temp_part)
                     _part.partedPartition = None
                     _part.disk = None
 
@@ -1230,8 +1232,12 @@ def allocatePartitions(storage, disks, partitions, freespace):
                 raise PartitioningError(_("not enough free space after "
                                         "creating extended partition"))
 
-        partition = addPartition(disklabel, free, part_type, _part.req_size,
-                                 _part.req_start_sector, _part.req_end_sector)
+        try:
+            partition = addPartition(disklabel, free, part_type, _part.req_size,
+                                _part.req_start_sector, _part.req_end_sector)
+        except ArithmeticError:
+            raise PartitioningError(_("failed to allocate aligned partition"))
+
         log.debug("created partition %s of %s and added it to %s",
                 partition.getDeviceNodeName(),
                 Size(partition.getLength(unit="B")),
