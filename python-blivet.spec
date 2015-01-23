@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.23
+Version: 0.61.0.24
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jan 22 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.24-1
+- Fix issue where too many mpath luns crashes installer (rmarshall)
+  Resolves: rhbz#1181336
+
 * Tue Jan 20 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.23-1
 - Raise a more descriptive exception for corrupt gpt disklabels. (dlehman)
   Resolves: rhbz#1123450
