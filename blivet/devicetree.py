@@ -27,6 +27,9 @@ import shutil
 import pprint
 import copy
 
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
+
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
@@ -45,7 +48,6 @@ from .formats.fs import nodev_filesystems
 from .devicelibs import mdraid
 from .devicelibs import dm
 from .devicelibs import lvm
-from .devicelibs import mpath
 from .devicelibs import loop
 from .devicelibs import edd
 from . import udev
@@ -1173,7 +1175,7 @@ class DeviceTree(object):
                 device = None
 
         if device and device.isDisk and \
-           mpath.is_multipath_member(device.path):
+           blockdev.mpath_is_mpath_member(device.path):
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
@@ -1769,7 +1771,7 @@ class DeviceTree(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
-        is_multipath_member = mpath.is_multipath_member(device.path)
+        is_multipath_member = blockdev.mpath_is_mpath_member(device.path)
         if is_multipath_member:
             format_type = "multipath_member"
 
@@ -2128,7 +2130,7 @@ class DeviceTree(object):
         self.dropLVMCache()
 
         if flags.installer_mode and not flags.image_install:
-            mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
+            blockdev.mpath_set_friendly_names(flags.multipath_friendly_names)
 
         self.setupDiskImages()
 
