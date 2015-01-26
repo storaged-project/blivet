@@ -20,6 +20,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define pythoncryptsetupver 0.1.1
 %define utillinuxver 2.15.1
 %define lvm2ver 2.02.99
+%define libblockdevver 0.6
 
 BuildArch: noarch
 BuildRequires: gettext
@@ -43,6 +44,8 @@ Requires: btrfs-progs
 Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
 Requires: lsof
+Requires: libblockdev >= %{libblockdevver}
+Requires: libblockdev-plugins-all >= %{libblockdevver}
 
 %description
 The python-blivet package is a python module for examining and modifying
