@@ -239,10 +239,9 @@ class MakeBumpVer:
                                  x.find('Merge branch') != 41,
                        proc[0].strip('\n').split('\n'))
 
-        if self.ignore and self.ignore != '':
-            startswith_commit = lambda x: not x.startswith(commit)
-            for commit in self.ignore.split(','):
-                lines = filter(startswith_commit, lines)
+        if self.ignore:
+            ignore_commits = self.ignore.split(',')
+            lines = [l for l in lines if not any(l.startswith(c) for c in ignore_commits)]
 
         rpm_log = []
         bad_bump = False
