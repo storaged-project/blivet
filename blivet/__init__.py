@@ -57,6 +57,23 @@ from .flags import flags
 
 import logging
 log = logging.getLogger("blivet")
+program_log = logging.getLogger("program")
+
+# XXX: respect the level? Need to translate between C and Python log levels.
+log_bd_message = lambda level, msg: program_log.info(msg)
+
+# initialize the libblockdev library
+from gi.repository import BlockDev as blockdev
+_REQUIRED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
+_required_plugins = blockdev.plugin_specs_from_names(_REQUIRED_PLUGIN_NAMES)
+if not blockdev.is_initialized():
+    if not blockdev.try_init(require_plugins=_required_plugins, log_func=log_bd_message):
+        raise RuntimeError("Failed to initialize the libblockdev library with all required plugins")
+else:
+    avail_plugs = set(blockdev.get_available_plugin_names())
+    if avail_plugs != _REQUIRED_PLUGIN_NAMES:
+        if not blockdev.reinit(require_plugins=_required_plugins, reload=False, log_func=log_bd_message):
+            raise RuntimeError("Failed to initialize the libblockdev library with all required plugins")
 
 def enable_installer_mode():
     """ Configure the module for use by anaconda (OS installer). """
