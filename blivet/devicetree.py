@@ -30,7 +30,7 @@ import copy
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -45,7 +45,6 @@ from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_f
 from . import formats
 from .formats import getFormat
 from .formats.fs import nodev_filesystems
-from .devicelibs import mdraid
 from .devicelibs import dm
 from .devicelibs import lvm
 from .devicelibs import loop
@@ -894,8 +893,8 @@ class DeviceTree(object):
 
             log.error("failed to scan md array %s", name)
             try:
-                mdraid.mddeactivate(path)
-            except MDRaidError:
+                blockdev.md_deactivate(path)
+            except GLib.GError:
                 log.error("failed to stop broken md array %s", name)
 
         return device
@@ -906,7 +905,7 @@ class DeviceTree(object):
         sysfs_path = udev.device_get_sysfs_path(info)
 
         if name.startswith("md"):
-            name = mdraid.name_from_md_node(name)
+            name = blockdev.md_name_from_node(name)
             device = self.getDeviceByName(name)
             if device:
                 return device
@@ -915,7 +914,7 @@ class DeviceTree(object):
             disk_name = os.path.basename(os.path.dirname(sysfs_path))
             disk_name = disk_name.replace('!','/')
             if disk_name.startswith("md"):
-                disk_name = mdraid.name_from_md_node(disk_name)
+                disk_name = blockdev.md_name_from_node(disk_name)
 
             disk = self.getDeviceByName(disk_name)
 
@@ -1024,7 +1023,7 @@ class DeviceTree(object):
             parentName = devicePathToName(parentPath)
             container = self.getDeviceByName(parentName)
             if not container:
-                parentSysName = mdraid.md_node_from_name(parentName)
+                parentSysName = blockdev.md_node_from_name(parentName)
                 container_sysfs = "/class/block/" + parentSysName
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
@@ -1155,8 +1154,8 @@ class DeviceTree(object):
                 devname = udev.device_get_devname(info)
                 if devname:
                     try:
-                        mdraid.mdrun(devname)
-                    except MDRaidError as e:
+                        blockdev.md_run(devname)
+                    except GLib.Error as e:
                         log.warning("Failed to start possibly degraded md array: %s", e)
                     else:
                         udev.settle()
@@ -1593,7 +1592,7 @@ class DeviceTree(object):
     def handleUdevMDMemberFormat(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        md_info = mdraid.mdexamine(device.path)
+        md_info = blockdev.md_examine(device.path)
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
         if device.format.mdUuid and md_array:
             md_array.parents.append(device)
@@ -1601,9 +1600,9 @@ class DeviceTree(object):
             # create the array with just this one member
             try:
                 # level is reported as, eg: "raid1"
-                md_level = udev.device_get_md_level(md_info)
-                md_devices = udev.device_get_md_devices(md_info)
-                md_uuid = udev.device_get_md_uuid(md_info)
+                md_level = md_info.level
+                md_devices = md_info.num_devices
+                md_uuid = md_info.uuid
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
@@ -1612,12 +1611,12 @@ class DeviceTree(object):
                 log.warning("invalid data for %s: no RAID level", device.name)
                 return
 
-            # mdexamine yields MD_METADATA only for metadata version > 0.90
+            # md_examine yields metadata (MD_METADATA) only for metadata version > 0.90
             # if MD_METADATA is missing, assume metadata version is 0.90
-            md_metadata = udev.device_get_md_metadata(md_info) or "0.90"
-            md_name = udev.device_get_md_name(md_info)
+            md_metadata = md_info.metadata or "0.90"
+            md_name = md_info.name
             if not md_name:
-                md_path = md_info.get("DEVICE", "")
+                md_path = md_info.device or ""
                 if md_path:
                     md_name = devicePathToName(md_path)
                     if re.match(r'md\d+$', md_name):
@@ -2564,7 +2563,7 @@ class DeviceTree(object):
 
                 if re.match(r'/dev/md\d+(p\d+)?$', devspec):
                     try:
-                        md_name = mdraid.name_from_md_node(devspec[5:])
+                        md_name = blockdev.md_name_from_node(devspec[5:])
                     except StorageError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         md_name = None

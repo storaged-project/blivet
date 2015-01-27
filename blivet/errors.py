@@ -105,9 +105,6 @@ class DiskLabelCommitError(DiskLabelError):
     pass
 
 # devicelibs
-class MDRaidError(StorageError):
-    pass
-
 class RaidError(StorageError):
     pass
 

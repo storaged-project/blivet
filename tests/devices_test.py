@@ -3,6 +3,7 @@
 
 import os
 import unittest
+from gi.repository import BlockDev as blockdev
 
 from mock import Mock
 
@@ -31,7 +32,6 @@ from blivet.devices import PartitionDevice
 from blivet.devices import StorageDevice
 from blivet.devices import ParentList
 from blivet.devicelibs import btrfs
-from blivet.devicelibs import mdraid
 from blivet.size import Size
 from blivet.util import sparsetmpfile
 
@@ -520,7 +520,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.stateCheck(self.dev19,
                         devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
-                        mdadmFormatUUID=xform(lambda x, m: self.assertEqual(x, mdraid.mduuid_from_canonical(self.dev19.uuid), m)),
+                        mdadmFormatUUID=xform(lambda x, m: self.assertEqual(x, blockdev.md_get_md_uuid(self.dev19.uuid), m)),
                         parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         uuid=xform(lambda x, m: self.assertEqual(x, self.dev19.uuid, m)))
 
