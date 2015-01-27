@@ -114,9 +114,6 @@ class DMError(StorageError):
 class LVMError(StorageError):
     pass
 
-class CryptoError(StorageError):
-    pass
-
 class MPathError(StorageError):
     pass
 

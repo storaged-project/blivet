@@ -20,9 +20,8 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-
-
 import os
+from gi.repository import BlockDev as blockdev
 
 try:
     import volume_key
@@ -188,9 +187,9 @@ class LUKS(DeviceFormat):
             return
 
         DeviceFormat.setup(self, **kwargs)
-        crypto.luks_open(self.device, self.mapName,
-                       passphrase=self.__passphrase,
-                       key_file=self._key_file)
+        blockdev.crypto_luks_open(self.device, self.mapName,
+                                  passphrase=self.__passphrase,
+                                  key_file=self._key_file)
 
     def teardown(self):
         """ Close, or tear down, the format. """
@@ -201,7 +200,7 @@ class LUKS(DeviceFormat):
 
         if self.status:
             log.debug("unmapping %s", self.mapName)
-            crypto.luks_close(self.mapName)
+            blockdev.crypto_luks_close(self.mapName)
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -223,17 +222,17 @@ class LUKS(DeviceFormat):
 
         try:
             DeviceFormat.create(self, **kwargs)
-            crypto.luks_format(self.device,
-                             passphrase=self.__passphrase,
-                             key_file=self._key_file,
-                             cipher=self.cipher,
-                             key_size=self.key_size,
-                             min_entropy=self.min_luks_entropy)
+            blockdev.crypto_luks_format(self.device,
+                                        passphrase=self.__passphrase,
+                                        key_file=self._key_file,
+                                        cipher=self.cipher,
+                                        key_size=self.key_size,
+                                        min_entropy=self.min_luks_entropy)
 
         except Exception:
             raise
         else:
-            self.uuid = crypto.luks_uuid(self.device)
+            self.uuid = blockdev.crypto_luks_uuid(self.device)
             self.exists = True
             if flags.installer_mode:
                 self.mapName = "luks-%s" % self.uuid
@@ -267,22 +266,26 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        crypto.luks_add_key(self.device,
-                          passphrase=self.__passphrase,
-                          key_file=self._key_file,
-                          new_passphrase=passphrase)
+        blockdev.crypto_luks_add_key(self.device,
+                                     pass_=self.__passphrase,
+                                     key_file=self._key_file,
+                                     new_passphrase=passphrase)
 
-    def removePassphrase(self, passphrase):
-        """ Remove the specified passphrase from the LUKS header. """
+    def removePassphrase(self):
+        """
+        Remove the saved passphrase (and possibly key file) from the LUKS
+        header.
+
+        """
+
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        crypto.luks_remove_key(self.device,
-                             passphrase=self.__passphrase,
-                             key_file=self._key_file,
-                             del_passphrase=passphrase)
+        blockdev.crypto_luks_remove_key(self.device,
+                                        passphrase=self.__passphrase,
+                                        key_file=self._key_file)
 
     def _escrowVolumeIdent(self, vol):
         """ Return an escrow packet filename prefix for a volume_key.Volume. """

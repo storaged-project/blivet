@@ -30,7 +30,7 @@ import copy
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, StorageError, UnusableConfigurationError
+from .errors import DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -1340,7 +1340,7 @@ class DeviceTree(object):
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
-                    except CryptoError:
+                    except GLib.GError:
                         device.format.passphrase = None
                     else:
                         break
@@ -1350,7 +1350,7 @@ class DeviceTree(object):
                                      exists=True)
             try:
                 luks_device.setup()
-            except (LUKSError, CryptoError, DeviceError) as e:
+            except (LUKSError, GLib.GError, DeviceError) as e:
                 log.info("setup of %s failed: %s", device.format.mapName, e)
                 device.removeChild()
             else:

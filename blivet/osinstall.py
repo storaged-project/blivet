@@ -24,6 +24,7 @@ import shlex
 import os
 import stat
 import time
+from gi.repository import BlockDev as blockdev
 
 from . import util
 from . import getSysroot, getTargetPhysicalRoot, errorHandler, ERROR_RAISE
@@ -33,7 +34,6 @@ from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStor
 from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
 from .devicelibs.dm import name_from_dm_node
-from .devicelibs.crypto import generateBackupPassphrase
 from .formats import getFormat
 from .flags import flags
 from .platform import platform as _platform
@@ -1089,7 +1089,7 @@ def writeEscrowPackets(storage):
 
     nss.nss.nss_init_nodb() # Does nothing if NSS is already initialized
 
-    backupPassphrase = generateBackupPassphrase()
+    backupPassphrase = blockdev.crypto_generate_backup_passphrase()
 
     try:
         escrowDir = getSysroot() + "/root"
