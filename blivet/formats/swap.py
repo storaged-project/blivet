@@ -23,9 +23,9 @@
 from parted import PARTITION_SWAP, fileSystemType
 from ..storage_log import log_method_call
 from ..errors import SwapSpaceError
-from ..devicelibs import swap
 from . import DeviceFormat, register_device_format
 from ..size import Size
+from gi.repository import BlockDev as blockdev
 
 import logging
 log = logging.getLogger("blivet")
@@ -66,7 +66,7 @@ class SwapSpace(DeviceFormat):
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
 
-        self.priority = kwargs.get("priority")
+        self.priority = kwargs.get("priority", -1)
         self.label = kwargs.get("label")
 
     def __repr__(self):
@@ -97,11 +97,12 @@ class SwapSpace(DeviceFormat):
     def _setPriority(self, priority):
         # pylint: disable=attribute-defined-outside-init
         if priority is None:
-            self._priority = None
+            self._priority = -1
             return
 
-        if not isinstance(priority, int) or not 0 <= priority <= 32767:
-            raise ValueError("swap priority must be an integer between 0 and 32767")
+        if not isinstance(priority, int) or not -1 <= priority <= 32767:
+            # -1 means "unspecified"
+            raise ValueError("swap priority must be an integer between -1 and 32767")
 
         self._priority = priority
 
@@ -134,7 +135,7 @@ class SwapSpace(DeviceFormat):
     @property
     def status(self):
         """ Device status. """
-        return self.exists and swap.swapstatus(self.device)
+        return self.exists and blockdev.swap_swapstatus(self.device)
 
     def setup(self, **kwargs):
         """ Activate the formatting.
@@ -158,7 +159,7 @@ class SwapSpace(DeviceFormat):
             return
 
         DeviceFormat.setup(self, **kwargs)
-        swap.swapon(self.device, priority=self.priority)
+        blockdev.swap_swapon(self.device, priority=self.priority)
 
     def teardown(self):
         """ Close, or tear down, a device. """
@@ -168,7 +169,7 @@ class SwapSpace(DeviceFormat):
             raise SwapSpaceError("format has not been created")
 
         if self.status:
-            swap.swapoff(self.device)
+            blockdev.swap_swapoff(self.device)
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -190,7 +191,7 @@ class SwapSpace(DeviceFormat):
 
         try:
             DeviceFormat.create(self, **kwargs)
-            swap.mkswap(self.device, label=self.label)
+            blockdev.swap_mkswap(self.device, label=self.label)
         except Exception:
             raise
         else:
