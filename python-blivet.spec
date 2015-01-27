@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.13
+Version: 0.61.14
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jan 27 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.14-1
+- Mountpoint detection for removable devices (vtrefny)
+- Use format.mountpoint for BTRFS listSubVolumes (vtrefny)
+- Allow handling device format for already handled BTRFS (vtrefny)
+
 * Wed Dec 03 2014 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.13-1
 - Fix pyparted version in spec file. (sbueno+anaconda)
 - Revert "Prune actions before cancelling them" (sbueno+anaconda)
