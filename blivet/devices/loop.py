@@ -20,8 +20,7 @@
 #
 
 import os
-
-from ..devicelibs import loop
+from gi.repository import BlockDev as blockdev
 
 from .. import errors
 from ..storage_log import log_method_call
@@ -74,7 +73,7 @@ class LoopDevice(StorageDevice):
             # if our name is loopN we must already be active
             return self.name
 
-        name = loop.get_loop_name(self.slave.path)
+        name = blockdev.loop_get_loop_name(self.slave.path)
         if name.startswith("loop"):
             self.name = name
 
@@ -84,7 +83,7 @@ class LoopDevice(StorageDevice):
     def status(self):
         return (self.slave.status and
                 self.name.startswith("loop") and
-                loop.get_loop_name(self.slave.path) == self.name)
+                blockdev.loop_get_loop_name(self.slave.path) == self.name)
 
     @property
     def size(self):
@@ -99,7 +98,7 @@ class LoopDevice(StorageDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        loop.loop_setup(self.slave.path)
+        blockdev.loop_setup(self.slave.path)
 
     def _postSetup(self):
         StorageDevice._postSetup(self)
@@ -110,7 +109,7 @@ class LoopDevice(StorageDevice):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        loop.loop_teardown(self.path)
+        blockdev.loop_teardown(self.path)
 
     def _postTeardown(self, recursive=False):
         StorageDevice._postTeardown(self, recursive=recursive)
