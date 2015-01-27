@@ -27,7 +27,7 @@ import shutil
 import pprint
 import copy
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, LVMError, MDRaidError, StorageError, UnusableConfigurationError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -692,13 +692,7 @@ class DeviceTree(object):
         vg_name = udev.device_get_lv_vg_name(info)
         device = self.getDeviceByName(vg_name)
         if not device:
-            # this means something is messed up, like a corrupt gpt disklabel
-            # that the kernel is perfectly happy with but parted refuses to use
             log.error("failed to find vg '%s' after scanning pvs", vg_name)
-            try:
-                lvm.vgdeactivate(vg_name)
-            except LVMError as e:
-                log.error("failed to deactivate vg: %s", e)
 
         # Don't return the device like we do in the other addUdevFooDevice
         # methods. The device we have here is a vg, not an lv.
