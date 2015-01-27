@@ -22,10 +22,11 @@
 
 import os
 
+from gi.repository import BlockDev as blockdev
+
 from ..storage_log import log_method_call
 from parted import PARTITION_RAID
 from ..errors import MDMemberError
-from ..devicelibs import mdraid
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import N_
@@ -88,7 +89,7 @@ class MDRaidMember(DeviceFormat):
         if not os.access(self.device, os.W_OK):
             raise MDMemberError("device path does not exist")
 
-        mdraid.mddestroy(self.device)
+        blockdev.md_destroy(self.device)
         self.exists = False
 
     @property

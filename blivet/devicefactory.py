@@ -33,6 +33,8 @@ from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
 from .size import Size
 
+from gi.repository import BlockDev as blockdev
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -1574,7 +1576,7 @@ class MDFactory(DeviceFactory):
         return self.raid_level.get_space(self.size,
            len(self._get_member_devices()),
            None,
-           mdraid.get_raid_superblock_size)
+           blockdev.md_get_superblock_size)
 
     def _get_total_space(self):
         return self._get_device_space()
