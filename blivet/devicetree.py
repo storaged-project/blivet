@@ -47,7 +47,6 @@ from .formats import getFormat
 from .formats.fs import nodev_filesystems
 from .devicelibs import dm
 from .devicelibs import lvm
-from .devicelibs import loop
 from .devicelibs import edd
 from . import udev
 from . import util
@@ -642,7 +641,7 @@ class DeviceTree(object):
 
         if name.startswith("loop"):
             # ignore loop devices unless they're backed by a file
-            return (not loop.get_backing_file(name))
+            return (not blockdev.loop_get_backing_file(name))
 
         # FIXME: check for virtual devices whose slaves are on the ignore list
 
@@ -2027,7 +2026,7 @@ class DeviceTree(object):
                 filedev.setup()
                 log.debug("%s", filedev)
 
-                loop_name = loop.get_loop_name(filedev.path)
+                loop_name = blockdev.loop_get_loop_name(filedev.path)
                 loop_sysfs = None
                 if loop_name:
                     loop_sysfs = "/class/block/%s" % loop_name

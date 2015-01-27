@@ -120,9 +120,6 @@ class CryptoError(StorageError):
 class MPathError(StorageError):
     pass
 
-class LoopError(StorageError):
-    pass
-
 class BTRFSError(StorageError):
     pass
 
