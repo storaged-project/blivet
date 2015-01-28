@@ -33,7 +33,6 @@ from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
 from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
-from .devicelibs.dm import name_from_dm_node
 from .formats import getFormat
 from .flags import flags
 from .platform import platform as _platform
@@ -1036,7 +1035,7 @@ def get_containing_device(path, devicetree):
 
     if device_name.startswith("dm-"):
         # have I told you lately that I love you, device-mapper?
-        device_name = name_from_dm_node(device_name)
+        device_name = blockdev.dm_name_from_node(device_name)
 
     return devicetree.getDeviceByName(device_name)
 
