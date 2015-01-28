@@ -28,7 +28,8 @@ from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPA
 
 from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError
 from .flags import flags
-from .devices import PartitionDevice, LUKSDevice, devicePathToName, FALLBACK_DEFAULT_PART_SIZE
+from .devices import PartitionDevice, LUKSDevice, devicePathToName
+from .devices.partition import FALLBACK_DEFAULT_PART_SIZE
 from .formats import getFormat
 from .devicelibs.lvm import get_pool_padding
 from .size import Size
