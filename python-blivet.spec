@@ -61,7 +61,8 @@ make DESTDIR=%{buildroot} install
 
 %files -f %{realname}.lang
 %defattr(-,root,root,-)
-%doc README ChangeLog COPYING examples
+%license COPYING
+%doc README ChangeLog examples
 %{python_sitelib}/*
 
 %changelog
