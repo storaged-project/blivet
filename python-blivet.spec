@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.24
+Version: 0.61.0.25
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,15 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jan 28 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.25-1
+- Fallback implicit partition size must be big enough for BTRFS (vpodzime)
+  Related: rhbz#1171116
+- Make implicit partitions smaller if real requests don't fit anywhere
+  (vpodzime)
+  Resolves: rhbz#1171116
+- Revert "Try to deactivate lvm on corrupted gpt disks." (dlehman)
+  Resolves: rhbz#1186317
+
 * Thu Jan 22 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.24-1
 - Fix issue where too many mpath luns crashes installer (rmarshall)
   Resolves: rhbz#1181336
