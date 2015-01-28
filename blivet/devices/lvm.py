@@ -24,10 +24,10 @@ from six import add_metaclass
 import abc
 import pprint
 import re
+from gi.repository import BlockDev as blockdev
 
 # device backend modules
 from ..devicelibs import lvm
-from ..devicelibs import dm
 
 from .. import errors
 from .. import util
@@ -598,7 +598,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        return dm.dm_node_from_name(self.mapName)
+        return blockdev.dm_node_from_name(self.mapName)
 
     def _getName(self):
         """ This device's name. """

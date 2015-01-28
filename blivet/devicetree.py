@@ -45,7 +45,6 @@ from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_f
 from . import formats
 from .formats import getFormat
 from .formats.fs import nodev_filesystems
-from .devicelibs import dm
 from .devicelibs import lvm
 from .devicelibs import edd
 from . import udev
@@ -734,7 +733,7 @@ class DeviceTree(object):
             for slave_name in slave_names:
                 # if it's a dm-X name, resolve it to a map name first
                 if slave_name.startswith("dm-"):
-                    dev_name = dm.name_from_dm_node(slave_name)
+                    dev_name = blockdev.dm_name_from_node(slave_name)
                 else:
                     dev_name = slave_name.replace("!", "/") # handles cciss
                 slave_dev = self.getDeviceByName(dev_name)
@@ -804,7 +803,7 @@ class DeviceTree(object):
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name first
             if slave_name.startswith("dm-"):
-                dev_name = dm.name_from_dm_node(slave_name)
+                dev_name = blockdev.dm_name_from_node(slave_name)
             else:
                 dev_name = slave_name.replace("!", "/") # handles cciss
             slave_dev = self.getDeviceByName(dev_name)
@@ -847,7 +846,7 @@ class DeviceTree(object):
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name
             if slave_name.startswith("dm-"):
-                dev_name = dm.name_from_dm_node(slave_name)
+                dev_name = blockdev.dm_name_from_node(slave_name)
             else:
                 dev_name = slave_name
             slave_dev = self.getDeviceByName(dev_name)
@@ -2552,7 +2551,7 @@ class DeviceTree(object):
 
                 if devspec.startswith("/dev/dm-"):
                     try:
-                        dm_name = dm.name_from_dm_node(devspec[5:])
+                        dm_name = blockdev.dm_name_from_node(devspec[5:])
                     except StorageError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         dm_name = None
