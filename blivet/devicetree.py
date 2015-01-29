@@ -797,6 +797,7 @@ class DeviceTree(object):
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
 
             device = MultipathDevice(name, parents=slave_devices,
+                                     sysfsPath=udev.device_get_sysfs_path(info),
                                      serial=serial)
             self._addDevice(device)
 
