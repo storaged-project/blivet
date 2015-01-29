@@ -1153,13 +1153,6 @@ class DeviceTree(object):
         elif udev.device_is_cdrom(info):
             log.info("%s is a cdrom", name)
             device = self.addUdevOpticalDevice(info)
-        elif udev.device_is_biosraid_member(info) and udev.device_is_disk(info):
-            log.info("%s is part of a biosraid", name)
-            device = DiskDevice(name,
-                            major=udev.device_get_major(info),
-                            minor=udev.device_get_minor(info),
-                            sysfsPath=sysfs_path, exists=True)
-            self._addDevice(device)
         elif udev.device_is_disk(info):
             device = self.addUdevDiskDevice(info)
         elif udev.device_is_partition(info):
