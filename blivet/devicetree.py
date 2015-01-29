@@ -28,7 +28,7 @@ import pprint
 import copy
 from six import add_metaclass
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -676,10 +676,58 @@ class DeviceTree(object):
                      (udev.device_is_md(info) and
                       not udev.device_get_md_container(info))))
 
+    def _addSlaveDevices(self, info):
+        """ Add all slaves of a device, raising DeviceTreeError on failure.
+
+            :raises: :class:`~.errors.DeviceTreeError if no slaves are found or
+                     if we fail to add any slave
+            :returns: a list of slave devices
+            :rtype: list of :class:`~.StorageDevice`
+        """
+        name = udev.device_get_name(info)
+        sysfs_path = udev.device_get_sysfs_path(info)
+        slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
+        slave_names = os.listdir(slave_dir)
+        slave_devices = []
+        if not slave_names:
+            log.error("no slaves found for %s", name)
+            raise DeviceTreeError("no slaves found for device %s" % name)
+
+        for slave_name in slave_names:
+            path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
+            slave_info = udev.get_device(os.path.realpath(path))
+
+            # cciss in sysfs is "cciss!cXdYpZ" but we need "cciss/cXdYpZ"
+            slave_name = udev.device_get_name(slave_info).replace("!", "/")
+
+            if not slave_info:
+                log.warning("unable to get udev info for %s", slave_name)
+
+            slave_dev = self.getDeviceByName(slave_name)
+            if not slave_dev and slave_info:
+                # we haven't scanned the slave yet, so do it now
+                self.addUdevDevice(slave_info)
+                slave_dev = self.getDeviceByName(slave_name)
+                if slave_dev is None:
+                    if udev.device_is_dm_lvm(info):
+                        if slave_name not in self.lvInfo:
+                            # we do not expect hidden lvs to be in the tree
+                            continue
+
+                    # if the current slave is still not in
+                    # the tree, something has gone wrong
+                    log.error("failure scanning device %s: could not add slave %s", name, slave_name)
+                    msg = "failed to add slave %s of device %s" % (slave_name,
+                                                                   name)
+                    raise DeviceTreeError(msg)
+
+            slave_devices.append(slave_dev)
+
+        return slave_devices
+
     def addUdevLVDevice(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
-        sysfs_path = udev.device_get_sysfs_path(info)
 
         vg_name = udev.device_get_lv_vg_name(info)
         device = self.getDeviceByName(vg_name, hidden=True)
@@ -687,14 +735,7 @@ class DeviceTree(object):
             log.warning("found non-vg device with name %s", vg_name)
             device = None
 
-        if not device:
-            # initiate detection of all PVs and hope that it leads to us having
-            # the VG and LVs in the tree
-            for pv_name in os.listdir(sysfs_path + "/slaves"):
-                link = os.readlink(sysfs_path + "/slaves/" + pv_name)
-                pv_sysfs_path = os.path.normpath(sysfs_path + '/slaves/' + link)
-                pv_info = udev.get_device(pv_sysfs_path)
-                self.addUdevDevice(pv_info)
+        self._addSlaveDevices(info)
 
         vg_name = udev.device_get_lv_vg_name(info)
         device = self.getDeviceByName(vg_name)
@@ -708,137 +749,53 @@ class DeviceTree(object):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
-        device = None
 
-        for dmdev in self.devices:
-            if not isinstance(dmdev, DMDevice):
-                continue
+        slave_devices = self._addSlaveDevices(info)
+        device = self.getDeviceByName(name)
 
-            try:
-                # there is a device in the tree already with the same
-                # major/minor as this one but with a different name
-                # XXX this is kind of racy
-                if dmdev.getDMNode() == os.path.basename(sysfs_path):
-                    # XXX should we take the name already in use?
-                    device = dmdev
-                    break
-            except DMError:
-                # This is a little lame, but the VG device is a DMDevice
-                # and it won't have a dm node. At any rate, this is not
-                # important enough to crash the install.
-                log.debug("failed to find dm node for %s", dmdev.name)
-                continue
-
+        # if this is a luks device whose map name is not what we expect,
+        # fix up the map name and see if that sorts us out
         handle_luks = (udev.device_is_dm_luks(info) and
                         (self._cleanup or not flags.installer_mode))
-        slave_dev = None
-        slave_info = None
+        if device is None and handle_luks and slave_devices:
+            slave_dev = slave_devices[0]
+            slave_dev.format.mapName = name
+            slave_info = udev.get_device(slave_dev.sysfsPath)
+            self.handleUdevLUKSFormat(slave_info, slave_dev)
+
+        # create a device for the livecd OS image(s)
+        if device is None and udev.device_is_dm_livecd(info):
+            device = DMDevice(name, dmUuid=info.get('DM_UUID'),
+                              sysfsPath=sysfs_path, exists=True,
+                              parents=[slave_dev])
+            device.protected = True
+            device.controllable = False
+            self._addDevice(device)
+
+        # if we get here, we found all of the slave devices and
+        # something must be wrong -- if all of the slaves are in
+        # the tree, this device should be as well
         if device is None:
-            # we couldn't find it, so create it
-            # first, get a list of the slave devs and look them up
-            slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
-            slave_names = os.listdir(slave_dir)
-            for slave_name in slave_names:
-                # if it's a dm-X name, resolve it to a map name first
-                if slave_name.startswith("dm-"):
-                    dev_name = dm.name_from_dm_node(slave_name)
-                else:
-                    dev_name = slave_name.replace("!", "/") # handles cciss
-                slave_dev = self.getDeviceByName(dev_name)
-                path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
-                new_info = udev.get_device(os.path.realpath(path))
-                if not slave_dev:
-                    # we haven't scanned the slave yet, so do it now
-                    if new_info:
-                        self.addUdevDevice(new_info)
-                        slave_dev = self.getDeviceByName(dev_name)
-                        if slave_dev is None:
-                            # if the current slave is still not in
-                            # the tree, something has gone wrong
-                            log.error("failure scanning device %s: could not add slave %s", name, dev_name)
-                            return
-
-                if handle_luks:
-                    slave_info = new_info
-
-            # try to get the device again now that we've got all the slaves
-            device = self.getDeviceByName(name)
-
-            if device is None and udev.device_is_dm_partition(info):
-                diskname = udev.device_get_dm_partition_disk(info)
-                disk = self.getDeviceByName(diskname)
-                return self.addUdevPartitionDevice(info, disk=disk)
-
-            # if this is a luks device whose map name is not what we expect,
-            # fix up the map name and see if that sorts us out
-            if device is None and handle_luks and slave_info and slave_dev:
-                slave_dev.format.mapName = name
-                self.handleUdevLUKSFormat(slave_info, slave_dev)
-
-                # try once more to get the device
-                device = self.getDeviceByName(name)
-
-            # create a device for the livecd OS image(s)
-            if device is None and udev.device_is_dm_livecd(info):
-                device = DMDevice(name, dmUuid=info.get('DM_UUID'),
-                                  sysfsPath=sysfs_path, exists=True,
-                                  parents=[slave_dev])
-                device.protected = True
-                device.controllable = False
-                self._addDevice(device)
-
-            # if we get here, we found all of the slave devices and
-            # something must be wrong -- if all of the slaves are in
-            # the tree, this device should be as well
-            if device is None:
-                lvm.lvm_cc_addFilterRejectRegexp(name)
-                log.warning("ignoring dm device %s", name)
+            lvm.lvm_cc_addFilterRejectRegexp(name)
+            log.warning("ignoring dm device %s", name)
 
         return device
 
     def addUdevMultiPathDevice(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
-        sysfs_path = udev.device_get_sysfs_path(info)
 
-        slave_devs = []
-
-        # TODO: look for this device by dm-uuid?
-
-        # first, get a list of the slave devs and look them up
-        slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
-        slave_names = os.listdir(slave_dir)
-        for slave_name in slave_names:
-            # if it's a dm-X name, resolve it to a map name first
-            if slave_name.startswith("dm-"):
-                dev_name = dm.name_from_dm_node(slave_name)
-            else:
-                dev_name = slave_name.replace("!", "/") # handles cciss
-            slave_dev = self.getDeviceByName(dev_name)
-            path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
-            new_info = udev.get_device(os.path.realpath(path))
-            if not slave_dev:
-                # we haven't scanned the slave yet, so do it now
-                if new_info:
-                    self.addUdevDevice(new_info)
-                    slave_dev = self.getDeviceByName(dev_name)
-                    if slave_dev is None:
-                        # if the current slave is still not in
-                        # the tree, something has gone wrong
-                        log.error("failure scanning device %s: could not add slave %s", name, dev_name)
-                        return
-
-            slave_devs.append(slave_dev)
+        slave_devices = self._addSlaveDevices(info)
 
         device = None
-        if slave_devs:
+        if slave_devices:
             try:
                 serial = info["DM_UUID"].split("-", 1)[1]
             except (IndexError, AttributeError):
                 log.error("multipath device %s has no DM_UUID", name)
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
 
-            device = MultipathDevice(name, parents=slave_devs,
+            device = MultipathDevice(name, parents=slave_devices,
                                      serial=serial)
             self._addDevice(device)
 
@@ -847,28 +804,8 @@ class DeviceTree(object):
     def addUdevMDDevice(self, info):
         name = udev.device_get_md_name(info)
         log_method_call(self, name=name)
-        sysfs_path = udev.device_get_sysfs_path(info)
 
-        slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
-        slave_names = os.listdir(slave_dir)
-        for slave_name in slave_names:
-            # if it's a dm-X name, resolve it to a map name
-            if slave_name.startswith("dm-"):
-                dev_name = dm.name_from_dm_node(slave_name)
-            else:
-                dev_name = slave_name
-            slave_dev = self.getDeviceByName(dev_name)
-            if not slave_dev:
-                # we haven't scanned the slave yet, so do it now
-                path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
-                new_info = udev.get_device(os.path.realpath(path))
-                if new_info:
-                    self.addUdevDevice(new_info)
-                    if self.getDeviceByName(dev_name) is None:
-                        # if the current slave is still not in
-                        # the tree, something has gone wrong
-                        log.error("failure scanning device %s: could not add slave %s", name, dev_name)
-                        return
+        self._addSlaveDevices(info)
 
         # try to get the device again now that we've got all the slaves
         device = self.getDeviceByName(name, incomplete=flags.allow_imperfect_devices)
