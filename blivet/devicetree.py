@@ -737,13 +737,14 @@ class DeviceTree(object):
 
         self._addSlaveDevices(info)
 
+        # LVM provides no means to resolve conflicts caused by duplicated VG
+        # names, so we're just being optimistic here. Woo!
         vg_name = udev.device_get_lv_vg_name(info)
-        device = self.getDeviceByName(vg_name)
-        if not device:
+        vg_device = self.getDeviceByName(vg_name)
+        if not vg_device:
             log.error("failed to find vg '%s' after scanning pvs", vg_name)
 
-        # Don't return the device like we do in the other addUdevFooDevice
-        # methods. The device we have here is a vg, not an lv.
+        return self.getDeviceByName(name)
 
     def addUdevDMDevice(self, info):
         name = udev.device_get_name(info)
