@@ -440,6 +440,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     _type = "lvmlv"
     _resizable = True
     _packages = ["lvm2"]
+    _containerClass = LVMVolumeGroupDevice
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=None, segType=None,
@@ -480,14 +481,17 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type percent: int
 
         """
-        if self.__class__.__name__ == "LVMLogicalVolumeDevice":
-            if isinstance(parents, list):
-                if len(parents) != 1:
-                    raise ValueError("constructor requires a single LVMVolumeGroupDevice instance")
-                elif not isinstance(parents[0], LVMVolumeGroupDevice):
-                    raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
-            elif not isinstance(parents, LVMVolumeGroupDevice):
-                raise ValueError("constructor requires a LVMVolumeGroupDevice instance")
+        if isinstance(parents, list):
+            if len(parents) != 1:
+                raise ValueError("constructor requires a single %s instance" % self._containerClass.__name__)
+
+            container = parents[0]
+        else:
+            container = parents
+
+        if not isinstance(container, self._containerClass):
+            raise ValueError("constructor requires a %s instance" % self._containerClass.__name__)
+
         DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfsPath=sysfsPath, parents=parents,
                           exists=exists)
@@ -1093,6 +1097,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Logical Volume """
     _type = "lvmthinlv"
+    _containerClass = LVMThinPoolDevice
 
     @property
     def pool(self):
