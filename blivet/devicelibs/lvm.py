@@ -21,6 +21,7 @@
 #
 
 from collections import namedtuple
+from gi.repository import BlockDev as blockdev
 
 import logging
 log = logging.getLogger("blivet")
@@ -54,15 +55,8 @@ KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
 config_args_data = { "filterRejects": [],    # regular expressions to reject.
                      "filterAccepts": [] }   # regexp to accept
 
-def _getConfigArgs(args):
+def _set_global_config():
     """lvm command accepts lvm.conf type arguments preceded by --config. """
-
-    # These commands are read-only, so we can run them with read-only locking.
-    # (not an exhaustive list, but these are the only ones used here)
-    READONLY_COMMANDS = ('lvs', 'pvs', 'vgs')
-
-    cmd = args[0]
-    config_args = []
 
     filter_string = ""
     rejects = config_args_data["filterRejects"]
@@ -82,19 +76,26 @@ def _getConfigArgs(args):
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
     config_string = " devices { %s } " % (devices_string) # strings can be added
-    if cmd in READONLY_COMMANDS:
-        config_string += "global {locking_type=4} "
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
-    if config_string:
-        config_args = ["--config", config_string]
-    return config_args
 
+    blockdev.lvm_set_global_config(config_string)
+
+def needs_config_refresh(fn):
+    def fn_with_refresh(*args, **kwargs):
+        ret = fn(*args, **kwargs)
+        _set_global_config()
+        return ret
+
+    return fn_with_refresh
+
+@needs_config_refresh
 def lvm_cc_addFilterRejectRegexp(regexp):
     """ Add a regular expression to the --config string."""
     log.debug("lvm filter: adding %s to the reject list", regexp)
     config_args_data["filterRejects"].append(regexp)
 
+@needs_config_refresh
 def lvm_cc_removeFilterRejectRegexp(regexp):
     """ Remove a regular expression from the --config string."""
     log.debug("lvm filter: removing %s from the reject list", regexp)
@@ -104,7 +105,7 @@ def lvm_cc_removeFilterRejectRegexp(regexp):
         log.debug("%s wasn't in the reject list", regexp)
         return
 
+@needs_config_refresh
 def lvm_cc_resetFilter():
     config_args_data["filterRejects"] = []
     config_args_data["filterAccepts"] = []
-# End config_args handling code.
