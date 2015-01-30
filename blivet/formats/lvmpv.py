@@ -21,12 +21,15 @@
 #
 
 import os
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
-from ..errors import LVMError, PhysicalVolumeError
+from ..errors import PhysicalVolumeError
 from ..devicelibs import lvm
 from ..i18n import N_
+from ..size import Size
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -74,7 +77,7 @@ class LVMPhysicalVolume(DeviceFormat):
         # liblvm may be able to tell us this at some point, even
         # for not-yet-created devices
         self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)
-        self.dataAlignment = kwargs.get("dataAlignment")
+        self.dataAlignment = kwargs.get("dataAlignment", Size(0))
 
         self.inconsistentVG = False
 
@@ -117,12 +120,12 @@ class LVMPhysicalVolume(DeviceFormat):
             # lvm has issues with persistence of metadata, so here comes the
             # hammer...
             DeviceFormat.destroy(self, **kwargs)
-            lvm.pvscan(self.device)
-            lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
+            blockdev.lvm_pvscan(self.device)
+            blockdev.lvm_pvcreate(self.device, data_alignment=self.dataAlignment)
         except Exception:
             raise
         finally:
-            lvm.pvscan(self.device)
+            blockdev.lvm_pvscan(self.device)
 
         self.exists = True
         self.notifyKernel()
@@ -143,11 +146,11 @@ class LVMPhysicalVolume(DeviceFormat):
 
         # FIXME: verify path exists?
         try:
-            lvm.pvremove(self.device)
-        except LVMError:
+            blockdev.lvm_pvremove(self.device)
+        except GLib.GError:
             DeviceFormat.destroy(self, **kwargs)
         finally:
-            lvm.pvscan(self.device)
+            blockdev.lvm_pvscan(self.device)
 
         self.exists = False
         self.notifyKernel()

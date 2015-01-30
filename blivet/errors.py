@@ -111,9 +111,6 @@ class RaidError(StorageError):
 class DMError(StorageError):
     pass
 
-class LVMError(StorageError):
-    pass
-
 class MPathError(StorageError):
     pass
 
