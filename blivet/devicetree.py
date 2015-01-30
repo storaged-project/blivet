@@ -1716,11 +1716,11 @@ class DeviceTree(object):
 
         if not btrfs_dev.subvolumes:
             snapshots = btrfs_dev.listSubVolumes(snapshotsOnly=True)
-            snapshot_ids = [s["id"] for s in snapshots]
+            snapshot_ids = [s.id for s in snapshots]
             for subvol_dict in btrfs_dev.listSubVolumes():
-                vol_id = subvol_dict["id"]
-                vol_path = subvol_dict["path"]
-                parent_id = subvol_dict["parent"]
+                vol_id = subvol_dict.id
+                vol_path = subvol_dict.path
+                parent_id = subvol_dict.parent_id
                 if vol_path in [sv.name for sv in btrfs_dev.subvolumes]:
                     continue
 
