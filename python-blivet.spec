@@ -13,7 +13,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 # match the requires versions of things).
 %define pykickstartver 1.99.22
 %define partedver 1.8.1
-%define pypartedver 2.5-2
+%define pypartedver 3.10.3
 %define e2fsver 1.41.0
 %define utillinuxver 2.15.1
 %define libblockdevver 0.6

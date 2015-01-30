@@ -25,6 +25,7 @@ import re
 import shutil
 import pprint
 import copy
+import parted
 
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
@@ -53,6 +54,18 @@ from .size import Size
 
 import logging
 log = logging.getLogger("blivet")
+
+def parted_exn_handler(exn_type, exn_options, exn_msg):
+    """ Answer any of parted's yes/no questions in the affirmative.
+
+        This allows us to proceed with partially corrupt gpt disklabels.
+    """
+    log.info("parted exception: %s", exn_msg)
+    ret = parted.EXCEPTION_RESOLVE_UNHANDLED
+    if exn_type == parted.EXCEPTION_TYPE_ERROR and \
+       exn_options == parted.EXCEPTION_OPT_YES_NO:
+        ret = parted.EXCEPTION_RESOLVE_YES
+    return ret
 
 class Populator(object):
     def __init__(self, devicetree=None, conf=None, passphrase=None,
@@ -1511,11 +1524,13 @@ class Populator(object):
         if cleanupOnly:
             self._cleanup = True
 
+        parted.register_exn_handler(parted_exn_handler)
         try:
             self._populate()
         except Exception:
             raise
         finally:
+            parted.clear_exn_handler()
             self.restoreConfigs()
 
     def _populate(self):
