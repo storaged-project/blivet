@@ -1143,7 +1143,8 @@ class LVMFactory(DeviceFactory):
             super(LVMFactory, self)._handle_no_size()
 
     def _get_device_space(self):
-        return lvm.get_pv_space(self.size, len(self._get_member_devices()))
+        # XXX: should respect the real extent size
+        return blockdev.lvm_get_lv_physical_size(self.size, lvm.LVM_PE_SIZE)
 
     def _get_device_size(self):
         size = self.size
@@ -1187,7 +1188,8 @@ class LVMFactory(DeviceFactory):
             log.debug("size bumped to %s to include free disk space", size)
         else:
             # container_size is a request for a fixed size for the container
-            size += lvm.get_pv_space(self.container_size, len(self.disks))
+            # XXX: should respect the real extent size
+            size += blockdev.lvm_get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
 
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
@@ -1197,8 +1199,8 @@ class LVMFactory(DeviceFactory):
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
-                size -= lvm.get_pv_space(self.device.size,
-                   len(self.container.parents))
+                # XXX: should respect the real extent size
+                size -= blockdev.lvm_get_lv_physical_size(self.device.size, lvm.LVM_PE_SIZE)
                 log.debug("size cut to %s to omit old device space", size)
 
         if self.container_raid_level:
@@ -1389,7 +1391,7 @@ class LVMThinPFactory(LVMFactory):
         """
         space = super(LVMThinPFactory, self)._get_device_space()
         log.debug("calculated total disk space prior to padding: %s", space)
-        space += lvm.get_pool_padding(space, pesize=self._pesize)
+        space += Size(blockdev.lvm_get_thpool_padding(space, self._pesize))
         log.debug("total disk space needed: %s", space)
         return space
 
@@ -1407,8 +1409,7 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.pool.freeSpace
                 log.debug("size cut to %s to omit pool free space", size)
 
-                pad = lvm.get_pool_padding(self.pool.freeSpace,
-                                       pesize=self._pesize)
+                pad = Size(blockdev.lvm_get_thpool_padding(self.pool.freeSpace, self._pesize))
                 size -= pad
                 log.debug("size cut to %s to omit pool padding from free "
                           "space", size)
@@ -1419,8 +1420,7 @@ class LVMThinPFactory(LVMFactory):
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
-                pad = lvm.get_pool_padding(self.device.size,
-                                       pesize=self._pesize)
+                pad = Size(blockdev.lvm_get_thpool_padding(self.device.size, self._pesize))
                 log.debug("old device size: %s ; old pad: %s", self.device.size, pad)
                 size -= pad
                 log.debug("size cut to %s to omit old device padding", size)
@@ -1484,8 +1484,7 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.device.poolSpaceUsed   # don't count our device
 
             # increase vg free space by the size of the current pool's pad
-            pad = lvm.get_pool_padding(self.pool.size,
-                                   pesize=self._pesize)
+            pad = Size(blockdev.lvm_get_thpool_padding(self.pool.size, self._pesize))
             log.debug("increasing free by current pool pad size (%s)", pad)
             free += pad
 
@@ -1493,11 +1492,11 @@ class LVMThinPFactory(LVMFactory):
         free = self.container.align(free + self.container.freeSpace)
         size = self.container.align(size, roundup=True)
 
-        pad = lvm.get_pool_padding(size, pesize=self._pesize)
+        pad = Size(blockdev.lvm_get_thpool_padding(size, self._pesize))
 
         log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
         if free < (size + pad):
-            pad = int(lvm.get_pool_padding(free, pesize=self._pesize, reverse=True))
+            pad = Size(blockdev.lvm_get_thpool_padding(free, self._pesize, included=True))
             free = self.container.align(free - pad) # round down
             log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s", size, free, self.container.name)

@@ -170,22 +170,24 @@ class DeviceTree(object):
 
     @property
     def pvInfo(self):
-        if self._pvInfo is None:
-            self._pvInfo = lvm.pvinfo() # pylint: disable=attribute-defined-outside-init
+        if self._pvs_cache is None:
+            pvs = blockdev.lvm_pvs()
+            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs) # pylint: disable=attribute-defined-outside-init
 
-        return self._pvInfo
+        return self._pvs_cache
 
     @property
     def lvInfo(self):
-        if self._lvInfo is None:
-            self._lvInfo = lvm.lvs() # pylint: disable=attribute-defined-outside-init
+        if self._lvs_cache is None:
+            lvs = blockdev.lvm_lvs()
+            self._lvs_cache = dict((lv.lv_name, lv) for lv in lvs) # pylint: disable=attribute-defined-outside-init
 
-        return self._lvInfo
+        return self._lvs_cache
 
     def dropLVMCache(self):
         """ Drop cached lvm information. """
-        self._pvInfo = None # pylint: disable=attribute-defined-outside-init
-        self._lvInfo = None # pylint: disable=attribute-defined-outside-init
+        self._pvs_cache = None # pylint: disable=attribute-defined-outside-init
+        self._lvs_cache = None # pylint: disable=attribute-defined-outside-init
 
     def pruneActions(self):
         """ Remove redundant/obsolete actions from the action list. """
@@ -1363,7 +1365,7 @@ class DeviceTree(object):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
         lv_info = dict((k, v) for (k, v) in iter(self.lvInfo.items())
-                                if udev.device_get_vg_name(v) == vg_name)
+                                if v.vg_name == vg_name)
 
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
 
@@ -1400,11 +1402,11 @@ class DeviceTree(object):
 
         def addLV(lv):
             """ Instantiate and add an LV based on data from the VG. """
-            lv_name = udev.device_get_lv_name(lv)
-            lv_uuid = udev.device_get_lv_uuid(lv)
-            lv_attr = udev.device_get_lv_attr(lv)
-            lv_size = udev.device_get_lv_size(lv)
-            lv_type = udev.device_get_lv_type(lv)
+            lv_name = lv.lv_name
+            lv_uuid = lv.uuid
+            lv_attr = lv.attr
+            lv_size = Size(lv.size)
+            lv_type = lv.segtype
 
             lv_class = LVMLogicalVolumeDevice
             lv_parents = [vg_device]
@@ -1418,7 +1420,7 @@ class DeviceTree(object):
 
             if lv_attr[0] in 'Ss':
                 log.info("found lvm snapshot volume '%s'", name)
-                origin_name = lvm.lvorigin(vg_name, lv_name)
+                origin_name = blockdev.lvm_lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin",
                                 vg_name, lv_name)
@@ -1468,11 +1470,11 @@ class DeviceTree(object):
                 lv_class = LVMThinPoolDevice
             elif lv_attr[0] == 'V':
                 # thin volume
-                pool_name = lvm.thinlvpoolname(vg_name, lv_name)
+                pool_name = blockdev.lvm_thlvpoolname(vg_name, lv_name)
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
                 addRequiredLV(pool_device_name, "failed to look up thin pool")
 
-                origin_name = lvm.lvorigin(vg_name, lv_name)
+                origin_name = blockdev.lvm_lvorigin(vg_name, lv_name)
                 if origin_name:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
                     addRequiredLV(origin_device_name, "failed to locate origin lv")
@@ -1539,13 +1541,12 @@ class DeviceTree(object):
     def handleUdevLVMPVFormat(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        pv_info = self.pvInfo.get(device.path, {})
-        # lookup/create the VG and LVs
-        try:
-            vg_name = udev.device_get_vg_name(pv_info)
-            vg_uuid = udev.device_get_vg_uuid(pv_info)
-        except KeyError:
-            # no vg name means no vg -- we're done with this pv
+        pv_info = self.pvInfo.get(device.path, None)
+        if pv_info:
+            vg_name = pv_info.vg_name
+            vg_uuid = pv_info.vg_uuid
+        else:
+            # no info about the PV -> we're done
             return
 
         if not vg_name:
@@ -1563,12 +1564,12 @@ class DeviceTree(object):
                 raise UnusableConfigurationError("multiple LVM volume groups with the same name")
 
             try:
-                vg_size = udev.device_get_vg_size(pv_info)
-                vg_free = udev.device_get_vg_free(pv_info)
-                pe_size = udev.device_get_vg_extent_size(pv_info)
-                pe_count = udev.device_get_vg_extent_count(pv_info)
-                pe_free = udev.device_get_vg_free_extents(pv_info)
-                pv_count = udev.device_get_vg_pv_count(pv_info)
+                vg_size = Size(pv_info.vg_size)
+                vg_free = Size(pv_info.vg_free)
+                pe_size = Size(pv_info.vg_extent_size)
+                pe_count = pv_info.vg_extent_count
+                pe_free = pv_info.vg_free_count
+                pv_count = pv_info.vg_pv_count
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
@@ -1821,20 +1822,20 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev.device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            pv_info = self.pvInfo.get(device.path, {})
-
-            try:
-                kwargs["vgName"] = udev.device_get_vg_name(pv_info)
-            except KeyError:
-                log.warning("PV %s has no vg_name", name)
-            try:
-                kwargs["vgUuid"] = udev.device_get_vg_uuid(pv_info)
-            except KeyError:
-                log.warning("PV %s has no vg_uuid", name)
-            try:
-                kwargs["peStart"] = udev.device_get_pv_pe_start(pv_info)
-            except KeyError:
-                log.warning("PV %s has no pe_start", name)
+            pv_info = self.pvInfo.get(device.path, None)
+            if pv_info:
+                if pv_info.vg_name:
+                    kwargs["vgName"] = pv_info.vg_name
+                else:
+                    log.warning("PV %s has no vg_name", name)
+                if pv_info.vg_uuid:
+                    kwargs["vgUuid"] = pv_info.vg_uuid
+                else:
+                    log.warning("PV %s has no vg_uuid", name)
+                if pv_info.pe_start:
+                    kwargs["peStart"] = Size(pv_info.pe_start)
+                else:
+                    log.warning("PV %s has no pe_start", name)
         elif format_type == "vfat":
             # efi magic
             if isinstance(device, PartitionDevice) and device.bootable:

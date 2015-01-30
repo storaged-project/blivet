@@ -22,13 +22,13 @@
 
 from operator import gt, lt
 from decimal import Decimal
+from gi.repository import BlockDev as blockdev
 
 import parted
 
 from .errors import DeviceError, PartitioningError
 from .flags import flags
 from .devices import PartitionDevice, LUKSDevice, devicePathToName
-from .devicelibs.lvm import get_pool_padding
 from .size import Size
 from .i18n import _
 from .util import stringize, unicodeize
@@ -1789,8 +1789,7 @@ def _apply_chunk_growth(chunk):
 
         # reduce the size of thin pools by the pad size
         if hasattr(req.device, "lvs"):
-            size -= get_pool_padding(size, pesize=req.device.vg.peSize,
-                                     reverse=True)
+            size -= Size(blockdev.lvm_get_thpool_padding(size, req.device.vg.peSize, included=True))
 
         # Base is pe, which means potentially rounded up by as much as
         # pesize-1. As a result, you can't just add the growth to the
@@ -1830,7 +1829,7 @@ def growLVM(storage):
                 lv.req_size = max(lv.req_size, lv.usedSpace)
 
                 # add the required padding to the requested pool size
-                lv.req_size += get_pool_padding(lv.req_size, pesize=vg.peSize)
+                lv.req_size += Size(blockdev.lvm_get_thpool_padding(lv.req_size, vg.peSize))
 
         # establish sizes for the percentage-based requests (which are fixed)
         percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
