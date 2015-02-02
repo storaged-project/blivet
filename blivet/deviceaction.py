@@ -546,7 +546,6 @@ class ActionCreateFormat(DeviceAction):
                 self.device.partedPartition.system = self.format.partedSystem
 
             self.device.disk.format.commitToDisk()
-            udev.settle()
 
         if isinstance(self.device.format, luks.LUKS):
             # LUKS needs to wait for random data entropy if it is too low

@@ -289,6 +289,7 @@ class DiskLabel(DeviceFormat):
             raise DiskLabelCommitError(msg)
         else:
             self.updateOrigPartedDisk()
+            udev.settle()
 
     def addPartition(self, start, end, ptype=None):
         """ Add a partition to the disklabel.
