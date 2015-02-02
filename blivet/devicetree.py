@@ -2058,7 +2058,9 @@ class DeviceTree(object):
 
         # the hidden list should be in leaves-first order
         for hidden in reversed(self._hidden):
-            if hidden == device or hidden.dependsOn(device):
+            if hidden == device or hidden.dependsOn(device) and \
+               not any(parent in self._hidden for parent in hidden.parents):
+
                 log.info("unhiding device %s %s (id %d)", hidden.type,
                                                           hidden.name,
                                                           hidden.id)
