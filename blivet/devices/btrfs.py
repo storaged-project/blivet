@@ -29,7 +29,6 @@ from ..devicelibs import raid
 from .. import errors
 from ..flags import flags
 from ..storage_log import log_method_call
-from .. import udev
 from ..formats import getFormat, DeviceFormat
 from ..size import Size
 
@@ -407,12 +406,6 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
     def _postCreate(self):
         super(BTRFSVolumeDevice, self)._postCreate()
-        info = udev.get_device(self.sysfsPath)
-        if not info:
-            log.error("failed to get updated udev info for new btrfs volume")
-        else:
-            self.format.volUUID = udev.device_get_uuid(info)
-
         self.format.exists = True
         self.originalFormat.exists = True
 
