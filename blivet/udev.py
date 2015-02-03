@@ -529,12 +529,24 @@ def device_is_biosraid_member(info):
 
     return False
 
-def device_get_dm_partition_disk(info):
-    return os.path.basename(os.path.dirname(device_get_sysfs_path(info)))
-
 def device_is_dm_partition(info):
     return (device_is_dm(info) and
             info.get("DM_UUID", "").split("-")[0].startswith("part"))
+
+def device_get_partition_disk(info):
+    if not device_is_partition(info) and not device_is_dm_partition(info):
+        return None
+
+    disk = None
+    majorminor = info["ID_PART_ENTRY_DISK"]
+    if majorminor:
+        major, minor = majorminor.split(":")
+        for device in get_devices():
+            if device.get("MAJOR") == major and device.get("MINOR") == minor:
+                disk = device_get_name(device)
+                break
+
+    return disk
 
 def device_get_disklabel_type(info):
     """ Return the type of disklabel on the device or None. """
