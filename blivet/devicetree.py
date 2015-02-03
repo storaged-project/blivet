@@ -27,9 +27,9 @@ import shutil
 import pprint
 import copy
 from six import add_metaclass
-import pyudev
+import time
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, EventQueueEmptyError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -58,6 +58,7 @@ from .storage_log import log_exception_info, log_method_call, log_method_return
 from .i18n import _
 from .size import Size
 from .threads import blivet_lock, SynchronizedMeta
+from .event import UdevEventHandler
 
 import logging
 log = logging.getLogger("blivet")
@@ -153,8 +154,7 @@ class DeviceTree(object):
 
         self._cleanup = False
 
-        self.ueventNotifyCB = None
-        self._pyudev_observer = None
+        self.eventHandler = UdevEventHandler(handler_cb=self.handleUevent)
 
     def setDiskImages(self, images):
         """ Set the disk images and reflect them in exclusiveDisks.
@@ -358,7 +358,7 @@ class DeviceTree(object):
         :type callbacks: :class:`~.callbacks.DoItCallbacks`
 
         """
-
+        self.eventHandler.enable()
         self._preProcessActions()
 
         for action in self._actions[:]:
@@ -389,15 +389,26 @@ class DeviceTree(object):
 
                 self._completed_actions.append(self._actions.pop(0))
 
+            udev.settle()
+
+            # give up some cycles to handle events
+            time.sleep(0.2)
+
         self._postProcessActions()
 
     ##
     ## uevent handling
     ##
-    def ueventCB(self, action, info):
-        print action, udev.device_get_name(info)
-        notify = False
-        device = None
+    def handleUevent(self):
+        """ Handle the next uevent in the queue. """
+        log_method_call(self)
+        try:
+            event = self.eventHandler.next_event()
+        except EventQueueEmptyError:
+            log.debug("uevent queue is empty")
+            return
+
+        log.debug("event: %s", event)
         if event.action == "add":
             self.deviceAddedCB(event.info)
         elif event.action == "remove":
@@ -405,40 +416,7 @@ class DeviceTree(object):
         elif event.action == "change":
             self.deviceChangedCB(event.info)
         else:
-            log.info("unknown uevent action: %s (%s)", action, info.sys_name)
-
-        if notify and self.ueventNotifyCB:
-            self.ueventNotifyCB(action, device)
-
-    def enableUeventMonitoring(self):
-        """ Enable monitoring and handling of block device uevents. """
-        monitor = pyudev.Monitor.from_netlink(udev.global_udev)
-        monitor.filter_by("block")
-        self._pyudev_observer = pyudev.MonitorObserver(monitor, self.ueventCB)
-        self._pyudev_observer.start()
-
-    def disableUeventMonitoring(self):
-        """ Disable monitoring and handling of block device uevents. """
-        if self._pyudev_observer:
-            self._pyudev_observer.stop()
-            self._pyudev_observer = None
-
-    def registerUeventNotifyCB(self, cb):
-        """ Register a uevent notification callback.
-
-            The callback will be run after processing the uevent, and will be
-            passed the action string and the StorageDevice instance that was
-            operated on.
-
-            Note that in the event of a remove action the returned device will
-            no longer be in the devicetree. Also, it is possible that the the
-            device will be hidden in the event of an add or remove action,
-            depending on the disk filtering settings of the devicetree.
-        """
-        if not callable(cb) or cb.func_code.co_argcount < 2:
-            raise ValueError("callback function must accept at least two args")
-
-        self.ueventNotifyCB = cb
+            log.info("unknown event: %s", event)
 
     def deviceAddedCB(self, info, force=False):
         """ Handle an "add" uevent on a block device.
@@ -461,7 +439,7 @@ class DeviceTree(object):
 
         if not info or not info.is_initialized:
             log.debug("new device not initialized -- not processing it")
-            return
+            return        
 
     def deviceChangedCB(self, info):
         """ Handle a "changed" uevent on a block device. """
@@ -538,8 +516,6 @@ class DeviceTree(object):
 
             if hasattr(device.format, "label"):
                 device.format.label = label
-
-        return device
 
     def deviceRemovedCB(self, info):
         """ Handle a "remove" uevent on a block device.
@@ -2173,6 +2149,7 @@ class DeviceTree(object):
                                      sysfsPath=loop_sysfs,
                                      exists=True)
                 loopdev.setup()
+                loopdev.updateSize()
                 log.debug("%s", loopdev)
                 dmdev = DMLinearDevice(name,
                                        dmUuid="ANACONDA-%s" % name,
@@ -2180,6 +2157,7 @@ class DeviceTree(object):
                                        exists=True)
                 dmdev.setup()
                 dmdev.updateSysfsPath()
+                dmdev.updateSize()
                 log.debug("%s", dmdev)
             except (ValueError, DeviceError) as e:
                 log.error("failed to set up disk image: %s", e)
@@ -2835,9 +2813,6 @@ class DeviceTree(object):
                 device.format.mountpoint = mountpoint   # for future mounts
                 device.format._mountpoint = mountpoint  # active mountpoint
                 device.format.mountopts = options
-
-    def __deepcopy__(self, memo):
-        return util.variable_copy(self, memo, shallow=('_pyudev_observer'))
 
     def __str__(self):
         done = []
