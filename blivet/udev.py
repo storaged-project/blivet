@@ -526,7 +526,19 @@ def device_is_biosraid_member(info):
     return False
 
 def device_get_dm_partition_disk(info):
-    return re.sub(r'p?\d*$', '', device_get_name(info))
+    if not device_is_dm_partition(info):
+        return None
+
+    disk = None
+    majorminor = info.get("ID_PART_ENTRY_DISK")
+    if majorminor:
+        major, minor = majorminor.split(":")
+        for device in get_devices():
+            if device.get("MAJOR") == major and device.get("MINOR") == minor:
+                disk = device_get_name(device)
+                break
+
+    return disk
 
 def device_is_dm_partition(info):
     return (device_is_dm(info) and
