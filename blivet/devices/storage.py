@@ -31,6 +31,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import getFormat
 from ..size import Size
+from ..threads import StorageSynchronizer
 
 import logging
 log = logging.getLogger("blivet")
@@ -127,6 +128,9 @@ class StorageDevice(Device):
         self._targetSize = self._size
 
         self.deviceLinks = []
+
+        """ Condition used to synchronize access with uevent handlers. """
+        self.cv = StorageSynchronizer()
 
     def __str__(self):
         exist = "existing"
@@ -368,6 +372,7 @@ class StorageDevice(Device):
             return False
 
         self.setupParents(orig=orig)
+        self.cv.starting = True
         return True
 
     def _setup(self, orig=False):
@@ -381,12 +386,23 @@ class StorageDevice(Device):
         if not self._preSetup(orig=orig):
             return
 
-        self._setup(orig=orig)
+        try:
+            self._setup(orig=orig)
+        except Exception:
+            self.cv.starting = False
+            raise
         self._postSetup()
 
     def _postSetup(self):
         """ Perform post-setup operations. """
-        udev.settle()
+        if self.__class__._setup != StorageDevice._setup:
+            self.cv.wait()
+
+        self.cv.starting = False
+        self.cv.notify()
+        if not flags.uevents:
+            udev.settle()
+
         # we always probe since the device may not be set up when we want
         # information about it
         self._size = self.currentSize
@@ -409,7 +425,11 @@ class StorageDevice(Device):
             self.originalFormat.teardown()
         if self.format.exists:
             self.format.teardown()
-        udev.settle()
+
+        if not flags.uevents:
+            udev.settle()
+
+        self.cv.stopping = True
         return True
 
     def _teardown(self, recursive=None):
@@ -423,11 +443,22 @@ class StorageDevice(Device):
         if not self._preTeardown(recursive=recursive):
             return
 
-        self._teardown(recursive=recursive)
+        try:
+            self._teardown(recursive=recursive)
+        except Exception:
+            self.cv.stopping = False
+            raise
+
         self._postTeardown(recursive=recursive)
 
     def _postTeardown(self, recursive=None):
         """ Perform post-teardown operations. """
+        if self.__class__._teardown != StorageDevice._teardown:
+            self.cv.wait()
+
+        self.cv.stopping = False
+        self.cv.notify()
+
         if recursive:
             self.teardownParents(recursive=recursive)
 
@@ -440,6 +471,7 @@ class StorageDevice(Device):
             raise errors.DeviceError("device has already been created", self.name)
 
         self.setupParents()
+        self.cv.creating = True
 
     def _create(self):
         """ Perform device-specific create operations. """
@@ -449,15 +481,29 @@ class StorageDevice(Device):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         self._preCreate()
-        self._create()
+        try:
+            self._create()
+        except Exception:
+            self.cv.creating = False
+            raise
         self._postCreate()
 
     def _postCreate(self):
         """ Perform post-create operations. """
+        # XXX what about devices that don't get started automatically when
+        #     they are created
+        if self.__class__._create != StorageDevice._create:
+            self.cv.notify() # notify the handler we're ready to post-process
+            self.cv.wait() # wait for notification the event was received
+
+        self.cv.creating = False
         self.exists = True
-        self.setup()
-        self.updateSysfsPath()
-        udev.settle()
+        self.cv.notify() # notify the event handler we're done post-processing
+
+        self.setup() # this seems redundant
+        if not flags.uevents:
+            self.updateSysfsPath()
+            udev.settle()
 
         # make sure that targetSize is updated to reflect the actual size
         if self.resizable:
@@ -477,6 +523,7 @@ class StorageDevice(Device):
             raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
 
         self.teardown()
+        self.cv.destroying = True
 
     def _destroy(self):
         """ Perform device-specific destruction operations. """
@@ -486,12 +533,23 @@ class StorageDevice(Device):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         self._preDestroy()
-        self._destroy()
+        try:
+            self._destroy()
+        except Exception:
+            self.cv.destroying = False
+            raise
         self._postDestroy()
 
     def _postDestroy(self):
         """ Perform post-destruction operations. """
+        if self.__class__._destroy != StorageDevice._destroy:
+            self.cv.notify() # notify the handler we're ready to post-process
+            self.cv.wait() # wait for notification that the event was received
+
+        self.cv.destroying = False
         self.exists = False
+        self.cv.notify() # notify the handler we're done post-processing
+        self.sysfsPath = ""
 
     def setupParents(self, orig=False):
         """ Run setup method of all parent devices. """

@@ -20,10 +20,13 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from threading import _RLock, currentThread
+from threading import _RLock, Condition, currentThread
 from functools import wraps
 from types import FunctionType
 from abc import ABCMeta
+import copy
+
+from .flags import flags
 
 import logging
 log = logging.getLogger("blivet")
@@ -41,6 +44,59 @@ class NoisyRLock(_RLock):
 
 #blivet_lock = NoisyRLock()
 blivet_lock = _RLock()
+
+class StorageSynchronizer(object):
+    """ Manager for shared state related to storage operations.
+
+        Each :class:`~.devices.StorageDevice` and
+        :class:`~.formats.DeviceFormat` instance contains an instance of this
+        class.
+
+        It is used by uevent handlers to notify
+        :class:`~.devices.StorageDevice` or :class:`~.formats.DeviceFormat`
+        instances when operations like create, destroy, setup, teardown have
+        completed.
+
+        It only provides wait and notify methods, both of which are merely
+        wrappers around the internal threading.Condition instance.
+    """
+    def __init__(self):
+        self._cv = Condition(blivet_lock)
+
+        # FIXME: make it so that only one of the flags can be set at a time
+        self.starting = False
+        self.stopping = False
+        self.creating = False
+        self.destroying = False
+        self.resizing = False
+
+        # for general purposes
+        self.changing = False
+
+    def __deepcopy__(self, memo):
+        new = self.__class__.__new__(self.__class__)
+        memo[id(self)] = new
+        for (attr, value) in self.__dict__.items():
+            if attr == "_cv":
+                setattr(new, attr, Condition(blivet_lock))
+            else:
+                setattr(new, attr, copy.deepcopy(value, memo))
+
+        return new
+
+    def wait(self, timeout=None):
+        if not flags.uevents:
+            return
+
+        args = [] if timeout is None else [timeout]
+        self._cv.wait(*args)
+
+    def notify(self, n=None):
+        if not flags.uevents:
+            return
+
+        args = [] if n is None else [n]
+        self._cv.notify(*args)
 
 def exclusive(m):
     """ Run a bound method after aqcuiring the instance's lock. """

@@ -124,6 +124,7 @@ class FS(DeviceFormat):
                                                                 self.device)
 
         self._targetSize = self._size
+        self._mounted_read_only = False
 
         if self.supported:
             self.loadModule()
@@ -413,15 +414,27 @@ class FS(DeviceFormat):
         argv = self._getFormatOptions(options=options,
            do_labeling=not self.relabels())
 
+        self.cv.creating = True
+
+        ret = 0
         try:
             ret = util.run_program([self.mkfsProg] + argv)
         except OSError as e:
             raise FormatCreateError(e, self.device)
+        else:
+            wait_args = []
+            if not ret:
+                wait_args = [2]
+
+            self.cv.wait(*wait_args)
+            if not ret:
+                self.exists = True
+        finally:
+            self.cv.creating = False
+            self.cv.notify()
 
         if ret:
             raise FormatCreateError("format failed: %s" % ret, self.device)
-
-        self.exists = True
 
         if self.label is not None and self.relabels():
             try:
@@ -506,10 +519,17 @@ class FS(DeviceFormat):
         else:
             self.targetSize = rounded
 
+        self.cv.resizing = True
+
         try:
             ret = util.run_program([self.resizefsProg] + self.resizeArgs)
         except OSError as e:
             raise FSResizeError(e, self.device)
+        else:
+            self.cv.wait()
+        finally:
+            self.cv.resizing = False
+            self.cv.notify()
 
         if ret:
             raise FSResizeError("resize failed: %s" % ret, self.device)
@@ -546,10 +566,18 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
+        self.cv.changing = True
+
         try:
             ret = util.run_program([self.fsckProg] + self._getCheckArgs())
         except OSError as e:
             raise FSError("filesystem check failed: %s" % e)
+        else:
+            # it may not have been opened r/w, so just wait briefly
+            self.cv.wait(timeout=2)
+        finally:
+            self.cv.changing = False
+            self.cv.notify()
 
         if self._fsckFailed(ret):
             hdr = _("%(type)s filesystem check failure on %(device)s: ") % \
@@ -643,15 +671,26 @@ class FS(DeviceFormat):
         if isinstance(self, BindFS):
             options = "bind," + options
 
+        self.cv.starting = True
+        read_only = "ro" in options.split(",")
+
         try:
             rc = util.mount(self.device, chrootedMountpoint,
                             fstype=self.mountType,
                             options=options)
         except Exception as e:
             raise FSError("mount failed: %s" % e)
+        else:
+            if not rc and not read_only:
+                self.cv.wait()
+        finally:
+            self.cv.starting = False
+            self.cv.notify()
 
         if rc:
             raise FSError("mount failed: %s" % rc)
+
+        self._mounted_read_only = read_only
 
         if flags.selinux and "ro" not in options.split(",") and flags.installer_mode:
             ret = util.reset_file_context(mountpoint, chroot)
@@ -677,14 +716,37 @@ class FS(DeviceFormat):
         if not os.path.exists(self._mountpoint):
             raise FSError("mountpoint does not exist")
 
-        udev.settle()
-        rc = util.umount(self._mountpoint)
+        if not flags.uevents:
+            udev.settle()
+
+        self.cv.starting = True
+
+        rc = 0
+        try:
+            rc = util.umount(self._mountpoint)
+        except Exception:
+            raise
+        else:
+            wait_args = []
+            if rc:
+                # If we got an error it's possible the device was not (or was
+                # already) closed, so we can't wait around forever for a change
+                # uevent
+                wait_args = [2]
+
+            if not self._mounted_read_only:
+                self.cv.wait(*wait_args)
+        finally:
+            self.cv.starting = False
+            self.cv.notify()
+
         if rc:
             # try and catch whatever is causing the umount problem
             util.run_program(["lsof", self._mountpoint])
             raise FSError("umount failed")
 
         self._mountpoint = None
+        self._mounted_read_only = False
 
     def readLabel(self):
         """Read this filesystem's label.
@@ -739,7 +801,20 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        rc = util.run_program(self._labelfs.label_app.setLabelCommand(self))
+        self.cv.changing = True
+        try:
+            rc = util.run_program(self._labelfs.label_app.setLabelCommand(self))
+        except Exception:
+            raise
+        else:
+            wait_args = []
+            if rc:
+                wait_args = [2]
+            self.cv.wait(*wait_args)
+        finally:
+            self.cv.changing = False
+            self.cv.notify()
+
         if rc:
             raise FSError("label failed")
 

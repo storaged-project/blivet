@@ -34,6 +34,7 @@ from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 from .callbacks import WaitForEntropyData
 from .size import Size
+from .flags import flags
 from .threads import SynchronizedMeta
 
 import logging
@@ -637,7 +638,8 @@ class ActionDestroyFormat(DeviceAction):
         status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
-        udev.settle()
+        if not flags.uevents:
+            udev.settle()
         if not status:
             self.device.teardown()
 

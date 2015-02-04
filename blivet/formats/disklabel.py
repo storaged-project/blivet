@@ -251,8 +251,17 @@ class DiskLabel(DeviceFormat):
         # could ensure a fresh disklabel by setting self._partedDisk to
         # None right before calling self.commit(), but that might hide
         # other problems.
-        self.commit()
-        self.exists = True
+        self.cv.creating = True
+        try:
+            self.commit(notify=False)
+        except Exception:
+            raise
+        else:
+            self.exists = True
+            self.cv.wait()
+        finally:
+            self.cv.creating = False
+            self.cv.notify()
 
     def destroy(self, **kwargs):
         """ Wipe the disklabel from the device. """
@@ -264,32 +273,59 @@ class DiskLabel(DeviceFormat):
         if not os.access(self.device, os.W_OK):
             raise DeviceFormatError("device path does not exist")
 
-        self.partedDevice.clobber()
-        self.exists = False
+        self.cv.destroying = True
+        try:
+            self.partedDevice.clobber()
+        except Exception:
+            raise
+        else:
+            self.cv.wait()
+            self.exists = False
+        finally:
+            self.cv.destroying = False
+            self.cv.notify()
 
-    def commit(self):
-        """ Commit the current partition table to disk and notify the OS. """
+    def commit(self, notify=True):
+        """ Commit the current partition table to disk and notify the OS.
+
+            :keyword bool notify: whether to ensure the operation via udev
+        """
         log_method_call(self, device=self.device,
                         numparts=len(self.partitions))
+        if notify:
+            self.cv.changing = True
         try:
             self.partedDisk.commit()
         except parted.DiskException as msg:
             raise DiskLabelCommitError(msg)
         else:
             self.updateOrigPartedDisk()
-            udev.settle()
+            if not flags.uevents:
+                udev.settle()
+            if notify:
+                self.cv.wait()
+        finally:
+            if notify:
+                self.cv.changing = False
+                self.cv.notify()
 
     def commitToDisk(self):
         """ Commit the current partition table to disk. """
         log_method_call(self, device=self.device,
                         numparts=len(self.partitions))
+        self.cv.changing = True
         try:
             self.partedDisk.commitToDevice()
         except parted.DiskException as msg:
             raise DiskLabelCommitError(msg)
         else:
             self.updateOrigPartedDisk()
-            udev.settle()
+            if not flags.uevents:
+                udev.settle()
+            self.cv.wait()
+        finally:
+            self.cv.changing = False
+            self.cv.notify()
 
     def addPartition(self, start, end, ptype=None):
         """ Add a partition to the disklabel.

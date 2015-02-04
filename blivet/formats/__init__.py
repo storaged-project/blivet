@@ -33,7 +33,8 @@ from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
 from ..i18n import N_
 from ..size import Size
-from ..threads import SynchronizedMeta
+from ..threads import SynchronizedMeta, StorageSynchronizer
+from ..flags import flags
 
 import logging
 log = logging.getLogger("blivet")
@@ -195,6 +196,8 @@ class DeviceFormat(ObjectID):
         #if self.__class__ is DeviceFormat:
         #    self.exists = True
 
+        self.cv = StorageSynchronizer()
+
     def __repr__(self):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
@@ -352,26 +355,40 @@ class DeviceFormat(ObjectID):
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 
+            :keyword bool notify: whether to ensure the operation via udev
             :raises: FormatDestroyError
             :returns: None.
         """
         # pylint: disable=unused-argument
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+
+        notify = kwargs.pop("notify", True)
+        if notify:
+            self.cv.destroying = True
         try:
             rc = run_program(["wipefs", "-f", "-a", self.device])
         except OSError as e:
             err = str(e)
         else:
             err = ""
+            wait_args = []
             if rc:
                 err = str(rc)
+                wait_args = [2]
+
+            if notify:
+                self.cv.wait(*wait_args)
+            if not err:
+                self.exists = False
+        finally:
+            if notify:
+                self.cv.destroying = False
+                self.cv.notify()
 
         if err:
             msg = "error wiping old signatures from %s: %s" % (self.device, err)
             raise FormatDestroyError(msg)
-
-        self.exists = False
 
     def setup(self, **kwargs):
         """ Activate the formatting.

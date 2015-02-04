@@ -540,15 +540,23 @@ class PartitionDevice(StorageDevice):
 
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % bs,
                "seek=%s" % start, "count=%s" % count]
+        # Is it reasonable to be using another device's cv? If not, we'll just
+        # move this method into DiskDevice.
+        self.disk.cv.changing = True
         try:
             util.run_program(cmd)
         except OSError as e:
             log.error(str(e))
+        else:
+            self.disk.cv.wait()
         finally:
+            self.disk.cv.changing = False
+            self.disk.cv.notify()
             # If a udev device is created with the watch option, then
             # a change uevent is synthesized and we need to wait for
             # things to settle.
-            udev.settle()
+            if not flags.uevents:
+                udev.settle()
 
     def _create(self):
         """ Create the device. """
@@ -556,8 +564,9 @@ class PartitionDevice(StorageDevice):
         self.disk.format.addPartition(self.partedPartition.geometry.start,
                                       self.partedPartition.geometry.end,
                                       self.partedPartition.type)
-
+        self.cv.creating = False
         self._wipe()
+        self.cv.creating = True
         try:
             self.disk.format.commit()
         except errors.DiskLabelCommitError:
@@ -566,6 +575,8 @@ class PartitionDevice(StorageDevice):
             raise
 
     def _postCreate(self):
+        StorageDevice._postCreate(self)
+
         if self.isExtended:
             partition = self.disk.format.extendedPartition
         else:
@@ -578,9 +589,7 @@ class PartitionDevice(StorageDevice):
         if not self.isExtended:
             # Ensure old metadata which lived in freespace so did not get
             # explictly destroyed by a destroyformat action gets wiped
-            DeviceFormat(device=self.path, exists=True).destroy()
-
-        StorageDevice._postCreate(self)
+            DeviceFormat(device=self.path, exists=True).destroy(notify=False)
 
     def _computeResize(self, partition, newsize=None):
         """ Return a new constraint and end-aligned geometry for new size.
@@ -635,7 +644,16 @@ class PartitionDevice(StorageDevice):
                                         start=geometry.start,
                                         end=geometry.end)
 
-        self.disk.format.commit()
+        self.cv.resizing = True
+        try:
+            self.disk.format.commit()
+        except Exception:
+            raise
+        else:
+            self.cv.wait()
+        finally:
+            self.cv.resizing = False
+            self.cv.notify()
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)

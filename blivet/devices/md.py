@@ -466,8 +466,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     def _postCreate(self):
         # this is critical since our status method requires a valid sysfs path
-        self.exists = True  # this is needed to run updateSysfsPath
-        self.updateSysfsPath()
+        if not flags.uevents:
+            self.exists = True  # this is needed to run updateSysfsPath
+            self.updateSysfsPath()
+
         StorageDevice._postCreate(self)
 
         # update our uuid attribute with the new array's UUID

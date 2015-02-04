@@ -73,7 +73,7 @@ class PPCPRePBoot(DeviceFormat):
             raise FormatCreateError("PReP Boot format already exists")
 
         DeviceFormat.create(self, **kwargs)
-
+        self.cv.creating = True
         try:
             fd = os.open(self.device, os.O_RDWR)
             length = os.lseek(fd, 0, os.SEEK_END)
@@ -87,11 +87,16 @@ class PPCPRePBoot(DeviceFormat):
                     buf = '\0' * length
                     os.write(fd, buf)
                     length = 0
-            os.close(fd)
         except OSError as e:
             log.error("error zeroing out %s: %s", self.device, e)
+        else:
+            self.cv.wait()
+        finally:
             if fd:
                 os.close(fd)
+            self.exists = True
+            self.cv.creating = False
+            self.cv.notify()
 
     @property
     def status(self):

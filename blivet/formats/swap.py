@@ -167,8 +167,21 @@ class SwapSpace(DeviceFormat):
         if not self.exists:
             raise SwapSpaceError("format has not been created")
 
-        if self.status:
+        if not self.status:
+            return
+
+        self.cv.stopping = True
+        try:
             swap.swapoff(self.device)
+        except Exception:
+            raise
+        else:
+            # We don't need to worry about missing the change event triggered by
+            # the swapoff call above because we hold the lock, preventing events
+            # from being handled, until we call wait here.
+            self.cv.wait()
+        finally:
+            self.cv.stopping = False
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -188,13 +201,18 @@ class SwapSpace(DeviceFormat):
         if self.exists:
             raise SwapSpaceError("format already exists")
 
+        DeviceFormat.create(self, **kwargs)
+        self.cv.creating = True
         try:
-            DeviceFormat.create(self, **kwargs)
             swap.mkswap(self.device, label=self.label)
         except Exception:
             raise
         else:
+            self.cv.wait()
             self.exists = True
+        finally:
+            self.cv.creating = False
+            self.cv.notify()
 
 register_device_format(SwapSpace)
 

@@ -188,9 +188,17 @@ class LUKS(DeviceFormat):
             return
 
         DeviceFormat.setup(self, **kwargs)
-        crypto.luks_open(self.device, self.mapName,
-                       passphrase=self.__passphrase,
-                       key_file=self._key_file)
+        self.cv.starting = True
+        try:
+            crypto.luks_open(self.device, self.mapName,
+                           passphrase=self.__passphrase,
+                           key_file=self._key_file)
+        except Exception:
+            raise
+        else:
+            self.cv.wait()
+        finally:
+            self.cv.starting = False
 
     def teardown(self):
         """ Close, or tear down, the format. """
@@ -199,9 +207,20 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        if self.status:
-            log.debug("unmapping %s", self.mapName)
+        if not self.status:
+            return
+
+        self.cv.stopping = True
+
+        log.debug("unmapping %s", self.mapName)
+        try:
             crypto.luks_close(self.mapName)
+        except Exception:
+            raise
+        else:
+            self.cv.wait()
+        finally:
+            self.cv.starting = False
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -221,22 +240,26 @@ class LUKS(DeviceFormat):
         if not self.hasKey:
             raise LUKSError("luks device has no key/passphrase")
 
+        DeviceFormat.create(self, **kwargs)
+        self.cv.creating = True
         try:
-            DeviceFormat.create(self, **kwargs)
             crypto.luks_format(self.device,
                              passphrase=self.__passphrase,
                              key_file=self._key_file,
                              cipher=self.cipher,
                              key_size=self.key_size,
                              min_entropy=self.min_luks_entropy)
-
         except Exception:
             raise
         else:
-            self.uuid = crypto.luks_uuid(self.device)
+            self.cv.wait()
+            #self.uuid = crypto.luks_uuid(self.device)
             self.exists = True
             if flags.installer_mode:
                 self.mapName = "luks-%s" % self.uuid
+        finally:
+            self.cv.creating = False
+            self.cv.notify()
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.

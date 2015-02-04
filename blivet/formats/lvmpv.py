@@ -109,8 +109,9 @@ class LVMPhysicalVolume(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
+        DeviceFormat.create(self, **kwargs)
+        self.cv.creating = True
         try:
-            DeviceFormat.create(self, **kwargs)
             # Consider use of -Z|--zero
             # -f|--force or -y|--yes may be required
 
@@ -121,10 +122,13 @@ class LVMPhysicalVolume(DeviceFormat):
             lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
         except Exception:
             raise
+        else:
+            self.cv.wait()
+            self.exists = True
         finally:
+            self.cv.creating = False
+            self.cv.notify()
             lvm.pvscan(self.device)
-
-        self.exists = True
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
@@ -140,15 +144,28 @@ class LVMPhysicalVolume(DeviceFormat):
         if self.status:
             raise PhysicalVolumeError("device is active")
 
+        self.cv.destroying = True
+
         # FIXME: verify path exists?
+        err = False
         try:
             lvm.pvremove(self.device)
         except LVMError:
-            DeviceFormat.destroy(self, **kwargs)
+            try:
+                DeviceFormat.destroy(self, **kwargs)
+            except Exception:
+                err = True
+                raise
         finally:
+            wait_args = []
+            if err:
+                wait_args = [2]
+            self.cv.wait(*wait_args)
+            self.cv.destroying = False
+            if not err:
+                self.exists = False
+            self.cv.notify()
             lvm.pvscan(self.device)
-
-        self.exists = False
 
     @property
     def status(self):

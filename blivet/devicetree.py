@@ -380,7 +380,6 @@ class DeviceTree(object):
 
                     action.execute(callbacks)
 
-                udev.settle()
                 for device in self._devices:
                     # make sure we catch any renumbering parted does
                     if device.exists and isinstance(device, PartitionDevice):
@@ -388,8 +387,6 @@ class DeviceTree(object):
                         device.format.device = device.path
 
                 self._completed_actions.append(self._actions.pop(0))
-
-            udev.settle()
 
             # give up some cycles to handle events
             time.sleep(0.2)
@@ -418,6 +415,108 @@ class DeviceTree(object):
         else:
             log.info("unknown event: %s", event)
 
+    def _notifyDevice(self, action, info):
+        """ Notify device condition variables as appropriate.
+
+            :param str action: an action string, eg: 'add', 'remove'
+            :param :class:`pyudev.Device` info: udev data for the device
+            :returns: True if any condition variable was notified
+            :rtype: bool
+
+            Methods :meth:`~.devices.StorageDevice.create`,
+            :meth:`~.devices.StorageDevice.destroy`, and
+            :meth:`~.devices.StorageDevice.setup` all use a condition variable
+            to synchronize the finalization/confirmation of their respective
+            operations. Since each device has only one condition variable, flags
+            are used to indicate which, if any, of these methods is waiting.
+        """
+        def device_op_in_progress(device):
+            ret = device.cv.starting or device.cv.resizing or device.cv.changing
+            log.debug("device %s ops-in-progress: %s", device, ret)
+            return ret
+
+        def format_op_in_progress(fmt):
+            ret = (fmt.cv.creating or fmt.cv.resizing or fmt.cv.destroying or
+                   fmt.cv.starting or fmt.cv.stopping or fmt.cv.changing)
+            log.debug("format %s ops-in-progress: %s", fmt, ret)
+            return ret
+
+        ret = False
+        name = udev.device_get_name(info)
+
+        # We can't do this lookup by sysfs path since the StorageDevice
+        # might have just been created, in which case it might not have a
+        # meaningful sysfs path (for dm and md they aren't predictable).
+        device = self.getDeviceByName(name)
+
+        if action in ("add", "change") and device and device.cv.creating:
+            device.sysfsPath = udev.device_get_sysfs_path(info)
+            device.cv.wait() # wait until the device says it's ready
+            device.cv.notify() # notify the device that we've received the event
+            device.cv.wait() # wait for the device to postprocess the event
+            ret = True
+        elif action == "change":
+            # could be any number of operations on a device that may no longer
+            # be in the tree
+            cv = None
+            if device and device_op_in_progress(device):
+                cv = device.cv
+            elif device and format_op_in_progress(device.format):
+                cv = device.format.cv
+            elif self._actions:
+                # see if this action is on a device scheduled for removal
+                devices = (a.device for a in self._actions if a.isDevice and
+                                                              a.isDestroy)
+                for device in devices:
+                    # hopefully all device names are intact after removal
+                    if device.name == name:
+                        break
+                else:
+                    device = None
+
+                if not device:
+                    # see if this is a format op on a format scheduled for
+                    # destruction
+                    actions = (a for a in self._actions if a.isDestroy and
+                                                           a.isFormat)
+                    for action in actions:
+                        if action.device.name == name and \
+                           format_op_in_progress(action.format):
+                            cv = action.format.cv
+                            break
+
+                if device and not cv:
+                    current_action = self._actions[0]
+                    if device_op_in_progress(current_action.device):
+                        cv = current_action.device.cv
+                    elif format_op_in_progress(current_action.format):
+                        cv = current_action.format.cv
+
+            if cv:
+                cv.notify()
+                cv.wait()
+                ret = True
+        elif action == "remove" and device and device.cv.stopping:
+            device.cv.notify()
+            device.cv.wait()
+            ret = True
+        elif action == "remove":
+            current_action = None
+            if self._actions:
+                current_action = self._actions[0]
+
+            if current_action and \
+               current_action.isDestroy and current_action.isDevice and \
+               current_action.device.exists and \
+               current_action.device.cv.destroying:
+                device = current_action.device
+                device.cv.wait() # wait until the device says it's ready
+                device.cv.notify() # notify device that we received the event
+                device.cv.wait() # wait for the device to postprocess the event
+                ret = True
+
+        return ret
+
     def deviceAddedCB(self, info, force=False):
         """ Handle an "add" uevent on a block device.
 
@@ -437,9 +536,12 @@ class DeviceTree(object):
             log.debug("ignoring add event for %s", sysfs_path)
             return
 
+        if self._notifyDevice("add", info):
+            return
+
         if not info or not info.is_initialized:
             log.debug("new device not initialized -- not processing it")
-            return        
+            return
 
     def deviceChangedCB(self, info):
         """ Handle a "changed" uevent on a block device. """
@@ -458,6 +560,10 @@ class DeviceTree(object):
             (udev.device_is_md(info) or udev.device_is_dm(info))):
             return self.deviceAddedCB(info, force=True)
 
+        # ignore return value since we'll want to update size, &c either way
+        self._notifyDevice("change", info)
+
+        # FIXME: find devices scheduled for removal as well?
         if not device:
             log.warning("device not found: %s", udev.device_get_name(info))
             return
@@ -529,6 +635,9 @@ class DeviceTree(object):
         """
         log.debug("device removed: %s", udev.device_get_sysfs_path(info))
         if info.subsystem != "block":
+            return
+
+        if self._notifyDevice("remove", info):
             return
 
     def _addDevice(self, newdev, new=True):
