@@ -31,6 +31,11 @@ class Flags(object):
         self.installer_mode = False
 
         #
+        # minor modes
+        #
+        self.uevents = False
+
+        #
         # minor modes (installer-specific)
         #
         self.automated_install = False

@@ -29,6 +29,7 @@ from six import add_metaclass
 from . import udev
 from . import util
 from .errors import EventHandlerError, EventParamError, EventQueueEmptyError
+from .flags import flags
 
 ##
 ## Event
@@ -220,12 +221,15 @@ class UdevEventHandler(EventHandler):
         self._pyudev_observer = pyudev.MonitorObserver(monitor,
                                                        self.handle_event)
         self._pyudev_observer.start()
+        flags.uevents = True
 
     def disable(self):
         """ Disable monitoring and handling of block device uevents. """
         if self._pyudev_observer:
             self._pyudev_observer.stop()
             self._pyudev_observer = None
+
+        flags.uevents = False
 
     def enqueue_event(self, *args, **kwargs):
         if args[0] == "add" and (udev.device_is_dm(args[1]) or
