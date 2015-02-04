@@ -493,12 +493,8 @@ class StorageDevice(Device):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         self._preCreate()
-        try:
-            self._create()
-        except Exception as e:
-            raise errors.DeviceCreateError(str(e), self.name)
-        else:
-            self._postCreate()
+        self._create()
+        self._postCreate()
 
     def _postCreate(self):
         """ Perform post-create operations. """
