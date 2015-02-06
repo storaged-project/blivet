@@ -43,7 +43,7 @@ class NoisyRLock(_RLock):
         log.debug("exit[2]: %s (%s)", self, currentThread().name)
 
 #blivet_lock = NoisyRLock()
-blivet_lock = _RLock()
+blivet_lock = _RLock(verbose=flags.debug_threads)
 
 class StorageSynchronizer(object):
     """ Manager for shared state related to storage operations.
@@ -61,7 +61,7 @@ class StorageSynchronizer(object):
         wrappers around the internal threading.Condition instance.
     """
     def __init__(self):
-        self._cv = Condition(blivet_lock)
+        self._cv = Condition(blivet_lock, verbose=flags.debug_threads)
 
         # FIXME: make it so that only one of the flags can be set at a time
         self.starting = False
@@ -78,7 +78,8 @@ class StorageSynchronizer(object):
         memo[id(self)] = new
         for (attr, value) in self.__dict__.items():
             if attr == "_cv":
-                setattr(new, attr, Condition(blivet_lock))
+                setattr(new, attr, Condition(blivet_lock,
+                                             verbose=flags.debug_threads))
             else:
                 setattr(new, attr, copy.deepcopy(value, memo))
 
