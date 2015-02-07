@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.75
+Version: 0.76
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -66,6 +66,48 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Feb 06 2015 Brian C. Lane <bcl@redhat.com> - 0.76-1
+- Revert "Switch to temporary transifex project" (bcl)
+- Check parent/container type for thin volumes and normal volumes. (dlehman)
+- drop useless entries from formatByDefault exceptlist (awilliam)
+- Fix import of devicelibs.raid in platform.py (vpodzime)
+- Use %%license in python-blivet.spec (bcl)
+- Fix import of FALLBACK_DEFAULT_PART_SIZE (vpodzime)
+- Make implicit partitions smaller if real requests don't fit anywhere
+  (vpodzime)
+- Use list comprehension instead of filter+lambda in makebumpver (amulhern)
+- Revert "Try to deactivate lvm on corrupted gpt disks." (dlehman)
+- Virtualize options property methods in DeviceFormat.options definition.
+  (amulhern)
+- Do not redefine size property in TmpFS. (amulhern)
+- Do not set self.exists to True in TmpFS.__init__(). (amulhern)
+- Simplify NoDevFS.type. (amulhern)
+- Set format's mountpoint if it has the mountpoint attribute. (amulhern)
+- Do not bother to set device.format.mountopts. (amulhern)
+- Tighten up FS.mountable(). (amulhern)
+- Simplify FS._getOptions(). (amulhern)
+- Simplify setting options variable. (amulhern)
+- Be less eager about processing all lines in /proc/meminfo. (amulhern)
+- Make error message more useful. (amulhern)
+- Add a tiny test for TmpFS. (amulhern)
+- More fixes for alignment-related partition allocation failures. (dlehman)
+- Do not mix stdout and stderr when running utilities unless requested
+  (vpodzime)
+- Define the _device, _label and _options attributes in constructor (vpodzime)
+- Get rid of the has_lvm function (vpodzime)
+- Do not create lambda over and over in a cycle (vpodzime)
+- Disable pylint check for cached LVM data in more places (vpodzime)
+- Fix issue where too many mpath luns crashes installer (#1181336) (rmarshall)
+- Allow user-specified values for data alignment of new lvm pvs. (#1178705)
+  (dlehman)
+- Let LVM determine alignment for PV data areas. (#962961) (dlehman)
+- Raise UnusableConfigurationError when unusable configuration is detected.
+  (dlehman)
+- Don't raise an exception for failure to scan an ignored disk. (dlehman)
+- Try to deactivate lvm on corrupted gpt disks. (dlehman)
+- Remove an unused and outdated constant (vpodzime)
+- Relax the blivet device name requirements (#1183061) (dshea)
+
 * Fri Jan 16 2015 Brian C. Lane <bcl@redhat.com> - 0.75-1
 - Switch to temporary transifex project (bcl)
 - Add docstrings to the methods in loop.py (bcl)
