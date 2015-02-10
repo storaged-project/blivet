@@ -406,6 +406,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Is this device directly accessible? """
         return False
 
+    @property
+    def fstabSpec(self):
+        return ""
+
     def populateKSData(self, data):
         super(LVMVolumeGroupDevice, self).populateKSData(data)
         data.vgname = self.name
