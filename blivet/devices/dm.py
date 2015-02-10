@@ -22,7 +22,7 @@
 
 import os
 from gi.repository import BlockDev as blockdev
-import block
+from gi.repository import GLib
 
 from .. import errors
 from .. import util
@@ -96,9 +96,13 @@ class DMDevice(StorageDevice):
 
     @property
     def status(self):
-        match = next((m for m in block.dm.maps() if m.name == self.mapName),
-           None)
-        return (match.live_table and not match.suspended) if match else False
+        try:
+            return blockdev.dm_map_exists(self.mapName, True, True)
+        except GLib.GError as e:
+            if "Not running as root" in e.message:
+                return False
+            else:
+                raise
 
     #def getTargetType(self):
     #    return dm.getDmTarget(name=self.name)
