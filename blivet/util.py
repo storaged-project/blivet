@@ -137,7 +137,7 @@ def get_mount_device(mountpoint):
             break
 
     if mount_device and re.match(r'/dev/loop\d+$', mount_device):
-        from blivet.devicelibs import loop
+        from .devicelibs import loop
         loop_name = os.path.basename(mount_device)
         mount_device = loop.get_backing_file(loop_name)
         log.debug("found backing file %s for loop device %s", mount_device,
