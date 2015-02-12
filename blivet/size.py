@@ -115,7 +115,7 @@ def unitStr(unit, xlate=False):
     """
     return _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
 
-def _parseUnits(spec, xlate):
+def parseUnits(spec, xlate):
     """ Parse a unit specification and return corresponding factor.
 
         :param spec: a units specifier
@@ -197,7 +197,7 @@ def _parseSpec(spec):
         # String contains non-ascii characters, so can not be English.
         pass
     else:
-        unit = _parseUnits(spec_ascii, False)
+        unit = parseUnits(spec_ascii, False)
         if unit is not None:
             return size * unit.factor
 
@@ -210,7 +210,7 @@ def _parseSpec(spec):
     else:
         spec_local = specifier
 
-    unit = _parseUnits(spec_local, True)
+    unit = parseUnits(spec_local, True)
     if unit is not None:
         return size * unit.factor
 
