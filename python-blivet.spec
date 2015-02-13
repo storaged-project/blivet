@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.76
+Version: 1.0
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -66,6 +66,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Feb 13 2015 David Lehman <dlehman@redhat.com> - 1.0-1
+- Move autopart and installation-specific code outside of __init__.py
+  (vpodzime)
+- Convert _parseUnits to public function (vtrefny)
+- LVMFactory: raise exception when adding LV to full fixed size VG (#1170660)
+  (vtrefny)
+- Do not unhide devices with hidden parents (#1158643) (vtrefny)
+
 * Fri Feb 06 2015 Brian C. Lane <bcl@redhat.com> - 0.76-1
 - Revert "Switch to temporary transifex project" (bcl)
 - Check parent/container type for thin volumes and normal volumes. (dlehman)
