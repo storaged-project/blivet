@@ -1,7 +1,7 @@
 ^blivet/arch.py:[[:digit:]]+: \[F0401\(import\-error\), numBits\] Unable to import 'platform'$
 ^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
-^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
-^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
+^blivet/blivet.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
+^blivet/blivet.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'BootLoaderError' but no assignment is done$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'errorHandler' but no assignment is done$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'ERROR_RAISE' but no assignment is done$
