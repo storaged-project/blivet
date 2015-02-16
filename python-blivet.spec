@@ -15,7 +15,6 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define pykickstartver 1.99.22
 %define partedver 1.8.1
 %define pypartedver 2.5-2
-%define pythonpyblockver 0.45
 %define e2fsver 1.41.0
 %define pythoncryptsetupver 0.1.1
 %define utillinuxver 2.15.1
@@ -41,7 +40,6 @@ Requires: lvm2 >= %{lvm2ver}
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: btrfs-progs
-Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
 Requires: lsof
 Requires: libblockdev >= %{libblockdevver}
