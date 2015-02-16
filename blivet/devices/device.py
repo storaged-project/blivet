@@ -96,7 +96,7 @@ class Device(util.ObjectID):
             For these parted objects, we just do a shallow copy.
         """
         return util.variable_copy(self, memo,
-           omit=('_raidSet', 'node'),
+           omit=('node'),
            shallow=('_partedDevice', '_partedPartition'))
 
     def __repr__(self):

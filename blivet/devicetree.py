@@ -21,7 +21,6 @@
 #
 
 import os
-import block
 import re
 import shutil
 import pprint
@@ -1656,23 +1655,21 @@ class DeviceTree(object):
         minor = udev.device_get_minor(info)
 
         # Have we already created the DMRaidArrayDevice?
-        rss = block.getRaidSetFromRelatedMem(uuid=uuid, name=name,
-                                            major=major, minor=minor)
-        if len(rss) == 0:
+        rs_names = blockdev.dm_get_member_raid_sets(uuid, name, major, minor)
+        if len(rs_names) == 0:
             log.warning("dmraid member %s does not appear to belong to any "
                         "array", device.name)
             return
 
-        for rs in rss:
-            dm_array = self.getDeviceByName(rs.name, incomplete=True)
+        for rs_name in rs_names:
+            dm_array = self.getDeviceByName(rs_name, incomplete=True)
             if dm_array is not None:
                 # We add the new device.
                 dm_array.parents.append(device)
             else:
                 # Activate the Raid set.
-                rs.activate(mknod=True)
-                dm_array = DMRaidArrayDevice(rs.name,
-                                             raidSet=rs,
+                blockdev.dm_activate_raid_set(rs_name)
+                dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[device])
 
                 self._addDevice(dm_array)

@@ -21,6 +21,7 @@
 #
 
 import os
+from gi.repository import BlockDev as blockdev
 
 from .. import errors
 from .. import util
@@ -172,7 +173,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     _formatClassName = property(lambda s: "dmraidmember")
     _formatUUIDAttr = property(lambda s: None)
 
-    def __init__(self, name, raidSet=None, fmt=None,
+    def __init__(self, name, fmt=None,
                  size=None, parents=None, sysfsPath=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -185,8 +186,6 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfsPath: sysfs device path
             :type sysfsPath: str
-            :keyword raidSet: the RaidSet object from block
-            :type raidSet: :class:`block.RaidSet`
 
             DMRaidArrayDevices always exist. Blivet cannot create or destroy
             them.
@@ -195,11 +194,6 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
                                                 parents=parents, exists=True,
                                                 sysfsPath=sysfsPath)
 
-        self._raidSet = raidSet
-
-    @property
-    def raidSet(self):
-        return self._raidSet
 
     @property
     def devices(self):
@@ -210,13 +204,13 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         """ Deactivate the raid set. """
         log_method_call(self, self.name, status=self.status)
         # This call already checks if the set is not active.
-        self._raidSet.deactivate()
+        blockdev.dm_deactivate_raid_set(self.name)
 
     def activate(self):
         """ Activate the raid set. """
         log_method_call(self, self.name, status=self.status)
         # This call already checks if the set is active.
-        self._raidSet.activate(mknod=True)
+        blockdev.dm_activate_raid_set(self.name)
         udev.settle()
 
     def _setup(self, orig=False):
@@ -242,7 +236,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
 
     @property
     def description(self):
-        return "BIOS RAID set (%s)" % self._raidSet.rs.set_type
+        return "BIOS RAID set (%s)" % blockdev.dm_get_raid_set_type(self.name)
 
     @property
     def model(self):
