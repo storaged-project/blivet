@@ -42,11 +42,6 @@ from .i18n import _
 import logging
 log = logging.getLogger("blivet")
 
-try:
-    import nss.nss
-except ImportError:
-    nss = None
-
 def releaseFromRedhatRelease(fn):
     """
     Attempt to identify the installation of a Linux distribution via
@@ -1081,12 +1076,6 @@ def writeEscrowPackets(storage):
         return
 
     log.debug("escrow: writeEscrowPackets start")
-
-    if not nss:
-        log.error("escrow: no nss python module -- aborting")
-        return
-
-    nss.nss.nss_init_nodb() # Does nothing if NSS is already initialized
 
     backupPassphrase = blockdev.crypto_generate_backup_passphrase()
 
