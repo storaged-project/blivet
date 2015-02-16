@@ -53,6 +53,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
     _formatClassName = property(lambda s: "lvmpv")
     _formatUUIDAttr = property(lambda s: "vgUuid")
 
+    @staticmethod
+    def get_supported_pe_sizes():
+        return [Size(pe_size) for pe_size in blockdev.lvm_get_supported_pe_sizes()]
+
     def __init__(self, name, parents=None, size=None, free=None,
                  peSize=None, peCount=None, peFree=None, pvCount=None,
                  uuid=None, exists=False, sysfsPath=''):
