@@ -173,19 +173,16 @@ def _parseSpec(spec):
     if radix != '.':
         spec = spec.replace(radix, '.')
 
-    # Match the string using only digit/space/not-space, since the
-    # string might be non-English and contain non-letter characters
-    # that Python doesn't understand as parts of words.
-    m = re.match(r'(-?\s*[0-9.]+)\s*([^\s]*)$', spec.strip())
+    m = re.match(r'(?P<numeric>(-|\+)?\s*(?P<base>([0-9]+)|([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*))(?P<exp>(e|E)(-|\+)[0-9]+)?)\s*(?P<rest>[^\s]*)$', spec.strip())
     if not m:
         raise ValueError("invalid size specification", spec)
 
     try:
-        size = Decimal(m.groups()[0])
+        size = Decimal(m.group('numeric'))
     except InvalidOperation:
         raise ValueError("invalid size specification", spec)
 
-    specifier = m.groups()[1]
+    specifier = m.group('rest')
 
     # First try to parse as English.
     try:
