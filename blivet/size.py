@@ -22,6 +22,7 @@
 import re
 import string
 import locale
+import sys
 from collections import namedtuple
 
 from decimal import Decimal
@@ -78,14 +79,18 @@ else:
 def _lowerASCII(s):
     """Convert a string to lowercase using only ASCII character definitions.
 
-       :param str s: string to convert
+       :param s: string instance to convert
+       :type s: str or bytes
        :returns: lower-cased string
        :rtype: str
     """
-    if six.PY2:
-        return string.translate(s, _ASCIIlower_table) # pylint: disable=no-member
-    else:
-        return str.translate(s, _ASCIIlower_table) # pylint: disable=no-member
+
+    # XXX: Python 3 has str.maketrans() and bytes.maketrans() so we should
+    # ideally use one or the other depending on the type of 's'. But it turns
+    # out we expect this function to always return string even if given bytes.
+    if not six.PY2 and isinstance(s, bytes):
+        s = s.decode(sys.getdefaultencoding())
+    return s.translate(_ASCIIlower_table) # pylint: disable=no-member
 
 def _makeSpec(prefix, suffix, xlate, lowercase=True):
     """ Synthesizes a whole word from prefix and suffix.
