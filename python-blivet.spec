@@ -11,14 +11,11 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
-%define dmver 1.02.17-6
 %define pykickstartver 1.99.22
 %define partedver 1.8.1
 %define pypartedver 2.5-2
 %define e2fsver 1.41.0
-%define pythoncryptsetupver 0.1.1
 %define utillinuxver 2.15.1
-%define lvm2ver 2.02.99
 %define libblockdevver 0.6
 
 BuildArch: noarch
@@ -32,15 +29,8 @@ Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
-Requires: device-mapper >= %{dmver}
-Requires: cryptsetup
-Requires: python-cryptsetup >= %{pythoncryptsetupver}
-Requires: mdadm
-Requires: lvm2 >= %{lvm2ver}
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
-Requires: btrfs-progs
-Requires: device-mapper-multipath
 Requires: lsof
 Requires: libblockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
