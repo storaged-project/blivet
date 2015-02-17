@@ -1200,8 +1200,9 @@ class DeviceTree(object):
         #
         # The first step is to either look up or create the device
         #
+        device_added = True
         if device:
-            pass
+            device_added = False
         elif udev.device_is_loop(info):
             log.info("%s is a loop device", name)
             device = self.addUdevLoopDevice(info)
@@ -1265,7 +1266,8 @@ class DeviceTree(object):
 
         # now handle the device's formatting
         self.handleUdevDeviceFormat(info, device)
-        device.originalFormat = copy.copy(device.format)
+        if device_added:
+            device.originalFormat = copy.copy(device.format)
         device.deviceLinks = udev.device_get_symlinks(info)
 
     def handleUdevDiskLabelFormat(self, info, device):
