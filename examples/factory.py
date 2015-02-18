@@ -20,8 +20,8 @@ b.reset()
 try:
     disk1 = b.devicetree.getDeviceByName("disk1")
     disk2 = b.devicetree.getDeviceByName("disk2")
-    disk1.format = blivet.formats.getFormat("disklabel", device=disk1.path)
-    disk2.format = blivet.formats.getFormat("disklabel", device=disk2.path)
+    b.initializeDisk(disk1)
+    b.initializeDisk(disk2)
 
     # create an lv named data in a vg named testvg
     device = b.factoryDevice(blivet.devicefactory.DEVICE_TYPE_LVM,
