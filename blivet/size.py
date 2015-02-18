@@ -255,7 +255,7 @@ class Size(Decimal):
 
         # drop any partial byte
         size = size.to_integral_value(rounding=ROUND_DOWN)
-        self = Decimal.__new__(cls, value=size)
+        self = Decimal.__new__(cls, value=size, context=context)
         return self
 
     # Force str and unicode types since the translated sizespec may be unicode
@@ -280,26 +280,26 @@ class Size(Decimal):
         return (self.__class__, (self.convertTo(),))
 
     def __add__(self, other, context=None):
-        return Size(Decimal.__add__(self, other, context=context))
+        return Size(Decimal.__add__(self, other))
 
     # needed to make sum() work with Size arguments
     def __radd__(self, other, context=None):
-        return Size(Decimal.__radd__(self, other, context=context))
+        return Size(Decimal.__radd__(self, other))
 
     def __sub__(self, other, context=None):
         # subtraction is implemented using __add__ and negation, so we'll
         # be getting passed a Size
-        return Decimal.__sub__(self, other, context=context)
+        return Decimal.__sub__(self, other)
 
     def __mul__(self, other, context=None):
-        return Size(Decimal.__mul__(self, other, context=context))
+        return Size(Decimal.__mul__(self, other))
     __rmul__ = __mul__
 
     def __div__(self, other, context=None):
-        return Size(Decimal.__div__(self, other, context=context))
+        return Size(Decimal.__div__(self, other))
 
     def __mod__(self, other, context=None):
-        return Size(Decimal.__mod__(self, other, context=context))
+        return Size(Decimal.__mod__(self, other))
 
     def convertTo(self, spec=None):
         """ Return the size in the units indicated by the specifier.
