@@ -42,29 +42,29 @@ _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 _DECIMAL_FACTOR = 10 ** 3
 _BINARY_FACTOR = 2 ** 10
 
-_BYTES_SYMBOL = N_(b"B")
-_BYTES_WORDS = (N_(b"bytes"), N_(b"byte"))
+_BYTES_SYMBOL = N_("B")
+_BYTES_WORDS = (N_("bytes"), N_("byte"))
 
 # Symbolic constants for units
-B = _Prefix(1, b"", b"")
+B = _Prefix(1, "", "")
 
-KB = _Prefix(_DECIMAL_FACTOR ** 1, N_(b"kilo"), N_(b"k"))
-MB = _Prefix(_DECIMAL_FACTOR ** 2, N_(b"mega"), N_(b"M"))
-GB = _Prefix(_DECIMAL_FACTOR ** 3, N_(b"giga"), N_(b"G"))
-TB = _Prefix(_DECIMAL_FACTOR ** 4, N_(b"tera"), N_(b"T"))
-PB = _Prefix(_DECIMAL_FACTOR ** 5, N_(b"peta"), N_(b"P"))
-EB = _Prefix(_DECIMAL_FACTOR ** 6, N_(b"exa"), N_(b"E"))
-ZB = _Prefix(_DECIMAL_FACTOR ** 7, N_(b"zetta"), N_(b"Z"))
-YB = _Prefix(_DECIMAL_FACTOR ** 8, N_(b"yotta"), N_(b"Y"))
+KB = _Prefix(_DECIMAL_FACTOR ** 1, N_("kilo"), N_("k"))
+MB = _Prefix(_DECIMAL_FACTOR ** 2, N_("mega"), N_("M"))
+GB = _Prefix(_DECIMAL_FACTOR ** 3, N_("giga"), N_("G"))
+TB = _Prefix(_DECIMAL_FACTOR ** 4, N_("tera"), N_("T"))
+PB = _Prefix(_DECIMAL_FACTOR ** 5, N_("peta"), N_("P"))
+EB = _Prefix(_DECIMAL_FACTOR ** 6, N_("exa"), N_("E"))
+ZB = _Prefix(_DECIMAL_FACTOR ** 7, N_("zetta"), N_("Z"))
+YB = _Prefix(_DECIMAL_FACTOR ** 8, N_("yotta"), N_("Y"))
 
-KiB = _Prefix(_BINARY_FACTOR ** 1, N_(b"kibi"), N_(b"Ki"))
-MiB = _Prefix(_BINARY_FACTOR ** 2, N_(b"mebi"), N_(b"Mi"))
-GiB = _Prefix(_BINARY_FACTOR ** 3, N_(b"gibi"), N_(b"Gi"))
-TiB = _Prefix(_BINARY_FACTOR ** 4, N_(b"tebi"), N_(b"Ti"))
-PiB = _Prefix(_BINARY_FACTOR ** 5, N_(b"pebi"), N_(b"Pi"))
-EiB = _Prefix(_BINARY_FACTOR ** 6, N_(b"exbi"), N_(b"Ei"))
-ZiB = _Prefix(_BINARY_FACTOR ** 7, N_(b"zebi"), N_(b"Zi"))
-YiB = _Prefix(_BINARY_FACTOR ** 8, N_(b"yobi"), N_(b"Yi"))
+KiB = _Prefix(_BINARY_FACTOR ** 1, N_("kibi"), N_("Ki"))
+MiB = _Prefix(_BINARY_FACTOR ** 2, N_("mebi"), N_("Mi"))
+GiB = _Prefix(_BINARY_FACTOR ** 3, N_("gibi"), N_("Gi"))
+TiB = _Prefix(_BINARY_FACTOR ** 4, N_("tebi"), N_("Ti"))
+PiB = _Prefix(_BINARY_FACTOR ** 5, N_("pebi"), N_("Pi"))
+EiB = _Prefix(_BINARY_FACTOR ** 6, N_("exbi"), N_("Ei"))
+ZiB = _Prefix(_BINARY_FACTOR ** 7, N_("zebi"), N_("Zi"))
+YiB = _Prefix(_BINARY_FACTOR ** 8, N_("yobi"), N_("Yi"))
 
 # Categories of symbolic constants
 _DECIMAL_PREFIXES = [KB, MB, GB, TB, PB, EB, ZB, YB]
