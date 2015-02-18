@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.25
+Version: 0.61.0.26
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Feb 18 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.26-1
+- Use a safer method to get a dm partition's disk name. (dlehman)
+  Resolves: rhbz#1190886
+  Related: rhbz#1181336
+
 * Wed Jan 28 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.25-1
 - Fallback implicit partition size must be big enough for BTRFS (vpodzime)
   Related: rhbz#1171116
