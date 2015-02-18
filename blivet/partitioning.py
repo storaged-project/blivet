@@ -23,12 +23,13 @@
 from operator import gt, lt
 from decimal import Decimal
 from gi.repository import BlockDev as blockdev
+import functools
 
 import parted
 
 from .errors import DeviceError, PartitioningError
 from .flags import flags
-from .devices import PartitionDevice, LUKSDevice, devicePathToName
+from .devices import Device, PartitionDevice, LUKSDevice, devicePathToName
 from .size import Size
 from .i18n import _
 from .util import stringize, unicodeize
@@ -106,6 +107,8 @@ def partitionCompare(part1, part2):
         ret = -1
 
     return ret
+
+_partitionCompareKey = functools.cmp_to_key(partitionCompare)
 
 def getNextPartitionType(disk, no_primary=None):
     """ Return the type of partition to create next on a disk.
@@ -580,7 +583,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                 ["%s(id %d)" % (p.name, p.id) for p in partitions])
 
     new_partitions = [p for p in partitions if not p.exists]
-    new_partitions.sort(cmp=partitionCompare)
+    new_partitions.sort(key=_partitionCompareKey)
 
     # the following dicts all use device path strings as keys
     disklabels = {}     # DiskLabel instances for each disk
@@ -607,7 +610,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
             req_disks = disks
 
         # sort the disks, making sure the boot disk is first
-        req_disks.sort(key=lambda d: d.name, cmp=storage.compareDisks)
+        req_disks.sort(key=storage.compareDisksKey)
         for disk in req_disks:
             if storage.bootDisk and disk == storage.bootDisk:
                 boot_index = req_disks.index(disk)
@@ -1347,7 +1350,7 @@ class VGChunk(Chunk):
 
     def sortRequests(self):
         # sort the partitions by start sector
-        self.requests.sort(key=lambda r: r.device, cmp=lvCompare)
+        self.requests.sort(key=_lvCompareKey)
 
 
 class ThinPoolChunk(VGChunk):
@@ -1755,6 +1758,11 @@ def lvCompare(lv1, lv2):
           0 => x == y
         > 1 => x > y
     """
+    if not isinstance(lv1, Device):
+        lv1 = lv1.device
+    if not isinstance(lv2, Device):
+        lv2 = lv2.device
+
     ret = 0
 
     # larger requests go to the front of the list
@@ -1778,6 +1786,8 @@ def lvCompare(lv1, lv2):
         ret = -1
 
     return ret
+
+_lvCompareKey = functools.cmp_to_key(lvCompare)
 
 def _apply_chunk_growth(chunk):
     """ grow the lvs by the amounts the VGChunk calculated """
