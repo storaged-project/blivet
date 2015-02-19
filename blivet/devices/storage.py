@@ -61,6 +61,9 @@ class StorageDevice(Device):
     _udev = True
     """ Whether udev manages device nodes for devices of this type. """
 
+    _postTeardownWaitTimeout = None
+    """ Timeout value for wait call following teardown. """
+
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
                  sysfsPath='', parents=None, exists=False, serial=None,
@@ -459,7 +462,7 @@ class StorageDevice(Device):
         """ Perform post-teardown operations. """
         event_sync = self.controlSync
         if self.__class__._teardown != StorageDevice._teardown:
-            event_sync.wait()
+            event_sync.wait(timeout=self._postTeardownWaitTimeout)
 
         event_sync.reset()
         event_sync.notify()

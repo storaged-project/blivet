@@ -52,6 +52,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     _packages = ["lvm2"]
     _formatClassName = property(lambda s: "lvmpv")
     _formatUUIDAttr = property(lambda s: "vgUuid")
+    _postTeardownWaitTimeout = 0.2
 
     def __init__(self, name, parents=None, size=None, free=None,
                  peSize=None, peCount=None, peFree=None, pvCount=None,
