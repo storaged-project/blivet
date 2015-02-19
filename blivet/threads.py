@@ -35,12 +35,16 @@ log = logging.getLogger("blivet")
 
 blivet_lock = RLock(verbose=flags.debug_threads)
 
+KEY_PRESENT = 'KEY_PRESENT'
+KEY_ABSENT = 'KEY_ABSENT'
+
 class StorageEventBase(ObjectID):
     _flag_names = ["starting", "stopping", "creating", "destroying", "resizing",
                    "changing"]
 
     def __init__(self):
         self._flags = dict()
+        self._validate = dict()
         self.reset()
 
     @property
@@ -49,6 +53,7 @@ class StorageEventBase(ObjectID):
 
     def reset(self):
         self._flags = {flag_name: False for flag_name in self._flag_names}
+        self._validate = dict()
 
     def _get_flag(self, flag):
         return self._flags[flag]
@@ -71,6 +76,34 @@ class StorageEventBase(ObjectID):
                         lambda s,v: s._set_flag("resizing", v))
     changing = property(lambda s: s._get_flag("changing"),
                         lambda s,v: s._set_flag("changing", v))
+
+    def info_update(self, *args, **kwargs):
+        self._validate.update(*args, **kwargs)
+
+    def info_remove(self, key):
+        if key in self._validate:
+            del self._validate[key]
+
+    def validate(self, info):
+        """ Verify that any udev key/value pairs are set correctly. """
+        log.debug("validating %s udev info %s", self,
+                                                pprint.pformat(self._validate))
+        log.debug("ref: %s", pprint.pformat(dict(info)))
+        valid = True
+        for (key, value) in self._validate.items():
+            if value == KEY_ABSENT and key in info:
+                valid = False
+                break
+            elif value == KEY_PRESENT and key not in info:
+                valid = False
+                break
+            elif value not in (KEY_ABSENT, KEY_PRESENT) and \
+                 (key not in info or info[key] != value):
+                valid = False
+                break
+
+        log.debug("returning %s", valid)
+        return valid
 
 class StorageEventSynchronizer(StorageEventBase):
     """ Manager for shared state related to storage operations.
@@ -159,6 +192,16 @@ class StorageEventSynchronizerSet(StorageEventBase):
     def notify(self, n=None):
         for ss in self.ss_list:
             ss.notify(n=n)
+
+    def info_update(self, *args, **kwargs):
+        super(StorageEventSynchronizerSet, self).info_update(*args, **kwargs)
+        for ss in self.ss_list:
+            ss.info_update(*args, **kwargs)
+
+    def info_remove(self, key):
+        super(StorageEventSynchronizerSet, self).info_remove(key)
+        for ss in self.ss_list:
+            ss.info_remove(key)
 
     def reset(self):
         super(StorageEventSynchronizerSet, self).reset()

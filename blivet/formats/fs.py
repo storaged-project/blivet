@@ -39,6 +39,7 @@ from ..size import Size, ROUND_UP, ROUND_DOWN, unitStr
 from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..i18n import _, N_
 from .. import udev
+from ..threads import KEY_PRESENT
 
 import logging
 log = logging.getLogger("blivet")
@@ -414,7 +415,9 @@ class FS(DeviceFormat):
         argv = self._getFormatOptions(options=options,
            do_labeling=not self.relabels())
 
-        self.cv.creating = True
+        self.eventSync.info_update(ID_FS_TYPE=self.mountType,
+                                   ID_FS_UUID=KEY_PRESENT)
+        self.eventSync.creating = True
 
         ret = 0
         try:
@@ -426,12 +429,12 @@ class FS(DeviceFormat):
             if not ret:
                 wait_args = [2]
 
-            self.cv.wait(*wait_args)
+            self.eventSync.wait(*wait_args)
             if not ret:
                 self.exists = True
         finally:
-            self.cv.creating = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
         if ret:
             raise FormatCreateError("format failed: %s" % ret, self.device)
@@ -519,17 +522,17 @@ class FS(DeviceFormat):
         else:
             self.targetSize = rounded
 
-        self.cv.resizing = True
+        self.eventSync.resizing = True
 
         try:
             ret = util.run_program([self.resizefsProg] + self.resizeArgs)
         except OSError as e:
             raise FSResizeError(e, self.device)
         else:
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
-            self.cv.resizing = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
         if ret:
             raise FSResizeError("resize failed: %s" % ret, self.device)
@@ -566,7 +569,7 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        self.cv.changing = True
+        self.eventSync.changing = True
 
         try:
             ret = util.run_program([self.fsckProg] + self._getCheckArgs())
@@ -574,10 +577,10 @@ class FS(DeviceFormat):
             raise FSError("filesystem check failed: %s" % e)
         else:
             # it may not have been opened r/w, so just wait briefly
-            self.cv.wait(timeout=2)
+            self.eventSync.wait(timeout=2)
         finally:
-            self.cv.changing = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
         if self._fsckFailed(ret):
             hdr = _("%(type)s filesystem check failure on %(device)s: ") % \
@@ -671,7 +674,7 @@ class FS(DeviceFormat):
         if isinstance(self, BindFS):
             options = "bind," + options
 
-        self.cv.starting = True
+        self.eventSync.starting = True
         read_only = "ro" in options.split(",")
 
         try:
@@ -682,10 +685,10 @@ class FS(DeviceFormat):
             raise FSError("mount failed: %s" % e)
         else:
             if not rc and not read_only:
-                self.cv.wait()
+                self.eventSync.wait()
         finally:
-            self.cv.starting = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
         if rc:
             raise FSError("mount failed: %s" % rc)
@@ -719,7 +722,7 @@ class FS(DeviceFormat):
         if not flags.uevents:
             udev.settle()
 
-        self.cv.starting = True
+        self.eventSync.stopping = True
 
         rc = 0
         try:
@@ -735,10 +738,10 @@ class FS(DeviceFormat):
                 wait_args = [2]
 
             if not self._mounted_read_only:
-                self.cv.wait(*wait_args)
+                self.eventSync.wait(*wait_args)
         finally:
-            self.cv.starting = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
         if rc:
             # try and catch whatever is causing the umount problem
@@ -801,7 +804,8 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        self.cv.changing = True
+        self.eventSync.info_update(ID_FS_LABEL=self.label)
+        self.eventSync.changing = True
         try:
             rc = util.run_program(self._labelfs.label_app.setLabelCommand(self))
         except Exception:
@@ -810,10 +814,10 @@ class FS(DeviceFormat):
             wait_args = []
             if rc:
                 wait_args = [2]
-            self.cv.wait(*wait_args)
+            self.eventSync.wait(*wait_args)
         finally:
-            self.cv.changing = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
         if rc:
             raise FSError("label failed")
@@ -1521,6 +1525,7 @@ class NFS(FS):
     def _setDevice(self, devspec):
         self._deviceCheck(devspec)
         self._device = devspec
+        self.eventSync.passthrough = True
 
     def _getDevice(self):
         return self._device
@@ -1560,6 +1565,7 @@ class NoDevFS(FS):
 
     def _setDevice(self, devspec):
         self._device = devspec
+        self.eventSync.passthrough = True
 
     @property
     def type(self):
@@ -1696,13 +1702,14 @@ class TmpFS(NoDevFS):
         """ All the tmpfs mounts use the same "tmpfs" device. """
         return self._type
 
+    # pylint: disable=unused-argument
     def _setDevice(self, value):
         # the DeviceFormat parent class does a
         # self.device = kwargs["device"]
         # assignment, so we need a setter for the
         # device property, but as the device is always the
         # same, nothing actually needs to be set
-        pass
+        self.eventSync.passthrough = True
 
     device = property(_getDevice, _setDevice)
 

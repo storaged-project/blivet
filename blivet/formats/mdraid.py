@@ -29,6 +29,7 @@ from ..devicelibs import mdraid
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import N_
+from ..threads import KEY_ABSENT
 
 import logging
 log = logging.getLogger("blivet")
@@ -88,8 +89,20 @@ class MDRaidMember(DeviceFormat):
         if not os.access(self.device, os.W_OK):
             raise MDMemberError("device path does not exist")
 
-        mdraid.mddestroy(self.device)
-        self.exists = False
+        self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
+                                   ID_FS_UUID=KEY_ABSENT,
+                                   ID_FS_UUID_SUB=KEY_ABSENT)
+        self.eventSync.destroying = True
+        try:
+            mdraid.mddestroy(self.device)
+        except Exception:
+            raise
+        else:
+            self.eventSync.wait()
+            self.exists = False
+        finally:
+            self.eventSync.reset()
+            self.eventSync.notify()
 
     @property
     def status(self):

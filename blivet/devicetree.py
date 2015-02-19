@@ -451,7 +451,8 @@ class DeviceTree(object):
                     break
 
         if action in ("add", "change") and device and \
-           device.modifySync.creating and not device.delegateModifyEvents:
+           device.modifySync.creating and not device.delegateModifyEvents and \
+           device.modifySync.validate(info):
             log.debug("* create %s", device.name)
             ## device create without event delegation (eg: partition)
             event_sync = device.modifySync
@@ -488,7 +489,8 @@ class DeviceTree(object):
                 log.debug("* resize %s", device.name)
                 event_sync = device.modifySync
             elif action == "change" and device and \
-                 device.controlSync.changing:
+                 device.controlSync.changing and \
+                 device.controlSync.validate(info):
                 ## device change (eg: event on pv for vg or lv creation)
                 log.debug("* change %s", device.name)
                 event_sync = device.controlSync
@@ -498,7 +500,8 @@ class DeviceTree(object):
                 # notified the CV from _postCreate/_postDestroy.
                 event_sync.wait(1)
             elif action == "change" and device and \
-                 device.format.eventSync.active:
+                 device.format.eventSync.active and \
+                 device.format.eventSync.validate(info):
                 ## any change to a format
                 log.debug("* change %s format", device.name)
                 event_sync = device.format.eventSync
@@ -521,7 +524,8 @@ class DeviceTree(object):
                                                            a.isFormat)
                     for action in actions:
                         if action.device.name == name and \
-                           action.format.eventSync.active:
+                           action.format.eventSync.active and \
+                           action.format.eventSync.validate(info):
                             ## any change to a format scheduled for destruction
                             ## on a device not scheduled for destruction
                             log.debug("*** change %s format", action.device.name)
@@ -542,12 +546,14 @@ class DeviceTree(object):
                         log.debug("** setup %s", current_action.device.name)
                         event_sync = current_action.device.controlSync
                     elif action == "change" and \
-                         current_action.device.modifySync.destroying:
+                         current_action.device.modifySync.destroying and \
+                         current_action.device.modifySync.validate(info):
                         # change to pv when removing lv or vg
                         log.debug("** destroy %s", current_action.device.name)
                         event_sync = current_action.device.modifySync
                     elif action == "change" and \
-                         current_action.format.eventSync.active:
+                         current_action.format.eventSync.active and \
+                         current_action.format.eventSync.validate(info):
                         ## any change to a format on a device scheduled for
                         ## destruction
                         log.debug("** change %s format", current_action.device.name)

@@ -35,6 +35,7 @@ from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import _, N_
+from ..threads import KEY_PRESENT
 
 import logging
 log = logging.getLogger("blivet")
@@ -188,7 +189,7 @@ class LUKS(DeviceFormat):
             return
 
         DeviceFormat.setup(self, **kwargs)
-        self.cv.starting = True
+        self.eventSync.starting = True
         try:
             crypto.luks_open(self.device, self.mapName,
                            passphrase=self.__passphrase,
@@ -196,9 +197,9 @@ class LUKS(DeviceFormat):
         except Exception:
             raise
         else:
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
-            self.cv.starting = False
+            self.eventSync.reset()
 
     def teardown(self):
         """ Close, or tear down, the format. """
@@ -210,7 +211,7 @@ class LUKS(DeviceFormat):
         if not self.status:
             return
 
-        self.cv.stopping = True
+        self.eventSync.stopping = True
 
         log.debug("unmapping %s", self.mapName)
         try:
@@ -218,9 +219,9 @@ class LUKS(DeviceFormat):
         except Exception:
             raise
         else:
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
-            self.cv.starting = False
+            self.eventSync.reset()
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -241,7 +242,9 @@ class LUKS(DeviceFormat):
             raise LUKSError("luks device has no key/passphrase")
 
         DeviceFormat.create(self, **kwargs)
-        self.cv.creating = True
+        self.eventSync.info_update(ID_FS_TYPE=self._udevTypes[0],
+                                   ID_FS_UUID=KEY_PRESENT)
+        self.eventSync.creating = True
         try:
             crypto.luks_format(self.device,
                              passphrase=self.__passphrase,
@@ -252,14 +255,18 @@ class LUKS(DeviceFormat):
         except Exception:
             raise
         else:
-            self.cv.wait()
-            #self.uuid = crypto.luks_uuid(self.device)
+            self.eventSync.wait()
             self.exists = True
-            if flags.installer_mode:
-                self.mapName = "luks-%s" % self.uuid
         finally:
-            self.cv.creating = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
+            # XXX It would be nice if we could get this from udev instead of
+            #     running this command, but we need it now to set our mapName
+            #     and there's no certainty that the uevent handler has updated
+            #     our uuid at this point.
+            if self.exists and flags.installer_mode:
+                self.uuid = crypto.luks_uuid(self.device)
+                self.mapName = "luks-%s" % self.uuid
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.

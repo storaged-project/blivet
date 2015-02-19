@@ -26,6 +26,7 @@ from ..errors import SwapSpaceError
 from ..devicelibs import swap
 from . import DeviceFormat, register_device_format
 from ..size import Size
+from ..threads import KEY_PRESENT
 
 import logging
 log = logging.getLogger("blivet")
@@ -158,7 +159,16 @@ class SwapSpace(DeviceFormat):
             return
 
         DeviceFormat.setup(self, **kwargs)
-        swap.swapon(self.device, priority=self.priority)
+        self.eventSync.starting = True
+        try:
+            swap.swapon(self.device, priority=self.priority)
+        except Exception:
+            raise
+        else:
+            self.eventSync.wait()
+        finally:
+            self.eventSync.reset()
+            self.eventSync.notify()
 
     def teardown(self):
         """ Close, or tear down, a device. """
@@ -170,7 +180,7 @@ class SwapSpace(DeviceFormat):
         if not self.status:
             return
 
-        self.cv.stopping = True
+        self.eventSync.stopping = True
         try:
             swap.swapoff(self.device)
         except Exception:
@@ -179,9 +189,10 @@ class SwapSpace(DeviceFormat):
             # We don't need to worry about missing the change event triggered by
             # the swapoff call above because we hold the lock, preventing events
             # from being handled, until we call wait here.
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
-            self.cv.stopping = False
+            self.eventSync.reset()
+            self.eventSync.notify()
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -202,17 +213,19 @@ class SwapSpace(DeviceFormat):
             raise SwapSpaceError("format already exists")
 
         DeviceFormat.create(self, **kwargs)
-        self.cv.creating = True
+        self.eventSync.info_update(ID_FS_TYPE=self._udevTypes[0],
+                                   ID_FS_UUID=KEY_PRESENT)
+        self.eventSync.creating = True
         try:
             swap.mkswap(self.device, label=self.label)
         except Exception:
             raise
         else:
-            self.cv.wait()
+            self.eventSync.wait()
             self.exists = True
         finally:
-            self.cv.creating = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
 register_device_format(SwapSpace)
 

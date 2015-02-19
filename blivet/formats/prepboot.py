@@ -25,6 +25,7 @@ from ..size import Size
 from .. import platform
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
+from ..threads import KEY_ABSENT
 from parted import PARTITION_PREP
 import os
 import logging
@@ -73,7 +74,8 @@ class PPCPRePBoot(DeviceFormat):
             raise FormatCreateError("PReP Boot format already exists")
 
         DeviceFormat.create(self, **kwargs)
-        self.cv.creating = True
+        self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT)
+        self.eventSync.creating = True
         try:
             fd = os.open(self.device, os.O_RDWR)
             length = os.lseek(fd, 0, os.SEEK_END)
@@ -90,13 +92,13 @@ class PPCPRePBoot(DeviceFormat):
         except OSError as e:
             log.error("error zeroing out %s: %s", self.device, e)
         else:
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
             if fd:
                 os.close(fd)
             self.exists = True
-            self.cv.creating = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
     @property
     def status(self):

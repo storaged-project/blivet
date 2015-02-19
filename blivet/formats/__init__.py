@@ -21,6 +21,7 @@
 #
 
 import os
+import stat
 from six import add_metaclass
 
 from ..util import notify_kernel
@@ -33,7 +34,8 @@ from ..devicelibs.dm import dm_node_from_name
 from ..devicelibs.mdraid import md_node_from_name
 from ..i18n import N_
 from ..size import Size
-from ..threads import SynchronizedMeta, StorageSynchronizer
+from ..threads import SynchronizedMeta, StorageEventSynchronizer
+from ..threads import KEY_ABSENT
 from ..flags import flags
 
 import logging
@@ -196,7 +198,8 @@ class DeviceFormat(ObjectID):
         #if self.__class__ is DeviceFormat:
         #    self.exists = True
 
-        self.cv = StorageSynchronizer()
+        self.eventSync = StorageEventSynchronizer()
+        self.updateSyncPassthrough()
 
     def __repr__(self):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
@@ -305,10 +308,17 @@ class DeviceFormat(ObjectID):
        doc="fstab entry option string"
     )
 
+    def updateSyncPassthrough(self):
+        self.eventSync.passthrough = (self.device and
+                               (not os.path.exists(self.device) or
+                                not stat.S_ISBLK(os.stat(self.device).st_mode)))
+
     def _setDevice(self, devspec):
         if devspec and not devspec.startswith("/"):
             raise ValueError("device must be a fully qualified path")
         self._device = devspec
+        if hasattr(self, "eventSync"):
+            self.updateSyncPassthrough()
 
     def _getDevice(self):
         return self._device
@@ -365,26 +375,31 @@ class DeviceFormat(ObjectID):
 
         notify = kwargs.pop("notify", True)
         if notify:
-            self.cv.destroying = True
+            self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
+                                       ID_FS_UUID=KEY_ABSENT)
+            self.eventSync.destroying = True
+
+        rc = 0
+        err = ""
         try:
             rc = run_program(["wipefs", "-f", "-a", self.device])
         except OSError as e:
             err = str(e)
         else:
-            err = ""
-            wait_args = []
             if rc:
                 err = str(rc)
+        finally:
+            wait_args = []
+            if err:
                 wait_args = [2]
 
             if notify:
-                self.cv.wait(*wait_args)
+                self.eventSync.wait(*wait_args)
             if not err:
                 self.exists = False
-        finally:
             if notify:
-                self.cv.destroying = False
-                self.cv.notify()
+                self.eventSync.reset()
+                self.eventSync.notify()
 
         if err:
             msg = "error wiping old signatures from %s: %s" % (self.device, err)

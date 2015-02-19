@@ -33,6 +33,7 @@ from ..flags import flags
 from ..i18n import _, N_
 from . import DeviceFormat, register_device_format
 from ..size import Size
+from ..threads import KEY_ABSENT, KEY_PRESENT
 
 import logging
 log = logging.getLogger("blivet")
@@ -251,18 +252,26 @@ class DiskLabel(DeviceFormat):
         # could ensure a fresh disklabel by setting self._partedDisk to
         # None right before calling self.commit(), but that might hide
         # other problems.
-        self.cv.creating = True
+        self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
+                                   ID_PART_TABLE_TYPE=self.labelType,
+                                   ID_PART_TABLE_UUID=KEY_PRESENT)
+        self.eventSync.creating = True
         try:
             self.commit(notify=False)
         except Exception:
             raise
         else:
             self.exists = True
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
-            self.cv.creating = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
+    def destroy(self, **kwargs):
+        self.eventSync.info_update(ID_PART_TABLE_TYPE=KEY_ABSENT,
+                                   ID_PART_TABLE_UUID=KEY_ABSENT)
+        super(DiskLabel, self).destroy(**kwargs)
+ 
     def commit(self, notify=True):
         """ Commit the current partition table to disk and notify the OS.
 
@@ -271,7 +280,7 @@ class DiskLabel(DeviceFormat):
         log_method_call(self, device=self.device,
                         numparts=len(self.partitions))
         if notify:
-            self.cv.changing = True
+            self.eventSync.changing = True
         try:
             self.partedDisk.commit()
         except parted.DiskException as msg:
@@ -281,17 +290,17 @@ class DiskLabel(DeviceFormat):
             if not flags.uevents:
                 udev.settle()
             if notify:
-                self.cv.wait()
+                self.eventSync.wait()
         finally:
             if notify:
-                self.cv.changing = False
-                self.cv.notify()
+                self.eventSync.reset()
+                self.eventSync.notify()
 
     def commitToDisk(self):
         """ Commit the current partition table to disk. """
         log_method_call(self, device=self.device,
                         numparts=len(self.partitions))
-        self.cv.changing = True
+        self.eventSync.changing = True
         try:
             self.partedDisk.commitToDevice()
         except parted.DiskException as msg:
@@ -300,10 +309,10 @@ class DiskLabel(DeviceFormat):
             self.updateOrigPartedDisk()
             if not flags.uevents:
                 udev.settle()
-            self.cv.wait()
+            self.eventSync.wait()
         finally:
-            self.cv.changing = False
-            self.cv.notify()
+            self.eventSync.reset()
+            self.eventSync.notify()
 
     def addPartition(self, start, end, ptype=None):
         """ Add a partition to the disklabel.
