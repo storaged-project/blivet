@@ -31,7 +31,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import getFormat
 from ..size import Size
-from ..threads import StorageSynchronizer
+from ..threads import StorageEventSynchronizer
 
 import logging
 log = logging.getLogger("blivet")
@@ -129,8 +129,8 @@ class StorageDevice(Device):
 
         self.deviceLinks = []
 
-        """ Condition used to synchronize access with uevent handlers. """
-        self.cv = StorageSynchronizer()
+        """ Used to synchronize access with uevent handlers. """
+        self._eventSync = None # use the same instance for all operations
 
     def __str__(self):
         exist = "existing"
@@ -372,7 +372,7 @@ class StorageDevice(Device):
             return False
 
         self.setupParents(orig=orig)
-        self.cv.starting = True
+        self.controlSync.starting = True
         return True
 
     def _setup(self, orig=False):
@@ -389,17 +389,18 @@ class StorageDevice(Device):
         try:
             self._setup(orig=orig)
         except Exception:
-            self.cv.starting = False
+            self.controlSync.reset()
             raise
         self._postSetup()
 
     def _postSetup(self):
         """ Perform post-setup operations. """
+        event_sync = self.controlSync
         if self.__class__._setup != StorageDevice._setup:
-            self.cv.wait()
+            event_sync.wait()
 
-        self.cv.starting = False
-        self.cv.notify()
+        event_sync.reset()
+        event_sync.notify()
         if not flags.uevents:
             udev.settle()
 
@@ -429,7 +430,7 @@ class StorageDevice(Device):
         if not flags.uevents:
             udev.settle()
 
-        self.cv.stopping = True
+        self.controlSync.stopping = True
         return True
 
     def _teardown(self, recursive=None):
@@ -446,18 +447,20 @@ class StorageDevice(Device):
         try:
             self._teardown(recursive=recursive)
         except Exception:
-            self.cv.stopping = False
+            self.controlSync.reset()
             raise
 
         self._postTeardown(recursive=recursive)
 
     def _postTeardown(self, recursive=None):
         """ Perform post-teardown operations. """
+        event_sync = self.controlSync
         if self.__class__._teardown != StorageDevice._teardown:
-            self.cv.wait()
+            event_sync.wait()
 
-        self.cv.stopping = False
-        self.cv.notify()
+        event_sync.reset()
+        event_sync.notify()
+        self.sysfsPath = ""
 
         if recursive:
             self.teardownParents(recursive=recursive)
@@ -471,7 +474,7 @@ class StorageDevice(Device):
             raise errors.DeviceError("device has already been created", self.name)
 
         self.setupParents()
-        self.cv.creating = True
+        self.modifySync.creating = True
 
     def _create(self):
         """ Perform device-specific create operations. """
@@ -484,7 +487,7 @@ class StorageDevice(Device):
         try:
             self._create()
         except Exception:
-            self.cv.creating = False
+            self.modifySync.reset()
             raise
         self._postCreate()
 
@@ -495,15 +498,15 @@ class StorageDevice(Device):
         """ Perform post-create operations. """
         # XXX what about devices that don't get started automatically when
         #     they are created
+        event_sync = self.modifySync
         if self.__class__._create != StorageDevice._create:
-            self.cv.notify() # notify the handler we're ready to post-process
-            self.cv.wait() # wait for notification the event was received
+            event_sync.notify() # notify the handler we're ready to post-process
+            event_sync.wait() # wait for notification the event was received
 
-        self.cv.creating = False
+        event_sync.reset()
         self.exists = True
-        self.cv.notify() # notify the event handler we're done post-processing
+        event_sync.notify() # notify event handler we're done post-processing
 
-        self.setup() # this seems redundant
         if not flags.uevents:
             self.updateSysfsPath()
             udev.settle()
@@ -511,12 +514,19 @@ class StorageDevice(Device):
         # Wipe any preexisting metadata at the location used by this new device
         # on disk.
         if self._doPostCreateWipe():
-            getFormat(None, device=self.path, exists=True).destroy()
-            udev.settle()
-
-        # make sure that targetSize is updated to reflect the actual size
-        if self.resizable:
-            self._targetSize = self.currentSize
+            self.controlSync.changing = True
+            getFormat(None, device=self.path, exists=True).destroy(notify=False)
+            # The block that we're synchronizing with in _notifyDevices also
+            # handles events that signal the creation of container devices.
+            # Since it handles device creation, it does a short wait before
+            # notifying the device that the event was received. Send a notify
+            # here to avoid waiting for that wait call to time out.
+            self.controlSync.notify()
+            self.controlSync.wait()
+            self.controlSync.reset()
+            self.controlSync.notify()
+            if not flags.uevents:
+                udev.settle()
 
         self._updateNetDevMountOption()
 
@@ -532,7 +542,7 @@ class StorageDevice(Device):
             raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
 
         self.teardown()
-        self.cv.destroying = True
+        self.modifySync.destroying = True
 
     def _destroy(self):
         """ Perform device-specific destruction operations. """
@@ -545,19 +555,20 @@ class StorageDevice(Device):
         try:
             self._destroy()
         except Exception:
-            self.cv.destroying = False
+            self.modifySync.reset()
             raise
         self._postDestroy()
 
     def _postDestroy(self):
         """ Perform post-destruction operations. """
+        event_sync = self.modifySync
         if self.__class__._destroy != StorageDevice._destroy:
-            self.cv.notify() # notify the handler we're ready to post-process
-            self.cv.wait() # wait for notification that the event was received
+            event_sync.notify() # notify the handler we're ready to post-process
+            event_sync.wait() # wait for notification that event was received
 
-        self.cv.destroying = False
+        event_sync.reset()
         self.exists = False
-        self.cv.notify() # notify the handler we're done post-processing
+        event_sync.notify() # notify the handler we're done post-processing
         self.sysfsPath = ""
 
     def setupParents(self, orig=False):
@@ -801,6 +812,57 @@ class StorageDevice(Device):
         """
         if not new:
             map(lambda p: p.addChild(), self.parents)
+
+    def _getEventSync(self):
+        if self._eventSync is None:
+            self._eventSync = StorageEventSynchronizer()
+
+        return self._eventSync
+
+    ##
+    ## Event synchronization managers
+    ##
+    # These manage synchronization between the device methods that initiate
+    # actions on the underlying device and uevent handlers. This allows us to
+    # know exactly when newly created devices appear, for example.
+    #
+    # There are two of them because of variations in behavior among different
+    # device types:
+    #
+    # * Disks and partitions only need one synchronization manager because all
+    #   operations on those devices manifest as uevents on the device itself.
+    # * LVM VGs are different in that there is no block device to represent the
+    #   VG. This means that actions on a VG manifest as uevents on the VG's PVs.
+    # * LVM LVs have a combination of the two aforementioned models. Controlling
+    #   actions (setup, teardown) manifest as uevents on the LV device, while
+    #   modifying actions (create, destroy) events manifest as uevents on the
+    #   PVs.
+    # * MD arrays are similar to LVM LVs except that there is no intermediate
+    #   VG layer (which is really only a passthrough anyway).
+    # * BTRFS volumes behave the same way as LVM VGs.
+    # * BTRFS subvolumes use their top-level volume's synchronization manager,
+    #   meaning they also rely on uevents on the physical member devices.
+    #
+    # It is counter-intuitive to use the controlSync for "changing" actions when
+    # "changing" is synonymous with "modify" (as in "modifySync"). We do this
+    # because we want "changing" to use events on the actual device if that
+    # device has a device node. In every case except for lvm vg and btrfs, the
+    # controlSync is connected to the device itself and is not delegating
+    # to parent devices.
+    controlSync = property(lambda d: d._getEventSync(),
+                           doc="controls synchronization for setup/teardown")
+    modifySync = property(lambda d: d._getEventSync(),
+                          doc="controls synchronization for create/destroy")
+
+    @property
+    def delegateModifyEvents(self):
+        """ Do modify actions for this device manifest on parent devices? """
+        return self.modifySync != self._getEventSync()
+
+    @property
+    def delegateControlEvents(self):
+        """ Do control actions for this device manifest on parent devices? """
+        return self.controlSync != self._getEventSync()
 
     def populateKSData(self, data):
         # the common pieces are basically the formatting

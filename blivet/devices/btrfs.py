@@ -561,6 +561,9 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
         if self not in self.volume.subvolumes:
             self.volume._addSubVolume(self)
 
+    controlSync = property(lambda d: d.volume.controlSync)
+    modifySync = property(lambda d: d.volume.modifySync)
+
     def populateKSData(self, data):
         super(BTRFSSubVolumeDevice, self).populateKSData(data)
         data.subvol = True

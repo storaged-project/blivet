@@ -26,7 +26,7 @@ from six import add_metaclass
 from .. import errors
 from ..storage_log import log_method_call
 from ..formats import get_device_format_class
-from ..threads import SynchronizedABCMeta
+from ..threads import SynchronizedABCMeta, StorageEventSynchronizerSet
 
 import logging
 log = logging.getLogger("blivet")
@@ -61,6 +61,7 @@ class ContainerDevice(StorageDevice):
         if not self.formatClass:
             raise errors.StorageError("cannot find '%s' class" % self._formatClassName)
 
+        self._parentSyncSet = None
         super(ContainerDevice, self).__init__(*args, **kwargs)
 
     def _verifyMemberUuid(self, member, expect_equality=True, require_existence=True):
@@ -123,6 +124,11 @@ class ContainerDevice(StorageDevice):
             raise ValueError("cannot add member with mismatched UUID")
 
         super(ContainerDevice, self)._addParent(member)
+        self._clearEventSyncs()
+
+    def _removeParent(self, member):
+        super(ContainerDevice, self)._removeParent(member)
+        self._clearEventSyncs()
 
     @abc.abstractmethod
     def _add(self, member):
@@ -188,3 +194,45 @@ class ContainerDevice(StorageDevice):
 
         if member in self.parents:
             self.parents.remove(member)
+
+    def _postCreate(self):
+        super(ContainerDevice, self)._postCreate()
+
+        for parent in self.parents:
+            # Make sure md and btrfs member formats are marked as existing since
+            # they have no format.create method.
+            parent.format.exists = True
+
+            ## Benefits to doing the below here:
+            ##  1. less type-specific code in the change handler
+            ##  2. container gets uuid set sooner
+            ##
+            ## Drawbacks to doing the below here:
+            ##  1. ...
+            ##
+
+            # Make sure that member and container UUIDs are synced up.
+            uuid = getattr(parent.format, self._formatUUIDAttr)
+            if uuid and not self.uuid:
+                # XXX This is also happening in DeviceTree._deviceChangedCB.
+                self.uuid = uuid
+            #elif self.uuid and not uuid:
+            #    # XXX I don't think this will ever happen.
+            #    setattr(parent.format, self._formatUUIDAttr, self.uuid)
+
+    # Container device operations manifest as events on member devices. We use
+    # the parents' controlSync since it monitors events on the device itself
+    # instead of delegating to parents whenever possible (IFF the device has a
+    # device node).
+    def _getParentSyncSet(self):
+        if self._parentSyncSet is None:
+            synchronizers = [p.controlSync for p in self.parents]
+            self._parentSyncSet = StorageEventSynchronizerSet(synchronizers)
+
+        return self._parentSyncSet
+
+    def _clearEventSyncs(self):
+        self._parentSyncSet = None
+
+    controlSync = property(lambda c: c._getParentSyncSet())
+    modifySync = property(lambda c: c._getParentSyncSet())

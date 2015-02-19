@@ -425,46 +425,86 @@ class DeviceTree(object):
 
             Methods :meth:`~.devices.StorageDevice.create`,
             :meth:`~.devices.StorageDevice.destroy`, and
-            :meth:`~.devices.StorageDevice.setup` all use a condition variable
-            to synchronize the finalization/confirmation of their respective
-            operations. Since each device has only one condition variable, flags
-            are used to indicate which, if any, of these methods is waiting.
+            :meth:`~.devices.StorageDevice.setup` all use a synchronization
+            manager (:class:`~.threads.StorageEventSynchronizer`) to
+            synchronize the finalization/confirmation of their respective
+            operations. Flags within the manager are used to indicate which, if
+            any, of these methods is under way.
         """
-        def device_op_in_progress(device):
-            ret = device.cv.starting or device.cv.resizing or device.cv.changing
-            log.debug("device %s ops-in-progress: %s", device, ret)
-            return ret
-
-        def format_op_in_progress(fmt):
-            ret = (fmt.cv.creating or fmt.cv.resizing or fmt.cv.destroying or
-                   fmt.cv.starting or fmt.cv.stopping or fmt.cv.changing)
-            log.debug("format %s ops-in-progress: %s", fmt, ret)
-            return ret
-
         ret = False
         name = udev.device_get_name(info)
+        sysfs_path = udev.device_get_sysfs_path(info)
+        log_method_call(self, name=name, action=action, sysfs_path=sysfs_path)
 
         # We can't do this lookup by sysfs path since the StorageDevice
         # might have just been created, in which case it might not have a
         # meaningful sysfs path (for dm and md they aren't predictable).
         device = self.getDeviceByName(name)
+        if device is None and name.startswith("md"):
+            # XXX HACK md devices have no symbolic name by the time they are
+            #          removed, so we have to look it up by sysfs path
+            # XXX do the same for teardown during action processing?
+            for _device in self._devices:
+                if _device.sysfsPath and \
+                   os.path.basename(_device.sysfsPath) == name:
+                    device = _device
+                    break
 
-        if action in ("add", "change") and device and device.cv.creating:
-            device.sysfsPath = udev.device_get_sysfs_path(info)
-            device.cv.wait() # wait until the device says it's ready
-            device.cv.notify() # notify the device that we've received the event
-            device.cv.wait() # wait for the device to postprocess the event
+        if action in ("add", "change") and device and \
+           device.modifySync.creating and not device.delegateModifyEvents:
+            log.debug("* create %s", device.name)
+            ## device create without event delegation (eg: partition)
+            event_sync = device.modifySync
+            # Only wait briefly since there is a possibility the device already
+            # notified the cv from _postCreate.
+            event_sync.wait(1) # wait until the device says it's ready
+            event_sync.notify() # notify the device that we received the event
+            event_sync.wait() # wait for the device to postprocess the event
             ret = True
-        elif action == "change":
+        elif action in ("add", "change"):
             # could be any number of operations on a device that may no longer
             # be in the tree
-            cv = None
-            if device and device_op_in_progress(device):
-                cv = device.cv
-            elif device and format_op_in_progress(device.format):
-                cv = device.format.cv
+            # device setup could be add or change event
+            # all other operations will be change event
+            event_sync = None
+            name = getattr(device, "name", None)
+            if device and device.controlSync.starting and \
+               not device.delegateControlEvents:
+                ## device setup
+                log.debug("* setup %s", device.name)
+                # update sysfsPath since the device will not have access to it
+                # until later in the change handler
+                device.sysfsPath = sysfs_path
+                event_sync = device.controlSync
+            elif device and device.controlSync.stopping and \
+                 device.name.startswith("loop"):
+                ## loop device teardown
+                # XXX HACK You don't get a remove event when you deactivate a
+                #          loop device.
+                log.debug("* teardown %s", device.name)
+                event_sync = device.controlSync
+            elif action == "change" and device and device.modifySync.resizing:
+                ## device resize
+                log.debug("* resize %s", device.name)
+                event_sync = device.modifySync
+            elif action == "change" and device and \
+                 device.controlSync.changing:
+                ## device change (eg: event on pv for vg or lv creation)
+                log.debug("* change %s", device.name)
+                event_sync = device.controlSync
+                # There's an extra notify/wait pair in device create/destroy
+                # that the other branches in this block will not do.
+                # Only wait briefly since it's possible the device has already
+                # notified the CV from _postCreate/_postDestroy.
+                event_sync.wait(1)
+            elif action == "change" and device and \
+                 device.format.eventSync.active:
+                ## any change to a format
+                log.debug("* change %s format", device.name)
+                event_sync = device.format.eventSync
             elif self._actions:
-                # see if this action is on a device scheduled for removal
+                # see if this action is on a device or format that is scheduled
+                # for removal
                 devices = (a.device for a in self._actions if a.isDevice and
                                                               a.isDestroy)
                 for device in devices:
@@ -474,33 +514,58 @@ class DeviceTree(object):
                 else:
                     device = None
 
-                if not device:
+                if action == "change" and not device:
                     # see if this is a format op on a format scheduled for
                     # destruction
                     actions = (a for a in self._actions if a.isDestroy and
                                                            a.isFormat)
                     for action in actions:
                         if action.device.name == name and \
-                           format_op_in_progress(action.format):
-                            cv = action.format.cv
+                           action.format.eventSync.active:
+                            ## any change to a format scheduled for destruction
+                            ## on a device not scheduled for destruction
+                            log.debug("*** change %s format", action.device.name)
+                            event_sync = action.format.eventSync
+                            name = action.device.name
                             break
 
-                if device and not cv:
+                # If we haven't come up with an event_sync yet, try the same
+                # checks on the device being operated on by the current action,
+                # if any.
+                # XXX None of the sync manager's flags should be set if an
+                #     action is not being executed.
+                if device and not event_sync and self._actions:
                     current_action = self._actions[0]
-                    if device_op_in_progress(current_action.device):
-                        cv = current_action.device.cv
-                    elif format_op_in_progress(current_action.format):
-                        cv = current_action.format.cv
+                    if current_action.device.controlSync.starting and \
+                       not current_action.device.delegateControlEvents:
+                        ## setup of device scheduled for destruction
+                        log.debug("** setup %s", current_action.device.name)
+                        event_sync = current_action.device.controlSync
+                    elif action == "change" and \
+                         current_action.device.modifySync.destroying:
+                        # change to pv when removing lv or vg
+                        log.debug("** destroy %s", current_action.device.name)
+                        event_sync = current_action.device.modifySync
+                    elif action == "change" and \
+                         current_action.format.eventSync.active:
+                        ## any change to a format on a device scheduled for
+                        ## destruction
+                        log.debug("** change %s format", current_action.device.name)
+                        event_sync = current_action.format.eventSync
 
-            if cv:
-                cv.notify()
-                cv.wait()
+            if event_sync:
+                event_sync.notify()
+                event_sync.wait()
                 ret = True
-        elif action == "remove" and device and device.cv.stopping:
-            device.cv.notify()
-            device.cv.wait()
+        elif action == "remove" and device and device.controlSync.stopping and \
+             not device.delegateControlEvents:
+            ## device teardown
+            log.debug("* teardown %s", device.name)
+            device.controlSync.notify()
+            device.controlSync.wait()
             ret = True
         elif action == "remove":
+            ## device destroy
             current_action = None
             if self._actions:
                 current_action = self._actions[0]
@@ -508,11 +573,16 @@ class DeviceTree(object):
             if current_action and \
                current_action.isDestroy and current_action.isDevice and \
                current_action.device.exists and \
-               current_action.device.cv.destroying:
+               current_action.device.modifySync.destroying and \
+               not current_action.device.delegateModifyEvents:
                 device = current_action.device
-                device.cv.wait() # wait until the device says it's ready
-                device.cv.notify() # notify device that we received the event
-                device.cv.wait() # wait for the device to postprocess the event
+                log.debug("* destroy %s", device.name)
+                event_sync = device.modifySync
+                # Only wait briefly since it's possible the device already
+                # notified the cv from _postDestroy.
+                event_sync.wait(1) # wait until the device says it's ready
+                event_sync.notify() # notify device that we received the event
+                event_sync.wait() # wait for the device to postprocess the event
                 ret = True
 
         return ret

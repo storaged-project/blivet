@@ -751,6 +751,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         if self not in self.vg.lvs:
             self.vg._addLogVol(self)
 
+    # lv create/destroy manifest as events on PVs
+    modifySync = property(lambda d: d.vg.modifySync,
+                          doc="control synchronization for create/destroy")
+
     def populateKSData(self, data):
         super(LVMLogicalVolumeDevice, self).populateKSData(data)
         data.vgname = self.vg.name

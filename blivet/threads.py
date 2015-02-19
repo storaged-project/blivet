@@ -25,15 +25,54 @@ from functools import wraps
 from types import FunctionType
 from abc import ABCMeta
 import copy
+import pprint
 
 from .flags import flags
+from .util import ObjectID
 
 import logging
 log = logging.getLogger("blivet")
 
 blivet_lock = RLock(verbose=flags.debug_threads)
 
-class StorageSynchronizer(object):
+class StorageEventBase(ObjectID):
+    _flag_names = ["starting", "stopping", "creating", "destroying", "resizing",
+                   "changing"]
+
+    def __init__(self):
+        self._flags = dict()
+        self.reset()
+
+    @property
+    def active(self):
+        return any(self._flags.values())
+
+    def reset(self):
+        self._flags = {flag_name: False for flag_name in self._flag_names}
+
+    def _get_flag(self, flag):
+        return self._flags[flag]
+
+    def _set_flag(self, flag, val):
+        if val and self.active:
+            raise RuntimeError("only one flag can be active at a time")
+
+        self._flags[flag] = val
+
+    starting = property(lambda s: s._get_flag("starting"),
+                        lambda s,v: s._set_flag("starting", v))
+    stopping = property(lambda s: s._get_flag("stopping"),
+                        lambda s,v: s._set_flag("stopping", v))
+    creating = property(lambda s: s._get_flag("creating"),
+                        lambda s,v: s._set_flag("creating", v))
+    destroying = property(lambda s: s._get_flag("destroying"),
+                        lambda s,v: s._set_flag("destroying", v))
+    resizing = property(lambda s: s._get_flag("resizing"),
+                        lambda s,v: s._set_flag("resizing", v))
+    changing = property(lambda s: s._get_flag("changing"),
+                        lambda s,v: s._set_flag("changing", v))
+
+class StorageEventSynchronizer(StorageEventBase):
     """ Manager for shared state related to storage operations.
 
         Each :class:`~.devices.StorageDevice` and
@@ -49,17 +88,8 @@ class StorageSynchronizer(object):
         wrappers around the internal threading.Condition instance.
     """
     def __init__(self):
+        super(StorageEventSynchronizer, self).__init__()
         self._cv = Condition(blivet_lock, verbose=flags.debug_threads)
-
-        # FIXME: make it so that only one of the flags can be set at a time
-        self.starting = False
-        self.stopping = False
-        self.creating = False
-        self.destroying = False
-        self.resizing = False
-
-        # for general purposes
-        self.changing = False
 
     def __deepcopy__(self, memo):
         new = self.__class__.__new__(self.__class__)
@@ -86,6 +116,53 @@ class StorageSynchronizer(object):
 
         args = [] if n is None else [n]
         self._cv.notify(*args)
+
+class StorageEventSynchronizerSet(StorageEventBase):
+    def __init__(self, ss_list):
+        self.ss_list = ss_list
+        super(StorageEventSynchronizerSet, self).__init__()
+
+    def _get_flag(self, flag):
+        if flag in ("creating", "destroying"):
+            _flag = "changing"
+        else:
+            _flag = flag
+
+        # they have to all be the same value
+        vals = [getattr(ss, _flag) for ss in self.ss_list]
+        if not (all(vals) or not any(vals)):
+            raise RuntimeError("sync set members out of sync")
+        return super(StorageEventSynchronizerSet, self)._get_flag(flag)
+
+    def _set_flag(self, flag, val):
+        if flag in ("creating", "destroying"):
+            # create/destroy actions on parents manifest as generic change
+            # events, ie: not noted as related to a create/destroy
+            _flag = "changing"
+        else:
+            _flag = flag
+
+        vals = [getattr(ss, _flag) for ss in self.ss_list]
+        if not (all(vals) or not any(vals)):
+            raise RuntimeError("sync set members out of sync")
+
+        for ss in self.ss_list:
+            setattr(ss, _flag, val)
+
+        super(StorageEventSynchronizerSet, self)._set_flag(flag, val)
+
+    def wait(self, timeout=None):
+        for ss in self.ss_list:
+            ss.wait(timeout=timeout)
+
+    def notify(self, n=None):
+        for ss in self.ss_list:
+            ss.notify(n=n)
+
+    def reset(self):
+        super(StorageEventSynchronizerSet, self).reset()
+        for ss in self.ss_list:
+            ss.reset()
 
 def exclusive(m):
     """ Run a bound method after aqcuiring the instance's lock. """

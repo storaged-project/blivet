@@ -200,6 +200,7 @@ class DMLinearDevice(DMDevice):
             return
 
         log.debug("not tearing down dm-linear device %s", self.name)
+        self.controlSync.reset()
 
     @property
     def description(self):

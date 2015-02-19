@@ -542,16 +542,17 @@ class PartitionDevice(StorageDevice):
                "seek=%s" % start, "count=%s" % count]
         # Is it reasonable to be using another device's cv? If not, we'll just
         # move this method into DiskDevice.
-        self.disk.cv.changing = True
+        event_sync = self.disk.controlSync
+        event_sync.changing = True
         try:
             util.run_program(cmd)
         except OSError as e:
             log.error(str(e))
         else:
-            self.disk.cv.wait()
+            event_sync.wait()
         finally:
-            self.disk.cv.changing = False
-            self.disk.cv.notify()
+            event_sync.reset()
+            event_sync.notify()
             # If a udev device is created with the watch option, then
             # a change uevent is synthesized and we need to wait for
             # things to settle.
@@ -564,9 +565,9 @@ class PartitionDevice(StorageDevice):
         self.disk.format.addPartition(self.partedPartition.geometry.start,
                                       self.partedPartition.geometry.end,
                                       self.partedPartition.type)
-        self.cv.creating = False
+        self.modifySync.reset()
         self._wipe()
-        self.cv.creating = True
+        self.modifySync.creating = True
         try:
             self.disk.format.commit()
         except errors.DiskLabelCommitError:
@@ -643,16 +644,17 @@ class PartitionDevice(StorageDevice):
                                         start=geometry.start,
                                         end=geometry.end)
 
-        self.cv.resizing = True
+        event_sync = self.modifySync
+        event_sync.resizing = True
         try:
             self.disk.format.commit()
         except Exception:
             raise
         else:
-            self.cv.wait()
+            event_sync.wait()
         finally:
-            self.cv.resizing = False
-            self.cv.notify()
+            event_sync.reset()
+            event_sync.notify()
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)

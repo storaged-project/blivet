@@ -410,7 +410,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     def _postSetup(self):
         super(MDRaidArrayDevice, self)._postSetup()
-        self.updateSysfsPath()
+        if not flags.uevents:
+            self.updateSysfsPath()
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -425,28 +426,18 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                           members=disks,
                           array_uuid=self.mdadmFormatUUID)
 
-    def _postTeardown(self, recursive=False):
-        super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)
-        # mdadm reuses minors indiscriminantly when there is no mdadm.conf, so
-        # we need to clear the sysfs path now so our status method continues to
-        # give valid results
-        self.sysfsPath = ''
+    def _preTeardown(self, recursive=None):
+        super(MDRaidArrayDevice, self)._preTeardown(recursive=recursive)
+        # We don't care about the return value of _preTeardown for md arrays.
+        # See the comment in MDRaidArrayDevice._teardown for more information.
+        return True
 
-    def teardown(self, recursive=None):
-        """ Close, or tear down, a device. """
-        log_method_call(self, self.name, status=self.status,
-                        controllable=self.controllable)
-        # we don't really care about the return value of _preTeardown here.
-        # see comment just above mddeactivate call
-        self._preTeardown(recursive=recursive)
-
+    def _teardown(self, recursive=None):
         # We don't really care what the array's state is. If the device
         # file exists, we want to deactivate it. mdraid has too many
         # states.
         if self.exists and os.path.exists(self.path):
             mdraid.mddeactivate(self.path)
-
-        self._postTeardown(recursive=recursive)
 
     def preCommitFixup(self, *args, **kwargs):
         """ Determine create parameters for this set """
@@ -464,21 +455,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
            self.format.type == "prepboot":
             self.metadataVersion = "1.0"
 
-    def _postCreate(self):
-        # this is critical since our status method requires a valid sysfs path
-        if not flags.uevents:
-            self.exists = True  # this is needed to run updateSysfsPath
-            self.updateSysfsPath()
-
-        StorageDevice._postCreate(self)
-
-        # update our uuid attribute with the new array's UUID
-        # XXX this won't work for containers since no UUID is reported for them
-        info = mdraid.mddetail(self.path)
-        self.uuid = info.get("UUID")
-        for member in self.devices:
-            member.format.mdUuid = self.uuid
-
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
@@ -490,7 +466,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                         spares,
                         metadataVer=self.metadataVersion,
                         bitmap=self.createBitmap)
-        udev.settle()
+        if not flags.uevents:
+            udev.settle()
 
     def _remove(self, member):
         self.setup()
@@ -538,6 +515,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     @property
     def model(self):
         return self.description
+
+    # md arrays use events on the members for create/destroy and events on the
+    # array device for setup/teardown
+    controlSync = property(lambda d: d._getEventSync())
 
     def dracutSetupArgs(self):
         return set(["rd.md.uuid=%s" % self.mdadmFormatUUID])
@@ -591,6 +572,7 @@ class MDContainerDevice(MDRaidArrayDevice):
         # Since BIOS RAID sets (containers in mdraid terminology) never change
         # there is no need to stop them and later restart them. Not stopping
         # (and thus also not starting) them also works around bug 523334
+        self.controlSync.reset()
         return
 
     @property
@@ -649,6 +631,7 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         # Since BIOS RAID sets (containers in mdraid terminology) never change
         # there is no need to stop them and later restart them. Not stopping
         # (and thus also not starting) them also works around bug 523334
+        self.controlSync.reset()
         return
 
     @property
