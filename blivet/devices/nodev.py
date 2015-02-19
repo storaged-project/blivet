@@ -30,6 +30,7 @@ from .storage import StorageDevice
 class NoDevice(StorageDevice):
     """ A nodev device for nodev filesystems like tmpfs. """
     _type = "nodev"
+    _udev = False
 
     def __init__(self, fmt=None):
         """

@@ -39,6 +39,7 @@ class FileDevice(StorageDevice):
     """
     _type = "file"
     _devDir = ""
+    _udev = False
 
     def __init__(self, path, fmt=None, size=None,
                  exists=False, parents=None):

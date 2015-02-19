@@ -87,9 +87,10 @@ class StorageEventSynchronizer(StorageEventBase):
         It only provides wait and notify methods, both of which are merely
         wrappers around the internal threading.Condition instance.
     """
-    def __init__(self):
+    def __init__(self, passthrough=False):
         super(StorageEventSynchronizer, self).__init__()
         self._cv = Condition(blivet_lock, verbose=flags.debug_threads)
+        self.passthrough = passthrough
 
     def __deepcopy__(self, memo):
         new = self.__class__.__new__(self.__class__)
@@ -104,14 +105,14 @@ class StorageEventSynchronizer(StorageEventBase):
         return new
 
     def wait(self, timeout=None):
-        if not flags.uevents:
+        if self.passthrough or not flags.uevents:
             return
 
         args = [] if timeout is None else [timeout]
         self._cv.wait(*args)
 
     def notify(self, n=None):
-        if not flags.uevents:
+        if self.passthrough or not flags.uevents:
             return
 
         args = [] if n is None else [n]

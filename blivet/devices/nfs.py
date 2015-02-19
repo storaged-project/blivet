@@ -31,6 +31,7 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
     """ An NFS device """
     _type = "nfs"
     _packages = ["dracut-network"]
+    _udev = False
 
     def __init__(self, device, fmt=None, parents=None):
         """

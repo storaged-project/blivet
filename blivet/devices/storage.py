@@ -58,6 +58,9 @@ class StorageDevice(Device):
     _isDisk = False
     _encrypted = False
 
+    _udev = True
+    """ Whether udev manages device nodes for devices of this type. """
+
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
                  sysfsPath='', parents=None, exists=False, serial=None,
@@ -815,7 +818,7 @@ class StorageDevice(Device):
 
     def _getEventSync(self):
         if self._eventSync is None:
-            self._eventSync = StorageEventSynchronizer()
+            self._eventSync = StorageEventSynchronizer(passthrough=not self._udev)
 
         return self._eventSync
 
