@@ -79,9 +79,36 @@ class EventQueue(object):
         self._queue = deque()
         self._lock = RLock()
 
+        # list of (device, action, count) tuples
+        self._blacklist = []
+
+    def _blacklist_match(self, event):
+        """ Return True if this event should be ignored """
+        match = None
+        for (device, action, count) in self._blacklist:
+            if ((device is None or event.device == device) and
+                (event is None or event.action == action)):
+                match = (device, action, count)
+                break
+
+        return match
+
+    def _blacklist_update(self, entry):
+        """ Update blacklist after a hit at the specified index. """
+        count = entry[2]
+        if count == 1:
+            self._blacklist.remove(entry)
+        elif count > 1:
+            idx = self._blacklist.index(entry)
+            self._blacklist[idx] = (entry[0], entry[1], count - 1)
+
     def enqueue(self, event):
         with self._lock:
-            self._queue.append(event)
+            bl_entry = self._blacklist_match(event)
+            if bl_entry is None:
+                self._queue.append(event)
+            else:
+                self._blacklist_update(bl_entry)
 
     def dequeue(self):
         """ Dequeue and return the next event.
@@ -95,6 +122,19 @@ class EventQueue(object):
                 raise EventQueueEmptyError()
 
             return self._queue.popleft()
+
+    def blacklist_add(self, device=None, action=None, count=1):
+        """ Ignore future events.
+
+            :keyword str device: ignore events on the named device
+            :keyword str action: ignore events of the specified type
+            :keyword int count: number of events to ignore
+
+            device of None means blacklist events on all devices
+            action of None means blacklist all event types
+            count of 0 means permanently blacklist this device/action pair
+        """
+        self._blacklist.append((device, action, count))
 
     def __list__(self):
         return list(self._queue)
@@ -198,6 +238,15 @@ class EventHandler(object):
     def disable(self):
         """ Disable monitoring and handling of events. """
         pass
+
+    def blacklist_event(self, device=None, action=None, count=1):
+        """ Ignore future events.
+
+            :keyword str device: ignore events on the named device
+            :keyword str action: ignore events of the specified type
+            :keyword int count: number of events to ignore
+        """
+        self._queue.blacklist_add(device=device, action=action, count=count)
 
     def next_event(self):
         return self._queue.dequeue()
