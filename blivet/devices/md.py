@@ -211,7 +211,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
-            size = self.currentSize
+            size = super(MDRaidArrayDevice, self).size
             log.debug("existing RAID %s size == %s", self.level, size)
 
         return size
