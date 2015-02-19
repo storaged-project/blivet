@@ -21,6 +21,7 @@
 #
 
 import abc
+import copy
 from collections import deque
 from threading import RLock, Timer
 import pyudev
@@ -31,11 +32,14 @@ from . import util
 from .errors import EventHandlerError, EventParamError, EventQueueEmptyError
 from .flags import flags
 
+import logging
+log = logging.getLogger("blivet")
+
 ##
 ## Event
 ##
 @add_metaclass(abc.ABCMeta)
-class Event(object):
+class Event(util.ObjectID):
     def __init__(self, action, info):
         """
             :param str action: a string describing the type of event
@@ -53,7 +57,7 @@ class Event(object):
         return None
 
     def __str__(self):
-        return "%s %s" % (self.action, self.device)
+        return "%s %s [%d]" % (self.action, self.device, self.id)
 
 class UdevEvent(Event):
     def __init__(self, action, info):
@@ -94,6 +98,18 @@ class EventQueue(object):
 
     def __list__(self):
         return list(self._queue)
+
+    def __deepcopy__(self, memo):
+        new = self.__class__.__new__(self.__class__)
+        memo[id(self)] = new
+        for (attr, value) in self.__dict__.items():
+            if attr == "_lock":
+                setattr(new, attr, RLock())
+            else:
+                setattr(new, attr, copy.deepcopy(value, memo))
+
+        return new
+
 
 ##
 ## EventHandler
@@ -232,11 +248,8 @@ class UdevEventHandler(EventHandler):
         flags.uevents = False
 
     def enqueue_event(self, *args, **kwargs):
-        if args[0] == "add" and (udev.device_is_dm(args[1]) or
-                                 udev.device_is_md(args[1])):
-            return
-
         event = UdevEvent(args[0], args[1])
+        log.debug("-> %s", event)
         self._queue.enqueue(event)
 
     def handle_event(self, *args, **kwargs):
