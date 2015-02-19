@@ -20,7 +20,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from threading import _RLock, Condition, currentThread
+from threading import RLock, Condition, currentThread
 from functools import wraps
 from types import FunctionType
 from abc import ABCMeta
@@ -31,19 +31,7 @@ from .flags import flags
 import logging
 log = logging.getLogger("blivet")
 
-class NoisyRLock(_RLock):
-    def __enter__(self, *args, **kwargs):
-        log.debug("enter[1]: %s (%s)", self, currentThread().name)
-        super(NoisyRLock, self).__enter__(*args, **kwargs)
-        log.debug("enter[2]: %s (%s)", self, currentThread().name)
-
-    def __exit__(self, *args, **kwargs):
-        log.debug("exit[1]: %s (%s)", self, currentThread().name)
-        super(NoisyRLock, self).__exit__(*args, **kwargs)
-        log.debug("exit[2]: %s (%s)", self, currentThread().name)
-
-#blivet_lock = NoisyRLock()
-blivet_lock = _RLock(verbose=flags.debug_threads)
+blivet_lock = RLock(verbose=flags.debug_threads)
 
 class StorageSynchronizer(object):
     """ Manager for shared state related to storage operations.
