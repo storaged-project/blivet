@@ -263,28 +263,6 @@ class DiskLabel(DeviceFormat):
             self.cv.creating = False
             self.cv.notify()
 
-    def destroy(self, **kwargs):
-        """ Wipe the disklabel from the device. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        if not self.exists:
-            raise DeviceFormatError("format does not exist")
-
-        if not os.access(self.device, os.W_OK):
-            raise DeviceFormatError("device path does not exist")
-
-        self.cv.destroying = True
-        try:
-            self.partedDevice.clobber()
-        except Exception:
-            raise
-        else:
-            self.cv.wait()
-            self.exists = False
-        finally:
-            self.cv.destroying = False
-            self.cv.notify()
-
     def commit(self, notify=True):
         """ Commit the current partition table to disk and notify the OS.
 
