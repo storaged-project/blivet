@@ -287,9 +287,7 @@ class Size(Decimal):
         return Size(Decimal.__radd__(self, other))
 
     def __sub__(self, other, context=None):
-        # subtraction is implemented using __add__ and negation, so we'll
-        # be getting passed a Size
-        return Decimal.__sub__(self, other)
+        return Size(Decimal.__sub__(self, other))
 
     def __mul__(self, other, context=None):
         return Size(Decimal.__mul__(self, other))
