@@ -488,6 +488,9 @@ class StorageDevice(Device):
             raise
         self._postCreate()
 
+    def _doPostCreateWipe(self):
+        return os.path.exists(self.path)
+
     def _postCreate(self):
         """ Perform post-create operations. """
         # XXX what about devices that don't get started automatically when
@@ -503,6 +506,12 @@ class StorageDevice(Device):
         self.setup() # this seems redundant
         if not flags.uevents:
             self.updateSysfsPath()
+            udev.settle()
+
+        # Wipe any preexisting metadata at the location used by this new device
+        # on disk.
+        if self._doPostCreateWipe():
+            getFormat(None, device=self.path, exists=True).destroy()
             udev.settle()
 
         # make sure that targetSize is updated to reflect the actual size

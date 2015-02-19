@@ -29,7 +29,7 @@ from .. import arch
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
-from ..formats import DeviceFormat, getFormat
+from ..formats import getFormat
 from ..size import Size, MiB
 
 from ..devicelibs import dm
@@ -574,6 +574,9 @@ class PartitionDevice(StorageDevice):
             self.disk.format.removePartition(part)
             raise
 
+    def _doPostCreateWipe(self):
+        return not self.isExtended
+
     def _postCreate(self):
         StorageDevice._postCreate(self)
 
@@ -586,10 +589,6 @@ class PartitionDevice(StorageDevice):
         log.debug("post-commit partition path is %s", getattr(partition,
                                                              "path", None))
         self.partedPartition = partition
-        if not self.isExtended:
-            # Ensure old metadata which lived in freespace so did not get
-            # explictly destroyed by a destroyformat action gets wiped
-            DeviceFormat(device=self.path, exists=True).destroy(notify=False)
 
     def _computeResize(self, partition, newsize=None):
         """ Return a new constraint and end-aligned geometry for new size.
