@@ -226,19 +226,19 @@ class TranslationTestCase(unittest.TestCase):
             locale.setlocale(locale.LC_ALL, '')
 
             # untranslated specs
-            self.assertEqual(size._makeSpec(b"", b"BYTES", False), b"bytes")
-            self.assertEqual(size._makeSpec(b"Mi", b"b", False), b"mib")
+            self.assertEqual(size._makeSpec("", "BYTES", False), "bytes")
+            self.assertEqual(size._makeSpec("Mi", "b", False), "mib")
 
             # un-lower-cased specs
-            self.assertEqual(size._makeSpec(b"", b"BYTES", False, False), b"BYTES")
-            self.assertEqual(size._makeSpec(b"Mi", b"b", False, False), b"Mib")
-            self.assertEqual(size._makeSpec(b"Mi", b"B", False, False), b"MiB")
+            self.assertEqual(size._makeSpec("", "BYTES", False, False), "BYTES")
+            self.assertEqual(size._makeSpec("Mi", "b", False, False), "Mib")
+            self.assertEqual(size._makeSpec("Mi", "B", False, False), "MiB")
 
             # translated specs
-            res = size._makeSpec(b"", b"bytes", True)
+            res = size._makeSpec("", "bytes", True)
 
-            # Note that exp != _(b"bytes").lower() as one might expect
-            exp = (_(b"") + _(b"bytes")).lower()
+            # Note that exp != _("bytes").lower() as one might expect
+            exp = (_("") + _("bytes")).lower()
             self.assertEqual(res, exp)
 
     def testParseSpec(self):
@@ -363,8 +363,8 @@ class UtilityMethodsTestCase(unittest.TestCase):
 
     def testLowerASCII(self):
         """ Tests for _lowerASCII. """
-        self.assertEqual(size._lowerASCII(b""), b"")
-        self.assertEqual(size._lowerASCII(b"B"), b"b")
+        self.assertEqual(size._lowerASCII(""), "")
+        self.assertEqual(size._lowerASCII("B"), "b")
 
     def testArithmetic(self):
         s = Size("2GiB")
