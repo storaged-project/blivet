@@ -1488,6 +1488,10 @@ class NoDevFS(FS):
     def mountType(self):
         return self.device  # this is probably set to the real/specific fstype
 
+    def notifyKernel(self):
+        # NoDevFS should not need to tell the kernel anything.
+        pass
+
 register_device_format(NoDevFS)
 
 
