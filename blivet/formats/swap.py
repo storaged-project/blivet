@@ -22,11 +22,9 @@
 
 from parted import PARTITION_SWAP, fileSystemType
 from ..storage_log import log_method_call
-from ..errors import SwapSpaceError
 from ..devicelibs import swap
 from . import DeviceFormat, register_device_format
 from ..size import Size
-from ..threads import KEY_PRESENT
 
 import logging
 log = logging.getLogger("blivet")
@@ -137,95 +135,21 @@ class SwapSpace(DeviceFormat):
         """ Device status. """
         return self.exists and swap.swapstatus(self.device)
 
-    def setup(self, **kwargs):
-        """ Activate the formatting.
-
-            :keyword device: device node path
-            :type device: str.
-            :raises: FormatSetupError.
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
+    def _setup(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise SwapSpaceError("format has not been created")
+        swap.swapon(self.device, priority=self.priority)
 
-        if self.status:
-            return
-
-        DeviceFormat.setup(self, **kwargs)
-        self.eventSync.starting = True
-        try:
-            swap.swapon(self.device, priority=self.priority)
-        except Exception:
-            raise
-        else:
-            self.eventSync.wait()
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
-
-    def teardown(self):
-        """ Close, or tear down, a device. """
+    def _teardown(self):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise SwapSpaceError("format has not been created")
+        swap.swapoff(self.device)
 
-        if not self.status:
-            return
-
-        self.eventSync.stopping = True
-        try:
-            swap.swapoff(self.device)
-        except Exception:
-            raise
-        else:
-            # We don't need to worry about missing the change event triggered by
-            # the swapoff call above because we hold the lock, preventing events
-            # from being handled, until we call wait here.
-            self.eventSync.wait()
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
-
-    def create(self, **kwargs):
-        """ Write the formatting to the specified block device.
-
-            :keyword device: path to device node
-            :type device: str.
-            :raises: FormatCreateError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
+    def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if self.exists:
-            raise SwapSpaceError("format already exists")
-
-        DeviceFormat.create(self, **kwargs)
-        self.eventSync.info_update(ID_FS_TYPE=self._udevTypes[0],
-                                   ID_FS_UUID=KEY_PRESENT)
-        self.eventSync.creating = True
-        try:
-            swap.mkswap(self.device, label=self.label)
-        except Exception:
-            raise
-        else:
-            self.eventSync.wait()
-            self.exists = True
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
+        super(SwapSpace, self)._create(**kwargs)
+        swap.mkswap(self.device, label=self.label)
 
 register_device_format(SwapSpace)
 

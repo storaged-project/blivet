@@ -390,7 +390,17 @@ class FS(DeviceFormat):
         argv.append(self.device)
         return argv
 
-    def doFormat(self, options=None):
+    # pylint: disable=unused-argument
+    def _preCreate(self, **kwargs):
+        super(FS, self)._preCreate(**kwargs)
+        if not self.mkfsProg:
+            return
+
+    def _setCreateEventInfo(self):
+        self.eventSync.info_update(ID_FS_TYPE=self.mountType,
+                                   ID_FS_UUID=KEY_PRESENT)
+
+    def _create(self, **kwargs):
         """ Create the filesystem.
 
             :param options: options to pass to mkfs
@@ -399,46 +409,24 @@ class FS(DeviceFormat):
         """
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
-
-        if self.exists:
-            raise FormatCreateError("filesystem already exists", self.device)
-
-        if not self.formattable:
-            return
-
-        if not self.mkfsProg:
-            return
-
-        if not os.path.exists(self.device):
-            raise FormatCreateError("device does not exist", self.device)
-
+        options = kwargs.get("options", "")
         argv = self._getFormatOptions(options=options,
            do_labeling=not self.relabels())
 
-        self.eventSync.info_update(ID_FS_TYPE=self.mountType,
-                                   ID_FS_UUID=KEY_PRESENT)
-        self.eventSync.creating = True
+        super(FS, self)._create()
 
         ret = 0
         try:
             ret = util.run_program([self.mkfsProg] + argv)
         except OSError as e:
             raise FormatCreateError(e, self.device)
-        else:
-            wait_args = []
-            if not ret:
-                wait_args = [2]
-
-            self.eventSync.wait(*wait_args)
-            if not ret:
-                self.exists = True
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
 
         if ret:
             raise FormatCreateError("format failed: %s" % ret, self.device)
 
+    # pylint: disable=unused-argument
+    def _postCreate(self, **kwargs):
+        super(FS, self)._postCreate()
         if self.label is not None and self.relabels():
             try:
                 self.writeLabel()
@@ -635,15 +623,8 @@ class FS(DeviceFormat):
 
         return ret
 
-    def mount(self, options="", chroot="/", mountpoint=None):
-        """ Mount this filesystem.
-
-            :keyword options: mount options (overrides all other option strings)
-            :type options: str.
-            :keyword chroot: prefix to apply to mountpoint
-            :keyword mountpoint: mountpoint (overrides self.mountpoint)
-            :raises: FSError
-        """
+    def _preSetup(self, **kwargs):
+        mountpoint = kwargs.get("mountpoint")
         if not self.exists:
             raise FSError("filesystem has not been created")
 
@@ -653,12 +634,23 @@ class FS(DeviceFormat):
         if not mountpoint:
             raise FSError("no mountpoint given")
 
-        if self.status:
-            return
-
         if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
             raise FSError("device %s does not exist" % self.device)
 
+        return not self.status
+
+    def _setup(self, **kwargs):
+        """ Mount this filesystem.
+
+            :keyword options: mount options (overrides all other option strings)
+            :type options: str.
+            :keyword chroot: prefix to apply to mountpoint
+            :keyword mountpoint: mountpoint (overrides self.mountpoint)
+            :raises: FSError
+        """
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint")
         # XXX os.path.join is FUBAR:
         #
         #         os.path.join("/mnt/foo", "/") -> "/"
@@ -674,27 +666,22 @@ class FS(DeviceFormat):
         if isinstance(self, BindFS):
             options = "bind," + options
 
-        self.eventSync.starting = True
-        read_only = "ro" in options.split(",")
-
         try:
             rc = util.mount(self.device, chrootedMountpoint,
                             fstype=self.mountType,
                             options=options)
         except Exception as e:
             raise FSError("mount failed: %s" % e)
-        else:
-            if not rc and not read_only:
-                self.eventSync.wait()
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
 
         if rc:
             raise FSError("mount failed: %s" % rc)
 
-        self._mounted_read_only = read_only
+        self._mountpoint = chrootedMountpoint
 
+    def _postSetup(self, **kwargs):
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint")
         if flags.selinux and "ro" not in options.split(",") and flags.installer_mode:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
@@ -705,16 +692,14 @@ class FS(DeviceFormat):
             if not ret:
                 log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
-        self._mountpoint = chrootedMountpoint
-
-    def unmount(self):
+    def _preTeardown(self):
         """ Unmount this filesystem. """
-        if not self.exists:
-            raise FSError("filesystem has not been created")
+        if not super(FS, self)._preTeardown():
+            return False
 
         if not self._mountpoint:
             # not mounted
-            return
+            return False
 
         if not os.path.exists(self._mountpoint):
             raise FSError("mountpoint does not exist")
@@ -722,32 +707,16 @@ class FS(DeviceFormat):
         if not flags.uevents:
             udev.settle()
 
-        self.eventSync.stopping = True
+        return True
 
-        rc = 0
-        try:
-            rc = util.umount(self._mountpoint)
-        except Exception:
-            raise
-        else:
-            wait_args = []
-            if rc:
-                # If we got an error it's possible the device was not (or was
-                # already) closed, so we can't wait around forever for a change
-                # uevent
-                wait_args = [2]
-
-            if not self._mounted_read_only:
-                self.eventSync.wait(*wait_args)
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
-
+    def _teardown(self):
+        rc = util.umount(self._mountpoint)
         if rc:
             # try and catch whatever is causing the umount problem
             util.run_program(["lsof", self._mountpoint])
             raise FSError("umount failed")
 
+    def _postTeardown(self):
         self._mountpoint = None
         self._mounted_read_only = False
 
@@ -927,27 +896,7 @@ class FS(DeviceFormat):
     # These methods just wrap filesystem-specific methods in more
     # generically named methods so filesystems and formatted devices
     # like swap and LVM physical volumes can have a common API.
-    def create(self, **kwargs):
-        """ Create the filesystem on the specified block device.
-
-            :keyword device: path to device node
-            :type device: str.
-            :raises: FormatCreateError, FSError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
-        if self.exists:
-            raise FSError("filesystem already exists")
-
-        DeviceFormat.create(self, **kwargs)
-
-        return self.doFormat(options=kwargs.get('options'))
-
-    def setup(self, **kwargs):
+    def mount(self, **kwargs):
         """ Mount the filesystem.
 
             The filesystem will be mounted at the directory indicated by
@@ -965,10 +914,10 @@ class FS(DeviceFormat):
                 If a device node path is passed to this method it will overwrite
                 any previously set value of this instance's "device" attribute.
         """
-        return self.mount(**kwargs)
+        return self.setup(**kwargs)
 
-    def teardown(self):
-        return self.unmount()
+    def unmount(self):
+        return self.teardown()
 
     @property
     def status(self):
@@ -1232,7 +1181,7 @@ class BTRFS(FS):
             # Don't try to mount it if there's no mountpoint.
             return
 
-        return self.mount(**kwargs)
+        return super(BTRFS, self).setup(**kwargs)
 
 register_device_format(BTRFS)
 

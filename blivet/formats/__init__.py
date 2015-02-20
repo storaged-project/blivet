@@ -35,7 +35,7 @@ from ..devicelibs.mdraid import md_node_from_name
 from ..i18n import N_
 from ..size import Size
 from ..threads import SynchronizedMeta, StorageEventSynchronizer
-from ..threads import KEY_ABSENT
+from ..threads import KEY_ABSENT, KEY_PRESENT
 from ..flags import flags
 
 import logging
@@ -339,6 +339,10 @@ class DeviceFormat(ObjectID):
     def type(self):
         return self._type
 
+    @property
+    def createGeneratesEvent(self):
+        return self.__class__._create != DeviceFormat._create
+
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
@@ -354,6 +358,24 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        self._preCreate(**kwargs)
+        try:
+            self._create(**kwargs)
+        except Exception:
+            if self.createGeneratesEvent:
+                self.eventSync.wait(timeout=1)
+                self.eventSync.reset()
+                self.eventSync.notify()
+            raise
+        self._postCreate(**kwargs)
+
+    def _setCreateEventInfo(self):
+        """ Specify requirements for udev info to confirm success. """
+        self.eventSync.info_update(ID_FS_TYPE=self._udevTypes[0],
+                                   ID_FS_UUID=KEY_PRESENT)
+
+    def _preCreate(self, **kwargs):
+        """ Perform checks and setup prior to creating the format. """
         # allow late specification of device path
         device = kwargs.get("device")
         if device:
@@ -361,6 +383,34 @@ class DeviceFormat(ObjectID):
 
         if not os.path.exists(self.device):
             raise FormatCreateError("invalid device specification", self.device)
+
+        if self.exists:
+            raise DeviceFormatError("format already exists")
+
+        if self.status:
+            raise DeviceFormatError("device exists and is active")
+
+        if not self.formattable:
+            return
+
+    # pylint: disable=unused-argument
+    def _create(self, **kwargs):
+        if self.createGeneratesEvent:
+            self._setCreateEventInfo()
+            self.eventSync.creating = True
+
+    # pylint: disable=unused-argument
+    def _postCreate(self, **kwargs):
+        if self.createGeneratesEvent:
+            self.eventSync.wait()
+            self.eventSync.reset()
+            self.eventSync.notify()
+
+        self.exists = True
+
+    @property
+    def destroyGeneratesEvent(self):
+        return True
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
@@ -372,11 +422,35 @@ class DeviceFormat(ObjectID):
         # pylint: disable=unused-argument
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        self._preDestroy(**kwargs)
+        try:
+            self._destroy()
+        except Exception:
+            if self.destroyGeneratesEvent:
+                self.eventSync.wait(timeout=2)
+                self.eventSync.reset()
+                self.eventSync.notify()
+            raise
 
+        self._postDestroy(**kwargs)
+
+    def _setDestroyEventInfo(self):
+        """ Specify requirements for udev info to confirm success. """
+        self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
+                                   ID_FS_UUID=KEY_ABSENT)
+
+    # pylint: disable=unused-argument
+    def _preDestroy(self, **kwargs):
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        if self.status:
+            raise DeviceFormatError("device is active")
+
+    def _destroy(self, **kwargs):
         notify = kwargs.pop("notify", True)
-        if notify:
-            self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
-                                       ID_FS_UUID=KEY_ABSENT)
+        if notify and self.destroyGeneratesEvent:
+            self._setDestroyEventInfo()
             self.eventSync.destroying = True
 
         rc = 0
@@ -388,22 +462,18 @@ class DeviceFormat(ObjectID):
         else:
             if rc:
                 err = str(rc)
-        finally:
-            wait_args = []
-            if err:
-                wait_args = [2]
-
-            if notify:
-                self.eventSync.wait(*wait_args)
-            if not err:
-                self.exists = False
-            if notify:
-                self.eventSync.reset()
-                self.eventSync.notify()
 
         if err:
             msg = "error wiping old signatures from %s: %s" % (self.device, err)
             raise FormatDestroyError(msg)
+
+    def _postDestroy(self, **kwargs):
+        notify = kwargs.pop("notify", True)
+        if notify and self.destroyGeneratesEvent:
+            self.eventSync.wait()
+        self.exists = False
+        if notify and self.destroyGeneratesEvent:
+            self.eventSync.notify()
 
     def setup(self, **kwargs):
         """ Activate the formatting.
@@ -420,12 +490,16 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        if not self._preSetup(**kwargs):
+            return
 
+        self._setup()
+        self._postSetup()
+
+    def _preSetup(self, **kwargs):
+        """ Return True if setup should proceed. """
         if not self.exists:
             raise FormatSetupError("format has not been created")
-
-        if self.status:
-            return
 
         # allow late specification of device path
         device = kwargs.get("device")
@@ -435,10 +509,38 @@ class DeviceFormat(ObjectID):
         if not self.device or not os.path.exists(self.device):
             raise FormatSetupError("invalid device specification")
 
+        return not self.status
+
+    # pylint: disable=unused-argument
+    def _setup(self, **kwargs):
+        pass
+
+    # pylint: disable=unused-argument
+    def _postSetup(self, **kwargs):
+        pass
+
     def teardown(self):
         """ Deactivate the formatting. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        if not self._preTeardown():
+            return
+
+        self._teardown()
+        self._postTeardown()
+
+    def _preTeardown(self):
+        """ Return True if teardown should proceed. """
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        return self.status
+
+    def _teardown(self):
+        pass
+
+    def _postTeardown(self):
+        pass
 
     @property
     def status(self):

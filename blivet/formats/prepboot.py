@@ -20,7 +20,6 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-from ..errors import FormatCreateError
 from ..size import Size
 from .. import platform
 from ..i18n import N_
@@ -57,25 +56,11 @@ class PPCPRePBoot(DeviceFormat):
         """
         DeviceFormat.__init__(self, **kwargs)
 
-    def create(self, **kwargs):
-        """ Write the formatting to the specified block device.
-
-            :keyword device: path to device node
-            :type device: str
-            :raises: FormatCreateError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
-        if self.exists:
-            raise FormatCreateError("PReP Boot format already exists")
-
-        DeviceFormat.create(self, **kwargs)
+    def _setCreateEventInfo(self):
         self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT)
-        self.eventSync.creating = True
+
+    def _create(self, **kwargs):
+        super(PPCPRePBoot, self)._create(**kwargs)
         try:
             fd = os.open(self.device, os.O_RDWR)
             length = os.lseek(fd, 0, os.SEEK_END)
@@ -91,14 +76,9 @@ class PPCPRePBoot(DeviceFormat):
                     length = 0
         except OSError as e:
             log.error("error zeroing out %s: %s", self.device, e)
-        else:
-            self.eventSync.wait()
         finally:
             if fd:
                 os.close(fd)
-            self.exists = True
-            self.eventSync.reset()
-            self.eventSync.notify()
 
     @property
     def status(self):

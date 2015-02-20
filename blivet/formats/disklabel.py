@@ -25,7 +25,7 @@ import os
 from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
-from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
+from ..errors import DiskLabelCommitError, InvalidDiskLabelError
 from .. import arch
 from .. import udev
 from .. import util
@@ -236,41 +236,26 @@ class DiskLabel(DeviceFormat):
         """ Device status. """
         return False
 
-    def create(self, **kwargs):
+    def _setCreateEventInfo(self):
+        self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
+                                   ID_PART_TABLE_TYPE=self.labelType,
+                                   ID_PART_TABLE_UUID=KEY_PRESENT)
+
+    def _create(self, **kwargs):
         """ Create the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if self.exists:
-            raise DeviceFormatError("format already exists")
-
-        if self.status:
-            raise DeviceFormatError("device exists and is active")
-
-        DeviceFormat.create(self, **kwargs)
+        super(DiskLabel, self)._create(**kwargs)
 
         # We're relying on someone having called resetPartedDisk -- we
         # could ensure a fresh disklabel by setting self._partedDisk to
         # None right before calling self.commit(), but that might hide
         # other problems.
-        self.eventSync.info_update(ID_FS_TYPE=KEY_ABSENT,
-                                   ID_PART_TABLE_TYPE=self.labelType,
-                                   ID_PART_TABLE_UUID=KEY_PRESENT)
-        self.eventSync.creating = True
-        try:
-            self.commit(notify=False)
-        except Exception:
-            raise
-        else:
-            self.exists = True
-            self.eventSync.wait()
-        finally:
-            self.eventSync.reset()
-            self.eventSync.notify()
+        self.commit(notify=False)
 
-    def destroy(self, **kwargs):
+    def _setDestroyEventInfo(self):
         self.eventSync.info_update(ID_PART_TABLE_TYPE=KEY_ABSENT,
                                    ID_PART_TABLE_UUID=KEY_ABSENT)
-        super(DiskLabel, self).destroy(**kwargs)
  
     def commit(self, notify=True):
         """ Commit the current partition table to disk and notify the OS.
