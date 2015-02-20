@@ -21,6 +21,9 @@
 #
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
+# we need integer division to work the same with both Python 2 and 3
+from __future__ import division
+
 import locale
 import os
 import unittest
@@ -149,10 +152,10 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.humanReadable(max_places=None), "63.9990234375 KiB")
 
         # deviation is less than 1/2 of 1% of 1024
-        s = Size(16384 - (1024/100/2))
+        s = Size(16384 - (1024/100//2))
         self.assertEquals(s.humanReadable(max_places=2), "16 KiB")
         # deviation is greater than 1/2 of 1% of 1024
-        s = Size(16384 - ((1024/100/2) + 1))
+        s = Size(16384 - ((1024/100//2) + 1))
         self.assertEquals(s.humanReadable(max_places=2), "15.99 KiB")
 
         s = Size(0x10000000000000)
@@ -383,6 +386,7 @@ class UtilityMethodsTestCase(unittest.TestCase):
         self.assertIsInstance(s-2, Size)
         self.assertIsInstance(s*2, Size)
         self.assertIsInstance(s/2, Size)
+        self.assertIsInstance(s//2, Size)
         self.assertIsInstance(s**2, Decimal)
         self.assertIsInstance(s % 127, Size)
 

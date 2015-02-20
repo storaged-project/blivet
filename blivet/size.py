@@ -296,6 +296,12 @@ class Size(Decimal):
     def __div__(self, other, context=None):
         return Size(Decimal.__div__(self, other))
 
+    def __truediv__(self, other, context=None):
+        return Size(Decimal.__truediv__(self, other))
+
+    def __floordiv__(self, other, context=None):
+        return Size(Decimal.__floordiv__(self, other))
+
     def __mod__(self, other, context=None):
         return Size(Decimal.__mod__(self, other))
 
