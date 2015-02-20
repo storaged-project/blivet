@@ -74,6 +74,7 @@ class NoDevice(StorageDevice):
 class TmpFSDevice(NoDevice):
     """ A nodev device for a tmpfs filesystem. """
     _type = "tmpfs"
+    _formatImmutable = True
 
     def __init__(self, *args, **kwargs):
         """Create a tmpfs device"""
