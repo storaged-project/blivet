@@ -15,41 +15,41 @@ class InitializationTestCase(unittest.TestCase):
         """Initialize some filesystems with valid and invalid labels."""
 
         # Ext2FS has a maximum length of 16
-        self.assertFalse(fs.Ext2FS.labelFormatOK("root___filesystem"))
-        self.assertTrue(fs.Ext2FS.labelFormatOK("root__filesystem"))
+        self.assertFalse(fs.Ext2FS().labelFormatOK("root___filesystem"))
+        self.assertTrue(fs.Ext2FS().labelFormatOK("root__filesystem"))
 
         # FATFS has a maximum length of 11
-        self.assertFalse(fs.FATFS.labelFormatOK("rtfilesystem"))
-        self.assertTrue(fs.FATFS.labelFormatOK("rfilesystem"))
+        self.assertFalse(fs.FATFS().labelFormatOK("rtfilesystem"))
+        self.assertTrue(fs.FATFS().labelFormatOK("rfilesystem"))
 
         # JFS has a maximum length of 16
-        self.assertFalse(fs.JFS.labelFormatOK("root___filesystem"))
-        self.assertTrue(fs.JFS.labelFormatOK("root__filesystem"))
+        self.assertFalse(fs.JFS().labelFormatOK("root___filesystem"))
+        self.assertTrue(fs.JFS().labelFormatOK("root__filesystem"))
 
         # ReiserFS has a maximum length of 16
-        self.assertFalse(fs.ReiserFS.labelFormatOK("root___filesystem"))
-        self.assertTrue(fs.ReiserFS.labelFormatOK("root__filesystem"))
+        self.assertFalse(fs.ReiserFS().labelFormatOK("root___filesystem"))
+        self.assertTrue(fs.ReiserFS().labelFormatOK("root__filesystem"))
 
         #XFS has a maximum length 12 and does not allow spaces
-        self.assertFalse(fs.XFS.labelFormatOK("root_filesyst"))
-        self.assertFalse(fs.XFS.labelFormatOK("root file"))
-        self.assertTrue(fs.XFS.labelFormatOK("root_filesys"))
+        self.assertFalse(fs.XFS().labelFormatOK("root_filesyst"))
+        self.assertFalse(fs.XFS().labelFormatOK("root file"))
+        self.assertTrue(fs.XFS().labelFormatOK("root_filesys"))
 
         #HFS has a maximum length of 27, minimum length of 1, and does not allow colons
-        self.assertFalse(fs.HFS.labelFormatOK("n" * 28))
-        self.assertFalse(fs.HFS.labelFormatOK("root:file"))
-        self.assertFalse(fs.HFS.labelFormatOK(""))
-        self.assertTrue(fs.HFS.labelFormatOK("n" * 27))
+        self.assertFalse(fs.HFS().labelFormatOK("n" * 28))
+        self.assertFalse(fs.HFS().labelFormatOK("root:file"))
+        self.assertFalse(fs.HFS().labelFormatOK(""))
+        self.assertTrue(fs.HFS().labelFormatOK("n" * 27))
 
         #HFSPlus has a maximum length of 128, minimum length of 1, and does not allow colons
-        self.assertFalse(fs.HFSPlus.labelFormatOK("n" * 129))
-        self.assertFalse(fs.HFSPlus.labelFormatOK("root:file"))
-        self.assertFalse(fs.HFSPlus.labelFormatOK(""))
-        self.assertTrue(fs.HFSPlus.labelFormatOK("n" * 128))
+        self.assertFalse(fs.HFSPlus().labelFormatOK("n" * 129))
+        self.assertFalse(fs.HFSPlus().labelFormatOK("root:file"))
+        self.assertFalse(fs.HFSPlus().labelFormatOK(""))
+        self.assertTrue(fs.HFSPlus().labelFormatOK("n" * 128))
 
         # NTFS has a maximum length of 128
-        self.assertFalse(fs.NTFS.labelFormatOK("n" * 129))
-        self.assertTrue(fs.NTFS.labelFormatOK("n" * 128))
+        self.assertFalse(fs.NTFS().labelFormatOK("n" * 129))
+        self.assertTrue(fs.NTFS().labelFormatOK("n" * 128))
 
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
@@ -62,7 +62,7 @@ class MethodsTestCase(unittest.TestCase):
     def setUp(self):
         self.fs = {}
         for k, v  in device_formats.items():
-            if issubclass(v, fs.FS) and v.labeling():
+            if issubclass(v, fs.FS) and v().labeling():
                 self.fs[k] = v(device="/dev", label="myfs")
 
 
@@ -87,7 +87,7 @@ class MethodsTestCase(unittest.TestCase):
         # all of the remaining are non-labeling so will accept any label
         label = "Houston, we have a problem!"
         for name, klass in device_formats.items():
-            if issubclass(klass, fs.FS) and not klass.labeling() and not issubclass(klass, fs.NFS):
+            if issubclass(klass, fs.FS) and not klass().labeling() and not issubclass(klass, fs.NFS):
                 self.assertEqual(klass(device="/dev", label=label).label, label, msg=name)
 
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
