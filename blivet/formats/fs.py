@@ -26,7 +26,7 @@ from decimal import Decimal
 import os
 import tempfile
 
-from . import fslabeling
+from ..tasks import fslabeling
 from ..errors import FormatCreateError, FSError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
