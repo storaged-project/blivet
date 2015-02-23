@@ -221,13 +221,11 @@ class DeviceFormat(ObjectID):
              "resizable": self.resizable}
         return d
 
-    @classmethod
-    def labeling(cls):
+    def labeling(self):
         """Returns False by default since most formats are non-labeling."""
         return False
 
-    @classmethod
-    def labelFormatOK(cls, label):
+    def labelFormatOK(self, label):
         """Checks whether the format of the label is OK for whatever
            application is used by blivet to write a label for this format.
            If there is no application that blivet uses to write a label,
@@ -239,7 +237,7 @@ class DeviceFormat(ObjectID):
            :return: True if the format of the label is OK, otherwise False
         """
         # pylint: disable=unused-argument
-        return cls.labeling()
+        return self.labeling()
 
     def _setLabel(self, label):
         """Sets the label for this format.
