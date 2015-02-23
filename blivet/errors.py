@@ -75,6 +75,12 @@ class MultipathMemberError(DeviceFormatError):
 class FSError(DeviceFormatError):
     pass
 
+class FSWriteLabelError(FSError):
+    pass
+
+class FSReadLabelError(FSError):
+    pass
+
 class FSResizeError(FSError):
     def __init__(self, message, details):
         FSError.__init__(self, message)
