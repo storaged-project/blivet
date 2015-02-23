@@ -151,25 +151,22 @@ class FS(DeviceFormat):
                   "mountable": self.mountable})
         return d
 
-    @classmethod
-    def labeling(cls):
+    def labeling(self):
         """Returns True if this filesystem uses labels, otherwise False.
 
            :rtype: bool
         """
-        return cls._labelfs is not None
+        return self._labelfs is not None
 
-    @classmethod
-    def relabels(cls):
+    def relabels(self):
         """Returns True if it is possible to relabel this filesystem
            after creation, otherwise False.
 
            :rtype: bool
         """
-        return cls._labelfs is not None and cls._labelfs.label_app is not None
+        return self._labelfs is not None and self._labelfs.label_app is not None
 
-    @classmethod
-    def labelFormatOK(cls, label):
+    def labelFormatOK(self, label):
         """Return True if the label has an acceptable format for this
            filesystem. None, which represents accepting the default for this
            device, is always acceptable.
@@ -177,7 +174,7 @@ class FS(DeviceFormat):
            :param label: A possible label
            :type label: str or None
         """
-        return label is None or (cls._labelfs is not None and cls._labelfs.labelFormatOK(label))
+        return label is None or (self._labelfs is not None and self._labelfs.labelFormatOK(label))
 
     label = property(lambda s: s._getLabel(), lambda s,l: s._setLabel(l),
        doc="this filesystem's label")
