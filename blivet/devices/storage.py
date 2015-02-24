@@ -395,6 +395,9 @@ class StorageDevice(Device):
         try:
             self._setup(orig=orig)
         except Exception:
+            # don't cause a deadlock if the failure generated an event
+            self.controlSync.wait(timeout=1)
+            self.controlSync.notify()
             self.controlSync.reset()
             raise
         self._postSetup()
@@ -453,6 +456,9 @@ class StorageDevice(Device):
         try:
             self._teardown(recursive=recursive)
         except Exception:
+            # don't cause a deadlock if the failure generated an event
+            self.controlSync.wait(timeout=1)
+            self.controlSync.notify()
             self.controlSync.reset()
             raise
 
@@ -493,6 +499,10 @@ class StorageDevice(Device):
         try:
             self._create()
         except Exception:
+            # don't cause a deadlock if the failure generated an event
+            self.modifySync.notify()
+            self.modifySync.wait(timeout=1)
+            self.modifySync.notify()
             self.modifySync.reset()
             raise
         self._postCreate()
@@ -506,6 +516,23 @@ class StorageDevice(Device):
         #     they are created
         event_sync = self.modifySync
         if self.__class__._create != StorageDevice._create:
+            # There is an extra notify/wait cycle for device creation. This is
+            # because some device types (partition) have so much pre/post code
+            # that it becomes likely that the event handler will notify the
+            # event sync before the device is waiting for that notification,
+            # which leads to a deadlock when the device waits for notification.
+            #
+            # It seemed better to add an extra wait with a short (~1s) timeout
+            # in the event handler than to use a timeout here and potentially
+            # run along before any event is received.
+            #
+            # If the timeout is here, we're assuming that reaching this point
+            # means an event has been generated and is being handled -- the
+            # second part there is the tricky one.
+            # If the timeout is there, we're assuming that reaching that point
+            # means that the device will be ready for post-processing within the
+            # timeout.
+            # The latter seems like a safer assumption to me.
             event_sync.notify() # notify the handler we're ready to post-process
             event_sync.wait() # wait for notification the event was received
 
@@ -561,6 +588,10 @@ class StorageDevice(Device):
         try:
             self._destroy()
         except Exception:
+            # don't cause a deadlock if the failure generated an event
+            self.modifySync.notify()
+            self.modifySync.wait(timeout=1)
+            self.modifySync.notify()
             self.modifySync.reset()
             raise
         self._postDestroy()
@@ -569,6 +600,8 @@ class StorageDevice(Device):
         """ Perform post-destruction operations. """
         event_sync = self.modifySync
         if self.__class__._destroy != StorageDevice._destroy:
+            # See comment in _postCreate, above for explanation of the extra
+            # notify here as compared to setup and teardown.
             event_sync.notify() # notify the handler we're ready to post-process
             event_sync.wait() # wait for notification that event was received
 
