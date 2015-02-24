@@ -31,6 +31,7 @@ from ..tasks import fsinfo
 from ..tasks import fslabeling
 from ..tasks import fsmkfs
 from ..tasks import fsreadlabel
+from ..tasks import fssize
 from ..tasks import fssync
 from ..tasks import fswritelabel
 from ..errors import FormatCreateError, FSError, FSReadLabelError
@@ -65,10 +66,10 @@ class FS(DeviceFormat):
     _infoClass = None
     _mkfsClass = None                    # mkfs
     _readlabelClass = None               # read label
+    _sizeinfoClass = None                # get current size
     _syncClass = None                    # sync the filesystem
     _writelabelClass = None              # write label after creation
     _defaultMountOptions = ["defaults"]  # default options passed to mount
-    _existingSizeFields = []
     _resizefsUnit = None
 
     def __init__(self, **kwargs):
@@ -107,6 +108,7 @@ class FS(DeviceFormat):
         self._fsck = getTaskObject(self._fsckClass)
         self._mkfs = getTaskObject(self._mkfsClass)
         self._readlabel = getTaskObject(self._readlabelClass)
+        self._sizeinfo = getTaskObject(self._sizeinfoClass)
         self._sync = getTaskObject(self._syncClass)
         self._writelabel = getTaskObject(self._writelabelClass)
 
@@ -246,7 +248,7 @@ class FS(DeviceFormat):
         finally:
             # try to gather current size info anyway
             self._current_info = self._getFSInfo()
-            self._size = self._getExistingSize(info=self._current_info)
+            self._size = self._getExistingSize()
             self._minSize = self._size # default to current size
             # We absolutely need a current size to enable resize. To shrink the
             # filesystem we need a real minimum size provided by the resize
@@ -279,85 +281,19 @@ class FS(DeviceFormat):
 
         return buf
 
-    def _getExistingSize(self, info=None):
+    def _getExistingSize(self):
         """ Determine the size of this filesystem.
 
-            Filesystem must exist.  Each filesystem varies, but the general
-            procedure is to run the filesystem dump or info utility and read
-            the block size and number of blocks for the filesystem
-            and compute megabytes from that.
-
-            The loop that reads the output from the infofsProg is meant
-            to be simple, but take in to account variations in output.
-            The general procedure:
-                1) Capture output from infofsProg.
-                2) Iterate over each line of the output:
-                       a) Trim leading and trailing whitespace.
-                       b) Break line into fields split on ' '
-                       c) If line begins with any of the strings in
-                          _existingSizeFields, start at the end of
-                          fields and take the first one that converts
-                          to an int.  Store this in the values list.
-                       d) Repeat until the values list length equals
-                          the _existingSizeFields length.
-                3) If the length of the values list equals the length
-                   of _existingSizeFields, compute the size of this
-                   filesystem by multiplying all of the values together
-                   to get bytes, then convert to megabytes.  Return
-                   this value.
-                4) If we were unable to capture all fields, return 0.
-
-            The caller should catch exceptions from this method.  Any
-            exception raised indicates a need to change the fields we
-            are looking for, the command to run and arguments, or
-            something else.  If you catch an exception from this method,
-            assume the filesystem cannot be resized.
-
-            :keyword info: filesystem info buffer
-            :type info: str (output of :attr:`infofsProg`)
-            :returns: size of existing fs in MiB.
-            :rtype: float.
+            :returns: size of existing fs
+            :rtype: :class:`~.size.Size`
         """
-        if not self._existingSizeFields:
-            return Size(0)
-
         size = Size(0)
-        if self.exists:
+
+        if self._sizeinfo:
             try:
-                values = []
-                for line in info.splitlines():
-                    found = False
-
-                    line = line.strip()
-                    tmp = line.split()
-                    tmp.reverse()
-
-                    for field in self._existingSizeFields:
-                        if line.startswith(field):
-                            for subfield in tmp:
-                                try:
-                                    values.append(int(subfield))
-                                    found = True
-                                    break
-                                except ValueError:
-                                    continue
-
-                        if found:
-                            break
-
-                    if len(values) == len(self._existingSizeFields):
-                        break
-
-                if len(values) != len(self._existingSizeFields):
-                    return Size(0)
-
-                size = 1
-                for value in values:
-                    size *= value
-
-                size = Size(size)
-            except Exception: # pylint: disable=broad-except
-                log_exception_info(log.error, "failed to obtain size of filesystem on %s", [self.device])
+                size = self._sizeinfo.doTask()
+            except FSError as e:
+                log.error("failed to obtain size of filesystem on %s: %s", self.device, e)
 
         return size
 
@@ -854,8 +790,8 @@ class Ext2FS(FS):
     _infoClass = fsinfo.Ext2FSInfo
     _mkfsClass = fsmkfs.Ext2FSMkfs
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
+    _sizeinfoClass = fssize.Ext2FSSize
     _writelabelClass = fswritelabel.Ext2FSWriteLabel
-    _existingSizeFields = ["Block count:", "Block size:"]
     _resizefsUnit = MiB
     partedSystem = fileSystemType["ext2"]
 
@@ -1082,8 +1018,8 @@ class JFS(FS):
     _check = True
     _infoClass = fsinfo.JFSInfo
     _mkfsClass = fsmkfs.JFSMkfs
+    _sizeinfoClass = fssize.JFSSize
     _writelabelClass = fswritelabel.JFSWriteLabel
-    _existingSizeFields = ["Physical block size:", "Aggregate size:"]
     partedSystem = fileSystemType["jfs"]
 
     @property
@@ -1107,8 +1043,8 @@ class ReiserFS(FS):
     _packages = ["reiserfs-utils"]
     _infoClass = fsinfo.ReiserFSInfo
     _mkfsClass = fsmkfs.ReiserFSMkfs
+    _sizeinfoClass = fssize.ReiserFSSize
     _writelabelClass = fswritelabel.ReiserFSWriteLabel
-    _existingSizeFields = ["Count of blocks on the device:", "Blocksize:"]
     partedSystem = fileSystemType["reiserfs"]
 
     @property
@@ -1132,9 +1068,9 @@ class XFS(FS):
     _infoClass = fsinfo.XFSInfo
     _mkfsClass = fsmkfs.XFSMkfs
     _readlabelClass = fsreadlabel.XFSReadLabel
+    _sizeinfoClass = fssize.XFSSize
     _syncClass = fssync.XFSSync
     _writelabelClass = fswritelabel.XFSWriteLabel
-    _existingSizeFields = ["dblocks =", "blocksize ="]
     partedSystem = fileSystemType["xfs"]
 
 register_device_format(XFS)
@@ -1216,8 +1152,8 @@ class NTFS(FS):
     _infoClass = fsinfo.NTFSInfo
     _mkfsClass = fsmkfs.NTFSMkfs
     _readlabelClass = fsreadlabel.NTFSReadLabel
+    _sizeinfoClass = fssize.NTFSSize
     _writelabelClass = fswritelabel.NTFSWriteLabel
-    _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
     _resizefsUnit = B
     partedSystem = fileSystemType["ntfs"]
 
@@ -1376,6 +1312,7 @@ class TmpFS(NoDevFS):
     # in the regard that the format is automatically created
     # once mounted
     _formattable = True
+    _sizeinfoClass = fssize.TmpFSSize
 
     def __init__(self, **kwargs):
         NoDevFS.__init__(self, **kwargs)
@@ -1407,31 +1344,6 @@ class TmpFS(NoDevFS):
         mountpoint is unmounted.
         """
         pass
-
-    def _getExistingSize(self, info=None):
-        """ Get current size of tmpfs filesystem using df.
-
-            :param NoneType info: a dummy parameter
-            :rtype: Size
-            :returns: the current size of the filesystem, 0 if not found.
-        """
-        if not self.status:
-            return Size(0)
-
-        df = ["df", self.systemMountpoint, "--output=size"]
-        try:
-            (ret, out) = util.run_program_and_capture_output(df)
-        except OSError:
-            return Size(0)
-
-        if ret:
-            return Size(0)
-
-        lines = out.split()
-        if len(lines) != 2 or lines[0] != "1K-blocks":
-            return Size(0)
-
-        return Size("%s KiB" % lines[1])
 
     @property
     def mountable(self):
