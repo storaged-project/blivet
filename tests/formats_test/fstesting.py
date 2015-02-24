@@ -47,7 +47,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         else:
             expected_size = _size
             # If the size can be obtained it will not be 0
-            if an_fs._infofs:
+            if an_fs._info:
                 self.assertNotEqual(expected_size, Size(0))
                 self.assertTrue(expected_size <= self._DEVICE_SIZE)
             # Otherwise it will be 0, assuming the device was not initialized

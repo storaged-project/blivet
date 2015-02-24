@@ -27,6 +27,7 @@ import os
 import tempfile
 
 from ..tasks import fsck
+from ..tasks import fsinfo
 from ..tasks import fslabeling
 from ..tasks import fsreadlabel
 from ..tasks import fssync
@@ -58,13 +59,12 @@ class FS(DeviceFormat):
     _modules = []                        # kernel modules required for support
     _resizefs = ""                       # resize utility
     _labelfs = None                      # labeling functionality
-    _infofs = ""                         # fs info utility
     _fsckClass = None                    # fsck
+    _infoClass = None
     _readlabelClass = None               # read label
     _syncClass = None                    # sync the filesystem
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
-    _defaultInfoOptions = []
     _existingSizeFields = []
     _resizefsUnit = None
     _fsProfileSpecifier = None           # mkfs option specifying fsprofile
@@ -101,6 +101,7 @@ class FS(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
 
         # Create task objects
+        self._info = getTaskObject(self._infoClass)
         self._fsck = getTaskObject(self._fsckClass)
         self._readlabel = getTaskObject(self._readlabelClass)
         self._sync = getTaskObject(self._syncClass)
@@ -254,14 +255,21 @@ class FS(DeviceFormat):
         pass
 
     def _getFSInfo(self):
+        """ Get filesystem information by use of external tools.
+
+            :returns: the output of the tool
+            :rtype: str
+
+            If for any reason the information is not obtained returns the
+            empty string.
+        """
         buf = ""
-        if self.infofsProg and self.exists and \
-           util.find_program_in_path(self.infofsProg):
-            argv = self._defaultInfoOptions + [ self.device ]
+
+        if self._info is not None and not self._info.unavailable:
             try:
-                buf = util.capture_output([self.infofsProg] + argv)
-            except OSError as e:
-                log.error("failed to gather fs info: %s", e)
+                buf = self._info.doTask()
+            except FSError as e:
+                log.error(e)
 
         return buf
 
@@ -780,8 +788,12 @@ class FS(DeviceFormat):
 
     @property
     def infofsProg(self):
-        """ Program used to get information for this filesystem type. """
-        return self._infofs
+        """ Program used to get information for this filesystem type.
+
+            :returns: the name of the program used to get information
+            :rtype: str or NoneType
+        """
+        return self._info.app_name if self._info else None
 
     @property
     def utilsAvailable(self):
@@ -925,10 +937,9 @@ class Ext2FS(FS):
     _maxSize = Size("8 TiB")
     _dump = True
     _check = True
-    _infofs = "dumpe2fs"
     _fsckClass = fsck.Ext2FSCK
+    _infoClass = fsinfo.Ext2FSInfo
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
-    _defaultInfoOptions = ["-h"]
     _existingSizeFields = ["Block count:", "Block size:"]
     _resizefsUnit = MiB
     _fsProfileSpecifier = "-T"
@@ -1141,8 +1152,7 @@ class JFS(FS):
     _linuxNative = True
     _dump = True
     _check = True
-    _infofs = "jfs_tune"
-    _defaultInfoOptions = ["-l"]
+    _infoClass = fsinfo.JFSInfo
     _existingSizeFields = ["Physical block size:", "Aggregate size:"]
     partedSystem = fileSystemType["jfs"]
 
@@ -1167,7 +1177,7 @@ class ReiserFS(FS):
     _dump = True
     _check = True
     _packages = ["reiserfs-utils"]
-    _infofs = "debugreiserfs"
+    _infoClass = fsinfo.ReiserFSInfo
     _existingSizeFields = ["Count of blocks on the device:", "Blocksize:"]
     partedSystem = fileSystemType["reiserfs"]
 
@@ -1191,11 +1201,9 @@ class XFS(FS):
     _linuxNative = True
     _supported = True
     _packages = ["xfsprogs"]
-    _infofs = "xfs_db"
+    _infoClass = fsinfo.XFSInfo
     _readlabelClass = fsreadlabel.XFSReadLabel
     _syncClass = fssync.XFSSync
-    _defaultInfoOptions = ["-c", "sb 0", "-c", "p dblocks",
-                           "-c", "p blocksize"]
     _existingSizeFields = ["dblocks =", "blocksize ="]
     partedSystem = fileSystemType["xfs"]
 
@@ -1275,10 +1283,9 @@ class NTFS(FS):
     _maxSize = Size("16 TiB")
     _defaultMountOptions = ["defaults", "ro"]
     _packages = ["ntfsprogs"]
-    _infofs = "ntfsinfo"
     _fsckClass = fsck.NTFSFSCK
+    _infoClass = fsinfo.NTFSInfo
     _readlabelClass = fsreadlabel.NTFSReadLabel
-    _defaultInfoOptions = ["-m"]
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
     _resizefsUnit = B
     partedSystem = fileSystemType["ntfs"]
