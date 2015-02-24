@@ -5,17 +5,17 @@
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
-# the GNU General Public License v.2, or (at your option) any later version.
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY expressed or implied, including the implied warranties of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-# Public License for more details.  You should have received a copy of the
-# GNU General Public License along with this program; if not, write to the
-# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301, USA.  Any Red Hat trademarks that are incorporated in the
-# source code or documentation are not subject to the GNU General Public
-# License and may only be used or replicated with the express permission of
-# Red Hat, Inc.
+# the GNU Lesser General Public License v.2, or (at your option) any later
+# version. This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY expressed or implied, including the implied
+# warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+# the GNU Lesser General Public License for more details.  You should have
+# received a copy of the GNU Lesser General Public License along with this
+# program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.  Any Red Hat trademarks
+# that are incorporated in the source code or documentation are not subject
+# to the GNU Lesser General Public License and may only be used or
+# replicated with the express permission of Red Hat, Inc.
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
@@ -160,18 +160,13 @@ class EventQueue(object):
 @add_metaclass(abc.ABCMeta)
 class EventHandler(object):
     _event_queue_class = EventQueue
-    _default_delay_sec = 0
 
-    def __init__(self, handler_cb=None, delay=None, notify_cb=None):
+    def __init__(self, handler_cb=None, notify_cb=None):
         self._handler_cb = None
         self._notify_cb = None
-        self._delay = self._default_delay_sec
 
         if handler_cb is not None:
             self.handler_cb = handler_cb
-
-        if delay is not None:
-            self.delay = delay
 
         if notify_cb is not None:
             self.notify_cb = notify_cb
@@ -207,22 +202,6 @@ class EventHandler(object):
 
     notify_cb = property(lambda h: h._get_notify_cb(),
                          lambda h, cb: h._set_notify_cb(cb))
-
-    #
-    # delay in seconds before handling a new event
-    #
-    def _set_delay(self, delay):
-        if not isinstance(delay, (int, float)):
-            raise EventParamError("delay must be int or float")
-
-        self._delay = delay
-
-    def _get_delay(self):
-        return self._delay
-
-    delay = property(lambda h: h._get_delay(),
-                     lambda h,d: h._set_delay(d),
-                     doc="delay in seconds before running callback")
 
     @abc.abstractproperty
     def enabled(self):
@@ -264,14 +243,13 @@ class EventHandler(object):
         pass
 
     def handle_event(self, *args, **kwargs):
-        """ Enqueue an event and handle it after the configured delay. """
+        """ Enqueue an event and call the configured handler. """
         self.enqueue_event(*args, **kwargs)
-        Timer(self.delay, self.handler_cb).start()
+        Timer(0, self.handler_cb).start()
 
 class UdevEventHandler(EventHandler):
-    def __init__(self, handler_cb, delay=None, notify_cb=None):
-        super(UdevEventHandler, self).__init__(handler_cb, delay=delay,
-                                               notify_cb=notify_cb)
+    def __init__(self, handler_cb, notify_cb=None):
+        super(UdevEventHandler, self).__init__(handler_cb, notify_cb=notify_cb)
         self._pyudev_observer = None
 
     def __deepcopy__(self, memo):
@@ -305,5 +283,5 @@ class UdevEventHandler(EventHandler):
         self._queue.enqueue(event)
 
     def handle_event(self, *args, **kwargs):
-        """ Enqueue a uevent and handle it after the configured delay. """
+        """ Enqueue a uevent and call the configured handler. """
         super(UdevEventHandler, self).handle_event(args[0], args[1])
