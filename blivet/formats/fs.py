@@ -27,7 +27,8 @@ import os
 import tempfile
 
 from ..tasks import fslabeling
-from ..errors import FormatCreateError, FSError, FSResizeError
+from ..tasks import fsreadlabel
+from ..errors import FormatCreateError, FSError, FSReadLabelError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
 from .. import platform
@@ -58,6 +59,7 @@ class FS(DeviceFormat):
     _fsck = ""                           # fs check utility
     _fsckErrors = {}                     # fs check command error codes & msgs
     _infofs = ""                         # fs info utility
+    _readlabelClass = None               # read label
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
     _defaultCheckOptions = []
@@ -96,6 +98,10 @@ class FS(DeviceFormat):
             raise TypeError("FS is an abstract class.")
 
         DeviceFormat.__init__(self, **kwargs)
+
+        # Create task objects
+        self._readlabel = getTaskObject(self._readlabelClass)
+
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
         self.label = kwargs.get("label")
@@ -695,27 +701,12 @@ class FS(DeviceFormat):
            :return: the filesystem's label
            :rtype: str
 
-           Raises a FSError if the label can not be read.
+           Raises a FSReadLabelError if the label can not be read.
         """
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        if not os.path.exists(self.device):
-            raise FSError("device does not exist")
-
-        if not self.relabels() or not self._labelfs.label_app.reads:
-            raise FSError("no application to read label for filesystem %s" % self.type)
-
-        (rc, out) = util.run_program_and_capture_output(self._labelfs.label_app.readLabelCommand(self))
-        if rc:
-            raise FSError("read label failed")
-
-        label = out.strip()
-
-        if label == "":
-            return ""
+        if self._readlabel is not None:
+            return self._readlabel.doTask()
         else:
-            return self._labelfs.label_app.extractLabel(label)
+            raise FSReadLabelError("label reading not implemented for filesystem %s" % self.type)
 
     def writeLabel(self):
         """ Create a label for this filesystem.
@@ -937,6 +928,7 @@ class Ext2FS(FS):
     _dump = True
     _check = True
     _infofs = "dumpe2fs"
+    _readlabelClass = fsreadlabel.Ext2FSReadLabel
     _defaultInfoOptions = ["-h"]
     _existingSizeFields = ["Block count:", "Block size:"]
     _resizefsUnit = MiB
@@ -1073,6 +1065,7 @@ class FATFS(FS):
     _formattable = True
     _maxSize = Size("1 TiB")
     _packages = [ "dosfstools" ]
+    _readlabelClass = fsreadlabel.DosFSReadLabel
     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
     _defaultCheckOptions = ["-n"]
     # FIXME this should be fat32 in some cases
@@ -1247,6 +1240,7 @@ class XFS(FS):
     _supported = True
     _packages = ["xfsprogs"]
     _infofs = "xfs_db"
+    _readlabelClass = fsreadlabel.XFSReadLabel
     _defaultInfoOptions = ["-c", "sb 0", "-c", "p dblocks",
                            "-c", "p blocksize"]
     _existingSizeFields = ["dblocks =", "blocksize ="]
@@ -1352,6 +1346,7 @@ class NTFS(FS):
     _defaultCheckOptions = ["-c"]
     _packages = ["ntfsprogs"]
     _infofs = "ntfsinfo"
+    _readlabelClass = fsreadlabel.NTFSReadLabel
     _defaultInfoOptions = ["-m"]
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
     _resizefsUnit = B
