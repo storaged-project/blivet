@@ -697,7 +697,7 @@ class DeviceTree(object):
             device.name = name
 
         # resize
-        # XXX resize of inactive lvs is handled in handleVgLvs (via change event
+        # XXX resize of inactive lvs is handled in updateLVs (via change event
         #     handler for pv(s))
         current_size = device.readCurrentSize()
         if expected or device.currentSize != current_size:
@@ -874,7 +874,7 @@ class DeviceTree(object):
                     # vg rename
                     vg_device.name = new_vg_name
                     vg_device.uuid = new_vg_uuid
-                    self.handleVgLvs(vg_device)
+                    self.updateLVs(vg_device)
 
             # the rest should be handled by events for the LVs
         elif device.format.type == "mdmember":
@@ -1913,7 +1913,7 @@ class DeviceTree(object):
             log.warning("luks device %s already in the tree",
                         device.format.mapName)
 
-    def handleVgLvs(self, vg_device):
+    def updateLVs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
         lv_info = dict((k, v) for (k, v) in iter(self.lvInfo.items())
@@ -2154,7 +2154,7 @@ class DeviceTree(object):
                                              exists=True)
             self._addDevice(vg_device)
 
-        self.handleVgLvs(vg_device)
+        self.updateLVs(vg_device)
 
     def handleUdevMDMemberFormat(self, info, device):
         # pylint: disable=unused-argument
