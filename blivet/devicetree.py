@@ -697,9 +697,11 @@ class DeviceTree(object):
             device.name = name
 
         # resize
-        # XXX resize of inactive lvs must be handled by PV change handler
-        if expected or device.currentSize != device.readCurrentSize():
-            device.updateSize()
+        # XXX resize of inactive lvs is handled in handleVgLvs (via change event
+        #     handler for pv(s))
+        current_size = device.readCurrentSize()
+        if expected or device.currentSize != current_size:
+            device.updateSize(newsize=current_size)
 
         # This is also happening in ContainerDevice._postCreate.
         if udev.device_is_md(info) and expected:
@@ -1932,7 +1934,7 @@ class DeviceTree(object):
             log.debug("no LVs listed for VG %s", vg_name)
             return
 
-        ## TODO: lvresize, lvconvert
+        ## TODO: lvconvert
 
         def addRequiredLV(name, msg):
             """ Add a prerequisite/parent LV.
@@ -1970,9 +1972,17 @@ class DeviceTree(object):
             lv_kwargs = {}
             name = "%s-%s" % (vg_name, lv_name)
 
-            if self.getDeviceByName(name):
+            lv_device = self.getDeviceByName(name)
+            if lv_device:
                 # some lvs may have been added on demand below
                 log.debug("already added %s", name)
+                if lv_size != lv_device.currentSize:
+                    # lvresize can operate on an inactive lv, in which case
+                    # the only notification we will receive is a change uevent
+                    # for the pv(s)
+                    # FIXME: account for scheduled actions
+                    lv_device.updateSize(newsize=lv_size)
+
                 return
 
             if lv_attr[0] in 'Ss':
