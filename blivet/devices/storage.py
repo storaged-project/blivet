@@ -680,9 +680,24 @@ class StorageDevice(Device):
             self._currentSize = self.readCurrentSize()
         return self._currentSize
 
-    def updateSize(self):
-        """ Update size, currentSize, and targetSize to actual size. """
-        self._currentSize = Size(0)
+    def updateSize(self, newsize=None):
+        """ Update size, currentSize, and targetSize to actual size.
+
+            :keyword :class:`~.size.Size` newsize: new size for device
+
+            .. note::
+
+                Most callers will not pass a new size. It is for special cases
+                like outside resize of inactive LVs, which precludes updating
+                the size from /sys.
+        """
+        if newsize is None:
+            self._currentSize = Size(0)
+        elif isinstance(newsize, Size):
+            self._currentSize = newsize
+        else:
+            raise ValueError("new size must be an instance of class Size")
+
         new_size = self.currentSize
         self._size = new_size
         self._targetSize = new_size # bypass setter checks
