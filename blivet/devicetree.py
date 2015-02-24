@@ -638,6 +638,131 @@ class DeviceTree(object):
             # if this device is on a hidden disk it should also be hidden
             self._hideIgnoredDisks()
 
+    def _diskLabelChangeHandler(self, info, device):
+        log.info("checking for changes to disklabel on %s", device.name)
+        # update the partition list
+        self.eventHandler.blacklist_event(device=udev.device_get_name(info),
+                                          action="change", count=1)
+        device.format.updatePartedDisk()
+        udev_devices = [d for d in udev.get_devices()
+                if udev.device_get_disklabel_uuid(d) == device.format.uuid and
+                    (udev.device_is_partition(d) or udev.device_is_dm_partition(d))]
+        def udev_part_start(info):
+            start = info.get("ID_PART_ENTRY_OFFSET")
+            return int(start) if start is not None else start
+
+        # remove any partitions we have that are no longer on disk
+        for old in self.getChildren(device):
+            if not old.exists:
+                log.warning("non-existent partition %s on changed "
+                            "disklabel", old.name)
+                continue
+
+            if old.isLogical:
+                # msdos partitions are of the form
+                # "%(disklabel_uuid)s-%(part_num)s". That's because
+                # there's not any place to store an actual UUID in
+                # the disklabel or partition metadata, I assume.
+                # The reason this is so sad is that when you remove
+                # logical partition that isn't the highest-numbered
+                # one, the others all get their numbers shifted down
+                # so the first one is always 5. Seriously. The msdos
+                # partition UUIDs are pretty useless for logical
+                # partitions.
+                start = old.partedPartition.geometry.start
+                new = next((p for p in udev_devices
+                                if udev_part_start(info) == start),
+                           None)
+            else:
+                new = next((p for p in udev_devices
+                    if udev.device_get_partition_uuid(p) == old.uuid),
+                            None)
+
+            if new is None:
+                log.info("partition %s was removed", old.name)
+                self.recursiveRemove(old, actions=False, modparent=False)
+            else:
+                udev_devices.remove(new)
+
+        # any partitions left in the list have been added
+        for new in udev_devices:
+            log.info("partition %s was added",
+                     udev.device_get_name(new))
+            self.addUdevDevice(new)
+
+    def _getMemberUUID(self, info, device, container=False):
+        uuid = udev.device_get_uuid(info)
+        container_uuid = None
+        if device.format.type == "btrfs":
+            container_uuid = uuid
+            uuid = info["ID_FS_UUID_SUB"]
+        elif device.format.type == "mdmember":
+            container_uuid = uuid
+            uuid = udev.device_get_md_device_uuid(info)
+        elif device.format.type == "lvmpv":
+            # LVM doesn't put the VG UUID in udev
+            if container:
+                pv_info = self.pvInfo.get(device.path)
+                container_uuid = udev.device_get_vg_uuid(pv_info)
+
+        return uuid if not container else container_uuid
+
+    def _getContainerUUID(self, info, device):
+        return self._getMemberUUID(info, device, container=True)
+
+    def _memberChangeHandler(self, info, device):
+        """ Handle a change uevent on a container member device.
+
+            :returns: whether the container changed
+            :rtype: bool
+
+        """
+        if not hasattr(device.format, "containerUUID"):
+            return
+
+        uuid = self._getMemberUUID(info, device)
+        container_uuid = self._getContainerUUID(info, device)
+
+        old_container_uuid = device.format.containerUUID
+        container_changed = (old_container_uuid != container_uuid)
+        try:
+            container = self.getChildren(device)[0]
+        except IndexError:
+            container = None
+
+        if container_changed:
+            if container:
+                if len(container.parents) == 1:
+                    self.recursiveRemove(container)
+                else:
+                    # FIXME: we need to be able to bypass the checks that
+                    #        prevent ill-advised member removals
+                    try:
+                        container.parents.remove(device)
+                    except DeviceError:
+                        log.error("failed to remove %s from container %s "
+                                  "to reflect uevent", device.name,
+                                                       container.name)
+
+            device.format = None
+            self.handleUdevDeviceFormat(info, device)
+        else:
+            device.format.containerUUID = container_uuid
+            device.format.uuid = uuid
+
+            if device.format.type == "lvmpv":
+                pv_info = self.pvInfo.get(device.path)
+                new_vg_name = udev.device_get_vg_name(pv_info)
+                device.format.vgName = new_vg_name
+                device.format.peStart = udev.device_get_pv_pe_start(pv_info)
+                if container:
+                    # vg rename
+                    container.name = new_vg_name
+                    self.updateLVs(container)
+
+        # MD TODO: raid level, spares
+        # BTRFS TODO: check for changes to subvol list IFF the volume is mounted
+
     def deviceChangedCB(self, info, expected=False):
         """ Handle a "changed" uevent on a block device. """
         sysfs_path = udev.device_get_sysfs_path(info)
@@ -720,7 +845,7 @@ class DeviceTree(object):
         ##
         ## Handle changes to the data it contains.
         ##
-        uuid = udev.device_get_uuid(info)
+        uuid = self._getMemberUUID(info, device)
         label = udev.device_get_label(info)
 
         partitioned = (device.partitionable and
@@ -732,22 +857,7 @@ class DeviceTree(object):
         log.info("partitioned: %s\ntype_changed: %s\nold type: %s\nnew type: %s",
                  partitioned, type_changed, device.format.type, new_type)
 
-        # here we're checking if the device was actually reformatted, so we want
-        # to look at container members' individual UUIDs and not the container
-        # UUID
-        container_uuid = None
-        if type_changed:
-            pass
-        elif device.format.type == "btrfs":
-            container_uuid = uuid
-            uuid = info["ID_FS_UUID_SUB"]
-        elif device.format.type == "mdmember":
-            container_uuid = uuid
-            uuid = udev.device_get_md_device_uuid(info)
-        elif device.format.type == "lvmpv":
-            # LVM doesn't put the VG UUID in udev
-            pass
-        elif partitioned:
+        if partitioned:
             uuid = udev.device_get_disklabel_uuid(info)
 
         log.info("old uuid: %s ; new uuid: %s", device.format.uuid, uuid)
@@ -765,14 +875,9 @@ class DeviceTree(object):
             device.format.uuid = uuid
 
             # FIXME: grab the info about uuid attrs from the container instance?
-            if expected:
-                if device.format.type == "btrfs":
-                    device.format.volUUID = container_uuid
-                elif device.format.type == "mdmember":
-                    device.format.mdUuid = container_uuid
-                elif device.format.type == "lvmpv":
-                    # XXX udev doesn't provide lvm uuids at all
-                    pass
+            if expected and hasattr(device.format, "containerUUID"):
+                device.format.containerUUID = self._getContainerUUID(info,
+                                                                     device)
 
             if hasattr(device.format, "label"):
                 device.format.label = label
@@ -792,146 +897,12 @@ class DeviceTree(object):
         ## existence.
         ##
         if partitioned:
-            log.info("checking for changes to disklabel on %s", device.name)
-            # update the partition list
-            self.eventHandler.blacklist_event(device=udev.device_get_name(info),
-                                              action="change", count=1)
-            device.format.updatePartedDisk()
-            udev_devices = [d for d in udev.get_devices()
-                    if udev.device_get_disklabel_uuid(d) == device.format.uuid and
-                        (udev.device_is_partition(d) or udev.device_is_dm_partition(d))]
-            def udev_part_start(info):
-                start = info.get("ID_PART_ENTRY_OFFSET")
-                return int(start) if start is not None else start
+            self._diskLabelChangeHandler(info, device)
+        elif hasattr(device.format, "containerUUID"):
+            if device.format.type == "lvmpv":
+                self.dropLVMCache()
 
-            # remove any partitions we have that are no longer on disk
-            for old in self.getChildren(device):
-                if not old.exists:
-                    log.warning("non-existent partition %s on changed "
-                                "disklabel", old.name)
-                    continue
-
-                if old.isLogical:
-                    # msdos partitions are of the form
-                    # "%(disklabel_uuid)s-%(part_num)s". That's because
-                    # there's not any place to store an actual UUID in
-                    # the disklabel or partition metadata, I assume.
-                    # The reason this is so sad is that when you remove
-                    # logical partition that isn't the highest-numbered
-                    # one, the others all get their numbers shifted down
-                    # so the first one is always 5. Seriously. The msdos
-                    # partition UUIDs are pretty useless for logical
-                    # partitions.
-                    start = old.partedPartition.geometry.start
-                    new = next((p for p in udev_devices
-                                    if udev_part_start(info) == start),
-                               None)
-                else:
-                    new = next((p for p in udev_devices
-                        if udev.device_get_partition_uuid(p) == old.uuid),
-                                None)
-
-                if new is None:
-                    log.info("partition %s was removed", old.name)
-                    self.recursiveRemove(old, actions=False, modparent=False)
-                else:
-                    udev_devices.remove(new)
-
-            # any partitions left in the list have been added
-            for new in udev_devices:
-                log.info("partition %s was added",
-                         udev.device_get_name(new))
-                self.addUdevDevice(new)
-        elif device.format.type == "lvmpv":
-            self.dropLVMCache() # too heavy-handed?
-
-            pv_info = self.pvInfo.get(device.path)
-
-            # lvmpv.vgUuid defaults to None; convert pvs output for comparison
-            new_vg_uuid = udev.device_get_vg_uuid(pv_info) or None
-            vg_changed = (device.format.vgUuid != new_vg_uuid)
-            new_vg_name = udev.device_get_vg_name(pv_info)
-            try:
-                vg_device = self.getChildren(device)[0]
-            except IndexError:
-                vg_device = None
-
-            if vg_changed:
-                if vg_device:
-                    if len(vg_device.parents) == 1:
-                        self.recursiveRemove(vg_device, actions=False)
-                    else:
-                        vg_device.parents.remove(device)
-
-                device.format = None
-                self.handleUdevDeviceFormat(info, device)
-            else:
-                device.format.uuid = uuid
-                device.format.vgUuid = new_vg_uuid
-                device.format.vgName = new_vg_name
-                device.format.peStart = udev.device_get_pv_pe_start(pv_info)
-                if vg_device:
-                    # vg rename
-                    vg_device.name = new_vg_name
-                    vg_device.uuid = new_vg_uuid
-                    self.updateLVs(vg_device)
-
-            # the rest should be handled by events for the LVs
-        elif device.format.type == "mdmember":
-            new_md_uuid = container_uuid
-            md_changed = (device.format.mdUuid != new_md_uuid)
-            try:
-                md_device = self.getChildren(device)[0]
-            except IndexError:
-                md_device = None
-
-            if md_changed:
-                if md_device:
-                    if len(md_device.parents) == 1:
-                        self.recursiveRemove(md_device)
-                    else:
-                        # FIXME: we need to be able to bypass the checks that
-                        #        prevent ill-advised member removals
-                        try:
-                            md_device.parents.remove(device)
-                        except DeviceError:
-                            log.error("failed to remove %s from md array %s "
-                                      "to reflect uevent", device.name,
-                                                           md_device.name)
-
-                device.format = None
-                self.handleUdevDeviceFormat(info, device)
-            else:
-                device.format.mdUuid = container_uuid
-                device.format.uuid = uuid
-
-            # the rest should be handled by events for the md itself
-            # TODO: raid level, spares
-        elif device.format.type == "btrfs":
-            btrfs_changed = (device.format.volUUID != container_uuid)
-            try:
-                btrfs_vol = self.getChildren(device)[0]
-            except IndexError:
-                btrfs_vol = None
-
-            if btrfs_changed:
-                if btrfs_vol:
-                    if len(btrfs_vol.parents) == 1:
-                        self.recursiveRemove(btrfs_vol, actions=False)
-                    else:
-                        try:
-                            btrfs_vol.parents.remove(device)
-                        except DeviceError:
-                            log.error("failed to remove %s from btrfs %s "
-                                      "to reflect uevent", device.name,
-                                                           btrfs_vol.name)
-
-                device.format = None
-                self.handleUdevDeviceFormat(info, device)
-            else:
-                device.format.uuid = uuid
-                device.format.volUUID = container_uuid
-                # TODO: check for changes to subvol list
+            self._memberChangeHandler(info, device)
 
     def deviceRemovedCB(self, info):
         """ Handle a "remove" uevent on a block device.
