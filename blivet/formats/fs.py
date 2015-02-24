@@ -110,6 +110,8 @@ class FS(DeviceFormat):
         self._sync = getTaskObject(self._syncClass)
         self._writelabel = getTaskObject(self._writelabelClass)
 
+        self._current_info = None # info obtained by _info task
+
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
         self.label = kwargs.get("label")
@@ -243,8 +245,8 @@ class FS(DeviceFormat):
             errors = False
         finally:
             # try to gather current size info anyway
-            info = self._getFSInfo()
-            self._size = self._getExistingSize(info=info)
+            self._current_info = self._getFSInfo()
+            self._size = self._getExistingSize(info=self._current_info)
             self._minSize = self._size # default to current size
             # We absolutely need a current size to enable resize. To shrink the
             # filesystem we need a real minimum size provided by the resize
@@ -253,7 +255,7 @@ class FS(DeviceFormat):
             if errors or self._size == Size(0):
                 self._resizable = False
 
-        self._getMinSize(info=info)   # force calculation of minimum size
+        self._getMinSize(info=self._current_info)   # force calculation of minimum size
 
     def _getMinSize(self, info=None):
         pass
