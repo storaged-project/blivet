@@ -26,6 +26,7 @@ from decimal import Decimal
 import os
 import tempfile
 
+from ..tasks import fsck
 from ..tasks import fslabeling
 from ..tasks import fsreadlabel
 from ..tasks import fssync
@@ -39,7 +40,7 @@ from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP, ROUND_DOWN, unitStr
 from ..size import B, KiB, MiB, GiB, KB, MB, GB
-from ..i18n import _, N_
+from ..i18n import N_
 from .. import udev
 from ..mounts import mountsCache
 
@@ -57,14 +58,12 @@ class FS(DeviceFormat):
     _modules = []                        # kernel modules required for support
     _resizefs = ""                       # resize utility
     _labelfs = None                      # labeling functionality
-    _fsck = ""                           # fs check utility
-    _fsckErrors = {}                     # fs check command error codes & msgs
     _infofs = ""                         # fs info utility
+    _fsckClass = None                    # fsck
     _readlabelClass = None               # read label
     _syncClass = None                    # sync the filesystem
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
-    _defaultCheckOptions = []
     _defaultInfoOptions = []
     _existingSizeFields = []
     _resizefsUnit = None
@@ -102,6 +101,7 @@ class FS(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
 
         # Create task objects
+        self._fsck = getTaskObject(self._fsckClass)
         self._readlabel = getTaskObject(self._readlabelClass)
         self._sync = getTaskObject(self._syncClass)
 
@@ -520,44 +520,15 @@ class FS(DeviceFormat):
         self._size = self.targetSize
         self.notifyKernel()
 
-    def _getCheckArgs(self):
-        argv = []
-        argv.extend(self.defaultCheckOptions)
-        argv.append(self.device)
-        return argv
-
-    def _fsckFailed(self, rc):
-        # pylint: disable=unused-argument
-        return False
-
-    def _fsckErrorMessage(self, rc):
-        return _("Unknown return code: %d.") % (rc,)
-
     def doCheck(self):
         """ Run a filesystem check.
 
             :raises: FSError
         """
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        if not self.fsckProg:
+        if self._fsck is not None:
+            self._fsck.doTask()
+        else:
             return
-
-        if not os.path.exists(self.device):
-            raise FSError("device does not exist")
-
-        try:
-            ret = util.run_program([self.fsckProg] + self._getCheckArgs())
-        except OSError as e:
-            raise FSError("filesystem check failed: %s" % e)
-
-        if self._fsckFailed(ret):
-            hdr = _("%(type)s filesystem check failure on %(device)s: ") % \
-                    {"type": self.type, "device": self.device}
-
-            msg = self._fsckErrorMessage(ret)
-            raise FSError(hdr + msg)
 
     def loadModule(self):
         """Load whatever kernel module is required to support this filesystem."""
@@ -748,11 +719,6 @@ class FS(DeviceFormat):
         return self._mkfs
 
     @property
-    def fsckProg(self):
-        """ Program used to check filesystems of this type. """
-        return self._fsck
-
-    @property
     def resizefsProg(self):
         """ Program used to resize filesystems of this type. """
         return self._resizefs
@@ -824,12 +790,6 @@ class FS(DeviceFormat):
         """ Default options passed to mount for this filesystem type. """
         # return a copy to prevent modification
         return self._defaultMountOptions[:]
-
-    @property
-    def defaultCheckOptions(self):
-        """ Default options passed to checker for this filesystem type. """
-        # return a copy to prevent modification
-        return self._defaultCheckOptions[:]
 
     def _getOptions(self):
         return self.mountopts or ",".join(self.defaultMountOptions)
@@ -929,43 +889,22 @@ class Ext2FS(FS):
     _modules = ["ext2"]
     _resizefs = "resize2fs"
     _labelfs = fslabeling.Ext2FSLabeling()
-    _fsck = "e2fsck"
-    _fsckErrors = {4: N_("File system errors left uncorrected."),
-                   8: N_("Operational error."),
-                   16: N_("Usage or syntax error."),
-                   32: N_("e2fsck cancelled by user request."),
-                   128: N_("Shared library error.")}
     _packages = ["e2fsprogs"]
     _formattable = True
     _supported = True
     _resizable = True
     _linuxNative = True
     _maxSize = Size("8 TiB")
-    _defaultCheckOptions = ["-f", "-p", "-C", "0"]
     _dump = True
     _check = True
     _infofs = "dumpe2fs"
+    _fsckClass = fsck.Ext2FSCK
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
     _defaultInfoOptions = ["-h"]
     _existingSizeFields = ["Block count:", "Block size:"]
     _resizefsUnit = MiB
     _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
-
-    def _fsckFailed(self, rc):
-        for errorCode in self._fsckErrors.keys():
-            if rc & errorCode:
-                return True
-        return False
-
-    def _fsckErrorMessage(self, rc):
-        msg = ''
-
-        for errorCode in self._fsckErrors.keys():
-            if rc & errorCode:
-                msg += "\n" + _(self._fsckErrors[errorCode])
-
-        return msg.strip()
 
     def _getMinSize(self, info=None):
         """ Set the minimum size for this filesystem in MiB.
@@ -1074,27 +1013,15 @@ class FATFS(FS):
     _mkfs = "mkdosfs"
     _modules = ["vfat"]
     _labelfs = fslabeling.FATFSLabeling()
-    _fsck = "dosfsck"
-    _fsckErrors = {1: N_("Recoverable errors have been detected or dosfsck has "
-                        "discovered an internal inconsistency."),
-                   2: N_("Usage error.")}
     _supported = True
     _formattable = True
     _maxSize = Size("1 TiB")
     _packages = [ "dosfstools" ]
+    _fsckClass = fsck.DosFSCK
     _readlabelClass = fsreadlabel.DosFSReadLabel
     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
-    _defaultCheckOptions = ["-n"]
     # FIXME this should be fat32 in some cases
     partedSystem = fileSystemType["fat16"]
-
-    def _fsckFailed(self, rc):
-        if rc >= 1:
-            return True
-        return False
-
-    def _fsckErrorMessage(self, rc):
-        return _(self._fsckErrors[rc])
 
 register_device_format(FATFS)
 
@@ -1297,7 +1224,6 @@ class HFSPlus(FS):
     _modules = ["hfsplus"]
     _udevTypes = ["hfsplus"]
     _mkfs = "mkfs.hfsplus"
-    _fsck = "fsck.hfsplus"
     _packages = ["hfsplus-tools"]
     _labelfs = fslabeling.HFSPlusLabeling()
     _formattable = True
@@ -1306,6 +1232,7 @@ class HFSPlus(FS):
     _maxSize = Size("2 TiB")
     _check = True
     partedSystem = fileSystemType["hfs+"]
+    _fsckClass = fsck.HFSPlusFSCK
 
 register_device_format(HFSPlus)
 
@@ -1335,24 +1262,18 @@ class NTFS(FS):
     _mkfs = "mkntfs"
     _resizefs = "ntfsresize"
     _labelfs = fslabeling.NTFSLabeling()
-    _fsck = "ntfsresize"
     _resizable = True
     _minSize = Size("1 MiB")
     _maxSize = Size("16 TiB")
     _defaultMountOptions = ["defaults", "ro"]
-    _defaultCheckOptions = ["-c"]
     _packages = ["ntfsprogs"]
     _infofs = "ntfsinfo"
+    _fsckClass = fsck.NTFSFSCK
     _readlabelClass = fsreadlabel.NTFSReadLabel
     _defaultInfoOptions = ["-m"]
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
     _resizefsUnit = B
     partedSystem = fileSystemType["ntfs"]
-
-    def _fsckFailed(self, rc):
-        if rc != 0:
-            return True
-        return False
 
     def _getMinSize(self, info=None):
         """ Set the minimum size for this filesystem.
