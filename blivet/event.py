@@ -87,7 +87,7 @@ class EventQueue(object):
         match = None
         for (device, action, count) in self._blacklist:
             if ((device is None or event.device == device) and
-                (event is None or event.action == action)):
+                (action is None or event.action == action)):
                 match = (device, action, count)
                 break
 
@@ -138,6 +138,9 @@ class EventQueue(object):
 
     def __list__(self):
         return list(self._queue)
+
+    def __iter__(self):
+        return iter(self._queue)
 
     def __deepcopy__(self, memo):
         new = self.__class__.__new__(self.__class__)
