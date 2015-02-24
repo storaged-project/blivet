@@ -260,10 +260,11 @@ class FS(DeviceFormat):
             if errors or self._size == Size(0):
                 self._resizable = False
 
-        self._getMinSize(info=self._current_info)   # force calculation of minimum size
+        self._minInstanceSize = self._getMinSize(info=self._current_info)
 
     def _getMinSize(self, info=None):
-        pass
+        # pylint: disable=unused-argument
+        return self._minInstanceSize
 
     def _getFSInfo(self):
         """ Get filesystem information by use of external tools.
@@ -821,7 +822,7 @@ class Ext2FS(FS):
                 else:
                     log.debug("using current size %s as min size", size)
 
-        self._minInstanceSize = size
+        return size
 
     @property
     def minSize(self):
@@ -1139,7 +1140,7 @@ class NTFS(FS):
                 else:
                     log.debug("using current size %s as min size", size)
 
-        self._minInstanceSize = size
+        return size
 
     @property
     def minSize(self):
