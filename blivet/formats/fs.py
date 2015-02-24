@@ -29,10 +29,12 @@ import tempfile
 from ..tasks import fsck
 from ..tasks import fsinfo
 from ..tasks import fslabeling
+from ..tasks import fsmkfs
 from ..tasks import fsreadlabel
 from ..tasks import fssync
 from ..tasks import fswritelabel
-from ..errors import FormatCreateError, FSError, FSReadLabelError, FSResizeError
+from ..errors import FormatCreateError, FSError, FSReadLabelError
+from ..errors import FSWriteLabelError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
 from .. import platform
@@ -56,20 +58,18 @@ class FS(DeviceFormat):
     _type = "Abstract Filesystem Class"  # fs type name
     _mountType = None                    # like _type but for passing to mount
     _name = None
-    _mkfs = ""                           # mkfs utility
     _modules = []                        # kernel modules required for support
     _resizefs = ""                       # resize utility
     _labelfs = None                      # labeling functionality
     _fsckClass = None                    # fsck
     _infoClass = None
+    _mkfsClass = None                    # mkfs
     _readlabelClass = None               # read label
     _syncClass = None                    # sync the filesystem
     _writelabelClass = None              # write label after creation
-    _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
     _existingSizeFields = []
     _resizefsUnit = None
-    _fsProfileSpecifier = None           # mkfs option specifying fsprofile
 
     def __init__(self, **kwargs):
         """
@@ -105,6 +105,7 @@ class FS(DeviceFormat):
         # Create task objects
         self._info = getTaskObject(self._infoClass)
         self._fsck = getTaskObject(self._fsckClass)
+        self._mkfs = getTaskObject(self._mkfsClass)
         self._readlabel = getTaskObject(self._readlabelClass)
         self._sync = getTaskObject(self._syncClass)
         self._writelabel = getTaskObject(self._writelabelClass)
@@ -373,34 +374,10 @@ class FS(DeviceFormat):
         """
         return max(Size(0), self.currentSize - self.minSize)
 
-    def _getFormatOptions(self, options=None, do_labeling=False):
-        """Get a list of format options to be used when creating the
-           filesystem.
-
-           :param options: any special options
-           :type options: list of str or None
-           :param bool do_labeling: True if labeling during filesystem creation,
-             otherwise False
-        """
-        argv = []
-        if options and isinstance(options, list):
-            argv.extend(options)
-        argv.extend(self.defaultFormatOptions)
-        if self._fsProfileSpecifier and self.fsprofile:
-            argv.extend([self._fsProfileSpecifier, self.fsprofile])
-
-        if do_labeling and self.label is not None:
-            if self.labelFormatOK(self.label):
-                argv.extend(self._labelfs.labelingArgs(self.label))
-            else:
-                log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
-
-        argv.append(self.device)
-        return argv
 
     def _preCreate(self, **kwargs):
         super(FS, self)._preCreate(**kwargs)
-        if not self.mkfsProg:
+        if self._mkfs.unavailable:
             return
 
     def _create(self, **kwargs):
@@ -415,18 +392,13 @@ class FS(DeviceFormat):
         if not self.formattable:
             return
 
-        argv = self._getFormatOptions(options=kwargs.get("options"),
-           do_labeling=not self.relabels())
-
         super(FS, self)._create()
-        ret = 0
         try:
-            ret = util.run_program([self.mkfsProg] + argv)
-        except OSError as e:
+            self._mkfs.doTask(options=kwargs.get("options"), label=not self.relabels())
+        except FSWriteLabelError as e:
+            log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
+        except FSError as e:
             raise FormatCreateError(e, self.device)
-
-        if ret:
-            raise FormatCreateError("format failed: %s" % ret, self.device)
 
     def _postCreate(self, **kwargs):
         super(FS, self)._postCreate(**kwargs)
@@ -756,7 +728,7 @@ class FS(DeviceFormat):
     @property
     def mkfsProg(self):
         """ Program used to create filesystems of this type. """
-        return self._mkfs
+        return self._mkfs.app_name if self._mkfs else None
 
     @property
     def resizefsProg(self):
@@ -819,12 +791,6 @@ class FS(DeviceFormat):
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
         return super(FS, self).resizable and self.utilsAvailable
-
-    @property
-    def defaultFormatOptions(self):
-        """ Default options passed to mkfs for this filesystem type. """
-        # return a copy to prevent modification
-        return self._defaultFormatOptions[:]
 
     @property
     def defaultMountOptions(self):
@@ -910,7 +876,6 @@ class FS(DeviceFormat):
 class Ext2FS(FS):
     """ ext2 filesystem. """
     _type = "ext2"
-    _mkfs = "mke2fs"
     _modules = ["ext2"]
     _resizefs = "resize2fs"
     _labelfs = fslabeling.Ext2FSLabeling()
@@ -924,11 +889,11 @@ class Ext2FS(FS):
     _check = True
     _fsckClass = fsck.Ext2FSCK
     _infoClass = fsinfo.Ext2FSInfo
+    _mkfsClass = fsmkfs.Ext2FSMkfs
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
     _writelabelClass = fswritelabel.Ext2FSWriteLabel
     _existingSizeFields = ["Block count:", "Block size:"]
     _resizefsUnit = MiB
-    _fsProfileSpecifier = "-T"
     partedSystem = fileSystemType["ext2"]
 
     def _getMinSize(self, info=None):
@@ -1009,9 +974,9 @@ register_device_format(Ext2FS)
 class Ext3FS(Ext2FS):
     """ ext3 filesystem. """
     _type = "ext3"
-    _defaultFormatOptions = ["-t", "ext3"]
     _modules = ["ext3"]
     partedSystem = fileSystemType["ext3"]
+    _mkfsClass = fsmkfs.Ext3FSMkfs
 
     # It is possible for a user to specify an fsprofile that defines a blocksize
     # smaller than the default of 4096 bytes and therefore to make liars of us
@@ -1025,8 +990,8 @@ register_device_format(Ext3FS)
 class Ext4FS(Ext3FS):
     """ ext4 filesystem. """
     _type = "ext4"
-    _defaultFormatOptions = ["-t", "ext4"]
     _modules = ["ext4"]
+    _mkfsClass = fsmkfs.Ext4FSMkfs
     partedSystem = fileSystemType["ext4"]
 
 register_device_format(Ext4FS)
@@ -1035,7 +1000,6 @@ register_device_format(Ext4FS)
 class FATFS(FS):
     """ FAT filesystem. """
     _type = "vfat"
-    _mkfs = "mkdosfs"
     _modules = ["vfat"]
     _labelfs = fslabeling.FATFSLabeling()
     _supported = True
@@ -1043,6 +1007,7 @@ class FATFS(FS):
     _maxSize = Size("1 TiB")
     _packages = [ "dosfstools" ]
     _fsckClass = fsck.DosFSCK
+    _mkfsClass = fsmkfs.FATFSMkfs
     _readlabelClass = fsreadlabel.DosFSReadLabel
     _writelabelClass = fswritelabel.DosFSWriteLabel
     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
@@ -1069,7 +1034,6 @@ register_device_format(EFIFS)
 class BTRFS(FS):
     """ btrfs filesystem """
     _type = "btrfs"
-    _mkfs = "mkfs.btrfs"
     _modules = ["btrfs"]
     _formattable = True
     _linuxNative = True
@@ -1077,6 +1041,7 @@ class BTRFS(FS):
     _packages = ["btrfs-progs"]
     _minSize = Size("256 MiB")
     _maxSize = Size("16 EiB")
+    _mkfsClass = fsmkfs.BTRFSMkfs
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # partedSystem = fileSystemType["btrfs"]
@@ -1107,14 +1072,13 @@ register_device_format(BTRFS)
 class GFS2(FS):
     """ gfs2 filesystem. """
     _type = "gfs2"
-    _mkfs = "mkfs.gfs2"
     _modules = ["dlm", "gfs2"]
     _formattable = True
-    _defaultFormatOptions = ["-j", "1", "-p", "lock_nolock", "-O"]
     _linuxNative = True
     _dump = True
     _check = True
     _packages = ["gfs2-utils"]
+    _mkfsClass = fsmkfs.GFS2Mkfs
     # FIXME parted needs to be thaught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # partedSystem = fileSystemType["gfs2"]
@@ -1130,16 +1094,15 @@ register_device_format(GFS2)
 class JFS(FS):
     """ JFS filesystem """
     _type = "jfs"
-    _mkfs = "mkfs.jfs"
     _modules = ["jfs"]
     _labelfs = fslabeling.JFSLabeling()
-    _defaultFormatOptions = ["-q"]
     _maxSize = Size("8 TiB")
     _formattable = True
     _linuxNative = True
     _dump = True
     _check = True
     _infoClass = fsinfo.JFSInfo
+    _mkfsClass = fsmkfs.JFSMkfs
     _writelabelClass = fswritelabel.JFSWriteLabel
     _existingSizeFields = ["Physical block size:", "Aggregate size:"]
     partedSystem = fileSystemType["jfs"]
@@ -1155,10 +1118,8 @@ register_device_format(JFS)
 class ReiserFS(FS):
     """ reiserfs filesystem """
     _type = "reiserfs"
-    _mkfs = "mkreiserfs"
     _labelfs = fslabeling.ReiserFSLabeling()
     _modules = ["reiserfs"]
-    _defaultFormatOptions = ["-f", "-f"]
     _maxSize = Size("16 TiB")
     _formattable = True
     _linuxNative = True
@@ -1166,6 +1127,7 @@ class ReiserFS(FS):
     _check = True
     _packages = ["reiserfs-utils"]
     _infoClass = fsinfo.ReiserFSInfo
+    _mkfsClass = fsmkfs.ReiserFSMkfs
     _writelabelClass = fswritelabel.ReiserFSWriteLabel
     _existingSizeFields = ["Count of blocks on the device:", "Blocksize:"]
     partedSystem = fileSystemType["reiserfs"]
@@ -1181,16 +1143,15 @@ register_device_format(ReiserFS)
 class XFS(FS):
     """ XFS filesystem """
     _type = "xfs"
-    _mkfs = "mkfs.xfs"
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
-    _defaultFormatOptions = ["-f"]
     _maxSize = Size("16 EiB")
     _formattable = True
     _linuxNative = True
     _supported = True
     _packages = ["xfsprogs"]
     _infoClass = fsinfo.XFSInfo
+    _mkfsClass = fsmkfs.XFSMkfs
     _readlabelClass = fsreadlabel.XFSReadLabel
     _syncClass = fssync.XFSSync
     _writelabelClass = fswritelabel.XFSWriteLabel
@@ -1201,10 +1162,10 @@ register_device_format(XFS)
 
 class HFS(FS):
     _type = "hfs"
-    _mkfs = "hformat"
     _modules = ["hfs"]
     _labelfs = fslabeling.HFSLabeling()
     _formattable = True
+    _mkfsClass = fsmkfs.HFSMkfs
     partedSystem = fileSystemType["hfs"]
 
 register_device_format(HFS)
@@ -1229,7 +1190,6 @@ class HFSPlus(FS):
     _type = "hfs+"
     _modules = ["hfsplus"]
     _udevTypes = ["hfsplus"]
-    _mkfs = "mkfs.hfsplus"
     _packages = ["hfsplus-tools"]
     _labelfs = fslabeling.HFSPlusLabeling()
     _formattable = True
@@ -1239,6 +1199,7 @@ class HFSPlus(FS):
     _check = True
     partedSystem = fileSystemType["hfs+"]
     _fsckClass = fsck.HFSPlusFSCK
+    _mkfsClass = fsmkfs.HFSPlusMkfs
 
 register_device_format(HFSPlus)
 
@@ -1265,7 +1226,6 @@ register_device_format(MacEFIFS)
 class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
-    _mkfs = "mkntfs"
     _resizefs = "ntfsresize"
     _labelfs = fslabeling.NTFSLabeling()
     _resizable = True
@@ -1275,6 +1235,7 @@ class NTFS(FS):
     _packages = ["ntfsprogs"]
     _fsckClass = fsck.NTFSFSCK
     _infoClass = fsinfo.NTFSInfo
+    _mkfsClass = fsmkfs.NTFSMkfs
     _readlabelClass = fsreadlabel.NTFSReadLabel
     _writelabelClass = fswritelabel.NTFSWriteLabel
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
