@@ -44,7 +44,7 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
             an_fs.readLabel()
 
         an_fs.label = "an fs"
-        with self.assertRaisesRegexp(FSError, "no application to set label for filesystem"):
+        with self.assertRaises(FSError):
             an_fs.writeLabel()
 
     def testCreating(self):
