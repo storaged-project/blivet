@@ -363,7 +363,7 @@ class DeviceFormat(ObjectID):
             self._create(**kwargs)
         except Exception:
             if self.createGeneratesEvent:
-                self.eventSync.wait(timeout=1)
+                self.eventSync.wait(timeout=2)
                 self.eventSync.reset()
                 self.eventSync.notify()
             raise
@@ -395,6 +395,12 @@ class DeviceFormat(ObjectID):
 
     # pylint: disable=unused-argument
     def _create(self, **kwargs):
+        """ Type-specific create method.
+
+            All this version does is set up event synchronization. Subclasses
+            should either call this when overriding it or set up the event
+            synchronizer themselves.
+        """
         if self.createGeneratesEvent:
             self._setCreateEventInfo()
             self.eventSync.creating = True
