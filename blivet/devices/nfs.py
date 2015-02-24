@@ -71,7 +71,7 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
 
-    def update_size(self):
+    def update_size(self, newsize=None):
         pass
 
     def is_name_valid(self, name):

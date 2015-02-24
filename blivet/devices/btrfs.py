@@ -76,7 +76,7 @@ class BTRFSDevice(StorageDevice):
         self.sysfs_path = self.parents[0].sysfs_path
         log.debug("%s sysfs_path set to %s", self.name, self.sysfs_path)
 
-    def update_size(self):
+    def update_size(self, newsize=None):
         pass
 
     def _post_create(self):
