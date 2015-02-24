@@ -752,8 +752,6 @@ class DeviceTree(object):
         uuid_changed = (device.format.uuid and device.format.uuid != uuid)
         reformatted = uuid_changed or type_changed
 
-        # FIXME: Updating the container UUID prevents us from detecting
-        #        changed container below.
         if not type_changed and (expected or not uuid_changed):
             log.info("%s was not reformatted, or was reformatted by blivet",
                      device.name)
@@ -765,15 +763,14 @@ class DeviceTree(object):
             device.format.uuid = uuid
 
             # FIXME: grab the info about uuid attrs from the container instance?
-            """
-            if device.format.type == "btrfs":
-                device.format.volUUID = container_uuid
-            elif device.format.type == "mdmember":
-                device.format.mdUuid = container_uuid
-            elif device.format.type == "lvmpv":
-                # XXX udev doesn't provide lvm uuids at all
-                pass
-            """
+            if expected:
+                if device.format.type == "btrfs":
+                    device.format.volUUID = container_uuid
+                elif device.format.type == "mdmember":
+                    device.format.mdUuid = container_uuid
+                elif device.format.type == "lvmpv":
+                    # XXX udev doesn't provide lvm uuids at all
+                    pass
 
             if hasattr(device.format, "label"):
                 device.format.label = label
