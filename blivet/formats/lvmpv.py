@@ -138,5 +138,13 @@ class LVMPhysicalVolume(DeviceFormat):
         return (self.exists and self.vgName and
                 os.path.isdir("/dev/mapper/%s" % self.vgName))
 
+    @property
+    def containerUUID(self):
+        return self.vgUuid
+
+    @containerUUID.setter
+    def containerUUID(self, uuid):
+        self.vgUuid = uuid
+
 register_device_format(LVMPhysicalVolume)
 

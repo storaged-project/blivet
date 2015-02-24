@@ -91,6 +91,14 @@ class MDRaidMember(DeviceFormat):
     def hidden(self):
         return (self._hidden or self.biosraid)
 
+    @property
+    def containerUUID(self):
+        return self.mdUuid
+
+    @containerUUID.setter
+    def containerUUID(self, uuid):
+        self.mdUuid = uuid
+
 # nodmraid -> Wether to use BIOS RAID or not
 # Note the anaconda cmdline has not been parsed yet when we're first imported,
 # so we can not use flags.dmraid here

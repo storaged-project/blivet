@@ -1183,6 +1183,14 @@ class BTRFS(FS):
 
         return super(BTRFS, self).setup(**kwargs)
 
+    @property
+    def containerUUID(self):
+        return self.volUUID
+
+    @containerUUID.setter
+    def containerUUID(self, uuid):
+        self.volUUID = uuid
+
 register_device_format(BTRFS)
 
 
