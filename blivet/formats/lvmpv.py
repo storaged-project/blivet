@@ -159,4 +159,12 @@ class LVMPhysicalVolume(DeviceFormat):
     def free(self, value):
         self._free = value
 
+    @property
+    def container_uuid(self):
+        return self.vg_uuid
+
+    @container_uuid.setter
+    def container_uuid(self, uuid):
+        self.vg_uuid = uuid
+
 register_device_format(LVMPhysicalVolume)
