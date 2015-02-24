@@ -321,9 +321,6 @@ class FS(DeviceFormat):
 
         size = Size(0)
         if self.exists:
-            if info is None:
-                info = self._getFSInfo()
-
             try:
                 values = []
                 for line in info.splitlines():
@@ -871,10 +868,6 @@ class Ext2FS(FS):
         blockSize = None
 
         if self.exists and os.path.exists(self.device):
-            if info is None:
-                # get block size
-                info = self._getFSInfo()
-
             for line in info.splitlines():
                 if line.startswith("Block size:"):
                     blockSize = int(line.split(" ")[-1])
