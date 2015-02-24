@@ -31,6 +31,7 @@ from ..tasks import fsinfo
 from ..tasks import fslabeling
 from ..tasks import fsreadlabel
 from ..tasks import fssync
+from ..tasks import fswritelabel
 from ..errors import FormatCreateError, FSError, FSReadLabelError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
@@ -63,6 +64,7 @@ class FS(DeviceFormat):
     _infoClass = None
     _readlabelClass = None               # read label
     _syncClass = None                    # sync the filesystem
+    _writelabelClass = None              # write label after creation
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
     _existingSizeFields = []
@@ -105,6 +107,7 @@ class FS(DeviceFormat):
         self._fsck = getTaskObject(self._fsckClass)
         self._readlabel = getTaskObject(self._readlabelClass)
         self._sync = getTaskObject(self._syncClass)
+        self._writelabel = getTaskObject(self._writelabelClass)
 
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
@@ -169,7 +172,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return self._labelfs is not None and self._labelfs.label_app is not None
+        return self._writelabel is not None and not self._writelabel.unavailable
 
     def labelFormatOK(self, label):
         """Return True if the label has an acceptable format for this
@@ -744,25 +747,10 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if self.label is None:
-            raise FSError("makes no sense to write a label when accepting default label")
-
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        if not self.relabels():
-            raise FSError("no application to set label for filesystem %s" % self.type)
-
-        if not self.labelFormatOK(self.label):
-            raise FSError("bad label format for labelling application %s" % self._labelfs.label_app.name)
-
-        if not os.path.exists(self.device):
-            raise FSError("device does not exist")
-
-        rc = util.run_program(self._labelfs.label_app.setLabelCommand(self))
-        if rc:
-            raise FSError("label failed")
-
+        if self._writelabel:
+            self._writelabel.doTask()
+        else:
+            raise FSError("label writing not implemented for filesystem %s" % self.type)
         self.notifyKernel()
 
     @property
@@ -781,10 +769,7 @@ class FS(DeviceFormat):
 
             May be None if no such program exists.
         """
-        if self._labelfs and self._labelfs.label_app:
-            return self._labelfs.label_app.name
-        else:
-            return None
+        return self._writelabel.app_name if self._writelabel else None
 
     @property
     def infofsProg(self):
@@ -940,6 +925,7 @@ class Ext2FS(FS):
     _fsckClass = fsck.Ext2FSCK
     _infoClass = fsinfo.Ext2FSInfo
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
+    _writelabelClass = fswritelabel.Ext2FSWriteLabel
     _existingSizeFields = ["Block count:", "Block size:"]
     _resizefsUnit = MiB
     _fsProfileSpecifier = "-T"
@@ -1058,6 +1044,7 @@ class FATFS(FS):
     _packages = [ "dosfstools" ]
     _fsckClass = fsck.DosFSCK
     _readlabelClass = fsreadlabel.DosFSReadLabel
+    _writelabelClass = fswritelabel.DosFSWriteLabel
     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
     # FIXME this should be fat32 in some cases
     partedSystem = fileSystemType["fat16"]
@@ -1153,6 +1140,7 @@ class JFS(FS):
     _dump = True
     _check = True
     _infoClass = fsinfo.JFSInfo
+    _writelabelClass = fswritelabel.JFSWriteLabel
     _existingSizeFields = ["Physical block size:", "Aggregate size:"]
     partedSystem = fileSystemType["jfs"]
 
@@ -1178,6 +1166,7 @@ class ReiserFS(FS):
     _check = True
     _packages = ["reiserfs-utils"]
     _infoClass = fsinfo.ReiserFSInfo
+    _writelabelClass = fswritelabel.ReiserFSWriteLabel
     _existingSizeFields = ["Count of blocks on the device:", "Blocksize:"]
     partedSystem = fileSystemType["reiserfs"]
 
@@ -1204,6 +1193,7 @@ class XFS(FS):
     _infoClass = fsinfo.XFSInfo
     _readlabelClass = fsreadlabel.XFSReadLabel
     _syncClass = fssync.XFSSync
+    _writelabelClass = fswritelabel.XFSWriteLabel
     _existingSizeFields = ["dblocks =", "blocksize ="]
     partedSystem = fileSystemType["xfs"]
 
@@ -1286,6 +1276,7 @@ class NTFS(FS):
     _fsckClass = fsck.NTFSFSCK
     _infoClass = fsinfo.NTFSInfo
     _readlabelClass = fsreadlabel.NTFSReadLabel
+    _writelabelClass = fswritelabel.NTFSWriteLabel
     _existingSizeFields = ["Cluster Size:", "Volume Size in Clusters:"]
     _resizefsUnit = B
     partedSystem = fileSystemType["ntfs"]
