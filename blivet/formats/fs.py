@@ -28,6 +28,7 @@ import tempfile
 
 from ..tasks import fslabeling
 from ..tasks import fsreadlabel
+from ..tasks import fssync
 from ..errors import FormatCreateError, FSError, FSReadLabelError, FSResizeError
 from . import DeviceFormat, register_device_format
 from .. import util
@@ -60,6 +61,7 @@ class FS(DeviceFormat):
     _fsckErrors = {}                     # fs check command error codes & msgs
     _infofs = ""                         # fs info utility
     _readlabelClass = None               # read label
+    _syncClass = None                    # sync the filesystem
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
     _defaultCheckOptions = []
@@ -101,6 +103,7 @@ class FS(DeviceFormat):
 
         # Create task objects
         self._readlabel = getTaskObject(self._readlabelClass)
+        self._sync = getTaskObject(self._syncClass)
 
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
@@ -919,8 +922,22 @@ class FS(DeviceFormat):
             return False
         return self.systemMountpoint is not None
 
-    def sync(self, root="/"):
-        pass
+    def sync(self, root='/'):
+        """ Ensure that data we've written is at least in the journal.
+
+            This is a little odd because xfs_freeze will only be
+            available under the install root.
+        """
+        if self._sync is None:
+            return
+
+        if not self._mountpoint.startswith(root):
+            return
+
+        try:
+            self._sync.doTask(root)
+        except FSError as e:
+            log.error(e)
 
     def populateKSData(self, data):
         super(FS, self).populateKSData(data)
@@ -1249,33 +1266,13 @@ class XFS(FS):
     _packages = ["xfsprogs"]
     _infofs = "xfs_db"
     _readlabelClass = fsreadlabel.XFSReadLabel
+    _syncClass = fssync.XFSSync
     _defaultInfoOptions = ["-c", "sb 0", "-c", "p dblocks",
                            "-c", "p blocksize"]
     _existingSizeFields = ["dblocks =", "blocksize ="]
     partedSystem = fileSystemType["xfs"]
 
-    def sync(self, root='/'):
-        """ Ensure that data we've written is at least in the journal.
-
-            This is a little odd because xfs_freeze will only be
-            available under the install root.
-        """
-        if not self.status or not self.systemMountpoint or \
-            not self.systemMountpoint.startswith(root):
-            return
-
-        try:
-            util.run_program(["xfs_freeze", "-f", self.systemMountpoint], root=root)
-        except OSError as e:
-            log.error("failed to run xfs_freeze: %s", e)
-
-        try:
-            util.run_program(["xfs_freeze", "-u", self.systemMountpoint], root=root)
-        except OSError as e:
-            log.error("failed to run xfs_freeze: %s", e)
-
 register_device_format(XFS)
-
 
 class HFS(FS):
     _type = "hfs"
