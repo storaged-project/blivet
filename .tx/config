@@ -2,7 +2,7 @@
 host = https://www.transifex.com
 
 [blivet.f22-branch]
-file_filter = po/<lang>.pot
+file_filter = po/<lang>.po
 source_file = po/blivet.pot
 source_lang = en
 type = PO
