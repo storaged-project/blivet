@@ -87,6 +87,11 @@ class FS(DeviceFormat):
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
         """
+
+        def getTaskObject(klass):
+            # pylint: disable=not-callable
+            return klass(self) if klass is not None else None
+
         if self.__class__ is FS:
             raise TypeError("FS is an abstract class.")
 
