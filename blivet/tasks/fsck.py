@@ -24,15 +24,13 @@ import os
 
 from six import add_metaclass
 
-from ..i18n import _, N_
-
 from ..errors import FSError
 from .. import util
 
 from . import availability
 from . import task
 
-_UNKNOWN_RC_MSG = N_("Unknown return code: %d")
+_UNKNOWN_RC_MSG = "Unknown return code: %d"
 
 @add_metaclass(abc.ABCMeta)
 class FSCK(task.Task):
@@ -123,16 +121,16 @@ class FSCK(task.Task):
 
         error_msg = self._errorMessage(rc)
         if error_msg is not None:
-            hdr = _("%(type)s filesystem check failure on %(device)s: ") % \
+            hdr = "%(type)s filesystem check failure on %(device)s: " % \
                     {"type": self.fs.type, "device": self.fs.device}
 
             raise FSError(hdr + error_msg)
 
 
 class DosFSCK(FSCK):
-    _fsckErrors = {1: N_("Recoverable errors have been detected or dosfsck has "
-                        "discovered an internal inconsistency."),
-                   2: N_("Usage error.")}
+    _fsckErrors = {1: "Recoverable errors have been detected or dosfsck has "
+                      "discovered an internal inconsistency.",
+                   2: "Usage error."}
 
     app_name = "dosfsck"
     options = ["-n"]
@@ -141,24 +139,24 @@ class DosFSCK(FSCK):
         if rc < 1:
             return None
         try:
-            return _(self._fsckErrors[rc])
+            return self._fsckErrors[rc]
         except KeyError:
             return _UNKNOWN_RC_MSG % rc
 
 
 class Ext2FSCK(FSCK):
-    _fsckErrors = {4: N_("File system errors left uncorrected."),
-                   8: N_("Operational error."),
-                   16: N_("Usage or syntax error."),
-                   32: N_("e2fsck cancelled by user request."),
-                   128: N_("Shared library error.")}
+    _fsckErrors = {4: "File system errors left uncorrected.",
+                   8: "Operational error.",
+                   16: "Usage or syntax error.",
+                   32: "e2fsck cancelled by user request.",
+                   128: "Shared library error."}
 
     app_name = "e2fsck"
     options = ["-f", "-p", "-C", "0"]
 
     def _errorMessage(self, rc):
-        msgs = (_(self._fsckErrors[c]) for c in self._fsckErrors.keys() if rc & c)
-        return "\n".join(msgs).strip() or None
+        msgs = (self._fsckErrors[c] for c in self._fsckErrors.keys() if rc & c)
+        return "\n".join(msgs) or None
 
 class HFSPlusFSCK(FSCK):
     app_name = "fsck.hfsplus"
