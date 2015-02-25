@@ -1504,8 +1504,8 @@ class Blivet(object):
         self.devicetree._DeviceTree__passphrases.append(passphrase)
 
     def setupDiskImages(self):
-        self.devicetree.setDiskImages(self.config.diskImages)
-        self.devicetree.setupDiskImages()
+        self.devicetree.discoverer.setDiskImages(self.config.diskImages)
+        self.devicetree.discoverer.setupDiskImages()
 
     @property
     def fileSystemFreeSpace(self):
