@@ -41,20 +41,10 @@ from ..i18n import _, N_
 from .. import udev
 from ..mounts import mountsCache
 
+from .fslib import kernel_filesystems, update_kernel_filesystems
+
 import logging
 log = logging.getLogger("blivet")
-
-kernel_filesystems = []
-nodev_filesystems = []
-
-def update_kernel_filesystems():
-    for line in open("/proc/filesystems").readlines():
-        fields = line.split()
-        kernel_filesystems.append(fields[-1])
-        if fields[0] == "nodev":
-            nodev_filesystems.append(fields[-1])
-
-update_kernel_filesystems()
 
 class FS(DeviceFormat):
     """ Filesystem base class. """
