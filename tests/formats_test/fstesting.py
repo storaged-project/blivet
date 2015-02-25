@@ -82,7 +82,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertFalse(an_fs.exists)
         self.assertIsNone(an_fs.device)
         self.assertIsNone(an_fs.uuid)
-        self.assertEqual(an_fs.options, ",".join(an_fs.defaultMountOptions))
+        self.assertEqual(an_fs.options, ",".join(an_fs._mount.options))
         self.assertEqual(an_fs.resizable, False)
 
         # sizes
