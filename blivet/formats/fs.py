@@ -636,7 +636,6 @@ class FS(DeviceFormat):
         #
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
-        util.makedirs(chrootedMountpoint)
 
         # passed in options override default options
         if not options or not isinstance(options, str):
