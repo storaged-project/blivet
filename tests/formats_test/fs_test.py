@@ -137,7 +137,7 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         newsize = self.an_fs.currentSize * 2
         self.an_fs.targetSize = newsize
         self.assertIsNone(self.an_fs.doResize())
-        self.assertEqual(self.an_fs.size, newsize.roundToNearest(self.an_fs._resizefsUnit, rounding=ROUND_DOWN))
+        self.assertEqual(self.an_fs.size, newsize.roundToNearest(self.an_fs._resize.unit, rounding=ROUND_DOWN))
 
     def testShrink(self):
         # Can not shrink tmpfs, because its minimum size is its current size
