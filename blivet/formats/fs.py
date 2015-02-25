@@ -32,6 +32,7 @@ from ..tasks import fslabeling
 from ..tasks import fsmkfs
 from ..tasks import fsmount
 from ..tasks import fsreadlabel
+from ..tasks import fsresize
 from ..tasks import fssize
 from ..tasks import fssync
 from ..tasks import fswritelabel
@@ -61,17 +62,16 @@ class FS(DeviceFormat):
     _mountType = None                    # like _type but for passing to mount
     _name = None
     _modules = []                        # kernel modules required for support
-    _resizefs = ""                       # resize utility
     _labelfs = None                      # labeling functionality
     _fsckClass = None                    # fsck
     _infoClass = None
     _mkfsClass = None                    # mkfs
     _mountClass = fsmount.FSMount        # default class for most filesystems
     _readlabelClass = None               # read label
+    _resizeClass = None                  # resize
     _sizeinfoClass = None                # get current size
     _syncClass = None                    # sync the filesystem
     _writelabelClass = None              # write label after creation
-    _resizefsUnit = None
 
     def __init__(self, **kwargs):
         """
@@ -110,6 +110,7 @@ class FS(DeviceFormat):
         self._mkfs = getTaskObject(self._mkfsClass)
         self._mount = getTaskObject(self._mountClass)
         self._readlabel = getTaskObject(self._readlabelClass)
+        self._resize = getTaskObject(self._resizeClass)
         self._sizeinfo = getTaskObject(self._sizeinfoClass)
         self._sync = getTaskObject(self._syncClass)
         self._writelabel = getTaskObject(self._writelabelClass)
@@ -345,37 +346,19 @@ class FS(DeviceFormat):
             except FSError as e:
                 log.warning("Failed to write label (%s) for filesystem %s: %s", self.label, self.type, e)
 
-    @property
-    def resizeArgs(self):
-        """ Returns the arguments for resizing the filesystem.
-
-            Must be overridden by every class that has non-None _resizefs.
-
-            :returns: arguments for resizing a filesystem.
-            :rtype: list of str
-        """
-        return []
-
     def doResize(self):
         """ Resize this filesystem based on this instance's targetSize attr.
 
             :raises: FSResizeError, FSError
         """
-        if not self.exists:
-            raise FSResizeError("filesystem does not exist", self.device)
-
         if not self.resizable:
             raise FSResizeError("filesystem not resizable", self.device)
 
         if self.targetSize == self.currentSize:
             return
 
-        if not self.resizefsProg:
+        if not self._resize:
             return
-
-        # tmpfs mounts don't need an existing device node
-        if not self.device == "tmpfs" and not os.path.exists(self.device):
-            raise FSResizeError("device does not exist", self.device)
 
         # The first minimum size can be incorrect if the fs was not
         # properly unmounted. After doCheck the minimum size will be correct
@@ -396,7 +379,7 @@ class FS(DeviceFormat):
         # We always round down because the fs has to fit on whatever device
         # contains it. To round up would risk quietly setting a target size too
         # large for the device to hold.
-        rounded = self.targetSize.roundToNearest(self._resizefsUnit,
+        rounded = self.targetSize.roundToNearest(self._resize.unit,
                                                  rounding=ROUND_DOWN)
 
         # 1. target size was between the min size and max size values prior to
@@ -417,18 +400,15 @@ class FS(DeviceFormat):
         # early.
         if self.targetSize > self.currentSize and rounded < self.currentSize:
             log.info("rounding target size down to next %s obviated resize of "
-                     "filesystem on %s", unitStr(self._resizefsUnit), self.device)
+                     "filesystem on %s", unitStr(self._resize.unit), self.device)
             return
         else:
             self.targetSize = rounded
 
         try:
-            ret = util.run_program([self.resizefsProg] + self.resizeArgs)
-        except OSError as e:
+            self._resize.doTask()
+        except FSError as e:
             raise FSResizeError(e, self.device)
-
-        if ret:
-            raise FSResizeError("resize failed: %s" % ret, self.device)
 
         self.doCheck()
 
@@ -643,7 +623,7 @@ class FS(DeviceFormat):
     @property
     def resizefsProg(self):
         """ Program used to resize filesystems of this type. """
-        return self._resizefs
+        return self._resize.app_name if self._resize else None
 
     @property
     def labelfsProg(self):
@@ -768,7 +748,6 @@ class Ext2FS(FS):
     """ ext2 filesystem. """
     _type = "ext2"
     _modules = ["ext2"]
-    _resizefs = "resize2fs"
     _labelfs = fslabeling.Ext2FSLabeling()
     _packages = ["e2fsprogs"]
     _formattable = True
@@ -782,9 +761,9 @@ class Ext2FS(FS):
     _infoClass = fsinfo.Ext2FSInfo
     _mkfsClass = fsmkfs.Ext2FSMkfs
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
+    _resizeClass = fsresize.Ext2FSResize
     _sizeinfoClass = fssize.Ext2FSSize
     _writelabelClass = fswritelabel.Ext2FSWriteLabel
-    _resizefsUnit = MiB
     partedSystem = fileSystemType["ext2"]
 
     def _getMinSize(self, info=None):
@@ -834,7 +813,7 @@ class Ext2FS(FS):
                            size + Size("500 MiB"))
                 # make sure that the padded and rounded min size is not larger
                 # than the current size
-                size = min(size.roundToNearest(self._resizefsUnit,
+                size = min(size.roundToNearest(self._resize.unit,
                                                rounding=ROUND_UP),
                            self.currentSize)
                 if orig_size < size:
@@ -847,13 +826,6 @@ class Ext2FS(FS):
     @property
     def minSize(self):
         return self._minInstanceSize
-
-    @property
-    def resizeArgs(self):
-        # No unit specifier is interpreted not as bytes, but block size.
-        FMT = {KiB: "%dK", MiB: "%dM", GiB: "%dG"}[self._resizefsUnit]
-        size_spec = FMT % self.targetSize.convertTo(self._resizefsUnit)
-        return ["-p", self.device, size_spec]
 
 register_device_format(Ext2FS)
 
@@ -1113,7 +1085,6 @@ register_device_format(MacEFIFS)
 class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
-    _resizefs = "ntfsresize"
     _labelfs = fslabeling.NTFSLabeling()
     _resizable = True
     _minSize = Size("1 MiB")
@@ -1124,9 +1095,9 @@ class NTFS(FS):
     _mkfsClass = fsmkfs.NTFSMkfs
     _mountClass = fsmount.NTFSMount
     _readlabelClass = fsreadlabel.NTFSReadLabel
+    _resizeClass = fsresize.NTFSResize
     _sizeinfoClass = fssize.NTFSSize
     _writelabelClass = fswritelabel.NTFSWriteLabel
-    _resizefsUnit = B
     partedSystem = fileSystemType["ntfs"]
 
     def _getMinSize(self, info=None):
@@ -1160,7 +1131,7 @@ class NTFS(FS):
                            minSize + Size("500 MiB"))
                 # make sure the padded and rounded min size is not larger than
                 # the current size
-                size = min(size.roundToNearest(self._resizefsUnit,
+                size = min(size.roundToNearest(self._resize.unit,
                                                rounding=ROUND_UP),
                            self.currentSize)
                 if minSize < size:
@@ -1173,16 +1144,6 @@ class NTFS(FS):
     @property
     def minSize(self):
         return self._minInstanceSize
-
-    @property
-    def resizeArgs(self):
-        FMT = {B: "%d", KB: "%dK", MB: "%dM", GB: "%dG"}[self._resizefsUnit]
-        size_spec = FMT % self.targetSize.convertTo(self._resizefsUnit)
-
-        # You must supply at least two '-f' options to ntfsresize or
-        # the proceed question will be presented to you.
-        return ["-ff", "-s", size_spec, self.device]
-
 
 register_device_format(NTFS)
 
@@ -1273,8 +1234,6 @@ class TmpFS(NoDevFS):
     _supported = True
     # remounting can be used to change
     # the size of a live tmpfs mount
-    _resizefs = "mount"
-    _resizefsUnit = MiB
     # as tmpfs is part of the Linux kernel,
     # it is Linux-native
     _linuxNative = True
@@ -1284,6 +1243,7 @@ class TmpFS(NoDevFS):
     _formattable = True
     _sizeinfoClass = fssize.TmpFSSize
     _mountClass = fsmount.TmpFSMount
+    _resizeClass = fsresize.TmpFSResize
 
     def __init__(self, **kwargs):
         NoDevFS.__init__(self, **kwargs)
@@ -1328,8 +1288,7 @@ class TmpFS(NoDevFS):
             This is not impossible, since a special option for mounting
             is size=<percentage>%.
         """
-        FMT = {KiB: "%dk", MiB: "%dm", GiB: "%dg"}[self._resizefsUnit]
-        return "size=%s" % (FMT % size.convertTo(self._resizefsUnit))
+        return "size=%s" % (self._resize.size_fmt % size.convertTo(self._resize.unit))
 
     def _getOptions(self):
         # Returns the regular mount options with the special size option,
@@ -1374,12 +1333,6 @@ class TmpFS(NoDevFS):
         # device property, but as the device is always the
         # same, nothing actually needs to be set
         pass
-
-    @property
-    def resizeArgs(self):
-        opts = super(TmpFS, self)._getOptions()
-        options = ("remount", opts, self._sizeOption(self.targetSize))
-        return ['-o', ",".join(options), self._type, self.systemMountpoint]
 
     def doResize(self):
         # Override superclass method to record whether mount options
