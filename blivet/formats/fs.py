@@ -165,7 +165,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return self._labelfs is not None
+        return (self._mkfs is not None and self._mkfs.labels) or self._writelabel is not None
 
     def relabels(self):
         """Returns True if it is possible to relabel this filesystem
