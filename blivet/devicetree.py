@@ -1034,17 +1034,6 @@ class DeviceTree(object):
                                                            dev.name,
                                                            dev.id)
 
-    def _removeChildrenFromTree(self, device):
-        devs_to_remove = self.getDependentDevices(device)
-        while devs_to_remove:
-            leaves = [d for d in devs_to_remove if d.isleaf]
-            for leaf in leaves:
-                self._removeDevice(leaf, modparent=False)
-                devs_to_remove.remove(leaf)
-            if len(devs_to_remove) == 1 and devs_to_remove[0].isExtended:
-                self._removeDevice(devs_to_remove[0], force=True, modparent=False)
-                break
-
     def recursiveRemove(self, device, actions=True, modparent=True):
         """ Remove a device after removing its dependent devices.
 
@@ -1751,8 +1740,10 @@ class DeviceTree(object):
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
                 # remove children from tree so that we don't stumble upon them later
-                self._removeChildrenFromTree(device)
-                device.format = formats.DeviceFormat()
+                for child in device.getChildren():
+                    self.recursiveRemove(child, actions=False)
+
+                device.format = None
 
         #
         # The first step is to either look up or create the device
