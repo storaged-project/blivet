@@ -262,6 +262,26 @@ class FS(DeviceFormat):
 
         self._minInstanceSize = self._getMinSize(info=self._current_info)
 
+    def _padSize(self, size):
+        """ Return a size padded according to some inflating rules.
+
+            This method was originally designed solely for minimum sizes,
+            and may only apply to them.
+
+            :param size: any size
+            :type size: :class:`~.size.Size`
+            :returns: a padded size
+            :rtype: :class:`~.size.Size`
+        """
+        # add some padding to the min size
+        padded = min(size * Decimal('1.1'), size + Size("500 MiB"))
+
+        # make sure the padded and rounded min size is not larger than
+        # the current size
+        padded = min(padded.roundToNearest(self._resize.unit, rounding=ROUND_UP), self.currentSize)
+
+        return padded
+
     def _getMinSize(self, info=None):
         # pylint: disable=unused-argument
         return self._minInstanceSize
@@ -809,14 +829,7 @@ class Ext2FS(FS):
                 size = _size
                 orig_size = size
                 log.debug("size=%s, current=%s", size, self.currentSize)
-                # add some padding
-                size = min(size * Decimal('1.1'),
-                           size + Size("500 MiB"))
-                # make sure that the padded and rounded min size is not larger
-                # than the current size
-                size = min(size.roundToNearest(self._resize.unit,
-                                               rounding=ROUND_UP),
-                           self.currentSize)
+                size = self._padSize(size)
                 if orig_size < size:
                     log.debug("padding min size from %s up to %s", orig_size, size)
                 else:
@@ -1127,14 +1140,7 @@ class NTFS(FS):
                 log.warning("Unable to discover minimum size of filesystem "
                             "on %s", self.device)
             else:
-                # add some padding to the min size
-                size = min(minSize * Decimal('1.1'),
-                           minSize + Size("500 MiB"))
-                # make sure the padded and rounded min size is not larger than
-                # the current size
-                size = min(size.roundToNearest(self._resize.unit,
-                                               rounding=ROUND_UP),
-                           self.currentSize)
+                size = self._padSize(minSize)
                 if minSize < size:
                     log.debug("padding min size from %s up to %s", minSize, size)
                 else:
