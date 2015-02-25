@@ -30,6 +30,7 @@ from ..tasks import fsck
 from ..tasks import fsinfo
 from ..tasks import fslabeling
 from ..tasks import fsmkfs
+from ..tasks import fsmount
 from ..tasks import fsreadlabel
 from ..tasks import fssize
 from ..tasks import fssync
@@ -65,11 +66,11 @@ class FS(DeviceFormat):
     _fsckClass = None                    # fsck
     _infoClass = None
     _mkfsClass = None                    # mkfs
+    _mountClass = fsmount.FSMount        # default class for most filesystems
     _readlabelClass = None               # read label
     _sizeinfoClass = None                # get current size
     _syncClass = None                    # sync the filesystem
     _writelabelClass = None              # write label after creation
-    _defaultMountOptions = ["defaults"]  # default options passed to mount
     _resizefsUnit = None
 
     def __init__(self, **kwargs):
@@ -107,6 +108,7 @@ class FS(DeviceFormat):
         self._info = getTaskObject(self._infoClass)
         self._fsck = getTaskObject(self._fsckClass)
         self._mkfs = getTaskObject(self._mkfsClass)
+        self._mount = getTaskObject(self._mountClass)
         self._readlabel = getTaskObject(self._readlabelClass)
         self._sizeinfo = getTaskObject(self._sizeinfoClass)
         self._sync = getTaskObject(self._syncClass)
@@ -511,20 +513,14 @@ class FS(DeviceFormat):
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
             :raises: FSError
         """
-        if not self.exists:
-            raise FSError("filesystem has not been created")
+        if self.status:
+            return
 
         if not mountpoint:
             mountpoint = self.mountpoint
 
         if not mountpoint:
             raise FSError("no mountpoint given")
-
-        if self.status:
-            return
-
-        if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
-            raise FSError("device %s does not exist" % self.device)
 
         # XXX os.path.join is FUBAR:
         #
@@ -533,22 +529,7 @@ class FS(DeviceFormat):
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
 
-        # passed in options override default options
-        if not options or not isinstance(options, str):
-            options = self.options
-
-        if isinstance(self, BindFS):
-            options = "bind," + options
-
-        try:
-            rc = util.mount(self.device, chrootedMountpoint,
-                            fstype=self.mountType,
-                            options=options)
-        except Exception as e:
-            raise FSError("mount failed: %s" % e)
-
-        if rc:
-            raise FSError("mount failed: %s" % rc)
+        options = self._mount.doTask(chrootedMountpoint, options=options)
 
         if flags.selinux and "ro" not in options.split(",") and flags.installer_mode:
             ret = util.reset_file_context(mountpoint, chroot)
@@ -655,34 +636,15 @@ class FS(DeviceFormat):
 
     @property
     def mountable(self):
-        canmount = (self.mountType in kernel_filesystems) or \
-                   (os.access("/sbin/mount.%s" % (self.mountType,), os.X_OK))
-
-        # Still consider the filesystem type mountable if there exists
-        # an appropriate filesystem driver in the kernel modules directory.
-        if not canmount:
-            modpath = os.path.realpath(os.path.join("/lib/modules", os.uname()[2]))
-            if os.path.isdir(modpath):
-                modname = "%s.ko" % self.mountType
-                for _root, _dirs, files in os.walk(modpath):
-                    if any(x.startswith(modname) for x in files):
-                        return True
-
-        return canmount
+        return not self._mount.unavailable
 
     @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
         return super(FS, self).resizable and self.utilsAvailable
 
-    @property
-    def defaultMountOptions(self):
-        """ Default options passed to mount for this filesystem type. """
-        # return a copy to prevent modification
-        return self._defaultMountOptions[:]
-
     def _getOptions(self):
-        return self.mountopts or ",".join(self.defaultMountOptions)
+        return self.mountopts or ",".join(self._mount.options)
 
     def _setOptions(self, options):
         self.mountopts = options
@@ -903,9 +865,9 @@ class FATFS(FS):
     _packages = [ "dosfstools" ]
     _fsckClass = fsck.DosFSCK
     _mkfsClass = fsmkfs.FATFSMkfs
+    _mountClass = fsmount.FATFSMount
     _readlabelClass = fsreadlabel.DosFSReadLabel
     _writelabelClass = fswritelabel.DosFSWriteLabel
-    _defaultMountOptions = ["umask=0077", "shortname=winnt"]
     # FIXME this should be fat32 in some cases
     partedSystem = fileSystemType["fat16"]
 
@@ -1146,11 +1108,11 @@ class NTFS(FS):
     _resizable = True
     _minSize = Size("1 MiB")
     _maxSize = Size("16 TiB")
-    _defaultMountOptions = ["defaults", "ro"]
     _packages = ["ntfsprogs"]
     _fsckClass = fsck.NTFSFSCK
     _infoClass = fsinfo.NTFSInfo
     _mkfsClass = fsmkfs.NTFSMkfs
+    _mountClass = fsmount.NTFSMount
     _readlabelClass = fsreadlabel.NTFSReadLabel
     _sizeinfoClass = fssize.NTFSSize
     _writelabelClass = fswritelabel.NTFSWriteLabel
@@ -1220,15 +1182,12 @@ class NFS(FS):
     """ NFS filesystem. """
     _type = "nfs"
     _modules = ["nfs"]
+    _mountClass = fsmount.NFSMount
 
     def _deviceCheck(self, devspec):
         if devspec is not None and ":" not in devspec:
             return "device must be of the form <host>:<path>"
         return None
-
-    @property
-    def mountable(self):
-        return False
 
 register_device_format(NFS)
 
@@ -1245,7 +1204,7 @@ class Iso9660FS(FS):
     """ ISO9660 filesystem. """
     _type = "iso9660"
     _supported = True
-    _defaultMountOptions = ["ro"]
+    _mountClass = fsmount.Iso9660FSMount
 
 register_device_format(Iso9660FS)
 
@@ -1253,6 +1212,7 @@ register_device_format(Iso9660FS)
 class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
+    _mountClass = fsmount.NoDevFSMount
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)
@@ -1280,7 +1240,7 @@ register_device_format(NoDevFS)
 class DevPtsFS(NoDevFS):
     """ devpts filesystem. """
     _type = "devpts"
-    _defaultMountOptions = ["gid=5", "mode=620"]
+    _mountClass = fsmount.DevPtsFSMount
 
 register_device_format(DevPtsFS)
 
@@ -1313,6 +1273,7 @@ class TmpFS(NoDevFS):
     # once mounted
     _formattable = True
     _sizeinfoClass = fssize.TmpFSSize
+    _mountClass = fsmount.TmpFSMount
 
     def __init__(self, **kwargs):
         NoDevFS.__init__(self, **kwargs)
@@ -1344,10 +1305,6 @@ class TmpFS(NoDevFS):
         mountpoint is unmounted.
         """
         pass
-
-    @property
-    def mountable(self):
-        return True
 
     def _sizeOption(self, size):
         """ Returns a size option string appropriate for mounting tmpfs.
@@ -1426,20 +1383,14 @@ register_device_format(TmpFS)
 
 class BindFS(FS):
     _type = "bind"
-
-    @property
-    def mountable(self):
-        return True
+    _mountClass = fsmount.BindFSMount
 
 register_device_format(BindFS)
 
 
 class SELinuxFS(NoDevFS):
     _type = "selinuxfs"
-
-    @property
-    def mountable(self):
-        return flags.selinux and super(SELinuxFS, self).mountable
+    _mountClass = fsmount.SELinuxFSMount
 
 register_device_format(SELinuxFS)
 
@@ -1448,4 +1399,3 @@ class USBFS(NoDevFS):
     _type = "usbfs"
 
 register_device_format(USBFS)
-
