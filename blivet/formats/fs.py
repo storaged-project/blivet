@@ -43,8 +43,6 @@ from .. import udev
 import logging
 log = logging.getLogger("blivet")
 
-fs_configs = {}
-
 kernel_filesystems = []
 nodev_filesystems = []
 
