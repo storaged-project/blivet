@@ -546,7 +546,7 @@ class DeviceActionTestCase(StorageTestCase):
         sda3_actions = self.storage.devicetree.findActions(devid=sda3.id)
         self.assertNotEqual(len(sda3_actions), 0)
 
-        self.storage.devicetree.pruneActions()
+        self.storage.devicetree.actions.prune()
 
         # verify the md actions are gone after pruning
         md0_actions = self.storage.devicetree.findActions(devid=md0.id)
