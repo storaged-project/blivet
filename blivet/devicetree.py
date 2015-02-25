@@ -31,6 +31,7 @@ from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
 from . import formats
+from .fslib import nodev_filesystems
 from .devicelibs import lvm
 from .devicelibs import edd
 from . import udev
@@ -970,7 +971,7 @@ class DeviceTree(object):
             except ValueError:
                 log.error("failed to parse /proc/mounts line: %s", line)
                 continue
-            if fstype in formats.fs.nodev_filesystems:
+            if fstype in nodev_filesystems:
                 if not flags.include_nodev:
                     continue
 
