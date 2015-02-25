@@ -193,7 +193,7 @@ class UnknownSourceDeviceError(StorageError):
 class DeviceFactoryError(StorageError):
     pass
 
-class EventHandlerError(StorageError):
+class EventManagerError(StorageError):
     pass
 
 class EventQueueEmptyError(StorageError):

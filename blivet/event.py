@@ -29,7 +29,7 @@ from six import add_metaclass
 
 from . import udev
 from . import util
-from .errors import EventHandlerError, EventParamError, EventQueueEmptyError
+from .errors import EventManagerError, EventParamError, EventQueueEmptyError
 from .flags import flags
 
 import logging
@@ -155,10 +155,10 @@ class EventQueue(object):
 
 
 ##
-## EventHandler
+## EventManager
 ##
 @add_metaclass(abc.ABCMeta)
-class EventHandler(object):
+class EventManager(object):
     _event_queue_class = EventQueue
 
     def __init__(self, handler_cb=None, notify_cb=None):
@@ -211,10 +211,10 @@ class EventHandler(object):
     def enable(self):
         """ Enable monitoring and handling of events.
 
-            :raises: :class:`~.errors.EventHandlerError` if no callback defined
+            :raises: :class:`~.errors.EventManagerError` if no callback defined
         """
         if self.handler_cb is None:
-            raise EventHandlerError("cannot enable handler with no callback")
+            raise EventManagerError("cannot enable handler with no callback")
 
     @abc.abstractmethod
     def disable(self):
@@ -247,9 +247,10 @@ class EventHandler(object):
         self.enqueue_event(*args, **kwargs)
         Timer(0, self.handler_cb).start()
 
-class UdevEventHandler(EventHandler):
-    def __init__(self, handler_cb, notify_cb=None):
-        super(UdevEventHandler, self).__init__(handler_cb, notify_cb=notify_cb)
+class UdevEventManager(EventManager):
+    def __init__(self, handler_cb=None, notify_cb=None):
+        super(UdevEventManager, self).__init__(handler_cb=handler_cb,
+                                               notify_cb=notify_cb)
         self._pyudev_observer = None
 
     def __deepcopy__(self, memo):
@@ -261,7 +262,7 @@ class UdevEventHandler(EventHandler):
 
     def enable(self):
         """ Enable monitoring and handling of block device uevents. """
-        super(UdevEventHandler, self).enable()
+        super(UdevEventManager, self).enable()
         monitor = pyudev.Monitor.from_netlink(udev.global_udev)
         monitor.filter_by("block")
         self._pyudev_observer = pyudev.MonitorObserver(monitor,
@@ -284,4 +285,4 @@ class UdevEventHandler(EventHandler):
 
     def handle_event(self, *args, **kwargs):
         """ Enqueue a uevent and call the configured handler. """
-        super(UdevEventHandler, self).handle_event(args[0], args[1])
+        super(UdevEventManager, self).handle_event(args[0], args[1])
