@@ -23,8 +23,6 @@ import abc
 
 from six import add_metaclass
 
-from . import fslabel
-
 @add_metaclass(abc.ABCMeta)
 class FSLabeling(object):
     """An abstract class that represents filesystem labeling actions.
@@ -32,9 +30,6 @@ class FSLabeling(object):
 
     default_label = abc.abstractproperty(
        doc="Default label set on this filesystem at creation.")
-
-    label_app = abc.abstractproperty(
-       doc="Post creation filesystem labeling application.")
 
     @abc.abstractmethod
     def labelFormatOK(self, label):
@@ -46,103 +41,58 @@ class FSLabeling(object):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def labelingArgs(self, label):
-        """Returns the arguments for writing the label during filesystem
-           creation. These arguments are intended to be passed to the
-           appropriate mkfs application.
-
-           :param str label: the label to use
-           :return: the arguments
-           :rtype: list of str
-        """
-        raise NotImplementedError
-
-
 class Ext2FSLabeling(FSLabeling):
 
     default_label = ""
-    label_app = fslabel.E2Label
 
     def labelFormatOK(self, label):
         return len(label) < 17
-
-    def labelingArgs(self, label):
-        return ["-L", label]
 
 class FATFSLabeling(FSLabeling):
 
     default_label = "NO NAME"
-    label_app = fslabel.DosFsLabel
 
     def labelFormatOK(self, label):
         return len(label) < 12
 
-    def labelingArgs(self, label):
-        return ["-n", label]
-
 class JFSLabeling(FSLabeling):
 
     default_label = ""
-    label_app = fslabel.JFSTune
 
     def labelFormatOK(self, label):
         return len(label) < 17
-
-    def labelingArgs(self, label):
-        return ["-L", label]
 
 class ReiserFSLabeling(FSLabeling):
 
     default_label = ""
-    label_app = fslabel.ReiserFSTune
 
     def labelFormatOK(self, label):
         return len(label) < 17
 
-    def labelingArgs(self, label):
-        return ["-l", label]
-
 class XFSLabeling(FSLabeling):
 
     default_label = ""
-    label_app = fslabel.XFSAdmin
 
     def labelFormatOK(self, label):
         return ' ' not in label and len(label) < 13
 
-    def labelingArgs(self, label):
-        return ["-L", label]
-
 class HFSLabeling(FSLabeling):
 
     default_label = "Untitled"
-    label_app = None
 
     def labelFormatOK(self, label):
         return ':' not in label and len(label) < 28 and len(label) > 0
 
-    def labelingArgs(self, label):
-        return ["-l", label]
-
 class HFSPlusLabeling(FSLabeling):
 
     default_label = "Untitled"
-    label_app = None
 
     def labelFormatOK(self, label):
         return ':' not in label and 0 < len(label) < 129
 
-    def labelingArgs(self, label):
-        return ["-v", label]
-
 class NTFSLabeling(FSLabeling):
 
     default_label = ""
-    label_app = fslabel.NTFSLabel
 
     def labelFormatOK(self, label):
         return len(label) < 129
-
-    def labelingArgs(self, label):
-        return ["-L", label]
