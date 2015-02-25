@@ -843,10 +843,7 @@ class FS(DeviceFormat):
 
     @property
     def mountType(self):
-        if not self._mountType:
-            self._mountType = self._type
-
-        return self._mountType
+        return self._mountType or self._type
 
     # These methods just wrap filesystem-specific methods in more
     # generically named methods so filesystems and formatted devices
