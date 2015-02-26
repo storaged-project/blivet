@@ -35,6 +35,8 @@ class FSMount(task.Task):
 
     app_name = "mount"
     options = ["defaults"]
+    # type argument to pass to mount, if different from filesystem type
+    fstype = None
 
     _app = availability.Application(availability.Path(), app_name)
 
@@ -52,15 +54,15 @@ class FSMount(task.Task):
         if not self._app.available:
             return "application %s is not available" % self._app
 
-        canmount = (self.fs.mountType in fslib.kernel_filesystems) or \
-                   (os.access("/sbin/mount.%s" % (self.fs.mountType,), os.X_OK))
+        canmount = (self.mountType in fslib.kernel_filesystems) or \
+                   (os.access("/sbin/mount.%s" % (self.mountType,), os.X_OK))
 
         # Still consider the filesystem type mountable if there exists
         # an appropriate filesystem driver in the kernel modules directory.
         if not canmount:
             modpath = os.path.realpath(os.path.join("/lib/modules", os.uname()[2]))
             if os.path.isdir(modpath):
-                modname = "%s.ko" % self.fs.mountType
+                modname = "%s.ko" % self.mountType
                 for _root, _dirs, files in os.walk(modpath):
                     if any(x.startswith(modname) for x in files):
                         return True
@@ -68,7 +70,7 @@ class FSMount(task.Task):
         if canmount:
             return False
         else:
-            return "mounting filesystem %s is not supported" % self.fs.mountType
+            return "mounting filesystem %s is not supported" % self.mountType
 
     @property
     def unready(self):
@@ -92,6 +94,15 @@ class FSMount(task.Task):
         return []
 
     # IMPLEMENTATION methods
+
+    @property
+    def mountType(self):
+        """ Mount type string to pass to mount command.
+
+            :returns: mount type string
+            :rtype: str
+        """
+        return self.fstype or self.fs._type
 
     def _modifyOptions(self, options):
         """ Any mandatory options can be added in this method.
@@ -129,13 +140,16 @@ class FSMount(task.Task):
 
         try:
             rc = util.mount(self.fs.device, mountpoint,
-                            fstype=self.fs.mountType,
+                            fstype=self.mountType,
                             options=self.mountOptions(options))
         except OSError as e:
             raise FSError("mount failed: %s" % e)
 
         if rc:
             raise FSError("mount failed: %s" % rc)
+
+class AppleBootstrapFSMount(FSMount):
+    fstype = "hfs"
 
 class BindFSMount(FSMount):
 
@@ -155,6 +169,12 @@ class DevPtsFSMount(FSMount):
 class FATFSMount(FSMount):
     options = ["umask=0077", "shortname=winnt"]
 
+class EFIFSMount(FATFSMount):
+    fstype = "vfat"
+
+class HFSPlusMount(FSMount):
+    fstype = "hfsplus"
+
 class Iso9660FSMount(FSMount):
     options = ["ro"]
 
@@ -169,6 +189,10 @@ class NoDevFSMount(FSMount):
             return "filesystem is currently mounted"
 
         return False
+
+    @property
+    def mountType(self):
+        return self.fs.device
 
 class NFSMount(FSMount):
 

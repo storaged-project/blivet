@@ -59,7 +59,6 @@ log = logging.getLogger("blivet")
 class FS(DeviceFormat):
     """ Filesystem base class. """
     _type = "Abstract Filesystem Class"  # fs type name
-    _mountType = None                    # like _type but for passing to mount
     _name = None
     _modules = []                        # kernel modules required for support
     _labelfs = None                      # labeling functionality
@@ -725,7 +724,7 @@ class FS(DeviceFormat):
 
     @property
     def mountType(self):
-        return self._mountType or self._type
+        return self._mount.mountType if self._mount else self._type
 
     # These methods just wrap filesystem-specific methods in more
     # generically named methods so filesystems and formatted devices
@@ -870,10 +869,10 @@ register_device_format(FATFS)
 
 class EFIFS(FATFS):
     _type = "efi"
-    _mountType = "vfat"
     _name = N_("EFI System Partition")
     _minSize = Size("50 MiB")
     _check = True
+    _mountClass = fsmount.EFIFSMount
 
     @property
     def supported(self):
@@ -1024,11 +1023,11 @@ register_device_format(HFS)
 
 class AppleBootstrapFS(HFS):
     _type = "appleboot"
-    _mountType = "hfs"
     _name = N_("Apple Bootstrap")
     _minSize = Size("768 KiB")
     _maxSize = Size("1 MiB")
     _supported = True
+    _mountClass = fsmount.AppleBootstrapFSMount
 
     @property
     def supported(self):
@@ -1044,13 +1043,13 @@ class HFSPlus(FS):
     _packages = ["hfsplus-tools"]
     _labelfs = fslabeling.HFSPlusLabeling()
     _formattable = True
-    _mountType = "hfsplus"
     _minSize = Size("1 MiB")
     _maxSize = Size("2 TiB")
     _check = True
     partedSystem = fileSystemType["hfs+"]
     _fsckClass = fsck.HFSPlusFSCK
     _mkfsClass = fsmkfs.HFSPlusMkfs
+    _mountClass = fsmount.HFSPlusMount
 
 register_device_format(HFSPlus)
 
@@ -1148,10 +1147,6 @@ class NoDevFS(FS):
     @property
     def type(self):
         return self.device
-
-    @property
-    def mountType(self):
-        return self.device  # this is probably set to the real/specific fstype
 
     def notifyKernel(self):
         # NoDevFS should not need to tell the kernel anything.
