@@ -56,7 +56,7 @@ class FSSize(task.Task):
         return True
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         return False
 
     @property
@@ -68,6 +68,10 @@ class FSSize(task.Task):
         if self.fs._current_info is None:
             return "No filesystem info available to extract current size from."
         return False
+
+    @property
+    def dependsOn(self):
+        return [self.fs._info]
 
     # IMPLEMENTATION methods
 
@@ -146,7 +150,7 @@ class TmpFSSize(task.Task):
         return cls._app.available
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app.available:
             return "application %s is not available" % self._app
         return False
@@ -160,6 +164,10 @@ class TmpFSSize(task.Task):
     @property
     def unable(self):
         return False
+
+    @property
+    def dependsOn(self):
+        return []
 
     @property
     def _sizeCommand(self):

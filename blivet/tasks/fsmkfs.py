@@ -61,7 +61,7 @@ class FSMkfs(task.Task):
         return cls._app().available
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app().available:
             return "Filesystem formatting application %s is unavailable." % self._app()
         return False
@@ -79,6 +79,10 @@ class FSMkfs(task.Task):
     @property
     def unable(self):
         return False
+
+    @property
+    def dependsOn(self):
+        return []
 
     # IMPLEMENTATION methods
 
