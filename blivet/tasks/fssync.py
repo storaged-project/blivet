@@ -54,7 +54,7 @@ class FSSync(task.Task):
         return cls._app().available
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app().available:
             return "application %s not available" % self._app()
         return None
@@ -72,6 +72,10 @@ class FSSync(task.Task):
     @property
     def unable(self):
         return False
+
+    @property
+    def dependsOn(self):
+        return []
 
     @abc.abstractmethod
     def doTask(self):
