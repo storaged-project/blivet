@@ -870,7 +870,7 @@ class FS(DeviceFormat):
 
         DeviceFormat.create(self, **kwargs)
 
-        return self.doFormat(options=kwargs.get('options'))
+        self.doFormat(options=kwargs.get('options'))
 
     def setup(self, **kwargs):
         """ Mount the filesystem.
