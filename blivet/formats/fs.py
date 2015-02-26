@@ -132,7 +132,7 @@ class FS(DeviceFormat):
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
         self._resizable = False
-        if flags.installer_mode and self.resizefsProg:
+        if flags.installer_mode and self._resize:
             # if you want current/min size you have to call updateSizeInfo
             try:
                 self.updateSizeInfo()
@@ -617,44 +617,10 @@ class FS(DeviceFormat):
         self.notifyKernel()
 
     @property
-    def mkfsProg(self):
-        """ Program used to create filesystems of this type. """
-        return self._mkfs.app_name if self._mkfs else None
-
-    @property
-    def resizefsProg(self):
-        """ Program used to resize filesystems of this type. """
-        return self._resize.app_name if self._resize else None
-
-    @property
-    def labelfsProg(self):
-        """ Program used to manage labels for this filesystem type.
-
-            May be None if no such program exists.
-        """
-        return self._writelabel.app_name if self._writelabel else None
-
-    @property
-    def infofsProg(self):
-        """ Program used to get information for this filesystem type.
-
-            :returns: the name of the program used to get information
-            :rtype: str or NoneType
-        """
-        return self._info.app_name if self._info else None
-
-    @property
     def utilsAvailable(self):
         # we aren't checking for fsck because we shouldn't need it
-        for prog in [self.mkfsProg, self.resizefsProg, self.labelfsProg,
-                     self.infofsProg]:
-            if not prog:
-                continue
-
-            if not util.find_program_in_path(prog):
-                return False
-
-        return True
+        tasks = [self._mkfs, self._resize, self._writelabel, self._info]
+        return not any(t is not None and t.unavailable for t in tasks)
 
     @property
     def supported(self):
