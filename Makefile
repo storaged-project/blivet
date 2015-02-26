@@ -5,14 +5,15 @@ RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g'
 RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-TX_PULL_ARGS = -a --disable-overwrite
-TX_PUSH_ARGS = -s
+ZANATA_PULL_ARGS = --transdir ./po/
+ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
 all:
 	$(MAKE) -C po
 
 po-pull:
-	tx pull $(TX_PULL_ARGS)
+	rpm -q zanata-python-client &>/dev/null || ( echo "need to run: yum install zanata-python-client"; exit 1 )
+	zanata pull $(ZANATA_PULL_ARGS)
 
 test:
 	@echo "*** Running unittests ***"
@@ -93,6 +94,6 @@ bumpver: po-pull
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
 	make -C po $(PKGNAME).pot ; \
-	tx push $(TX_PUSH_ARGS)
+	zanata push $(ZANATA_PUSH_ARGS)
 
 .PHONY: check clean install tag archive local
