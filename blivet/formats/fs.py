@@ -29,6 +29,7 @@ import tempfile
 from ..tasks import fsck
 from ..tasks import fsinfo
 from ..tasks import fslabeling
+from ..tasks import fsminsize
 from ..tasks import fsmkfs
 from ..tasks import fsmount
 from ..tasks import fsreadlabel
@@ -46,7 +47,6 @@ from parted import fileSystemType
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP, ROUND_DOWN, unitStr
-from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..i18n import N_
 from .. import udev
 from ..mounts import mountsCache
@@ -65,6 +65,7 @@ class FS(DeviceFormat):
     _labelfs = None                      # labeling functionality
     _fsckClass = None                    # fsck
     _infoClass = None
+    _minsizeClass = None                 # find the minimum size
     _mkfsClass = None                    # mkfs
     _mountClass = fsmount.FSMount        # default class for most filesystems
     _readlabelClass = None               # read label
@@ -107,6 +108,7 @@ class FS(DeviceFormat):
         # Create task objects
         self._info = getTaskObject(self._infoClass)
         self._fsck = getTaskObject(self._fsckClass)
+        self._minsize = getTaskObject(self._minsizeClass)
         self._mkfs = getTaskObject(self._mkfsClass)
         self._mount = getTaskObject(self._mountClass)
         self._readlabel = getTaskObject(self._readlabelClass)
@@ -260,7 +262,7 @@ class FS(DeviceFormat):
             if errors or self._size == Size(0):
                 self._resizable = False
 
-        self._minInstanceSize = self._getMinSize(info=self._current_info)
+        self._minInstanceSize = self._getMinSize()
 
     def _padSize(self, size):
         """ Return a size padded according to some inflating rules.
@@ -282,9 +284,32 @@ class FS(DeviceFormat):
 
         return padded
 
-    def _getMinSize(self, info=None):
-        # pylint: disable=unused-argument
-        return self._minInstanceSize
+    def _getMinSize(self):
+        """ Get the minimum size of the filesystem. This represents a lower
+            bound for shrinking the filesystem.
+
+            :returns: a lower bound for shrinking
+            :rtype: :class:`~.size.Size`
+        """
+        if self._minsizeClass is None:
+            return self._minInstanceSize
+
+        size = self._minSize
+        if self.exists and os.path.exists(self.device) and \
+           self._minsize is not None and not self._minsize.unavailable:
+            try:
+                result = self._minsize.doTask()
+            except FSError as e:
+                log.warning("failed to get minimum size for %s filesystem "
+                            "on %s: %s", self.type, self.device, e)
+            else:
+                size = self._padSize(result)
+                if result < size:
+                    log.debug("padding min size from %s up to %s", result, size)
+                else:
+                    log.debug("using current size %s as min size", size)
+
+        return size
 
     def _getFSInfo(self):
         """ Get filesystem information by use of external tools.
@@ -750,62 +775,13 @@ class Ext2FS(FS):
     _check = True
     _fsckClass = fsck.Ext2FSCK
     _infoClass = fsinfo.Ext2FSInfo
+    _minsizeClass = fsminsize.Ext2FSMinSize
     _mkfsClass = fsmkfs.Ext2FSMkfs
     _readlabelClass = fsreadlabel.Ext2FSReadLabel
     _resizeClass = fsresize.Ext2FSResize
     _sizeinfoClass = fssize.Ext2FSSize
     _writelabelClass = fswritelabel.Ext2FSWriteLabel
     partedSystem = fileSystemType["ext2"]
-
-    def _getMinSize(self, info=None):
-        """ Set the minimum size for this filesystem in MiB.
-
-            :keyword info: filesystem info buffer
-            :type info: str (output of :attr:`infofsProg`)
-            :rtype: None.
-        """
-        size = self._minSize
-        blockSize = None
-
-        if self.exists and os.path.exists(self.device):
-            for line in info.splitlines():
-                if line.startswith("Block size:"):
-                    blockSize = int(line.split(" ")[-1])
-
-            if blockSize is None:
-                raise FSError("failed to get block size for %s filesystem "
-                              "on %s" % (self.mountType, self.device))
-
-            # get minimum size according to resize2fs
-            buf = util.capture_output([self.resizefsProg,
-                                       "-P", self.device])
-            _size = None
-            for line in buf.splitlines():
-                # line will look like:
-                # Estimated minimum size of the filesystem: 1148649
-                (text, _sep, minSize) = line.partition(":")
-                if "minimum size of the filesystem" not in text:
-                    continue
-                minSize = minSize.strip()
-                if not minSize:
-                    break
-                _size = Size(int(minSize) * blockSize)
-                break
-
-            if not _size:
-                log.warning("failed to get minimum size for %s filesystem "
-                            "on %s", self.mountType, self.device)
-            else:
-                size = _size
-                orig_size = size
-                log.debug("size=%s, current=%s", size, self.currentSize)
-                size = self._padSize(size)
-                if orig_size < size:
-                    log.debug("padding min size from %s up to %s", orig_size, size)
-                else:
-                    log.debug("using current size %s as min size", size)
-
-        return size
 
     @property
     def minSize(self):
@@ -1096,6 +1072,7 @@ class NTFS(FS):
     _packages = ["ntfsprogs"]
     _fsckClass = fsck.NTFSFSCK
     _infoClass = fsinfo.NTFSInfo
+    _minsizeClass = fsminsize.NTFSMinSize
     _mkfsClass = fsmkfs.NTFSMkfs
     _mountClass = fsmount.NTFSMount
     _readlabelClass = fsreadlabel.NTFSReadLabel
@@ -1103,40 +1080,6 @@ class NTFS(FS):
     _sizeinfoClass = fssize.NTFSSize
     _writelabelClass = fswritelabel.NTFSWriteLabel
     partedSystem = fileSystemType["ntfs"]
-
-    def _getMinSize(self, info=None):
-        """ Set the minimum size for this filesystem.
-
-            :keyword info: filesystem info buffer
-            :type info: str (output of :attr:`infofsProg`)
-            :rtype: None
-        """
-        size = self._minSize
-        if self.exists and os.path.exists(self.device) and \
-           util.find_program_in_path(self.resizefsProg):
-            minSize = None
-            buf = util.capture_output([self.resizefsProg, "-m", self.device])
-            for l in buf.split("\n"):
-                if not l.startswith("Minsize"):
-                    continue
-                try:
-                    # ntfsresize uses SI unit prefixes
-                    minSize = Size("%d mb" % int(l.split(":")[1].strip()))
-                except (IndexError, ValueError) as e:
-                    minSize = None
-                    log.warning("Unable to parse output for minimum size on %s: %s", self.device, e)
-
-            if minSize is None:
-                log.warning("Unable to discover minimum size of filesystem "
-                            "on %s", self.device)
-            else:
-                size = self._padSize(minSize)
-                if minSize < size:
-                    log.debug("padding min size from %s up to %s", minSize, size)
-                else:
-                    log.debug("using current size %s as min size", size)
-
-        return size
 
     @property
     def minSize(self):
