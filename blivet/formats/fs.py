@@ -108,14 +108,16 @@ class FS(DeviceFormat):
         # Create task objects
         self._info = getTaskObject(self._infoClass)
         self._fsck = getTaskObject(self._fsckClass)
-        self._minsize = getTaskObject(self._minsizeClass)
         self._mkfs = getTaskObject(self._mkfsClass)
         self._mount = getTaskObject(self._mountClass)
         self._readlabel = getTaskObject(self._readlabelClass)
         self._resize = getTaskObject(self._resizeClass)
-        self._sizeinfo = getTaskObject(self._sizeinfoClass)
         self._sync = getTaskObject(self._syncClass)
         self._writelabel = getTaskObject(self._writelabelClass)
+
+        # These two may depend on info class, so create them after
+        self._minsize = getTaskObject(self._minsizeClass)
+        self._sizeinfo = getTaskObject(self._sizeinfoClass)
 
         self._current_info = None # info obtained by _info task
 
