@@ -58,7 +58,7 @@ class FSMinSize(task.Task):
         return cls._app().available
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app().available:
             return "application %s not available" % self._app()
         return None
@@ -112,6 +112,10 @@ class Ext2FSMinSize(FSMinSize):
         if self.fs._current_info is None:
             return "No filesystem info available to extract block size from."
         return False
+
+    @property
+    def dependsOn(self):
+        return [self.fs._info]
 
     def _extractBlockSize(self):
         """ Extract block size from filesystem info.
@@ -173,6 +177,10 @@ class NTFSMinSize(FSMinSize):
     @property
     def unable(self):
         return False
+
+    @property
+    def dependsOn(self):
+        return []
 
     def _extractMinSize(self, info):
         """ Extract the minimum size from the resizefs info.

@@ -39,7 +39,13 @@ class Task(object):
 
     # Note that unavailable is able to obtain more precise information than
     # available, since it is able to access the filesystem object.
-    unavailable = abc.abstractproperty(
+
+    @property
+    def unavailable(self):
+        """ Reason if this task or the tasks it depends on are unavailable. """
+        return self._unavailable or next((t.unavailable for t in self.dependsOn), False)
+
+    _unavailable = abc.abstractproperty(
        doc="Reason if the necessary external tools are unavailable.")
 
     unready = abc.abstractproperty(
@@ -47,6 +53,8 @@ class Task(object):
 
     unable = abc.abstractproperty(
        doc="Reason if the object is not in a correct state for this task.")
+
+    dependsOn = abc.abstractproperty(doc="tasks that this task depends on")
 
     @property
     def impossible(self):

@@ -48,7 +48,7 @@ class FSMount(task.Task):
         return cls._app.available
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app.available:
             return "application %s is not available" % self._app
 
@@ -86,6 +86,10 @@ class FSMount(task.Task):
     @property
     def unable(self):
         return False
+
+    @property
+    def dependsOn(self):
+        return []
 
     # IMPLEMENTATION methods
 
@@ -132,7 +136,7 @@ class FSMount(task.Task):
 class BindFSMount(FSMount):
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app.available:
             return "application %s is not available" % self._app
 
@@ -164,7 +168,7 @@ class NoDevFSMount(FSMount):
 
 class NFSMount(FSMount):
 
-    def unavailable(self):
+    def _unavailable(self):
         return True
 
 class NTFSMount(FSMount):
@@ -173,7 +177,7 @@ class NTFSMount(FSMount):
 class SELinuxFSMount(NoDevFSMount):
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not flags.selinux:
             return "selinux not enabled"
         return super(SELinuxFSMount, self).unavailable
@@ -190,7 +194,7 @@ class TmpFSMount(NoDevFSMount):
         return ",".join(o for o in (options, size_opt) if o)
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app.available:
             return "application %s is not available" % self._app
 

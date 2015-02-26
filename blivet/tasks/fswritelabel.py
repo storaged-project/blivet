@@ -59,7 +59,7 @@ class FSWriteLabel(task.Task):
         return cls._app().available
 
     @property
-    def unavailable(self):
+    def _unavailable(self):
         if not self._app().available:
             return "application %s is not available" % self._app()
 
@@ -84,6 +84,10 @@ class FSWriteLabel(task.Task):
             return "bad label format for labelling application %s" % self._app()
 
         return False
+
+    @property
+    def dependsOn(self):
+        return []
 
     # IMPLEMENTATION methods
 
