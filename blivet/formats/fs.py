@@ -670,6 +670,10 @@ class FS(DeviceFormat):
         return not self._mount.unavailable
 
     @property
+    def formattable(self):
+        return super(FS, self).formattable and not self._mkfs.unavailable
+
+    @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
         return super(FS, self).resizable and self.utilsAvailable
