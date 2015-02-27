@@ -32,15 +32,21 @@ from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSResize(task.Task):
+class FSResizeTask(task.Task):
+    """ The abstract properties that any resize task must have. """
+
+    unit = abc.abstractproperty(doc="Resize unit.")
+    size_fmt = abc.abstractproperty(doc="Size format string.")
+
+
+@add_metaclass(abc.ABCMeta)
+class FSResize(FSResizeTask):
     """ An abstract class for resizing a filesystem. """
 
     description = "resize filesystem"
 
     app_name = abc.abstractproperty(
        doc="The name of the filesystem resizing application.")
-
-    unit = abc.abstractproperty(doc="Resize unit.")
 
     args = abc.abstractproperty(doc="Resize arguments.")
 
@@ -187,4 +193,3 @@ class UnimplementedFSResize(task.UnimplementedTask, FSResizeTask):
     @property
     def size_fmt(self):
         raise NotImplementedError()
->>>>>>> 8c59753... with resize

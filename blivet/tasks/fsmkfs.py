@@ -31,7 +31,12 @@ from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSMkfs(task.Task):
+class FSMkfsTask(task.Task):
+
+    labels = abc.abstractproperty(doc="whether this task labels")
+
+@add_metaclass(abc.ABCMeta)
+class FSMkfs(FSMkfsTask):
     """An abstract class that represents filesystem creation actions. """
     description = "mkfs"
 
@@ -251,3 +256,16 @@ class XFSMkfs(FSMkfs):
     @property
     def args(self):
         return ["-f"]
+
+class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs
+
+    @property
+    def labels(self):
+        return False

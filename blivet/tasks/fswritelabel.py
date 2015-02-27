@@ -152,3 +152,12 @@ class XFSWriteLabel(FSWriteLabel):
     @property
     def args(self):
         return ["-L", self.fs.label if self.fs.label != "" else "--", self.fs.device]
+
+class UnimplementedFSWriteLabel(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs

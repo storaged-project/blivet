@@ -213,3 +213,12 @@ class NTFSMinSize(FSMinSize):
         if minSize is None:
             raise FSError("Unable to discover minimum size of filesystem on %s" % self.fs.device)
         return minSize
+
+class UnimplementedFSMinSize(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs
