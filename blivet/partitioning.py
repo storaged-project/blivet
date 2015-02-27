@@ -813,7 +813,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                 break
 
         if free is None:
-            raise PartitioningError(_("Unable to allocate requested partition scheme."))
+            raise PartitioningError(_("Not enough free space to allocate the requested partition scheme."))
 
         _disk = use_disk
         disklabel = _disk.format
