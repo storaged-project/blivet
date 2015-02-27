@@ -1596,14 +1596,10 @@ class DeviceTree(object):
             md_array.parents.append(device)
         else:
             # create the array with just this one member
-            try:
-                # level is reported as, eg: "raid1"
-                md_level = md_info.level
-                md_devices = md_info.num_devices
-                md_uuid = md_info.uuid
-            except (KeyError, ValueError) as e:
-                log.warning("invalid data for %s: %s", device.name, e)
-                return
+            # level is reported as, eg: "raid1"
+            md_level = md_info.level
+            md_devices = md_info.num_devices
+            md_uuid = md_info.uuid
 
             if md_level is None:
                 log.warning("invalid data for %s: no RAID level", device.name)
@@ -1612,22 +1608,26 @@ class DeviceTree(object):
             # md_examine yields metadata (MD_METADATA) only for metadata version > 0.90
             # if MD_METADATA is missing, assume metadata version is 0.90
             md_metadata = md_info.metadata or "0.90"
-            md_name = md_info.name
-            if not md_name:
-                md_path = md_info.device or ""
-                if md_path:
-                    md_name = devicePathToName(md_path)
-                    if re.match(r'md\d+$', md_name):
-                        # md0 -> 0
-                        md_name = md_name[2:]
+            md_name = None
+            md_path = md_info.device or ""
+            if md_path:
+                md_name = devicePathToName(md_path)
+                if re.match(r'md\d+$', md_name):
+                    # md0 -> 0
+                    md_name = md_name[2:]
 
-                    if md_name:
-                        array = self.getDeviceByName(md_name, incomplete=True)
-                        if array and array.uuid != md_uuid:
-                            log.error("found multiple devices with the name %s", md_name)
+                if md_name:
+                    array = self.getDeviceByName(md_name, incomplete=True)
+                    if array and array.uuid != md_uuid:
+                        log.error("found multiple devices with the name %s", md_name)
 
-            log.info("using name %s for md array containing member %s",
-                        md_name, device.name)
+            if md_name:
+                log.info("using name %s for md array containing member %s",
+                         md_name, device.name)
+            else:
+                log.error("failed to determine name for the md array %s" % (md_uuid or "unknown"))
+                return
+
             try:
                 md_array = MDRaidArrayDevice(md_name,
                                              level=md_level,
