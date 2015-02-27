@@ -111,10 +111,10 @@ class LVMPhysicalVolume(DeviceFormat):
         lvm.pvscan(self.device)
         super(LVMPhysicalVolume, self)._create(**kwargs)
         lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
+        lvm.pvscan(self.device)
 
     def _postCreate(self, **kwargs):
         super(LVMPhysicalVolume, self)._postCreate(**kwargs)
-        lvm.pvscan(self.device)
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,

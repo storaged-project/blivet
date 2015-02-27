@@ -266,18 +266,23 @@ class DiskLabel(DeviceFormat):
                         numparts=len(self.partitions))
         if notify:
             self.eventSync.changing = True
+        err = False
         try:
             self.partedDisk.commit()
         except parted.DiskException as msg:
+            err = True
             raise DiskLabelCommitError(msg)
         else:
             self.updateOrigPartedDisk()
+        finally:
             if not flags.uevents:
                 udev.settle()
             if notify:
-                self.eventSync.wait()
-        finally:
-            if notify:
+                if err:
+                    timeout=2
+                else:
+                    timeout=None
+                self.eventSync.wait(timeout=timeout)
                 self.eventSync.reset()
                 self.eventSync.notify()
 
