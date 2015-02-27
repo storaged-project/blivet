@@ -459,10 +459,9 @@ class FS(DeviceFormat):
 
             :raises: FSError
         """
-        if not self._fsck.unavailable:
-            self._fsck.doTask()
-        else:
+        if self._fsck.unavailable:
             return
+        self._fsck.doTask()
 
     def loadModule(self):
         """Load whatever kernel module is required to support this filesystem."""
@@ -590,10 +589,9 @@ class FS(DeviceFormat):
 
            Raises a FSReadLabelError if the label can not be read.
         """
-        if not self._readlabel.unavailable:
-            return self._readlabel.doTask()
-        else:
-            raise FSReadLabelError("label reading not implemented for filesystem %s" % self.type)
+        if self._readlabel.unavailable:
+            raise FSReadLabelError("can not read label for filesystem %s" % self.type)
+        return self._readlabel.doTask()
 
     def writeLabel(self):
         """ Create a label for this filesystem.
@@ -605,10 +603,9 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if not self._writelabel.unavailable:
-            self._writelabel.doTask()
-        else:
-            raise FSError("label writing not implemented for filesystem %s" % self.type)
+        if self._writelabel.unavailable:
+            raise FSError("not able to write label for filesystem %s" % self.type)
+        self._writelabel.doTask()
         self.notifyKernel()
 
     @property
