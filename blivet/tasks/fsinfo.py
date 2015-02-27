@@ -129,3 +129,12 @@ class ReiserFSInfo(FSInfo):
 class XFSInfo(FSInfo):
     app_name = "xfs_db"
     options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize"]
+
+class UnimplementedFSInfo(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs
