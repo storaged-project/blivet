@@ -20,6 +20,7 @@
 #
 
 import os
+import six
 
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
@@ -267,8 +268,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return self._memberDevices
 
     def _setMemberDevices(self, number):
-        if not isinstance(number, int):
-            raise ValueError("memberDevices is an integer")
+        if not isinstance(number, six.integer_types):
+            raise ValueError("memberDevices must be an integer")
 
         if not self.exists and number > self.totalDevices:
             raise ValueError("memberDevices cannot be greater than totalDevices")
