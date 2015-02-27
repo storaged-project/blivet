@@ -189,3 +189,13 @@ class TmpFSSize(task.Task):
             raise FSError("Failed to parse output of command %s." % self._sizeCommand())
 
         return Size("%s KiB" % lines[1])
+
+
+class UnimplementedFSSize(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs

@@ -184,3 +184,12 @@ class NTFSFSCK(FSCK):
 
     def _errorMessage(self, rc):
         return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
+
+class UnimplementedFSCK(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs

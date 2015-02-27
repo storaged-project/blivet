@@ -160,3 +160,12 @@ class XFSReadLabel(FSReadLabel):
     @property
     def args(self):
         return ["-l", self.fs.device]
+
+class UnimplementedFSReadLabel(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs

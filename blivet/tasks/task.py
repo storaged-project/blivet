@@ -27,6 +27,11 @@ from six import add_metaclass
 class Task(object):
     """ An abstract class that represents some task. """
 
+    # Whether or not the functionality is implemented in the task class.
+    # It is True by default. Only NotImplementedClass and its descendants
+    # should have a False value.
+    implemented = True
+
     @classmethod
     @abc.abstractmethod
     def available(cls):
@@ -68,4 +73,31 @@ class Task(object):
     @abc.abstractmethod
     def doTask(self, *args, **kwargs):
         """ Do the task for this class. """
+        raise NotImplementedError()
+
+class UnimplementedTask(Task):
+    """ A null Task, which returns a negative or empty for all properties."""
+
+    description = "an unimplemented task"
+    implemented = False
+
+    @classmethod
+    def available(cls):
+        return False
+
+    @property
+    def _unavailable(self):
+        return "Not implemented task can not succeed."
+
+    @property
+    def unready(self):
+        return "Not implemented task can not succeed."
+
+    @property
+    def unable(self):
+        return "Not implemented task can not succeed."
+
+    dependsOn = []
+
+    def doTask(self, *args, **kwargs):
         raise NotImplementedError()
