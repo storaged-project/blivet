@@ -128,7 +128,7 @@ class FS(DeviceFormat):
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
         self._resizable = False
-        if flags.installer_mode and self._resize.implemented:
+        if flags.installer_mode and not self._resize.unavailable:
             # if you want current/min size you have to call updateSizeInfo
             try:
                 self.updateSizeInfo()
@@ -171,7 +171,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return self._mkfs.labels or self._writelabel.implemented
+        return (self._mkfs.labels and not self._mkfs.unavailable) or not self._writelabel.unavailable
 
     def relabels(self):
         """Returns True if it is possible to relabel this filesystem
@@ -179,7 +179,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return self._writelabel.implemented
+        return not self._writelabel.unavailable
 
     def labelFormatOK(self, label):
         """Return True if the label has an acceptable format for this
@@ -334,7 +334,7 @@ class FS(DeviceFormat):
         """
         size = Size(0)
 
-        if self._sizeinfo.implemented:
+        if not self._sizeinfo.unavailable:
             try:
                 size = self._sizeinfo.doTask()
             except FSError as e:
@@ -365,7 +365,7 @@ class FS(DeviceFormat):
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
 
-        if not self._mkfs.implemented:
+        if self._mkfs.unavailable:
             return
 
         try:
@@ -395,7 +395,7 @@ class FS(DeviceFormat):
         if self.targetSize == self.currentSize:
             return
 
-        if not self._resize.implemented:
+        if self._resize.unavailable:
             return
 
         # The first minimum size can be incorrect if the fs was not
@@ -459,7 +459,7 @@ class FS(DeviceFormat):
 
             :raises: FSError
         """
-        if self._fsck.implemented:
+        if not self._fsck.unavailable:
             self._fsck.doTask()
         else:
             return
@@ -590,7 +590,7 @@ class FS(DeviceFormat):
 
            Raises a FSReadLabelError if the label can not be read.
         """
-        if self._readlabel.implemented:
+        if not self._readlabel.unavailable:
             return self._readlabel.doTask()
         else:
             raise FSReadLabelError("label reading not implemented for filesystem %s" % self.type)
@@ -605,7 +605,7 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if self._writelabel.implemented:
+        if not self._writelabel.unavailable:
             self._writelabel.doTask()
         else:
             raise FSError("label writing not implemented for filesystem %s" % self.type)
@@ -700,7 +700,7 @@ class FS(DeviceFormat):
             This is a little odd because xfs_freeze will only be
             available under the install root.
         """
-        if not self._sync.implemented:
+        if self._sync.unavailable:
             return
 
         if not self._mountpoint.startswith(root):
