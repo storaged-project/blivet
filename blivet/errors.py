@@ -105,37 +105,13 @@ class DiskLabelCommitError(DiskLabelError):
     pass
 
 # devicelibs
-class SwapError(StorageError):
-    pass
-
-class SuspendError(SwapError):
-    pass
-
-class OldSwapError(SwapError):
-    pass
-
-class UnknownSwapError(SwapError):
-    pass
-
-class MDRaidError(StorageError):
-    pass
-
 class RaidError(StorageError):
     pass
 
 class DMError(StorageError):
     pass
 
-class LVMError(StorageError):
-    pass
-
-class CryptoError(StorageError):
-    pass
-
 class MPathError(StorageError):
-    pass
-
-class LoopError(StorageError):
     pass
 
 class BTRFSError(StorageError):

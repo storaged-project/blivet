@@ -1,7 +1,7 @@
 ^blivet/arch.py:[[:digit:]]+: \[F0401\(import\-error\), numBits\] Unable to import 'platform'$
 ^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
-^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
-^blivet/__init__.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
+^blivet/blivet.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
+^blivet/blivet.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'BootLoaderError' but no assignment is done$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'errorHandler' but no assignment is done$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'ERROR_RAISE' but no assignment is done$
@@ -18,6 +18,7 @@
 ^blivet/__init__.py:[[:digit:]]+: \[W0612\(unused\-variable\), enable_installer_mode\] Unused variable 'productName'$
 ^blivet/__init__.py:[[:digit:]]+: \[W0612\(unused\-variable\), enable_installer_mode\] Unused variable 'ROOT_PATH'$
 ^blivet/__init__.py:[[:digit:]]+: \[W0612\(unused\-variable\), enable_installer_mode\] Unused variable 'shortProductName'$
+^blivet/.*: \[E0611\(no\-name\-in\-module\).*\] No name 'GLib' in module 'gi.repository'$
 ^dm.c: [[:digit:]]+: not running as root returning empty list$
 ^tests/devicelibs_test/mdraid_test.py:[[:digit:]]+: \[E1003\(bad\-super\-call\), ([[:alnum:]\.]+).__init__\] Bad first argument YES given to super\(\)$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value [[:alnum:] ]+ 'member_count' in [[:alnum:] ]+ call$

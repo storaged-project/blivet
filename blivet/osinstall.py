@@ -24,6 +24,7 @@ import shlex
 import os
 import stat
 import time
+from gi.repository import BlockDev as blockdev
 
 from . import util
 from . import getSysroot, getTargetPhysicalRoot, errorHandler, ERROR_RAISE
@@ -32,8 +33,6 @@ from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
 from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
-from .devicelibs.dm import name_from_dm_node
-from .devicelibs.crypto import generateBackupPassphrase
 from .formats import getFormat
 from .flags import flags
 from .platform import platform as _platform
@@ -42,11 +41,6 @@ from .i18n import _
 
 import logging
 log = logging.getLogger("blivet")
-
-try:
-    import nss.nss
-except ImportError:
-    nss = None
 
 def releaseFromRedhatRelease(fn):
     """
@@ -1036,7 +1030,7 @@ def get_containing_device(path, devicetree):
 
     if device_name.startswith("dm-"):
         # have I told you lately that I love you, device-mapper?
-        device_name = name_from_dm_node(device_name)
+        device_name = blockdev.dm_name_from_node(device_name)
 
     return devicetree.getDeviceByName(device_name)
 
@@ -1083,13 +1077,7 @@ def writeEscrowPackets(storage):
 
     log.debug("escrow: writeEscrowPackets start")
 
-    if not nss:
-        log.error("escrow: no nss python module -- aborting")
-        return
-
-    nss.nss.nss_init_nodb() # Does nothing if NSS is already initialized
-
-    backupPassphrase = generateBackupPassphrase()
+    backupPassphrase = blockdev.crypto_generate_backup_passphrase()
 
     try:
         escrowDir = getSysroot() + "/root"

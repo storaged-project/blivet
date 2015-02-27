@@ -22,6 +22,8 @@
 import os
 import parted
 import _ped
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 from .. import errors
 from .. import util
@@ -31,8 +33,6 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, getFormat
 from ..size import Size, MiB
-
-from ..devicelibs import dm
 
 import logging
 log = logging.getLogger("blivet")
@@ -692,8 +692,8 @@ class PartitionDevice(StorageDevice):
             # self.exists has been unset, so don't use self.status
             if os.path.exists(self.path):
                 try:
-                    dm.dm_remove(self.name)
-                except (errors.DMError, OSError):
+                    blockdev.dm_remove(self.name)
+                except GLib.GError:
                     pass
 
     def _getSize(self):

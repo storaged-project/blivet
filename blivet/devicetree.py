@@ -21,13 +21,15 @@
 #
 
 import os
-import block
 import re
 import shutil
 import pprint
 import copy
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
+
+from .errors import DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -42,11 +44,7 @@ from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_f
 from . import formats
 from .formats import getFormat
 from .formats.fs import nodev_filesystems
-from .devicelibs import mdraid
-from .devicelibs import dm
 from .devicelibs import lvm
-from .devicelibs import mpath
-from .devicelibs import loop
 from .devicelibs import edd
 from . import udev
 from . import util
@@ -171,22 +169,24 @@ class DeviceTree(object):
 
     @property
     def pvInfo(self):
-        if self._pvInfo is None:
-            self._pvInfo = lvm.pvinfo() # pylint: disable=attribute-defined-outside-init
+        if self._pvs_cache is None:
+            pvs = blockdev.lvm_pvs()
+            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs) # pylint: disable=attribute-defined-outside-init
 
-        return self._pvInfo
+        return self._pvs_cache
 
     @property
     def lvInfo(self):
-        if self._lvInfo is None:
-            self._lvInfo = lvm.lvs() # pylint: disable=attribute-defined-outside-init
+        if self._lvs_cache is None:
+            lvs = blockdev.lvm_lvs()
+            self._lvs_cache = dict((lv.lv_name, lv) for lv in lvs) # pylint: disable=attribute-defined-outside-init
 
-        return self._lvInfo
+        return self._lvs_cache
 
     def dropLVMCache(self):
         """ Drop cached lvm information. """
-        self._pvInfo = None # pylint: disable=attribute-defined-outside-init
-        self._lvInfo = None # pylint: disable=attribute-defined-outside-init
+        self._pvs_cache = None # pylint: disable=attribute-defined-outside-init
+        self._lvs_cache = None # pylint: disable=attribute-defined-outside-init
 
     def pruneActions(self):
         """ Remove redundant/obsolete actions from the action list. """
@@ -641,7 +641,7 @@ class DeviceTree(object):
 
         if name.startswith("loop"):
             # ignore loop devices unless they're backed by a file
-            return (not loop.get_backing_file(name))
+            return (not blockdev.loop_get_backing_file(name))
 
         # FIXME: check for virtual devices whose slaves are on the ignore list
 
@@ -734,7 +734,7 @@ class DeviceTree(object):
             for slave_name in slave_names:
                 # if it's a dm-X name, resolve it to a map name first
                 if slave_name.startswith("dm-"):
-                    dev_name = dm.name_from_dm_node(slave_name)
+                    dev_name = blockdev.dm_name_from_node(slave_name)
                 else:
                     dev_name = slave_name.replace("!", "/") # handles cciss
                 slave_dev = self.getDeviceByName(dev_name)
@@ -804,7 +804,7 @@ class DeviceTree(object):
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name first
             if slave_name.startswith("dm-"):
-                dev_name = dm.name_from_dm_node(slave_name)
+                dev_name = blockdev.dm_name_from_node(slave_name)
             else:
                 dev_name = slave_name.replace("!", "/") # handles cciss
             slave_dev = self.getDeviceByName(dev_name)
@@ -847,7 +847,7 @@ class DeviceTree(object):
         for slave_name in slave_names:
             # if it's a dm-X name, resolve it to a map name
             if slave_name.startswith("dm-"):
-                dev_name = dm.name_from_dm_node(slave_name)
+                dev_name = blockdev.dm_name_from_node(slave_name)
             else:
                 dev_name = slave_name
             slave_dev = self.getDeviceByName(dev_name)
@@ -892,8 +892,8 @@ class DeviceTree(object):
 
             log.error("failed to scan md array %s", name)
             try:
-                mdraid.mddeactivate(path)
-            except MDRaidError:
+                blockdev.md_deactivate(path)
+            except GLib.GError:
                 log.error("failed to stop broken md array %s", name)
 
         return device
@@ -904,7 +904,7 @@ class DeviceTree(object):
         sysfs_path = udev.device_get_sysfs_path(info)
 
         if name.startswith("md"):
-            name = mdraid.name_from_md_node(name)
+            name = blockdev.md_name_from_node(name)
             device = self.getDeviceByName(name)
             if device:
                 return device
@@ -913,7 +913,7 @@ class DeviceTree(object):
             disk_name = os.path.basename(os.path.dirname(sysfs_path))
             disk_name = disk_name.replace('!','/')
             if disk_name.startswith("md"):
-                disk_name = mdraid.name_from_md_node(disk_name)
+                disk_name = blockdev.md_name_from_node(disk_name)
 
             disk = self.getDeviceByName(disk_name)
 
@@ -1022,7 +1022,7 @@ class DeviceTree(object):
             parentName = devicePathToName(parentPath)
             container = self.getDeviceByName(parentName)
             if not container:
-                parentSysName = mdraid.md_node_from_name(parentName)
+                parentSysName = blockdev.md_node_from_name(parentName)
                 container_sysfs = "/class/block/" + parentSysName
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
@@ -1153,8 +1153,8 @@ class DeviceTree(object):
                 devname = udev.device_get_devname(info)
                 if devname:
                     try:
-                        mdraid.mdrun(devname)
-                    except MDRaidError as e:
+                        blockdev.md_run(devname)
+                    except GLib.Error as e:
                         log.warning("Failed to start possibly degraded md array: %s", e)
                     else:
                         udev.settle()
@@ -1173,7 +1173,7 @@ class DeviceTree(object):
                 device = None
 
         if device and device.isDisk and \
-           mpath.is_multipath_member(device.path):
+           blockdev.mpath_is_mpath_member(device.path):
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
@@ -1340,7 +1340,7 @@ class DeviceTree(object):
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
-                    except CryptoError:
+                    except GLib.GError:
                         device.format.passphrase = None
                     else:
                         break
@@ -1350,7 +1350,7 @@ class DeviceTree(object):
                                      exists=True)
             try:
                 luks_device.setup()
-            except (LUKSError, CryptoError, DeviceError) as e:
+            except (LUKSError, GLib.GError, DeviceError) as e:
                 log.info("setup of %s failed: %s", device.format.mapName, e)
                 device.removeChild()
             else:
@@ -1364,7 +1364,7 @@ class DeviceTree(object):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
         lv_info = dict((k, v) for (k, v) in iter(self.lvInfo.items())
-                                if udev.device_get_vg_name(v) == vg_name)
+                                if v.vg_name == vg_name)
 
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
 
@@ -1401,11 +1401,11 @@ class DeviceTree(object):
 
         def addLV(lv):
             """ Instantiate and add an LV based on data from the VG. """
-            lv_name = udev.device_get_lv_name(lv)
-            lv_uuid = udev.device_get_lv_uuid(lv)
-            lv_attr = udev.device_get_lv_attr(lv)
-            lv_size = udev.device_get_lv_size(lv)
-            lv_type = udev.device_get_lv_type(lv)
+            lv_name = lv.lv_name
+            lv_uuid = lv.uuid
+            lv_attr = lv.attr
+            lv_size = Size(lv.size)
+            lv_type = lv.segtype
 
             lv_class = LVMLogicalVolumeDevice
             lv_parents = [vg_device]
@@ -1419,7 +1419,7 @@ class DeviceTree(object):
 
             if lv_attr[0] in 'Ss':
                 log.info("found lvm snapshot volume '%s'", name)
-                origin_name = lvm.lvorigin(vg_name, lv_name)
+                origin_name = blockdev.lvm_lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin",
                                 vg_name, lv_name)
@@ -1469,11 +1469,11 @@ class DeviceTree(object):
                 lv_class = LVMThinPoolDevice
             elif lv_attr[0] == 'V':
                 # thin volume
-                pool_name = lvm.thinlvpoolname(vg_name, lv_name)
+                pool_name = blockdev.lvm_thlvpoolname(vg_name, lv_name)
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
                 addRequiredLV(pool_device_name, "failed to look up thin pool")
 
-                origin_name = lvm.lvorigin(vg_name, lv_name)
+                origin_name = blockdev.lvm_lvorigin(vg_name, lv_name)
                 if origin_name:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
                     addRequiredLV(origin_device_name, "failed to locate origin lv")
@@ -1540,13 +1540,12 @@ class DeviceTree(object):
     def handleUdevLVMPVFormat(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        pv_info = self.pvInfo.get(device.path, {})
-        # lookup/create the VG and LVs
-        try:
-            vg_name = udev.device_get_vg_name(pv_info)
-            vg_uuid = udev.device_get_vg_uuid(pv_info)
-        except KeyError:
-            # no vg name means no vg -- we're done with this pv
+        pv_info = self.pvInfo.get(device.path, None)
+        if pv_info:
+            vg_name = pv_info.vg_name
+            vg_uuid = pv_info.vg_uuid
+        else:
+            # no info about the PV -> we're done
             return
 
         if not vg_name:
@@ -1564,12 +1563,12 @@ class DeviceTree(object):
                 raise UnusableConfigurationError("multiple LVM volume groups with the same name")
 
             try:
-                vg_size = udev.device_get_vg_size(pv_info)
-                vg_free = udev.device_get_vg_free(pv_info)
-                pe_size = udev.device_get_vg_extent_size(pv_info)
-                pe_count = udev.device_get_vg_extent_count(pv_info)
-                pe_free = udev.device_get_vg_free_extents(pv_info)
-                pv_count = udev.device_get_vg_pv_count(pv_info)
+                vg_size = Size(pv_info.vg_size)
+                vg_free = Size(pv_info.vg_free)
+                pe_size = Size(pv_info.vg_extent_size)
+                pe_count = pv_info.vg_extent_count
+                pe_free = pv_info.vg_free_count
+                pv_count = pv_info.vg_pv_count
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
@@ -1591,44 +1590,44 @@ class DeviceTree(object):
     def handleUdevMDMemberFormat(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        md_info = mdraid.mdexamine(device.path)
+        md_info = blockdev.md_examine(device.path)
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
         if device.format.mdUuid and md_array:
             md_array.parents.append(device)
         else:
             # create the array with just this one member
-            try:
-                # level is reported as, eg: "raid1"
-                md_level = udev.device_get_md_level(md_info)
-                md_devices = udev.device_get_md_devices(md_info)
-                md_uuid = udev.device_get_md_uuid(md_info)
-            except (KeyError, ValueError) as e:
-                log.warning("invalid data for %s: %s", device.name, e)
-                return
+            # level is reported as, eg: "raid1"
+            md_level = md_info.level
+            md_devices = md_info.num_devices
+            md_uuid = md_info.uuid
 
             if md_level is None:
                 log.warning("invalid data for %s: no RAID level", device.name)
                 return
 
-            # mdexamine yields MD_METADATA only for metadata version > 0.90
+            # md_examine yields metadata (MD_METADATA) only for metadata version > 0.90
             # if MD_METADATA is missing, assume metadata version is 0.90
-            md_metadata = udev.device_get_md_metadata(md_info) or "0.90"
-            md_name = udev.device_get_md_name(md_info)
-            if not md_name:
-                md_path = md_info.get("DEVICE", "")
-                if md_path:
-                    md_name = devicePathToName(md_path)
-                    if re.match(r'md\d+$', md_name):
-                        # md0 -> 0
-                        md_name = md_name[2:]
+            md_metadata = md_info.metadata or "0.90"
+            md_name = None
+            md_path = md_info.device or ""
+            if md_path:
+                md_name = devicePathToName(md_path)
+                if re.match(r'md\d+$', md_name):
+                    # md0 -> 0
+                    md_name = md_name[2:]
 
-                    if md_name:
-                        array = self.getDeviceByName(md_name, incomplete=True)
-                        if array and array.uuid != md_uuid:
-                            log.error("found multiple devices with the name %s", md_name)
+                if md_name:
+                    array = self.getDeviceByName(md_name, incomplete=True)
+                    if array and array.uuid != md_uuid:
+                        log.error("found multiple devices with the name %s", md_name)
 
-            log.info("using name %s for md array containing member %s",
-                        md_name, device.name)
+            if md_name:
+                log.info("using name %s for md array containing member %s",
+                         md_name, device.name)
+            else:
+                log.error("failed to determine name for the md array %s" % (md_uuid or "unknown"))
+                return
+
             try:
                 md_array = MDRaidArrayDevice(md_name,
                                              level=md_level,
@@ -1656,23 +1655,21 @@ class DeviceTree(object):
         minor = udev.device_get_minor(info)
 
         # Have we already created the DMRaidArrayDevice?
-        rss = block.getRaidSetFromRelatedMem(uuid=uuid, name=name,
-                                            major=major, minor=minor)
-        if len(rss) == 0:
+        rs_names = blockdev.dm_get_member_raid_sets(uuid, name, major, minor)
+        if len(rs_names) == 0:
             log.warning("dmraid member %s does not appear to belong to any "
                         "array", device.name)
             return
 
-        for rs in rss:
-            dm_array = self.getDeviceByName(rs.name, incomplete=True)
+        for rs_name in rs_names:
+            dm_array = self.getDeviceByName(rs_name, incomplete=True)
             if dm_array is not None:
                 # We add the new device.
                 dm_array.parents.append(device)
             else:
                 # Activate the Raid set.
-                rs.activate(mknod=True)
-                dm_array = DMRaidArrayDevice(rs.name,
-                                             raidSet=rs,
+                blockdev.dm_activate_raid_set(rs_name)
+                dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[device])
 
                 self._addDevice(dm_array)
@@ -1717,11 +1714,11 @@ class DeviceTree(object):
 
         if not btrfs_dev.subvolumes:
             snapshots = btrfs_dev.listSubVolumes(snapshotsOnly=True)
-            snapshot_ids = [s["id"] for s in snapshots]
+            snapshot_ids = [s.id for s in snapshots]
             for subvol_dict in btrfs_dev.listSubVolumes():
-                vol_id = subvol_dict["id"]
-                vol_path = subvol_dict["path"]
-                parent_id = subvol_dict["parent"]
+                vol_id = subvol_dict.id
+                vol_path = subvol_dict.path
+                parent_id = subvol_dict.parent_id
                 if vol_path in [sv.name for sv in btrfs_dev.subvolumes]:
                     continue
 
@@ -1769,7 +1766,7 @@ class DeviceTree(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
-        is_multipath_member = mpath.is_multipath_member(device.path)
+        is_multipath_member = blockdev.mpath_is_mpath_member(device.path)
         if is_multipath_member:
             format_type = "multipath_member"
 
@@ -1822,20 +1819,20 @@ class DeviceTree(object):
             kwargs["biosraid"] = udev.device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            pv_info = self.pvInfo.get(device.path, {})
-
-            try:
-                kwargs["vgName"] = udev.device_get_vg_name(pv_info)
-            except KeyError:
-                log.warning("PV %s has no vg_name", name)
-            try:
-                kwargs["vgUuid"] = udev.device_get_vg_uuid(pv_info)
-            except KeyError:
-                log.warning("PV %s has no vg_uuid", name)
-            try:
-                kwargs["peStart"] = udev.device_get_pv_pe_start(pv_info)
-            except KeyError:
-                log.warning("PV %s has no pe_start", name)
+            pv_info = self.pvInfo.get(device.path, None)
+            if pv_info:
+                if pv_info.vg_name:
+                    kwargs["vgName"] = pv_info.vg_name
+                else:
+                    log.warning("PV %s has no vg_name", name)
+                if pv_info.vg_uuid:
+                    kwargs["vgUuid"] = pv_info.vg_uuid
+                else:
+                    log.warning("PV %s has no vg_uuid", name)
+                if pv_info.pe_start:
+                    kwargs["peStart"] = Size(pv_info.pe_start)
+                else:
+                    log.warning("PV %s has no pe_start", name)
         elif format_type == "vfat":
             # efi magic
             if isinstance(device, PartitionDevice) and device.bootable:
@@ -2026,7 +2023,7 @@ class DeviceTree(object):
                 filedev.setup()
                 log.debug("%s", filedev)
 
-                loop_name = loop.get_loop_name(filedev.path)
+                loop_name = blockdev.loop_get_loop_name(filedev.path)
                 loop_sysfs = None
                 if loop_name:
                     loop_sysfs = "/class/block/%s" % loop_name
@@ -2128,7 +2125,7 @@ class DeviceTree(object):
         self.dropLVMCache()
 
         if flags.installer_mode and not flags.image_install:
-            mpath.set_friendly_names(enabled=flags.multipath_friendly_names)
+            blockdev.mpath_set_friendly_names(flags.multipath_friendly_names)
 
         self.setupDiskImages()
 
@@ -2552,7 +2549,7 @@ class DeviceTree(object):
 
                 if devspec.startswith("/dev/dm-"):
                     try:
-                        dm_name = dm.name_from_dm_node(devspec[5:])
+                        dm_name = blockdev.dm_name_from_node(devspec[5:])
                     except StorageError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         dm_name = None
@@ -2562,7 +2559,7 @@ class DeviceTree(object):
 
                 if re.match(r'/dev/md\d+(p\d+)?$', devspec):
                     try:
-                        md_name = mdraid.name_from_md_node(devspec[5:])
+                        md_name = blockdev.md_name_from_node(devspec[5:])
                     except StorageError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         md_name = None

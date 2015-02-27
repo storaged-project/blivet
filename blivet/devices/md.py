@@ -20,6 +20,10 @@
 #
 
 import os
+import six
+
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 from ..devicelibs import mdraid, raid
 
@@ -129,8 +133,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         if self.uuid is not None:
             try:
-                formatted_uuid = mdraid.mduuid_from_canonical(self.uuid)
-            except errors.MDRaidError:
+                formatted_uuid = blockdev.md_get_md_uuid(self.uuid)
+            except GLib.GError:
                 pass
 
         return formatted_uuid
@@ -192,7 +196,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
            :returns: estimated superblock size
            :rtype: :class:`~.size.Size`
         """
-        return mdraid.get_raid_superblock_size(raw_array_size,
+        return blockdev.md_get_superblock_size(raw_array_size,
                                                version=self.metadataVersion)
 
     @property
@@ -206,7 +210,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                     self.memberDevices,
                     self.chunkSize,
                     self.getSuperBlockSize)
-            except (errors.MDRaidError, errors.RaidError) as e:
+            except (GLib.GError, errors.RaidError) as e:
                 log.info("could not calculate size of device %s for raid level %s: %s", self.name, self.level, e)
                 size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
@@ -264,8 +268,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return self._memberDevices
 
     def _setMemberDevices(self, number):
-        if not isinstance(number, int):
-            raise ValueError("memberDevices is an integer")
+        if not isinstance(number, six.integer_types):
+            raise ValueError("memberDevices must be an integer")
 
         if not self.exists and number > self.totalDevices:
             raise ValueError("memberDevices cannot be greater than totalDevices")
@@ -421,9 +425,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             member.setup(orig=orig)
             disks.append(member.path)
 
-        mdraid.mdactivate(self.path,
-                          members=disks,
-                          array_uuid=self.mdadmFormatUUID)
+        blockdev.md_activate(self.path, members=disks, uuid=self.mdadmFormatUUID)
 
     def _postTeardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)
@@ -437,14 +439,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
         # we don't really care about the return value of _preTeardown here.
-        # see comment just above mddeactivate call
+        # see comment just above md_deactivate call
         self._preTeardown(recursive=recursive)
 
         # We don't really care what the array's state is. If the device
         # file exists, we want to deactivate it. mdraid has too many
         # states.
         if self.exists and os.path.exists(self.path):
-            mdraid.mddeactivate(self.path)
+            blockdev.md_deactivate(self.path)
 
         self._postTeardown(recursive=recursive)
 
@@ -472,8 +474,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         # update our uuid attribute with the new array's UUID
         # XXX this won't work for containers since no UUID is reported for them
-        info = mdraid.mddetail(self.path)
-        self.uuid = info.get("UUID")
+        info = blockdev.md_detail(self.path)
+        self.uuid = info.uuid
         for member in self.devices:
             member.format.mdUuid = self.uuid
 
@@ -482,40 +484,38 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         log_method_call(self, self.name, status=self.status)
         disks = [disk.path for disk in self.devices]
         spares = len(self.devices) - self.memberDevices
-        mdraid.mdcreate(self.path,
-                        self.level,
-                        disks,
-                        spares,
-                        metadataVer=self.metadataVersion,
-                        bitmap=self.createBitmap)
+        level = None
+        if self.level:
+            level = str(self.level)
+        blockdev.md_create(self.path, level, disks, spares,
+                           version=self.metadataVersion,
+                           bitmap=self.createBitmap)
         udev.settle()
 
     def _remove(self, member):
         self.setup()
         # see if the device must be marked as failed before it can be removed
         fail = (self.memberStatus(member) == "in_sync")
-        mdraid.mdremove(self.path, member.path, fail=fail)
+        blockdev.md_remove(self.path, member.path, fail)
 
     def _add(self, member):
         """ Add a member device to an array.
 
            :param str member: the member's path
 
-           :raises: MDRaidError
+           :raises: GLib.GError
         """
         self.setup()
 
-        grow_mode = False
         raid_devices = None
         try:
             if not self.level.has_redundancy():
-                grow_mode = True
                 if self.level is not raid.Linear:
-                    raid_devices = int(mdraid.mddetail(self.name)['RAID DEVICES']) + 1
+                    raid_devices = int(blockdev.md_detail(self.name).raid_devices) + 1
         except errors.RaidError:
             pass
 
-        mdraid.mdadd(self.path, member.path, grow_mode=grow_mode, raid_devices=raid_devices)
+        blockdev.md_add(self.path, member.path, raid_devs=raid_devices)
 
     @property
     def formatArgs(self):
@@ -583,7 +583,7 @@ class MDContainerDevice(MDRaidArrayDevice):
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
         # we don't really care about the return value of _preTeardown here.
-        # see comment just above mddeactivate call
+        # see comment just above md_deactivate call
         self._preTeardown(recursive=recursive)
 
         # Since BIOS RAID sets (containers in mdraid terminology) never change
@@ -641,7 +641,7 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
         # we don't really care about the return value of _preTeardown here.
-        # see comment just above mddeactivate call
+        # see comment just above md_deactivate call
         self._preTeardown(recursive=recursive)
 
         # Since BIOS RAID sets (containers in mdraid terminology) never change

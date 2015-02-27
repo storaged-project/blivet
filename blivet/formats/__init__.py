@@ -1,3 +1,4 @@
+
 # __init__.py
 # Entry point for anaconda storage formats subpackage.
 #
@@ -21,15 +22,15 @@
 #
 
 import os
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
 from ..util import ObjectID
 from ..storage_log import log_method_call
-from ..errors import DeviceFormatError, DMError, FormatCreateError, FormatDestroyError, FormatSetupError, MDRaidError
-from ..devicelibs.dm import dm_node_from_name
-from ..devicelibs.mdraid import md_node_from_name
+from ..errors import DeviceFormatError, FormatCreateError, FormatDestroyError, FormatSetupError
 from ..i18n import N_
 from ..size import Size
 
@@ -344,14 +345,14 @@ class DeviceFormat(ObjectID):
 
         if self.device.startswith("/dev/mapper/"):
             try:
-                name = dm_node_from_name(os.path.basename(self.device))
-            except DMError:
+                name = blockdev.dm_node_from_name(os.path.basename(self.device))
+            except GLib.GError:
                 log.warning("failed to get dm node for %s", self.device)
                 return
         elif self.device.startswith("/dev/md/"):
             try:
-                name = md_node_from_name(os.path.basename(self.device))
-            except MDRaidError:
+                name = blockdev.md_node_from_name(os.path.basename(self.device))
+            except GLib.GError:
                 log.warning("failed to get md node for %s", self.device)
                 return
         else:

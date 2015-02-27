@@ -21,9 +21,8 @@
 #
 
 import os
-
-from ..devicelibs import dm
-import block
+from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 from .. import errors
 from .. import util
@@ -97,9 +96,13 @@ class DMDevice(StorageDevice):
 
     @property
     def status(self):
-        match = next((m for m in block.dm.maps() if m.name == self.mapName),
-           None)
-        return (match.live_table and not match.suspended) if match else False
+        try:
+            return blockdev.dm_map_exists(self.mapName, True, True)
+        except GLib.GError as e:
+            if "Not running as root" in e.message:
+                return False
+            else:
+                raise
 
     #def getTargetType(self):
     #    return dm.getDmTarget(name=self.name)
@@ -110,7 +113,7 @@ class DMDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        return dm.dm_node_from_name(self.name)
+        return blockdev.dm_node_from_name(self.name)
 
     def setupPartitions(self):
         log_method_call(self, name=self.name, kids=self.kids)
@@ -128,7 +131,7 @@ class DMDevice(StorageDevice):
         for dev in os.listdir("/dev/mapper/"):
             prefix = self.name + "p"
             if dev.startswith(prefix) and dev[len(prefix):].isdigit():
-                dm.dm_remove(dev)
+                blockdev.dm_remove(dev)
 
     def _setName(self, value):
         """ Set the device's map name. """
@@ -183,8 +186,8 @@ class DMLinearDevice(DMDevice):
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
         slave_length = self.slave.partedDevice.length
-        dm.dm_create_linear(self.name, self.slave.path, slave_length,
-                            self.dmUuid)
+        blockdev.dm_create_linear(self.name, self.slave.path, slave_length,
+                                  self.dmUuid)
 
     def _postSetup(self):
         StorageDevice._postSetup(self)
@@ -194,7 +197,7 @@ class DMLinearDevice(DMDevice):
     def _teardown(self, recursive=False):
         self.teardownPartitions()
         udev.settle()
-        dm.dm_remove(self.name)
+        blockdev.dm_remove(self.name)
         udev.settle()
 
     def deactivate(self, recursive=False):
