@@ -1625,7 +1625,7 @@ class DeviceTree(object):
                 log.info("using name %s for md array containing member %s",
                          md_name, device.name)
             else:
-                log.error("failed to determine name for the md array %s" % (md_uuid or "unknown"))
+                log.error("failed to determine name for the md array %s", (md_uuid or "unknown"))
                 return
 
             try:
