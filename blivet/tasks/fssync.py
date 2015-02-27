@@ -113,3 +113,12 @@ class XFSSync(FSSync):
 
         if error_msg:
             raise FSError(error_msg)
+
+class UnimplementedFSSync(task.UnimplementedTask):
+
+    def __init__(self, an_fs):
+        """ Initializer.
+
+            :param FS an_fs: a filesystem object
+        """
+        self.fs = an_fs

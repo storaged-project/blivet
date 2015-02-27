@@ -62,16 +62,16 @@ class FS(DeviceFormat):
     _name = None
     _modules = []                        # kernel modules required for support
     _labelfs = None                      # labeling functionality
-    _fsckClass = None                    # fsck
-    _infoClass = None
-    _minsizeClass = None                 # find the minimum size
-    _mkfsClass = None                    # mkfs
-    _mountClass = fsmount.FSMount        # default class for most filesystems
-    _readlabelClass = None               # read label
-    _resizeClass = None                  # resize
-    _sizeinfoClass = None                # get current size
-    _syncClass = None                    # sync the filesystem
-    _writelabelClass = None              # write label after creation
+    _fsckClass = fsck.UnimplementedFSCK
+    _infoClass = fsinfo.UnimplementedFSInfo
+    _minsizeClass = fsminsize.UnimplementedFSMinSize
+    _mkfsClass = fsmkfs.UnimplementedFSMkfs
+    _mountClass = fsmount.FSMount
+    _readlabelClass = fsreadlabel.UnimplementedFSReadLabel
+    _resizeClass = fsresize.UnimplementedFSResize
+    _sizeinfoClass = fssize.UnimplementedFSSize
+    _syncClass = fssync.UnimplementedFSSync
+    _writelabelClass = fswritelabel.UnimplementedFSWriteLabel
 
     def __init__(self, **kwargs):
         """
@@ -95,28 +95,24 @@ class FS(DeviceFormat):
                 it via the 'device' kwarg to the :meth:`create` method.
         """
 
-        def getTaskObject(klass):
-            # pylint: disable=not-callable
-            return klass(self) if klass is not None else None
-
         if self.__class__ is FS:
             raise TypeError("FS is an abstract class.")
 
         DeviceFormat.__init__(self, **kwargs)
 
         # Create task objects
-        self._info = getTaskObject(self._infoClass)
-        self._fsck = getTaskObject(self._fsckClass)
-        self._mkfs = getTaskObject(self._mkfsClass)
-        self._mount = getTaskObject(self._mountClass)
-        self._readlabel = getTaskObject(self._readlabelClass)
-        self._resize = getTaskObject(self._resizeClass)
-        self._sync = getTaskObject(self._syncClass)
-        self._writelabel = getTaskObject(self._writelabelClass)
+        self._info = self._infoClass(self)
+        self._fsck = self._fsckClass(self)
+        self._mkfs = self._mkfsClass(self)
+        self._mount = self._mountClass(self)
+        self._readlabel = self._readlabelClass(self)
+        self._resize = self._resizeClass(self)
+        self._sync = self._syncClass(self)
+        self._writelabel = self._writelabelClass(self)
 
         # These two may depend on info class, so create them after
-        self._minsize = getTaskObject(self._minsizeClass)
-        self._sizeinfo = getTaskObject(self._sizeinfoClass)
+        self._minsize = self._minsizeClass(self)
+        self._sizeinfo = self._sizeinfoClass(self)
 
         self._current_info = None # info obtained by _info task
 
@@ -132,7 +128,7 @@ class FS(DeviceFormat):
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
         self._resizable = False
-        if flags.installer_mode and self._resize:
+        if flags.installer_mode and self._resize.implemented:
             # if you want current/min size you have to call updateSizeInfo
             try:
                 self.updateSizeInfo()
@@ -175,7 +171,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return (self._mkfs is not None and self._mkfs.labels) or self._writelabel is not None
+        return self._mkfs.labels or self._writelabel.implemented
 
     def relabels(self):
         """Returns True if it is possible to relabel this filesystem
@@ -183,7 +179,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return self._writelabel is not None and not self._writelabel.unavailable
+        return self._writelabel.implemented
 
     def labelFormatOK(self, label):
         """Return True if the label has an acceptable format for this
@@ -292,12 +288,11 @@ class FS(DeviceFormat):
             :returns: a lower bound for shrinking
             :rtype: :class:`~.size.Size`
         """
-        if self._minsizeClass is None:
+        if not self._minsizeClass.implemented:
             return self._minInstanceSize
 
         size = self._minSize
-        if self.exists and os.path.exists(self.device) and \
-           self._minsize is not None and not self._minsize.unavailable:
+        if self.exists and os.path.exists(self.device) and not self._minsize.unavailable:
             try:
                 result = self._minsize.doTask()
             except FSError as e:
@@ -323,7 +318,7 @@ class FS(DeviceFormat):
         """
         buf = ""
 
-        if self._info is not None and not self._info.unavailable:
+        if not self._info.unavailable:
             try:
                 buf = self._info.doTask()
             except FSError as e:
@@ -339,7 +334,7 @@ class FS(DeviceFormat):
         """
         size = Size(0)
 
-        if self._sizeinfo:
+        if self._sizeinfo.implemented:
             try:
                 size = self._sizeinfo.doTask()
             except FSError as e:
@@ -404,7 +399,7 @@ class FS(DeviceFormat):
         if self.targetSize == self.currentSize:
             return
 
-        if not self._resize:
+        if not self._resize.implemented:
             return
 
         # The first minimum size can be incorrect if the fs was not
@@ -468,7 +463,7 @@ class FS(DeviceFormat):
 
             :raises: FSError
         """
-        if self._fsck is not None:
+        if self._fsck.implemented:
             self._fsck.doTask()
         else:
             return
@@ -641,7 +636,7 @@ class FS(DeviceFormat):
 
            Raises a FSReadLabelError if the label can not be read.
         """
-        if self._readlabel is not None:
+        if self._readlabel.implemented:
             return self._readlabel.doTask()
         else:
             raise FSReadLabelError("label reading not implemented for filesystem %s" % self.type)
@@ -656,7 +651,7 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if self._writelabel:
+        if self._writelabel.implemented:
             self._writelabel.doTask()
         else:
             raise FSError("label writing not implemented for filesystem %s" % self.type)
@@ -666,7 +661,7 @@ class FS(DeviceFormat):
     def utilsAvailable(self):
         # we aren't checking for fsck because we shouldn't need it
         tasks = [self._mkfs, self._resize, self._writelabel, self._info]
-        return not any(t is not None and t.unavailable for t in tasks)
+        return not any(t.implemented and t.unavailable for t in tasks)
 
     @property
     def supported(self):
@@ -690,7 +685,7 @@ class FS(DeviceFormat):
 
     @property
     def mountType(self):
-        return self._mount.mountType if self._mount else self._type
+        return self._mount.mountType
 
     # These methods just wrap filesystem-specific methods in more
     # generically named methods so filesystems and formatted devices
@@ -735,7 +730,7 @@ class FS(DeviceFormat):
             This is a little odd because xfs_freeze will only be
             available under the install root.
         """
-        if self._sync is None:
+        if not self._sync.implemented:
             return
 
         if not self._mountpoint.startswith(root):
