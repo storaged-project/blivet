@@ -99,7 +99,7 @@ class MDRaidMember(DeviceFormat):
 
     @property
     def hidden(self):
-        return (self._hidden or self.biosraid)
+        return super(MDRaidMember, self).hidden or self.biosraid
 
 # nodmraid -> Wether to use BIOS RAID or not
 # Note the anaconda cmdline has not been parsed yet when we're first imported,
