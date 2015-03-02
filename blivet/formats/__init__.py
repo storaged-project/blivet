@@ -456,7 +456,12 @@ class DeviceFormat(ObjectID):
 
     @property
     def supported(self):
-        """ Is this format a supported type? """
+        """ Is this format a supported type?
+
+            Are the necessary external applications required by the
+            functionality that this format provides actually provided by
+            the environment in which blivet is running?
+        """
         return self._supported
 
     @property
