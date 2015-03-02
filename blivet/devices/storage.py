@@ -164,23 +164,6 @@ class StorageDevice(Device):
         return packages
 
     @property
-    def services(self):
-        """ List of services required to manage devices of this type.
-
-            This list includes the services required by this device's
-            format type as well those required by all of its parent
-            devices.
-        """
-        services = super(StorageDevice, self).services
-        services.extend(self.format.services)
-        for parent in self.parents:
-            for service in parent.format.services:
-                if service not in services:
-                    services.append(service)
-
-        return services
-
-    @property
     def disks(self):
         """ A list of all disks this device depends on, including itself. """
         _disks = []

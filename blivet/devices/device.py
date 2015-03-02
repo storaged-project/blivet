@@ -66,7 +66,6 @@ class Device(util.ObjectID):
 
     _type = "device"
     _packages = []
-    _services = []
 
     def __init__(self, name, parents=None):
         """
@@ -288,20 +287,6 @@ class Device(util.ObjectID):
                     packages.append(package)
 
         return packages
-
-    @property
-    def services(self):
-        """ List of services required to manage devices of this type.
-
-            This list includes the services required by its parent devices."
-        """
-        services = self._services
-        for parent in self.parents:
-            for service in parent.services:
-                if service not in services:
-                    services.append(service)
-
-        return services
 
     @property
     def mediaPresent(self):
