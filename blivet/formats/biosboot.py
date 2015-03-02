@@ -36,6 +36,7 @@ class BIOSBoot(DeviceFormat):
     _linuxNative = True                 # for clearpart
     _maxSize = Size("2 MiB")
     _minSize = Size("512 KiB")
+    _supported = True
 
     def __init__(self, **kwargs):
         """
@@ -56,7 +57,7 @@ class BIOSBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return isinstance(platform.platform, platform.X86)
+        return super(BIOSBoot,self).supported and isinstance(platform.platform, platform.X86)
 
 register_device_format(BIOSBoot)
 
