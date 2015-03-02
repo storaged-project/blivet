@@ -153,7 +153,6 @@ class DeviceFormat(ObjectID):
     _supported = False                  # is supported
     _linuxNative = False                # for clearpart
     _packages = []                      # required packages
-    _services = []                      # required services
     _resizable = False                  # can be resized
     _maxSize = Size(0)                  # maximum size
     _minSize = Size(0)                  # minimum size
@@ -468,11 +467,6 @@ class DeviceFormat(ObjectID):
     def packages(self):
         """ Packages required to manage formats of this type. """
         return self._packages
-
-    @property
-    def services(self):
-        """ Services required to manage formats of this type. """
-        return self._services
 
     @property
     def resizable(self):
