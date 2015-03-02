@@ -148,19 +148,8 @@ class StorageDevice(Device):
 
     @property
     def packages(self):
-        """ List of packages required to manage devices of this type.
-
-            This list includes the packages required by this device's
-            format type as well those required by all of its parent
-            devices.
-        """
         packages = super(StorageDevice, self).packages
-        packages.extend(self.format.packages)
-        for parent in self.parents:
-            for package in parent.format.packages:
-                if package not in packages:
-                    packages.append(package)
-
+        packages.extend(p for p in self.format.packages if p not in packages)
         return packages
 
     @property

@@ -276,15 +276,15 @@ class Device(util.ObjectID):
 
     @property
     def packages(self):
-        """ List of packages required to manage devices of this type.
+        """ List of packages required to manage this device and all its
+            ancestor devices. Does not contain duplicates.
 
-            This list includes the packages required by its parent devices.
+            :returns: names of packages required by device and all ancestors
+            :rtype: list of str
         """
         packages = self._packages
         for parent in self.parents:
-            for package in parent.packages:
-                if package not in packages:
-                    packages.append(package)
+            packages.extend(p for p in parent.packages if p not in packages)
 
         return packages
 
