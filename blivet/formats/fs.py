@@ -1096,6 +1096,7 @@ class EFIFS(FATFS):
     _mountType = "vfat"
     _name = N_("EFI System Partition")
     _minSize = Size("50 MiB")
+    _check = True
 
     @property
     def supported(self):
