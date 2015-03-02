@@ -39,6 +39,7 @@ class PPCPRePBoot(DeviceFormat):
     _linuxNative = True                 # for clearpart
     _maxSize = Size("10 MiB")
     _minSize = Size("4 MiB")
+    _supported = True
 
     def __init__(self, **kwargs):
         """
@@ -99,7 +100,7 @@ class PPCPRePBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return isinstance(platform.platform, platform.IPSeriesPPC)
+        return super(PPCPRePBoot, self).supported and isinstance(platform.platform, platform.IPSeriesPPC)
 
 register_device_format(PPCPRePBoot)
 

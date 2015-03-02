@@ -1095,8 +1095,7 @@ class EFIFS(FATFS):
 
     @property
     def supported(self):
-        return (isinstance(platform.platform, platform.EFI) and
-                self.utilsAvailable)
+        return super(EFIFS, self).supported and isinstance(platform.platform, platform.EFI)
 
 register_device_format(EFIFS)
 
@@ -1176,11 +1175,7 @@ class GFS2(FS):
     @property
     def supported(self):
         """ Is this filesystem a supported type? """
-        supported = self._supported
-        if flags.gfs2:
-            supported = self.utilsAvailable
-
-        return supported
+        return self.utilsAvailable if flags.gfs2 else self._supported
 
 register_device_format(GFS2)
 
@@ -1205,11 +1200,7 @@ class JFS(FS):
     @property
     def supported(self):
         """ Is this filesystem a supported type? """
-        supported = self._supported
-        if flags.jfs:
-            supported = self.utilsAvailable
-
-        return supported
+        return self.utilsAvailable if flags.jfs else self._supported
 
 register_device_format(JFS)
 
@@ -1234,11 +1225,7 @@ class ReiserFS(FS):
     @property
     def supported(self):
         """ Is this filesystem a supported type? """
-        supported = self._supported
-        if flags.reiserfs:
-            supported = self.utilsAvailable
-
-        return supported
+        return self.utilsAvailable if flags.reiserfs else self._supported
 
 register_device_format(ReiserFS)
 
@@ -1300,11 +1287,11 @@ class AppleBootstrapFS(HFS):
     _name = N_("Apple Bootstrap")
     _minSize = Size("768 KiB")
     _maxSize = Size("1 MiB")
+    _supported = True
 
     @property
     def supported(self):
-        return (isinstance(platform.platform, platform.NewWorldPPC)
-                and self.utilsAvailable)
+        return super(AppleBootstrapFS, self).supported and isinstance(platform.platform, platform.NewWorldPPC)
 
 register_device_format(AppleBootstrapFS)
 
@@ -1333,11 +1320,11 @@ class MacEFIFS(HFSPlus):
     _labelfs = fslabeling.HFSPlusLabeling()
     _udevTypes = []
     _minSize = Size("50 MiB")
+    _supported = True
 
     @property
     def supported(self):
-        return (isinstance(platform.platform, platform.MacEFI) and
-                self.utilsAvailable)
+        return super(MacEFIFS, self).supported and isinstance(platform.platform, platform.MacEFI)
 
     def __init__(self, **kwargs):
         if "label" not in kwargs:
