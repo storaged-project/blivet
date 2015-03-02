@@ -231,11 +231,23 @@ class FS(DeviceFormat):
 
     def updateSizeInfo(self):
         """ Update this filesystem's current and minimum size (for resize). """
-        if not self.exists:
-            return
 
-        self._size = Size(0)
-        self._minSize = self.__class__._minSize
+        #   This method ensures:
+        #   * If there are fsck errors, self._resizable is False.
+        #       Note that if there is no fsck program, no errors are possible.
+        #   * If it is not possible to obtain the current size of the
+        #       filesystem by interrogating the filesystem, self._resizable
+        #       is False (and self._size is 0).
+        #   * _minInstanceSize is obtained or it is set to _size. Effectively
+        #     this means that it is the actual minimum size, or if that
+        #     cannot be obtained the actual current size of the device.
+        #     If it was not possible to obtain the current size of the device
+        #     then _minInstanceSize is 0, but since _resizable is False
+        #     that information can not be used to shrink the filesystem below
+        #     its unknown actual minimum size.
+        #   * self._getMinSize() is only run if fsck succeeds and a current
+        #     existing size can be obtained.
+        self._current_info = None
         self._minInstanceSize = Size(0)
         self._resizable = self.__class__._resizable
 
@@ -243,23 +255,49 @@ class FS(DeviceFormat):
         try:
             self.doCheck()
         except FSError:
-            errors = True
+            self._resizable = False
             raise
-        else:
-            errors = False
         finally:
             # try to gather current size info anyway
-            self._current_info = self._getFSInfo()
-            self._size = self._getExistingSize()
-            self._minSize = self._size # default to current size
+            self._size = Size(0)
+            try:
+                if self._info.implemented:
+                    self._current_info = self._info.doTask()
+            except FSError as e:
+                log.info("Failed to obtain info for device %s: %s", self.device, e)
+            try:
+                self._size = self._sizeinfo.doTask()
+                self._minInstanceSize = self._size
+            except (FSError, NotImplementedError) as e:
+                log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+
             # We absolutely need a current size to enable resize. To shrink the
             # filesystem we need a real minimum size provided by the resize
             # tool. Failing that, we can default to the current size,
             # effectively disabling shrink.
-            if errors or self._size == Size(0):
+            if self._size == Size(0):
                 self._resizable = False
 
-        self._minInstanceSize = self._getMinSize()
+        try:
+            result = self._minsize.doTask()
+            size = self._padSize(result)
+            if result < size:
+                log.debug("padding min size from %s up to %s", result, size)
+            else:
+                log.debug("using current size %s as min size", size)
+            self._minInstanceSize = size
+        except (FSError, NotImplementedError) as e:
+            log.warning("Failed to obtain minimum size for device %s: %s", self.device, e)
+
+    @property
+    def minSize(self):
+        # If self._minInstanceSize is not 0, then it should be no less than
+        # self._minSize, by definition, and since a non-zero value indicates
+        # that it was obtained, it is the preferred value.
+        # If self._minInstanceSize is less than self._minSize,
+        # but not 0, then there must be some mistake, so better to use
+        # self._minSize.
+        return max(self._minInstanceSize, self._minSize)
 
     def _padSize(self, size):
         """ Return a size padded according to some inflating rules.
@@ -280,67 +318,6 @@ class FS(DeviceFormat):
         padded = min(padded.roundToNearest(self._resize.unit, rounding=ROUND_UP), self.currentSize)
 
         return padded
-
-    def _getMinSize(self):
-        """ Get the minimum size of the filesystem. This represents a lower
-            bound for shrinking the filesystem.
-
-            :returns: a lower bound for shrinking
-            :rtype: :class:`~.size.Size`
-        """
-        if not self._minsizeClass.implemented:
-            return self._minInstanceSize
-
-        size = self._minSize
-        if self.exists and os.path.exists(self.device) and not self._minsize.unavailable:
-            try:
-                result = self._minsize.doTask()
-            except FSError as e:
-                log.warning("failed to get minimum size for %s filesystem "
-                            "on %s: %s", self.type, self.device, e)
-            else:
-                size = self._padSize(result)
-                if result < size:
-                    log.debug("padding min size from %s up to %s", result, size)
-                else:
-                    log.debug("using current size %s as min size", size)
-
-        return size
-
-    def _getFSInfo(self):
-        """ Get filesystem information by use of external tools.
-
-            :returns: the output of the tool
-            :rtype: str
-
-            If for any reason the information is not obtained returns the
-            empty string.
-        """
-        buf = ""
-
-        if not self._info.unavailable:
-            try:
-                buf = self._info.doTask()
-            except FSError as e:
-                log.error(e)
-
-        return buf
-
-    def _getExistingSize(self):
-        """ Determine the size of this filesystem.
-
-            :returns: size of existing fs
-            :rtype: :class:`~.size.Size`
-        """
-        size = Size(0)
-
-        if not self._sizeinfo.unavailable:
-            try:
-                size = self._sizeinfo.doTask()
-            except FSError as e:
-                log.error("failed to obtain size of filesystem on %s: %s", self.device, e)
-
-        return size
 
     @property
     def currentSize(self):
@@ -676,7 +653,7 @@ class FS(DeviceFormat):
     @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
-        return super(FS, self).resizable and self.utilsAvailable
+        return super(FS, self).resizable and not self._resize.unavailable
 
     def _getOptions(self):
         return self.mountopts or ",".join(self._mount.options)
@@ -775,10 +752,6 @@ class Ext2FS(FS):
     _sizeinfoClass = fssize.Ext2FSSize
     _writelabelClass = fswritelabel.Ext2FSWriteLabel
     partedSystem = fileSystemType["ext2"]
-
-    @property
-    def minSize(self):
-        return self._minInstanceSize
 
 register_device_format(Ext2FS)
 
@@ -1053,10 +1026,6 @@ class NTFS(FS):
     _sizeinfoClass = fssize.NTFSSize
     _writelabelClass = fswritelabel.NTFSWriteLabel
     partedSystem = fileSystemType["ntfs"]
-
-    @property
-    def minSize(self):
-        return self._minInstanceSize
 
 register_device_format(NTFS)
 
