@@ -185,7 +185,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
     def testResize(self):
         an_fs = self._fs_class()
-        if not an_fs.formattable:
+        if not an_fs.formattable or not an_fs.resizable:
             return
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
