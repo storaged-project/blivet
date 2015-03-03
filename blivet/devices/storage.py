@@ -681,14 +681,8 @@ class StorageDevice(Device):
 
     @property
     def growable(self):
-        """ True if this device or it's component devices are growable. """
-        grow = getattr(self, "req_grow", False)
-        if not grow:
-            for parent in self.parents:
-                grow = parent.growable
-                if grow:
-                    break
-        return grow
+        """ True if this device or its component devices are growable. """
+        return getattr(self, "req_grow", False) or any(p.growable for p in self.parents)
 
     def checkSize(self):
         """ Check to make sure the size of the device is allowed by the
