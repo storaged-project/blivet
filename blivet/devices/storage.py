@@ -157,9 +157,7 @@ class StorageDevice(Device):
         """ A list of all disks this device depends on, including itself. """
         _disks = []
         for parent in self.parents:
-            for disk in parent.disks:
-                if disk not in _disks:
-                    _disks.append(disk)
+            _disks.extend(d for d in parent.disks if d not in _disks)
 
         if self.isDisk and not self.format.hidden:
             _disks.append(self)
