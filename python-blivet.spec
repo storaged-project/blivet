@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0
+Version: 1.0.1
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -57,6 +57,44 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Mar 03 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.1-1
+- Use format string and arguments for logging function (vpodzime)
+- Do not restrict MDRaidArrayDevice's memberDevices to type int (vpodzime)
+- Adapt better to libblockdev's md_examine data (vpodzime)
+- Set TmpFS._resizable to False. (amulhern)
+- Add an additional test for TmpFS. (amulhern)
+- Override NoDevFS.notifyKernel() so that it does nothing. (amulhern)
+- Add TmpFS._resizefsUnit and use appropriately. (amulhern)
+- Rewrite TmpFS class definition. (amulhern)
+- Add TmpFS._getExistingSize() method. (amulhern)
+- Make _getExistingSize() method more generally useful. (amulhern)
+- Remove _getExistingSize() methods with body pass. (amulhern)
+- Tidy up the definition of the device property throughout formats package. (amulhern)
+- Add a test to check properties of device paths assigned to formats. (amulhern)
+- Set TmpFSDevice object's _formatImmutable attribute to True. (amulhern)
+- Remove no longer needed requires (vpodzime)
+- Filter out pylint's "No name 'GLib' in module 'gi.repository'" messages (vpodzime)
+- Add a static method providing list of available PE sizes (vpodzime)
+- Use BlockDev's crypto plugin to do LUKS escrow (vpodzime)
+- Use BlockDev's DM plugin to work with DM RAID sets (vpodzime)
+- Use BlockDev's DM plugin for DM map existence testing (vpodzime)
+- Remove tests for the removed devicelibs functions (vpodzime)
+- Set and refresh BlockDev's global LVM config if needed (vpodzime)
+- Use BlockDev's LVM plugin instead of devicelibs/lvm.py (vpodzime)
+- Use BlockDev's BTRFS plugin instead of devicelibs/btrfs.py (vpodzime)
+- Use the BlockDev's DM plugin instead of devicelibs/dm.py (vpodzime)
+- Use BlockDev's crypto plugin instead of devicelibs/crypto.py (vpodzime)
+- Use BlockDev's loop plugin instead of devicelibs/loop.py (vpodzime)
+- Use BlockDev's MD plugin instead of devicelibs/mdraid.py (vpodzime)
+- Use BlockDev's swap plugin instead of devicelibs/swap.py (vpodzime)
+- Use BlockDev's mpath plugin instead of devicelibs/mpath.py (vpodzime)
+- First little step towards libblockdev (vpodzime)
+- Move the Blivet class into its own module (vpodzime)
+- Fix txconfig typo. (sbueno+anaconda)
+- Update txconfig for f22-branch. (sbueno+anaconda)
+- Use a safer method to get a dm partition's disk name. (dlehman)
+- Be more careful about overwriting device.originalFormat. (#1192004) (dlehman)
+
 * Fri Feb 13 2015 David Lehman <dlehman@redhat.com> - 1.0-1
 - Move autopart and installation-specific code outside of __init__.py
   (vpodzime)

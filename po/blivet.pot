@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-13 14:30-0600\n"
+"POT-Creation-Date: 2015-03-03 15:57-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,10 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: ../blivet/__init__.py:1304
-msgid "You must create a new filesystem on the root device."
-msgstr ""
 
 #: ../blivet/size.py:44
 msgid "B"
@@ -218,35 +214,35 @@ msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1816
+#: ../blivet/partitioning.py:1815
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:107
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/osinstall.py:231
+#: ../blivet/osinstall.py:225
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:236
+#: ../blivet/osinstall.py:230
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:238
+#: ../blivet/osinstall.py:232
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:241
+#: ../blivet/osinstall.py:235
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/devicetree.py:1304
+#: ../blivet/devicetree.py:1307
 msgid "Invalid Disk Label"
+msgstr ""
+
+#: ../blivet/fcoe.py:107
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -332,6 +328,10 @@ msgstr ""
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
+msgstr ""
+
+#: ../blivet/blivet.py:1209
+msgid "You must create a new filesystem on the root device."
 msgstr ""
 
 #: ../blivet/zfcp.py:49 ../blivet/devicelibs/dasd.py:135
@@ -591,7 +591,7 @@ msgstr ""
 msgid "BIOS Boot"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:147
+#: ../blivet/formats/__init__.py:148
 msgid "Unknown"
 msgstr ""
 
@@ -603,19 +603,19 @@ msgstr ""
 msgid "multipath member device"
 msgstr ""
 
-#: ../blivet/formats/luks.py:46
+#: ../blivet/formats/luks.py:40
 msgid "LUKS"
 msgstr ""
 
-#: ../blivet/formats/luks.py:47
+#: ../blivet/formats/luks.py:41
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:39
+#: ../blivet/formats/lvmpv.py:42
 msgid "physical volume (LVM)"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:40
+#: ../blivet/formats/mdraid.py:41
 msgid "software RAID"
 msgstr ""
 
@@ -634,15 +634,10 @@ msgstr ""
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:50
+#: ../blivet/devicelibs/lvm.py:47
 msgid "Generic"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:51
+#: ../blivet/devicelibs/lvm.py:48
 msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:423
-#, python-format
-msgid "vginfo failed for %s"
 msgstr ""
