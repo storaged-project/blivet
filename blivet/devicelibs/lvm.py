@@ -331,7 +331,7 @@ def pvinfo(device=None):
 def vgcreate(vg_name, pv_list, pe_size):
     argv = ["vgcreate"]
     if pe_size:
-        argv.extend(["-s", "%dm" % pe_size.convertTo(MiB)])
+        argv.extend(["-s", "%dk" % pe_size.convertTo(KiB)])
     argv.append(vg_name)
     argv.extend(pv_list)
 
