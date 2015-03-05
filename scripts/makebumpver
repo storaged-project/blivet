@@ -64,6 +64,7 @@ class MakeBumpVer:
         self.fixedin_name = kwargs.get('fixedin', self.name)
         self.version = kwargs.get('version')
         self.release = kwargs.get('release')
+        self.new_release = kwargs.get('new_release') or self.release
         self.ignore = kwargs.get('ignore')
 
         self.bugmap = {}
@@ -371,7 +372,7 @@ class MakeBumpVer:
         """ find first occurrence of search and replace it with replace
         """
         for i, l in enumerate(lines):
-            if l.find(search) > -1:
+            if re.search(search, l):
                 break
         else:
             print("!!! Failed to replace '%s' with '%s'" % (search, replace))
@@ -386,6 +387,8 @@ class MakeBumpVer:
 
         self._replaceString(l, "Version: %s\n" % (self.version),
                                "Version: %s\n" % (newVersion))
+        self._replaceString(l, "Release: %s\n" % (self.release+r"%{\?dist}"),
+                               "Release: %s\n" % (self.new_release+r"%{?dist}"))
 
         i = l.index('%changelog\n')
         top = l[:i]
@@ -398,7 +401,7 @@ class MakeBumpVer:
         today = datetime.date.today()
         stamp = today.strftime("%a %b %d %Y")
         f.write("* %s %s <%s> - %s-%s\n" % (stamp, self.gituser, self.gitemail,
-                                            newVersion, self.release))
+                                            newVersion, self.new_release))
 
         for msg, rhbz in rpmlog:
             msg = re.sub('(?<!%)%%(?!%)|(?<!%%)%(?!%%)', '%%', msg)
@@ -434,7 +437,7 @@ class MakeBumpVer:
 
     def run(self):
         newVersion = self._incrementVersion()
-        fixedIn = "%s-%s-%s" % (self.fixedin_name, newVersion, self.release)
+        fixedIn = "%s-%s-%s" % (self.fixedin_name, newVersion, self.new_release)
         rpmlog = self._rpmLog(fixedIn)
 
         self._writeNewSpec(newVersion, rpmlog)
@@ -447,6 +450,7 @@ def usage(cmd):
     sys.stdout.write("    -n, --name       Package name.\n")
     sys.stdout.write("    -v, --version    Current package version number.\n")
     sys.stdout.write("    -r, --release    Package release number.\n")
+    sys.stdout.write("        --newrelease Value for release in the .spec file.\n")
     sys.stdout.write("    -i, --ignore     Comma separated list of git commits to ignore.\n")
     sys.stdout.write("    -m, --map        Comma separated list of FEDORA_BZ=RHEL_BZ mappings.\n")
     sys.stdout.write("    -s, --skip-acks  Skip checking for rhel-X.X.X ack flag\n")
@@ -461,14 +465,14 @@ def main(argv):
     prog = os.path.basename(argv[0])
     cwd = os.getcwd()
     spec = os.path.realpath(cwd + '/python-blivet.spec')
-    name, version, release = None, None, None
+    name, version, release, new_release = None, None, None, None
     ignore, bugmap = None, None
     show_help, unknown, skip_acks = False, False, False
     opts = []
 
     try:
         opts, _args = getopt.getopt(argv[1:], 'n:v:r:i:m:d?',
-                                   ['name=', 'version=', 'release=',
+                                   ['name=', 'version=', 'release=', 'newrelease=',
                                     'ignore=', 'map=', 'debug', 'help'])
     except getopt.GetoptError:
         show_help = True
@@ -480,6 +484,8 @@ def main(argv):
             version = a
         elif o in ('-r', '--release'):
             release = a
+        elif o in ('--newrelease'):
+            new_release = a
         elif o in ('-i', '--ignore'):
             ignore = a
         elif o in ('-m', '--map'):
@@ -525,7 +531,8 @@ def main(argv):
 
     mbv = MakeBumpVer(name=name, version=version, release=release,
                       ignore=ignore, bugmap=bugmap, spec=spec, skip_acks=skip_acks,
-                      version_files=version_files, fixedin="python-"+name)
+                      version_files=version_files, fixedin="python-"+name,
+                      new_release=new_release)
     mbv.run()
 
 if __name__ == "__main__":
