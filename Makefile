@@ -15,6 +15,13 @@ po-pull:
 	rpm -q zanata-python-client &>/dev/null || ( echo "need to run: yum install zanata-python-client"; exit 1 )
 	zanata pull $(ZANATA_PULL_ARGS)
 
+po-empty:
+	for lingua in $$(gawk 'match($$0, /locale>(.*)<\/locale/, ary) {print ary[1]}' ./zanata.xml) ; do \
+		[ -f ./po/$$lingua.po ] || \
+		msginit -i ./po/$(PKGNAME).pot -o ./po/$$lingua.po --no-translator || \
+		exit 1 ; \
+	done
+
 test:
 	@echo "*** Running unittests ***"
 	PYTHONPATH=.:tests/ python -m unittest discover -v -s tests/ -p '*_test.py'
