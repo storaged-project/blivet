@@ -2,11 +2,14 @@ PKGNAME=blivet
 SPECFILE=python-blivet.spec
 VERSION=$(shell awk '/Version:/ { print $$2 }' $(SPECFILE))
 RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g')
+RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
 RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 ZANATA_PULL_ARGS = --transdir ./po/
 ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
+
+MOCKCHROOT ?= fedora-rawhide-x86_64
 
 all:
 	$(MAKE) -C po
@@ -102,5 +105,38 @@ bumpver: po-pull
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
 	make -C po $(PKGNAME).pot ; \
 	zanata push $(ZANATA_PUSH_ARGS)
+
+scratch-bumpver: po-empty
+	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RELEASE) --newrelease $(RC_RELEASE)" ; \
+	if [ ! -z "$(IGNORE)" ]; then \
+		opts="$${opts} -i $(IGNORE)" ; \
+	fi ; \
+	if [ ! -z "$(MAP)" ]; then \
+		opts="$${opts} -m $(MAP)" ; \
+	fi ; \
+	if [ ! -z "$(SKIP_ACKS)" ]; then \
+		opts="$${opts} -s" ; \
+	fi ; \
+	if [ ! -z "$(BZDEBUG)" ]; then \
+		opts="$${opts} -d" ; \
+	fi ; \
+	( scripts/makebumpver $${opts} ) || exit 1 ;
+
+scratch: po-empty
+	@rm -f ChangeLog
+	@make ChangeLog
+	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
+	@rm -rf /tmp/$(PKGNAME)-$(VERSION) /tmp/$(PKGNAME)
+	@dir=$$PWD; cp -a $$dir /tmp/$(PKGNAME)-$(VERSION)
+	@cd /tmp/$(PKGNAME)-$(VERSION) ; python setup.py -q sdist
+	@cp /tmp/$(PKGNAME)-$(VERSION)/dist/$(PKGNAME)-$(VERSION).tar.gz .
+	@rm -rf /tmp/$(PKGNAME)-$(VERSION)
+	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
+
+rc-release: scratch-bumpver scratch
+	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . || exit 1
+	cp /var/lib/mock/$(MOCKCHROOT)/result/*src.rpm . || exit 1
+	mock -r $(MOCKCHROOT) --rebuild *src.rpm || exit 1
+	cp /var/lib/mock/$(MOCKCHROOT)/result/*.rpm . || exit 1
 
 .PHONY: check clean install tag archive local
