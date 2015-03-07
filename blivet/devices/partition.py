@@ -528,17 +528,30 @@ class PartitionDevice(StorageDevice):
         self._bootable = self.getFlag(parted.PARTITION_BOOT)
 
     def _wipe(self):
-        """ Wipe the partition metadata. """
+        """ Wipe the partition metadata.
+
+            Assumes that the partition metadata is located at the start
+            of the partition and occupies no more than 1 MiB.
+
+            Erases in block increments. Erases the smallest number of blocks
+            such that at least 1 MiB is erased or the whole partition is
+            erased.
+        """
         log_method_call(self, self.name, status=self.status)
 
         start = self.partedPartition.geometry.start
         part_len = self.partedPartition.geometry.end - start
         bs = Size(self.partedPartition.geometry.device.sectorSize)
+
+        # Ensure that count is smallest value such that count * bs >= 1 MiB
+        (count, rem) = divmod(Size("1 MiB"), bs)
+        if rem:
+            count += 1
+
+        # Ensure that count <= part_len
+        count = min(count, part_len)
+
         device = self.partedPartition.geometry.device.path
-
-        # Erase 1MiB or to end of partition
-        count = min(int(Size("1 MiB") // bs), part_len)
-
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % int(bs),
                "seek=%s" % start, "count=%s" % count]
         try:
