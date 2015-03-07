@@ -1154,7 +1154,7 @@ class DeviceTree(object):
                 if devname:
                     try:
                         blockdev.md_run(devname)
-                    except GLib.Error as e:
+                    except GLib.GError as e:
                         log.warning("Failed to start possibly degraded md array: %s", e)
                     else:
                         udev.settle()

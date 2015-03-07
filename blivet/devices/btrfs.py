@@ -356,7 +356,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         subvolid = None
         try:
             subvolid = blockdev.btrfs_get_default_subvolume_id(self.originalFormat._mountpoint)
-        except GLib.Error as e:
+        except GLib.GError as e:
             log.debug("failed to get default subvolume id: %s", e)
 
         self._defaultSubVolumeID = subvolid
@@ -368,7 +368,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         """
         try:
             blockdev.btrfs_set_default_subvolume(self.originalFormat._mountpoint, vol_id)
-        except GLib.Error as e:
+        except GLib.GError as e:
             log.error("failed to set new default subvolume id (%s): %s",
                       vol_id, e)
             # The only time we set a new default subvolume is so we can remove
