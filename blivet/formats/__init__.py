@@ -476,8 +476,13 @@ class DeviceFormat(ObjectID):
 
     @property
     def resizable(self):
-        """ Can formats of this type be resized? """
+        """ Can this device format be resized? """
         return self._resizable and self.exists
+
+    @property
+    def resizeSupported(self):
+        """ Can formats of this type be resized? """
+        return self.__class__._resizable
 
     @property
     def linuxNative(self):

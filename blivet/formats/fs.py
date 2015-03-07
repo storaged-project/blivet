@@ -449,6 +449,7 @@ class FS(DeviceFormat):
         if not self.exists:
             raise FSResizeError("filesystem does not exist", self.device)
 
+        self.updateSizeInfo()
         if not self.resizable:
             raise FSResizeError("filesystem not resizable", self.device)
 
@@ -466,12 +467,6 @@ class FS(DeviceFormat):
         # properly unmounted. After doCheck the minimum size will be correct
         # so run the check one last time and bump up the size if it was too
         # small.
-        self.updateSizeInfo()
-
-        # Check again if resizable is True, as updateSizeInfo() can change that
-        if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
-
         if self.targetSize < self.minSize:
             self.targetSize = self.minSize
             log.info("Minimum size changed, setting targetSize on %s to %s",
@@ -815,7 +810,7 @@ class FS(DeviceFormat):
 
     @property
     def resizable(self):
-        """ Can formats of this filesystem type be resized? """
+        """ Can this filesystem be resized? """
         return super(FS, self).resizable and self.utilsAvailable
 
     @property
