@@ -151,7 +151,7 @@ def parseUnits(spec, xlate):
 
     return None
 
-def _parseSpec(spec):
+def parseSpec(spec):
     """ Parse string representation of size.
 
         :param spec: the specification of a size with, optionally, units
@@ -240,7 +240,7 @@ class Size(Decimal):
             you can use the letter 'b' or 'B' or omit the size specifier.
         """
         if isinstance(value, (six.string_types, bytes)):
-            size = _parseSpec(value)
+            size = parseSpec(value)
         elif isinstance(value, (six.integer_types, float, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):

@@ -236,34 +236,34 @@ class TranslationTestCase(unittest.TestCase):
             self.assertEqual(res, exp)
 
     def testParseSpec(self):
-        """ Tests for _parseSpec(). """
+        """ Tests for parseSpec(). """
         for lang in  self.TEST_LANGS:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
             # Test parsing English spec in foreign locales
-            self.assertEqual(size._parseSpec("1 kibibytes"), Decimal(1024))
-            self.assertEqual(size._parseSpec("2 kibibyte"), Decimal(2048))
-            self.assertEqual(size._parseSpec("2 kilobyte"), Decimal(2000))
-            self.assertEqual(size._parseSpec("2 kilobytes"), Decimal(2000))
-            self.assertEqual(size._parseSpec("2 KB"), Decimal(2000))
-            self.assertEqual(size._parseSpec("2 K"), Decimal(2048))
-            self.assertEqual(size._parseSpec("2 k"), Decimal(2048))
-            self.assertEqual(size._parseSpec("2 Ki"), Decimal(2048))
-            self.assertEqual(size._parseSpec("2 g"), Decimal(2 * 1024 ** 3))
-            self.assertEqual(size._parseSpec("2 G"), Decimal(2 * 1024 ** 3))
+            self.assertEqual(size.parseSpec("1 kibibytes"), Decimal(1024))
+            self.assertEqual(size.parseSpec("2 kibibyte"), Decimal(2048))
+            self.assertEqual(size.parseSpec("2 kilobyte"), Decimal(2000))
+            self.assertEqual(size.parseSpec("2 kilobytes"), Decimal(2000))
+            self.assertEqual(size.parseSpec("2 KB"), Decimal(2000))
+            self.assertEqual(size.parseSpec("2 K"), Decimal(2048))
+            self.assertEqual(size.parseSpec("2 k"), Decimal(2048))
+            self.assertEqual(size.parseSpec("2 Ki"), Decimal(2048))
+            self.assertEqual(size.parseSpec("2 g"), Decimal(2 * 1024 ** 3))
+            self.assertEqual(size.parseSpec("2 G"), Decimal(2 * 1024 ** 3))
 
             # Test parsing foreign spec
-            self.assertEqual(size._parseSpec("1 %s%s" % (_("kibi"), _("bytes"))), Decimal(1024))
+            self.assertEqual(size.parseSpec("1 %s%s" % (_("kibi"), _("bytes"))), Decimal(1024))
 
             # Can't parse a valueless number
             with self.assertRaises(ValueError):
-                size._parseSpec("Ki")
+                size.parseSpec("Ki")
 
-            self.assertEqual(size._parseSpec("2 %s" % _("K")), Decimal(2048))
-            self.assertEqual(size._parseSpec("2 %s" % _("Ki")), Decimal(2048))
-            self.assertEqual(size._parseSpec("2 %s" % _("g")), Decimal(2 * 1024 ** 3))
-            self.assertEqual(size._parseSpec("2 %s" % _("G")), Decimal(2 * 1024 ** 3))
+            self.assertEqual(size.parseSpec("2 %s" % _("K")), Decimal(2048))
+            self.assertEqual(size.parseSpec("2 %s" % _("Ki")), Decimal(2048))
+            self.assertEqual(size.parseSpec("2 %s" % _("g")), Decimal(2 * 1024 ** 3))
+            self.assertEqual(size.parseSpec("2 %s" % _("G")), Decimal(2 * 1024 ** 3))
 
     def testTranslated(self):
         s = Size("56.19 MiB")
