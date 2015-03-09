@@ -80,11 +80,6 @@ class FSResizeError(FSError):
         FSError.__init__(self, message)
         self.details = details
 
-class DirtyFSError(FSError):
-    def __init__(self, devices):
-        FSError.__init__(self)
-        self.devices = devices
-
 class LUKSError(DeviceFormatError):
     pass
 

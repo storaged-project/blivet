@@ -31,7 +31,7 @@ from . import getSysroot, getTargetPhysicalRoot, errorHandler, ERROR_RAISE
 
 from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
-from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError, DeviceError, DirtyFSError
+from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
 from .formats import getFormat
 from .flags import flags
@@ -1126,51 +1126,3 @@ def storageInitialize(storage, ksdata, protected):
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
             log.debug("onlyuse is now: %s", ",".join(ksdata.ignoredisk.onlyuse))
 
-def mountExistingSystem(fsset, rootDevice,
-                        allowDirty=None, dirtyCB=None,
-                        readOnly=None):
-    """ Mount filesystems specified in rootDevice's /etc/fstab file. """
-
-    rootPath = getSysroot()
-    if dirtyCB is None:
-        dirtyCB = lambda l: False
-
-    if readOnly:
-        readOnly = "ro"
-    else:
-        readOnly = ""
-
-    if rootDevice.protected and os.path.ismount("/mnt/install/isodir"):
-        util.mount("/mnt/install/isodir",
-                   rootPath,
-                   fstype=rootDevice.format.type,
-                   options="bind")
-    else:
-        rootDevice.setup()
-        rootDevice.format.mount(chroot=rootPath,
-                                mountpoint="/",
-                                options=readOnly)
-
-    fsset.parseFSTab()
-
-    # check for dirty filesystems
-    dirtyDevs = []
-    for device in fsset.mountpoints.values():
-        if not hasattr(device.format, "needsFSCheck"):
-            continue
-
-        try:
-            device.setup()
-        except DeviceError:
-            # we'll catch this in the main loop
-            continue
-
-        if device.format.needsFSCheck:
-            log.info("%s contains a dirty %s filesystem", device.path,
-                                                          device.format.type)
-            dirtyDevs.append(device.path)
-
-    if dirtyDevs and (not allowDirty or dirtyCB(dirtyDevs)):
-        raise DirtyFSError(dirtyDevs)
-
-    fsset.mountFilesystems(rootPath=getSysroot(), readOnly=readOnly, skipRoot=True)
