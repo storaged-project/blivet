@@ -148,46 +148,15 @@ class StorageDevice(Device):
 
     @property
     def packages(self):
-        """ List of packages required to manage devices of this type.
-
-            This list includes the packages required by this device's
-            format type as well those required by all of its parent
-            devices.
-        """
         packages = super(StorageDevice, self).packages
-        packages.extend(self.format.packages)
-        for parent in self.parents:
-            for package in parent.format.packages:
-                if package not in packages:
-                    packages.append(package)
-
-        return packages
-
-    @property
-    def services(self):
-        """ List of services required to manage devices of this type.
-
-            This list includes the services required by this device's
-            format type as well those required by all of its parent
-            devices.
-        """
-        services = super(StorageDevice, self).services
-        services.extend(self.format.services)
-        for parent in self.parents:
-            for service in parent.format.services:
-                if service not in services:
-                    services.append(service)
-
-        return services
+        return packages + [p for p in self.format.packages if p not in packages]
 
     @property
     def disks(self):
         """ A list of all disks this device depends on, including itself. """
         _disks = []
         for parent in self.parents:
-            for disk in parent.disks:
-                if disk not in _disks:
-                    _disks.append(disk)
+            _disks.extend(d for d in parent.disks if d not in _disks)
 
         if self.isDisk and not self.format.hidden:
             _disks.append(self)
@@ -709,14 +678,8 @@ class StorageDevice(Device):
 
     @property
     def growable(self):
-        """ True if this device or it's component devices are growable. """
-        grow = getattr(self, "req_grow", False)
-        if not grow:
-            for parent in self.parents:
-                grow = parent.growable
-                if grow:
-                    break
-        return grow
+        """ True if this device or its component devices are growable. """
+        return getattr(self, "req_grow", any(p.growable for p in self.parents))
 
     def checkSize(self):
         """ Check to make sure the size of the device is allowed by the

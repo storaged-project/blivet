@@ -249,7 +249,6 @@ class MultipathDevice(DMDevice):
     """ A multipath device """
     _type = "dm-multipath"
     _packages = ["device-mapper-multipath"]
-    _services = ["multipathd"]
     _partitionable = True
     _isDisk = True
 
