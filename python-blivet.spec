@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.14
+Version: 0.61.15
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Mar 09 2015 David Lehman <dlehman@redhat.com> - 0.61.15-1
+- Allow passing KiB values to vgcreate -s option (tjeyasin)
+- Add a script to rebase and merge pull requests (dshea)
+- Allow user-specified values for data alignment of new lvm pvs. (#1178705)
+  (dlehman)
+- Let LVM determine alignment for PV data areas. (#962961) (dlehman)
+
 * Tue Jan 27 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.14-1
 - Mountpoint detection for removable devices (vtrefny)
 - Use format.mountpoint for BTRFS listSubVolumes (vtrefny)
