@@ -539,8 +539,8 @@ class PartitionDevice(StorageDevice):
         # Erase 1MiB or to end of partition
         count = min(int(Size("1 MiB") // bs), part_len)
 
-        cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%s" % bs,
-               "seek=%s" % start, "count=%s" % count]
+        cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % bs,
+               "seek=%d" % start, "count=%d" % count]
         try:
             util.run_program(cmd)
         except OSError as e:
