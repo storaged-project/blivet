@@ -552,8 +552,8 @@ class PartitionDevice(StorageDevice):
         count = min(count, part_len)
 
         device = self.partedPartition.geometry.device.path
-        cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % int(bs),
-               "seek=%s" % start, "count=%s" % count]
+        cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % bs,
+               "seek=%d" % start, "count=%d" % count]
         try:
             util.run_program(cmd)
         except OSError as e:
