@@ -1126,3 +1126,22 @@ def storageInitialize(storage, ksdata, protected):
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
             log.debug("onlyuse is now: %s", ",".join(ksdata.ignoredisk.onlyuse))
 
+def mountExistingSystem(fsset, rootDevice, readOnly=None):
+    """ Mount filesystems specified in rootDevice's /etc/fstab file. """
+    rootPath = getSysroot()
+
+    readOnly = "ro" if readOnly else ""
+
+    if rootDevice.protected and os.path.ismount("/mnt/install/isodir"):
+        util.mount("/mnt/install/isodir",
+                   rootPath,
+                   fstype=rootDevice.format.type,
+                   options="bind")
+    else:
+        rootDevice.setup()
+        rootDevice.format.mount(chroot=rootPath,
+                                mountpoint="/",
+                                options=readOnly)
+
+    fsset.parseFSTab()
+    fsset.mountFilesystems(rootPath=rootPath, readOnly=readOnly, skipRoot=True)
