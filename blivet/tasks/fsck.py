@@ -159,12 +159,20 @@ class Ext2FSCK(FSCK):
         return "\n".join(msgs) or None
 
 class HFSPlusFSCK(FSCK):
+    _fsckErrors = {3: "Quick check found a dirty filesystem; no repairs done.",
+                   4: "Root filesystem was dirty. System should be rebooted.",
+                   8: "Corrupt filesystem, repairs did not succeed.",
+                   47: "Major error found; no repairs attempted."}
     app_name = "fsck.hfsplus"
     options = []
 
     def _errorMessage(self, rc):
-        # pylint: disable=unused-argument
-        return None
+        if rc < 1:
+            return None
+        try:
+            return self._fsckErrors[rc]
+        except KeyError:
+            return _UNKNOWN_RC_MSG % rc
 
 class NTFSFSCK(FSCK):
     app_name = "ntfsresize"
