@@ -188,10 +188,10 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(Size("1024"), Size("1 KiB"))
 
     def testScientificNotation(self):
-        self.assertEqual(size._parseSpec("1e+0 KiB"), Decimal(1024))
-        self.assertEqual(size._parseSpec("1e-0 KiB"), Decimal(1024))
-        self.assertEqual(size._parseSpec("1e-1 KB"), Decimal(100))
-        self.assertEqual(size._parseSpec("1E-4KB"), Decimal("0.1"))
+        self.assertEqual(size.parseSpec("1e+0 KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec("1e-0 KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec("1e-1 KB"), Decimal(100))
+        self.assertEqual(size.parseSpec("1E-4KB"), Decimal("0.1"))
         self.assertEqual(Size("1E-10KB"), Size(0))
 
 class TranslationTestCase(unittest.TestCase):
