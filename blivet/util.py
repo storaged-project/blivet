@@ -87,7 +87,7 @@ def mount(device, mountpoint, fstype, options=None):
         options = "defaults"
 
     mountpoint = os.path.normpath(mountpoint)
-    if not os.path.exists(mountpoint):
+    if not os.path.isdir(mountpoint):
         makedirs(mountpoint)
 
     argv = ["mount", "-t", fstype, "-o", options, device, mountpoint]
