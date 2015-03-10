@@ -29,7 +29,8 @@ import copy
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
-from .errors import DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, StorageError, UnusableConfigurationError
+from .actionlist import ActionList
+from .errors import DeviceError, DeviceTreeError, DMError, FSError, InvalidDiskLabelError, LUKSError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -40,7 +41,6 @@ from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
 from .devices import MultipathDevice, NoDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
-from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
 from . import formats
 from .formats import getFormat
 from .formats.fs import nodev_filesystems
@@ -49,7 +49,6 @@ from .devicelibs import edd
 from . import udev
 from . import util
 from .platform import platform
-from . import tsort
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
 from .i18n import _
@@ -100,8 +99,7 @@ class DeviceTree(object):
         """ Reset the instance to its initial state. """
         # internal data members
         self._devices = []
-        self._actions = []
-        self._completed_actions = []
+        self._actions = ActionList()
 
         # a list of all device names we encounter
         self.names = []
@@ -147,6 +145,10 @@ class DeviceTree(object):
 
         self._cleanup = False
 
+    @property
+    def actions(self):
+        return self._actions
+
     def setDiskImages(self, images):
         """ Set the disk images and reflect them in exclusiveDisks.
 
@@ -187,199 +189,6 @@ class DeviceTree(object):
         """ Drop cached lvm information. """
         self._pvs_cache = None # pylint: disable=attribute-defined-outside-init
         self._lvs_cache = None # pylint: disable=attribute-defined-outside-init
-
-    def pruneActions(self):
-        """ Remove redundant/obsolete actions from the action list. """
-        for action in reversed(self._actions[:]):
-            if action not in self._actions:
-                log.debug("action %d already pruned", action.id)
-                continue
-
-            for obsolete in self._actions[:]:
-                if action.obsoletes(obsolete):
-                    log.info("removing obsolete action %d (%d)",
-                             obsolete.id, action.id)
-                    self._actions.remove(obsolete)
-
-                    if obsolete.obsoletes(action) and action in self._actions:
-                        log.info("removing mutually-obsolete action %d (%d)",
-                                 action.id, obsolete.id)
-                        self._actions.remove(action)
-
-    def sortActions(self):
-        """ Sort actions based on dependencies. """
-        if not self._actions:
-            return
-
-        edges = []
-
-        # collect all ordering requirements for the actions
-        for action in self._actions:
-            action_idx = self._actions.index(action)
-            children = []
-            for _action in self._actions:
-                if _action == action:
-                    continue
-
-                # create edges based on both action type and dependencies.
-                if _action.requires(action):
-                    children.append(_action)
-
-            for child in children:
-                child_idx = self._actions.index(child)
-                edges.append((action_idx, child_idx))
-
-        # create a graph reflecting the ordering information we have
-        graph = tsort.create_graph(list(range(len(self._actions))), edges)
-
-        # perform a topological sort based on the graph's contents
-        order = tsort.tsort(graph)
-
-        # now replace self._actions with a sorted version of the same list
-        actions = []
-        for idx in order:
-            actions.append(self._actions[idx])
-        self._actions = actions
-
-    def _preProcessActions(self):
-        """ Prepare the action queue for execution. """
-        for action in self._actions:
-            log.debug("action: %s", action)
-
-        log.info("pruning action queue...")
-        self.pruneActions()
-
-        problematic = self.findActiveDevicesOnActionDisks()
-        if problematic:
-            if flags.installer_mode:
-                self.teardownAll()
-            else:
-                raise RuntimeError("partitions in use on disks with changes "
-                                   "pending: %s" %
-                                   ",".join(problematic))
-
-        log.info("resetting parted disks...")
-        for device in self.devices:
-            if device.partitioned:
-                device.format.resetPartedDisk()
-
-            if device.originalFormat.type == "disklabel" and \
-               device.originalFormat != device.format:
-                device.originalFormat.resetPartedDisk()
-
-        # Call preCommitFixup on all devices
-        mpoints = [getattr(d.format, 'mountpoint', "") for d in self.devices]
-        for device in self.devices:
-            device.preCommitFixup(mountpoints=mpoints)
-
-        # Also call preCommitFixup on any devices we're going to
-        # destroy (these are already removed from the tree)
-        for action in self._actions:
-            if isinstance(action, ActionDestroyDevice):
-                action.device.preCommitFixup(mountpoints=mpoints)
-
-        # setup actions to create any extended partitions we added
-        #
-        # If the extended partition was explicitly requested it will already
-        # have an action registered.
-        #
-        # XXX At this point there can be duplicate partition paths in the
-        #     tree (eg: non-existent sda6 and previous sda6 that will become
-        #     sda5 in the course of partitioning), so we access the list
-        #     directly here.
-        for device in self._devices:
-            if isinstance(device, PartitionDevice) and \
-               device.isExtended and not device.exists and \
-               not self.findActions(device=device, action_type="create"):
-                # don't properly register the action since the device is
-                # already in the tree
-                action = ActionCreateDevice(device)
-                # apply the action first in case the apply method fails
-                action.apply()
-                self._actions.append(action)
-
-        log.info("sorting actions...")
-        self.sortActions()
-        for action in self._actions:
-            log.debug("action: %s", action)
-
-            # Remove lvm filters for devices we are operating on
-            for device in (d for d in self._devices if d.dependsOn(action.device)):
-                lvm.lvm_cc_removeFilterRejectRegexp(device.name)
-
-    def _postProcessActions(self):
-        """ Clean up relics from action queue execution. """
-        # removal of partitions makes use of originalFormat, so it has to stay
-        # up to date in case of multiple passes through this method
-        for disk in (d for d in self.devices if d.partitioned):
-            disk.format.updateOrigPartedDisk()
-            disk.originalFormat = copy.deepcopy(disk.format)
-
-        # now we have to update the parted partitions of all devices so they
-        # match the parted disks we just updated
-        for partition in self.getDevicesByInstance(PartitionDevice):
-            pdisk = partition.disk.format.partedDisk
-            partition.partedPartition = pdisk.getPartitionByPath(partition.path)
-
-    def findActiveDevicesOnActionDisks(self):
-        """ Return a list of devices using the disks we plan to change. """
-        # Find out now if there are active devices using partitions on disks
-        # whose disklabels we are going to change. If there are, do not proceed.
-        disks = []
-        for action in self._actions:
-            disk = None
-            if action.isDevice and isinstance(action.device, PartitionDevice):
-                disk = action.device.disk
-            elif action.isFormat and action.format.type == "disklabel":
-                disk = action.device
-
-            if disk is not None and disk not in disks:
-                disks.append(disk)
-
-        active = (dev for dev in self.devices
-                        if (dev.status and
-                            (not dev.isDisk and
-                             not isinstance(dev, PartitionDevice))))
-        devices = [a.name for a in active if any(d in disks for d in a.disks)]
-        return devices
-
-    def processActions(self, callbacks=None, dryRun=None):
-        """
-        Execute all registered actions.
-
-        :param callbacks: callbacks to be invoked when actions are executed
-        :type callbacks: :class:`~.callbacks.DoItCallbacks`
-
-        """
-
-        self._preProcessActions()
-
-        for action in self._actions[:]:
-            log.info("executing action: %s", action)
-            if not dryRun:
-                try:
-                    action.execute(callbacks)
-                except DiskLabelCommitError:
-                    # it's likely that a previous action
-                    # triggered setup of an lvm or md device.
-                    # include deps no longer in the tree due to pending removal
-                    devs = self._devices + [a.device for a in self._actions]
-                    for dep in set(devs):
-                        if dep.exists and dep.dependsOn(action.device.disk):
-                            dep.teardown(recursive=True)
-
-                    action.execute(callbacks)
-
-                udev.settle()
-                for device in self._devices:
-                    # make sure we catch any renumbering parted does
-                    if device.exists and isinstance(device, PartitionDevice):
-                        device.updateName()
-                        device.format.device = device.path
-
-                self._completed_actions.append(self._actions.pop(0))
-
-        self._postProcessActions()
 
     def _addDevice(self, newdev, new=True):
         """ Add a device to the tree.
@@ -537,34 +346,16 @@ class DeviceTree(object):
             :rtype: list of :class:`~.deviceaction.DeviceAction`
 
         """
-        if device is None and action_type is None and object_type is None and \
-           path is None and devid is None:
-            return self._actions[:]
+        return self._actions.find(device=device,
+                                  action_type=action_type,
+                                  object_type=object_type,
+                                  path=path,
+                                  devid=devid)
 
-        # convert the string arguments to the types used in actions
-        _type = action_type_from_string(action_type)
-        _object = action_object_from_string(object_type)
-
-        actions = []
-        for action in self._actions:
-            if device is not None and action.device != device:
-                continue
-
-            if _type is not None and action.type != _type:
-                continue
-
-            if _object is not None and action.obj != _object:
-                continue
-
-            if path is not None and action.device.path != path:
-                continue
-
-            if devid is not None and action.device.id != devid:
-                continue
-
-            actions.append(action)
-
-        return actions
+    def processActions(self, dryRun=False, callbacks=None):
+        self.actions.process(devices=self.devices,
+                             dryRun=dryRun,
+                             callbacks=callbacks)
 
     def getDependentDevices(self, dep):
         """ Return a list of devices that depend on dep.
