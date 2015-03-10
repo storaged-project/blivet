@@ -564,6 +564,7 @@ class ActionCreateFormat(DeviceAction):
                                 get_current_entropy(), min_required_entropy)
                     self.device.format.min_luks_entropy = 0
 
+        self.device.setup()
         self.device.format.create(device=self.device.path,
                                   options=self.device.formatArgs)
         udev.settle()
