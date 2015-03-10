@@ -269,7 +269,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
     @property
     def formatImmutable(self):
-        return self.exists
+        return super(BTRFSVolumeDevice, self).formatImmutable or self.exists
 
     def _setName(self, value):
         self._name = value  # name is not used outside of blivet
