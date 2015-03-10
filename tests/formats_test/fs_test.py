@@ -147,7 +147,7 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         with self.assertRaises(ValueError):
             self.an_fs.targetSize = newsize
 
-    def teardown(self):
+    def tearDown(self):
         try:
             self.an_fs.unmount()
         except Exception: # pylint: disable=broad-except
