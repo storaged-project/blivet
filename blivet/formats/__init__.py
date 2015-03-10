@@ -188,10 +188,6 @@ class DeviceFormat(ObjectID):
         self.exists = kwargs.get("exists", False)
         self.options = kwargs.get("options")
 
-        # don't worry about existence if this is a DeviceFormat instance
-        #if self.__class__ is DeviceFormat:
-        #    self.exists = True
-
     def __repr__(self):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
