@@ -204,10 +204,7 @@ class DeviceFormat(ObjectID):
 
     @property
     def _existence_str(self):
-        exist = "existing"
-        if not self.exists:
-            exist = "non-existent"
-        return exist
+        return "existing" if self.exists else "non-existent"
 
     @property
     def desc(self):
@@ -322,11 +319,7 @@ class DeviceFormat(ObjectID):
 
     @property
     def name(self):
-        if self._name:
-            name = self._name
-        else:
-            name = self.type
-        return name
+        return self._name or self.type
 
     @property
     def type(self):
