@@ -593,14 +593,15 @@ class FS(DeviceFormat):
 
         # try the mount
         try:
-            self.mount(mountpoint=mountpoint)
+            rc = self.mount(mountpoint=mountpoint)
+            ret = not rc
         except Exception: # pylint: disable=broad-except
             log_exception_info(log.info, "test mount failed")
-        else:
+
+        if ret:
             self.unmount()
-            ret = True
-        finally:
-            os.rmdir(mountpoint)
+
+        os.rmdir(mountpoint)
 
         return ret
 
