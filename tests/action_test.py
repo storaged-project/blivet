@@ -537,25 +537,25 @@ class DeviceActionTestCase(StorageTestCase):
         self.scheduleCreateFormat(device=sda1, fmt=fmt)
 
         # verify the md actions are present prior to pruning
-        md0_actions = self.storage.devicetree.findActions(devid=md0.id)
+        md0_actions = self.storage.devicetree.actions.find(devid=md0.id)
         self.assertNotEqual(len(md0_actions), 0)
 
-        sdb1_actions = self.storage.devicetree.findActions(devid=sdb1.id)
+        sdb1_actions = self.storage.devicetree.actions.find(devid=sdb1.id)
         self.assertNotEqual(len(sdb1_actions), 0)
 
-        sda3_actions = self.storage.devicetree.findActions(devid=sda3.id)
+        sda3_actions = self.storage.devicetree.actions.find(devid=sda3.id)
         self.assertNotEqual(len(sda3_actions), 0)
 
-        self.storage.devicetree.pruneActions()
+        self.storage.devicetree.actions.prune()
 
         # verify the md actions are gone after pruning
-        md0_actions = self.storage.devicetree.findActions(devid=md0.id)
+        md0_actions = self.storage.devicetree.actions.find(devid=md0.id)
         self.assertEqual(len(md0_actions), 0)
 
-        sdb1_actions = self.storage.devicetree.findActions(devid=sdb1.id)
+        sdb1_actions = self.storage.devicetree.actions.find(devid=sdb1.id)
         self.assertEqual(len(sdb1_actions), 0)
 
-        sda3_actions = self.storage.devicetree.findActions(sda3.id)
+        sda3_actions = self.storage.devicetree.actions.find(sda3.id)
         self.assertEqual(len(sda3_actions), 0)
 
     def testActionDependencies(self):
@@ -638,7 +638,7 @@ class DeviceActionTestCase(StorageTestCase):
         # its PVs, and the devices that contain the PVs
         lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
-        actions = self.storage.devicetree.findActions(action_type="create",
+        actions = self.storage.devicetree.actions.find(action_type="create",
                                                       object_type="device",
                                                       device=lv_root)
         self.assertEqual(len(actions), 1,
@@ -649,7 +649,7 @@ class DeviceActionTestCase(StorageTestCase):
         vgs = [d for d in self.storage.vgs if d.name == "VolGroup"]
         self.assertNotEqual(vgs, [])
         vg = vgs[0]
-        actions = self.storage.devicetree.findActions(action_type="create",
+        actions = self.storage.devicetree.actions.find(action_type="create",
                                                       object_type="device",
                                                       device=vg)
         self.assertEqual(len(actions), 1,
@@ -663,7 +663,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(pvs, [])
         for pv in pvs:
             # include device and format create actions for each pv
-            actions = self.storage.devicetree.findActions(action_type="create",
+            actions = self.storage.devicetree.actions.find(action_type="create",
                                                           device=pv)
             self.assertEqual(len(actions), 2,
                              "wrong number of device create actions for "
@@ -700,7 +700,7 @@ class DeviceActionTestCase(StorageTestCase):
         # require each other, regardless of the partitions' numbers
         sda1 = self.storage.devicetree.getDeviceByName("sda1")
         self.assertNotEqual(sda1, None)
-        actions = self.storage.devicetree.findActions(action_type="create",
+        actions = self.storage.devicetree.actions.find(action_type="create",
                                                       object_type="device",
                                                       device=sda1)
         self.assertEqual(len(actions), 1,
