@@ -23,6 +23,8 @@ import abc
 
 from six import add_metaclass
 
+from gi.repository import BlockDev as blockdev
+
 from .. import util
 
 class Application(object):
@@ -82,3 +84,18 @@ class Path(Method):
             :rtype: bool
         """
         return bool(util.find_program_in_path(application.name))
+
+
+class BlockDevMethod(Method):
+    """ Methods for when application is actually a libblockdev plugin. """
+
+    def available(self, application):
+        """ Returns True if the plugin is loaded.
+
+            :param application: any application
+            :type application: applications.application.Application
+
+            :returns: True if the name of the plugin is loaded
+            :rtype: bool
+        """
+        return application.name in blockdev.get_available_plugin_names()
