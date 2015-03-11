@@ -640,7 +640,7 @@ class FS(DeviceFormat):
     @property
     def supported(self):
         log_method_call(self, supported=self._supported)
-        return self._supported and self.utilsAvailable
+        return super(FS, self).supported and self.utilsAvailable
 
     @property
     def mountable(self):
