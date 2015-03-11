@@ -53,18 +53,6 @@ class Application(object):
         """
         return self._method.available(self)
 
-    @property
-    def path(self):
-        """ Absolute path of directory containing the executable.
-
-            :returns: Absolute path of directory containing executable.
-            :rtype: str or NoneType
-
-            Returns None if available is False.
-        """
-        return self._method.path(self)
-
-
 @add_metaclass(abc.ABCMeta)
 class Method(object):
     """ A collection of methods for a particular application task. """
@@ -81,20 +69,6 @@ class Method(object):
         """
         raise NotImplementedError()
 
-    @abc.abstractmethod
-    def path(self, application):
-        """ Returns the absolute path of the application.
-
-            :param application: any application
-            :type application: applications.application.Application
-
-            :returns: the absolute path of the application
-            :rtype: str or NoneType
-
-            Returns None when available is False
-        """
-        raise NotImplementedError()
-
 class Path(Method):
     """ Methods for when application is found in  PATH. """
 
@@ -107,15 +81,4 @@ class Path(Method):
             :returns: True if the name of the application is in the path
             :rtype: bool
         """
-        return bool(self.path(application))
-
-    def path(self, application):
-        """ Obtain absolute path of executable.
-
-            :param application: The application to locate.
-            :type application: applications.application.Application
-
-            :returns: path of executable
-            :rtype: str
-        """
-        return util.find_program_in_path(application.name)
+        return bool(util.find_program_in_path(application.name))
