@@ -134,9 +134,7 @@ scratch: po-empty
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 
 rc-release: scratch-bumpver scratch
-	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . || exit 1
-	cp /var/lib/mock/$(MOCKCHROOT)/result/*src.rpm . || exit 1
-	mock -r $(MOCKCHROOT) --rebuild *src.rpm || exit 1
-	cp /var/lib/mock/$(MOCKCHROOT)/result/*.rpm . || exit 1
+	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
+	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
 
 .PHONY: check clean install tag archive local
