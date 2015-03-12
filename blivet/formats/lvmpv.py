@@ -28,6 +28,7 @@ from ..storage_log import log_method_call
 from parted import PARTITION_LVM
 from ..errors import PhysicalVolumeError
 from ..devicelibs import lvm
+from ..tasks import availability
 from ..i18n import N_
 from ..size import Size
 from . import DeviceFormat, register_device_format
@@ -48,6 +49,7 @@ class LVMPhysicalVolume(DeviceFormat):
     _minSize = lvm.LVM_PE_SIZE * 2      # one for metadata and one for data
     _packages = ["lvm2"]                # required packages
     _ksMountpoint = "pv."
+    _plugin = availability.BLOCKDEV_LVM_PLUGIN
 
     def __init__(self, **kwargs):
         """
@@ -95,6 +97,14 @@ class LVMPhysicalVolume(DeviceFormat):
         d.update({"vgName": self.vgName, "vgUUID": self.vgUuid,
                   "peStart": self.peStart, "dataAlignment": self.dataAlignment})
         return d
+
+    @property
+    def formattable(self):
+        return super(LVMPhysicalVolume, self).formattable and self._plugin.available
+
+    @property
+    def supported(self):
+        return super(LVMPhysicalVolume, self).supported and self._plugin.available
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
