@@ -52,6 +52,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     _packages = ["lvm2"]
     _formatClassName = property(lambda s: "lvmpv")
     _formatUUIDAttr = property(lambda s: "vgUuid")
+    _formatImmutable = True
 
     @staticmethod
     def get_supported_pe_sizes():
