@@ -156,9 +156,7 @@ class LUKS(DeviceFormat):
 
     @property
     def status(self):
-        if not self.exists or not self.mapName:
-            return False
-        return os.path.exists("/dev/mapper/%s" % self.mapName)
+        return self.exists and self.mapName and os.path.exists("/dev/mapper/%s" % self.mapName)
 
     def setup(self, **kwargs):
         """ Open the encrypted block device.
