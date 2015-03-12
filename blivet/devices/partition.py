@@ -65,7 +65,7 @@ class PartitionDevice(StorageDevice):
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfsPath='', parents=None, exists=False,
-                 partType=None, primary=False, weight=0):
+                 partType=None, primary=False, weight=0, partFlags=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -124,6 +124,7 @@ class PartitionDevice(StorageDevice):
         self.req_name = None
 
         self._bootable = False
+        self.req_flags = None
 
         StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                major=major, minor=minor, exists=exists,
@@ -190,6 +191,8 @@ class PartitionDevice(StorageDevice):
 
             self.req_start_sector = start
             self.req_end_sector = end
+
+            self.req_flags = partFlags
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
@@ -589,6 +592,23 @@ class PartitionDevice(StorageDevice):
         log.debug("post-commit partition path is %s", getattr(partition,
                                                              "path", None))
         self.partedPartition = partition
+
+        if self.req_flags:
+            for flag, set_val in self.req_flags.iteritems():
+                flag_number = _ped.partition_flag_get_by_name(flag)
+                if flag_number > 0:
+                    if self.flagAvailable(flag_number):
+                        if set_val:
+                            self.setFlag(flag_number)
+                        else:
+                            self.unsetFlag(flag_number)
+                    else:
+                        log.error("Flag (%s) not available "
+                                    "for this partition" % flag)
+                else:
+                    log.error("Partition flag (%s) not recognized." % flag)
+            self.disk.format.commit()
+
         if not self.isExtended:
             # Ensure old metadata which lived in freespace so did not get
             # explictly destroyed by a destroyformat action gets wiped
