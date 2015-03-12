@@ -29,6 +29,7 @@ from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import _, N_
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -44,6 +45,7 @@ class LUKS(DeviceFormat):
     _linuxNative = True                 # for clearpart
     _packages = ["cryptsetup"]          # required packages
     _minSize = crypto.LUKS_METADATA_SIZE
+    _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
 
     def __init__(self, **kwargs):
         """
@@ -148,6 +150,14 @@ class LUKS(DeviceFormat):
     def hasKey(self):
         return ((self.__passphrase not in ["", None]) or
                 (self._key_file and os.access(self._key_file, os.R_OK)))
+
+    @property
+    def formattable(self):
+        return super(LUKS, self).formattable and self._plugin.available
+
+    @property
+    def supported(self):
+        return super(LUKS, self).supported and self._plugin.available
 
     @property
     def configured(self):

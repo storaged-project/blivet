@@ -30,6 +30,7 @@ from ..errors import MDMemberError
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import N_
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -46,6 +47,7 @@ class MDRaidMember(DeviceFormat):
     _linuxNative = True                 # for clearpart
     _packages = ["mdadm"]               # required packages
     _ksMountpoint = "raid."
+    _plugin = availability.BLOCKDEV_MDRAID_PLUGIN
 
     def __init__(self, **kwargs):
         """
@@ -76,6 +78,14 @@ class MDRaidMember(DeviceFormat):
         d = super(MDRaidMember, self).dict
         d.update({"mdUUID": self.mdUuid, "biosraid": self.biosraid})
         return d
+
+    @property
+    def formattable(self):
+        return super(MDRaidMember, self).formattable and self._plugin.available
+
+    @property
+    def supported(self):
+        return super(MDRaidMember, self).supported and self._plugin.available
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
