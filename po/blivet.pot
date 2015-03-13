@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-04 18:48-0500\n"
+"POT-Creation-Date: 2015-03-13 13:57-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -476,34 +476,34 @@ msgstr ""
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:594
+#: ../blivet/deviceaction.py:595
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:640
+#: ../blivet/deviceaction.py:641
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:733
+#: ../blivet/deviceaction.py:734
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:763
+#: ../blivet/deviceaction.py:764
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:770
+#: ../blivet/deviceaction.py:771
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:813
+#: ../blivet/deviceaction.py:814
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:877
+#: ../blivet/deviceaction.py:878
 msgid "remove container member"
 msgstr ""
 

@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.2
+Version: 1.0.3
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -57,6 +57,9 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Mar 13 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.3-1
+- Make sure the device is setup before formatting it (#1196397) (bcl)
+
 * Wed Mar 04 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.2-1
 - Revive the mountExistingSystem() function and all it needs (vpodzime)
 
