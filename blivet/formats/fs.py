@@ -1118,6 +1118,7 @@ class BTRFS(FS):
     def __init__(self, **kwargs):
         super(BTRFS, self).__init__(**kwargs)
         self.volUUID = kwargs.pop("volUUID", None)
+        self.subvolspec = kwargs.pop("subvolspec", None)
 
     def create(self, **kwargs):
         # filesystem creation is done in blockdev.btrfs_create_volume

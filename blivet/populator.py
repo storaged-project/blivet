@@ -1215,6 +1215,7 @@ class Populator(object):
                                         device=btrfs_dev.path,
                                         exists=True,
                                         volUUID=btrfs_dev.format.volUUID,
+                                        subvolspec=vol_path,
                                         mountopts="subvol=%s" % vol_path)
                 if vol_id in snapshot_ids:
                     device_class = BTRFSSnapShotDevice
