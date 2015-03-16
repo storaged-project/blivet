@@ -50,6 +50,7 @@ from .devicelibs import loop
 from .devicelibs import edd
 from . import udev
 from . import util
+from . import mounts
 from .platform import platform
 from . import tsort
 from .flags import flags
@@ -95,6 +96,9 @@ class DeviceTree(object):
             :type dasd: :class:`~.dasd.DASD`
 
         """
+
+        self.mountsCache = mounts.MountsCache()
+
         self.reset(conf, passphrase, luksDict, iscsi, dasd)
 
     def reset(self, conf=None, passphrase=None, luksDict=None,
@@ -1715,6 +1719,10 @@ class DeviceTree(object):
                                           exists=True)
             self._addDevice(btrfs_dev)
 
+        btrfs_dev.format.mountsCache = self.mountsCache
+        btrfs_dev.originalFormat.mountsCache = self.mountsCache
+        self.mountsCache.add(btrfs_dev.format.device, btrfs_dev.format.subvolspec)
+
         if not btrfs_dev.subvolumes:
             snapshots = btrfs_dev.listSubVolumes(snapshotsOnly=True)
             snapshot_ids = [s["id"] for s in snapshots]
@@ -1753,6 +1761,9 @@ class DeviceTree(object):
                                       parents=[parent],
                                       exists=True)
                 self._addDevice(subvol)
+
+                subvol.format.mountsCache = self.mountsCache
+                self.mountsCache.add(subvol.format.device, subvol.format.subvolspec)
 
     def handleUdevDeviceFormat(self, info, device):
         log_method_call(self, name=getattr(device, "name", None))
@@ -1885,6 +1896,9 @@ class DeviceTree(object):
             self.handleUdevLVMPVFormat(info, device)
         elif device.format.type == "btrfs":
             self.handleBTRFSFormat(info, device)
+        else:
+            device.format.mountsCache = self.mountsCache
+            self.mountsCache.add(device.format.device)
 
     def updateDeviceFormat(self, device):
         log.info("updating format of device: %s", device)

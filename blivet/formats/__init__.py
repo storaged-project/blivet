@@ -160,6 +160,7 @@ class DeviceFormat(ObjectID):
     _check = False
     _hidden = False                     # hide devices with this formatting?
     _ksMountpoint = None
+    mountsCache = None
 
     def __init__(self, **kwargs):
         """

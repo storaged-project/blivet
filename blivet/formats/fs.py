@@ -110,7 +110,6 @@ class FS(DeviceFormat):
         # filesystem size does not necessarily equal device size
         self._size = kwargs.get("size", Size(0))
         self._minInstanceSize = Size(0)    # min size of this FS instance
-        self._mountpoint = None     # the current mountpoint when mounted
 
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
@@ -581,6 +580,13 @@ class FS(DeviceFormat):
         # If we successfully loaded a kernel module for this filesystem, we
         # also need to update the list of supported filesystems.
         update_kernel_filesystems()
+
+    @property
+    def systemMountpoint(self):
+        if not self.mountsCache:
+            return None
+
+        return self.mountsCache.getMountpoint(self.device)
 
     def testMount(self):
         """ Try to mount the fs and return True if successful. """
@@ -1159,6 +1165,13 @@ class BTRFS(FS):
             return
 
         return self.mount(**kwargs)
+
+    @property
+    def systemMountpoint(self):
+        if not self.mountsCache:
+            return None
+
+        return self.mountsCache.getMountpoint(self.device, self.subvolspec)
 
 register_device_format(BTRFS)
 
