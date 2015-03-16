@@ -292,7 +292,7 @@ class Blivet(object):
             self.dumpState("initial")
 
         if not flags.installer_mode:
-            self.devicetree.getActiveMounts()
+            self.devicetree.handleNodevFilesystems()
 
         self.updateBootLoaderDiskList()
 
