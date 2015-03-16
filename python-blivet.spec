@@ -24,7 +24,7 @@ BuildRequires: python-setuptools
 
 Requires: python
 Requires: python-six
-Requires: pykickstart >= %{pykickstartver}
+Requires: python-kickstart >= %{pykickstartver}
 Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
