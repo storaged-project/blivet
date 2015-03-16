@@ -9,6 +9,7 @@ import re
 import sys
 import tempfile
 import uuid
+import hashlib
 from decimal import Decimal
 from contextlib import contextmanager
 from gi.repository import BlockDev as blockdev
@@ -356,6 +357,18 @@ def insert_colons(a_string):
         return insert_colons(a_string[:-2]) + ':' + suffix
     else:
         return suffix
+
+def md5_file(filename):
+
+    md5 = hashlib.md5()
+    with open(filename, "rb") as f:
+
+        block = f.read(65536)
+        while block:
+            md5.update(block)
+            block = f.read(65536)
+
+    return md5.hexdigest()
 
 class ObjectID(object):
     """This class is meant to be extended by other classes which require
