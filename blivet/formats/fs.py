@@ -39,6 +39,7 @@ from ..size import Size, ROUND_UP, ROUND_DOWN, unitStr
 from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..i18n import _, N_
 from .. import udev
+from ..mounts import mountsCache
 
 import logging
 log = logging.getLogger("blivet")
@@ -110,7 +111,6 @@ class FS(DeviceFormat):
         # filesystem size does not necessarily equal device size
         self._size = kwargs.get("size", Size(0))
         self._minInstanceSize = Size(0)    # min size of this FS instance
-        self._mountpoint = None     # the current mountpoint when mounted
 
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
@@ -582,6 +582,21 @@ class FS(DeviceFormat):
         # also need to update the list of supported filesystems.
         update_kernel_filesystems()
 
+    @property
+    def systemMountpoint(self):
+        """ Get current mountpoint
+
+            returns: mountpoint
+            rtype: str or None
+
+        """
+
+        if not self.exists:
+            return None
+
+        return mountsCache.getMountpoint(self.device,
+                                         getattr(self, "subvolspec", None))
+
     def testMount(self):
         """ Try to mount the fs and return True if successful. """
         ret = False
@@ -665,28 +680,24 @@ class FS(DeviceFormat):
             if not ret:
                 log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
-        self._mountpoint = chrootedMountpoint
-
     def unmount(self):
         """ Unmount this filesystem. """
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        if not self._mountpoint:
+        if not self.systemMountpoint:
             # not mounted
             return
 
-        if not os.path.exists(self._mountpoint):
+        if not os.path.exists(self.systemMountpoint):
             raise FSError("mountpoint does not exist")
 
         udev.settle()
-        rc = util.umount(self._mountpoint)
+        rc = util.umount(self.systemMountpoint)
         if rc:
             # try and catch whatever is causing the umount problem
-            util.run_program(["lsof", self._mountpoint])
+            util.run_program(["lsof", self.systemMountpoint])
             raise FSError("umount failed")
-
-        self._mountpoint = None
 
     def readLabel(self):
         """Read this filesystem's label.
@@ -900,7 +911,7 @@ class FS(DeviceFormat):
         # FIXME check /proc/mounts or similar
         if not self.exists:
             return False
-        return self._mountpoint is not None
+        return self.systemMountpoint is not None
 
     def sync(self, root="/"):
         pass
@@ -1272,16 +1283,17 @@ class XFS(FS):
             This is a little odd because xfs_freeze will only be
             available under the install root.
         """
-        if not self.status or not self._mountpoint.startswith(root):
+        if not self.status or not self.systemMountpoint or \
+            not self.systemMountpoint.startswith(root):
             return
 
         try:
-            util.run_program(["xfs_freeze", "-f", self.mountpoint], root=root)
+            util.run_program(["xfs_freeze", "-f", self.systemMountpoint], root=root)
         except OSError as e:
             log.error("failed to run xfs_freeze: %s", e)
 
         try:
-            util.run_program(["xfs_freeze", "-u", self.mountpoint], root=root)
+            util.run_program(["xfs_freeze", "-u", self.systemMountpoint], root=root)
         except OSError as e:
             log.error("failed to run xfs_freeze: %s", e)
 
@@ -1605,14 +1617,14 @@ class TmpFS(NoDevFS):
 
     @property
     def free(self):
-        if self._mountpoint:
-            # If self._mountpoint is defined, it means this tmpfs mount
+        if self.systemMountpoint:
+            # If self.systemMountpoint is defined, it means this tmpfs mount
             # has been mounted and there is a path we can use as a handle to
             # look-up the free space on the filesystem.
             # When running with changeroot, such as during installation,
-            # self._mountpoint is set to the full changeroot path once mounted,
-            # so even with changeroot, statvfs should still work fine.
-            st = os.statvfs(self._mountpoint)
+            # self.systemMountpoint is set to the full changeroot path once
+            # mounted so even with changeroot, statvfs should still work fine.
+            st = os.statvfs(self.systemMountpoint)
             free_space = Size(st.f_bavail*st.f_frsize)
         else:
             # Free might be called even if the tmpfs mount has not been
@@ -1646,7 +1658,7 @@ class TmpFS(NoDevFS):
         # if any mount options are defined, append them
         if self._options:
             remount_options = "%s,%s" % (remount_options, self._options)
-        return ['-o', remount_options, self._type, self._mountpoint]
+        return ['-o', remount_options, self._type, self.systemMountpoint]
 
     def doResize(self):
         # we need to override doResize, because the
