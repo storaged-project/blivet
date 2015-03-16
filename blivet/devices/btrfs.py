@@ -108,14 +108,14 @@ class BTRFSDevice(StorageDevice):
         fmt.mount(mountpoint=tmpdir)
 
     def _undo_temp_mount(self):
-        if getattr(self.format, "_mountpoint", None):
+        if getattr(self.format, "systemMountpoint", None):
             fmt = self.format
-        elif getattr(self.originalFormat, "_mountpoint", None):
+        elif getattr(self.originalFormat, "systemMountpoint", None):
             fmt = self.originalFormat
         else:
             return
 
-        mountpoint = fmt._mountpoint
+        mountpoint = fmt.systemMountpoint
 
         if os.path.basename(mountpoint).startswith(self._temp_dir_prefix):
             fmt.unmount()
@@ -327,7 +327,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             return subvols
 
         try:
-            subvols = btrfs.list_subvolumes(self.originalFormat._mountpoint,
+            subvols = btrfs.list_subvolumes(self.originalFormat.systemMountpoint,
                                             snapshots_only=snapshotsOnly)
         except errors.BTRFSError as e:
             log.debug("failed to list subvolumes: %s", e)
@@ -354,7 +354,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     def _getDefaultSubVolumeID(self):
         subvolid = None
         try:
-            subvolid = btrfs.get_default_subvolume(self.originalFormat._mountpoint)
+            subvolid = btrfs.get_default_subvolume(self.originalFormat.systemMountpoint)
         except errors.BTRFSError as e:
             log.debug("failed to get default subvolume id: %s", e)
 
@@ -366,7 +366,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             This writes the change to the filesystem, which must be mounted.
         """
         try:
-            btrfs.set_default_subvolume(self.originalFormat._mountpoint, vol_id)
+            btrfs.set_default_subvolume(self.originalFormat.systemMountpoint, vol_id)
         except errors.BTRFSError as e:
             log.error("failed to set new default subvolume id (%s): %s",
                       vol_id, e)
@@ -430,7 +430,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             raise
 
         try:
-            btrfs.remove(self.originalFormat._mountpoint, member.path)
+            btrfs.remove(self.originalFormat.systemMountpoint, member.path)
         finally:
             self._undo_temp_mount()
 
@@ -442,7 +442,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             raise
 
         try:
-            btrfs.add(self.originalFormat._mountpoint, member.path)
+            btrfs.add(self.originalFormat.systemMountpoint, member.path)
         finally:
             self._undo_temp_mount()
 
@@ -527,7 +527,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
     def _create(self):
         log_method_call(self, self.name, status=self.status)
         self.volume._do_temp_mount()
-        mountpoint = self.volume.format._mountpoint
+        mountpoint = self.volume.format.systemMountpoint
         if not mountpoint:
             raise RuntimeError("btrfs subvol create requires mounted volume")
 
@@ -547,7 +547,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
             # btrfs does not allow removal of the default subvolume
             self.volume._setDefaultSubVolumeID(self.volume.vol_id)
 
-        mountpoint = self.volume.originalFormat._mountpoint
+        mountpoint = self.volume.originalFormat.systemMountpoint
         if not mountpoint:
             raise RuntimeError("btrfs subvol destroy requires mounted volume")
         btrfs.delete_subvolume(mountpoint, self.name)
@@ -623,7 +623,7 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
     def _create(self):
         log_method_call(self, self.name, status=self.status)
         self.volume._do_temp_mount()
-        mountpoint = self.volume.format._mountpoint
+        mountpoint = self.volume.format.systemMountpoint
         if not mountpoint:
             raise RuntimeError("btrfs subvol create requires mounted volume")
 

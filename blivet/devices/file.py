@@ -65,7 +65,7 @@ class FileDevice(StorageDevice):
     @property
     def path(self):
         try:
-            root = self.parents[0].format._mountpoint
+            root = self.parents[0].format.systemMountpoint
             mountpoint = self.parents[0].format.mountpoint
         except (AttributeError, IndexError):
             root = ""
