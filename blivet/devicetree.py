@@ -2663,26 +2663,14 @@ class DeviceTree(object):
             log.debug("failed to resolve '%s'", devspec)
         return device
 
-    def getActiveMounts(self):
-        """ Reflect active mounts in the appropriate devices' formats. """
-        log.info("collecting information about active mounts")
+    def handleNodevFilesystems(self):
+
         for line in open("/proc/mounts").readlines():
             try:
                 (devspec, mountpoint, fstype, options, _rest) = line.split(None, 4)
             except ValueError:
                 log.error("failed to parse /proc/mounts line: %s", line)
                 continue
-
-            if fstype == "btrfs":
-                # get the subvol name from /proc/self/mountinfo
-                for line in open("/proc/self/mountinfo").readlines():
-                    fields = line.split()
-                    _subvol = fields[3]
-                    _mountpoint = fields[4]
-                    _devspec = fields[9]
-                    if _mountpoint == mountpoint and _devspec == devspec:
-                        log.debug("subvol %s", _subvol)
-                        options += ",subvol=%s" % _subvol[1:]
 
             if fstype in nodev_filesystems:
                 if not flags.include_nodev:
@@ -2699,16 +2687,12 @@ class DeviceTree(object):
                 fmt = getFormat("nodev")
                 fmt.device = fstype
 
+                fmt.mountsCache = self.mountsCache
+                self.mountsCache.add(fmt.device)
+
                 # NoDevice also needs some special works since they don't have
                 # per-instance names in the kernel.
                 device = NoDevice(fmt=fmt)
                 n = len([d for d in self.devices if d.format.type == fstype])
                 device._name += ".%d" % n
                 self._addDevice(device)
-                devspec = device.name
-
-            device = self.resolveDevice(devspec, options=options)
-            if device is not None:
-                device.format.mountpoint = mountpoint   # for future mounts
-                device.format._mountpoint = mountpoint  # active mountpoint
-                device.format.mountopts = options
