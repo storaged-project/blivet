@@ -1317,7 +1317,6 @@ register_device_format(HFSPlus)
 class MacEFIFS(HFSPlus):
     _type = "macefi"
     _name = N_("Linux HFS+ ESP")
-    _labelfs = fslabeling.HFSPlusLabeling()
     _udevTypes = []
     _minSize = Size("50 MiB")
     _supported = True
