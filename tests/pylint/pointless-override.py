@@ -244,13 +244,13 @@ class PointlessClassAttributeOverrideChecker(BaseChecker):
     msgs = {
        "W9951":
        (
-          "Assignment to class attribute %s overrides identical assignment in ancestor.",
+          "Assignment to class attribute %s overrides identical assignment in ancestor %s.",
           "pointless-class-attribute-override",
           "Assignment to class attribute  that overrides assignment in ancestor that assigns identical value has no effect."
        ),
        "W9952":
        (
-          "definition of %s method overrides identical method definition in ancestor",
+          "Definition of %s method overrides identical method definition in ancestor %s.",
           "pointless-method-definition-override",
           "Overriding empty method definition with another empty method definition has no effect."
        )
@@ -264,7 +264,7 @@ class PointlessClassAttributeOverrideChecker(BaseChecker):
                     match = next((v for (n, v) in checker.get_data(a, False) if n == name), None)
                     if match is not None:
                         if checker.check_equal(value, match):
-                            self.add_message(checker.message_id, node=value, args=(name,))
+                            self.add_message(checker.message_id, node=value, args=(name,a.name))
                         break
 
 def register(linter):
