@@ -91,6 +91,10 @@ class SwapSpace(DeviceFormat):
     def supported(self):
         return super(SwapSpace, self).supported and self._plugin.available
 
+    @property
+    def setupable(self):
+        return super(SwapSpace, self).setupable and self._plugin.available
+
     def labeling(self):
         """Returns True as mkswap can write a label to the swap space."""
         return True

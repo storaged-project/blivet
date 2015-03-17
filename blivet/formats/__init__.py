@@ -515,6 +515,15 @@ class DeviceFormat(ObjectID):
         data.fstype = self.type
         data.mountpoint = self.ksMountpoint
 
+    @property
+    def setupable(self):
+        """ Should we expect the setup method to succeed on this format.
+
+            :returns: True if this format can be set up, otherwise False
+            :rtype: bool
+        """
+        return self.exists and self.device and os.path.exists(self.device)
+
 register_device_format(DeviceFormat)
 
 collect_device_format_classes()
