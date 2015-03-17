@@ -370,6 +370,7 @@ class Populator(object):
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
 
             device = MultipathDevice(name, parents=slave_devs,
+                                     sysfsPath=udev.device_get_sysfs_path(info),
                                      serial=serial)
             self.devicetree._addDevice(device)
 
