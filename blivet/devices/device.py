@@ -221,15 +221,7 @@ class Device(util.ObjectID):
             :returns: whether this device depends on 'dep'
             :rtype: bool
         """
-        # XXX does a device depend on itself?
-        if dep in self.parents:
-            return True
-
-        for parent in self.parents:
-            if parent.dependsOn(dep):
-                return True
-
-        return False
+        return dep in self.parents or any(p.dependsOn(dep) for p in self.parents)
 
     def dracutSetupArgs(self):
         return set()
