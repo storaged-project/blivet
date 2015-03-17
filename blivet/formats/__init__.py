@@ -459,6 +459,16 @@ class DeviceFormat(ObjectID):
         self._setup(**kwargs)
         self._postSetup(**kwargs)
 
+    @property
+    def controllable(self):
+        """ Are external utilities available to allow this format to be both
+            setup and teared down.
+
+            :returns: True if this format can be set up, otherwise False
+            :rtype: bool
+        """
+        return True
+
     def _preSetup(self, **kwargs):
         """ Return True if setup should proceed. """
         if not self.exists:

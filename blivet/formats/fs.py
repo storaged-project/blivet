@@ -643,6 +643,10 @@ class FS(DeviceFormat):
         return super(FS, self).supported and self.utilsAvailable
 
     @property
+    def controllable(self):
+        return super(FS, self).controllable and self.mountable
+
+    @property
     def mountable(self):
         return not self._mount.unavailable
 

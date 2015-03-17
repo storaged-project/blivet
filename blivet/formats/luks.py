@@ -160,6 +160,10 @@ class LUKS(DeviceFormat):
         return super(LUKS, self).supported and self._plugin.available
 
     @property
+    def controllable(self):
+        return super(LUKS, self).controllable and self._plugin.available
+
+    @property
     def configured(self):
         """ To be ready we need a key or passphrase and a map name. """
         return self.hasKey and self.mapName
