@@ -35,7 +35,7 @@ from .. import util
 from ..formats import getFormat
 from ..storage_log import log_method_call
 from .. import udev
-from ..size import Size, KiB, MiB
+from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
 
 import logging
 log = logging.getLogger("blivet")
@@ -373,8 +373,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def align(self, size, roundup=False):
         """ Align a size to a multiple of physical extent size. """
         size = util.numeric_type(size)
-
-        return Size(blockdev.lvm_round_size_to_pe(size, self.peSize, roundup))
+        return size.roundToNearest(self.peSize, rounding=ROUND_UP if roundup else ROUND_DOWN)
 
     @property
     def pvs(self):
