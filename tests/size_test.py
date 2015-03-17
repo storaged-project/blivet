@@ -332,6 +332,17 @@ class TranslationTestCase(unittest.TestCase):
         self.assertEqual(s.roundToNearest(TiB, rounding=size.ROUND_DOWN),
                          Size(0))
 
+        # test Size parameters
+        self.assertEqual(s.roundToNearest(Size("128 GiB")), Size("512 GiB"))
+        self.assertEqual(s.roundToNearest(Size("1 KiB")), Size("513 GiB"))
+        self.assertEqual(s.roundToNearest(Size("1 TiB")), Size("1 TiB"))
+        self.assertEqual(s.roundToNearest(Size("1 TiB"), rounding=size.ROUND_DOWN), Size(0))
+        self.assertEqual(s.roundToNearest(Size(0)), Size(0))
+        self.assertEqual(s.roundToNearest(Size("13 GiB")), Size("507 GiB"))
+
+        with self.assertRaises(ValueError):
+            s.roundToNearest(Size("-1 B"))
+
 class UtilityMethodsTestCase(unittest.TestCase):
 
     def testLowerASCII(self):
