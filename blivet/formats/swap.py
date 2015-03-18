@@ -114,7 +114,7 @@ class SwapSpace(DeviceFormat):
 
     def _getOptions(self):
         opts = ""
-        if self.priority is not None:
+        if self.priority is not None and self.priority != -1:
             opts += "pri=%d" % self.priority
 
         return opts
