@@ -2213,7 +2213,7 @@ class DeviceTree(object):
 
             try:
                 device.teardown(recursive=True)
-            except StorageError as e:
+            except (StorageError, GLib.GError) as e:
                 log.info("teardown of %s failed: %s", device.name, e)
 
     def teardownDiskImages(self):
@@ -2550,7 +2550,7 @@ class DeviceTree(object):
                 if devspec.startswith("/dev/dm-"):
                     try:
                         dm_name = blockdev.dm_name_from_node(devspec[5:])
-                    except StorageError as e:
+                    except GLib.GError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         dm_name = None
 
@@ -2560,7 +2560,7 @@ class DeviceTree(object):
                 if re.match(r'/dev/md\d+(p\d+)?$', devspec):
                     try:
                         md_name = blockdev.md_name_from_node(devspec[5:])
-                    except StorageError as e:
+                    except GLib.GError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         md_name = None
 
