@@ -24,6 +24,7 @@ import shlex
 import os
 import stat
 import time
+from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 
 from . import util
@@ -528,7 +529,7 @@ class FSSet(object):
                 try:
                     device.setup()
                     device.format.setup()
-                except StorageError as e:
+                except (StorageError, GLib.GError) as e:
                     if errorHandler.cb(e) == ERROR_RAISE:
                         raise
                 else:
