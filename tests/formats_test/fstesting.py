@@ -3,6 +3,9 @@
 import abc
 from six import add_metaclass
 
+import os
+import tempfile
+
 from tests import loopbackedtestcase
 from blivet.errors import FSError, FSResizeError
 from blivet.size import Size, ROUND_DOWN
@@ -163,6 +166,22 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         self.assertTrue(an_fs.testMount())
+
+    def testMountpoint(self):
+        an_fs = self._fs_class()
+        # FIXME: BTRFS fails to mount
+        if isinstance(an_fs, fs.BTRFS):
+            return
+        if not an_fs.formattable or not an_fs.mountable:
+            return
+        an_fs.device = self.loopDevices[0]
+        self.assertIsNone(an_fs.create())
+        mountpoint = tempfile.mkdtemp()
+        an_fs.mount(mountpoint=mountpoint)
+        self.assertEqual(an_fs.systemMountpoint, mountpoint)
+        an_fs.unmount()
+        self.assertIsNone(an_fs.systemMountpoint)
+        os.rmdir(mountpoint)
 
     def testResize(self):
         an_fs = self._fs_class()
