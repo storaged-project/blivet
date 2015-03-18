@@ -33,6 +33,7 @@ from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
 from .size import Size
 
+from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 
 import logging
@@ -595,7 +596,7 @@ class DeviceFactory(object):
         e = None
         try:
             self._post_create()
-        except StorageError as e:
+        except (StorageError, GLib.GError) as e:
             log.error("device post-create method failed: %s", e)
         else:
             if not device.size:
@@ -651,7 +652,7 @@ class DeviceFactory(object):
 
         try:
             self._post_create()
-        except StorageError as e:
+        except (StorageError, GLib.GError) as e:
             log.error("device post-create method failed: %s", e)
             raise
         else:
@@ -900,7 +901,7 @@ class PartitionFactory(DeviceFactory):
     def _post_create(self):
         try:
             doPartitioning(self.storage)
-        except StorageError as e:
+        except (StorageError, GLib.GError) as e:
             log.error("failed to allocate partitions: %s", e)
             raise
 
@@ -1056,7 +1057,7 @@ class PartitionSetFactory(PartitionFactory):
                 member = self.storage.newPartition(parents=[disk], grow=True,
                                            size=base_size,
                                            fmt_type=member_format)
-            except StorageError as e:
+            except (StorageError, GLib.GError) as e:
                 log.error("failed to create new member partition: %s", e)
                 continue
 
