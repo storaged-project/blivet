@@ -41,6 +41,7 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
+from .external import ExternalDependencies
 
 class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     """ An mdraid (Linux RAID) device. """
@@ -49,7 +50,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     _devDir = "/dev/md"
     _formatClassName = property(lambda s: "mdmember")
     _formatUUIDAttr = property(lambda s: "mdUuid")
-    _external_dependencies = [availability.BLOCKDEV_MDRAID_PLUGIN]
+    _external_dependencies = ExternalDependencies(default=[availability.BLOCKDEV_MDRAID_PLUGIN])
 
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  memberDevices=None, totalDevices=None,

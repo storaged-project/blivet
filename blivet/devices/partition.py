@@ -42,6 +42,7 @@ from .device import Device
 from .storage import StorageDevice
 from .dm import DMDevice
 from .lib import devicePathToName, deviceNameToDiskByPath
+from .external import ExternalDependencies
 
 DEFAULT_PART_SIZE = Size("500MiB")
 
@@ -61,7 +62,7 @@ class PartitionDevice(StorageDevice):
     _type = "partition"
     _resizable = True
     defaultSize = DEFAULT_PART_SIZE
-    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
+    _external_dependencies = ExternalDependencies(destroy=[availability.BLOCKDEV_DM_PLUGIN])
 
     def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,

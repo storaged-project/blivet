@@ -27,6 +27,7 @@ from . import udev
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice
+from .devices import external
 from .formats import getFormat, luks
 from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
@@ -144,11 +145,17 @@ class DeviceAction(util.ObjectID):
     type = ACTION_TYPE_NONE
     obj = ACTION_OBJECT_NONE
     typeDescStr = ""
+    dependency_search_mode = external.DefaultMode
 
     def __init__(self, device):
         util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
+
+        unavailable_dependencies = device.unavailableDependencies(self.dependency_search_mode)
+        if unavailable_dependencies:
+            raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, ", ".join(str(d) for d in unavailable_dependencies)))
+
         self.device = device
         self.container = getattr(self.device, "container", None)
         self._applied = False
@@ -336,6 +343,7 @@ class ActionDestroyDevice(DeviceAction):
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
     typeDescStr = N_("destroy device")
+    dependency_search_mode = external.DestroyMode
 
     def __init__(self, device):
         # XXX should we insist that device.fs be None?

@@ -26,6 +26,8 @@ from .. import errors
 from ..storage_log import log_method_call
 from ..tasks import availability
 
+from .external import ExternalDependencies
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -34,7 +36,7 @@ from .storage import StorageDevice
 class LoopDevice(StorageDevice):
     """ A loop device. """
     _type = "loop"
-    _external_dependencies = [availability.BLOCKDEV_LOOP_PLUGIN]
+    _external_dependencies = ExternalDependencies(default=[availability.BLOCKDEV_LOOP_PLUGIN])
 
     def __init__(self, name=None, fmt=None, size=None, sysfsPath=None,
                  exists=False, parents=None):

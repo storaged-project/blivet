@@ -39,6 +39,7 @@ log = logging.getLogger("blivet")
 
 from .device import Device
 from .network import NetworkStorageDevice
+from .external import DefaultMode, ExternalDependencies
 
 class StorageDevice(Device):
     """ A generic storage device.
@@ -57,7 +58,7 @@ class StorageDevice(Device):
     _partitionable = False
     _isDisk = False
     _encrypted = False
-    _external_dependencies = []
+    _external_dependencies = ExternalDependencies()
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
@@ -752,39 +753,38 @@ class StorageDevice(Device):
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
 
-    @property
-    def externalDependencies(self):
+    def externalDependencies(self, mode=DefaultMode):
         """ A list of external dependencies of this device type.
 
+            :param mode: the mode of action for these dependencies
+
             :returns: a set of external dependencies
-            :rtype: list of availability.ExternalResource
+            :rtype: set of availability.ExternalResource
 
             The external dependencies include the dependencies of this
             device type and of all superclass device types.
-
-            May contain duplicates.
         """
-        return self._external_dependencies + \
-           [d for p in self.__class__.__mro__ if isinstance(p, StorageDevice) for d in p._external_dependencies]
+        return set(
+           [d for p in self.__class__.__mro__ if issubclass(p, StorageDevice) for d in mode.dependencies(p._external_dependencies)]
+        )
 
-    @property
-    def allExternalDependencies(self):
+    def allExternalDependencies(self, mode=DefaultMode):
         """ A list of external dependencies of this device and its parents.
 
+            :param mode: the mode of action for these dependencies
+
             :returns: the external dependencies of this device and all parents.
-            :rtype: list of availability.ExternalResource
-
-            May contain duplicates.
+            :rtype: set of availability.ExternalResource
         """
-        return self.externalDependencies + \
-           [d for p in self.parents for d in p.allExternalDependencies]
+        return set([d for p in self.ancestors for d in p.externalDependencies(mode)])
 
-    @property
-    def supported(self):
-        """ Whether the external dependencies required by this device
-            and its parents are available in the environment.
+    def unavailableDependencies(self, mode=DefaultMode):
+        """ Any unavailable external dependencies of this device or its
+            parents.
 
-            :returns: True if all external dependencies are available
-            :rtype: bool
+            :param mode: the mode of action for these dependencies
+
+            :returns: A list of unavailable external dependencies.
+            :rtype: set of availability.externalResource
         """
-        return all(e.available for e in set(self.allExternalDependencies))
+        return set([e for e in self.allExternalDependencies(mode) if not e.available])

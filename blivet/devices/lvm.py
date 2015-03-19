@@ -46,6 +46,7 @@ from .storage import StorageDevice
 from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
+from .external import ExternalDependencies
 
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group """
@@ -447,10 +448,9 @@ class LVMLogicalVolumeDevice(DMDevice):
     _resizable = True
     _packages = ["lvm2"]
     _containerClass = LVMVolumeGroupDevice
-    _external_dependencies = [
-        availability.BLOCKDEV_DM_PLUGIN,
-        availability.BLOCKDEV_LVM_PLUGIN
-    ]
+    _external_dependencies = ExternalDependencies(
+        default=[availability.BLOCKDEV_DM_PLUGIN, availability.BLOCKDEV_LVM_PLUGIN]
+    )
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=None, segType=None,

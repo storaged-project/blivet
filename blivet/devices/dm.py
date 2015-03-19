@@ -30,6 +30,8 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..tasks import availability
 
+from .external import ExternalDependencies
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -39,10 +41,9 @@ class DMDevice(StorageDevice):
     """ A device-mapper device """
     _type = "dm"
     _devDir = "/dev/mapper"
-    _external_dependencies = [
-       availability.application("kpartx"),
-       availability.BLOCKDEV_DM_PLUGIN
-    ]
+    _external_dependencies = ExternalDependencies(
+       default=[availability.application("kpartx"), availability.BLOCKDEV_DM_PLUGIN]
+    )
 
     def __init__(self, name, fmt=None, size=None, dmUuid=None, uuid=None,
                  target=None, exists=False, parents=None, sysfsPath=''):
