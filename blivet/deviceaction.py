@@ -148,6 +148,11 @@ class DeviceAction(util.ObjectID):
         util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
+
+        unavailable_dependencies = device.unavailableDependencies
+        if unavailable_dependencies:
+            raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, ", ".join(str(d) for d in unavailable_dependencies)))
+
         self.device = device
         self.container = getattr(self.device, "container", None)
         self._applied = False

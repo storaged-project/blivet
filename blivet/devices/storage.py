@@ -751,38 +751,34 @@ class StorageDevice(Device):
         return not(badchars or name == '.' or name == '..')
 
     @property
-    def externalDependencies(self):
+    def typeExternalDependencies(self):
         """ A list of external dependencies of this device type.
 
             :returns: a set of external dependencies
-            :rtype: list of availability.ExternalResource
+            :rtype: set of availability.ExternalResource
 
             The external dependencies include the dependencies of this
             device type and of all superclass device types.
-
-            May contain duplicates.
         """
-        return self._external_dependencies + \
-           [d for p in self.__class__.__mro__ if isinstance(p, StorageDevice) for d in p._external_dependencies]
+        return set(
+           [d for p in self.__class__.__mro__ if issubclass(p, StorageDevice) for d in p._external_dependencies]
+        )
 
     @property
-    def allExternalDependencies(self):
+    def externalDependencies(self):
         """ A list of external dependencies of this device and its parents.
 
             :returns: the external dependencies of this device and all parents.
-            :rtype: list of availability.ExternalResource
-
-            May contain duplicates.
+            :rtype: set of availability.ExternalResource
         """
-        return self.externalDependencies + \
-           [d for p in self.parents for d in p.allExternalDependencies]
+        return set([d for p in self.ancestors for d in p.typeExternalDependencies])
 
     @property
-    def supported(self):
-        """ Whether the external dependencies required by this device
-            and its parents are available in the environment.
+    def unavailableDependencies(self):
+        """ Any unavailable external dependencies of this device or its
+            parents.
 
-            :returns: True if all external dependencies are available
-            :rtype: bool
+            :returns: A list of unavailable external dependencies.
+            :rtype: set of availability.externalResource
         """
-        return all(e.available for e in set(self.allExternalDependencies))
+        return set([e for e in self.externalDependencies if not e.available])
