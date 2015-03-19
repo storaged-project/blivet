@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.4
+Version: 1.0.5
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -57,6 +57,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Mar 19 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.5-1
+- Don't specify priority in fstab if -1 (default) is used (#1203709) (vpodzime)
+- Catch GLib.GError in places where we catch StorageError (#1202505) (vpodzime)
+
 * Tue Mar 17 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.4-1
 - Use Size method to perform a Size operation (#1200812) (amulhern)
 - Extend Size.roundToNearest to allow Size units (#1200812) (amulhern)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 14:58-0400\n"
+"POT-Creation-Date: 2015-03-19 13:59-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -218,21 +218,21 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/osinstall.py:225
+#: ../blivet/osinstall.py:226
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:230
+#: ../blivet/osinstall.py:231
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:232
+#: ../blivet/osinstall.py:233
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:235
+#: ../blivet/osinstall.py:236
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
