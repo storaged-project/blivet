@@ -41,7 +41,7 @@ class DMDevice(StorageDevice):
     _type = "dm"
     _devDir = "/dev/mapper"
     _external_dependencies = [
-       availability.Application(availability.Path(), "kpartx"),
+       availability.application("kpartx"),
        availability.BLOCKDEV_DM_PLUGIN
     ]
 
