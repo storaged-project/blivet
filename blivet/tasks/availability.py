@@ -99,3 +99,13 @@ class BlockDevMethod(Method):
             :rtype: bool
         """
         return application.name in blockdev.get_available_plugin_names()
+
+# blockdev plugins
+BLOCKDEV_BTRFS_PLUGIN = Application(BlockDevMethod(), "btrfs")
+BLOCKDEV_CRYPTO_PLUGIN = Application(BlockDevMethod(), "crypto")
+BLOCKDEV_DM_PLUGIN = Application(BlockDevMethod(), "dm")
+BLOCKDEV_LOOP_PLUGIN = Application(BlockDevMethod(), "loop")
+BLOCKDEV_LVM_PLUGIN = Application(BlockDevMethod(), "lvm")
+BLOCKDEV_MDRAID_PLUGIN = Application(BlockDevMethod(), "mdraid")
+BLOCKDEV_MPATH_PLUGIN = Application(BlockDevMethod(), "mpath")
+BLOCKDEV_SWAP_PLUGIN = Application(BlockDevMethod(), "swap")
