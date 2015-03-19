@@ -24,7 +24,8 @@ from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
 
-def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False):
+
+def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False, binary_output=False):
     if env_prune is None:
         env_prune = []
 
@@ -54,6 +55,8 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
                                     preexec_fn=chroot, cwd=root, env=env)
 
             out, err = proc.communicate()
+            if not binary_output and six.PY3:
+                out = out.decode("utf-8")
             if out:
                 if not stderr_to_stdout:
                     program_log.info("stdout:")
@@ -79,7 +82,15 @@ def run_program(*args, **kwargs):
 def capture_output(*args, **kwargs):
     return _run_program(*args, **kwargs)[1]
 
+def capture_output_binary(*args, **kwargs):
+    kwargs["binary_output"] = True
+    return _run_program(*args, **kwargs)[1]
+
 def run_program_and_capture_output(*args, **kwargs):
+    return _run_program(*args, **kwargs)
+
+def run_program_and_capture_output_binary(*args, **kwargs):
+    kwargs["binary_output"] = True
     return _run_program(*args, **kwargs)
 
 def mount(device, mountpoint, fstype, options=None):
