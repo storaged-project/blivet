@@ -44,7 +44,7 @@ class FSMinSize(task.Task):
 
     @classmethod
     def _app(cls):
-        return availability.Application(availability.Path(), cls.app_name)
+        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
