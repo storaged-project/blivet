@@ -204,10 +204,13 @@ class StorageDevice(Device):
         if value == self._name:
             return
 
-        if self.exists:
-            raise errors.DeviceError("Cannot rename existing device.")
-
         super(StorageDevice, self)._setName(value)
+
+        # update our format's path
+        # First, check that self._format has been defined in case this is
+        # running early in the constructor.
+        if hasattr(self, "_format") and self.format.device:
+            self.format.device = self.path
 
     def alignTargetSize(self, newsize):
         """ Return a proposed target size adjusted for device specifics.
@@ -463,12 +466,8 @@ class StorageDevice(Device):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         self._preCreate()
-        try:
-            self._create()
-        except Exception as e:
-            raise errors.DeviceCreateError(str(e), self.name)
-        else:
-            self._postCreate()
+        self._create()
+        self._postCreate()
 
     def _postCreate(self):
         """ Perform post-create operations. """
