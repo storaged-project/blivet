@@ -56,6 +56,7 @@ class StorageDevice(Device):
     _partitionable = False
     _isDisk = False
     _encrypted = False
+    _external_dependencies = []
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
@@ -748,3 +749,40 @@ class StorageDevice(Device):
 
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
+
+    @property
+    def externalDependencies(self):
+        """ A list of external dependencies of this device type.
+
+            :returns: a set of external dependencies
+            :rtype: list of availability.Application objects
+
+            The external dependencies include the dependencies of this
+            device type and of all superclass device types.
+
+            May contain duplicates.
+        """
+        return self._external_dependencies + \
+           [d for p in self.__class__.__mro__ if isinstance(p, StorageDevice) for d in p._external_dependencies]
+
+    @property
+    def allExternalDependencies(self):
+        """ A list of external dependencies of this device and its parents.
+
+            :returns: the external dependencies of this device and all parents.
+            :rtype: list of availability.Application objects
+
+            May contain duplicates.
+        """
+        return self.externalDependencies + \
+           [d for p in self.parents for d in p.allExternalDependencies]
+
+    @property
+    def supported(self):
+        """ Whether the external dependencies required by this device
+            and its parents are available in the environment.
+
+            :returns: True if all external dependencies are available
+            :rtype: bool
+        """
+        return all(e.available for e in set(self.allExternalDependencies))
