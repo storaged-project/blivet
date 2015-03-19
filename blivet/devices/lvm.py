@@ -36,6 +36,7 @@ from ..formats import getFormat
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -446,6 +447,10 @@ class LVMLogicalVolumeDevice(DMDevice):
     _resizable = True
     _packages = ["lvm2"]
     _containerClass = LVMVolumeGroupDevice
+    _external_dependencies = [
+        availability.BLOCKDEV_DM_PLUGIN,
+        availability.BLOCKDEV_LVM_PLUGIN
+    ]
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=None, segType=None,
