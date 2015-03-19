@@ -38,7 +38,7 @@ class FSMount(task.Task):
     # type argument to pass to mount, if different from filesystem type
     fstype = None
 
-    _app = availability.Application(availability.Path(), app_name)
+    _app = availability.application(app_name)
 
     def __init__(self, an_fs):
         self.fs = an_fs

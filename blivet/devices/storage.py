@@ -757,7 +757,7 @@ class StorageDevice(Device):
         """ A list of external dependencies of this device type.
 
             :returns: a set of external dependencies
-            :rtype: list of availability.Application objects
+            :rtype: list of availability.ExternalResource
 
             The external dependencies include the dependencies of this
             device type and of all superclass device types.
@@ -772,7 +772,7 @@ class StorageDevice(Device):
         """ A list of external dependencies of this device and its parents.
 
             :returns: the external dependencies of this device and all parents.
-            :rtype: list of availability.Application objects
+            :rtype: list of availability.ExternalResource
 
             May contain duplicates.
         """

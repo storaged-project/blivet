@@ -136,7 +136,7 @@ class TmpFSSize(task.Task):
     description = "current filesystem size"
 
     app_name = "df"
-    _app = availability.Application(availability.Path(), app_name)
+    _app = availability.application(app_name)
 
     def __init__(self, an_fs):
         """ Initializer.

@@ -27,7 +27,7 @@ from gi.repository import BlockDev as blockdev
 
 from .. import util
 
-class Application(object):
+class ExternalResource(object):
     """ An application. """
 
     def __init__(self, method, name):
@@ -60,11 +60,11 @@ class Method(object):
     """ A collection of methods for a particular application task. """
 
     @abc.abstractmethod
-    def available(self, application):
-        """ Returns True if the application is available.
+    def available(self, resource):
+        """ Returns True if the resource is available.
 
-            :param application: any application
-            :type application: applications.application.Application
+            :param resource: any external resource
+            :type resource: applications.application.Application
 
             :returns: True if the application is available
             :rtype: bool
@@ -74,38 +74,52 @@ class Method(object):
 class Path(Method):
     """ Methods for when application is found in  PATH. """
 
-    def available(self, application):
+    def available(self, resource):
         """ Returns True if the name of the application is in the path.
 
-            :param application: any application
-            :type application: applications.application.Application
+            :param resource: any application
+            :type resource: applications.application.Application
 
             :returns: True if the name of the application is in the path
             :rtype: bool
         """
-        return bool(util.find_program_in_path(application.name))
+        return bool(util.find_program_in_path(resource.name))
 
+Path = Path()
 
 class BlockDevMethod(Method):
     """ Methods for when application is actually a libblockdev plugin. """
 
-    def available(self, application):
+    def available(self, resource):
         """ Returns True if the plugin is loaded.
 
-            :param application: any application
+            :param resource: a libblockdev plugin
             :type application: applications.application.Application
 
             :returns: True if the name of the plugin is loaded
             :rtype: bool
         """
-        return application.name in blockdev.get_available_plugin_names()
+        return resource.name in blockdev.get_available_plugin_names()
+
+BlockDevMethod = BlockDevMethod()
+
+def application(name):
+    """ Construct an external resource that is an application.
+
+        This application will be available if its name can be found in $PATH.
+    """
+    return ExternalResource(Path, name)
+
+def blockdev_plugin(name):
+    """ Construct an external resource that is a libblockdev plugin. """
+    return ExternalResource(BlockDevMethod, name)
 
 # blockdev plugins
-BLOCKDEV_BTRFS_PLUGIN = Application(BlockDevMethod(), "btrfs")
-BLOCKDEV_CRYPTO_PLUGIN = Application(BlockDevMethod(), "crypto")
-BLOCKDEV_DM_PLUGIN = Application(BlockDevMethod(), "dm")
-BLOCKDEV_LOOP_PLUGIN = Application(BlockDevMethod(), "loop")
-BLOCKDEV_LVM_PLUGIN = Application(BlockDevMethod(), "lvm")
-BLOCKDEV_MDRAID_PLUGIN = Application(BlockDevMethod(), "mdraid")
-BLOCKDEV_MPATH_PLUGIN = Application(BlockDevMethod(), "mpath")
-BLOCKDEV_SWAP_PLUGIN = Application(BlockDevMethod(), "swap")
+BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("btrfs")
+BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("crypto")
+BLOCKDEV_DM_PLUGIN = blockdev_plugin("dm")
+BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("loop")
+BLOCKDEV_LVM_PLUGIN = blockdev_plugin("lvm")
+BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid")
+BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("mpath")
+BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap")

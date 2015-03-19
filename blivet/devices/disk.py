@@ -253,9 +253,7 @@ class MultipathDevice(DMDevice):
     _packages = ["device-mapper-multipath"]
     _partitionable = True
     _isDisk = True
-    _external_dependencies = [
-       availability.Application(availability.Path(), "multipath")
-    ]
+    _external_dependencies = [availability.application("multipath")]
 
     def __init__(self, name, fmt=None, size=None, serial=None,
                  parents=None, sysfsPath=''):
