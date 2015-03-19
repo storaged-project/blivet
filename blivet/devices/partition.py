@@ -33,7 +33,6 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, getFormat
 from ..size import Size, MiB
-from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -61,7 +60,6 @@ class PartitionDevice(StorageDevice):
     _type = "partition"
     _resizable = True
     defaultSize = DEFAULT_PART_SIZE
-    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
 
     def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,

@@ -447,10 +447,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     _resizable = True
     _packages = ["lvm2"]
     _containerClass = LVMVolumeGroupDevice
-    _external_dependencies = [
-        availability.BLOCKDEV_DM_PLUGIN,
-        availability.BLOCKDEV_LVM_PLUGIN
-    ]
+    _external_dependencies = default=[availability.BLOCKDEV_LVM_PLUGIN]
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=None, segType=None,
