@@ -186,6 +186,12 @@ class _LazyImportObject(object):
         sys.modules["%s.%s" % (__package__, self._name)] = val
         return getattr(val, attr)
 
+    def __dir__(self):
+        mod = importlib.import_module(__package__+"."+self._real_mod)
+        val = getattr(mod, self._name)
+        sys.modules["%s.%s" % (__package__, self._name)] = val
+        return dir(val)
+
 # this way things like 'from blivet import Blivet' work without an overhead of
 # importing of everything the Blivet class needs whenever anything from the
 # 'blivet' package is imported (e.g. the 'arch' module)
