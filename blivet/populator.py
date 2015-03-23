@@ -302,7 +302,7 @@ class Populator(object):
         if device is None and udev.device_is_dm_livecd(info):
             device = DMDevice(name, dmUuid=info.get('DM_UUID'),
                               sysfsPath=sysfs_path, exists=True,
-                              parents=[slave_dev])
+                              parents=[slave_devices[0]])
             device.protected = True
             device.controllable = False
             self.devicetree._addDevice(device)
