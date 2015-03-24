@@ -706,6 +706,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         blockdev.lvm_lvresize(self.vg.name, self._name, self.size)
 
     @property
+    def resizeSupported(self):
+        return self.vg.parentUnsetupableFormat(orig=True) is None
+
+    @property
     def isleaf(self):
         # Thin snapshots do not need to be removed prior to removal of the
         # origin, but the old snapshots do.

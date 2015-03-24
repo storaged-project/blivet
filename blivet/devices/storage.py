@@ -356,6 +356,11 @@ class StorageDevice(Device):
             raise errors.DeviceError("device type %s is not resizable" % self.type)
 
     @property
+    def resizeSupported(self):
+        """ Are the tools available for resize. """
+        return False
+
+    @property
     def readonly(self):
         # A device is read-only if it or any parent device is read-only
         return self._readonly or any(p.readonly for p in self.parents)

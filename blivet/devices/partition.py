@@ -656,6 +656,10 @@ class PartitionDevice(StorageDevice):
         self.disk.format.commit()
         self._currentSize = Size(partition.getLength(unit="B"))
 
+    @property
+    def resizeSupported(self):
+        return self.parentUnsetupableFormat(orig=True) is None
+
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
         if not self.sysfsPath:
