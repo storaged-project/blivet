@@ -49,8 +49,8 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         dev1 = DiskDevice("name", fmt=getFormat("mdmember"))
         dev2 = DiskDevice("other")
         self.part = PartitionDevice("part", fmt=getFormat("mdmember"), parents=[dev2])
-        self.dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1, self.part], fmt=getFormat("ext4"))
-        self.luks = LUKSDevice("luks", parents=[self.dev])
+        self.dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1, self.part], fmt=getFormat("luks"))
+        self.luks = LUKSDevice("luks", parents=[self.dev], fmt=getFormat("ext4"))
 
         self.mdraid_method = availability.BLOCKDEV_MDRAID_PLUGIN._method
 
@@ -62,16 +62,16 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         # dev is not among its unavailable dependencies
         availability.BLOCKDEV_MDRAID_PLUGIN._method = TrueMethod()
         self.assertNotIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailableDependencies)
-        self.assertIsNotNone(ActionCreateDevice(self.dev))
-        self.assertIsNotNone(ActionDestroyDevice(self.dev))
-        self.assertIsNotNone(ActionCreateFormat(self.dev))
-        self.assertIsNotNone(ActionDestroyFormat(self.dev))
+        self.assertIsNotNone(ActionCreateDevice(self.luks))
+        self.assertIsNotNone(ActionDestroyDevice(self.luks))
+        self.assertIsNotNone(ActionCreateFormat(self.luks, fmt=getFormat("macefi")))
+        self.assertIsNotNone(ActionDestroyFormat(self.luks))
 
         # dev is among the unavailable dependencies
         availability.BLOCKDEV_MDRAID_PLUGIN._method = FalseMethod()
         self.assertIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailableDependencies)
         with self.assertRaises(ValueError):
-            ActionCreateDevice(self.dev)
+            ActionCreateDevice(self.luks)
         with self.assertRaises(ValueError):
             ActionDestroyDevice(self.dev)
         with self.assertRaises(ValueError):
