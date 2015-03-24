@@ -166,6 +166,10 @@ class LVMPhysicalVolume(DeviceFormat):
         self.notifyKernel()
 
     @property
+    def destroyable(self):
+        return self._plugin.available
+
+    @property
     def status(self):
         # XXX hack
         return (self.exists and self.vgName and
