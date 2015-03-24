@@ -178,6 +178,19 @@ class Device(util.ObjectID):
         """ Open, or set up, a device. """
         raise NotImplementedError("setup method not defined for Device")
 
+    def unsetupableFormat(self, orig=False):
+        """ Duplicates the setup method in structure, in order to check
+            the setupableness of the relevant formats.
+
+            Must be overridden correspondingly in every class where setup
+            is overridden.
+
+            :param bool orig: True if the original format is checked
+            :returns: the offending format, if one if is found, otherwise None
+            :rtype: DeviceFormat or NoneType
+        """
+        raise NotImplementedError("unsetupableFormat method not defined for Device")
+
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
         raise NotImplementedError("teardown method not defined for Device")
@@ -199,6 +212,19 @@ class Device(util.ObjectID):
         log_method_call(self, name=self.name, orig=orig, kids=self.kids)
         for parent in self.parents:
             parent.setup(orig=orig)
+
+    def parentUnsetupableFormat(self, orig=False):
+        """ Duplicates the setupParents method in structure in order to
+            check the setupableness of the relevant formats.
+
+            Must be overridden correspondingly in every class where
+            setupParents method is overridden.
+
+            :param bool orig: True if the original format is checked
+            :returns: the offending format, if one if is found, otherwise None
+            :rtype: DeviceFormat or NoneType
+        """
+        return next((p.unsetupableFormat(orig=orig) for p in self.parents), None)
 
     def teardownParents(self, recursive=None):
         """ Run teardown method of all parent devices.
