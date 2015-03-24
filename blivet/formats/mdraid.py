@@ -103,6 +103,10 @@ class MDRaidMember(DeviceFormat):
         self.exists = False
 
     @property
+    def destroyable(self):
+        return self._plugin.available
+
+    @property
     def status(self):
         # XXX hack -- we don't have a nice way to see if the array is active
         return False
