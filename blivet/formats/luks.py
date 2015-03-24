@@ -217,6 +217,10 @@ class LUKS(DeviceFormat):
             self.mapName = "luks-%s" % self.uuid
 
     @property
+    def destroyable(self):
+        return self._plugin.available
+
+    @property
     def keyFile(self):
         """ Path to key file to be used in /etc/crypttab """
         return self._key_file

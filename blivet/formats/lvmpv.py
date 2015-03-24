@@ -132,6 +132,10 @@ class LVMPhysicalVolume(DeviceFormat):
             blockdev.lvm_pvscan(self.device)
 
     @property
+    def destroyable(self):
+        return self._plugin.available
+
+    @property
     def status(self):
         # XXX hack
         return (self.exists and self.vgName and
