@@ -52,10 +52,11 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         dev2 = DiskDevice("other")
         self.part = PartitionDevice("part", fmt=getFormat("mdmember"), parents=[dev2])
         self.dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1, self.part], fmt=getFormat("ext4"))
-        self.luks = LUKSDevice("luks", parents=[self.dev])
+        self.luks = LUKSDevice("luks", parents=[self.dev], fmt=getFormat("luks"))
 
         self.mdraid_method = availability.BLOCKDEV_MDRAID_PLUGIN._method
         self.dm_method = availability.BLOCKDEV_DM_PLUGIN._method
+        self.mount_method = self.dev.format._mount._app._method
 
     def testAvailabilityMDRAIDplugin(self):
 
@@ -67,7 +68,7 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         self.assertNotIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailableDependencies())
         self.assertIsNotNone(ActionCreateDevice(self.dev))
         self.assertIsNotNone(ActionDestroyDevice(self.dev))
-        self.assertIsNotNone(ActionCreateFormat(self.dev))
+        self.assertIsNotNone(ActionCreateFormat(self.dev, fmt=getFormat("macefi")))
         self.assertIsNotNone(ActionDestroyFormat(self.dev))
 
         # dev is among the unavailable dependencies
@@ -95,7 +96,7 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         self.assertNotIn(availability.BLOCKDEV_DM_PLUGIN, self.part.unavailableDependencies(DefaultMode))
         self.assertIsNotNone(ActionCreateDevice(self.dev))
         self.assertIsNotNone(ActionDestroyDevice(self.dev))
-        self.assertIsNotNone(ActionCreateFormat(self.dev))
+        self.assertIsNotNone(ActionCreateFormat(self.dev, fmt=getFormat("macefi")))
         self.assertIsNotNone(ActionDestroyFormat(self.dev))
 
         # if dm plugin is available, possible to do all actions w/ a partition
@@ -103,15 +104,32 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         self.assertNotIn(availability.BLOCKDEV_DM_PLUGIN, self.part.unavailableDependencies(DefaultMode))
         self.assertIn(availability.BLOCKDEV_DM_PLUGIN, self.part.unavailableDependencies(DestroyMode))
         self.assertIsNotNone(ActionCreateDevice(self.dev))
-        self.assertIsNotNone(ActionCreateFormat(self.dev))
+        self.assertIsNotNone(ActionCreateFormat(self.dev, fmt=getFormat("macefi")))
         self.assertIsNotNone(ActionDestroyFormat(self.dev))
         with self.assertRaises(ValueError):
             ActionDestroyDevice(self.dev)
 
+    def testFormatAvailability(self):
+        self.dev.format._mount._app._method = TrueMethod()
+        self.assertIsNotNone(ActionCreateDevice(self.luks))
+        self.assertIsNotNone(ActionDestroyDevice(self.luks))
+        self.assertIsNotNone(ActionCreateFormat(self.luks, fmt=getFormat("macefi")))
+        self.assertIsNotNone(ActionDestroyFormat(self.luks))
+
+        self.dev.format._mount._app._method = FalseMethod()
+        with self.assertRaises(ValueError):
+            ActionCreateDevice(self.luks)
+        with self.assertRaises(ValueError):
+            ActionDestroyDevice(self.luks)
+        with self.assertRaises(ValueError):
+            ActionCreateFormat(self.luks, fmt=getFormat("macefi"))
+        with self.assertRaises(ValueError):
+            ActionDestroyFormat(self.luks)
 
     def tearDown(self):
         availability.BLOCKDEV_MDRAID_PLUGIN._method = self.mdraid_method
         availability.BLOCKDEV_DM_PLUGIN._method = self.dm_method
+        self.dev.format._mount._app._method = self.mount_method
 
 if __name__ == "__main__":
     unittest.main()
