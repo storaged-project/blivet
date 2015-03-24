@@ -625,6 +625,9 @@ class LVMLogicalVolumeDevice(DMDevice):
         # parent is a vg, which has no formatting (or device for that matter)
         Device.setupParents(self, orig=orig)
 
+    def parentUnsetupableFormat(self, orig=False):
+        return Device.parentUnsetupableFormat(self, orig=orig)
+
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
@@ -944,6 +947,9 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
 
     def setup(self, orig=False):
         pass
+
+    def unsetupableFormat(self, orig=False):
+        return None
 
     def teardown(self, recursive=False):
         pass
