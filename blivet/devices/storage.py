@@ -377,6 +377,10 @@ class StorageDevice(Device):
         self._setup(orig=orig)
         self._postSetup()
 
+    def unsetupableFormat(self, orig=False):
+        # parentSetup method is called indirectly through _preSetup method
+        return self.parentUnsetupableFormat(orig=orig)
+
     def _postSetup(self):
         """ Perform post-setup operations. """
         udev.settle()
@@ -499,6 +503,22 @@ class StorageDevice(Device):
             # set up the formatting, if present
             if _format.type and _format.exists:
                 _format.setup()
+
+    def parentUnsetupableFormat(self, orig=False):
+        for parent in self.parents:
+            unsetupable = parent.unsetupableFormat(orig=orig)
+            if unsetupable is not None:
+                return unsetupable
+
+            if orig:
+                _format = parent.originalFormat
+            else:
+                _format = parent.format
+
+            if not _format.setupable:
+                return _format
+
+        return None
 
     def _getSize(self):
         """ Get the device's size, accounting for pending changes. """

@@ -465,6 +465,15 @@ class DeviceFormat(ObjectID):
         self._setup(**kwargs)
         self._postSetup(**kwargs)
 
+    @property
+    def setupable(self):
+        """ Are external utilities available to allow this format to be setup.
+
+            :returns: True if this format can be set up, otherwise False
+            :rtype: bool
+        """
+        return True
+
     def _preSetup(self, **kwargs):
         """ Return True if setup should proceed. """
         if not self.exists:
@@ -593,15 +602,6 @@ class DeviceFormat(ObjectID):
         data.format = not self.exists
         data.fstype = self.type
         data.mountpoint = self.ksMountpoint
-
-    @property
-    def setupable(self):
-        """ Should we expect the setup method to succeed on this format.
-
-            :returns: True if this format can be set up, otherwise False
-            :rtype: bool
-        """
-        return self.exists and self.device and os.path.exists(self.device)
 
 register_device_format(DeviceFormat)
 
