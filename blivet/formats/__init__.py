@@ -397,6 +397,12 @@ class DeviceFormat(ObjectID):
 
         self.exists = False
 
+    @property
+    def destroyable(self):
+        """ Do we have the facilities to destroy a format of this type. """
+        # assumes wipefs is always available
+        return True
+
     def setup(self, **kwargs):
         """ Activate the formatting.
 
