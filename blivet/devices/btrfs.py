@@ -540,6 +540,9 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
         log_method_call(self, name=self.name, orig=orig, kids=self.kids)
         self.volume.setup(orig=orig)
 
+    def parentUnsetupableFormat(self, orig=False):
+        return self.volume.unsetupableFormat(self, orig=orig)
+
     def _create(self):
         log_method_call(self, self.name, status=self.status)
         self.volume._do_temp_mount()

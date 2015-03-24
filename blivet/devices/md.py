@@ -430,6 +430,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         blockdev.md_activate(self.path, members=disks, uuid=self.mdadmFormatUUID)
 
+    def unsetupableFormat(self, orig=False):
+        return next((m.unsetupableFormat(orig=orig) for m in self.devices), None)
+
     def _postTeardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)
         # mdadm reuses minors indiscriminantly when there is no mdadm.conf, so
