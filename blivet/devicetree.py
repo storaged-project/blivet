@@ -966,7 +966,7 @@ class DeviceTree(object):
     def handleNodevFilesystems(self):
         for line in open("/proc/mounts").readlines():
             try:
-                (devspec, mountpoint, fstype, options, _rest) = line.split(None, 4)
+                (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
             except ValueError:
                 log.error("failed to parse /proc/mounts line: %s", line)
                 continue

@@ -57,7 +57,7 @@ class MountsCache(object):
 
         for line in open("/proc/mounts").readlines():
             try:
-                (devspec, mountpoint, fstype, options, _rest) = line.split(None, 4)
+                (devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
             except ValueError:
                 log.error("failed to parse /proc/mounts line: %s", line)
                 continue
