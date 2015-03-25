@@ -27,20 +27,13 @@ from six import add_metaclass
 from ..errors import FSError
 from .. import util
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSSync(task.Task):
+class FSSync(task.BasicApplication):
     """ An abstract class that represents syncing a filesystem. """
 
     description = "filesystem syncing"
-
-    app_name = abc.abstractproperty(doc="The name of the syncing application.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -48,16 +41,6 @@ class FSSync(task.Task):
             :param FS an_fs: a filesystem object
         """
         self.fs = an_fs
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s not available" % self._app()
-        return None
 
     @property
     def unready(self):
@@ -72,10 +55,6 @@ class FSSync(task.Task):
     @property
     def unable(self):
         return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     @abc.abstractmethod
     def doTask(self):

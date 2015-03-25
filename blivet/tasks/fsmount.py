@@ -29,16 +29,15 @@ from ..formats import fslib
 from . import availability
 from . import task
 
-class FSMount(task.Task):
+class FSMount(task.BasicApplication):
     """An abstract class that represents filesystem mounting actions. """
     description = "mount a filesystem"
 
-    app_name = "mount"
     options = ["defaults"]
     # type argument to pass to mount, if different from filesystem type
     fstype = None
 
-    _app = availability.application(app_name)
+    ext = availability.application("mount")
 
     def __init__(self, an_fs):
         self.fs = an_fs
@@ -51,8 +50,8 @@ class FSMount(task.Task):
 
     @property
     def _unavailable(self):
-        if not self._app.available:
-            return "application %s is not available" % self._app
+        if not self.ext.available:
+            return "application %s is not available" % self.ext
 
         canmount = (self.mountType in fslib.kernel_filesystems) or \
                    (os.access("/sbin/mount.%s" % (self.mountType,), os.X_OK))
@@ -84,14 +83,6 @@ class FSMount(task.Task):
             return "device %s does not exist" % self.fs.device
 
         return False
-
-    @property
-    def unable(self):
-        return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     # IMPLEMENTATION methods
 
@@ -155,8 +146,8 @@ class BindFSMount(FSMount):
 
     @property
     def _unavailable(self):
-        if not self._app.available:
-            return "application %s is not available" % self._app
+        if not self.ext.available:
+            return "application %s is not available" % self.ext
 
         return False
 
@@ -223,7 +214,7 @@ class TmpFSMount(NoDevFSMount):
 
     @property
     def _unavailable(self):
-        if not self._app.available:
-            return "application %s is not available" % self._app
+        if not self.ext.available:
+            return "application %s is not available" % self.ext
 
         return False
