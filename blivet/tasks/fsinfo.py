@@ -27,24 +27,16 @@ from six import add_metaclass
 from ..errors import FSError
 from .. import util
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSInfo(task.Task):
+class FSInfo(task.BasicApplication):
     """ An abstract class that represents an information gathering app. """
 
     description = "filesystem info"
 
-    app_name = abc.abstractproperty(
-       doc="The name of the filesystem information gathering application.")
-
     options = abc.abstractproperty(
        doc="Options for invoking the application.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -52,17 +44,6 @@ class FSInfo(task.Task):
             :param FS an_fs: a filesystem object
         """
         self.fs = an_fs
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s not available." % self._app()
-
-        return False
 
     @property
     def unready(self):
@@ -77,9 +58,6 @@ class FSInfo(task.Task):
     @property
     def unable(self):
         return False
-
-    def dependsOn(self):
-        return []
 
     @property
     def _infoCommand(self):
