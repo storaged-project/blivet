@@ -28,13 +28,13 @@ class DeviceActionTestCase(StorageTestCase):
     """ DeviceActionTestSuite """
 
     def setUp(self):
-        """ Create something like a preexisting autopart on two disks (sda,sdb).
+        """ Create something like a preexisting autopart on two disks (mocksda,mocksdb).
 
-            The other two disks (sdc,sdd) are left for individual tests to use.
+            The other two disks (mocksdc,mocksdd) are left for individual tests to use.
         """
         super(DeviceActionTestCase, self).setUp()
 
-        for name in ["sda", "sdb", "sdc", "sdd"]:
+        for name in ["mocksda", "mocksdb", "mocksdc", "mocksdd"]:
             disk = self.newDevice(device_class=DiskDevice,
                                   name=name, size=Size("100 GiB"))
             disk.format = self.newFormat("disklabel", path=disk.path,
@@ -42,31 +42,31 @@ class DeviceActionTestCase(StorageTestCase):
             self.storage.devicetree._addDevice(disk)
 
         # create a layout similar to autopart as a starting point
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
+        mocksda = self.storage.devicetree.getDeviceByName("mocksda")
+        mocksdb = self.storage.devicetree.getDeviceByName("mocksdb")
 
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              exists=True, name="sda1", parents=[sda],
+        mocksda1 = self.newDevice(device_class=PartitionDevice,
+                              exists=True, name="mocksda1", parents=[mocksda],
                               size=Size("500 MiB"))
-        sda1.format = self.newFormat("ext4", mountpoint="/boot",
-                                     device_instance=sda1,
-                                     device=sda1.path, exists=True)
-        self.storage.devicetree._addDevice(sda1)
+        mocksda1.format = self.newFormat("ext4", mountpoint="/boot",
+                                     device_instance=mocksda1,
+                                     device=mocksda1.path, exists=True)
+        self.storage.devicetree._addDevice(mocksda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.5 GiB"), name="sda2",
-                              parents=[sda], exists=True)
-        sda2.format = self.newFormat("lvmpv", device=sda2.path, exists=True)
-        self.storage.devicetree._addDevice(sda2)
+        mocksda2 = self.newDevice(device_class=PartitionDevice,
+                              size=Size("99.5 GiB"), name="mocksda2",
+                              parents=[mocksda], exists=True)
+        mocksda2.format = self.newFormat("lvmpv", device=mocksda2.path, exists=True)
+        self.storage.devicetree._addDevice(mocksda2)
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.999 GiB"), name="sdb1",
-                              parents=[sdb], exists=True)
-        sdb1.format = self.newFormat("lvmpv", device=sdb1.path, exists=True)
-        self.storage.devicetree._addDevice(sdb1)
+        mocksdb1 = self.newDevice(device_class=PartitionDevice,
+                              size=Size("99.999 GiB"), name="mocksdb1",
+                              parents=[mocksdb], exists=True)
+        mocksdb1.format = self.newFormat("lvmpv", device=mocksdb1.path, exists=True)
+        self.storage.devicetree._addDevice(mocksdb1)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="VolGroup", parents=[sda2, sdb1],
+                            name="VolGroup", parents=[mocksda2, mocksdb1],
                             exists=True)
         self.storage.devicetree._addDevice(vg)
 
@@ -122,23 +122,23 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(devicetree.getDevicesByType("lvmvg"), [])
         self.assertEqual(devicetree.getDevicesByType("partition"), [])
 
-        sda = devicetree.getDeviceByName("sda")
-        self.assertNotEqual(sda, None, "failed to find disk 'sda'")
+        mocksda = devicetree.getDeviceByName("mocksda")
+        self.assertNotEqual(mocksda, None, "failed to find disk 'mocksda'")
 
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              name="sda1", size=Size("500 MiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda1)
+        mocksda1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksda1", size=Size("500 MiB"),
+                              parents=[mocksda])
+        self.scheduleCreateDevice(mocksda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              name="sda2", size=Size("100 GiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda2)
-        fmt = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateFormat(device=sda2, fmt=fmt)
+        mocksda2 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksda2", size=Size("100 GiB"),
+                              parents=[mocksda])
+        self.scheduleCreateDevice(mocksda2)
+        fmt = self.newFormat("lvmpv", device=mocksda2.path)
+        self.scheduleCreateFormat(device=mocksda2, fmt=fmt)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="vg", parents=[sda2])
+                            name="vg", parents=[mocksda2])
         self.scheduleCreateDevice(vg)
 
         lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
@@ -155,43 +155,43 @@ class DeviceActionTestCase(StorageTestCase):
         fmt = self.newFormat("swap", device=lv_swap.path)
         self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
 
-        sda3 = self.newDevice(device_class=PartitionDevice,
-                              name="sda3", parents=[sda],
+        mocksda3 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksda3", parents=[mocksda],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(sda3)
-        fmt = self.newFormat("mdmember", device=sda3.path)
-        self.scheduleCreateFormat(device=sda3, fmt=fmt)
+        self.scheduleCreateDevice(mocksda3)
+        fmt = self.newFormat("mdmember", device=mocksda3.path)
+        self.scheduleCreateFormat(device=mocksda3, fmt=fmt)
 
-        sdb = devicetree.getDeviceByName("sdb")
-        self.assertNotEqual(sdb, None, "failed to find disk 'sdb'")
+        mocksdb = devicetree.getDeviceByName("mocksdb")
+        self.assertNotEqual(mocksdb, None, "failed to find disk 'mocksdb'")
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdb1", parents=[sdb],
+        mocksdb1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksdb1", parents=[mocksdb],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdb1)
-        fmt = self.newFormat("mdmember", device=sdb1.path,)
-        self.scheduleCreateFormat(device=sdb1, fmt=fmt)
+        self.scheduleCreateDevice(mocksdb1)
+        fmt = self.newFormat("mdmember", device=mocksdb1.path,)
+        self.scheduleCreateFormat(device=mocksdb1, fmt=fmt)
 
         md0 = self.newDevice(device_class=MDRaidArrayDevice,
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
-                             parents=[sdb1, sda3])
+                             parents=[mocksdb1, mocksda3])
         self.scheduleCreateDevice(md0)
 
         fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
         self.scheduleCreateFormat(device=md0, fmt=fmt)
 
-        fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
-        self.scheduleCreateFormat(device=sda1, fmt=fmt)
+        fmt = self.newFormat("ext4", mountpoint="/boot", device=mocksda1.path)
+        self.scheduleCreateFormat(device=mocksda1, fmt=fmt)
 
     def testActionCreation(self):
         """ Verify correct operation of action class constructors. """
         # instantiation of device resize action for non-existent device should
         # fail
         # XXX resizable depends on existence, so this is covered implicitly
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
+        mocksdd = self.storage.devicetree.getDeviceByName("mocksdd")
         p = self.newDevice(device_class=PartitionDevice,
-                           name="sdd1", size=Size("32 GiB"), parents=[sdd])
+                           name="mocksdd1", size=Size("32 GiB"), parents=[mocksdd])
         self.failUnlessRaises(ValueError,
                               ActionResizeDevice,
                               p,
@@ -271,47 +271,47 @@ class DeviceActionTestCase(StorageTestCase):
 
         # registering any action other than create for a device that's not in
         # the devicetree should fail
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        self.assertNotEqual(sdc, None)
-        sdc1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdc1", size=Size("100 GiB"),
-                              parents=[sdc], exists=True)
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        self.assertNotEqual(mocksdc, None)
+        mocksdc1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksdc1", size=Size("100 GiB"),
+                              parents=[mocksdc], exists=True)
 
-        sdc1_format = self.newFormat("ext2", device=sdc1.path, mountpoint="/")
-        create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
-        create_sdc1_format.apply()
+        mocksdc1_format = self.newFormat("ext2", device=mocksdc1.path, mountpoint="/")
+        create_mocksdc1_format = ActionCreateFormat(mocksdc1, mocksdc1_format)
+        create_mocksdc1_format.apply()
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
-                              create_sdc1_format)
+                              create_mocksdc1_format)
 
-        sdc1_format.exists = True
-        sdc1_format._resizable = True
-        resize_sdc1_format = ActionResizeFormat(sdc1,
-                                                sdc1.size - Size("10 GiB"))
-        resize_sdc1_format.apply()
+        mocksdc1_format.exists = True
+        mocksdc1_format._resizable = True
+        resize_mocksdc1_format = ActionResizeFormat(mocksdc1,
+                                                mocksdc1.size - Size("10 GiB"))
+        resize_mocksdc1_format.apply()
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
-                              resize_sdc1_format)
+                              resize_mocksdc1_format)
 
-        resize_sdc1 = ActionResizeDevice(sdc1, sdc1.size - Size("10 GiB"))
-        resize_sdc1.apply()
+        resize_mocksdc1 = ActionResizeDevice(mocksdc1, mocksdc1.size - Size("10 GiB"))
+        resize_mocksdc1.apply()
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
-                              resize_sdc1)
+                              resize_mocksdc1)
 
-        resize_sdc1.cancel()
-        resize_sdc1_format.cancel()
+        resize_mocksdc1.cancel()
+        resize_mocksdc1_format.cancel()
 
-        destroy_sdc1_format = ActionDestroyFormat(sdc1)
+        destroy_mocksdc1_format = ActionDestroyFormat(mocksdc1)
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
-                              destroy_sdc1_format)
+                              destroy_mocksdc1_format)
 
 
-        destroy_sdc1 = ActionDestroyDevice(sdc1)
+        destroy_mocksdc1 = ActionDestroyDevice(mocksdc1)
         self.failUnlessRaises(blivet.errors.DeviceTreeError,
                               self.storage.devicetree.registerAction,
-                              destroy_sdc1)
+                              destroy_mocksdc1)
 
         # registering a device destroy action should cause the device to be
         # removed from the devicetree
@@ -325,34 +325,34 @@ class DeviceActionTestCase(StorageTestCase):
 
         # registering a device create action should cause the device to be
         # added to the devicetree
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
-        self.assertNotEqual(sdd, None)
-        sdd1 = self.storage.devicetree.getDeviceByName("sdd1")
-        self.assertEqual(sdd1, None)
-        sdd1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdd1", size=Size("100 GiB"),
-                              parents=[sdd])
-        a = ActionCreateDevice(sdd1)
+        mocksdd = self.storage.devicetree.getDeviceByName("mocksdd")
+        self.assertNotEqual(mocksdd, None)
+        mocksdd1 = self.storage.devicetree.getDeviceByName("mocksdd1")
+        self.assertEqual(mocksdd1, None)
+        mocksdd1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksdd1", size=Size("100 GiB"),
+                              parents=[mocksdd])
+        a = ActionCreateDevice(mocksdd1)
         self.storage.devicetree.registerAction(a)
-        sdd1 = self.storage.devicetree.getDeviceByName("sdd1")
-        self.assertNotEqual(sdd1, None)
+        mocksdd1 = self.storage.devicetree.getDeviceByName("mocksdd1")
+        self.assertNotEqual(mocksdd1, None)
 
     def testActionObsoletes(self):
         """ Verify correct operation of DeviceAction.obsoletes. """
-        self.destroyAllDevices(disks=["sdc"])
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        self.assertNotEqual(sdc, None)
+        self.destroyAllDevices(disks=["mocksdc"])
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        self.assertNotEqual(mocksdc, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdc1", parents=[sdc], size=Size("40 GiB"))
+        mocksdc1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksdc1", parents=[mocksdc], size=Size("40 GiB"))
 
         # ActionCreateDevice
         #
         # - obsoletes other ActionCreateDevice instances w/ lower id and same
         #   device
-        create_device_1 = ActionCreateDevice(sdc1)
+        create_device_1 = ActionCreateDevice(mocksdc1)
         create_device_1.apply()
-        create_device_2 = ActionCreateDevice(sdc1)
+        create_device_2 = ActionCreateDevice(mocksdc1)
         create_device_2.apply()
         self.assertEqual(create_device_2.obsoletes(create_device_1), True)
         self.assertEqual(create_device_1.obsoletes(create_device_2), False)
@@ -361,11 +361,11 @@ class DeviceActionTestCase(StorageTestCase):
         #
         # - obsoletes other ActionCreateFormat instances w/ lower id and same
         #   device
-        format_1 = self.newFormat("ext3", mountpoint="/home", device=sdc1.path)
-        format_2 = self.newFormat("ext3", mountpoint="/opt", device=sdc1.path)
-        create_format_1 = ActionCreateFormat(sdc1, format_1)
+        format_1 = self.newFormat("ext3", mountpoint="/home", device=mocksdc1.path)
+        format_2 = self.newFormat("ext3", mountpoint="/opt", device=mocksdc1.path)
+        create_format_1 = ActionCreateFormat(mocksdc1, format_1)
         create_format_1.apply()
-        create_format_2 = ActionCreateFormat(sdc1, format_2)
+        create_format_2 = ActionCreateFormat(mocksdc1, format_2)
         create_format_2.apply()
         self.assertEqual(create_format_2.obsoletes(create_format_1), True)
         self.assertEqual(create_format_1.obsoletes(create_format_2), False)
@@ -374,23 +374,23 @@ class DeviceActionTestCase(StorageTestCase):
         #
         # - obsoletes other ActionResizeFormat instances w/ lower id and same
         #   device
-        sdc1.exists = True
-        sdc1.format.exists = True
-        sdc1.format._resizable = True
-        resize_format_1 = ActionResizeFormat(sdc1, sdc1.size - Size("1000 MiB"))
+        mocksdc1.exists = True
+        mocksdc1.format.exists = True
+        mocksdc1.format._resizable = True
+        resize_format_1 = ActionResizeFormat(mocksdc1, mocksdc1.size - Size("1000 MiB"))
         resize_format_1.apply()
-        resize_format_2 = ActionResizeFormat(sdc1, sdc1.size - Size("5000 MiB"))
+        resize_format_2 = ActionResizeFormat(mocksdc1, mocksdc1.size - Size("5000 MiB"))
         resize_format_2.apply()
         self.assertEqual(resize_format_2.obsoletes(resize_format_1), True)
         self.assertEqual(resize_format_1.obsoletes(resize_format_2), False)
-        sdc1.exists = False
-        sdc1.format.exists = False
+        mocksdc1.exists = False
+        mocksdc1.format.exists = False
 
         # ActionCreateFormat
         #
         # - obsoletes resize format actions w/ lower id on same device
-        new_format = self.newFormat("ext4", mountpoint="/foo", device=sdc1.path)
-        create_format_3 = ActionCreateFormat(sdc1, new_format)
+        new_format = self.newFormat("ext4", mountpoint="/foo", device=mocksdc1.path)
+        create_format_3 = ActionCreateFormat(mocksdc1, new_format)
         create_format_3.apply()
         self.assertEqual(create_format_3.obsoletes(resize_format_1), True)
         self.assertEqual(create_format_3.obsoletes(resize_format_2), True)
@@ -399,27 +399,27 @@ class DeviceActionTestCase(StorageTestCase):
         #
         # - obsoletes other ActionResizeDevice instances w/ lower id and same
         #   device
-        sdc1.exists = True
-        sdc1.format.exists = True
-        sdc1.format._resizable = True
-        resize_device_1 = ActionResizeDevice(sdc1,
-                                             sdc1.size + Size("10 GiB"))
+        mocksdc1.exists = True
+        mocksdc1.format.exists = True
+        mocksdc1.format._resizable = True
+        resize_device_1 = ActionResizeDevice(mocksdc1,
+                                             mocksdc1.size + Size("10 GiB"))
         resize_device_1.apply()
-        resize_device_2 = ActionResizeDevice(sdc1,
-                                             sdc1.size - Size("10 GiB"))
+        resize_device_2 = ActionResizeDevice(mocksdc1,
+                                             mocksdc1.size - Size("10 GiB"))
         resize_device_2.apply()
         self.assertEqual(resize_device_2.obsoletes(resize_device_1), True)
         self.assertEqual(resize_device_1.obsoletes(resize_device_2), False)
-        sdc1.exists = False
-        sdc1.format.exists = False
+        mocksdc1.exists = False
+        mocksdc1.format.exists = False
 
         # ActionDestroyFormat
         #
         # - obsoletes all format actions w/ higher id on same device (including
         #   self if format does not exist)
-        destroy_format_1 = ActionDestroyFormat(sdc1)
+        destroy_format_1 = ActionDestroyFormat(mocksdc1)
         destroy_format_1.apply()
-        destroy_format_2 = ActionDestroyFormat(sdc1)
+        destroy_format_2 = ActionDestroyFormat(mocksdc1)
         destroy_format_2.apply()
         self.assertEqual(destroy_format_1.obsoletes(create_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(resize_format_1), True)
@@ -431,58 +431,58 @@ class DeviceActionTestCase(StorageTestCase):
         #
         # - obsoletes all actions w/ lower id that act on the same non-existent
         #   device (including self)
-        # sdc1 does not exist
-        destroy_sdc1 = ActionDestroyDevice(sdc1)
-        destroy_sdc1.apply()
-        self.assertEqual(destroy_sdc1.obsoletes(create_format_2), True)
-        self.assertEqual(destroy_sdc1.obsoletes(resize_format_2), True)
-        self.assertEqual(destroy_sdc1.obsoletes(create_device_1), True)
-        self.assertEqual(destroy_sdc1.obsoletes(resize_device_1), True)
-        self.assertEqual(destroy_sdc1.obsoletes(destroy_sdc1), True)
+        # mocksdc1 does not exist
+        destroy_mocksdc1 = ActionDestroyDevice(mocksdc1)
+        destroy_mocksdc1.apply()
+        self.assertEqual(destroy_mocksdc1.obsoletes(create_format_2), True)
+        self.assertEqual(destroy_mocksdc1.obsoletes(resize_format_2), True)
+        self.assertEqual(destroy_mocksdc1.obsoletes(create_device_1), True)
+        self.assertEqual(destroy_mocksdc1.obsoletes(resize_device_1), True)
+        self.assertEqual(destroy_mocksdc1.obsoletes(destroy_mocksdc1), True)
 
         # ActionDestroyDevice
         #
         # - obsoletes all but ActionDestroyFormat actions w/ lower id on the
         #   same existing device
-        # sda1 exists
-        sda1 = self.storage.devicetree.getDeviceByName("sda1")
-        self.assertNotEqual(sda1, None)
-        #sda1.format._resizable = True
-        resize_sda1_format = ActionResizeFormat(sda1,
-                                                sda1.size - Size("50 MiB"))
-        resize_sda1_format.apply()
-        resize_sda1 = ActionResizeDevice(sda1, sda1.size - Size("50 MiB"))
-        resize_sda1.apply()
-        destroy_sda1_format = ActionDestroyFormat(sda1)
-        destroy_sda1_format.apply()
-        destroy_sda1 = ActionDestroyDevice(sda1)
-        destroy_sda1.apply()
-        self.assertEqual(destroy_sda1.obsoletes(resize_sda1_format), True)
-        self.assertEqual(destroy_sda1.obsoletes(resize_sda1), True)
-        self.assertEqual(destroy_sda1.obsoletes(destroy_sda1), False)
-        self.assertEqual(destroy_sda1.obsoletes(destroy_sda1_format), False)
+        # mocksda1 exists
+        mocksda1 = self.storage.devicetree.getDeviceByName("mocksda1")
+        self.assertNotEqual(mocksda1, None)
+        #mocksda1.format._resizable = True
+        resize_mocksda1_format = ActionResizeFormat(mocksda1,
+                                                mocksda1.size - Size("50 MiB"))
+        resize_mocksda1_format.apply()
+        resize_mocksda1 = ActionResizeDevice(mocksda1, mocksda1.size - Size("50 MiB"))
+        resize_mocksda1.apply()
+        destroy_mocksda1_format = ActionDestroyFormat(mocksda1)
+        destroy_mocksda1_format.apply()
+        destroy_mocksda1 = ActionDestroyDevice(mocksda1)
+        destroy_mocksda1.apply()
+        self.assertEqual(destroy_mocksda1.obsoletes(resize_mocksda1_format), True)
+        self.assertEqual(destroy_mocksda1.obsoletes(resize_mocksda1), True)
+        self.assertEqual(destroy_mocksda1.obsoletes(destroy_mocksda1), False)
+        self.assertEqual(destroy_mocksda1.obsoletes(destroy_mocksda1_format), False)
 
     def testActionPruning(self):
         """ Verify correct functioning of action pruning. """
         self.destroyAllDevices()
 
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        self.assertNotEqual(sda, None, "failed to find disk 'sda'")
+        mocksda = self.storage.devicetree.getDeviceByName("mocksda")
+        self.assertNotEqual(mocksda, None, "failed to find disk 'mocksda'")
 
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              name="sda1", size=Size("500 MiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda1)
+        mocksda1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksda1", size=Size("500 MiB"),
+                              parents=[mocksda])
+        self.scheduleCreateDevice(mocksda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              name="sda2", size=Size("100 GiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda2)
-        fmt = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateFormat(device=sda2, fmt=fmt)
+        mocksda2 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksda2", size=Size("100 GiB"),
+                              parents=[mocksda])
+        self.scheduleCreateDevice(mocksda2)
+        fmt = self.newFormat("lvmpv", device=mocksda2.path)
+        self.scheduleCreateFormat(device=mocksda2, fmt=fmt)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="vg", parents=[sda2])
+                            name="vg", parents=[mocksda2])
         self.scheduleCreateDevice(vg)
 
         lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
@@ -501,27 +501,27 @@ class DeviceActionTestCase(StorageTestCase):
 
         # we'll soon schedule destroy actions for these members and the array,
         # which will test pruning. the whole mess should reduce to nothing
-        sda3 = self.newDevice(device_class=PartitionDevice,
-                              name="sda3", parents=[sda],
+        mocksda3 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksda3", parents=[mocksda],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(sda3)
-        fmt = self.newFormat("mdmember", device=sda3.path)
-        self.scheduleCreateFormat(device=sda3, fmt=fmt)
+        self.scheduleCreateDevice(mocksda3)
+        fmt = self.newFormat("mdmember", device=mocksda3.path)
+        self.scheduleCreateFormat(device=mocksda3, fmt=fmt)
 
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
-        self.assertNotEqual(sdb, None, "failed to find disk 'sdb'")
+        mocksdb = self.storage.devicetree.getDeviceByName("mocksdb")
+        self.assertNotEqual(mocksdb, None, "failed to find disk 'mocksdb'")
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdb1", parents=[sdb],
+        mocksdb1 = self.newDevice(device_class=PartitionDevice,
+                              name="mocksdb1", parents=[mocksdb],
                               size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdb1)
-        fmt = self.newFormat("mdmember", device=sdb1.path,)
-        self.scheduleCreateFormat(device=sdb1, fmt=fmt)
+        self.scheduleCreateDevice(mocksdb1)
+        fmt = self.newFormat("mdmember", device=mocksdb1.path,)
+        self.scheduleCreateFormat(device=mocksdb1, fmt=fmt)
 
         md0 = self.newDevice(device_class=MDRaidArrayDevice,
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
-                             parents=[sdb1, sda3])
+                             parents=[mocksdb1, mocksda3])
         self.scheduleCreateDevice(md0)
 
         fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
@@ -530,21 +530,21 @@ class DeviceActionTestCase(StorageTestCase):
         # now destroy the md and its components
         self.scheduleDestroyFormat(md0)
         self.scheduleDestroyDevice(md0)
-        self.scheduleDestroyDevice(sdb1)
-        self.scheduleDestroyDevice(sda3)
+        self.scheduleDestroyDevice(mocksdb1)
+        self.scheduleDestroyDevice(mocksda3)
 
-        fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
-        self.scheduleCreateFormat(device=sda1, fmt=fmt)
+        fmt = self.newFormat("ext4", mountpoint="/boot", device=mocksda1.path)
+        self.scheduleCreateFormat(device=mocksda1, fmt=fmt)
 
         # verify the md actions are present prior to pruning
         md0_actions = self.storage.devicetree.actions.find(devid=md0.id)
         self.assertNotEqual(len(md0_actions), 0)
 
-        sdb1_actions = self.storage.devicetree.actions.find(devid=sdb1.id)
-        self.assertNotEqual(len(sdb1_actions), 0)
+        mocksdb1_actions = self.storage.devicetree.actions.find(devid=mocksdb1.id)
+        self.assertNotEqual(len(mocksdb1_actions), 0)
 
-        sda3_actions = self.storage.devicetree.actions.find(devid=sda3.id)
-        self.assertNotEqual(len(sda3_actions), 0)
+        mocksda3_actions = self.storage.devicetree.actions.find(devid=mocksda3.id)
+        self.assertNotEqual(len(mocksda3_actions), 0)
 
         self.storage.devicetree.actions.prune()
 
@@ -552,11 +552,11 @@ class DeviceActionTestCase(StorageTestCase):
         md0_actions = self.storage.devicetree.actions.find(devid=md0.id)
         self.assertEqual(len(md0_actions), 0)
 
-        sdb1_actions = self.storage.devicetree.actions.find(devid=sdb1.id)
-        self.assertEqual(len(sdb1_actions), 0)
+        mocksdb1_actions = self.storage.devicetree.actions.find(devid=mocksdb1.id)
+        self.assertEqual(len(mocksdb1_actions), 0)
 
-        sda3_actions = self.storage.devicetree.actions.find(sda3.id)
-        self.assertEqual(len(sda3_actions), 0)
+        mocksda3_actions = self.storage.devicetree.actions.find(mocksda3.id)
+        self.assertEqual(len(mocksda3_actions), 0)
 
     def testActionDependencies(self):
         """ Verify correct functioning of action dependencies. """
@@ -594,29 +594,29 @@ class DeviceActionTestCase(StorageTestCase):
 
         # create something like uncommitted autopart
         self.destroyAllDevices()
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
-        sda1 = self.newDevice(device_class=PartitionDevice, name="sda1",
-                              size=Size("500 MiB"), parents=[sda])
-        sda1_format = self.newFormat("ext4", mountpoint="/boot",
-                                     device=sda1.path)
-        self.scheduleCreateDevice(sda1)
-        self.scheduleCreateFormat(device=sda1, fmt=sda1_format)
+        mocksda = self.storage.devicetree.getDeviceByName("mocksda")
+        mocksdb = self.storage.devicetree.getDeviceByName("mocksdb")
+        mocksda1 = self.newDevice(device_class=PartitionDevice, name="mocksda1",
+                              size=Size("500 MiB"), parents=[mocksda])
+        mocksda1_format = self.newFormat("ext4", mountpoint="/boot",
+                                     device=mocksda1.path)
+        self.scheduleCreateDevice(mocksda1)
+        self.scheduleCreateFormat(device=mocksda1, fmt=mocksda1_format)
 
-        sda2 = self.newDevice(device_class=PartitionDevice, name="sda2",
-                              size=Size("99.5 GiB"), parents=[sda])
-        sda2_format = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateDevice(sda2)
-        self.scheduleCreateFormat(device=sda2, fmt=sda2_format)
+        mocksda2 = self.newDevice(device_class=PartitionDevice, name="mocksda2",
+                              size=Size("99.5 GiB"), parents=[mocksda])
+        mocksda2_format = self.newFormat("lvmpv", device=mocksda2.path)
+        self.scheduleCreateDevice(mocksda2)
+        self.scheduleCreateFormat(device=mocksda2, fmt=mocksda2_format)
 
-        sdb1 = self.newDevice(device_class=PartitionDevice, name="sdb1",
-                              size=Size("100 GiB"), parents=[sdb])
-        sdb1_format = self.newFormat("lvmpv", device=sdb1.path)
-        self.scheduleCreateDevice(sdb1)
-        self.scheduleCreateFormat(device=sdb1, fmt=sdb1_format)
+        mocksdb1 = self.newDevice(device_class=PartitionDevice, name="mocksdb1",
+                              size=Size("100 GiB"), parents=[mocksdb])
+        mocksdb1_format = self.newFormat("lvmpv", device=mocksdb1.path)
+        self.scheduleCreateDevice(mocksdb1)
+        self.scheduleCreateFormat(device=mocksdb1, fmt=mocksdb1_format)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="VolGroup", parents=[sda2, sdb1])
+                            name="VolGroup", parents=[mocksda2, mocksdb1])
         self.scheduleCreateDevice(vg)
 
         lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
@@ -678,71 +678,71 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionCreateDevice
         # the higher numbered partition of two that are scheduled to be
         # created on a single disk should require the action that creates the
-        # lower numbered of the two, eg: create sda2 before creating sda3
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        self.assertNotEqual(sdc, None)
+        # lower numbered of the two, eg: create mocksda2 before creating mocksda3
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        self.assertNotEqual(mocksdc, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("50 GiB"))
-        create_sdc1 = self.scheduleCreateDevice(sdc1)
-        self.assertEqual(isinstance(create_sdc1, ActionCreateDevice), True)
+        mocksdc1 = self.newDevice(device_class=PartitionDevice, name="mocksdc1",
+                              parents=[mocksdc], size=Size("50 GiB"))
+        create_mocksdc1 = self.scheduleCreateDevice(mocksdc1)
+        self.assertEqual(isinstance(create_mocksdc1, ActionCreateDevice), True)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              parents=[sdc], size=Size("50 GiB"))
-        create_sdc2 = self.scheduleCreateDevice(sdc2)
-        self.assertEqual(isinstance(create_sdc2, ActionCreateDevice), True)
+        mocksdc2 = self.newDevice(device_class=PartitionDevice, name="mocksdc2",
+                              parents=[mocksdc], size=Size("50 GiB"))
+        create_mocksdc2 = self.scheduleCreateDevice(mocksdc2)
+        self.assertEqual(isinstance(create_mocksdc2, ActionCreateDevice), True)
 
-        self.assertEqual(create_sdc2.requires(create_sdc1), True)
-        self.assertEqual(create_sdc1.requires(create_sdc2), False)
+        self.assertEqual(create_mocksdc2.requires(create_mocksdc1), True)
+        self.assertEqual(create_mocksdc1.requires(create_mocksdc2), False)
 
         # ActionCreateDevice
         # actions that create partitions on two separate disks should not
         # require each other, regardless of the partitions' numbers
-        sda1 = self.storage.devicetree.getDeviceByName("sda1")
-        self.assertNotEqual(sda1, None)
+        mocksda1 = self.storage.devicetree.getDeviceByName("mocksda1")
+        self.assertNotEqual(mocksda1, None)
         actions = self.storage.devicetree.actions.find(action_type="create",
                                                       object_type="device",
-                                                      device=sda1)
+                                                      device=mocksda1)
         self.assertEqual(len(actions), 1,
-                         "wrong number of create actions found for sda1")
-        create_sda1 = actions[0]
-        self.assertEqual(create_sdc2.requires(create_sda1), False)
-        self.assertEqual(create_sda1.requires(create_sdc1), False)
+                         "wrong number of create actions found for mocksda1")
+        create_mocksda1 = actions[0]
+        self.assertEqual(create_mocksdc2.requires(create_mocksda1), False)
+        self.assertEqual(create_mocksda1.requires(create_mocksdc1), False)
 
         # ActionDestroyDevice
         # an action that destroys a device containing an mdmember format
         # should require the action that destroys the md array it is a
         # member of if an array is defined
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        self.assertNotEqual(sdc, None)
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
-        self.assertNotEqual(sdd, None)
+        self.destroyAllDevices(disks=["mocksdc", "mocksdd"])
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        self.assertNotEqual(mocksdc, None)
+        mocksdd = self.storage.devicetree.getDeviceByName("mocksdd")
+        self.assertNotEqual(mocksdd, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdc1)
-        fmt = self.newFormat("mdmember", device=sdc1.path)
-        self.scheduleCreateFormat(device=sdc1, fmt=fmt)
+        mocksdc1 = self.newDevice(device_class=PartitionDevice, name="mocksdc1",
+                              parents=[mocksdc], size=Size("40 GiB"))
+        self.scheduleCreateDevice(mocksdc1)
+        fmt = self.newFormat("mdmember", device=mocksdc1.path)
+        self.scheduleCreateFormat(device=mocksdc1, fmt=fmt)
 
-        sdd1 = self.newDevice(device_class=PartitionDevice, name="sdd1",
-                              parents=[sdd], size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdd1)
-        fmt = self.newFormat("mdmember", device=sdd1.path,)
-        self.scheduleCreateFormat(device=sdd1, fmt=fmt)
+        mocksdd1 = self.newDevice(device_class=PartitionDevice, name="mocksdd1",
+                              parents=[mocksdd], size=Size("40 GiB"))
+        self.scheduleCreateDevice(mocksdd1)
+        fmt = self.newFormat("mdmember", device=mocksdd1.path,)
+        self.scheduleCreateFormat(device=mocksdd1, fmt=fmt)
 
         md0 = self.newDevice(device_class=MDRaidArrayDevice,
                              name="md0", level="raid0", minor=0,
                              memberDevices=2, totalDevices=2,
-                             parents=[sdc1, sdd1])
+                             parents=[mocksdc1, mocksdd1])
         self.scheduleCreateDevice(md0)
         fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
         self.scheduleCreateFormat(device=md0, fmt=fmt)
 
         destroy_md0_format = self.scheduleDestroyFormat(md0)
         destroy_md0 = self.scheduleDestroyDevice(md0)
-        destroy_members = [self.scheduleDestroyDevice(sdc1)]
-        destroy_members.append(self.scheduleDestroyDevice(sdd1))
+        destroy_members = [self.scheduleDestroyDevice(mocksdc1)]
+        destroy_members.append(self.scheduleDestroyDevice(mocksdd1))
 
         for member in destroy_members:
             # device and format destroy actions for md members should require
@@ -754,35 +754,35 @@ class DeviceActionTestCase(StorageTestCase):
         # when there are two actions that will each destroy a partition on the
         # same disk, the action that will destroy the lower-numbered
         # partition should require the action that will destroy the higher-
-        # numbered partition, eg: destroy sda2 before destroying sda1
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("50 GiB"))
-        self.scheduleCreateDevice(sdc1)
+        # numbered partition, eg: destroy mocksda2 before destroying mocksda1
+        self.destroyAllDevices(disks=["mocksdc", "mocksdd"])
+        mocksdc1 = self.newDevice(device_class=PartitionDevice, name="mocksdc1",
+                              parents=[mocksdc], size=Size("50 GiB"))
+        self.scheduleCreateDevice(mocksdc1)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              parents=[sdc], size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdc2)
+        mocksdc2 = self.newDevice(device_class=PartitionDevice, name="mocksdc2",
+                              parents=[mocksdc], size=Size("40 GiB"))
+        self.scheduleCreateDevice(mocksdc2)
 
-        destroy_sdc1 = self.scheduleDestroyDevice(sdc1)
-        destroy_sdc2 = self.scheduleDestroyDevice(sdc2)
-        self.assertEqual(destroy_sdc1.requires(destroy_sdc2), True)
-        self.assertEqual(destroy_sdc2.requires(destroy_sdc1), False)
+        destroy_mocksdc1 = self.scheduleDestroyDevice(mocksdc1)
+        destroy_mocksdc2 = self.scheduleDestroyDevice(mocksdc2)
+        self.assertEqual(destroy_mocksdc1.requires(destroy_mocksdc2), True)
+        self.assertEqual(destroy_mocksdc2.requires(destroy_mocksdc1), False)
 
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        self.assertNotEqual(sdc, None)
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
-        self.assertNotEqual(sdd, None)
+        self.destroyAllDevices(disks=["mocksdc", "mocksdd"])
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        self.assertNotEqual(mocksdc, None)
+        mocksdd = self.storage.devicetree.getDeviceByName("mocksdd")
+        self.assertNotEqual(mocksdd, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("50 GiB"))
-        create_pv = self.scheduleCreateDevice(sdc1)
-        fmt = self.newFormat("lvmpv", device=sdc1.path)
-        create_pv_format = self.scheduleCreateFormat(device=sdc1, fmt=fmt)
+        mocksdc1 = self.newDevice(device_class=PartitionDevice, name="mocksdc1",
+                              parents=[mocksdc], size=Size("50 GiB"))
+        create_pv = self.scheduleCreateDevice(mocksdc1)
+        fmt = self.newFormat("lvmpv", device=mocksdc1.path)
+        create_pv_format = self.scheduleCreateFormat(device=mocksdc1, fmt=fmt)
 
         testvg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                                name="testvg", parents=[sdc1])
+                                name="testvg", parents=[mocksdc1])
         create_vg = self.scheduleCreateDevice(testvg)
         testlv = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                 name="testlv", parents=[testvg],
@@ -809,14 +809,14 @@ class DeviceActionTestCase(StorageTestCase):
 
         # XXX from here on, the devices are existing but not in the tree, so
         #     we instantiate and use actions directly
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc1 = self.newDevice(device_class=PartitionDevice, exists=True,
-                              name="sdc1", parents=[sdc],
+        self.destroyAllDevices(disks=["mocksdc", "mocksdd"])
+        mocksdc1 = self.newDevice(device_class=PartitionDevice, exists=True,
+                              name="mocksdc1", parents=[mocksdc],
                               size=Size("50 GiB"))
-        sdc1.format = self.newFormat("lvmpv", device=sdc1.path, exists=True,
-                                     device_instance=sdc1)
+        mocksdc1.format = self.newFormat("lvmpv", device=mocksdc1.path, exists=True,
+                                     device_instance=mocksdc1)
         testvg = self.newDevice(device_class=LVMVolumeGroupDevice, exists=True,
-                                name="testvg", parents=[sdc1],
+                                name="testvg", parents=[mocksdc1],
                                 size=Size("50 GiB"))
         testlv = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                 exists=True, size=Size("30 GiB"),
@@ -828,18 +828,18 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that resizes a device should require an action that grows
         # a device that the first action's device depends on, eg: grow
         # device containing PV before resize of VG or LVs
-        sdc1.format._resizable = True   # override lvmpv.resizable
-        sdc1.exists = True
-        sdc1.format.exists = True
-        grow_pv = ActionResizeDevice(sdc1, sdc1.size + Size("10 GiB"))
+        mocksdc1.format._resizable = True   # override lvmpv.resizable
+        mocksdc1.exists = True
+        mocksdc1.format.exists = True
+        grow_pv = ActionResizeDevice(mocksdc1, mocksdc1.size + Size("10 GiB"))
         grow_pv.apply()
         grow_lv = ActionResizeDevice(testlv, testlv.size + Size("5 GiB"))
         grow_lv.apply()
         grow_lv_format = ActionResizeFormat(testlv,
                                             testlv.size + Size("5 GiB"))
         grow_lv_format.apply()
-        sdc1.exists = False
-        sdc1.format.exists = False
+        mocksdc1.exists = False
+        mocksdc1.format.exists = False
 
         self.assertEqual(grow_lv.requires(grow_pv), True)
         self.assertEqual(grow_pv.requires(grow_lv), False)
@@ -882,12 +882,12 @@ class DeviceActionTestCase(StorageTestCase):
         shrink_lv = ActionResizeDevice(testlv,
                                        testlv.size - Size("10 GiB"))
         shrink_lv.apply()
-        sdc1.exists = True
-        sdc1.format.exists = True
-        shrink_pv = ActionResizeDevice(sdc1, sdc1.size - Size("5 GiB"))
+        mocksdc1.exists = True
+        mocksdc1.format.exists = True
+        shrink_pv = ActionResizeDevice(mocksdc1, mocksdc1.size - Size("5 GiB"))
         shrink_pv.apply()
-        sdc1.exists = False
-        sdc1.format.exists = False
+        mocksdc1.exists = False
+        mocksdc1.format.exists = False
 
         self.assertEqual(shrink_pv.requires(shrink_lv), True)
         self.assertEqual(shrink_lv.requires(shrink_pv), False)
@@ -931,7 +931,7 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that creates a format on a device should require an action
         # that resizes the device that will contain the format
         grow_lv = ActionResizeDevice(testlv, testlv.size + Size("1 GiB"))
-        fmt = self.newFormat("msdos", device=testlv.path)
+        fmt = self.newFormat("disklabel", device=testlv.path)
         format_lv = ActionCreateFormat(testlv, fmt)
         self.assertEqual(format_lv.requires(grow_lv), True)
         self.assertEqual(grow_lv.requires(format_lv), False)
@@ -939,7 +939,7 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionDestroyFormat
         # an action that destroys a format should require an action that
         # destroys a device that depends on the format's device
-        destroy_pv_format = ActionDestroyFormat(sdc1)
+        destroy_pv_format = ActionDestroyFormat(mocksdc1)
         destroy_lv_format = ActionDestroyFormat(testlv)
         destroy_lv = ActionDestroyDevice(testlv)
         self.assertEqual(destroy_pv_format.requires(destroy_lv), True)
@@ -952,18 +952,18 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_pv_format.requires(destroy_lv_format), True)
         self.assertEqual(destroy_lv_format.requires(destroy_pv_format), False)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              size=Size("5 GiB"), parents=[sdc])
-        create_sdc2 = self.scheduleCreateDevice(sdc2)
+        mocksdc2 = self.newDevice(device_class=PartitionDevice, name="mocksdc2",
+                              size=Size("5 GiB"), parents=[mocksdc])
+        create_mocksdc2 = self.scheduleCreateDevice(mocksdc2)
 
         # create actions should always require destroy actions -- even for
         # unrelated devices -- since, after pruning, it should always be the
         # case that destroy actions are processed before create actions (no
         # create/destroy loops are allowed)
-        self.assertEqual(create_sdc2.requires(destroy_lv), True)
+        self.assertEqual(create_mocksdc2.requires(destroy_lv), True)
 
         # similarly, create actions should also require resize actions
-        self.assertEqual(create_sdc2.requires(grow_lv), True)
+        self.assertEqual(create_mocksdc2.requires(grow_lv), True)
 
     def testActionApplyCancel(self):
         lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
@@ -1002,10 +1002,10 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(lv_root.format, original_format)
 
 
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        sdc.format = None
-        pv_fmt = self.newFormat("lvmpv", device_instance=sdc, device=sdc.path)
-        self.scheduleCreateFormat(device=sdc, fmt=pv_fmt)
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        mocksdc.format = None
+        pv_fmt = self.newFormat("lvmpv", device_instance=mocksdc, device=mocksdc.path)
+        self.scheduleCreateFormat(device=mocksdc, fmt=pv_fmt)
         vg = self.storage.devicetree.getDeviceByName("VolGroup")
         original_pvs = vg.parents[:]
 
@@ -1014,56 +1014,56 @@ class DeviceActionTestCase(StorageTestCase):
         #     the original ordering of the container's parents list when
         #     canceled.
         pvs = original_pvs[:]
-        action = ActionAddMember(vg, sdc)
+        action = ActionAddMember(vg, mocksdc)
         self.assertEqual(list(vg.parents), original_pvs)
         action.apply()
-        pvs.append(sdc)
+        pvs.append(mocksdc)
         self.assertEqual(list(vg.parents), pvs)
         action.cancel()
-        pvs.remove(sdc)
+        pvs.remove(mocksdc)
         self.assertEqual(list(vg.parents), original_pvs)
 
         # ActionRemoveMember
         pvs = original_pvs[:]
-        sdb1 = self.storage.devicetree.getDeviceByName("sdb1")
-        action = ActionRemoveMember(vg, sdb1)
+        mocksdb1 = self.storage.devicetree.getDeviceByName("mocksdb1")
+        action = ActionRemoveMember(vg, mocksdb1)
         self.assertEqual(list(vg.parents), original_pvs)
         action.apply()
-        pvs.remove(sdb1)
+        pvs.remove(mocksdb1)
         self.assertEqual(list(vg.parents), pvs)
         action.cancel()
         self.assertEqual(list(vg.parents), original_pvs)
 
     def testContainerActions(self):
         self.destroyAllDevices()
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
+        mocksda = self.storage.devicetree.getDeviceByName("mocksda")
+        mocksdb = self.storage.devicetree.getDeviceByName("mocksdb")
 
         #
         # create something like an existing lvm autopart layout across two disks
         #
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              exists=True, name="sda1", parents=[sda],
+        mocksda1 = self.newDevice(device_class=PartitionDevice,
+                              exists=True, name="mocksda1", parents=[mocksda],
                               size=Size("500 MiB"))
-        sda1.format = self.newFormat("ext4", mountpoint="/boot",
-                                     device_instance=sda1,
-                                     device=sda1.path, exists=True)
-        self.storage.devicetree._addDevice(sda1)
+        mocksda1.format = self.newFormat("ext4", mountpoint="/boot",
+                                     device_instance=mocksda1,
+                                     device=mocksda1.path, exists=True)
+        self.storage.devicetree._addDevice(mocksda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.5 GiB"), name="sda2",
-                              parents=[sda], exists=True)
-        sda2.format = self.newFormat("lvmpv", device=sda2.path, exists=True)
-        self.storage.devicetree._addDevice(sda2)
+        mocksda2 = self.newDevice(device_class=PartitionDevice,
+                              size=Size("99.5 GiB"), name="mocksda2",
+                              parents=[mocksda], exists=True)
+        mocksda2.format = self.newFormat("lvmpv", device=mocksda2.path, exists=True)
+        self.storage.devicetree._addDevice(mocksda2)
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.999 GiB"), name="sdb1",
-                              parents=[sdb], exists=True)
-        sdb1.format = self.newFormat("lvmpv", device=sdb1.path, exists=True)
-        self.storage.devicetree._addDevice(sdb1)
+        mocksdb1 = self.newDevice(device_class=PartitionDevice,
+                              size=Size("99.999 GiB"), name="mocksdb1",
+                              parents=[mocksdb], exists=True)
+        mocksdb1.format = self.newFormat("lvmpv", device=mocksdb1.path, exists=True)
+        self.storage.devicetree._addDevice(mocksdb1)
 
         vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="VolGroup", parents=[sda2, sdb1],
+                            name="VolGroup", parents=[mocksda2, mocksdb1],
                             exists=True)
         self.storage.devicetree._addDevice(vg)
 
@@ -1086,23 +1086,23 @@ class DeviceActionTestCase(StorageTestCase):
         #
         # test some modifications to the VG
         #
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              size=Size("50 GiB"), parents=[sdc])
-        sdc1_format = self.newFormat("lvmpv", device=sdc1.path)
-        create_sdc1 = self.scheduleCreateDevice(sdc1)
-        create_sdc1_format = self.scheduleCreateFormat(device=sdc1,
-                                                       fmt=sdc1_format)
+        mocksdc = self.storage.devicetree.getDeviceByName("mocksdc")
+        mocksdc1 = self.newDevice(device_class=PartitionDevice, name="mocksdc1",
+                              size=Size("50 GiB"), parents=[mocksdc])
+        mocksdc1_format = self.newFormat("lvmpv", device=mocksdc1.path)
+        create_mocksdc1 = self.scheduleCreateDevice(mocksdc1)
+        create_mocksdc1_format = self.scheduleCreateFormat(device=mocksdc1,
+                                                       fmt=mocksdc1_format)
 
         self.assertEqual(len(vg.parents), 2)
 
-        add_sdc1 = ActionAddMember(vg, sdc1)
+        add_mocksdc1 = ActionAddMember(vg, mocksdc1)
         self.assertEqual(len(vg.parents), 2)
-        add_sdc1.apply()
+        add_mocksdc1.apply()
         self.assertEqual(len(vg.parents), 3)
 
-        self.assertEqual(add_sdc1.requires(create_sdc1), True)
-        self.assertEqual(add_sdc1.requires(create_sdc1_format), True)
+        self.assertEqual(add_mocksdc1.requires(create_mocksdc1), True)
+        self.assertEqual(add_mocksdc1.requires(create_mocksdc1_format), True)
 
         new_lv = self.newDevice(device_class=LVMLogicalVolumeDevice,
                                 name="newlv", parents=[vg],
@@ -1112,43 +1112,43 @@ class DeviceActionTestCase(StorageTestCase):
         create_new_lv_format = self.scheduleCreateFormat(device=new_lv,
                                                          fmt=new_lv_format)
 
-        self.assertEqual(create_new_lv.requires(add_sdc1), True)
-        self.assertEqual(create_new_lv_format.requires(add_sdc1), False)
+        self.assertEqual(create_new_lv.requires(add_mocksdc1), True)
+        self.assertEqual(create_new_lv_format.requires(add_mocksdc1), False)
 
         self.storage.devicetree.cancelAction(create_new_lv_format)
         self.storage.devicetree.cancelAction(create_new_lv)
 
-        remove_sdb1 = ActionRemoveMember(vg, sdb1)
+        remove_mocksdb1 = ActionRemoveMember(vg, mocksdb1)
         self.assertEqual(len(vg.parents), 3)
-        remove_sdb1.apply()
+        remove_mocksdb1.apply()
         self.assertEqual(len(vg.parents), 2)
 
-        self.assertEqual(remove_sdb1.requires(add_sdc1), True)
+        self.assertEqual(remove_mocksdb1.requires(add_mocksdc1), True)
 
-        vg.parents.append(sdb1)
-        remove_sdb1_2 = ActionRemoveMember(vg, sdb1)
-        remove_sdb1_2.apply()
-        self.assertEqual(remove_sdb1_2.obsoletes(remove_sdb1), False)
-        self.assertEqual(remove_sdb1.obsoletes(remove_sdb1_2), True)
+        vg.parents.append(mocksdb1)
+        remove_mocksdb1_2 = ActionRemoveMember(vg, mocksdb1)
+        remove_mocksdb1_2.apply()
+        self.assertEqual(remove_mocksdb1_2.obsoletes(remove_mocksdb1), False)
+        self.assertEqual(remove_mocksdb1.obsoletes(remove_mocksdb1_2), True)
 
-        remove_sdc1 = ActionRemoveMember(vg, sdc1)
-        remove_sdc1.apply()
-        self.assertEqual(remove_sdc1.obsoletes(add_sdc1), True)
-        self.assertEqual(add_sdc1.obsoletes(remove_sdc1), True)
+        remove_mocksdc1 = ActionRemoveMember(vg, mocksdc1)
+        remove_mocksdc1.apply()
+        self.assertEqual(remove_mocksdc1.obsoletes(add_mocksdc1), True)
+        self.assertEqual(add_mocksdc1.obsoletes(remove_mocksdc1), True)
 
         # add/remove loops (same member&container) should obsolete both actions
-        add_sdb1 = ActionAddMember(vg, sdb1)
-        add_sdb1.apply()
-        self.assertEqual(add_sdb1.obsoletes(remove_sdb1), True)
-        self.assertEqual(remove_sdb1.obsoletes(add_sdb1), True)
+        add_mocksdb1 = ActionAddMember(vg, mocksdb1)
+        add_mocksdb1.apply()
+        self.assertEqual(add_mocksdb1.obsoletes(remove_mocksdb1), True)
+        self.assertEqual(remove_mocksdb1.obsoletes(add_mocksdb1), True)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              size=Size("5 GiB"), parents=[sdc])
-        create_sdc2 = self.scheduleCreateDevice(sdc2)
+        mocksdc2 = self.newDevice(device_class=PartitionDevice, name="mocksdc2",
+                              size=Size("5 GiB"), parents=[mocksdc])
+        create_mocksdc2 = self.scheduleCreateDevice(mocksdc2)
 
         # destroy/resize/create sequencing does not apply to container actions
-        self.assertEqual(create_sdc2.requires(remove_sdc1), False)
-        self.assertEqual(remove_sdc1.requires(create_sdc2), False)
+        self.assertEqual(create_mocksdc2.requires(remove_mocksdc1), False)
+        self.assertEqual(remove_mocksdc1.requires(create_mocksdc2), False)
 
     def testActionSorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
