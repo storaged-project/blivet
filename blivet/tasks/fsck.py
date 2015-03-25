@@ -27,27 +27,19 @@ from six import add_metaclass
 from ..errors import FSError
 from .. import util
 
-from . import availability
 from . import task
 
 _UNKNOWN_RC_MSG = "Unknown return code: %d"
 
 @add_metaclass(abc.ABCMeta)
-class FSCK(task.Task):
+class FSCK(task.BasicApplication):
     """An abstract class that represents actions associated with
        checking consistency of a filesystem.
     """
     description = "fsck"
 
-    app_name = abc.abstractproperty(
-       doc="The name of the filesystem labeling application.")
-
     options = abc.abstractproperty(
        doc="Options for invoking the application.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -57,17 +49,6 @@ class FSCK(task.Task):
         self.fs = an_fs
 
     # TASK methods
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s is not available" % self._app()
-
-        return False
 
     @property
     def unready(self):
@@ -82,10 +63,6 @@ class FSCK(task.Task):
     @property
     def unable(self):
         return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     # IMPLEMENTATION methods
 

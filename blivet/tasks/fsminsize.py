@@ -28,23 +28,15 @@ from ..errors import FSError
 from .. import util
 from ..size import Size
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSMinSize(task.Task):
+class FSMinSize(task.BasicApplication):
     """ An abstract class that represents min size information extraction. """
 
     description = "minimum filesystem size"
 
-    app_name = abc.abstractproperty(
-       doc="App for obtaining minimum size information.")
-
     options = abc.abstractproperty(doc="Options for use with app.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -52,16 +44,6 @@ class FSMinSize(task.Task):
             :param FS an_fs: a filesystem object
         """
         self.fs = an_fs
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s not available" % self._app()
-        return None
 
     @property
     def unready(self):

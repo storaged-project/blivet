@@ -28,25 +28,17 @@ from six import add_metaclass
 from ..errors import FSReadLabelError
 from .. import util
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSReadLabel(task.Task):
+class FSReadLabel(task.BasicApplication):
     """ An abstract class that represents reading a filesystem's label. """
     description = "read filesystem label"
-
-    app_name = abc.abstractproperty(
-       doc="The name of the filesystem labeling application.")
 
     label_regex = abc.abstractproperty(
         doc="Matches the string output by the reading application.")
 
     args = abc.abstractproperty(doc="arguments for reading a label.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -56,17 +48,6 @@ class FSReadLabel(task.Task):
         self.fs = an_fs
 
     # TASK methods
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s is not available" % self._app()
-
-        return False
 
     @property
     def unready(self):
@@ -81,10 +62,6 @@ class FSReadLabel(task.Task):
     @property
     def unable(self):
         return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     # IMPLEMENTATION methods
 

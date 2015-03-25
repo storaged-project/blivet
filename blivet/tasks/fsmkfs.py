@@ -27,7 +27,6 @@ from six import add_metaclass
 from ..errors import FSError, FSWriteLabelError
 from .. import util
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -36,21 +35,14 @@ class FSMkfsTask(task.Task):
     labels = abc.abstractproperty(doc="whether this task labels")
 
 @add_metaclass(abc.ABCMeta)
-class FSMkfs(FSMkfsTask):
+class FSMkfs(task.BasicApplication, FSMkfsTask):
     """An abstract class that represents filesystem creation actions. """
     description = "mkfs"
-
-    app_name = abc.abstractproperty(
-       doc="Name of the filesystem creation application.")
 
     label_option = abc.abstractproperty(
        doc="Option for setting a filesystem label.")
 
     args = abc.abstractproperty(doc="options for creating filesystem")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -60,16 +52,6 @@ class FSMkfs(FSMkfsTask):
         self.fs = an_fs
 
     # TASK methods
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "Filesystem formatting application %s is unavailable." % self._app()
-        return False
 
     @property
     def unready(self):
@@ -84,10 +66,6 @@ class FSMkfs(FSMkfsTask):
     @property
     def unable(self):
         return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     # IMPLEMENTATION methods
 

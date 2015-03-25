@@ -28,7 +28,6 @@ from ..errors import FSError
 from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..import util
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -40,19 +39,12 @@ class FSResizeTask(task.Task):
 
 
 @add_metaclass(abc.ABCMeta)
-class FSResize(FSResizeTask):
+class FSResize(task.BasicApplication, FSResizeTask):
     """ An abstract class for resizing a filesystem. """
 
     description = "resize filesystem"
 
-    app_name = abc.abstractproperty(
-       doc="The name of the filesystem resizing application.")
-
     args = abc.abstractproperty(doc="Resize arguments.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -62,17 +54,6 @@ class FSResize(FSResizeTask):
         self.fs = an_fs
 
     # TASK methods
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s not available." % self._app()
-
-        return False
 
     @property
     def unready(self):
@@ -87,10 +68,6 @@ class FSResize(FSResizeTask):
     @property
     def unable(self):
         return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     # IMPLEMENTATION methods
 

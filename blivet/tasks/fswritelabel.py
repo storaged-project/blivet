@@ -27,23 +27,15 @@ from six import add_metaclass
 from .. import util
 from ..errors import FSWriteLabelError
 
-from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSWriteLabel(task.Task):
+class FSWriteLabel(task.BasicApplication):
     """ An abstract class that represents writing a label for a filesystem. """
 
     description = "write filesystem label"
 
-    app_name = abc.abstractproperty(
-       doc="The name of the filesystem labeling application.")
-
     args = abc.abstractproperty(doc="arguments for writing a label")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -53,17 +45,6 @@ class FSWriteLabel(task.Task):
         self.fs = an_fs
 
     # TASK methods
-
-    @classmethod
-    def available(cls):
-        return cls._app().available
-
-    @property
-    def _unavailable(self):
-        if not self._app().available:
-            return "application %s is not available" % self._app()
-
-        return False
 
     @property
     def unready(self):
@@ -84,10 +65,6 @@ class FSWriteLabel(task.Task):
             return "bad label format for labelling application %s" % self._app()
 
         return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     # IMPLEMENTATION methods
 
