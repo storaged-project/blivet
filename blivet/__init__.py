@@ -63,17 +63,27 @@ program_log = logging.getLogger("program")
 log_bd_message = lambda level, msg: program_log.info(msg)
 
 # initialize the libblockdev library
+from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
-_REQUIRED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
-_required_plugins = blockdev.plugin_specs_from_names(_REQUIRED_PLUGIN_NAMES)
+_REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
+_requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 if not blockdev.is_initialized():
-    if not blockdev.try_init(require_plugins=_required_plugins, log_func=log_bd_message):
-        raise RuntimeError("Failed to initialize the libblockdev library with all required plugins")
+    try:
+        blockdev.try_init(require_plugins=_requested_plugins, log_func=log_bd_message)
+    except GLib.GError:
+        pass
 else:
     avail_plugs = set(blockdev.get_available_plugin_names())
-    if avail_plugs != _REQUIRED_PLUGIN_NAMES:
-        if not blockdev.reinit(require_plugins=_required_plugins, reload=False, log_func=log_bd_message):
-            raise RuntimeError("Failed to initialize the libblockdev library with all required plugins")
+    if avail_plugs != _REQUESTED_PLUGIN_NAMES:
+        try:
+            blockdev.reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
+        except GLib.GError:
+            pass
+
+avail_plugs = set(blockdev.get_available_plugin_names())
+missing_plugs =  _REQUESTED_PLUGIN_NAMES - avail_plugs
+for p in missing_plugs:
+    log.info("Failed to load plugin %s", p)
 
 def enable_installer_mode():
     """ Configure the module for use by anaconda (OS installer). """
