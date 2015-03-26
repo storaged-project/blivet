@@ -1,5 +1,5 @@
 
-import unittest
+import unittest2 as unittest
 from blivet.devices import ParentList
 from blivet.devices import Device
 

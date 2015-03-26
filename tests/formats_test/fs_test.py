@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import os
 import tempfile
-import unittest
+import unittest2 as unittest
 
 import blivet.formats.fs as fs
 from blivet.size import Size, ROUND_DOWN

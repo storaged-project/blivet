@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import unittest
+import unittest2 as unittest
 import time
 import uuid
 

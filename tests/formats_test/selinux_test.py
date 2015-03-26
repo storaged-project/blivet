@@ -2,7 +2,7 @@
 import os
 import selinux
 import tempfile
-import unittest
+import unittest2 as unittest
 
 import blivet
 from tests import loopbackedtestcase

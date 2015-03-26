@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import unittest
+import unittest2 as unittest
 
 import blivet.devicelibs.swap as swap
 from blivet.errors import SwapError

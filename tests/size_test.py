@@ -23,7 +23,7 @@
 
 import locale
 import os
-import unittest
+import unittest2 as unittest
 
 from decimal import Decimal
 

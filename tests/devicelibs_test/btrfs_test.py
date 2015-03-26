@@ -3,7 +3,7 @@ import os
 import os.path
 import subprocess
 import tempfile
-import unittest
+import unittest2 as unittest
 
 import blivet.devicelibs.btrfs as btrfs
 from blivet.errors import BTRFSError

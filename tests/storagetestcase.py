@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import unittest
+import unittest2 as unittest
 from mock import Mock
 
 import parted

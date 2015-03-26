@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import unittest
+import unittest2 as unittest
 
 import blivet.devicelibs.raid as raid
 import blivet.errors as errors

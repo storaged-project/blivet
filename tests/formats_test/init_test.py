@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import copy
-import unittest
+import unittest2 as unittest
 
 import blivet.formats as formats
 

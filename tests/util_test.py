@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import unittest
+import unittest2 as unittest
 from decimal import Decimal
 
 from blivet import util
