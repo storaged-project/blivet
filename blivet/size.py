@@ -244,7 +244,9 @@ class Size(Decimal):
         """
         if isinstance(value, (six.string_types, bytes)):
             size = _parseSpec(value)
-        elif isinstance(value, (six.integer_types, float, Decimal)):
+        elif isinstance(value, float):
+            size = Decimal(str(value))
+        elif isinstance(value, (six.integer_types, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):
             size = Decimal(value.convertTo())
