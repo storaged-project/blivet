@@ -4,7 +4,6 @@ import sys
 import traceback
 
 log = logging.getLogger("blivet")
-log.addHandler(logging.NullHandler())
 
 def function_name_and_depth():
     IGNORED_FUNCS = ["function_name_and_depth",
