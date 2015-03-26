@@ -27,7 +27,7 @@ po-empty:
 
 test:
 	@echo "*** Running unittests ***"
-	PYTHONPATH=.:tests/ python -m unittest discover -v -s tests/ -p '*_test.py'
+	PYTHONPATH=.:tests/ unit2 discover -v -s tests/ -p '*_test.py'
 
 coverage:
 	@which coverage || (echo "*** Please install python-coverage ***"; exit 2)
