@@ -244,7 +244,7 @@ class PartitionDevice(StorageDevice):
 
         (_constraint, geometry) = self._computeResize(self.partedPartition,
                                                       newsize=newsize)
-        return Size(geometry.getLength(unit="B"))
+        return Size(geometry.getSize(unit="b"))
 
     def _setTargetSize(self, newsize):
         if not isinstance(newsize, Size):
@@ -519,7 +519,7 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             return
 
-        self._size = Size(self.partedPartition.getLength(unit="B"))
+        self._size = Size(self.partedPartition.getSize(unit="b"))
         self._currentSize = self._size
         self.targetSize = self._size
 
@@ -582,7 +582,7 @@ class PartitionDevice(StorageDevice):
             DeviceFormat(device=self.path, exists=True).destroy()
 
         StorageDevice._postCreate(self)
-        self._currentSize = Size(self.partedPartition.getLength(unit="B"))
+        self._currentSize = Size(self.partedPartition.getSize(unit="b"))
 
     def create(self):
         """ Create the device. """
@@ -651,7 +651,7 @@ class PartitionDevice(StorageDevice):
                                         end=geometry.end)
 
         self.disk.format.commit()
-        self._currentSize = Size(partition.getLength(unit="B"))
+        self._currentSize = Size(partition.getSize(unit="b"))
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -700,7 +700,7 @@ class PartitionDevice(StorageDevice):
         """ Get the device's size. """
         size = self._size
         if self.partedPartition:
-            size = Size(self.partedPartition.getLength(unit="B"))
+            size = Size(self.partedPartition.getSize(unit="b"))
         return size
 
     def _setSize(self, newsize):
@@ -778,7 +778,7 @@ class PartitionDevice(StorageDevice):
             pass
         else:
             if partition.type == parted.PARTITION_FREESPACE:
-                maxPartSize += Size(partition.getLength(unit="B"))
+                maxPartSize += Size(partition.getSize(unit="b"))
 
         return maxPartSize
 

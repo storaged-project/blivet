@@ -211,7 +211,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = Size(self.partedDevice.getSize(unit="b"))
             log.debug("existing RAID %s size == %s", self.level, size)
 
         return size

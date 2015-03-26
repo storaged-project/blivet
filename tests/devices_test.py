@@ -850,7 +850,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             disk.format.addPartition(start, end)
             partition = disk.format.partedDisk.getPartitionBySector(start)
             self.assertNotEqual(partition, None)
-            self.assertEqual(orig_size, Size(partition.getLength(unit='B')))
+            self.assertEqual(orig_size, Size(partition.getSize(unit='b')))
 
             device = PartitionDevice(os.path.basename(partition.path),
                                      size=orig_size)
@@ -902,14 +902,14 @@ class PartitionDeviceTestCase(unittest.TestCase):
             device.targetSize = new_target
             self.assertEqual(device.targetSize, new_target)
             self.assertEqual(device.size, new_target)
-            parted_size = Size(device.partedPartition.getLength(unit='B'))
+            parted_size = Size(device.partedPartition.getSize(unit='b'))
             self.assertEqual(parted_size, device.targetSize)
 
             # reset target size to original size
             device.targetSize = orig_size
             self.assertEqual(device.targetSize, orig_size)
             self.assertEqual(device.size, orig_size)
-            parted_size = Size(device.partedPartition.getLength(unit='B'))
+            parted_size = Size(device.partedPartition.getSize(unit='b'))
             self.assertEqual(parted_size, device.targetSize)
 
     def testMinMaxSizeAlignment(self):

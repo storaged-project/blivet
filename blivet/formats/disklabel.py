@@ -206,7 +206,7 @@ class DiskLabel(DeviceFormat):
         size = self._size
         if not size:
             try:
-                size = Size(self.partedDevice.getLength(unit="B"))
+                size = Size(self.partedDevice.getSize(unit="b"))
             except Exception: # pylint: disable=broad-except
                 log_exception_info()
                 size = Size(0)
@@ -383,7 +383,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        return sum((Size(f.getLength(unit="B")) for f in self.partedDisk.getFreeSpacePartitions()), Size(0))
+        return sum((Size(f.getSize(unit="b")) for f in self.partedDisk.getFreeSpacePartitions()), Size(0))
 
     @property
     def magicPartitionNumber(self):
