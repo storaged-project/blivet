@@ -25,7 +25,6 @@ BuildRequires: gettext
 BuildRequires: python-setuptools
 
 Requires: python
-Requires: python-six
 Requires: util-linux-ng >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}

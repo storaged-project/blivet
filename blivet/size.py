@@ -27,7 +27,6 @@ from collections import namedtuple
 from decimal import Decimal
 from decimal import InvalidOperation
 from decimal import ROUND_DOWN, ROUND_UP, ROUND_HALF_UP
-import six
 
 from .errors import SizePlacesError
 from .i18n import _, N_
@@ -70,10 +69,7 @@ _DECIMAL_PREFIXES = [KB, MB, GB, TB, PB, EB, ZB, YB]
 _BINARY_PREFIXES = [KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB]
 _EMPTY_PREFIX = B
 
-if six.PY2:
-    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
-else:
-    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+_ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
 
 def _lowerASCII(s):
     """Convert a string to lowercase using only ASCII character definitions.
@@ -82,10 +78,7 @@ def _lowerASCII(s):
        :returns: lower-cased string
        :rtype: str
     """
-    if six.PY2:
-        return string.translate(s, _ASCIIlower_table) # pylint: disable=no-member
-    else:
-        return str.translate(s, _ASCIIlower_table) # pylint: disable=no-member
+    return string.translate(s, _ASCIIlower_table) # pylint: disable=no-member
 
 def _makeSpec(prefix, suffix, xlate, lowercase=True):
     """ Synthesizes a whole word from prefix and suffix.
@@ -189,10 +182,7 @@ def _parseSpec(spec):
 
     # First try to parse as English.
     try:
-        if six.PY2:
-            spec_ascii = str(specifier.decode("ascii"))
-        else:
-            spec_ascii = bytes(specifier, 'ascii')
+        spec_ascii = str(specifier.decode("ascii"))
     except (UnicodeDecodeError, UnicodeEncodeError):
         # String contains non-ascii characters, so can not be English.
         pass
@@ -202,13 +192,10 @@ def _parseSpec(spec):
             return size * unit.factor
 
     # No English match found, try localized size specs.
-    if six.PY2:
-        if isinstance(specifier, unicode):
-            spec_local = specifier
-        else:
-            spec_local = specifier.decode("utf-8")
-    else:
+    if isinstance(specifier, unicode):
         spec_local = specifier
+    else:
+        spec_local = specifier.decode("utf-8")
 
     unit = parseUnits(spec_local, True)
     if unit is not None:
@@ -242,11 +229,11 @@ class Size(Decimal):
             If you want to use a spec value to represent a bytes value,
             you can use the letter 'b' or 'B' or omit the size specifier.
         """
-        if isinstance(value, (six.string_types, bytes)):
+        if isinstance(value, (basestring, bytes)):
             size = _parseSpec(value)
         elif isinstance(value, float):
             size = Decimal(str(value))
-        elif isinstance(value, (six.integer_types, Decimal)):
+        elif isinstance(value, (int, long, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):
             size = Decimal(value.convertTo())
@@ -342,10 +329,10 @@ class Size(Decimal):
             if n.humanReadable() == x U and b is the number of bytes in 1 U,
             and e = 1/2 * 1/(10^max_places) * b, then x - e < n < x + e.
         """
-        if max_places is not None and (max_places < 0 or not isinstance(max_places, six.integer_types)):
+        if max_places is not None and (max_places < 0 or not isinstance(max_places, (int, long))):
             raise SizePlacesError("max_places must be None or an non-negative integer value")
 
-        if min_value < 0 or not isinstance(min_value, (six.integer_types, Decimal)):
+        if min_value < 0 or not isinstance(min_value, (int, long, Decimal)):
             raise ValueError("min_value must be a precise positive numeric value.")
 
         # Find the smallest prefix which will allow a number less than
