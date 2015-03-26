@@ -12,7 +12,6 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %define dmver 1.02.17-6
-%define pykickstartver 1.99.22
 %define partedver 1.8.1
 %define pypartedver 2.5-2
 %define pythonpyblockver 0.45
@@ -27,7 +26,6 @@ BuildRequires: python-setuptools
 
 Requires: python
 Requires: python-six
-Requires: pykickstart >= %{pykickstartver}
 Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
