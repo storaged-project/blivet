@@ -35,7 +35,7 @@ log = logging.getLogger("blivet")
 MAIN_VOLUME_ID = 5
 
 # if any component device is less than this size, mkfs.btrfs will fail
-MIN_MEMBER_SIZE = Size("16 MiB")
+MIN_MEMBER_SIZE = Size("8 MiB")
 
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single"])
 
