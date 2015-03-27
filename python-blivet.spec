@@ -26,7 +26,7 @@ BuildRequires: python-setuptools
 
 Requires: python
 Requires: python-six
-Requires: util-linux >= %{utillinuxver}
+Requires: util-linux-ng >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
