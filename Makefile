@@ -9,7 +9,7 @@ VERSION_TAG=$(PKGNAME)-$(VERSION)
 ZANATA_PULL_ARGS = --transdir ./po/
 ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
-MOCKCHROOT ?= fedora-rawhide-x86_64
+MOCKCHROOT ?= epel-6-x86_64
 
 all:
 	$(MAKE) -C po
