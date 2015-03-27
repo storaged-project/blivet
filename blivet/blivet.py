@@ -1684,6 +1684,7 @@ class Blivet(object):
             root.swaps = [s for s in root.swaps if s]
 
             for (mountpoint, old_dev) in root.mounts.items():
+                removed = set()
                 if old_dev is None:
                     continue
 
@@ -1691,9 +1692,12 @@ class Blivet(object):
                 if new_dev is None:
                     # if the device has been removed don't include this
                     # mountpoint at all
-                    del root.mounts[mountpoint]
+                    removed.add(mountpoint)
                 else:
                     root.mounts[mountpoint] = new_dev
+
+            for mnt in removed:
+                del root.mounts[mnt]
 
         log.debug("finished Blivet copy")
         return new
