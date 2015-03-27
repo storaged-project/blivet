@@ -72,7 +72,7 @@ class Ext2FSLabeling(FSLabeling):
 
 class FATFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "NO NAME")
+    default_label = property(lambda s: "")
     label_app = property(lambda s: fslabel.DosFsLabel)
 
     def labelFormatOK(self, label):
