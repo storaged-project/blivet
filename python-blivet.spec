@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.1
+Version: 1.2
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -57,6 +57,81 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Mar 27 2015 Brian C. Lane <bcl@redhat.com> - 1.2-1
+- Fix pylint unused variable warnings (vtrefny)
+- Add test for mountpoints (vtrefny)
+- Replace _mountpoint with systemMountpoint in other modules (vtrefny)
+- New method to handle nodev filesystems (vtrefny)
+- Add dynamic mountpoint detection support (vtrefny)
+- New method to compute md5 hash of file (vtrefny)
+- Add information about subvolume to BTRFS format (vtrefny)
+- Don't specify priority in fstab if -1 (default) is used (#1203709) (vpodzime)
+- Catch GLib.GError in places where we catch StorageError (#1202505) (vpodzime)
+- slave_dev is undefined here, use slave_devices[0] instead. (clumens)
+- Clean out the mock chroot before attempting to run the rest of the test.
+  (clumens)
+- Move recursiveRemove from Blivet to DeviceTree. (dlehman)
+- Factor out adding of sysfs slave (parent) devices into its own method.
+  (dlehman)
+- Add a __str__ method to DeviceTree. (dlehman)
+- Allow changing the names of existing devices. (dlehman)
+- Remove redundant block for adding fwraid member disks. (dlehman)
+- Return a device from addUdevLVDevice if possible. (dlehman)
+- Pass a sysfs path to MultipathDevice constructor from Populator. (dlehman)
+- Resolve md names in udev info. (dlehman)
+- LVMVolumeGroupDevice format should be marked as immutable. (dlehman)
+- Don't catch and re-raise device create exceptions as DeviceCreateError.
+  (dlehman)
+- Call superclass _preCreate from BTRFSVolumeDevice._preCreate. (dlehman)
+- Move code that populates the device tree into a new class and module.
+  (dlehman)
+- Move action list management into a separate class and module. (dlehman)
+- Put an __init__.py in devices_tests directory. (amulhern)
+- Require the Python 2 version of pykickstart (#1202255) (vpodzime)
+- Use Size method to perform a Size operation (#1200812) (amulhern)
+- Extend Size.roundToNearest to allow Size units (#1200812) (amulhern)
+- Move code that populates the device tree into a new class and module.
+  (dlehman)
+- Move action list management into a separate class and module. (dlehman)
+- Remove a pointless override. (amulhern)
+- Display the name of the overridden ancestor in error message. (amulhern)
+- Check for simple function calls in pointless overrides. (amulhern)
+- Simplify supported methods in FS.py. (amulhern)
+- Make hidden property use superclass method where possible. (amulhern)
+- Simplify some methods in DeviceFormat class. (amulhern)
+- Do supercall in BTRFSVolumeDevice.formatImmutable. (amulhern)
+- Add a comment to supported property. (amulhern)
+- Get rid of some very old commented out code. (amulhern)
+- Put all mock results into the top-level source dir. (clumens)
+- Spell TestCase.teardown correctly as tearDown(). (amulhern)
+- Make testMount() check return value of util.mount(). (amulhern)
+- Remove unused fs_configs. (amulhern)
+- Remove side-effects from mountType property. (amulhern)
+- Do not make the mountpoint directory in fs.FS.mount(). (amulhern)
+- Mount should not be satisfied with anything less than a directory. (amulhern)
+- Do not return doFormat() value. (amulhern)
+- Put previously removed mountExistingSystem() into osinstall.py. (amulhern)
+- Revert "Revive the mountExistingSystem() function and all it needs"
+  (amulhern)
+- Make sure the device is setup before formatting it (#1196397) (bcl)
+- Use %%d format string for every value that should be an integer decimal.
+  (amulhern)
+- Robustify PartitionDevice._wipe() method. (amulhern)
+- Fix up scientific notation _parseSpec() tests. (amulhern)
+- Make size._parseSpec a public method. (amulhern)
+- Simplify StorageDevice.disks. (amulhern)
+- Simplify StorageDevice.growable. (amulhern)
+- Simplify and correct StorageDevice.packages property. (amulhern)
+- Remove services infrastructure from devices and formats. (amulhern)
+- Split devices tests out into a separate directory. (amulhern)
+- Fix dd wipe call. (exclusion)
+- Add a script to rebase and merge pull requests (dshea)
+- Add pylint false positive to list of pylint false positives. (amulhern)
+- Change all instances of GLib.Error to GLib.GError. (amulhern)
+- Sort pylint-false-positives using sort's default options with LC_ALL=C.
+  (amulhern)
+- Add ability to match scientific notation in strings. (amulhern)
+
 * Fri Mar 06 2015 Brian C. Lane <bcl@redhat.com> - 1.1-1
 - Add scratch, scratch-bumpver and rc-release targets. (bcl)
 - Add --newrelease to makebumpver (bcl)
