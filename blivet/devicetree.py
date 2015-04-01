@@ -133,6 +133,18 @@ class DeviceTree(object):
     def dasd(self):
         return self._populator.dasd
 
+    @dasd.setter
+    def dasd(self, dasd):
+        self._populator.dasd = dasd
+
+    @property
+    def protectedDevNames(self):
+        return self._populator.protectedDevNames
+
+    @property
+    def diskImages(self):
+        return self._populator.diskImages
+
     @property
     def pvInfo(self):
         if self._pvs_cache is None:
@@ -488,6 +500,15 @@ class DeviceTree(object):
     def setupDiskImages(self):
         """ Set up devices to represent the disk image files. """
         self._populator.setupDiskImages()
+
+    def updateDeviceFormat(self, device):
+        return self._populator.updateDeviceFormat(device)
+
+    def pruneActions(self):
+        return self._actions.prune()
+
+    def sortActions(self):
+        return self._actions.sort()
 
     def populate(self, cleanupOnly=False):
         """ Locate all storage devices.
