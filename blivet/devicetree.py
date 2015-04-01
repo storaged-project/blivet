@@ -582,23 +582,30 @@ class DeviceTree(object):
 
         return actions
 
-    def getDependentDevices(self, dep):
+    def getDependentDevices(self, dep, hidden=False):
         """ Return a list of devices that depend on dep.
 
             The list includes both direct and indirect dependents.
 
             :param dep: the device whose dependents we are looking for
             :type dep: :class:`~.devices.StorageDevice`
+            :keyword bool hidden: include hidden devices in search
         """
         dependents = []
+        log_method_call(self, dep=dep, hidden=hidden)
 
         # don't bother looping looking for dependents if this is a leaf device
-        if dep.isleaf:
+        # XXX all hidden devices are leaves
+        if dep.isleaf and not hidden:
+            log.debug("dep is a leaf")
             return dependents
 
-        incomplete = [d for d in self._devices
-                            if not getattr(d, "complete", True)]
-        for device in self.devices + incomplete:
+        devices = self._devices[:]
+        if hidden:
+            devices.extend(self._hidden)
+
+        for device in devices:
+            log.debug("checking if %s depends on %s", device.name, dep.name)
             if device.dependsOn(dep):
                 dependents.append(device)
 
