@@ -145,7 +145,7 @@ class DeviceTree(object):
     def lvInfo(self):
         if self._lvs_cache is None:
             lvs = blockdev.lvm_lvs()
-            self._lvs_cache = dict((lv.lv_name, lv) for lv in lvs) # pylint: disable=attribute-defined-outside-init
+            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs) # pylint: disable=attribute-defined-outside-init
 
         return self._lvs_cache
 
