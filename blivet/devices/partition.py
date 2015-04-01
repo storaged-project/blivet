@@ -703,47 +703,25 @@ class PartitionDevice(StorageDevice):
     def _setSize(self, newsize):
         """ Set the device's size.
 
-            Most devices have two scenarios for setting a size:
+            .. note::
 
-                1) set actual/current size
-                2) set target for resize
+                If you change the size of an allocated-but-not-existing
+                partition, you are responsible for calling doPartitioning to
+                reallocate it with the new size.
 
-            Partitions have a third scenario:
-
-                3) update size of an allocated-but-non-existent partition
         """
         log_method_call(self, self.name,
                         status=self.status, size=self._size, newsize=newsize)
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if not self.exists and not self.partedPartition:
+        if not self.exists:
             # device does not exist (a partition request), just set basic value
             self._size = newsize
             self.req_size = newsize
             self.req_base_size = newsize
-            return
-
-        if self.exists:
+        else:
             super(PartitionDevice, self)._setSize(newsize)
-            return
-
-        # the rest is for changing the size of an allocated-but-not-existing
-        # partition, which I'm not sure is advisable
-        if newsize > self.disk.size:
-            raise ValueError("partition size would exceed disk size")
-
-        maxAvailableSize = Size(self.partedPartition.getMaxAvailableSize(unit="B"))
-
-        if newsize > maxAvailableSize:
-            raise ValueError("new size is greater than available space")
-
-         # now convert the size to sectors and update the geometry
-        geometry = self.partedPartition.geometry
-        physicalSectorSize = geometry.device.physicalSectorSize
-
-        new_length = int(newsize) / physicalSectorSize
-        geometry.length = new_length
 
     def _getDisk(self):
         """ The disk that contains this partition."""
