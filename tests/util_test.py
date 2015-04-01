@@ -7,8 +7,6 @@ from blivet import util
 
 class MiscTest(unittest.TestCase):
 
-    longMessage = True
-
     def test_power_of_two(self):
         self.assertFalse(util.power_of_two(None))
         self.assertFalse(util.power_of_two("not a number"))
