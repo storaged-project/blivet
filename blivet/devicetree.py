@@ -2001,6 +2001,21 @@ class DeviceTree(object):
             for pv in vg.pvs:
                 lvm.lvm_cc_addFilterRejectRegexp(pv.name)
 
+    def getRelatedDisks(self, disk):
+        """ Return disks related to disk by container membership.
+
+            :param :class:`~.devices.StorageDevice` disk: the disk
+            :returns: related disks
+            :rtype: set of :class:`~.devices.StorageDevice`
+
+            .. note::
+
+                The disk may be hidden.
+
+        """
+        return set(d for dep in self.getDependentDevices(disk, hidden=True)
+                        for d in dep.disks)
+
     def hide(self, device):
         """ Hide the specified device.
 
