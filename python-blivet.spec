@@ -16,7 +16,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define pypartedver 2.5-2
 %define pythonpyblockver 0.45
 %define e2fsver 1.41.0
-%define pythoncryptsetupver 0.1.1
+%define pythoncryptsetupver 0.0.11
 %define utillinuxver 2.15.1
 %define lvm2ver 2.02.99
 

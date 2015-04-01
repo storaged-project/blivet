@@ -39,8 +39,7 @@ class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
         ##
         # pass
         self.assertEqual(crypto.is_luks(_LOOP_DEV0), -22)
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
-            crypto.is_luks("/not/existing/device")
+        self.assertEqual(crypto.is_luks("/not/existing/device"), -22)
 
         ##
         ## luks_format
@@ -59,7 +58,7 @@ class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
             crypto.luks_format(_LOOP_DEV1, key_file=keyfile)
 
         # fail
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+        with self.assertRaises(CryptoError):
             crypto.luks_format("/not/existing/device", passphrase="secret", cipher="aes-cbc-essiv:sha256", key_size=256)
 
         # no passhprase or key file
@@ -86,24 +85,19 @@ class CryptoTestCase(loopbackedtestcase.LoopBackedTestCase):
         ##
         ## luks_remove_key
         ##
-        # fail
-        with self.assertRaisesRegexp(CryptoError, "luks remove key failed"):
-            crypto.luks_remove_key(_LOOP_DEV0, del_passphrase="another-secret", passphrase="wrong-pasphrase")
-
         # pass
         self.assertEqual(crypto.luks_remove_key(_LOOP_DEV0, del_passphrase="another-secret", passphrase="secret"), None)
 
         # fail
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+        with self.assertRaises(CryptoError):
             crypto.luks_open("/not/existing/device", "another-crypted", passphrase="secret")
 
         # no passhprase or key file
-        with self.assertRaisesRegexp(ValueError, "luks_format requires passphrase"):
+        with self.assertRaises(ValueError):
             crypto.luks_open(_LOOP_DEV1, "another-crypted")
 
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
-            crypto.luks_status("another-crypted")
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+        self.assertFalse(crypto.luks_status("another-crypted"))
+        with self.assertRaises(CryptoError):
             crypto.luks_close("wrong-name")
 
         # cleanup
@@ -150,8 +144,8 @@ class CryptoTestCase2(loopbackedtestcase.LoopBackedTestCase):
         ## luks_status
         ##
         # pass
-        self.assertEqual(crypto.luks_status(_name0), 2)
-        self.assertEqual(crypto.luks_status(_name1), 2)
+        self.assertTrue(crypto.luks_status(_name0))
+        self.assertTrue(crypto.luks_status(_name1))
 
         ##
         ## luks_uuid
@@ -170,9 +164,9 @@ class CryptoTestCase2(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(crypto.luks_close(_name1), None)
 
         # already closed
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+        with self.assertRaises(CryptoError):
             crypto.luks_close("crypted")
-        with self.assertRaisesRegexp(IOError, "Device cannot be opened"):
+        with self.assertRaises(CryptoError):
             crypto.luks_close("encrypted")
 
 class CryptoTestCase3(unittest.TestCase):
