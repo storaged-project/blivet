@@ -1444,7 +1444,7 @@ class DeviceTree(object):
                 rname = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, rname)
                 addRequiredLV(name, "failed to look up raid lv")
-                raid[name]["copies"] += 1
+                raid_items[name]["copies"] += 1
                 return
             elif lv_attr[0] == 'e':
                 if lv_name.endswith("_pmspare]"):
@@ -1455,14 +1455,14 @@ class DeviceTree(object):
                 lv_name = re.sub(r'_[tr]meta.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
                 addRequiredLV(name, "failed to look up raid lv")
-                raid[name]["meta"] += lv_size
+                raid_items[name]["meta"] += lv_size
                 return
             elif lv_attr[0] == 'l':
                 # log volume
                 rname = re.sub(r'_mlog.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, rname)
                 addRequiredLV(name, "failed to look up log lv")
-                raid[name]["log"] = lv_size
+                raid_items[name]["log"] = lv_size
                 return
             elif lv_attr[0] == 't':
                 # thin pool
@@ -1517,13 +1517,13 @@ class DeviceTree(object):
                     # do format handling now
                     self.addUdevDevice(lv_info)
 
-        raid = dict((n.replace("[", "").replace("]", ""),
+        raid_items = dict((n.replace("[", "").replace("]", ""),
                      {"copies": 0, "log": Size(0), "meta": Size(0)})
                      for n in lv_info.keys())
         for lv in lv_info.values():
             addLV(lv)
 
-        for name, data in raid.items():
+        for name, data in raid_items.items():
             lv_dev = self.getDeviceByName(name)
             if not lv_dev:
                 # hidden lv, eg: pool00_tdata
