@@ -26,7 +26,6 @@ from gi.repository import GLib
 
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
-from ..errors import PhysicalVolumeError
 from ..devicelibs import lvm
 from ..i18n import N_
 from ..size import Size
@@ -96,64 +95,31 @@ class LVMPhysicalVolume(DeviceFormat):
                   "peStart": self.peStart, "dataAlignment": self.dataAlignment})
         return d
 
-    def create(self, **kwargs):
-        """ Write the formatting to the specified block device.
-
-            :keyword device: path to device node
-            :type device: str
-            :raises: FormatCreateError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
+    def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
-        try:
-            DeviceFormat.create(self, **kwargs)
-            # Consider use of -Z|--zero
-            # -f|--force or -y|--yes may be required
+        # Consider use of -Z|--zero
+        # -f|--force or -y|--yes may be required
 
-            # lvm has issues with persistence of metadata, so here comes the
-            # hammer...
-            DeviceFormat.destroy(self, **kwargs)
-            blockdev.lvm_pvscan(self.device)
-            blockdev.lvm_pvcreate(self.device, data_alignment=self.dataAlignment)
-        except Exception:
-            raise
-        finally:
-            blockdev.lvm_pvscan(self.device)
+        # lvm has issues with persistence of metadata, so here comes the
+        # hammer...
+        # XXX This format doesn't exist yet, so bypass the precondition checking
+        #     for destroy by calling _destroy directly.
+        DeviceFormat._destroy(self, **kwargs)
+        blockdev.lvm_pvscan(self.device)
+        blockdev.lvm_pvcreate(self.device, data_alignment=self.dataAlignment)
+        blockdev.lvm_pvscan(self.device)
 
-        self.exists = True
-        self.notifyKernel()
-
-    def destroy(self, **kwargs):
-        """ Remove the formatting from the associated block device.
-
-            :raises: FormatDestroyError
-            :returns: None.
-        """
+    def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise PhysicalVolumeError("format has not been created")
-
-        if self.status:
-            raise PhysicalVolumeError("device is active")
-
-        # FIXME: verify path exists?
         try:
             blockdev.lvm_pvremove(self.device)
         except GLib.GError:
             DeviceFormat.destroy(self, **kwargs)
         finally:
             blockdev.lvm_pvscan(self.device)
-
-        self.exists = False
-        self.notifyKernel()
 
     @property
     def status(self):

@@ -22,7 +22,6 @@
 
 from parted import PARTITION_SWAP, fileSystemType
 from ..storage_log import log_method_call
-from ..errors import SwapSpaceError
 from . import DeviceFormat, register_device_format
 from ..size import Size
 from gi.repository import BlockDev as blockdev
@@ -137,66 +136,20 @@ class SwapSpace(DeviceFormat):
         """ Device status. """
         return self.exists and blockdev.swap_swapstatus(self.device)
 
-    def setup(self, **kwargs):
-        """ Activate the formatting.
-
-            :keyword device: device node path
-            :type device: str.
-            :raises: FormatSetupError.
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
+    def _setup(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise SwapSpaceError("format has not been created")
-
-        if self.status:
-            return
-
-        DeviceFormat.setup(self, **kwargs)
         blockdev.swap_swapon(self.device, priority=self.priority)
 
-    def teardown(self):
+    def _teardown(self):
         """ Close, or tear down, a device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise SwapSpaceError("format has not been created")
+        blockdev.swap_swapoff(self.device)
 
-        if self.status:
-            blockdev.swap_swapoff(self.device)
-
-    def create(self, **kwargs):
-        """ Write the formatting to the specified block device.
-
-            :keyword device: path to device node
-            :type device: str.
-            :raises: FormatCreateError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
+    def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if self.exists:
-            raise SwapSpaceError("format already exists")
-
-        try:
-            DeviceFormat.create(self, **kwargs)
-            blockdev.swap_mkswap(self.device, label=self.label)
-        except Exception:
-            raise
-        else:
-            self.exists = True
-            self.notifyKernel()
+        blockdev.swap_mkswap(self.device, label=self.label)
 
 register_device_format(SwapSpace)
-

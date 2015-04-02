@@ -160,90 +160,47 @@ class LUKS(DeviceFormat):
             return False
         return os.path.exists("/dev/mapper/%s" % self.mapName)
 
-    def setup(self, **kwargs):
-        """ Open the encrypted block device.
-
-            :keyword device: device node path
-            :type device: str.
-            :raises: FormatSetupError.
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
-        log_method_call(self, device=self.device, mapName=self.mapName,
-                        type=self.type, status=self.status)
+    def _preSetup(self, **kwargs):
         if not self.configured:
             raise LUKSError("luks device not configured")
 
-        if self.status:
-            return
+        return super(LUKS, self)._preSetup(**kwargs)
 
-        DeviceFormat.setup(self, **kwargs)
+    def _setup(self, **kwargs):
+        log_method_call(self, device=self.device, mapName=self.mapName,
+                        type=self.type, status=self.status)
         blockdev.crypto_luks_open(self.device, self.mapName,
                                   passphrase=self.__passphrase,
                                   key_file=self._key_file)
 
-    def teardown(self):
+    def _teardown(self):
         """ Close, or tear down, the format. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise LUKSError("format has not been created")
+        log.debug("unmapping %s", self.mapName)
+        blockdev.crypto_luks_close(self.mapName)
 
-        if self.status:
-            log.debug("unmapping %s", self.mapName)
-            blockdev.crypto_luks_close(self.mapName)
-
-    def create(self, **kwargs):
-        """ Write the formatting to the specified block device.
-
-            :keyword device: path to device node
-            :type device: str.
-            :raises: FormatCreateError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
+    def _preCreate(self, **kwargs):
+        super(LUKS, self)._preCreate(**kwargs)
         if not self.hasKey:
             raise LUKSError("luks device has no key/passphrase")
 
-        try:
-            DeviceFormat.create(self, **kwargs)
-            blockdev.crypto_luks_format(self.device,
-                                        passphrase=self.__passphrase,
-                                        key_file=self._key_file,
-                                        cipher=self.cipher,
-                                        key_size=self.key_size,
-                                        min_entropy=self.min_luks_entropy)
-
-        except Exception:
-            raise
-        else:
-            self.uuid = blockdev.crypto_luks_uuid(self.device)
-            self.exists = True
-            if flags.installer_mode:
-                self.mapName = "luks-%s" % self.uuid
-
-            self.notifyKernel()
-
-    def destroy(self, **kwargs):
-        """ Remove the formatting from the associated block device.
-
-            :raises: FormatDestroyError
-            :returns: None.
-        """
+    def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        self.teardown()
-        DeviceFormat.destroy(self, **kwargs)
+        super(LUKS, self)._create(**kwargs) # set up the event sync
+        blockdev.crypto_luks_format(self.device,
+                                    passphrase=self.__passphrase,
+                                    key_file=self._key_file,
+                                    cipher=self.cipher,
+                                    key_size=self.key_size,
+                                    min_entropy=self.min_luks_entropy)
+
+    def _postCreate(self, **kwargs):
+        super(LUKS, self)._postCreate(**kwargs)
+        self.uuid = blockdev.crypto_luks_uuid(self.device)
+        if flags.installer_mode or not self.mapName:
+            self.mapName = "luks-%s" % self.uuid
 
     @property
     def keyFile(self):

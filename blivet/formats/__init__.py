@@ -367,6 +367,12 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        self._preCreate(**kwargs)
+        self._create(**kwargs)
+        self._postCreate(**kwargs)
+
+    def _preCreate(self, **kwargs):
+        """ Perform checks and setup prior to creating the format. """
         # allow late specification of device path
         device = kwargs.get("device")
         if device:
@@ -375,21 +381,53 @@ class DeviceFormat(ObjectID):
         if not os.path.exists(self.device):
             raise FormatCreateError("invalid device specification", self.device)
 
+        if self.exists:
+            raise DeviceFormatError("format already exists")
+
+        if self.status:
+            raise DeviceFormatError("device exists and is active")
+
+    # pylint: disable=unused-argument
+    def _create(self, **kwargs):
+        """ Type-specific create method. """
+        pass
+
+    # pylint: disable=unused-argument
+    def _postCreate(self, **kwargs):
+        self.exists = True
+        self.notifyKernel()
+
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
 
             :raises: FormatDestroyError
             :returns: None.
         """
-        # pylint: disable=unused-argument
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        self._preDestroy(**kwargs)
+        self._destroy(**kwargs)
+        self._postDestroy(**kwargs)
+
+    # pylint: disable=unused-argument
+    def _preDestroy(self, **kwargs):
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        if self.status:
+            raise DeviceFormatError("device is active")
+
+        if not os.access(self.device, os.W_OK):
+            raise DeviceFormatError("device path does not exist or is not writable")
+
+    def _destroy(self, **kwargs):
+        rc = 0
+        err = ""
         try:
             rc = run_program(["wipefs", "-f", "-a", self.device])
         except OSError as e:
             err = str(e)
         else:
-            err = ""
             if rc:
                 err = str(rc)
 
@@ -397,7 +435,9 @@ class DeviceFormat(ObjectID):
             msg = "error wiping old signatures from %s: %s" % (self.device, err)
             raise FormatDestroyError(msg)
 
+    def _postDestroy(self, **kwargs):
         self.exists = False
+        self.notifyKernel()
 
     def setup(self, **kwargs):
         """ Activate the formatting.
@@ -414,12 +454,16 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        if not self._preSetup(**kwargs):
+            return
 
+        self._setup(**kwargs)
+        self._postSetup(**kwargs)
+
+    def _preSetup(self, **kwargs):
+        """ Return True if setup should proceed. """
         if not self.exists:
             raise FormatSetupError("format has not been created")
-
-        if self.status:
-            return
 
         # allow late specification of device path
         device = kwargs.get("device")
@@ -429,10 +473,38 @@ class DeviceFormat(ObjectID):
         if not self.device or not os.path.exists(self.device):
             raise FormatSetupError("invalid device specification")
 
+        return not self.status
+
+    # pylint: disable=unused-argument
+    def _setup(self, **kwargs):
+        pass
+
+    # pylint: disable=unused-argument
+    def _postSetup(self, **kwargs):
+        pass
+
     def teardown(self):
         """ Deactivate the formatting. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        if not self._preTeardown():
+            return
+
+        self._teardown()
+        self._postTeardown()
+
+    def _preTeardown(self):
+        """ Return True if teardown should proceed. """
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        return self.status
+
+    def _teardown(self):
+        pass
+
+    def _postTeardown(self):
+        pass
 
     @property
     def status(self):

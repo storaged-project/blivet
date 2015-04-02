@@ -25,7 +25,7 @@ import os
 from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
-from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
+from ..errors import DiskLabelCommitError, InvalidDiskLabelError
 from .. import arch
 from .. import udev
 from .. import util
@@ -229,37 +229,21 @@ class DiskLabel(DeviceFormat):
         """ Device status. """
         return False
 
-    def create(self, **kwargs):
+    def _create(self, **kwargs):
         """ Create the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if self.exists:
-            raise DeviceFormatError("format already exists")
-
-        if self.status:
-            raise DeviceFormatError("device exists and is active")
-
-        DeviceFormat.create(self, **kwargs)
-
         # We're relying on someone having called resetPartedDisk -- we
         # could ensure a fresh disklabel by setting self._partedDisk to
         # None right before calling self.commit(), but that might hide
         # other problems.
         self.commit()
-        self.exists = True
 
-    def destroy(self, **kwargs):
+    def _destroy(self, **kwargs):
         """ Wipe the disklabel from the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self.exists:
-            raise DeviceFormatError("format does not exist")
-
-        if not os.access(self.device, os.W_OK):
-            raise DeviceFormatError("device path does not exist")
-
         self.partedDevice.clobber()
-        self.exists = False
 
     def commit(self):
         """ Commit the current partition table to disk and notify the OS. """
