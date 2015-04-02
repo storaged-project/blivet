@@ -1593,15 +1593,19 @@ class DeviceTree(object):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
         md_info = blockdev.md_examine(device.path)
+
+        # Use mdadm info if udev info is missing
+        md_uuid = md_info.uuid
+        device.format.mdUuid = device.format.mdUuid or md_uuid
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
-        if device.format.mdUuid and md_array:
+
+        if md_array:
             md_array.parents.append(device)
         else:
             # create the array with just this one member
             # level is reported as, eg: "raid1"
             md_level = md_info.level
             md_devices = md_info.num_devices
-            md_uuid = md_info.uuid
 
             if md_level is None:
                 log.warning("invalid data for %s: no RAID level", device.name)
