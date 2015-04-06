@@ -628,6 +628,11 @@ class FS(DeviceFormat):
             :keyword chroot: prefix to apply to mountpoint
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
             :raises: FSError
+
+        .. note::
+            When mounted multiple times the unmount method needs to be called with
+            a specific mountpoint to unmount, otherwise it will try to unmount the most
+            recent one listed by the system.
         """
         if not self.exists:
             raise FSError("filesystem has not been created")
@@ -678,23 +683,34 @@ class FS(DeviceFormat):
             if not ret:
                 log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
-    def unmount(self):
-        """ Unmount this filesystem. """
+    def unmount(self, mountpoint=None):
+        """ Unmount this filesystem.
+
+            :param str mountpoint: Optional mountpoint to be unmounted.
+            :raises: FSError
+
+            If mountpoint isn't passed this will unmount the most recent mountpoint listed
+            by the system. Override this behavior by passing a specific mountpoint. FSError
+            will be raised in either case if the path doesn't exist.
+        """
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        if not self.systemMountpoint:
+        # Prefer the explicit mountpoint path, fall back to first system mountpoint
+        mountpoint = mountpoint or self.systemMountpoint
+
+        if not mountpoint:
             # not mounted
             return
 
-        if not os.path.exists(self.systemMountpoint):
+        if not os.path.exists(mountpoint):
             raise FSError("mountpoint does not exist")
 
         udev.settle()
-        rc = util.umount(self.systemMountpoint)
+        rc = util.umount(mountpoint)
         if rc:
             # try and catch whatever is causing the umount problem
-            util.run_program(["lsof", self.systemMountpoint])
+            util.run_program(["lsof", mountpoint])
             raise FSError("umount failed")
 
     def readLabel(self):
