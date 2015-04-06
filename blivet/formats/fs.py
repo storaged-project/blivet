@@ -587,6 +587,7 @@ class FS(DeviceFormat):
             returns: mountpoint
             rtype: str or None
 
+            If there are multiple mountpoints it returns the most recent one.
         """
 
         if not self.exists:
@@ -643,9 +644,6 @@ class FS(DeviceFormat):
         if not mountpoint:
             raise FSError("no mountpoint given")
 
-        if self.status:
-            return
-
         if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
             raise FSError("device %s does not exist" % self.device)
 
@@ -655,6 +653,10 @@ class FS(DeviceFormat):
         #
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
+
+        # Already mounted here?
+        if self.systemMountpoint == chrootedMountpoint:
+            return
 
         # passed in options override default options
         if not options or not isinstance(options, str):
@@ -696,7 +698,7 @@ class FS(DeviceFormat):
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        # Prefer the explicit mountpoint path, fall back to first system mountpoint
+        # Prefer the explicit mountpoint path, fall back to most recent mountpoint
         mountpoint = mountpoint or self.systemMountpoint
 
         if not mountpoint:
