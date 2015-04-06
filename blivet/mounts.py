@@ -50,6 +50,15 @@ class MountsCache(object):
 
         return self.mountpoints.get((devspec, subvolspec))
 
+    def isMountpoint(self, path):
+        """ Check to see if a path is already mounted
+
+            :param str path: Path to check
+        """
+        self._cacheCheck()
+
+        return path in self.mountpoints.values()
+
     def _getActiveMounts(self):
         """ Get information about mounted devices from /proc/mounts and
             /proc/self/mountinfo
