@@ -368,7 +368,7 @@ class DeviceTree(object):
                                   path=path,
                                   devid=devid)
 
-    def processActions(self, dryRun=False, callbacks=None):
+    def processActions(self, callbacks=None, dryRun=False):
         self.actions.process(devices=self.devices,
                              dryRun=dryRun,
                              callbacks=callbacks)

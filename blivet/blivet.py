@@ -159,7 +159,7 @@ class Blivet(object):
 
         """
 
-        self.devicetree.processActions(callbacks)
+        self.devicetree.processActions(callbacks=callbacks)
         if not flags.installer_mode:
             return
 
