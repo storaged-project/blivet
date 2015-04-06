@@ -1025,7 +1025,7 @@ class DeviceTree(object):
             container = self.getDeviceByName(parentName)
             if not container:
                 parentSysName = blockdev.md_node_from_name(parentName)
-                container_sysfs = "/class/block/" + parentSysName
+                container_sysfs = "/sys/class/block/" + parentSysName
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
                     log.error("failed to find md container %s at %s",
