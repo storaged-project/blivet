@@ -29,8 +29,11 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
+from ..tasks import availability
 
 from ..fcoe import fcoe
+
+from .external import ExternalDependencies
 
 import logging
 log = logging.getLogger("blivet")
@@ -172,6 +175,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     _isDisk = True
     _formatClassName = property(lambda s: "dmraidmember")
     _formatUUIDAttr = property(lambda s: None)
+    _external_dependencies = ExternalDependencies(default=[availability.BLOCKDEV_DM_PLUGIN])
 
     def __init__(self, name, fmt=None,
                  size=None, parents=None, sysfsPath=''):
@@ -251,6 +255,7 @@ class MultipathDevice(DMDevice):
     _packages = ["device-mapper-multipath"]
     _partitionable = True
     _isDisk = True
+    _external_dependencies = ExternalDependencies(default=[availability.application("multipath")])
 
     def __init__(self, name, fmt=None, size=None, serial=None,
                  parents=None, sysfsPath=''):

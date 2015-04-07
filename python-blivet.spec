@@ -29,11 +29,8 @@ Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
-Requires: dosfstools
-Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
 
 %description
 The python-blivet package is a python module for examining and modifying

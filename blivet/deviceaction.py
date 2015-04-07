@@ -27,6 +27,7 @@ from . import udev
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice
+from .devices import external
 from .formats import getFormat, luks
 from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
@@ -144,11 +145,17 @@ class DeviceAction(util.ObjectID):
     type = ACTION_TYPE_NONE
     obj = ACTION_OBJECT_NONE
     typeDescStr = ""
+    dependency_search_mode = external.DefaultMode
 
     def __init__(self, device):
         util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
+
+        unavailable_dependencies = device.unavailableDependencies(self.dependency_search_mode)
+        if unavailable_dependencies:
+            raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, ", ".join(str(d) for d in unavailable_dependencies)))
+
         self.device = device
         self.container = getattr(self.device, "container", None)
         self._applied = False
@@ -295,6 +302,10 @@ class ActionCreateDevice(DeviceAction):
         if device.exists:
             raise ValueError("device already exists")
 
+        unsetupableFormat = device.unsetupableFormat()
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be setup" % unsetupableFormat)
+
         # FIXME: assert device.fs is None
         DeviceAction.__init__(self, device)
 
@@ -336,8 +347,13 @@ class ActionDestroyDevice(DeviceAction):
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
     typeDescStr = N_("destroy device")
+    dependency_search_mode = external.DestroyMode
 
     def __init__(self, device):
+        unsetupableFormat = device.parentUnsetupableFormat()
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be teared down" % unsetupableFormat)
+
         # XXX should we insist that device.fs be None?
         DeviceAction.__init__(self, device)
 
@@ -432,6 +448,9 @@ class ActionResizeDevice(DeviceAction):
         if device.maxSize and newsize > device.maxSize:
             raise ValueError("new size is too large")
 
+        if not device.resizeSupported:
+            raise ValueError("some external application that resizing requires is not available on your system")
+
         DeviceAction.__init__(self, device)
         if newsize > device.currentSize:
             self.dir = RESIZE_GROW
@@ -524,6 +543,13 @@ class ActionCreateFormat(DeviceAction):
 
         if self._format.exists:
             raise ValueError("specified format already exists")
+
+        if not fmt.formattable:
+            raise ValueError("resource to create this format %s is unavailable" % fmt)
+
+        unsetupableFormat = device.unsetupableFormat()
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be setup" % unsetupableFormat)
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
@@ -647,6 +673,13 @@ class ActionDestroyFormat(DeviceAction):
         DeviceAction.__init__(self, device)
         self.origFormat = self.device.format
 
+        if not device.format.destroyable:
+            raise ValueError("resource to destroy this format type %s is unavailable" % device.format.type)
+
+        unsetupableFormat = device.unsetupableFormat(orig=True)
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be setup" % unsetupableFormat)
+
     def apply(self):
         if self._applied:
             return
@@ -743,6 +776,10 @@ class ActionResizeFormat(DeviceAction):
         if device.format.currentSize == newsize:
             raise ValueError("new size same as old size")
 
+        unsetupableFormat = device.unsetupableFormat(orig=True)
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be setup" % unsetupableFormat)
+
         DeviceAction.__init__(self, device)
         if newsize > device.format.currentSize:
             self.dir = RESIZE_GROW
@@ -815,6 +852,11 @@ class ActionAddMember(DeviceAction):
 
     def __init__(self, container, device):
         super(ActionAddMember, self).__init__(device)
+
+        unsetupableFormat = device.unsetupableFormat()
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be setup" % unsetupableFormat)
+
         self.container = container
 
     def apply(self):
@@ -879,6 +921,11 @@ class ActionRemoveMember(DeviceAction):
 
     def __init__(self, container, device):
         super(ActionRemoveMember, self).__init__(device)
+
+        unsetupableFormat = device.unsetupableFormat()
+        if unsetupableFormat is not None:
+            raise ValueError("device format %s can not be setup" % unsetupableFormat)
+
         self.container = container
 
     def apply(self):

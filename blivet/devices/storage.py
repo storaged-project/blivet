@@ -39,6 +39,7 @@ log = logging.getLogger("blivet")
 
 from .device import Device
 from .network import NetworkStorageDevice
+from .external import DefaultMode, ExternalDependencies
 
 class StorageDevice(Device):
     """ A generic storage device.
@@ -57,6 +58,7 @@ class StorageDevice(Device):
     _partitionable = False
     _isDisk = False
     _encrypted = False
+    _external_dependencies = ExternalDependencies()
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
@@ -354,6 +356,11 @@ class StorageDevice(Device):
             raise errors.DeviceError("device type %s is not resizable" % self.type)
 
     @property
+    def resizeSupported(self):
+        """ Are the tools available for resize. """
+        return False
+
+    @property
     def readonly(self):
         # A device is read-only if it or any parent device is read-only
         return self._readonly or any(p.readonly for p in self.parents)
@@ -400,6 +407,10 @@ class StorageDevice(Device):
 
         self._setup(orig=orig)
         self._postSetup()
+
+    def unsetupableFormat(self, orig=False):
+        # parentSetup method is called indirectly through _preSetup method
+        return self.parentUnsetupableFormat(orig=orig)
 
     def _postSetup(self):
         """ Perform post-setup operations. """
@@ -524,6 +535,22 @@ class StorageDevice(Device):
             # set up the formatting, if present
             if _format.type and _format.exists:
                 _format.setup()
+
+    def parentUnsetupableFormat(self, orig=False):
+        for parent in self.parents:
+            unsetupable = parent.unsetupableFormat(orig=orig)
+            if unsetupable is not None:
+                return unsetupable
+
+            if orig:
+                _format = parent.originalFormat
+            else:
+                _format = parent.format
+
+            if not _format.setupable:
+                return _format
+
+        return None
 
     def _getSize(self):
         """ Get the device's size, accounting for pending changes. """
@@ -750,3 +777,39 @@ class StorageDevice(Device):
 
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
+
+    def externalDependencies(self, mode=DefaultMode):
+        """ A list of external dependencies of this device type.
+
+            :param mode: the mode of action for these dependencies
+
+            :returns: a set of external dependencies
+            :rtype: set of availability.ExternalResource
+
+            The external dependencies include the dependencies of this
+            device type and of all superclass device types.
+        """
+        return set(
+           [d for p in self.__class__.__mro__ if issubclass(p, StorageDevice) for d in mode.dependencies(p._external_dependencies)]
+        )
+
+    def allExternalDependencies(self, mode=DefaultMode):
+        """ A list of external dependencies of this device and its parents.
+
+            :param mode: the mode of action for these dependencies
+
+            :returns: the external dependencies of this device and all parents.
+            :rtype: set of availability.ExternalResource
+        """
+        return set([d for p in self.ancestors for d in p.externalDependencies(mode)])
+
+    def unavailableDependencies(self, mode=DefaultMode):
+        """ Any unavailable external dependencies of this device or its
+            parents.
+
+            :param mode: the mode of action for these dependencies
+
+            :returns: A list of unavailable external dependencies.
+            :rtype: set of availability.externalResource
+        """
+        return set([e for e in self.allExternalDependencies(mode) if not e.available])

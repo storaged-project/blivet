@@ -41,11 +41,15 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
+from .external import ExternalDependencies
+
+from ..tasks import availability
 
 class BTRFSDevice(StorageDevice):
     """ Base class for BTRFS volume and sub-volume devices. """
     _type = "btrfs"
     _packages = ["btrfs-progs"]
+    _external_dependencies = ExternalDependencies(default=[availability.BLOCKDEV_BTRFS_PLUGIN])
 
     def __init__(self, *args, **kwargs):
         """ Passing None or no name means auto-generate one like btrfs.%d """
@@ -535,6 +539,9 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
         """ Run setup method of all parent devices. """
         log_method_call(self, name=self.name, orig=orig, kids=self.kids)
         self.volume.setup(orig=orig)
+
+    def parentUnsetupableFormat(self, orig=False):
+        return self.volume.unsetupableFormat(self, orig=orig)
 
     def _create(self):
         log_method_call(self, self.name, status=self.status)

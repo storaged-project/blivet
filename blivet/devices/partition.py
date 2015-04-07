@@ -33,6 +33,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, getFormat
 from ..size import Size, MiB
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -41,6 +42,7 @@ from .device import Device
 from .storage import StorageDevice
 from .dm import DMDevice
 from .lib import devicePathToName, deviceNameToDiskByPath
+from .external import ExternalDependencies
 
 DEFAULT_PART_SIZE = Size("500MiB")
 
@@ -60,6 +62,7 @@ class PartitionDevice(StorageDevice):
     _type = "partition"
     _resizable = True
     defaultSize = DEFAULT_PART_SIZE
+    _external_dependencies = ExternalDependencies(destroy=[availability.BLOCKDEV_DM_PLUGIN])
 
     def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
@@ -652,6 +655,10 @@ class PartitionDevice(StorageDevice):
 
         self.disk.format.commit()
         self._currentSize = Size(partition.getLength(unit="B"))
+
+    @property
+    def resizeSupported(self):
+        return self.parentUnsetupableFormat(orig=True) is None
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
