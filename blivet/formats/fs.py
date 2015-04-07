@@ -921,7 +921,6 @@ class FS(DeviceFormat):
 
     @property
     def status(self):
-        # FIXME check /proc/mounts or similar
         if not self.exists:
             return False
         return self.systemMountpoint is not None
