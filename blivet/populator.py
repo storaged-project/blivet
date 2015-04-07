@@ -1124,7 +1124,7 @@ class Populator(object):
                    metadataVersion=md_metadata,
                    exists=True
                 )
-            except ValueError as e:
+            except (ValueError, DeviceError) as e:
                 log.error("failed to create md array: %s", e)
                 return
 
