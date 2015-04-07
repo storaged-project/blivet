@@ -37,6 +37,7 @@ from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
 from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice
 from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
+from .devices import MDContainerDevice
 from .devices import MultipathDevice, NoDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
@@ -46,6 +47,7 @@ from .formats import getFormat
 from .formats.fs import nodev_filesystems
 from .devicelibs import lvm
 from .devicelibs import edd
+from .devicelibs import raid
 from . import udev
 from . import util
 from .platform import platform
@@ -1023,7 +1025,7 @@ class DeviceTree(object):
             container = self.getDeviceByName(parentName)
             if not container:
                 parentSysName = blockdev.md_node_from_name(parentName)
-                container_sysfs = "/class/block/" + parentSysName
+                container_sysfs = "/sys/class/block/" + parentSysName
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
                     log.error("failed to find md container %s at %s",
@@ -1444,7 +1446,7 @@ class DeviceTree(object):
                 rname = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, rname)
                 addRequiredLV(name, "failed to look up raid lv")
-                raid[name]["copies"] += 1
+                raid_items[name]["copies"] += 1
                 return
             elif lv_attr[0] == 'e':
                 if lv_name.endswith("_pmspare]"):
@@ -1455,14 +1457,14 @@ class DeviceTree(object):
                 lv_name = re.sub(r'_[tr]meta.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
                 addRequiredLV(name, "failed to look up raid lv")
-                raid[name]["meta"] += lv_size
+                raid_items[name]["meta"] += lv_size
                 return
             elif lv_attr[0] == 'l':
                 # log volume
                 rname = re.sub(r'_mlog.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, rname)
                 addRequiredLV(name, "failed to look up log lv")
-                raid[name]["log"] = lv_size
+                raid_items[name]["log"] = lv_size
                 return
             elif lv_attr[0] == 't':
                 # thin pool
@@ -1517,13 +1519,13 @@ class DeviceTree(object):
                     # do format handling now
                     self.addUdevDevice(lv_info)
 
-        raid = dict((n.replace("[", "").replace("]", ""),
+        raid_items = dict((n.replace("[", "").replace("]", ""),
                      {"copies": 0, "log": Size(0), "meta": Size(0)})
                      for n in lv_info.keys())
         for lv in lv_info.values():
             addLV(lv)
 
-        for name, data in raid.items():
+        for name, data in raid_items.items():
             lv_dev = self.getDeviceByName(name)
             if not lv_dev:
                 # hidden lv, eg: pool00_tdata
@@ -1591,15 +1593,19 @@ class DeviceTree(object):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
         md_info = blockdev.md_examine(device.path)
+
+        # Use mdadm info if udev info is missing
+        md_uuid = md_info.uuid
+        device.format.mdUuid = device.format.mdUuid or md_uuid
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
-        if device.format.mdUuid and md_array:
+
+        if md_array:
             md_array.parents.append(device)
         else:
             # create the array with just this one member
             # level is reported as, eg: "raid1"
             md_level = md_info.level
             md_devices = md_info.num_devices
-            md_uuid = md_info.uuid
 
             if md_level is None:
                 log.warning("invalid data for %s: no RAID level", device.name)
@@ -1628,14 +1634,25 @@ class DeviceTree(object):
                 log.error("failed to determine name for the md array %s", (md_uuid or "unknown"))
                 return
 
+            array_type = MDRaidArrayDevice
             try:
-                md_array = MDRaidArrayDevice(md_name,
-                                             level=md_level,
-                                             memberDevices=md_devices,
-                                             uuid=md_uuid,
-                                             metadataVersion=md_metadata,
-                                             exists=True)
-            except ValueError as e:
+                if raid.getRaidLevel(md_level) is raid.Container and \
+                   getattr(device.format, "biosraid", False):
+                    array_type = MDContainerDevice
+            except raid.RaidError as e:
+                log.error("failed to create md array: %s", e)
+                return
+
+            try:
+                md_array = array_type(
+                   md_name,
+                   level=md_level,
+                   memberDevices=md_devices,
+                   uuid=md_uuid,
+                   metadataVersion=md_metadata,
+                   exists=True
+                )
+            except (ValueError, DeviceError) as e:
                 log.error("failed to create md array: %s", e)
                 return
 
