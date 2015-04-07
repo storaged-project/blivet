@@ -95,8 +95,8 @@ class Device(util.ObjectID):
             For these parted objects, we just do a shallow copy.
         """
         return util.variable_copy(self, memo,
-           omit=('node'),
-           shallow=('_partedDevice', '_partedPartition'))
+           omit=('node',),
+           shallow=('_partedPartition',))
 
     def __repr__(self):
         s = ("%(type)s instance (%(id)s) --\n"
@@ -287,11 +287,6 @@ class Device(util.ObjectID):
             packages.extend(p for p in parent.packages if p not in packages)
 
         return packages
-
-    @property
-    def mediaPresent(self):
-        """ True if this device contains usable media. """
-        return True
 
     @classmethod
     def isNameValid(cls, name): # pylint: disable=unused-argument

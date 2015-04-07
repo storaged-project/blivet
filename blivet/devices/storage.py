@@ -22,8 +22,6 @@
 
 import os
 import copy
-import parted
-import _ped
 import pyudev
 
 from .. import errors
@@ -39,6 +37,7 @@ log = logging.getLogger("blivet")
 
 from .device import Device
 from .network import NetworkStorageDevice
+from .lib import LINUX_SECTOR_SIZE
 
 class StorageDevice(Device):
     """ A generic storage device.
@@ -106,7 +105,11 @@ class StorageDevice(Device):
         super(StorageDevice, self).__init__(name, parents=parents)
 
         self._format = None
+
+        # The size will be overridden by a call to updateSize at the end of this
+        # method for existing and active devices.
         self._size = Size(util.numeric_type(size))
+        self._currentSize = self._size if self.exists else Size(0)
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
         self._serial = serial
@@ -125,16 +128,8 @@ class StorageDevice(Device):
 
         self.deviceLinks = []
 
-        if self.exists and flags.testing and not self._size:
-            def read_int_from_sys(path):
-                return int(open(path).readline().strip())
-
-            device_root = "/sys/class/block/%s" % self.name
-            if os.path.exists("%s/queue" % device_root):
-                sector_size = read_int_from_sys("%s/queue/logical_block_size"
-                                                % device_root)
-                size = read_int_from_sys("%s/size" % device_root)
-                self._size = Size(size * sector_size)
+        if self.exists and self.status:
+            self.updateSize()
 
     def __str__(self):
         exist = "existing"
@@ -168,26 +163,6 @@ class StorageDevice(Device):
     def encrypted(self):
         """ True if this device, or any it requires, is encrypted. """
         return self._encrypted or any(p.encrypted for p in self.parents)
-
-    def _getPartedDevicePath(self):
-        return self.path
-
-    @property
-    def partedDevice(self):
-        devicePath = self._getPartedDevicePath()
-        if self.exists and self.status and not self._partedDevice:
-            log.debug("looking up parted Device: %s", devicePath)
-
-            # We aren't guaranteed to be able to get a device.  In
-            # particular, built-in USB flash readers show up as devices but
-            # do not always have any media present, so parted won't be able
-            # to find a device.
-            try:
-                self._partedDevice = parted.Device(path=devicePath)
-            except (_ped.IOException, _ped.DeviceException):
-                pass
-
-        return self._partedDevice
 
     @property
     def raw_device(self):
@@ -253,12 +228,12 @@ class StorageDevice(Device):
               "  format = %(format)s\n"
               "  major = %(major)s  minor = %(minor)s  exists = %(exists)s"
               "  protected = %(protected)s\n"
-              "  sysfs path = %(sysfs)s  partedDevice = %(partedDevice)s\n"
+              "  sysfs path = %(sysfs)s\n"
               "  target size = %(targetSize)s  path = %(path)s\n"
               "  format args = %(formatArgs)s  originalFormat = %(origFmt)s" %
               {"uuid": self.uuid, "format": self.format, "size": self.size,
                "major": self.major, "minor": self.minor, "exists": self.exists,
-               "sysfs": self.sysfsPath, "partedDevice": self.partedDevice,
+               "sysfs": self.sysfsPath,
                "targetSize": self.targetSize, "path": self.path,
                "protected": self.protected,
                "formatArgs": self.formatArgs, "origFmt": self.originalFormat.type})
@@ -404,9 +379,10 @@ class StorageDevice(Device):
     def _postSetup(self):
         """ Perform post-setup operations. """
         udev.settle()
-        # we always probe since the device may not be set up when we want
-        # information about it
-        self._size = self.currentSize
+        self.updateSysfsPath()
+        # the device may not be set up when we want information about it
+        if self._size == Size(0):
+            self.updateSize()
 
     #
     # teardown
@@ -477,9 +453,7 @@ class StorageDevice(Device):
         udev.settle()
 
         # make sure that targetSize is updated to reflect the actual size
-        if self.resizable:
-            self._partedDevice = None
-            self._targetSize = self.currentSize
+        self.updateSize()
 
         self._updateNetDevMountOption()
 
@@ -527,12 +501,6 @@ class StorageDevice(Device):
 
     def _getSize(self):
         """ Get the device's size, accounting for pending changes. """
-        if self.exists and not self.mediaPresent:
-            return Size(0)
-
-        if self.exists and self.partedDevice:
-            self._size = self.currentSize
-
         size = self._size
         if self.exists and self.resizable:
             size = self.targetSize
@@ -540,18 +508,40 @@ class StorageDevice(Device):
         return size
 
     def _setSize(self, newsize):
-        """ Set the device's size to a new value. """
+        """ Set the device's size to a new value.
+
+            This is not adequate to set up a resize as it does not set a new
+            target size for the device.
+        """
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if self.maxSize and newsize > self.maxSize:
+        # only calculate these once
+        max_size = self.maxSize
+        min_size = self.minSize
+        if max_size and newsize > max_size:
             raise errors.DeviceError("device cannot be larger than %s" %
-                              (self.maxSize,), self.name)
+                                     max_size, self.name)
+        elif min_size and newsize < min_size:
+            raise errors.DeviceError("device cannot be smaller than %s" %
+                                     min_size, self.name)
+
         self._size = newsize
 
     size = property(lambda x: x._getSize(),
                     lambda x, y: x._setSize(y),
                     doc="The device's size, accounting for pending changes")
+
+    def readCurrentSize(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfsPath=self.sysfsPath)
+        size = Size(0)
+        if self.exists and os.path.exists(self.path) and \
+           os.path.isdir(self.sysfsPath):
+            blocks = int(util.get_sysfs_attr(self.sysfsPath, "size"))
+            size = Size(blocks * LINUX_SECTOR_SIZE)
+
+        return size
 
     @property
     def currentSize(self):
@@ -561,12 +551,17 @@ class StorageDevice(Device):
 
             If the device does not exist, then the actual size is 0.
         """
-        size = Size(0)
-        if self.exists and self.partedDevice:
-            size = Size(self.partedDevice.getLength(unit="B"))
-        elif self.exists:
-            size = self._size
-        return size
+        if self._currentSize == Size(0):
+            self._currentSize = self.readCurrentSize()
+        return self._currentSize
+
+    def updateSize(self):
+        """ Update size, currentSize, and targetSize to actual size. """
+        self._currentSize = Size(0)
+        new_size = self.currentSize
+        self._size = new_size
+        self._targetSize = new_size # bypass setter checks
+        log.debug("updated %s size to %s (%s)", self.name, self.size, new_size)
 
     @property
     def minSize(self):
@@ -577,6 +572,11 @@ class StorageDevice(Device):
     def maxSize(self):
         """ The maximum size this device can be. """
         return self.alignTargetSize(self.format.maxSize) if self.resizable else self.currentSize
+
+    @property
+    def mediaPresent(self):
+        """ True if this device contains usable media. """
+        return True
 
     @property
     def status(self):
@@ -668,8 +668,6 @@ class StorageDevice(Device):
 
     @property
     def model(self):
-        if not self._model:
-            self._model = getattr(self.partedDevice, "model", "")
         return self._model
 
     @property

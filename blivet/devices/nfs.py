@@ -69,6 +69,9 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
 
+    def updateSize(self):
+        pass
+
     @classmethod
     def isNameValid(cls, name):
         # Override StorageDevice.isNameValid to allow /

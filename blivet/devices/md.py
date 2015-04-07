@@ -204,7 +204,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """Returns the actual or estimated size depending on whether or
            not the array exists.
         """
-        if not self.exists or not self.partedDevice:
+        if not self.exists or not self.mediaPresent:
             try:
                 size = self.level.get_size([d.size for d in self.devices],
                     self.memberDevices,
@@ -215,10 +215,13 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
         else:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = self.currentSize
             log.debug("existing RAID %s size == %s", self.level, size)
 
         return size
+
+    def updateSize(self):
+        super(ContainerDevice, self).updateSize()
 
     @property
     def description(self):
@@ -527,13 +530,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return formatArgs
 
     @property
-    def mediaPresent(self):
-        if flags.testing:
-            return True
-        else:
-            return self.partedDevice is not None
-
-    @property
     def model(self):
         return self.description
 
@@ -648,8 +644,3 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         # there is no need to stop them and later restart them. Not stopping
         # (and thus also not starting) them also works around bug 523334
         return
-
-    @property
-    def mediaPresent(self):
-        # BIOS RAID sets should show as present even when teared down
-        return True

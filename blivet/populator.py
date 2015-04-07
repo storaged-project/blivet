@@ -547,6 +547,7 @@ class Populator(object):
         device = diskType(name,
                           major=udev.device_get_major(info),
                           minor=udev.device_get_minor(info),
+                          model=udev.device_get_model(info),
                           sysfsPath=sysfs_path, **kwargs)
 
         if diskType == DASDDevice:
@@ -670,9 +671,6 @@ class Populator(object):
         #
         device_added = True
         if device:
-            # we successfully looked up the device. skip to format handling.
-            # first, grab the parted.Device while it's active
-            _unused = device.partedDevice
             device_added = False
         elif udev.device_is_loop(info):
             log.info("%s is a loop device", name)
@@ -987,6 +985,7 @@ class Populator(object):
 
                 if lv_device.status:
                     lv_device.updateSysfsPath()
+                    lv_device.updateSize()
                     lv_info = udev.get_device(lv_device.sysfsPath)
                     if not lv_info:
                         log.error("failed to get udev data for lv %s", lv_device.name)

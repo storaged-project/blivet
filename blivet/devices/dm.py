@@ -33,6 +33,7 @@ import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
+from .lib import LINUX_SECTOR_SIZE
 
 class DMDevice(StorageDevice):
     """ A device-mapper device """
@@ -181,7 +182,7 @@ class DMLinearDevice(DMDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        slave_length = self.slave.partedDevice.length
+        slave_length = self.slave.currentSize / LINUX_SECTOR_SIZE
         blockdev.dm_create_linear(self.name, self.slave.path, slave_length,
                                   self.dmUuid)
 
