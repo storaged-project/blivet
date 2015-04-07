@@ -1630,8 +1630,17 @@ class DeviceTree(object):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
         md_info = mdraid.mdexamine(device.path)
+
+        try:
+            md_uuid = udev.device_get_md_uuid(md_info)
+        except KeyError as e:
+            log.warning("invalid data for %s: %s", device.name, e)
+            return
+
+        # Use mdadm info if udev info is missing
+        device.format.mdUuid = device.format.mdUuid or md_uuid
         md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
-        if device.format.mdUuid and md_array:
+        if md_array:
             md_array.parents.append(device)
         else:
             # create the array with just this one member
@@ -1639,7 +1648,6 @@ class DeviceTree(object):
                 # level is reported as, eg: "raid1"
                 md_level = udev.device_get_md_level(md_info)
                 md_devices = udev.device_get_md_devices(md_info)
-                md_uuid = udev.device_get_md_uuid(md_info)
             except (KeyError, ValueError) as e:
                 log.warning("invalid data for %s: %s", device.name, e)
                 return
