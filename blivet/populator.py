@@ -37,11 +37,13 @@ from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
 from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice
 from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
+from .devices import MDContainerDevice
 from .devices import MultipathDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
 from . import formats
 from .devicelibs import lvm
+from .devicelibs import raid
 from . import udev
 from . import util
 from .flags import flags
@@ -1104,13 +1106,24 @@ class Populator(object):
                 log.error("failed to determine name for the md array %s", (md_uuid or "unknown"))
                 return
 
+            array_type = MDRaidArrayDevice
             try:
-                md_array = MDRaidArrayDevice(md_name,
-                                             level=md_level,
-                                             memberDevices=md_devices,
-                                             uuid=md_uuid,
-                                             metadataVersion=md_metadata,
-                                             exists=True)
+                if raid.getRaidLevel(md_level) is raid.Container and \
+                   getattr(device.format, "biosraid", False):
+                    array_type = MDContainerDevice
+            except raid.RaidError as e:
+                log.error("failed to create md array: %s", e)
+                return
+
+            try:
+                md_array = array_type(
+                   md_name,
+                   level=md_level,
+                   memberDevices=md_devices,
+                   uuid=md_uuid,
+                   metadataVersion=md_metadata,
+                   exists=True
+                )
             except ValueError as e:
                 log.error("failed to create md array: %s", e)
                 return
