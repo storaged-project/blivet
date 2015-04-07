@@ -269,6 +269,11 @@ class Size(Decimal):
     def __deepcopy__(self, memo):
         return Size(self.convertTo())
 
+    # pickling support for Size
+    # see https://docs.python.org/3/library/pickle.html#object.__reduce__
+    def __reduce__(self):
+        return (self.__class__, (self.convertTo(),))
+
     def __add__(self, other, context=None):
         return Size(Decimal.__add__(self, other, context=context))
 
