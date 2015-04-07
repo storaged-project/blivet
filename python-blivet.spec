@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.6
+Version: 1.0.7
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -57,6 +57,15 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Apr 07 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.7-1
+- Merge pull request #67 from mulkieran/f22-1208536 (mulkieran)
+- Prepend /sys to sysfs path for udev lookup (#1208536) (amulhern)
+- Fall back on mdadm info if udev info is missing for the array (#1208536)
+  (amulhern)
+- Catch DeviceError as well as ValueError (#1208536) (amulhern)
+- Make an MDContainerDevice if that is the right model (#1208536) (amulhern)
+- Change raid variable name to raid_items (#1208536) (amulhern)
+
 * Thu Apr 02 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.6-1
 - Wrap keys() with a list so that the dictionary can be changed (martin.kolman)
 
