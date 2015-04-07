@@ -221,6 +221,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return size
 
     def updateSize(self):
+        # pylint: disable=bad-super-call
         super(ContainerDevice, self).updateSize()
 
     @property
