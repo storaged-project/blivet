@@ -30,7 +30,7 @@ import parted
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
-from .errors import DeviceError, DeviceTreeError, FSError, InvalidDiskLabelError, LUKSError, UnusableConfigurationError
+from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -436,10 +436,12 @@ class Populator(object):
                not self._isIgnoredDisk(disk):
                 if info.get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
+                    cls = CorruptGPTError
                 else:
                     msg = "failed to scan disk %s" % disk.name
+                    cls = DiskLabelScanError
 
-                raise UnusableConfigurationError(msg)
+                raise cls(msg)
 
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
@@ -1050,7 +1052,7 @@ class Populator(object):
             if isinstance(same_name, LVMVolumeGroupDevice) and \
                not (all(self._isIgnoredDisk(d) for d in same_name.disks) or
                     all(self._isIgnoredDisk(d) for d in device.disks)):
-                raise UnusableConfigurationError("multiple LVM volume groups with the same name")
+                raise DuplicateVGError("multiple LVM volume groups with the same name (%s)" % vg_name)
 
             try:
                 vg_size = Size(pv_info.vg_size)
