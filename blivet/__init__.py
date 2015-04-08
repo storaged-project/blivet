@@ -178,7 +178,16 @@ def storageInitialize(storage, ksdata, protected):
     if protected:
         storage.config.protectedDevSpecs.extend(protected)
 
-    storage.reset()
+    while True:
+        try:
+            storage.reset()
+        except StorageError as e:
+            if errorHandler.cb(e) == ERROR_RAISE:
+                raise
+            else:
+                continue
+        else:
+            break
 
     if protected and not flags.live_install and \
        not any(d.protected for d in storage.devices):
