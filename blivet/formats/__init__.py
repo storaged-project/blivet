@@ -37,6 +37,7 @@ from ..storage_log import log_method_call
 from ..errors import DeviceFormatError, FormatCreateError, FormatDestroyError, FormatSetupError
 from ..i18n import N_
 from ..size import Size
+from ..threads import SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -149,7 +150,7 @@ def get_device_format_class(fmt_type):
     return fmt
 
 
-class DeviceFormat(ObjectID):
+class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
     """ Generic device format.
 

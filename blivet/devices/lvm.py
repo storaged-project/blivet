@@ -42,6 +42,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
 from ..tasks import availability
+from ..threads import SynchronizedABCMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -1002,7 +1003,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._cache = LVMCache(self, size=cache_pool_lv.size, exists=True)
 
 
-@add_metaclass(abc.ABCMeta)
+@add_metaclass(SynchronizedABCMeta)
 class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
 
     """Abstract base class for internal LVs
@@ -1262,7 +1263,7 @@ class LVMCachePoolLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
 _INTERNAL_LV_CLASSES.append(LVMCachePoolLogicalVolumeDevice)
 
 
-@add_metaclass(abc.ABCMeta)
+@add_metaclass(SynchronizedABCMeta)
 class LVMSnapShotBase(object):
 
     """ Abstract base class for lvm snapshots

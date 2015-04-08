@@ -28,7 +28,6 @@ import time
 import parted
 import functools
 
-
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
 from .storage_log import log_method_call, log_exception_info
@@ -53,6 +52,7 @@ from . import fcoe
 from . import zfcp
 from . import devicefactory
 from . import get_bootloader, get_sysroot, short_product_name, __version__
+from .threads import SynchronizedMeta
 from .util import open  # pylint: disable=redefined-builtin
 
 from .i18n import _
@@ -108,7 +108,7 @@ class StorageDiscoveryConfig(object):
         self.zero_mbr = ksdata.zerombr.zerombr
 
 
-class Blivet(object):
+class Blivet(object, metaclass=SynchronizedMeta):
 
     """ Top-level class for managing storage configuration. """
 

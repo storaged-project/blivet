@@ -39,6 +39,7 @@ from .devicelibs import lvm
 from . import util
 from .populator import PopulatorMixin
 from .storage_log import log_method_call, log_method_return
+from .threads import SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -47,7 +48,6 @@ _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 
 class DeviceTreeBase(object):
-
     """ A quasi-tree that represents the devices in the system.
 
         The tree contains a list of :class:`~.devices.StorageDevice` instances,
@@ -66,7 +66,6 @@ class DeviceTreeBase(object):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
-
     def __init__(self, conf=None):
         """
             :keyword conf: storage discovery configuration
@@ -895,7 +894,7 @@ class DeviceTreeBase(object):
                     self.hide(disk)
 
 
-class DeviceTree(DeviceTreeBase, PopulatorMixin):
+class DeviceTree(DeviceTreeBase, PopulatorMixin, metaclass=SynchronizedMeta):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.__init__(self, conf=conf)
         PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
