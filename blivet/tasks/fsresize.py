@@ -28,6 +28,7 @@ from ..errors import FSError
 from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..import util
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -80,7 +81,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
         raise NotImplementedError()
 
     def _resizeCommand(self):
-        return [str(self._app())] + self.args
+        return [str(self.ext)] + self.args
 
     def doTask(self):
         """ Resize the device.
@@ -100,7 +101,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
             raise FSError("resize failed: %s" % ret)
 
 class Ext2FSResize(FSResize):
-    app_name = "resize2fs"
+    ext = availability.application("resize2fs")
     unit = MiB
     # No unit specifier is interpreted not as bytes, but block size
     size_fmt = {KiB: "%dK", MiB: "%dM", GiB: "%dG"}[unit]
@@ -113,7 +114,7 @@ class Ext2FSResize(FSResize):
         return ["-p", self.fs.device, self.sizeSpec()]
 
 class NTFSResize(FSResize):
-    app_name = "ntfsresize"
+    ext = availability.application("ntfsresize")
     unit = B
     size_fmt = {B: "%d", KB: "%dK", MB: "%dM", GB: "%dG"}[unit]
 
@@ -130,7 +131,7 @@ class NTFSResize(FSResize):
 
 class TmpFSResize(FSResize):
 
-    app_name = "mount"
+    ext = availability.application("mount")
     unit = MiB
     size_fmt = {KiB: "%dk", MiB: "%dm", GiB: "%dg"}[unit]
 

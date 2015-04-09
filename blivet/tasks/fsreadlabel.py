@@ -28,6 +28,7 @@ from six import add_metaclass
 from ..errors import FSReadLabelError
 from .. import util
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -72,7 +73,7 @@ class FSReadLabel(task.BasicApplication):
            :return: the command
            :rtype: list of str
         """
-        return [str(self._app())] + self.args
+        return [str(self.ext)] + self.args
 
     def _extractLabel(self, labelstr):
         """Extract the label from an output string.
@@ -108,7 +109,7 @@ class FSReadLabel(task.BasicApplication):
         return label if label == "" else self._extractLabel(label)
 
 class DosFSReadLabel(FSReadLabel):
-    app_name = "dosfslabel"
+    ext = availability.application("dosfslabel")
     label_regex = r'(?P<label>.*)'
 
     @property
@@ -116,7 +117,7 @@ class DosFSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class Ext2FSReadLabel(FSReadLabel):
-    app_name = "e2label"
+    ext = availability.application("e2label")
     label_regex = r'(?P<label>.*)'
 
     @property
@@ -124,7 +125,7 @@ class Ext2FSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class NTFSReadLabel(FSReadLabel):
-    app_name = "ntfslabel"
+    ext = availability.application("ntfslabel")
     label_regex = r'(?P<label>.*)'
 
     @property
@@ -132,7 +133,7 @@ class NTFSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class XFSReadLabel(FSReadLabel):
-    app_name = "xfs_admin"
+    ext = availability.application("xfs_admin")
     label_regex = r'label = "(?P<label>.*)"'
 
     @property

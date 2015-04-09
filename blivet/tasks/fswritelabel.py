@@ -27,6 +27,7 @@ from six import add_metaclass
 from .. import util
 from ..errors import FSWriteLabelError
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -62,7 +63,7 @@ class FSWriteLabel(task.BasicApplication):
             return "makes no sense to write a label when accepting default label"
 
         if not self.fs.labelFormatOK(self.fs.label):
-            return "bad label format for labelling application %s" % self._app()
+            return "bad label format for labelling application %s" % self.ext
 
         return False
 
@@ -77,7 +78,7 @@ class FSWriteLabel(task.BasicApplication):
 
            Requires that self.unavailable, self.unable, self.unready are False.
         """
-        return [str(self._app())] + self.args
+        return [str(self.ext)] + self.args
 
     def doTask(self):
         error_msg = self.impossible
@@ -89,42 +90,42 @@ class FSWriteLabel(task.BasicApplication):
             raise FSWriteLabelError("label failed")
 
 class DosFSWriteLabel(FSWriteLabel):
-    app_name = "dosfslabel"
+    ext = availability.application("dosfslabel")
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
 
 class Ext2FSWriteLabel(FSWriteLabel):
-    app_name = "e2label"
+    ext = availability.application("e2label")
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
 
 class JFSWriteLabel(FSWriteLabel):
-    app_name = "jfs_tune"
+    ext = availability.application("jfs_tune")
 
     @property
     def args(self):
         return ["-L", self.fs.label, self.fs.device]
 
 class NTFSWriteLabel(FSWriteLabel):
-    app_name = "ntfslabel"
+    ext = availability.application("ntfslabel")
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
 
 class ReiserFSWriteLabel(FSWriteLabel):
-    app_name = "reiserfstune"
+    ext = availability.application("reiserfstune")
 
     @property
     def args(self):
         return ["-l", self.fs.label, self.fs.device]
 
 class XFSWriteLabel(FSWriteLabel):
-    app_name = "xfs_admin"
+    ext = availability.application("xfs_admin")
 
     @property
     def args(self):
