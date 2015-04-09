@@ -33,7 +33,7 @@ from . import task
 @add_metaclass(abc.ABCMeta)
 class FSMkfsTask(task.Task):
 
-    labels = abc.abstractproperty(doc="whether this task labels")
+    can_label = abc.abstractproperty(doc="whether this task labels")
 
 @add_metaclass(abc.ABCMeta)
 class FSMkfs(task.BasicApplication, FSMkfsTask):
@@ -71,7 +71,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
     # IMPLEMENTATION methods
 
     @property
-    def labels(self):
+    def can_label(self):
         """ Whether this task can label the filesystem.
 
             :returns: True if this task can label the filesystem
@@ -79,16 +79,13 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
         """
         return self.label_option is not None
 
-    def _labelOptions(self, label=False):
+    @property
+    def _labelOptions(self):
         """ Any labeling options that a particular filesystem may use.
 
-            :param bool label: if True, label if possible, default is False
-            :returns: labeling options, may be an empty list
+            :returns: labeling options
             :rtype: list of str
         """
-        if label is False:
-            return []
-
         # Do not know how to set label while formatting.
         if self.label_option is None:
             return []
@@ -107,15 +104,16 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
            filesystem.
 
            :param options: any special options
-           :param bool label: if True, label if possible, default is False
            :type options: list of str or None
+           :param bool label: if True, label if possible, default is False
         """
         options = options or []
 
         if not isinstance(options, list):
             raise FSError("options parameter must be a list.")
 
-        return options + self.args + self._labelOptions(label) + [self.fs.device]
+        label_options = self._labelOptions if label else []
+        return options + self.args + label_options + [self.fs.device]
 
     def _mkfsCommand(self, options, label):
         """Return the command to make the filesystem.
@@ -246,5 +244,5 @@ class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
         self.fs = an_fs
 
     @property
-    def labels(self):
+    def can_label(self):
         return False
