@@ -27,6 +27,7 @@ from six import add_metaclass
 from ..errors import FSError
 from .. import util
 
+from . import availability
 from . import task
 
 _UNKNOWN_RC_MSG = "Unknown return code: %d"
@@ -85,7 +86,7 @@ class FSCK(task.BasicApplication):
            :return: the command
            :rtype: list of str
         """
-        return [str(self._app())] + self.options + [self.fs.device]
+        return [str(self.ext)] + self.options + [self.fs.device]
 
     def doTask(self):
         """ Check the filesystem.
@@ -114,7 +115,7 @@ class DosFSCK(FSCK):
                       "discovered an internal inconsistency.",
                    2: "Usage error."}
 
-    app_name = "dosfsck"
+    ext = availability.application("dosfsck")
     options = ["-n"]
 
     def _errorMessage(self, rc):
@@ -133,7 +134,7 @@ class Ext2FSCK(FSCK):
                    32: "e2fsck cancelled by user request.",
                    128: "Shared library error."}
 
-    app_name = "e2fsck"
+    ext = availability.application("e2fsck")
     options = ["-f", "-p", "-C", "0"]
 
     def _errorMessage(self, rc):
@@ -145,7 +146,7 @@ class HFSPlusFSCK(FSCK):
                    4: "Root filesystem was dirty. System should be rebooted.",
                    8: "Corrupt filesystem, repairs did not succeed.",
                    47: "Major error found; no repairs attempted."}
-    app_name = "fsck.hfsplus"
+    ext = availability.application("fsck.hfsplus")
     options = []
 
     def _errorMessage(self, rc):
@@ -157,7 +158,7 @@ class HFSPlusFSCK(FSCK):
             return _UNKNOWN_RC_MSG % rc
 
 class NTFSFSCK(FSCK):
-    app_name = "ntfsresize"
+    ext = availability.application("ntfsresize")
     options = ["-c"]
 
     def _errorMessage(self, rc):

@@ -27,6 +27,7 @@ from six import add_metaclass
 from ..errors import FSError
 from .. import util
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -63,13 +64,13 @@ class FSSync(task.BasicApplication):
 class XFSSync(FSSync):
     """ Info application for XFS. """
 
-    app_name = "xfs_freeze"
+    ext = availability.application("xfs_freeze")
 
     def _freezeCommand(self):
-        return [str(self._app()), "-f", self.fs.systemMountpoint]
+        return [str(self.ext), "-f", self.fs.systemMountpoint]
 
     def _unfreezeCommand(self):
-        return [str(self._app()), "-u", self.fs.systemMountpoint]
+        return [str(self.ext), "-u", self.fs.systemMountpoint]
 
     def doTask(self, root="/"):
         # pylint: disable=arguments-differ

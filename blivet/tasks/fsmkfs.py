@@ -27,6 +27,7 @@ from six import add_metaclass
 from ..errors import FSError, FSWriteLabelError
 from .. import util
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -124,7 +125,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
            :returns: the mkfs command
            :rtype: list of str
         """
-        return [str(self._app())] + self._formatOptions(options, label)
+        return [str(self.ext)] + self._formatOptions(options, label)
 
     def doTask(self, options=None, label=False):
         """Create the format on the device and label if possible and desired.
@@ -148,7 +149,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
             raise FSError("format failed: %s" % ret)
 
 class BTRFSMkfs(FSMkfs):
-    app_name = "mkfs.btrfs"
+    ext = availability.application("mkfs.btrfs")
     label_option = None
 
     @property
@@ -156,7 +157,7 @@ class BTRFSMkfs(FSMkfs):
         return []
 
 class Ext2FSMkfs(FSMkfs):
-    app_name = "mke2fs"
+    ext = availability.application("mke2fs")
     label_option = "-L"
 
     _opts = []
@@ -172,7 +173,7 @@ class Ext4FSMkfs(Ext3FSMkfs):
     _opts = ["-t", "ext4"]
 
 class FATFSMkfs(FSMkfs):
-    app_name = "mkdosfs"
+    ext = availability.application("mkdosfs")
     label_option = "-n"
 
     @property
@@ -180,7 +181,7 @@ class FATFSMkfs(FSMkfs):
         return []
 
 class GFS2Mkfs(FSMkfs):
-    app_name = "mkfs.gfs2"
+    ext = availability.application("mkfs.gfs2")
     label_option = None
 
     @property
@@ -188,7 +189,7 @@ class GFS2Mkfs(FSMkfs):
         return ["-j", "1", "-p", "lock_nolock", "-O"]
 
 class HFSMkfs(FSMkfs):
-    app_name = "hformat"
+    ext = availability.application("hformat")
     label_option = "-l"
 
     @property
@@ -196,7 +197,7 @@ class HFSMkfs(FSMkfs):
         return []
 
 class HFSPlusMkfs(FSMkfs):
-    app_name = "mkfs.hfsplus"
+    ext = availability.application("mkfs.hfsplus")
     label_option = "-v"
 
     @property
@@ -204,7 +205,7 @@ class HFSPlusMkfs(FSMkfs):
         return []
 
 class JFSMkfs(FSMkfs):
-    app_name = "mkfs.jfs"
+    ext = availability.application("mkfs.jfs")
     label_option = "-L"
 
     @property
@@ -212,7 +213,7 @@ class JFSMkfs(FSMkfs):
         return ["-q"]
 
 class NTFSMkfs(FSMkfs):
-    app_name = "mkntfs"
+    ext = availability.application("mkntfs")
     label_option = "-L"
 
     @property
@@ -220,7 +221,7 @@ class NTFSMkfs(FSMkfs):
         return []
 
 class ReiserFSMkfs(FSMkfs):
-    app_name = "mkreiserfs"
+    ext = availability.application("mkreiserfs")
     label_option = "-l"
 
     @property
@@ -228,7 +229,7 @@ class ReiserFSMkfs(FSMkfs):
         return ["-f", "-f"]
 
 class XFSMkfs(FSMkfs):
-    app_name = "mkfs.xfs"
+    ext = availability.application("mkfs.xfs")
     label_option = "-L"
 
     @property
