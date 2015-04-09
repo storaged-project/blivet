@@ -171,7 +171,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return (self._mkfs.labels and not self._mkfs.unavailable) or not self._writelabel.unavailable
+        return (self._mkfs.can_label and not self._mkfs.unavailable) or not self._writelabel.unavailable
 
     def relabels(self):
         """Returns True if it is possible to relabel this filesystem
