@@ -112,11 +112,12 @@ class FileDevice(StorageDevice):
 
         zeros = zero * block_size
         for _n in range(count):
-            os.write(fd, zeros)
+            os.write(fd, zeros.encode("utf-8"))
 
         if rem:
             # write out however many more zeros it takes to hit our size target
-            os.write(fd, zero * rem)
+            size_target = zero * rem
+            os.write(fd, size_target.encode("utf-8"))
 
         os.close(fd)
 
