@@ -28,6 +28,7 @@ from ..errors import FSError
 from .. import util
 from ..size import Size
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -54,7 +55,7 @@ class FSMinSize(task.BasicApplication):
         return False
 
     def _resizeCommand(self):
-        return [str(self._app())] + self.options + [self.fs.device]
+        return [str(self.ext)] + self.options + [self.fs.device]
 
     def _getResizeInfo(self):
         """ Get info from fsresize program.
@@ -86,7 +87,7 @@ class FSMinSize(task.BasicApplication):
 
 class Ext2FSMinSize(FSMinSize):
 
-    app_name = "resize2fs"
+    ext = availability.application("resize2fs")
     options = ["-P"]
 
     @property
@@ -153,7 +154,7 @@ class Ext2FSMinSize(FSMinSize):
 
 class NTFSMinSize(FSMinSize):
 
-    app_name = "ntfsresize"
+    ext = availability.application("ntfsresize")
     options = ["-m"]
 
     @property
