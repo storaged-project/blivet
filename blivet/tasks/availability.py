@@ -20,12 +20,14 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
+from distutils.version import LooseVersion
 
 from six import add_metaclass
 
 from gi.repository import BlockDev as blockdev
 
 from .. import util
+from ..errors import AvailabilityError
 
 class ExternalResource(object):
     """ An application. """
@@ -87,6 +89,47 @@ class Path(Method):
 
 Path = Path()
 
+class PackageInfo(object):
+
+    def __init__(self, package_name, required_version=None):
+        """ Initializer.
+
+            :param str package_name: the name of the package
+            :param required_version: the required version for this package
+            :type required_version: :class:`distutils.LooseVersion` or NoneType
+        """
+        self.package_name = package_name
+        self.required_version = required_version
+
+    def __str__(self):
+        return "%s-%s" % (self.package_name, self.required_version)
+
+class PackageMethod(object):
+    """ Methods for checking the package version of the external resource. """
+
+    def __init__(self, package=None):
+        """ Initializer.
+
+            :param :class:`PackageInfo` package:
+        """
+        self.package = package
+
+    @property
+    def packageVersion(self):
+        args = ["rpm", "-q", "--query-format", "%{VERSION}", self.package]
+        try:
+            (rc, out) = util.run_program_and_capture_output(args)
+            if rc != 0:
+                raise AvailabilityError("Could not determine package version for %s" % self.package.package_name)
+        except OSError as e:
+            raise AvailabilityError("Could not determine package version for %s: %s" % (self.package.package_name, e))
+
+        return LooseVersion(out)
+
+    def available(self, resource):
+        return Path.available(resource) and \
+           self.package.required_version is None or self.packageVersion >= self.package.required_version
+
 class BlockDevMethod(Method):
     """ Methods for when application is actually a libblockdev plugin. """
 
@@ -109,6 +152,16 @@ def application(name):
         This application will be available if its name can be found in $PATH.
     """
     return ExternalResource(Path, name)
+
+def application_by_package(name, package):
+    """ Construct an external resource that is an application.
+
+        This application will be available if its name can be found in $PATH
+        AND its package version is at least the required version.
+
+        :param :class:`PackageInfo` package: the package
+    """
+    return ExternalResource(PackageMethod(package), name)
 
 def blockdev_plugin(name):
     """ Construct an external resource that is a libblockdev plugin. """
