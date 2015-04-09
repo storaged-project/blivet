@@ -132,11 +132,10 @@ class ReiserFSSize(FSSize):
 class XFSSize(FSSize):
     tags = _Tags(size="blocksize =", count="dblocks =")
 
-class TmpFSSize(task.Task):
+class TmpFSSize(task.BasicApplication):
     description = "current filesystem size"
 
-    app_name = "df"
-    _app = availability.application(app_name)
+    ext = availability.application("df")
 
     def __init__(self, an_fs):
         """ Initializer.
@@ -144,16 +143,6 @@ class TmpFSSize(task.Task):
            :param FS an_fs: a filesystem object
         """
         self.fs = an_fs
-
-    @classmethod
-    def available(cls):
-        return cls._app.available
-
-    @property
-    def _unavailable(self):
-        if not self._app.available:
-            return "application %s is not available" % self._app
-        return False
 
     @property
     def unready(self):
@@ -166,12 +155,8 @@ class TmpFSSize(task.Task):
         return False
 
     @property
-    def dependsOn(self):
-        return []
-
-    @property
     def _sizeCommand(self):
-        return [str(self._app), self.fs.systemMountpoint, "--output=size"]
+        return [str(self.ext), self.fs.systemMountpoint, "--output=size"]
 
     def doTask(self):
         error_msg = self.impossible

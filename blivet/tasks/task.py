@@ -23,8 +23,6 @@ import abc
 
 from six import add_metaclass
 
-from . import availability
-
 @add_metaclass(abc.ABCMeta)
 class Task(object):
     """ An abstract class that represents some task. """
@@ -108,22 +106,18 @@ class UnimplementedTask(Task):
 class BasicApplication(Task):
     """ A task representing an application. """
 
-    app_name = abc.abstractproperty(doc="The name of the application.")
-
-    @classmethod
-    def _app(cls):
-        return availability.application(cls.app_name)
+    ext = abc.abstractproperty(doc="The object representing the external resource.")
 
     # TASK methods
 
     @classmethod
     def available(cls):
-        return cls._app().available
+        return cls.ext.available
 
     @property
     def _unavailable(self):
-        if not self._app().available:
-            return "application %s is not available" % self._app()
+        if not self.ext.available:
+            return "application %s is not available" % self.ext
 
         return False
 

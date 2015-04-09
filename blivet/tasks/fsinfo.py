@@ -27,6 +27,7 @@ from six import add_metaclass
 from ..errors import FSError
 from .. import util
 
+from . import availability
 from . import task
 
 @add_metaclass(abc.ABCMeta)
@@ -66,7 +67,7 @@ class FSInfo(task.BasicApplication):
             :returns: a list of appropriate options
             :rtype: list of str
         """
-        return [str(self._app())] + self.options + [self.fs.device]
+        return [str(self.ext)] + self.options + [self.fs.device]
 
     def doTask(self):
         """ Returns information from the command.
@@ -89,23 +90,23 @@ class FSInfo(task.BasicApplication):
         return out
 
 class Ext2FSInfo(FSInfo):
-    app_name = "dumpe2fs"
+    ext = availability.application("dumpe2fs")
     options = ["-h"]
 
 class JFSInfo(FSInfo):
-    app_name = "jfs_tune"
+    ext = availability.application("jfs_tune")
     options = ["-l"]
 
 class NTFSInfo(FSInfo):
-    app_name = "ntfsinfo"
+    ext = availability.application("ntfsinfo")
     options = ["-m"]
 
 class ReiserFSInfo(FSInfo):
-    app_name = "debugreiserfs"
+    ext = availability.application("debugreiserfs")
     options = []
 
 class XFSInfo(FSInfo):
-    app_name = "xfs_db"
+    ext = availability.application("xfs_db")
     options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize"]
 
 class UnimplementedFSInfo(task.UnimplementedTask):
