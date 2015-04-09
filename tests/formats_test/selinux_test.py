@@ -17,6 +17,10 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
     def __init__(self, methodName='runTest'):
         super(SELinuxContextTestCase, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB")])
 
+    def setUp(self):
+        self.installer_mode = blivet.flags.installer_mode
+        super(SELinuxContextTestCase, self).setUp()
+
     def testMountingExt2FS(self):
         """ Test that lost+found directory gets assigned correct SELinux
             context if installer_mode is True, and retains some random old
@@ -78,6 +82,10 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         an_fs.unmount()
         os.rmdir(mountpoint)
+
+    def tearDown(self):
+        super(SELinuxContextTestCase, self).tearDown()
+        blivet.flags.installer_mode = self.installer_mode
 
 if __name__ == "__main__":
     unittest.main()
