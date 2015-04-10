@@ -593,8 +593,12 @@ class FS(DeviceFormat):
         if not self.exists:
             return None
 
-        return mountsCache.getMountpoint(self.device,
-                                         getattr(self, "subvolspec", None))
+        # It is possible to have multiple mountpoints, return the last one
+        try:
+            return mountsCache.getMountpoints(self.device,
+                                              getattr(self, "subvolspec", None))[-1]
+        except IndexError:
+            return None
 
     def testMount(self):
         """ Try to mount the fs and return True if successful. """
