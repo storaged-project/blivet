@@ -157,7 +157,7 @@ class BTRFSMkfs(FSMkfs):
         return []
 
 class Ext2FSMkfs(FSMkfs):
-    ext = availability.application("mke2fs")
+    ext = availability.application_by_package("mke2fs", availability.E2FSPROGS_PACKAGE)
     label_option = "-L"
 
     _opts = []
