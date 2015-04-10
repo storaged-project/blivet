@@ -162,7 +162,8 @@ class PointlessAssignment(PointlessData):
             return len(node.elts) == len(other.elts) and \
                all(cls.check_equal(n, o) for (n, o) in zip(node.elts, other.elts))
         if isinstance(node, astroid.Dict):
-            return len(node.items) == len(other.items)
+            return len(node.items) == len(other.items) and \
+               all(cls.check_equal(n, o) for (n, o) in zip(sorted(node.items), sorted(other.items)))
         if isinstance(node, astroid.CallFunc):
             if type(node.func) != type(other.func):
                 return False
@@ -180,7 +181,8 @@ class PointlessAssignment(PointlessData):
 
             return node.starargs == other.starargs and \
                node.kwargs == other.kwargs and \
-               all(cls.check_equal(n, o) for (n, o) in zip(node.args, other.args))
+               node.args == other.args
+
         return False
 
     @staticmethod
