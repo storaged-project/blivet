@@ -1035,6 +1035,11 @@ class DeviceTree(object):
                 device._name += ".%d" % n
                 self._addDevice(device)
 
+    def saveLUKSpassphrase(self, device):
+        """ Save a device's LUKS passphrase in case of reset. """
+
+        self._populator.saveLUKSpassphrase(device)
+
     def __str__(self):
         done = []
         def show_subtree(root, depth):

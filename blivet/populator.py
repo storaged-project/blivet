@@ -1512,6 +1512,13 @@ class Populator(object):
     def restoreConfigs(self):
         self.backupConfigs(restore=True)
 
+    def saveLUKSpassphrase(self, device):
+        """ Save a device's LUKS passphrase in case of reset. """
+
+        passphrase = device.format._LUKS__passphrase
+        self.__luksDevs[device.format.uuid] = passphrase
+        self.__passphrases.append(passphrase)
+
     def populate(self, cleanupOnly=False):
         """ Locate all storage devices.
 
