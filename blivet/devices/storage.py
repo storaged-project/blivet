@@ -140,7 +140,8 @@ class StorageDevice(Device):
         exist = "existing"
         if not self.exists:
             exist = "non-existent"
-        s = "%s %s %s" % (exist, self.size, super(StorageDevice, self).__str__())
+        s = "%s %s %s" % (exist, self.size.humanReadable(xlate=False),
+                super(StorageDevice, self).__str__())
         if self.format.type:
             s += " with %s" % self.format
 
@@ -283,10 +284,11 @@ class StorageDevice(Device):
               "  sysfs path = %(sysfs)s  partedDevice = %(partedDevice)s\n"
               "  target size = %(targetSize)s  path = %(path)s\n"
               "  format args = %(formatArgs)s  originalFormat = %(origFmt)s" %
-              {"uuid": self.uuid, "format": self.format, "size": self.size,
+              {"uuid": self.uuid, "format": self.format, "size": self.size.humanReadable(xlate=False),
                "major": self.major, "minor": self.minor, "exists": self.exists,
                "sysfs": self.sysfsPath, "partedDevice": self.partedDevice,
-               "targetSize": self.targetSize, "path": self.path,
+               "targetSize": self.targetSize.humanReadable(xlate=False),
+               "path": self.path,
                "protected": self.protected,
                "formatArgs": self.formatArgs, "origFmt": self.originalFormat.type})
         return s
