@@ -97,7 +97,7 @@ class DosFSWriteLabel(FSWriteLabel):
         return [self.fs.device, self.fs.label]
 
 class Ext2FSWriteLabel(FSWriteLabel):
-    ext = availability.application("e2label")
+    ext = availability.application_by_package("e2label", availability.E2FSPROGS_PACKAGE)
 
     @property
     def args(self):

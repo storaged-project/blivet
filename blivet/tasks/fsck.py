@@ -134,7 +134,7 @@ class Ext2FSCK(FSCK):
                    32: "e2fsck cancelled by user request.",
                    128: "Shared library error."}
 
-    ext = availability.application("e2fsck")
+    ext = availability.application_by_package("e2fsck", availability.E2FSPROGS_PACKAGE)
     options = ["-f", "-p", "-C", "0"]
 
     def _errorMessage(self, rc):

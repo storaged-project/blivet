@@ -117,7 +117,7 @@ class DosFSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class Ext2FSReadLabel(FSReadLabel):
-    ext = availability.application("e2label")
+    ext = availability.application_by_package("e2label", availability.E2FSPROGS_PACKAGE)
     label_regex = r'(?P<label>.*)'
 
     @property
