@@ -101,7 +101,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
             raise FSError("resize failed: %s" % ret)
 
 class Ext2FSResize(FSResize):
-    ext = availability.application("resize2fs")
+    ext = availability.application_by_package("resize2fs", availability.E2FSPROGS_PACKAGE)
     unit = MiB
     # No unit specifier is interpreted not as bytes, but block size
     size_fmt = {KiB: "%dK", MiB: "%dM", GiB: "%dG"}[unit]

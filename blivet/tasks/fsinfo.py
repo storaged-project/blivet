@@ -90,7 +90,7 @@ class FSInfo(task.BasicApplication):
         return out
 
 class Ext2FSInfo(FSInfo):
-    ext = availability.application("dumpe2fs")
+    ext = availability.application_by_package("dumpe2fs", availability.E2FSPROGS_PACKAGE)
     options = ["-h"]
 
 class JFSInfo(FSInfo):
