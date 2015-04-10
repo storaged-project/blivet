@@ -116,7 +116,7 @@ class PackageMethod(object):
 
     @property
     def packageVersion(self):
-        args = ["rpm", "-q", "--query-format", "%{VERSION}", self.package]
+        args = ["rpm", "-q", "--queryformat", "%{VERSION}", self.package.package_name]
         try:
             (rc, out) = util.run_program_and_capture_output(args)
             if rc != 0:
@@ -176,3 +176,6 @@ BLOCKDEV_LVM_PLUGIN = blockdev_plugin("lvm")
 BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid")
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("mpath")
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap")
+
+# packages
+E2FSPROGS_PACKAGE = PackageMethod(PackageInfo("e2fsprogs", LooseVersion("1.41.0")))

@@ -87,7 +87,7 @@ class FSMinSize(task.BasicApplication):
 
 class Ext2FSMinSize(FSMinSize):
 
-    ext = availability.application("resize2fs")
+    ext = availability.application_by_package("resize2fs", availability.E2FSPROGS_PACKAGE)
     options = ["-P"]
 
     @property
