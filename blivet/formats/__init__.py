@@ -104,7 +104,7 @@ def collect_device_format_classes():
     (myfile_name, _ext) = os.path.splitext(myfile)
     for module_file in os.listdir(mydir):
         (mod_name, ext) = os.path.splitext(module_file)
-        if ext == ".py" and mod_name != myfile_name:
+        if ext == ".py" and mod_name != myfile_name and not mod_name.startswith("."):
             try:
                 globals()[mod_name] = __import__(mod_name, globals(), locals(), [], -1)
             except ImportError:
