@@ -287,9 +287,12 @@ class Size(Decimal):
         """ Return the size in the units indicated by the specifier.
 
             :param spec: a units specifier
+            :type spec: a defined constant or a string
             :returns: a numeric value in the units indicated by the specifier
             :rtype: Decimal
         """
+        if isinstance(spec, basestring):
+            spec = parseUnits(spec, False)
         return Decimal(self) / Decimal((spec or B).factor)
 
     def humanReadable(self, max_places=2, strip=True, min_value=1, xlate=True):

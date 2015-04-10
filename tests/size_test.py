@@ -174,6 +174,10 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.convertTo(KiB), 1792)
         self.assertEquals(s.convertTo(MiB), Decimal("1.75"))
 
+    def testConvertToString(self):
+        s = Size(1835008)
+        self.assertEquals(s.convertTo(MiB), s.convertTo("MiB"))
+
     def testNegative(self):
         s = Size("-500MiB")
         self.assertEquals(s.humanReadable(), "-500 MiB")
