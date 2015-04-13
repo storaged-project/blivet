@@ -102,7 +102,7 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
     return swap
 
 def _getCandidateDisks(storage):
-    """ Return a list of disks to be used for autopart.
+    """ Return a list of disks to be used for autopart/reqpart.
 
         Disks must be partitioned and have a single free region large enough
         for a default-sized (500MiB) partition. They must also be in
@@ -179,8 +179,8 @@ def _scheduleImplicitPartitions(storage, disks, min_luks_entropy=0):
 
     return devs
 
-def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0):
-    """ Schedule creation of autopart partitions.
+def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, requests=None):
+    """ Schedule creation of autopart/reqpart partitions.
 
         This only schedules the requests for actual partitions.
 
@@ -191,9 +191,15 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0):
         :param min_luks_entropy: minimum entropy in bits required for
                                  luks format creation
         :type min_luks_entropy: int
+        :param requests: list of partitioning requests to operate on,
+                         or `~.storage.autoPartitionRequests` by default
+        :type requests: list of :class:`~.partspec.PartSpec` instances
         :returns: None
         :rtype: None
     """
+    if not requests:
+        requests = storage.autoPartitionRequests
+
     # basis for requests with requiredSpace is the sum of the sizes of the
     # two largest free regions
     all_free = (Size(reg.getLength(unit="B")) for reg in getFreeRegions(disks))
@@ -222,8 +228,8 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0):
     #
     # First pass is for partitions only. We'll do LVs later.
     #
-    for request in storage.autoPartitionRequests:
-        if ((request.lv and
+    for request in requests:
+        if ((request.lv and storage.doAutoPart and
              storage.autoPartType in (AUTOPART_TYPE_LVM,
                                       AUTOPART_TYPE_LVM_THINP)) or
             (request.btr and storage.autoPartType == AUTOPART_TYPE_BTRFS)):
@@ -300,7 +306,8 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0):
                                   parents=dev)
             storage.createDevice(luks_dev)
 
-        if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
+        if storage.doAutoPart and \
+           storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
                                     AUTOPART_TYPE_BTRFS):
             # doing LVM/BTRFS -- make sure the newly created partition fits in some
             # free space together with one of the implicitly requested partitions
@@ -414,6 +421,27 @@ def _scheduleVolumes(storage, devs):
 
         # schedule the device for creation
         storage.createDevice(dev)
+
+def doReqPartition(storage, requests):
+    """Perform automatic partitioning of just required platform-specific
+       partitions.  This is incompatible with doAutoPartition.
+
+       :param storage: a :class:`~.Blivet` instance
+       :type storage: :class:`~.Blivet`
+       :param requests: list of partitioning requests to operate on,
+                        or `~.storage.autoPartitionRequests` by default
+       :type requests: list of :class:`~.partspec.PartSpec` instances
+    """
+    if not storage.partitioned:
+        raise NoDisksError(_("No usable disks selected"))
+
+    disks = _getCandidateDisks(storage)
+
+    if disks == []:
+        raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
+                                      "automatic partitioning"))
+
+    _schedulePartitions(storage, disks, [], requests=requests)
 
 def doAutoPartition(storage, data, min_luks_entropy=0):
     """ Perform automatic partitioning.
