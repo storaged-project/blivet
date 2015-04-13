@@ -44,10 +44,6 @@ class FSMount(task.BasicApplication):
 
     # TASK methods
 
-    @classmethod
-    def available(cls):
-        return cls._app.available
-
     @property
     def _unavailable(self):
         if not self.ext.available:
