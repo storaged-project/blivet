@@ -32,18 +32,7 @@ class Task(object):
     # should have a False value.
     implemented = True
 
-    @classmethod
-    @abc.abstractmethod
-    def available(cls):
-        """ A class-level method indicating whether tasks of this class
-            are available.
-        """
-        raise NotImplementedError()
-
     description = abc.abstractproperty(doc="Brief description for this task.")
-
-    # Note that unavailable is able to obtain more precise information than
-    # available, since it is able to access the filesystem object.
 
     @property
     def unavailable(self):
@@ -81,10 +70,6 @@ class UnimplementedTask(Task):
     description = "an unimplemented task"
     implemented = False
 
-    @classmethod
-    def available(cls):
-        return False
-
     @property
     def _unavailable(self):
         return "Not implemented task can not succeed."
@@ -109,10 +94,6 @@ class BasicApplication(Task):
     ext = abc.abstractproperty(doc="The object representing the external resource.")
 
     # TASK methods
-
-    @classmethod
-    def available(cls):
-        return cls.ext.available
 
     @property
     def _unavailable(self):

@@ -51,10 +51,6 @@ class FSSize(task.Task):
 
     # TASK methods
 
-    @classmethod
-    def available(cls):
-        return True
-
     @property
     def _unavailable(self):
         return False
