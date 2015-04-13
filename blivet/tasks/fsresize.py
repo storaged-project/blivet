@@ -101,7 +101,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
             raise FSError("resize failed: %s" % ret)
 
 class Ext2FSResize(FSResize):
-    ext = availability.application_by_package("resize2fs", availability.E2FSPROGS_PACKAGE)
+    ext = availability.RESIZE2FS_APP
     unit = MiB
     # No unit specifier is interpreted not as bytes, but block size
     size_fmt = {KiB: "%dK", MiB: "%dM", GiB: "%dG"}[unit]
@@ -114,7 +114,7 @@ class Ext2FSResize(FSResize):
         return ["-p", self.fs.device, self.sizeSpec()]
 
 class NTFSResize(FSResize):
-    ext = availability.application("ntfsresize")
+    ext = availability.NTFSRESIZE_APP
     unit = B
     size_fmt = {B: "%d", KB: "%dK", MB: "%dM", GB: "%dG"}[unit]
 
@@ -131,7 +131,7 @@ class NTFSResize(FSResize):
 
 class TmpFSResize(FSResize):
 
-    ext = availability.application("mount")
+    ext = availability.MOUNT_APP
     unit = MiB
     size_fmt = {KiB: "%dk", MiB: "%dm", GiB: "%dg"}[unit]
 

@@ -109,7 +109,7 @@ class FSReadLabel(task.BasicApplication):
         return label if label == "" else self._extractLabel(label)
 
 class DosFSReadLabel(FSReadLabel):
-    ext = availability.application("dosfslabel")
+    ext = availability.DOSFSLABEL_APP
     label_regex = r'(?P<label>.*)'
 
     @property
@@ -117,7 +117,7 @@ class DosFSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class Ext2FSReadLabel(FSReadLabel):
-    ext = availability.application_by_package("e2label", availability.E2FSPROGS_PACKAGE)
+    ext = availability.E2LABEL_APP
     label_regex = r'(?P<label>.*)'
 
     @property
@@ -125,7 +125,7 @@ class Ext2FSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class NTFSReadLabel(FSReadLabel):
-    ext = availability.application("ntfslabel")
+    ext = availability.NTFSLABEL_APP
     label_regex = r'(?P<label>.*)'
 
     @property
@@ -133,7 +133,7 @@ class NTFSReadLabel(FSReadLabel):
         return [self.fs.device]
 
 class XFSReadLabel(FSReadLabel):
-    ext = availability.application("xfs_admin")
+    ext = availability.XFSADMIN_APP
     label_regex = r'label = "(?P<label>.*)"'
 
     @property
