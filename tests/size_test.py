@@ -25,7 +25,7 @@ import locale
 import os
 import unittest
 
-from six.moves import cPickle
+from six.moves import cPickle # pylint: disable=import-error
 
 from decimal import Decimal
 
