@@ -33,6 +33,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -48,6 +49,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     _devDir = "/dev/md"
     _formatClassName = property(lambda s: "mdmember")
     _formatUUIDAttr = property(lambda s: "mdUuid")
+    _external_dependencies = [availability.BLOCKDEV_MDRAID_PLUGIN]
 
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  memberDevices=None, totalDevices=None,
@@ -430,6 +432,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             disks.append(member.path)
 
         blockdev.md_activate(self.path, members=disks, uuid=self.mdadmFormatUUID)
+
+    def unsetupableFormat(self, orig=False):
+        return next((m.unsetupableFormat(orig=orig) for m in self.devices), None)
 
     def _postTeardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)

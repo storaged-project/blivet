@@ -36,6 +36,7 @@ from ..formats import getFormat
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -446,6 +447,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     _resizable = True
     _packages = ["lvm2"]
     _containerClass = LVMVolumeGroupDevice
+    _external_dependencies = default=[availability.BLOCKDEV_LVM_PLUGIN]
 
     def __init__(self, name, parents=None, size=None, uuid=None,
                  copies=1, logSize=None, segType=None,
@@ -623,6 +625,9 @@ class LVMLogicalVolumeDevice(DMDevice):
         # parent is a vg, which has no formatting (or device for that matter)
         Device.setupParents(self, orig=orig)
 
+    def parentUnsetupableFormat(self, orig=False):
+        return Device.parentUnsetupableFormat(self, orig=orig)
+
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
@@ -696,6 +701,10 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         udev.settle()
         blockdev.lvm_lvresize(self.vg.name, self._name, self.size)
+
+    @property
+    def resizeSupported(self):
+        return self.vg.parentUnsetupableFormat(orig=True) is None
 
     @property
     def isleaf(self):
@@ -942,6 +951,9 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
 
     def setup(self, orig=False):
         pass
+
+    def unsetupableFormat(self, orig=False):
+        return None
 
     def teardown(self, recursive=False):
         pass
