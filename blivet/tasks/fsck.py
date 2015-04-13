@@ -158,7 +158,7 @@ class HFSPlusFSCK(FSCK):
             return _UNKNOWN_RC_MSG % rc
 
 class NTFSFSCK(FSCK):
-    ext = availability.application("ntfsresize")
+    ext = availability.NTFSRESIZE_APP
     options = ["-c"]
 
     def _errorMessage(self, rc):

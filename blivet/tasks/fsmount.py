@@ -37,7 +37,7 @@ class FSMount(task.BasicApplication):
     # type argument to pass to mount, if different from filesystem type
     fstype = None
 
-    ext = availability.application("mount")
+    ext = availability.MOUNT_APP
 
     def __init__(self, an_fs):
         self.fs = an_fs

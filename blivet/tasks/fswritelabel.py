@@ -90,28 +90,28 @@ class FSWriteLabel(task.BasicApplication):
             raise FSWriteLabelError("label failed")
 
 class DosFSWriteLabel(FSWriteLabel):
-    ext = availability.application("dosfslabel")
+    ext = availability.DOSFSLABEL_APP
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
 
 class Ext2FSWriteLabel(FSWriteLabel):
-    ext = availability.application_by_package("e2label", availability.E2FSPROGS_PACKAGE)
+    ext = availability.E2LABEL_APP
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
 
 class JFSWriteLabel(FSWriteLabel):
-    ext = availability.application("jfs_tune")
+    ext = availability.JFSTUNE_APP
 
     @property
     def args(self):
         return ["-L", self.fs.label, self.fs.device]
 
 class NTFSWriteLabel(FSWriteLabel):
-    ext = availability.application("ntfslabel")
+    ext = availability.NTFSLABEL_APP
 
     @property
     def args(self):
@@ -125,7 +125,7 @@ class ReiserFSWriteLabel(FSWriteLabel):
         return ["-l", self.fs.label, self.fs.device]
 
 class XFSWriteLabel(FSWriteLabel):
-    ext = availability.application("xfs_admin")
+    ext = availability.XFSADMIN_APP
 
     @property
     def args(self):
