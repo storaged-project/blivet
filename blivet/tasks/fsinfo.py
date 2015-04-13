@@ -94,7 +94,7 @@ class Ext2FSInfo(FSInfo):
     options = ["-h"]
 
 class JFSInfo(FSInfo):
-    ext = availability.application("jfs_tune")
+    ext = availability.JFSTUNE_APP
     options = ["-l"]
 
 class NTFSInfo(FSInfo):

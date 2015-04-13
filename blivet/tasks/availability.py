@@ -179,3 +179,14 @@ BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap")
 
 # packages
 E2FSPROGS_PACKAGE = PackageMethod(PackageInfo("e2fsprogs", LooseVersion("1.41.0")))
+
+# applications
+DOSFSLABEL_APP = application("dosfslabel")
+E2LABEL_APP = application_by_package("e2label", E2FSPROGS_PACKAGE)
+JFSTUNE_APP = application("jfs_tune")
+NTFSLABEL_APP = application("ntfslabel")
+NTFSRESIZE_APP = application("ntfsresize")
+RESIZE2FS_APP = application_by_package("resize2fs", E2FSPROGS_PACKAGE)
+XFSADMIN_APP = application("xfs_admin")
+
+MOUNT_APP = application("mount")
