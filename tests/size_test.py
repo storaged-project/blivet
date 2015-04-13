@@ -25,6 +25,8 @@ import locale
 import os
 import unittest
 
+from six.moves import cPickle
+
 from decimal import Decimal
 
 from blivet.i18n import _
@@ -193,6 +195,10 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(size.parseSpec("1e-1 KB"), Decimal(100))
         self.assertEqual(size.parseSpec("1E-4KB"), Decimal("0.1"))
         self.assertEqual(Size("1E-10KB"), Size(0))
+
+    def testPickling(self):
+        s = Size("10 MiB")
+        self.assertEqual(s, cPickle.loads(cPickle.dumps(s)))
 
 class TranslationTestCase(unittest.TestCase):
 
