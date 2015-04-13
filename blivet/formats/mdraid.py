@@ -20,13 +20,10 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import os
-
 from gi.repository import BlockDev as blockdev
 
 from ..storage_log import log_method_call
 from parted import PARTITION_RAID
-from ..errors import MDMemberError
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import N_
@@ -77,20 +74,8 @@ class MDRaidMember(DeviceFormat):
         d.update({"mdUUID": self.mdUuid, "biosraid": self.biosraid})
         return d
 
-    def destroy(self, **kwargs):
-        """ Remove the formatting from the associated block device.
-
-            :raises: FormatDestroyError
-            :returns: None.
-        """
-        if not self.exists:
-            raise MDMemberError("format does not exist")
-
-        if not os.access(self.device, os.W_OK):
-            raise MDMemberError("device path does not exist")
-
+    def _destroy(self, **kwargs):
         blockdev.md_destroy(self.device)
-        self.exists = False
 
     @property
     def status(self):

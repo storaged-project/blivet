@@ -115,7 +115,7 @@ def get_mount_paths(dev):
     """
     from .mounts import mountsCache
 
-    mount_paths = mountsCache.getMountpoint(dev)
+    mount_paths = mountsCache.getMountpoints(dev)
     if mount_paths:
         log.debug("%s is mounted on %s", dev, ', '.join(mount_paths))
     return mount_paths

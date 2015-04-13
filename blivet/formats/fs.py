@@ -386,7 +386,12 @@ class FS(DeviceFormat):
         argv.append(self.device)
         return argv
 
-    def doFormat(self, options=None):
+    def _preCreate(self, **kwargs):
+        super(FS, self)._preCreate(**kwargs)
+        if not self.mkfsProg:
+            return
+
+    def _create(self, **kwargs):
         """ Create the filesystem.
 
             :param options: options to pass to mkfs
@@ -395,22 +400,14 @@ class FS(DeviceFormat):
         """
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
-
-        if self.exists:
-            raise FormatCreateError("filesystem already exists", self.device)
-
         if not self.formattable:
             return
 
-        if not self.mkfsProg:
-            return
-
-        if not os.path.exists(self.device):
-            raise FormatCreateError("device does not exist", self.device)
-
-        argv = self._getFormatOptions(options=options,
+        argv = self._getFormatOptions(options=kwargs.get("options"),
            do_labeling=not self.relabels())
 
+        super(FS, self)._create()
+        ret = 0
         try:
             ret = util.run_program([self.mkfsProg] + argv)
         except OSError as e:
@@ -419,9 +416,8 @@ class FS(DeviceFormat):
         if ret:
             raise FormatCreateError("format failed: %s" % ret, self.device)
 
-        self.exists = True
-        self.notifyKernel()
-
+    def _postCreate(self, **kwargs):
+        super(FS, self)._postCreate(**kwargs)
         if self.label is not None and self.relabels():
             try:
                 self.writeLabel()
@@ -625,7 +621,20 @@ class FS(DeviceFormat):
 
         return ret
 
-    def mount(self, options="", chroot="/", mountpoint=None):
+    def _preSetup(self, **kwargs):
+        if not self.exists:
+            raise FSError("filesystem has not been created")
+
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+        if not mountpoint:
+            raise FSError("no mountpoint given")
+
+        if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
+            raise FSError("device %s does not exist" % self.device)
+
+        return not self.status
+
+    def _setup(self, **kwargs):
         """ Mount this filesystem.
 
             :keyword options: mount options (overrides all other option strings)
@@ -633,23 +642,10 @@ class FS(DeviceFormat):
             :keyword chroot: prefix to apply to mountpoint
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
             :raises: FSError
-
-        .. note::
-            When mounted multiple times the unmount method needs to be called with
-            a specific mountpoint to unmount, otherwise it will try to unmount the most
-            recent one listed by the system.
         """
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        if not mountpoint:
-            mountpoint = self.mountpoint
-
-        if not mountpoint:
-            raise FSError("no mountpoint given")
-
-        if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
-            raise FSError("device %s does not exist" % self.device)
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
         # XXX os.path.join is FUBAR:
         #
@@ -679,6 +675,11 @@ class FS(DeviceFormat):
         if rc:
             raise FSError("mount failed: %s" % rc)
 
+    def _postSetup(self, **kwargs):
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+
         if flags.selinux and "ro" not in options.split(",") and flags.installer_mode:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
@@ -689,7 +690,24 @@ class FS(DeviceFormat):
             if not ret:
                 log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
-    def unmount(self, mountpoint=None):
+    def _preTeardown(self, **kwargs):
+        if not super(FS, self)._preTeardown(**kwargs):
+            return False
+
+        # Prefer the explicit mountpoint path, fall back to most recent mountpoint
+        mountpoint = kwargs.get("mountpoint") or self.systemMountpoint
+
+        if not mountpoint:
+            # not mounted
+            return False
+
+        if not os.path.exists(mountpoint):
+            raise FSError("mountpoint does not exist")
+
+        udev.settle()
+        return True
+
+    def _teardown(self, **kwargs):
         """ Unmount this filesystem.
 
             :param str mountpoint: Optional mountpoint to be unmounted.
@@ -699,20 +717,7 @@ class FS(DeviceFormat):
             by the system. Override this behavior by passing a specific mountpoint. FSError
             will be raised in either case if the path doesn't exist.
         """
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        # Prefer the explicit mountpoint path, fall back to most recent mountpoint
-        mountpoint = mountpoint or self.systemMountpoint
-
-        if not mountpoint:
-            # not mounted
-            return
-
-        if not os.path.exists(mountpoint):
-            raise FSError("mountpoint does not exist")
-
-        udev.settle()
+        mountpoint = kwargs.get("mountpoint") or self.systemMountpoint
         rc = util.umount(mountpoint)
         if rc:
             # try and catch whatever is causing the umount problem
@@ -880,48 +885,33 @@ class FS(DeviceFormat):
     # These methods just wrap filesystem-specific methods in more
     # generically named methods so filesystems and formatted devices
     # like swap and LVM physical volumes can have a common API.
-    def create(self, **kwargs):
-        """ Create the filesystem on the specified block device.
+    def mount(self, **kwargs):
+        """ Mount this filesystem.
 
-            :keyword device: path to device node
-            :type device: str.
-            :raises: FormatCreateError, FSError
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
-        if self.exists:
-            raise FSError("filesystem already exists")
-
-        DeviceFormat.create(self, **kwargs)
-
-        self.doFormat(options=kwargs.get('options'))
-
-    def setup(self, **kwargs):
-        """ Mount the filesystem.
-
-            The filesystem will be mounted at the directory indicated by
-            self.mountpoint unless overridden via the 'mountpoint' kwarg.
-
-            :keyword device: device node path
-            :type device: str.
+            :keyword options: mount options (overrides all other option strings)
+            :type options: str.
+            :keyword chroot: prefix to apply to mountpoint
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
-            :type mountpoint: str.
-            :raises: FormatSetupError.
-            :returns: None.
+            :raises: FSError
 
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
+        .. note::
+            When mounted multiple times the unmount method needs to be called with
+            a specific mountpoint to unmount, otherwise it will try to unmount the most
+            recent one listed by the system.
         """
-        return self.mount(**kwargs)
+        return self.setup(**kwargs)
 
-    def teardown(self):
-        return self.unmount()
+    def unmount(self):
+        """ Unmount this filesystem.
+
+            :param str mountpoint: Optional mountpoint to be unmounted.
+            :raises: FSError
+
+            If mountpoint isn't passed this will unmount the most recent mountpoint listed
+            by the system. Override this behavior by passing a specific mountpoint. FSError
+            will be raised in either case if the path doesn't exist.
+        """
+        return self.teardown()
 
     @property
     def status(self):
@@ -1160,32 +1150,12 @@ class BTRFS(FS):
         # filesystem deletion is done in blockdev.btrfs_delete_volume
         self.exists = False
 
-    def setup(self, **kwargs):
-        """ Mount the filesystem.
-
-            The filesystem will be mounted at the directory indicated by
-            self.mountpoint unless overridden via the 'mountpoint' kwarg.
-
-            :keyword device: device node path
-            :type device: str.
-            :keyword mountpoint: mountpoint (overrides self.mountpoint)
-            :type mountpoint: str.
-            :raises: FormatSetupError.
-            :returns: None.
-
-            .. :note::
-
-                If a device node path is passed to this method it will overwrite
-                any previously set value of this instance's "device" attribute.
-        """
+    def _preSetup(self, **kwargs):
         log_method_call(self, type=self.mountType, device=self.device,
                         mountpoint=self.mountpoint)
-        if not self.mountpoint and "mountpoint" not in kwargs:
-            # Since btrfs vols have subvols the format setup is automatic.
-            # Don't try to mount it if there's no mountpoint.
-            return
-
-        return self.mount(**kwargs)
+        # Since btrfs vols have subvols the format setup is automatic.
+        # Don't try to mount it if there's no mountpoint.
+        return self.mountpoint or kwargs.get("mountpoint")
 
 register_device_format(BTRFS)
 
