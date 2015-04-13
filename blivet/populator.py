@@ -25,11 +25,12 @@ import re
 import shutil
 import pprint
 import copy
+import parted
 
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
-from .errors import DeviceError, DeviceTreeError, FSError, InvalidDiskLabelError, LUKSError, UnusableConfigurationError
+from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -53,6 +54,18 @@ from .size import Size
 
 import logging
 log = logging.getLogger("blivet")
+
+def parted_exn_handler(exn_type, exn_options, exn_msg):
+    """ Answer any of parted's yes/no questions in the affirmative.
+
+        This allows us to proceed with partially corrupt gpt disklabels.
+    """
+    log.info("parted exception: %s", exn_msg)
+    ret = parted.EXCEPTION_RESOLVE_UNHANDLED
+    if exn_type == parted.EXCEPTION_TYPE_ERROR and \
+       exn_options == parted.EXCEPTION_OPT_YES_NO:
+        ret = parted.EXCEPTION_RESOLVE_YES
+    return ret
 
 class Populator(object):
     def __init__(self, devicetree=None, conf=None, passphrase=None,
@@ -423,10 +436,12 @@ class Populator(object):
                not self._isIgnoredDisk(disk):
                 if info.get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
+                    cls = CorruptGPTError
                 else:
                     msg = "failed to scan disk %s" % disk.name
+                    cls = DiskLabelScanError
 
-                raise UnusableConfigurationError(msg)
+                raise cls(msg)
 
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
@@ -1037,7 +1052,7 @@ class Populator(object):
             if isinstance(same_name, LVMVolumeGroupDevice) and \
                not (all(self._isIgnoredDisk(d) for d in same_name.disks) or
                     all(self._isIgnoredDisk(d) for d in device.disks)):
-                raise UnusableConfigurationError("multiple LVM volume groups with the same name")
+                raise DuplicateVGError("multiple LVM volume groups with the same name (%s)" % vg_name)
 
             try:
                 vg_size = Size(pv_info.vg_size)
@@ -1511,11 +1526,13 @@ class Populator(object):
         if cleanupOnly:
             self._cleanup = True
 
+        parted.register_exn_handler(parted_exn_handler)
         try:
             self._populate()
         except Exception:
             raise
         finally:
+            parted.clear_exn_handler()
             self.restoreConfigs()
 
     def _populate(self):
