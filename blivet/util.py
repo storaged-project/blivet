@@ -24,7 +24,6 @@ from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
 
-
 def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False):
     if env_prune is None:
         env_prune = []
@@ -108,18 +107,15 @@ def umount(mountpoint):
     return rc
 
 def get_mount_paths(dev):
-    """ Given a device node path, return a list of all active mountpoints. """
-    mounts = open("/proc/mounts").readlines()
-    mount_paths = []
-    for mnt in mounts:
-        try:
-            (device, path, _rest) = mnt.split(None, 2)
-        except ValueError:
-            continue
+    """ Given a device node path, return a list of all active mountpoints.
 
-        if dev == device:
-            mount_paths.append(path)
+        :param str dev: Device path
+        :returns: A list of mountpoints or []
+        :rtype: list
+    """
+    from .mounts import mountsCache
 
+    mount_paths = mountsCache.getMountpoint(dev)
     if mount_paths:
         log.debug("%s is mounted on %s", dev, ', '.join(mount_paths))
     return mount_paths

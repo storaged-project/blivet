@@ -19,7 +19,7 @@
 #
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
-
+from collections import defaultdict
 from . import util
 
 import logging
@@ -32,29 +32,42 @@ class MountsCache(object):
 
     def __init__(self):
         self.mountsHash = 0
-        self.mountpoints = {}
+        self.mountpoints = defaultdict(list)
 
-    def getMountpoint(self, devspec, subvolspec=None):
-        """ Get mountpoint for selected device
+    def getMountpoints(self, devspec, subvolspec=None):
+        """ Get mountpoints for selected device
 
             :param devscpec: device specification, eg. "/dev/vda1"
             :type devspec: str
             :param subvolspec: btrfs subvolume specification, eg. ID or name
             :type subvolspec: str
-            :returns: mountpoint (path)
-            :rtype: str or NoneType
+            :returns: list of mountpoints (path)
+            :rtype: list of str or empty list
 
+            .. note::
+                Devices can be mounted on multiple paths, and paths can have multiple
+                devices mounted to them (hiding previous mounts). Callers should take this into account.
         """
-
         self._cacheCheck()
 
-        return self.mountpoints.get((devspec, subvolspec))
+        return self.mountpoints[(devspec, subvolspec)]
+
+    def isMountpoint(self, path):
+        """ Check to see if a path is already mounted
+
+            :param str path: Path to check
+        """
+        self._cacheCheck()
+
+        return any(path in p for p in self.mountpoints.values())
 
     def _getActiveMounts(self):
         """ Get information about mounted devices from /proc/mounts and
             /proc/self/mountinfo
-        """
 
+            Refreshes self.mountpoints with current moutpoint information
+        """
+        self.mountpoints = defaultdict(list)
         for line in open("/proc/mounts").readlines():
             try:
                 (devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
@@ -73,10 +86,10 @@ class MountsCache(object):
                         # empty _subvol[1:] means it is a top-level volume
                         subvolspec = _subvol[1:] or 5
 
-                        self.mountpoints[(devspec, subvolspec)] = mountpoint
+                        self.mountpoints[(devspec, subvolspec)].append(mountpoint)
 
             else:
-                self.mountpoints[(devspec, None)] = mountpoint
+                self.mountpoints[(devspec, None)].append(mountpoint)
 
     def _cacheCheck(self):
         """ Computes the MD5 hash on /proc/mounts and updates the cache on change
@@ -86,7 +99,6 @@ class MountsCache(object):
 
         if md5hash != self.mountsHash:
             self.mountsHash = md5hash
-            self.mountpoints = {}
             self._getActiveMounts()
 
 mountsCache = MountsCache()

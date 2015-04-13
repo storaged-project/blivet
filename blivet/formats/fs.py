@@ -587,13 +587,18 @@ class FS(DeviceFormat):
             returns: mountpoint
             rtype: str or None
 
+            If there are multiple mountpoints it returns the most recent one.
         """
 
         if not self.exists:
             return None
 
-        return mountsCache.getMountpoint(self.device,
-                                         getattr(self, "subvolspec", None))
+        # It is possible to have multiple mountpoints, return the last one
+        try:
+            return mountsCache.getMountpoints(self.device,
+                                              getattr(self, "subvolspec", None))[-1]
+        except IndexError:
+            return None
 
     def testMount(self):
         """ Try to mount the fs and return True if successful. """
@@ -628,6 +633,11 @@ class FS(DeviceFormat):
             :keyword chroot: prefix to apply to mountpoint
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
             :raises: FSError
+
+        .. note::
+            When mounted multiple times the unmount method needs to be called with
+            a specific mountpoint to unmount, otherwise it will try to unmount the first
+            one listed by the system.
         """
         if not self.exists:
             raise FSError("filesystem has not been created")
@@ -638,9 +648,6 @@ class FS(DeviceFormat):
         if not mountpoint:
             raise FSError("no mountpoint given")
 
-        if self.status:
-            return
-
         if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
             raise FSError("device %s does not exist" % self.device)
 
@@ -650,6 +657,10 @@ class FS(DeviceFormat):
         #
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
+
+        # Already mounted here?
+        if self.systemMountpoint == chrootedMountpoint:
+            return
 
         # passed in options override default options
         if not options or not isinstance(options, str):
@@ -678,23 +689,34 @@ class FS(DeviceFormat):
             if not ret:
                 log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
-    def unmount(self):
-        """ Unmount this filesystem. """
+    def unmount(self, mountpoint=None):
+        """ Unmount this filesystem.
+
+            :param str mountpoint: Optional mountpoint to be unmounted.
+            :raises: FSError
+
+            If mountpoint isn't passed this will unmount the first mountpoint listed by the
+            system. Override this behavior by passing a specific mountpoint. FSError will
+            be raised in either case if the path doesn't exist.
+        """
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        if not self.systemMountpoint:
+        # Prefer the explicit mountpoint path, fall back to most recent mountpoint
+        mountpoint = mountpoint or self.systemMountpoint
+
+        if not mountpoint:
             # not mounted
             return
 
-        if not os.path.exists(self.systemMountpoint):
+        if not os.path.exists(mountpoint):
             raise FSError("mountpoint does not exist")
 
         udev.settle()
-        rc = util.umount(self.systemMountpoint)
+        rc = util.umount(mountpoint)
         if rc:
             # try and catch whatever is causing the umount problem
-            util.run_program(["lsof", self.systemMountpoint])
+            util.run_program(["lsof", mountpoint])
             raise FSError("umount failed")
 
     def readLabel(self):
@@ -903,7 +925,6 @@ class FS(DeviceFormat):
 
     @property
     def status(self):
-        # FIXME check /proc/mounts or similar
         if not self.exists:
             return False
         return self.systemMountpoint is not None
