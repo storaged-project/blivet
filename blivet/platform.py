@@ -152,10 +152,21 @@ class Platform(object):
             _packages.append('dracut-fips')
         return _packages
 
-    def setDefaultPartitioning(self):
-        """Return the default platform-specific partitioning information."""
+    def setPlatformBootloaderReqs(self):
+        """Return the required platform-specific bootloader partition
+           information.  These are typically partitions that do not get mounted,
+           like biosboot or prepboot, but may also include the /boot/efi
+           partition."""
+        return []
+
+    def setPlatformBootPartition(self):
+        """Return the default /boot partition for this platform."""
         return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
                          weight=self.weight(mountpoint="/boot"))]
+
+    def setDefaultPartitioning(self):
+        """Return the default platform-specific partitioning information."""
+        return self.setPlatformBootloaderReqs() + self.setPlatformBootPartition()
 
     def weight(self, fstype=None, mountpoint=None):
         """ Given an fstype (as a string) or a mountpoint, return an integer
@@ -190,9 +201,9 @@ class X86(Platform):
     def __init__(self):
         super(X86, self).__init__()
 
-    def setDefaultPartitioning(self):
+    def setPlatformBootloaderReqs(self):
         """Return the default platform-specific partitioning information."""
-        ret = Platform.setDefaultPartitioning(self)
+        ret = Platform.setPlatformBootloaderReqs(self)
         ret.append(PartSpec(fstype="biosboot", size=Size("1MiB"),
                             weight=self.weight(fstype="biosboot")))
         return ret
@@ -223,8 +234,8 @@ class EFI(Platform):
                                     "an EFI System Partition on a GPT-formatted "
                                     "disk, mounted at /boot/efi.")
 
-    def setDefaultPartitioning(self):
-        ret = Platform.setDefaultPartitioning(self)
+    def setPlatformBootloaderReqs(self):
+        ret = Platform.setPlatformBootloaderReqs(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="efi",
                             size=Size("20MiB"), maxSize=Size("200MiB"),
                             grow=True, weight=self.weight(fstype="efi")))
@@ -245,8 +256,8 @@ class MacEFI(EFI):
     _non_linux_format_types = ["macefi"]
     _packages = ["mactel-boot"]
 
-    def setDefaultPartitioning(self):
-        ret = Platform.setDefaultPartitioning(self)
+    def setPlatformBootloaderReqs(self):
+        ret = Platform.setPlatformBootloaderReqs(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="macefi",
                             size=Size("20MiB"), maxSize=Size("200MiB"),
                             grow=True, weight=self.weight(mountpoint="/boot/efi")))
@@ -273,8 +284,8 @@ class IPSeriesPPC(PPC):
                                     "within the first 4GiB of an MBR- "
                                     "or GPT-formatted disk.")
 
-    def setDefaultPartitioning(self):
-        ret = PPC.setDefaultPartitioning(self)
+    def setPlatformBootloaderReqs(self):
+        ret = PPC.setPlatformBootloaderReqs(self)
         ret.append(PartSpec(fstype="prepboot", size=Size("4MiB"),
                             weight=self.weight(fstype="prepboot")))
         return ret
@@ -298,8 +309,8 @@ class NewWorldPPC(PPC):
                                     "Partition on an Apple Partition Map-"
                                     "formatted disk.")
 
-    def setDefaultPartitioning(self):
-        ret = Platform.setDefaultPartitioning(self)
+    def setPlatformBootloaderReqs(self):
+        ret = Platform.setPlatformBootloaderReqs(self)
         ret.append(PartSpec(fstype="appleboot", size=Size("1MiB"),
                             weight=self.weight(fstype="appleboot")))
         return ret
@@ -333,10 +344,11 @@ class S390(Platform):
     def __init__(self):
         Platform.__init__(self)
 
-    def setDefaultPartitioning(self):
+    def setPlatformBootPartition(self):
         """Return the default platform-specific partitioning information."""
         return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
                          weight=self.weight(mountpoint="/boot"), lv=False)]
+
     def requiredDiskLabelType(self, device_type):
         """The required disklabel type for the specified device type."""
         if device_type == parted.DEVICE_DASD:
@@ -379,12 +391,16 @@ class omapARM(ARM):
     _boot_stage1_missing_error = N_("You must include a U-Boot Partition on a "
                                     "FAT-formatted disk, mounted at /boot/uboot.")
 
-    def setDefaultPartitioning(self):
+    def setPlatformBootloaderReqs(self):
         """Return the ARM-OMAP platform-specific partitioning information."""
         ret = [PartSpec(mountpoint="/boot/uboot", fstype="vfat",
                         size=Size("20MiB"), maxSize=Size("200MiB"),
                         grow=True,
                         weight=self.weight(fstype="vfat", mountpoint="/boot/uboot"))]
+        return ret
+
+    def setDefaultPartitioning(self):
+        ret = ARM.setDefaultPartitioning(self)
         ret.append(PartSpec(mountpoint="/", fstype="ext4",
                             size=Size("2GiB"), maxSize=Size("3GiB"),
                             weight=self.weight(mountpoint="/")))
