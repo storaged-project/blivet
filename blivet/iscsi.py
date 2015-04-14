@@ -23,6 +23,7 @@ from . import util
 from .flags import flags
 from .i18n import _
 from .storage_log import log_exception_info
+from multiprocessing import Process, Pipe
 import os
 import logging
 import shutil
@@ -56,6 +57,47 @@ def has_iscsi():
         log.info("ISCSID is %s", ISCSID)
 
     return True
+
+
+def _call_discover_targets(conn_pipe, ipaddr, port, authinfo):
+    """ Function to separate iscsi discover_sendtargets call to it's own process.
+
+        The call must be started on special process because the libiscsi
+        library is not thread safe. When thread is used or it's called on
+        main thread the main thread will freeze.
+
+        Also the discover is about four times slower (only for timeout)
+        this is caused by signals which are delivered to bad (python)
+        thread instead of C library thread.
+
+        To transfer data to main process conn_pipe (write only) is used.
+        Pipe returns tuple (ok, data).
+            ok  : True if everything was ok
+            data: Dictionary with libiscsi.node parameters if ok was True
+                  Exception if ok was False
+    """
+    try:
+        found_nodes = libiscsi.discover_sendtargets(address=ipaddr,
+                                                    port=int(port),
+                                                    authinfo=authinfo)
+    except IOError as ex:
+        conn_pipe.send((False, ex))
+        conn_pipe.close()
+        return
+
+    nodes = []
+
+    # the node object is not pickable so it can't be send with pipe
+    # TODO: change libiscsi.node to pickable object
+    for node in found_nodes:
+        nodes.append({'name': node.name,
+                     'tpgt': node.tpgt,
+                     'address': node.address,
+                     'port': node.port,
+                     'iface': node.iface})
+
+    conn_pipe.send((True, nodes))
+
 
 class iscsi(object):
     """ iSCSI utility class.
@@ -277,10 +319,41 @@ class iscsi(object):
                                                  reverse_password=r_password)
             self.startup()
 
-            # Note may raise an IOError
-            found_nodes = libiscsi.discover_sendtargets(address=ipaddr,
-                                                        port=int(port),
-                                                        authinfo=authinfo)
+            # start libiscsi discover_sendtargets in a new process
+            # threads can't be used here because the libiscsi library
+            # using signals internally which are send to bad thread
+            (con_recv, con_write) = Pipe(False)
+            p = Process(target=_call_discover_targets, args=(con_write,
+                                                             ipaddr,
+                                                             port,
+                                                             authinfo, ))
+
+            p.start()
+
+            found_nodes = []
+
+            try:
+                (ok, data) = con_recv.recv()
+
+                if not ok:
+                    found_nodes =  None
+                    log.debug("iSCSI: error raised when "
+                              "discover_sendtargets process called: %s",
+                              str(data))
+
+            except EOFError:
+                found_nodes = None
+                log.debug("iSCSI: can't receive response from "
+                          "_call_discover_targets")
+
+            p.join()
+
+            # convert dictionary back to iscsi nodes object
+            if found_nodes is not None:
+                for node in data:
+                    found_nodes.append(libiscsi.node(**node))
+
+
             if found_nodes is None:
                 return []
             self.discovered_targets[(ipaddr, port)] = []
