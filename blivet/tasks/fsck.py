@@ -52,18 +52,15 @@ class FSCK(task.BasicApplication):
     # TASK methods
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
 
         if not os.path.exists(self.fs.device):
-            return "device %s does not exist" % self.fs.device.name
+            errors.append("device %s does not exist" % self.fs.device.name)
 
-        return False
-
-    @property
-    def unable(self):
-        return False
+        return errors
 
     # IMPLEMENTATION methods
 
@@ -93,9 +90,9 @@ class FSCK(task.BasicApplication):
 
            :raises FSError: on failure
         """
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         try:
             rc = util.run_program(self._fsckCommand)

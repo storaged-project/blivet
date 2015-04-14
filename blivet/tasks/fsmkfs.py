@@ -55,18 +55,15 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
     # TASK methods
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if self.fs.exists:
-            return "filesystem already exists"
+            errors.append("filesystem already exists")
 
         if not os.path.exists(self.fs.device):
-            return "device does not exist"
+            errors.append("device does not exist")
 
-        return False
-
-    @property
-    def unable(self):
-        return False
+        return errors
 
     # IMPLEMENTATION methods
 
@@ -133,9 +130,9 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
            :param bool label: whether to label while creating, default is False
         """
         # pylint: disable=arguments-differ
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         options = options or []
         try:

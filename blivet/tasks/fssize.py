@@ -52,18 +52,19 @@ class FSSize(task.Task):
     # TASK methods
 
     @property
-    def _unavailable(self):
-        return False
+    def _availabilityErrors(self):
+        return []
 
     @property
-    def unready(self):
-        return False
+    def readinessErrors(self):
+        return []
 
     @property
-    def unable(self):
+    def abilityErrors(self):
+        errors = []
         if self.fs._current_info is None:
-            return "No filesystem info available to extract current size from."
-        return False
+            errors.append("No filesystem info available to extract current size from.")
+        return []
 
     @property
     def dependsOn(self):
@@ -78,9 +79,9 @@ class FSSize(task.Task):
             :rtype: :class:`~.size.Size` or NoneType
             :raises FSError: on failure
         """
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         # Setup initial values
         values = {}
@@ -141,23 +142,20 @@ class TmpFSSize(task.BasicApplication):
         self.fs = an_fs
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.status:
-            return "filesystem is not mounted"
-        return False
-
-    @property
-    def unable(self):
-        return False
+            errors.append("filesystem is not mounted")
+        return errors
 
     @property
     def _sizeCommand(self):
         return [str(self.ext), self.fs.systemMountpoint, "--output=size"]
 
     def doTask(self):
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         try:
             (ret, out) = util.run_program_and_capture_output(self._sizeCommand)

@@ -47,12 +47,13 @@ class FSMinSize(task.BasicApplication):
         self.fs = an_fs
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
         if not os.path.exists(self.fs.device):
-            return "device %s does not exist" % self.fs.device.name
-        return False
+            errors.append("device %s does not exist" % self.fs.device.name)
+        return errors
 
     def _resizeCommand(self):
         return [str(self.ext)] + self.options + [self.fs.device]
@@ -91,10 +92,11 @@ class Ext2FSMinSize(FSMinSize):
     options = ["-P"]
 
     @property
-    def unable(self):
+    def abilityErrors(self):
+        errors = []
         if self.fs._current_info is None:
-            return "No filesystem info available to extract block size from."
-        return False
+            errors.append("No filesystem info available to extract block size from.")
+        return errors
 
     @property
     def dependsOn(self):
@@ -137,9 +139,9 @@ class Ext2FSMinSize(FSMinSize):
         return numBlocks
 
     def doTask(self):
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         blockSize = self._extractBlockSize()
         if blockSize is None:
@@ -156,14 +158,6 @@ class NTFSMinSize(FSMinSize):
 
     ext = availability.NTFSRESIZE_APP
     options = ["-m"]
-
-    @property
-    def unable(self):
-        return False
-
-    @property
-    def dependsOn(self):
-        return []
 
     def _extractMinSize(self, info):
         """ Extract the minimum size from the resizefs info.
@@ -187,9 +181,9 @@ class NTFSMinSize(FSMinSize):
 
 
     def doTask(self):
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         resize_info = self._getResizeInfo()
         minSize = self._extractMinSize(resize_info)
