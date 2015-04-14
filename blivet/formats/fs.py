@@ -622,17 +622,27 @@ class FS(DeviceFormat):
         return ret
 
     def _preSetup(self, **kwargs):
+        """ Check to see if the filesystem should be mounted.
+
+            :keyword chroot: prefix to apply to mountpoint
+            :keyword mountpoint: mountpoint (overrides self.mountpoint)
+            :returns: True if it is ok to mount, False if it is not.
+            :raises: FSError
+        """
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+
         if not self.exists:
             raise FSError("filesystem has not been created")
 
-        mountpoint = kwargs.get("mountpoint") or self.mountpoint
         if not mountpoint:
             raise FSError("no mountpoint given")
 
         if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
             raise FSError("device %s does not exist" % self.device)
 
-        return not self.status
+        chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
+        return self.systemMountpoint != chrootedMountpoint
 
     def _setup(self, **kwargs):
         """ Mount this filesystem.
@@ -653,10 +663,6 @@ class FS(DeviceFormat):
         #
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
-
-        # Already mounted here?
-        if self.systemMountpoint == chrootedMountpoint:
-            return
 
         # passed in options override default options
         if not options or not isinstance(options, str):
@@ -901,7 +907,7 @@ class FS(DeviceFormat):
         """
         return self.setup(**kwargs)
 
-    def unmount(self):
+    def unmount(self, **kwargs):
         """ Unmount this filesystem.
 
             :param str mountpoint: Optional mountpoint to be unmounted.
@@ -911,7 +917,7 @@ class FS(DeviceFormat):
             by the system. Override this behavior by passing a specific mountpoint. FSError
             will be raised in either case if the path doesn't exist.
         """
-        return self.teardown()
+        return self.teardown(**kwargs)
 
     @property
     def status(self):
