@@ -47,18 +47,15 @@ class FSInfo(task.BasicApplication):
         self.fs = an_fs
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
 
         if not os.path.exists(self.fs.device):
-            return "device does not exist"
+            errors.append("device does not exist")
 
-        return False
-
-    @property
-    def unable(self):
-        return False
+        return errors
 
     @property
     def _infoCommand(self):
@@ -76,9 +73,11 @@ class FSInfo(task.BasicApplication):
             :rtype: str
             :raises FSError: if info cannot be obtained
         """
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
+
+        error_msg = None
         try:
             (rc, out) = util.run_program_and_capture_output(self._infoCommand)
             if rc:

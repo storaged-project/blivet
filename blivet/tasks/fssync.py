@@ -44,18 +44,15 @@ class FSSync(task.BasicApplication):
         self.fs = an_fs
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.status:
-            return "filesystem has not been mounted"
+            errors.append("filesystem has not been mounted")
 
         if not os.path.exists(self.fs.device):
-            return "device does not exist"
+            errors.append("device does not exist")
 
-        return False
-
-    @property
-    def unable(self):
-        return False
+        return errors
 
     @abc.abstractmethod
     def doTask(self):
@@ -74,9 +71,9 @@ class XFSSync(FSSync):
 
     def doTask(self, root="/"):
         # pylint: disable=arguments-differ
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         error_msg = None
         try:

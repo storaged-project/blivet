@@ -35,29 +35,30 @@ class Task(object):
     description = abc.abstractproperty(doc="Brief description for this task.")
 
     @property
-    def unavailable(self):
-        """ Reason if this task or the tasks it depends on are unavailable. """
-        return self._unavailable or next((t.unavailable for t in self.dependsOn), False)
+    def availabilityErrors(self):
+        """ Reasons if this task or the tasks it depends on are unavailable. """
+        return self._availabilityErrors + \
+           [e for t in self.dependsOn for e in t.availabilityErrors]
 
-    _unavailable = abc.abstractproperty(
-       doc="Reason if the necessary external tools are unavailable.")
+    _availabilityErrors = abc.abstractproperty(
+       doc="Reasons if the necessary external tools are unavailable.")
 
-    unready = abc.abstractproperty(
-       doc="Reason if the actual thing, e.g. device, is is not ready for this action.")
+    readinessErrors = abc.abstractproperty(
+       doc="Reasons if the actual thing, e.g. device, is is not ready for this action.")
 
-    unable = abc.abstractproperty(
-       doc="Reason if the object is not in a correct state for this task.")
+    abilityErrors = abc.abstractproperty(
+       doc="Reasons if the object is not in a correct state for this task.")
 
     dependsOn = abc.abstractproperty(doc="tasks that this task depends on")
 
     @property
-    def impossible(self):
-        """ Returns a reason if the task can not succeed, otherwise False.
+    def possibilityErrors(self):
+        """ Returns reasons if the task can not succeed.
 
-            :returns: reason or False
-            :rtype: str or bool
+            :returns: list of reasons the task can not succeed
+            :rtype: list of str
         """
-        return self.unavailable or self.unable or self.unready
+        return self.availabilityErrors + self.abilityErrors + self.readinessErrors
 
     @abc.abstractmethod
     def doTask(self, *args, **kwargs):
@@ -71,16 +72,16 @@ class UnimplementedTask(Task):
     implemented = False
 
     @property
-    def _unavailable(self):
-        return "Not implemented task can not succeed."
+    def _availabilityErrors(self):
+        return ["Not implemented task can not succeed."]
 
     @property
-    def unready(self):
-        return "Not implemented task can not succeed."
+    def readinessErrors(self):
+        return ["Not implemented task can not succeed."]
 
     @property
-    def unable(self):
-        return "Not implemented task can not succeed."
+    def abilityErrors(self):
+        return ["Not implemented task can not succeed."]
 
     dependsOn = []
 
@@ -96,20 +97,21 @@ class BasicApplication(Task):
     # TASK methods
 
     @property
-    def _unavailable(self):
+    def _availabilityErrors(self):
+        errors = []
         if not self.ext.available:
-            return "application %s is not available" % self.ext
+            errors.append("application %s is not available" % self.ext)
 
-        return False
+        return errors
 
     @property
     def dependsOn(self):
         return []
 
     @property
-    def unable(self):
-        return False
+    def abilityErrors(self):
+        return []
 
     @property
-    def unready(self):
-        return False
+    def readinessErrors(self):
+        return []

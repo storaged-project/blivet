@@ -128,7 +128,7 @@ class FS(DeviceFormat):
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
         self._resizable = False
-        if flags.installer_mode and not self._resize.unavailable:
+        if flags.installer_mode and not self._resize.availabilityErrors:
             # if you want current/min size you have to call updateSizeInfo
             try:
                 self.updateSizeInfo()
@@ -171,7 +171,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return (self._mkfs.can_label and not self._mkfs.unavailable) or not self._writelabel.unavailable
+        return (self._mkfs.can_label and not self._mkfs.availabilityErrors) or not self._writelabel.availabilityErrors
 
     def relabels(self):
         """Returns True if it is possible to relabel this filesystem
@@ -179,7 +179,7 @@ class FS(DeviceFormat):
 
            :rtype: bool
         """
-        return not self._writelabel.unavailable
+        return not self._writelabel.availabilityErrors
 
     def labelFormatOK(self, label):
         """Return True if the label has an acceptable format for this
@@ -334,7 +334,7 @@ class FS(DeviceFormat):
 
     def _preCreate(self, **kwargs):
         super(FS, self)._preCreate(**kwargs)
-        if self._mkfs.unavailable:
+        if self._mkfs.availabilityErrors:
             return
 
     def _create(self, **kwargs):
@@ -376,7 +376,7 @@ class FS(DeviceFormat):
         if self.targetSize == self.currentSize:
             return
 
-        if self._resize.unavailable:
+        if self._resize.availabilityErrors:
             return
 
         # The first minimum size can be incorrect if the fs was not
@@ -440,7 +440,7 @@ class FS(DeviceFormat):
 
             :raises: FSError
         """
-        if self._fsck.unavailable:
+        if self._fsck.availabilityErrors:
             return
         self._fsck.doTask()
 
@@ -612,7 +612,7 @@ class FS(DeviceFormat):
 
            Raises a FSReadLabelError if the label can not be read.
         """
-        if self._readlabel.unavailable:
+        if self._readlabel.availabilityErrors:
             raise FSReadLabelError("can not read label for filesystem %s" % self.type)
         return self._readlabel.doTask()
 
@@ -626,7 +626,7 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if self._writelabel.unavailable:
+        if self._writelabel.availabilityErrors:
             raise FSError("not able to write label for filesystem %s" % self.type)
         self._writelabel.doTask()
         self.notifyKernel()
@@ -635,7 +635,7 @@ class FS(DeviceFormat):
     def utilsAvailable(self):
         # we aren't checking for fsck because we shouldn't need it
         tasks = [self._mkfs, self._resize, self._writelabel, self._info]
-        return not any(t.implemented and t.unavailable for t in tasks)
+        return not any(t.implemented and t.availabilityErrors for t in tasks)
 
     @property
     def supported(self):
@@ -648,16 +648,16 @@ class FS(DeviceFormat):
 
     @property
     def mountable(self):
-        return not self._mount.unavailable
+        return not self._mount.availabilityErrors
 
     @property
     def formattable(self):
-        return super(FS, self).formattable and not self._mkfs.unavailable
+        return super(FS, self).formattable and not self._mkfs.availabilityErrors
 
     @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
-        return super(FS, self).resizable and not self._resize.unavailable
+        return super(FS, self).resizable and not self._resize.availabilityErrors
 
     def _getOptions(self):
         return self.mountopts or ",".join(self._mount.options)
@@ -712,7 +712,7 @@ class FS(DeviceFormat):
             This is a little odd because xfs_freeze will only be
             available under the install root.
         """
-        if self._sync.unavailable:
+        if self._sync.availabilityErrors:
             return
 
         if not self._mountpoint.startswith(root):

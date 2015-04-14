@@ -45,9 +45,8 @@ class FSMount(task.BasicApplication):
     # TASK methods
 
     @property
-    def _unavailable(self):
-        if not self.ext.available:
-            return "application %s is not available" % self.ext
+    def _availabilityErrors(self):
+        errors = super(FSMount, self)._availabilityErrors
 
         canmount = (self.mountType in fslib.kernel_filesystems) or \
                    (os.access("/sbin/mount.%s" % (self.mountType,), os.X_OK))
@@ -60,25 +59,26 @@ class FSMount(task.BasicApplication):
                 modname = "%s.ko" % self.mountType
                 for _root, _dirs, files in os.walk(modpath):
                     if any(x.startswith(modname) for x in files):
-                        return True
+                        canmount = True
+                        break
 
-        if canmount:
-            return False
-        else:
-            return "mounting filesystem %s is not supported" % self.mountType
+        if not canmount:
+            errors.append("mounting filesystem %s is not supported" % self.mountType)
+        return errors
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
 
         if self.fs.status:
-            return "filesystem is currently mounted"
+            errors.append("filesystem is currently mounted")
 
         if not os.path.exists(self.fs.device):
-            return "device %s does not exist" % self.fs.device
+            errors.append("device %s does not exist" % self.fs.device)
 
-        return False
+        return errors
 
     # IMPLEMENTATION methods
 
@@ -121,9 +121,9 @@ class FSMount(task.BasicApplication):
            :type options: str or None
         """
         # pylint: disable=arguments-differ
-        error_msg = self.impossible
-        if error_msg:
-            raise FSError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
         try:
             rc = util.mount(self.fs.device, mountpoint,
@@ -141,11 +141,12 @@ class AppleBootstrapFSMount(FSMount):
 class BindFSMount(FSMount):
 
     @property
-    def _unavailable(self):
+    def _availabilityErrors(self):
+        errors = []
         if not self.ext.available:
-            return "application %s is not available" % self.ext
+            errors.append("application %s is not available" % self.ext)
 
-        return False
+        return errors
 
     def _modifyOptions(self, options):
         return ",".join(["bind", options])
@@ -168,14 +169,15 @@ class Iso9660FSMount(FSMount):
 class NoDevFSMount(FSMount):
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
 
         if self.fs.status:
-            return "filesystem is currently mounted"
+            errors.append("filesystem is currently mounted")
 
-        return False
+        return errors
 
     @property
     def mountType(self):
@@ -183,8 +185,8 @@ class NoDevFSMount(FSMount):
 
 class NFSMount(FSMount):
 
-    def _unavailable(self):
-        return True
+    def _availabilityErrors(self):
+        return ["nfs filesystem can't be mounted"]
 
 class NTFSMount(FSMount):
     options = ["default", "ro"]
@@ -192,10 +194,11 @@ class NTFSMount(FSMount):
 class SELinuxFSMount(NoDevFSMount):
 
     @property
-    def _unavailable(self):
+    def _availabilityErrors(self):
+        errors = super(SELinuxFSMount, self)._availabilityErrors
         if not flags.selinux:
-            return "selinux not enabled"
-        return super(SELinuxFSMount, self).unavailable
+            errors.append("selinux not enabled")
+        return errors
 
 class TmpFSMount(NoDevFSMount):
 
@@ -209,8 +212,9 @@ class TmpFSMount(NoDevFSMount):
         return ",".join(o for o in (options, size_opt) if o)
 
     @property
-    def _unavailable(self):
+    def _availabilityErrors(self):
+        errors = []
         if not self.ext.available:
-            return "application %s is not available" % self.ext
+            errors.append("application %s is not available" % self.ext)
 
-        return False
+        return errors
