@@ -48,24 +48,26 @@ class FSWriteLabel(task.BasicApplication):
     # TASK methods
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
 
         if not os.path.exists(self.fs.device):
-            return "device (%s) does not exist" % self.fs.device.name
+            errors.append("device (%s) does not exist" % self.fs.device.name)
 
-        return False
+        return errors
 
     @property
-    def unable(self):
+    def abilityErrors(self):
+        errors = []
         if self.fs.label is None:
-            return "makes no sense to write a label when accepting default label"
+            errors.append("makes no sense to write a label when accepting default label")
 
         if not self.fs.labelFormatOK(self.fs.label):
-            return "bad label format for labelling application %s" % self.ext
+            errors.append("bad label format for labelling application %s" % self.ext)
 
-        return False
+        return errors
 
     # IMPLEMENTATION methods
 
@@ -75,15 +77,13 @@ class FSWriteLabel(task.BasicApplication):
 
            :return: the command
            :rtype: list of str
-
-           Requires that self.unavailable, self.unable, self.unready are False.
         """
         return [str(self.ext)] + self.args
 
     def doTask(self):
-        error_msg = self.impossible
-        if error_msg:
-            raise FSWriteLabelError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSWriteLabelError("\n".join(error_msgs))
 
         rc = util.run_program(self._setCommand)
         if rc:

@@ -51,18 +51,15 @@ class FSReadLabel(task.BasicApplication):
     # TASK methods
 
     @property
-    def unready(self):
+    def readinessErrors(self):
+        errors = []
         if not self.fs.exists:
-            return "filesystem has not been created"
+            errors.append("filesystem has not been created")
 
         if not os.path.exists(self.fs.device):
-            return "device %s does not exist" % self.fs.device.name
+            errors.append("device %s does not exist" % self.fs.device.name)
 
-        return False
-
-    @property
-    def unable(self):
-        return False
+        return errors
 
     # IMPLEMENTATION methods
 
@@ -96,9 +93,9 @@ class FSReadLabel(task.BasicApplication):
             :returns: the filesystem label
             :rtype: str
         """
-        error_msg = self.impossible
-        if error_msg:
-            raise FSReadLabelError(error_msg)
+        error_msgs = self.possibilityErrors
+        if error_msgs:
+            raise FSReadLabelError("\n".join(error_msgs))
 
         (rc, out) = util.run_program_and_capture_output(self._readCommand)
         if rc != 0:
