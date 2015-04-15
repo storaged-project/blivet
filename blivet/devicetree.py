@@ -375,6 +375,45 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         return set(d for dep in self.get_dependent_devices(disk, hidden=True)
                    for d in dep.disks)
 
+    def get_disk_actions(self, disks):
+        """ Return a list of actions related to the specified disk.
+
+            :param disks: list of disks
+            :type disk: list of :class:`~.devices.StorageDevices`
+            :returns: list of related actions
+            :rtype: list of :class:`~.deviceaction.DeviceAction`
+
+            This includes all actions on the specified disks, plus all actions
+            on disks that are in any way connected to the specified disk via
+            container devices.
+        """
+        # This is different from get_related_disks in that we are finding disks
+        # related by any action -- not just the current state of the devicetree.
+        related_disks = set()
+        for action in self.actions:
+            if any(action.device.depends_on(d) for d in disks):
+                related_disks.update(action.device.disks)
+
+        # now related_disks could be a superset of disks, so go through and
+        # build a list of actions related to any disk in related_disks
+        # Note that this list preserves the ordering of the action list.
+        related_actions = [a for a in self.actions
+                           if set(a.device.disks).intersection(related_disks)]
+        return related_actions
+
+    def cancel_disk_actions(self, disks):
+        """ Cancel all actions related to the specified disk.
+
+            :param disks: list of disks
+            :type disk: list of :class:`~.devices.StorageDevices`
+
+            This includes actions related directly and indirectly (via container
+            membership, for example).
+        """
+        actions = self.get_disk_actions(disks)
+        for action in reversed(actions):
+            self.actions.remove(action)
+
     #
     # Device search by property
     #
@@ -819,17 +858,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         if device.is_disk:
             # Cancel all actions on this disk and any disk related by way of an
             # aggregate/container device (eg: lvm volume group).
-            disks = [device]
-            related_actions = [a for a in self._actions
-                               if a.device.depends_on(device)]
-            for related_device in (a.device for a in related_actions):
-                disks.extend(related_device.disks)
-
-            disks = set(disks)
-            cancel = [a for a in self._actions
-                      if set(a.device.disks).intersection(disks)]
-            for action in reversed(cancel):
-                self.actions.remove(action)
+            self.cancel_disk_actions(device)
 
         for d in device.children:
             self.hide(d)
