@@ -40,6 +40,7 @@ Requires: lsof
 Requires: libselinux-python
 Requires: libblockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
+Requires: libselinux-python
 
 %description
 The python-blivet package is a python module for examining and modifying
