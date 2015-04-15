@@ -644,6 +644,24 @@ class FS(DeviceFormat):
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
         return self.systemMountpoint != chrootedMountpoint
 
+    def _setupMountOptions(self, options):
+        """ The options actually used to mount the filesystem.
+
+            These are not necessarily the same as either the default options
+            or the options argument.
+
+            :param str options: the mount options passed to setup() method.
+            :returns: the mount options used by setup
+            :rtype: str
+        """
+        if not options or not isinstance(options, str):
+            options = self.options
+
+        if isinstance(self, BindFS):
+            options = "bind," + options
+
+        return options
+
     def _setup(self, **kwargs):
         """ Mount this filesystem.
 
@@ -653,7 +671,7 @@ class FS(DeviceFormat):
             :keyword mountpoint: mountpoint (overrides self.mountpoint)
             :raises: FSError
         """
-        options = kwargs.get("options", "")
+        options = self._setupMountOptions(kwargs.get("options", ""))
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
@@ -663,13 +681,6 @@ class FS(DeviceFormat):
         #
         #mountpoint = os.path.join(chroot, mountpoint)
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
-
-        # passed in options override default options
-        if not options or not isinstance(options, str):
-            options = self.options
-
-        if isinstance(self, BindFS):
-            options = "bind," + options
 
         try:
             rc = util.mount(self.device, chrootedMountpoint,
@@ -682,7 +693,7 @@ class FS(DeviceFormat):
             raise FSError("mount failed: %s" % rc)
 
     def _postSetup(self, **kwargs):
-        options = kwargs.get("options", "")
+        options = self._setupMountOptions(kwargs.get("options", ""))
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
