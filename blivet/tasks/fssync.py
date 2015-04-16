@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import os
 
 from six import add_metaclass
 
@@ -43,17 +42,6 @@ class FSSync(task.BasicApplication):
         """
         self.fs = an_fs
 
-    @property
-    def readinessErrors(self):
-        errors = []
-        if not self.fs.status:
-            errors.append("filesystem has not been mounted")
-
-        if not os.path.exists(self.fs.device):
-            errors.append("device does not exist")
-
-        return errors
-
     @abc.abstractmethod
     def doTask(self):
         raise NotImplementedError()
@@ -71,7 +59,7 @@ class XFSSync(FSSync):
 
     def doTask(self, root="/"):
         # pylint: disable=arguments-differ
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 

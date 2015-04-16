@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import os
 
 from six import add_metaclass
 
@@ -45,30 +44,6 @@ class FSWriteLabel(task.BasicApplication):
         """
         self.fs = an_fs
 
-    # TASK methods
-
-    @property
-    def readinessErrors(self):
-        errors = []
-        if not self.fs.exists:
-            errors.append("filesystem has not been created")
-
-        if not os.path.exists(self.fs.device):
-            errors.append("device (%s) does not exist" % self.fs.device.name)
-
-        return errors
-
-    @property
-    def abilityErrors(self):
-        errors = []
-        if self.fs.label is None:
-            errors.append("makes no sense to write a label when accepting default label")
-
-        if not self.fs.labelFormatOK(self.fs.label):
-            errors.append("bad label format for labelling application %s" % self.ext)
-
-        return errors
-
     # IMPLEMENTATION methods
 
     @property
@@ -81,7 +56,7 @@ class FSWriteLabel(task.BasicApplication):
         return [str(self.ext)] + self.args
 
     def doTask(self):
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSWriteLabelError("\n".join(error_msgs))
 

@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import os
 
 from six import add_metaclass
 
@@ -45,15 +44,6 @@ class FSMinSize(task.BasicApplication):
             :param FS an_fs: a filesystem object
         """
         self.fs = an_fs
-
-    @property
-    def readinessErrors(self):
-        errors = []
-        if not self.fs.exists:
-            errors.append("filesystem has not been created")
-        if not os.path.exists(self.fs.device):
-            errors.append("device %s does not exist" % self.fs.device.name)
-        return errors
 
     def _resizeCommand(self):
         return [str(self.ext)] + self.options + [self.fs.device]
@@ -92,13 +82,6 @@ class Ext2FSMinSize(FSMinSize):
     options = ["-P"]
 
     @property
-    def abilityErrors(self):
-        errors = []
-        if self.fs._current_info is None:
-            errors.append("No filesystem info available to extract block size from.")
-        return errors
-
-    @property
     def dependsOn(self):
         return [self.fs._info]
 
@@ -108,6 +91,9 @@ class Ext2FSMinSize(FSMinSize):
             :returns: block size of fileystem or None
             :rtype: :class:`~.size.Size` or NoneType
         """
+        if self.fs._current_info is None:
+            return None
+
         blockSize = None
         for line in (l.strip() for l in self.fs._current_info.splitlines() if l.startswith("Block size:")):
             try:
@@ -139,7 +125,7 @@ class Ext2FSMinSize(FSMinSize):
         return numBlocks
 
     def doTask(self):
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
@@ -181,7 +167,7 @@ class NTFSMinSize(FSMinSize):
 
 
     def doTask(self):
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
