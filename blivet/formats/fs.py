@@ -370,6 +370,9 @@ class FS(DeviceFormat):
 
             :raises: FSResizeError, FSError
         """
+        if not self.exists:
+            raise FSResizeError("filesystem does not exist", self.device)
+
         if not self.resizable:
             raise FSResizeError("filesystem not resizable", self.device)
 
@@ -378,6 +381,10 @@ class FS(DeviceFormat):
 
         if self._resize.availabilityErrors:
             return
+
+        # tmpfs mounts don't need an existing device node
+        if not self.device == "tmpfs" and not os.path.exists(self.device):
+            raise FSResizeError("device does not exist", self.device)
 
         # The first minimum size can be incorrect if the fs was not
         # properly unmounted. After doCheck the minimum size will be correct
@@ -440,8 +447,15 @@ class FS(DeviceFormat):
 
             :raises: FSError
         """
+        if not self.exists:
+            raise FSError("filesystem has not been created")
+
         if self._fsck.availabilityErrors:
             return
+
+        if not os.path.exists(self.device):
+            raise FSError("device does not exist")
+
         self._fsck.doTask()
 
     def loadModule(self):
@@ -612,6 +626,12 @@ class FS(DeviceFormat):
 
            Raises a FSReadLabelError if the label can not be read.
         """
+        if not self.exists:
+            raise FSReadLabelError("filesystem has not been created")
+
+        if not os.path.exists(self.device):
+            raise FSReadLabelError("device does not exist")
+
         if self._readlabel.availabilityErrors:
             raise FSReadLabelError("can not read label for filesystem %s" % self.type)
         return self._readlabel.doTask()
@@ -626,8 +646,21 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
+        if self.label is None:
+            raise FSError("makes no sense to write a label when accepting default label")
+
+        if not self.exists:
+            raise FSError("filesystem has not been created")
+
         if self._writelabel.availabilityErrors:
-            raise FSError("not able to write label for filesystem %s" % self.type)
+            raise FSError("no application to set label for filesystem %s" % self.type)
+
+        if not self.labelFormatOK(self.label):
+            raise FSError("bad label format for labelling application %s" % self._writelabel)
+
+        if not os.path.exists(self.device):
+            raise FSError("device does not exist")
+
         self._writelabel.doTask()
         self.notifyKernel()
 
@@ -712,10 +745,9 @@ class FS(DeviceFormat):
             This is a little odd because xfs_freeze will only be
             available under the install root.
         """
-        if self._sync.availabilityErrors:
-            return
-
-        if not self._mountpoint.startswith(root):
+        if not self.status or not self.systemMountpoint or \
+            not self.systemMountpoint.startswith(root) or \
+            self._sync.availabilityErrors:
             return
 
         try:
@@ -946,6 +978,7 @@ class XFS(FS):
     _syncClass = fssync.XFSSync
     _writelabelClass = fswritelabel.XFSWriteLabel
     partedSystem = fileSystemType["xfs"]
+
 
 register_device_format(XFS)
 

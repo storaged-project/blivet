@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import os
 
 from six import add_metaclass
 
@@ -48,19 +47,6 @@ class FSCK(task.BasicApplication):
             :param FS an_fs: a filesystem object
         """
         self.fs = an_fs
-
-    # TASK methods
-
-    @property
-    def readinessErrors(self):
-        errors = []
-        if not self.fs.exists:
-            errors.append("filesystem has not been created")
-
-        if not os.path.exists(self.fs.device):
-            errors.append("device %s does not exist" % self.fs.device.name)
-
-        return errors
 
     # IMPLEMENTATION methods
 
@@ -90,7 +76,7 @@ class FSCK(task.BasicApplication):
 
            :raises FSError: on failure
         """
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 

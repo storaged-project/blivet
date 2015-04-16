@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import os
 
 from six import add_metaclass
 
@@ -54,19 +53,6 @@ class FSResize(task.BasicApplication, FSResizeTask):
         """
         self.fs = an_fs
 
-    # TASK methods
-
-    @property
-    def readinessErrors(self):
-        errors = []
-        if not self.fs.exists:
-            errors.append("filesystem has not been created")
-
-        if not os.path.exists(self.fs.device):
-            errors.append("device does not exist")
-
-        return errors
-
     # IMPLEMENTATION methods
 
     @abc.abstractmethod
@@ -85,7 +71,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
 
             :raises FSError: on failure
         """
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
@@ -134,15 +120,6 @@ class TmpFSResize(FSResize):
 
     def sizeSpec(self):
         return "size=%s" % (self.size_fmt % self.fs.targetSize.convertTo(self.unit))
-
-    @property
-    def readinessErrors(self):
-        # TmpFS does not require a device in order to be mounted.
-        errors = []
-        if not self.fs.exists:
-            errors.append("filesystem has not been created")
-
-        return errors
 
     @property
     def args(self):

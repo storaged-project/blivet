@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import os
 
 from six import add_metaclass
 
@@ -47,17 +46,6 @@ class FSInfo(task.BasicApplication):
         self.fs = an_fs
 
     @property
-    def readinessErrors(self):
-        errors = []
-        if not self.fs.exists:
-            errors.append("filesystem has not been created")
-
-        if not os.path.exists(self.fs.device):
-            errors.append("device does not exist")
-
-        return errors
-
-    @property
     def _infoCommand(self):
         """ Returns the command for reading filesystem information.
 
@@ -73,7 +61,7 @@ class FSInfo(task.BasicApplication):
             :rtype: str
             :raises FSError: if info cannot be obtained
         """
-        error_msgs = self.possibilityErrors
+        error_msgs = self.availabilityErrors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 

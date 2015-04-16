@@ -43,22 +43,7 @@ class Task(object):
     _availabilityErrors = abc.abstractproperty(
        doc="Reasons if the necessary external tools are unavailable.")
 
-    readinessErrors = abc.abstractproperty(
-       doc="Reasons if the actual thing, e.g. device, is is not ready for this action.")
-
-    abilityErrors = abc.abstractproperty(
-       doc="Reasons if the object is not in a correct state for this task.")
-
     dependsOn = abc.abstractproperty(doc="tasks that this task depends on")
-
-    @property
-    def possibilityErrors(self):
-        """ Returns reasons if the task can not succeed.
-
-            :returns: list of reasons the task can not succeed
-            :rtype: list of str
-        """
-        return self.availabilityErrors + self.abilityErrors + self.readinessErrors
 
     @abc.abstractmethod
     def doTask(self, *args, **kwargs):
@@ -73,14 +58,6 @@ class UnimplementedTask(Task):
 
     @property
     def _availabilityErrors(self):
-        return ["Not implemented task can not succeed."]
-
-    @property
-    def readinessErrors(self):
-        return ["Not implemented task can not succeed."]
-
-    @property
-    def abilityErrors(self):
         return ["Not implemented task can not succeed."]
 
     dependsOn = []
@@ -106,12 +83,4 @@ class BasicApplication(Task):
 
     @property
     def dependsOn(self):
-        return []
-
-    @property
-    def abilityErrors(self):
-        return []
-
-    @property
-    def readinessErrors(self):
         return []
