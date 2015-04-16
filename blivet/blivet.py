@@ -1775,6 +1775,11 @@ class Blivet(object):
         if self.doAutoPart:
             return
 
+        self._updateCustomStorageKSData()
+
+    def _updateCustomStorageKSData(self):
+        """ Update KSData for custom storage. """
+
         # custom storage
         ksMap = {PartitionDevice: ("PartData", "partition"),
                  TmpFSDevice: ("PartData", "partition"),
@@ -1786,6 +1791,10 @@ class Blivet(object):
         # make a list of ancestors of all used devices
         devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
                                 for a in d.ancestors))
+
+        # devices which share information with their distinct raw device
+        complementary_devices = [d for d in devices if d.raw_device is not d]
+
         devices.sort(key=lambda d: len(d.ancestors))
         for device in devices:
             cls = next((c for c in ksMap if isinstance(device, c)), None)
@@ -1797,6 +1806,14 @@ class Blivet(object):
 
             cls = getattr(self.ksdata, class_attr)
             data = cls()    # all defaults
+
+            complements = [d for d in complementary_devices if d.raw_device is device]
+
+            if len(complements) > 1:
+                log.warning("omitting ksdata for %s, found too many (%d) complementary devices", device, len(complements))
+                continue
+
+            device = complements[0] if complements else device
 
             device.populateKSData(data)
 
