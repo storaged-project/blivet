@@ -22,6 +22,7 @@
 #
 
 import os
+import importlib
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
@@ -106,7 +107,7 @@ def collect_device_format_classes():
         (mod_name, ext) = os.path.splitext(module_file)
         if ext == ".py" and mod_name != myfile_name and not mod_name.startswith("."):
             try:
-                globals()[mod_name] = __import__(mod_name, globals(), locals(), [], -1)
+                globals()[mod_name] = importlib.import_module("."+mod_name, package=__package__)
             except ImportError:
                 log.error("import of device format module '%s' failed", mod_name)
                 from traceback import format_exc

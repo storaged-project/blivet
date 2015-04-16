@@ -24,7 +24,8 @@ from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
 
-def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False):
+
+def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False, binary_output=False):
     if env_prune is None:
         env_prune = []
 
@@ -54,6 +55,8 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
                                     preexec_fn=chroot, cwd=root, env=env)
 
             out, err = proc.communicate()
+            if not binary_output and six.PY3:
+                out = out.decode("utf-8")
             if out:
                 if not stderr_to_stdout:
                     program_log.info("stdout:")
@@ -79,7 +82,15 @@ def run_program(*args, **kwargs):
 def capture_output(*args, **kwargs):
     return _run_program(*args, **kwargs)[1]
 
+def capture_output_binary(*args, **kwargs):
+    kwargs["binary_output"] = True
+    return _run_program(*args, **kwargs)[1]
+
 def run_program_and_capture_output(*args, **kwargs):
+    return _run_program(*args, **kwargs)
+
+def run_program_and_capture_output_binary(*args, **kwargs):
+    kwargs["binary_output"] = True
     return _run_program(*args, **kwargs)
 
 def mount(device, mountpoint, fstype, options=None):
@@ -382,7 +393,8 @@ class ObjectID(object):
     _newid_gen = functools.partial(next, itertools.count())
 
     def __new__(cls, *args, **kwargs):
-        self = super(ObjectID, cls).__new__(cls, *args, **kwargs)
+        # pylint: disable=unused-argument
+        self = super(ObjectID, cls).__new__(cls)
         self.id = self._newid_gen() # pylint: disable=attribute-defined-outside-init
         return self
 
@@ -446,6 +458,29 @@ def unicodeize(inputstr):
         return unicode(inputstr)
     else:
         return str(inputstr)
+
+def compare(first, second):
+    """ Compare two objects.
+
+        :param first: first object to compare
+        :param second: second object to compare
+        :returns: 0 if first == second, 1 if first > second, -1 if first < second
+        :rtype: int
+
+        This method replaces Python 2 cmp() built-in-function.
+    """
+
+    if first == None and second == None:
+        return 0
+
+    elif first == None:
+        return -1
+
+    elif second == None:
+        return 1
+
+    else:
+        return (first > second) - (first < second)
 
 ##
 ## Convenience functions for examples and tests

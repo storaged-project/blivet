@@ -23,15 +23,16 @@
 from operator import gt, lt
 from decimal import Decimal
 from gi.repository import BlockDev as blockdev
+import functools
 
 import parted
 
 from .errors import DeviceError, PartitioningError
 from .flags import flags
-from .devices import PartitionDevice, LUKSDevice, devicePathToName
+from .devices import Device, PartitionDevice, LUKSDevice, devicePathToName
 from .size import Size
 from .i18n import _
-from .util import stringize, unicodeize
+from .util import stringize, unicodeize, compare
 
 import logging
 log = logging.getLogger("blivet")
@@ -60,7 +61,7 @@ def partitionCompare(part1, part2):
     elif part1_start is None and part2_start is not None:
         return 1
     elif part1_start is not None and part2_start is not None:
-        return cmp(part1_start, part2_start)
+        return compare(part1_start, part2_start)
 
     if part1.req_base_weight:
         ret -= part1.req_base_weight
@@ -75,16 +76,16 @@ def partitionCompare(part1, part2):
     elif not part1.req_disks and part2.req_disks:
         ret += 500
     else:
-        ret += cmp(len(part1.req_disks), len(part2.req_disks)) * 500
+        ret += compare(len(part1.req_disks), len(part2.req_disks)) * 500
 
     # primary-only to the front of the list
-    ret -= cmp(part1.req_primary, part2.req_primary) * 200
+    ret -= compare(part1.req_primary, part2.req_primary) * 200
 
     # fixed size requests to the front
-    ret += cmp(part1.req_grow, part2.req_grow) * 100
+    ret += compare(part1.req_grow, part2.req_grow) * 100
 
     # larger requests go to the front of the list
-    ret -= cmp(part1.req_base_size, part2.req_base_size) * 50
+    ret -= compare(part1.req_base_size, part2.req_base_size) * 50
 
     # potentially larger growable requests go to the front
     if part1.req_grow and part2.req_grow:
@@ -93,12 +94,12 @@ def partitionCompare(part1, part2):
         elif part1.req_max_size and not part2.req_max_size:
             ret += 25
         else:
-            ret -= cmp(part1.req_max_size, part2.req_max_size) * 25
+            ret -= compare(part1.req_max_size, part2.req_max_size) * 25
 
     # give a little bump based on mountpoint
     if hasattr(part1.format, "mountpoint") and \
        hasattr(part2.format, "mountpoint"):
-        ret += cmp(part1.format.mountpoint, part2.format.mountpoint) * 10
+        ret += compare(part1.format.mountpoint, part2.format.mountpoint) * 10
 
     if ret > 0:
         ret = 1
@@ -106,6 +107,8 @@ def partitionCompare(part1, part2):
         ret = -1
 
     return ret
+
+_partitionCompareKey = functools.cmp_to_key(partitionCompare)
 
 def getNextPartitionType(disk, no_primary=None):
     """ Return the type of partition to create next on a disk.
@@ -580,7 +583,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                 ["%s(id %d)" % (p.name, p.id) for p in partitions])
 
     new_partitions = [p for p in partitions if not p.exists]
-    new_partitions.sort(cmp=partitionCompare)
+    new_partitions.sort(key=_partitionCompareKey)
 
     # the following dicts all use device path strings as keys
     disklabels = {}     # DiskLabel instances for each disk
@@ -607,7 +610,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
             req_disks = disks
 
         # sort the disks, making sure the boot disk is first
-        req_disks.sort(key=lambda d: d.name, cmp=storage.compareDisks)
+        req_disks.sort(key=storage.compareDisksKey)
         for disk in req_disks:
             if storage.bootDisk and disk == storage.bootDisk:
                 boot_index = req_disks.index(disk)
@@ -1347,7 +1350,7 @@ class VGChunk(Chunk):
 
     def sortRequests(self):
         # sort the partitions by start sector
-        self.requests.sort(key=lambda r: r.device, cmp=lvCompare)
+        self.requests.sort(key=_lvCompareKey)
 
 
 class ThinPoolChunk(VGChunk):
@@ -1755,13 +1758,18 @@ def lvCompare(lv1, lv2):
           0 => x == y
         > 1 => x > y
     """
+    if not isinstance(lv1, Device):
+        lv1 = lv1.device
+    if not isinstance(lv2, Device):
+        lv2 = lv2.device
+
     ret = 0
 
     # larger requests go to the front of the list
-    ret -= cmp(lv1.size, lv2.size) * 100
+    ret -= compare(lv1.size, lv2.size) * 100
 
     # fixed size requests to the front
-    ret += cmp(lv1.req_grow, lv2.req_grow) * 50
+    ret += compare(lv1.req_grow, lv2.req_grow) * 50
 
     # potentially larger growable requests go to the front
     if lv1.req_grow and lv2.req_grow:
@@ -1770,7 +1778,7 @@ def lvCompare(lv1, lv2):
         elif lv1.req_max_size and not lv2.req_max_size:
             ret += 25
         else:
-            ret -= cmp(lv1.req_max_size, lv2.req_max_size) * 25
+            ret -= compare(lv1.req_max_size, lv2.req_max_size) * 25
 
     if ret > 0:
         ret = 1
@@ -1778,6 +1786,8 @@ def lvCompare(lv1, lv2):
         ret = -1
 
     return ret
+
+_lvCompareKey = functools.cmp_to_key(lvCompare)
 
 def _apply_chunk_growth(chunk):
     """ grow the lvs by the amounts the VGChunk calculated """

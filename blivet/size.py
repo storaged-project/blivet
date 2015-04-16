@@ -22,6 +22,7 @@
 import re
 import string
 import locale
+import sys
 from collections import namedtuple
 
 from decimal import Decimal
@@ -41,29 +42,29 @@ _Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
 _DECIMAL_FACTOR = 10 ** 3
 _BINARY_FACTOR = 2 ** 10
 
-_BYTES_SYMBOL = N_(b"B")
-_BYTES_WORDS = (N_(b"bytes"), N_(b"byte"))
+_BYTES_SYMBOL = N_("B")
+_BYTES_WORDS = (N_("bytes"), N_("byte"))
 
 # Symbolic constants for units
-B = _Prefix(1, b"", b"")
+B = _Prefix(1, "", "")
 
-KB = _Prefix(_DECIMAL_FACTOR ** 1, N_(b"kilo"), N_(b"k"))
-MB = _Prefix(_DECIMAL_FACTOR ** 2, N_(b"mega"), N_(b"M"))
-GB = _Prefix(_DECIMAL_FACTOR ** 3, N_(b"giga"), N_(b"G"))
-TB = _Prefix(_DECIMAL_FACTOR ** 4, N_(b"tera"), N_(b"T"))
-PB = _Prefix(_DECIMAL_FACTOR ** 5, N_(b"peta"), N_(b"P"))
-EB = _Prefix(_DECIMAL_FACTOR ** 6, N_(b"exa"), N_(b"E"))
-ZB = _Prefix(_DECIMAL_FACTOR ** 7, N_(b"zetta"), N_(b"Z"))
-YB = _Prefix(_DECIMAL_FACTOR ** 8, N_(b"yotta"), N_(b"Y"))
+KB = _Prefix(_DECIMAL_FACTOR ** 1, N_("kilo"), N_("k"))
+MB = _Prefix(_DECIMAL_FACTOR ** 2, N_("mega"), N_("M"))
+GB = _Prefix(_DECIMAL_FACTOR ** 3, N_("giga"), N_("G"))
+TB = _Prefix(_DECIMAL_FACTOR ** 4, N_("tera"), N_("T"))
+PB = _Prefix(_DECIMAL_FACTOR ** 5, N_("peta"), N_("P"))
+EB = _Prefix(_DECIMAL_FACTOR ** 6, N_("exa"), N_("E"))
+ZB = _Prefix(_DECIMAL_FACTOR ** 7, N_("zetta"), N_("Z"))
+YB = _Prefix(_DECIMAL_FACTOR ** 8, N_("yotta"), N_("Y"))
 
-KiB = _Prefix(_BINARY_FACTOR ** 1, N_(b"kibi"), N_(b"Ki"))
-MiB = _Prefix(_BINARY_FACTOR ** 2, N_(b"mebi"), N_(b"Mi"))
-GiB = _Prefix(_BINARY_FACTOR ** 3, N_(b"gibi"), N_(b"Gi"))
-TiB = _Prefix(_BINARY_FACTOR ** 4, N_(b"tebi"), N_(b"Ti"))
-PiB = _Prefix(_BINARY_FACTOR ** 5, N_(b"pebi"), N_(b"Pi"))
-EiB = _Prefix(_BINARY_FACTOR ** 6, N_(b"exbi"), N_(b"Ei"))
-ZiB = _Prefix(_BINARY_FACTOR ** 7, N_(b"zebi"), N_(b"Zi"))
-YiB = _Prefix(_BINARY_FACTOR ** 8, N_(b"yobi"), N_(b"Yi"))
+KiB = _Prefix(_BINARY_FACTOR ** 1, N_("kibi"), N_("Ki"))
+MiB = _Prefix(_BINARY_FACTOR ** 2, N_("mebi"), N_("Mi"))
+GiB = _Prefix(_BINARY_FACTOR ** 3, N_("gibi"), N_("Gi"))
+TiB = _Prefix(_BINARY_FACTOR ** 4, N_("tebi"), N_("Ti"))
+PiB = _Prefix(_BINARY_FACTOR ** 5, N_("pebi"), N_("Pi"))
+EiB = _Prefix(_BINARY_FACTOR ** 6, N_("exbi"), N_("Ei"))
+ZiB = _Prefix(_BINARY_FACTOR ** 7, N_("zebi"), N_("Zi"))
+YiB = _Prefix(_BINARY_FACTOR ** 8, N_("yobi"), N_("Yi"))
 
 # Categories of symbolic constants
 _DECIMAL_PREFIXES = [KB, MB, GB, TB, PB, EB, ZB, YB]
@@ -78,14 +79,18 @@ else:
 def _lowerASCII(s):
     """Convert a string to lowercase using only ASCII character definitions.
 
-       :param str s: string to convert
+       :param s: string instance to convert
+       :type s: str or bytes
        :returns: lower-cased string
        :rtype: str
     """
-    if six.PY2:
-        return string.translate(s, _ASCIIlower_table) # pylint: disable=no-member
-    else:
-        return str.translate(s, _ASCIIlower_table) # pylint: disable=no-member
+
+    # XXX: Python 3 has str.maketrans() and bytes.maketrans() so we should
+    # ideally use one or the other depending on the type of 's'. But it turns
+    # out we expect this function to always return string even if given bytes.
+    if not six.PY2 and isinstance(s, bytes):
+        s = s.decode(sys.getdefaultencoding())
+    return s.translate(_ASCIIlower_table) # pylint: disable=no-member
 
 def _makeSpec(prefix, suffix, xlate, lowercase=True):
     """ Synthesizes a whole word from prefix and suffix.
@@ -250,7 +255,7 @@ class Size(Decimal):
 
         # drop any partial byte
         size = size.to_integral_value(rounding=ROUND_DOWN)
-        self = Decimal.__new__(cls, value=size)
+        self = Decimal.__new__(cls, value=size, context=context)
         return self
 
     # Force str and unicode types since the translated sizespec may be unicode
@@ -275,26 +280,30 @@ class Size(Decimal):
         return (self.__class__, (self.convertTo(),))
 
     def __add__(self, other, context=None):
-        return Size(Decimal.__add__(self, other, context=context))
+        return Size(Decimal.__add__(self, other))
 
     # needed to make sum() work with Size arguments
     def __radd__(self, other, context=None):
-        return Size(Decimal.__radd__(self, other, context=context))
+        return Size(Decimal.__radd__(self, other))
 
     def __sub__(self, other, context=None):
-        # subtraction is implemented using __add__ and negation, so we'll
-        # be getting passed a Size
-        return Decimal.__sub__(self, other, context=context)
+        return Size(Decimal.__sub__(self, other))
 
     def __mul__(self, other, context=None):
-        return Size(Decimal.__mul__(self, other, context=context))
+        return Size(Decimal.__mul__(self, other))
     __rmul__ = __mul__
 
     def __div__(self, other, context=None):
-        return Size(Decimal.__div__(self, other, context=context))
+        return Size(Decimal.__div__(self, other))
+
+    def __truediv__(self, other, context=None):
+        return Size(Decimal.__truediv__(self, other))
+
+    def __floordiv__(self, other, context=None):
+        return Size(Decimal.__floordiv__(self, other))
 
     def __mod__(self, other, context=None):
-        return Size(Decimal.__mod__(self, other, context=context))
+        return Size(Decimal.__mod__(self, other))
 
     def convertTo(self, spec=None):
         """ Return the size in the units indicated by the specifier.

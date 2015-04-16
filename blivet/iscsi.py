@@ -215,7 +215,8 @@ class iscsi(object):
         if not os.path.isdir("/etc/iscsi"):
             os.makedirs("/etc/iscsi", 0o755)
         fd = os.open(INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
-        os.write(fd, "InitiatorName=%s\n" %(self.initiator))
+        initiator_name = "InitiatorName=%s\n" % self.initiator
+        os.write(fd, initiator_name.encode("utf-8"))
         os.close(fd)
         self.initiatorSet = True
 
@@ -410,7 +411,8 @@ class iscsi(object):
         if not os.path.isdir(root + "/etc/iscsi"):
             os.makedirs(root + "/etc/iscsi", 0o755)
         fd = os.open(root + INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
-        os.write(fd, "InitiatorName=%s\n" %(self.initiator))
+        initiator_name = "InitiatorName=%s\n" % self.initiator
+        os.write(fd, initiator_name.encode("utf-8"))
         os.close(fd)
 
         # copy "db" files.  *sigh*

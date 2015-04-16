@@ -26,6 +26,7 @@ import shelve
 import contextlib
 import time
 import parted
+import functools
 
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
@@ -345,7 +346,7 @@ class Blivet(object):
                     log.info("Skipping disk: %s: No media present", device.name)
                     continue
                 disks.append(device)
-        disks.sort(key=lambda d: d.name, cmp=self.compareDisks)
+        disks.sort(key=self.compareDisksKey)
         return disks
 
     @property
@@ -1409,7 +1410,7 @@ class Blivet(object):
             return
 
         boot_disks = [d for d in self.disks if d.partitioned]
-        boot_disks.sort(cmp=self.compareDisks, key=lambda d: d.name)
+        boot_disks.sort(key=self.compareDisksKey)
         self.bootloader.set_disk_list(boot_disks)
 
     def setUpBootLoader(self, early=False):
@@ -1542,6 +1543,11 @@ class Blivet(object):
         os.symlink(target, path)
 
     def compareDisks(self, first, second):
+        if not isinstance(first, str):
+            first = first.name
+        if not isinstance(second, str):
+            second = second.name
+
         if first in self.eddDict and second in self.eddDict:
             one = self.eddDict[first]
             two = self.eddDict[second]
@@ -1593,6 +1599,10 @@ class Blivet(object):
                     return 1
 
         return 0
+
+    @property
+    def compareDisksKey(self):
+        return functools.cmp_to_key(self.compareDisks)
 
     def getFSType(self, mountpoint=None):
         """ Return the default filesystem type based on mountpoint. """
@@ -1674,6 +1684,7 @@ class Blivet(object):
             root.swaps = [s for s in root.swaps if s]
 
             for (mountpoint, old_dev) in root.mounts.items():
+                removed = set()
                 if old_dev is None:
                     continue
 
@@ -1681,9 +1692,12 @@ class Blivet(object):
                 if new_dev is None:
                     # if the device has been removed don't include this
                     # mountpoint at all
-                    del root.mounts[mountpoint]
+                    removed.add(mountpoint)
                 else:
                     root.mounts[mountpoint] = new_dev
+
+            for mnt in removed:
+                del root.mounts[mnt]
 
         log.debug("finished Blivet copy")
         return new

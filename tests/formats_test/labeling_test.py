@@ -76,12 +76,12 @@ class MethodsTestCase(unittest.TestCase):
 
         # JFS, XFS use a -L flag
         lflag_classes = [fs.JFS, fs.XFS]
-        for name, klass in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in lflag_classes)]:
-            self.assertEqual(klass._labelfs.label_app.setLabelCommand(v), [klass._labelfs.label_app.name, "-L", "myfs", "/dev"], msg=name)
+        for name, klass in ((k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in lflag_classes)):
+            self.assertEqual(klass._labelfs.label_app.setLabelCommand(klass), [klass._labelfs.label_app.name, "-L", "myfs", "/dev"], msg=name)
 
         # Ext2FS and descendants and FATFS do not use a flag
         noflag_classes = [fs.Ext2FS, fs.FATFS]
-        for name, klass in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in noflag_classes)]:
+        for name, klass in ((k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in noflag_classes)):
             self.assertEqual(klass._labelfs.label_app.setLabelCommand(klass), [klass._labelfs.label_app.name, "/dev", "myfs"], msg=name)
 
         # all of the remaining are non-labeling so will accept any label

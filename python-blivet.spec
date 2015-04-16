@@ -8,6 +8,7 @@ License: LGPLv2+
 Group: System Environment/Libraries
 %define realname blivet
 Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
+%global with_python3 1
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -22,6 +23,10 @@ BuildArch: noarch
 BuildRequires: gettext
 BuildRequires: python-setuptools
 
+%if 0%{with_python3}
+BuildRequires: python3-devel python3-setuptools
+%endif
+
 Requires: python
 Requires: python-six
 Requires: python-kickstart >= %{pykickstartver}
@@ -32,6 +37,7 @@ Requires: pyparted >= %{pypartedver}
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
+Requires: libselinux-python
 Requires: libblockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
 
@@ -39,8 +45,35 @@ Requires: libblockdev-plugins-all >= %{libblockdevver}
 The python-blivet package is a python module for examining and modifying
 storage configuration.
 
+%if 0%{with_python3}
+%package -n python3-%{realname}
+Summary: A python3 package for examining and modifying storage configuration.
+Requires: python3
+Requires: python3-six
+Requires: python3-kickstart
+Requires: python3-pyudev
+Requires: parted >= %{partedver}
+Requires: python3-pyparted >= %{pypartedver}
+Requires: libselinux-python3
+Requires: libblockdev >= %{libblockdevver}
+Requires: libblockdev-plugins-all >= %{libblockdevver}
+Requires: util-linux >= %{utillinuxver}
+Requires: dosfstools
+Requires: e2fsprogs >= %{e2fsver}
+Requires: lsof
+
+%description -n python3-%{realname}
+The python3-%{realname} is a python3 package for examining and modifying storage
+configuration.
+%endif
+
 %prep
 %setup -q -n %{realname}-%{version}
+
+%if 0%{?with_python3}
+rm -rf %{py3dir}
+cp -a . %{py3dir}
+%endif
 
 %build
 make
@@ -50,11 +83,24 @@ rm -rf %{buildroot}
 make DESTDIR=%{buildroot} install
 %find_lang %{realname}
 
+%if 0%{?with_python3}
+pushd %{py3dir}
+make PYTHON=%{__python3} DESTDIR=%{buildroot} install
+popd
+%endif
+
 %files -f %{realname}.lang
 %defattr(-,root,root,-)
 %license COPYING
 %doc README ChangeLog examples
 %{python_sitelib}/*
+
+%if 0%{?with_python3}
+%files -n python3-%{realname}
+%license COPYING
+%doc README ChangeLog examples
+%{python3_sitelib}/*
+%endif
 
 %changelog
 * Fri Mar 27 2015 Brian C. Lane <bcl@redhat.com> - 1.2-1
