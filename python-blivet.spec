@@ -15,7 +15,6 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define pykickstartver 1.99.22
 %define partedver 1.8.1
 %define pypartedver 3.10.3
-%define e2fsver 1.41.0
 %define utillinuxver 2.15.1
 %define libblockdevver 0.6
 
@@ -34,12 +33,10 @@ Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
-Requires: dosfstools
-Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: libselinux-python
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
+Requires: rpm
 
 %description
 The python-blivet package is a python module for examining and modifying
@@ -56,10 +53,7 @@ Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: util-linux >= %{utillinuxver}
-Requires: dosfstools
-Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 
 %description -n python3-%{realname}
