@@ -520,7 +520,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.stateCheck(self.dev19,
                         devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
-                        mdadmFormatUUID=xform(lambda x, m: self.assertEqual(x, blockdev.md_get_md_uuid(self.dev19.uuid), m)),
+                        mdadmFormatUUID=xform(lambda x, m: self.assertEqual(x, blockdev.md.get_md_uuid(self.dev19.uuid), m)),
                         parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         uuid=xform(lambda x, m: self.assertEqual(x, self.dev19.uuid, m)))
 

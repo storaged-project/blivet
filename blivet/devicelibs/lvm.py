@@ -79,7 +79,7 @@ def _set_global_config():
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
 
-    blockdev.lvm_set_global_config(config_string)
+    blockdev.lvm.set_global_config(config_string)
 
 def needs_config_refresh(fn):
     def fn_with_refresh(*args, **kwargs):

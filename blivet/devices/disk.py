@@ -204,13 +204,13 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         """ Deactivate the raid set. """
         log_method_call(self, self.name, status=self.status)
         # This call already checks if the set is not active.
-        blockdev.dm_deactivate_raid_set(self.name)
+        blockdev.dm.deactivate_raid_set(self.name)
 
     def activate(self):
         """ Activate the raid set. """
         log_method_call(self, self.name, status=self.status)
         # This call already checks if the set is active.
-        blockdev.dm_activate_raid_set(self.name)
+        blockdev.dm.activate_raid_set(self.name)
         udev.settle()
 
     def _setup(self, orig=False):
@@ -236,7 +236,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
 
     @property
     def description(self):
-        return "BIOS RAID set (%s)" % blockdev.dm_get_raid_set_type(self.name)
+        return "BIOS RAID set (%s)" % blockdev.dm.get_raid_set_type(self.name)
 
     @property
     def model(self):

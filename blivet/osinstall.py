@@ -24,7 +24,6 @@ import shlex
 import os
 import stat
 import time
-from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 
 from . import util
@@ -529,7 +528,7 @@ class FSSet(object):
                 try:
                     device.setup()
                     device.format.setup()
-                except (StorageError, GLib.GError) as e:
+                except (StorageError, blockdev.BlockDevError) as e:
                     if errorHandler.cb(e) == ERROR_RAISE:
                         raise
                 else:
@@ -1031,7 +1030,7 @@ def get_containing_device(path, devicetree):
 
     if device_name.startswith("dm-"):
         # have I told you lately that I love you, device-mapper?
-        device_name = blockdev.dm_name_from_node(device_name)
+        device_name = blockdev.dm.name_from_node(device_name)
 
     return devicetree.getDeviceByName(device_name)
 
@@ -1078,7 +1077,7 @@ def writeEscrowPackets(storage):
 
     log.debug("escrow: writeEscrowPackets start")
 
-    backupPassphrase = blockdev.crypto_generate_backup_passphrase()
+    backupPassphrase = blockdev.crypto.generate_backup_passphrase()
 
     try:
         escrowDir = getSysroot() + "/root"
