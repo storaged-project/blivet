@@ -54,6 +54,9 @@ class NoDevice(StorageDevice):
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
 
+    def unsetupableFormat(self, orig=False):
+        return None
+
     def teardown(self, recursive=False):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,

@@ -36,4 +36,4 @@ setup(name='blivet', version='1.2',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',
       data_files=data_files,
-      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.formats'])
+      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.formats', 'blivet.tasks'])

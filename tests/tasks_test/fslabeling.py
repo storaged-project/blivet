@@ -4,7 +4,7 @@ import abc
 from six import add_metaclass
 
 from tests import loopbackedtestcase
-from blivet.errors import FSError
+from blivet.errors import FSError, FSReadLabelError
 from blivet.size import Size
 
 @add_metaclass(abc.ABCMeta)
@@ -40,11 +40,11 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
-        with self.assertRaisesRegexp(FSError, "no application to read label"):
+        with self.assertRaises(FSReadLabelError):
             an_fs.readLabel()
 
         an_fs.label = "an fs"
-        with self.assertRaisesRegexp(FSError, "no application to set label for filesystem"):
+        with self.assertRaises(FSError):
             an_fs.writeLabel()
 
     def testCreating(self):
@@ -81,7 +81,7 @@ class LabelingWithRelabeling(LabelingAsRoot):
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
         self.assertIsNone(an_fs.create())
 
-        with self.assertRaisesRegexp(FSError, "no application to read label"):
+        with self.assertRaises(FSReadLabelError):
             an_fs.readLabel()
 
         an_fs.label = "an fs"

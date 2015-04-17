@@ -1013,7 +1013,7 @@ class DeviceTree(object):
             except ValueError:
                 log.error("failed to parse /proc/mounts line: %s", line)
                 continue
-            if fstype in formats.fs.nodev_filesystems:
+            if fstype in formats.fslib.nodev_filesystems:
                 if not flags.include_nodev:
                     continue
 
