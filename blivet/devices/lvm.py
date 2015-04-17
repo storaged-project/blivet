@@ -25,7 +25,6 @@ import abc
 import pprint
 import re
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 # device backend modules
 from ..devicelibs import lvm
@@ -56,7 +55,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     @staticmethod
     def get_supported_pe_sizes():
-        return [Size(pe_size) for pe_size in blockdev.lvm_get_supported_pe_sizes()]
+        return [Size(pe_size) for pe_size in blockdev.lvm.get_supported_pe_sizes()]
 
     def __init__(self, name, parents=None, size=None, free=None,
                  peSize=None, peCount=None, peFree=None, pvCount=None,
@@ -201,13 +200,13 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm_vgdeactivate(self.name)
+        blockdev.lvm.vgdeactivate(self.name)
 
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         pv_list = [pv.path for pv in self.parents]
-        blockdev.lvm_vgcreate(self.name, pv_list, self.peSize)
+        blockdev.lvm.vgcreate(self.name, pv_list, self.peSize)
 
     def _postCreate(self):
         self._complete = True
@@ -230,9 +229,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
             # the same name that we want to keep/use.
             return
 
-        blockdev.lvm_vgreduce(self.name, None)
-        blockdev.lvm_vgdeactivate(self.name)
-        blockdev.lvm_vgremove(self.name)
+        blockdev.lvm.vgreduce(self.name, None)
+        blockdev.lvm.vgdeactivate(self.name)
+        blockdev.lvm.vgremove(self.name)
 
     def _remove(self, member):
         status = []
@@ -241,15 +240,15 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.exists:
                 lv.setup()
 
-        blockdev.lvm_pvmove(member.path)
-        blockdev.lvm_vgreduce(self.name, member.path)
+        blockdev.lvm.pvmove(member.path)
+        blockdev.lvm.vgreduce(self.name, member.path)
 
         for (lv, status) in zip(self.lvs, status):
             if lv.status and not status:
                 lv.teardown()
 
     def _add(self, member):
-        blockdev.lvm_vgextend(self.name, member.path)
+        blockdev.lvm.vgextend(self.name, member.path)
 
     def _addLogVol(self, lv):
         """ Add an LV to this VG. """
@@ -603,7 +602,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        return blockdev.dm_node_from_name(self.mapName)
+        return blockdev.dm.node_from_name(self.mapName)
 
     def _getName(self):
         """ This device's name. """
@@ -627,13 +626,13 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm_lvactivate(self.vg.name, self._name)
+        blockdev.lvm.lvactivate(self.vg.name, self._name)
 
     def _teardown(self, recursive=None):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm_lvdeactivate(self.vg.name, self._name)
+        blockdev.lvm.lvdeactivate(self.vg.name, self._name)
 
     def _postTeardown(self, recursive=False):
         try:
@@ -651,8 +650,8 @@ class LVMLogicalVolumeDevice(DMDevice):
         super(LVMLogicalVolumeDevice, self)._preCreate()
 
         try:
-            vg_info = blockdev.lvm_vginfo(self.vg.name)
-        except GLib.GError as lvmerr:
+            vg_info = blockdev.lvm.vginfo(self.vg.name)
+        except blockdev.LVMError as lvmerr:
             log.error("Failed to get free space for the %s VG: %s", self.vg.name, lvmerr)
             # nothing more can be done, we don't know the VG's free space
             return
@@ -671,7 +670,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         # should we use --zero for safety's sake?
-        blockdev.lvm_lvcreate(self.vg.name, self._name, self.size)
+        blockdev.lvm.lvcreate(self.vg.name, self._name, self.size)
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -681,7 +680,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        blockdev.lvm_lvremove(self.vg.name, self._name)
+        blockdev.lvm.lvremove(self.vg.name, self._name)
 
     def resize(self):
         log_method_call(self, self.name, status=self.status)
@@ -695,7 +694,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             self.format.teardown()
 
         udev.settle()
-        blockdev.lvm_lvresize(self.vg.name, self._name, self.size)
+        blockdev.lvm.lvresize(self.vg.name, self._name, self.size)
 
     @property
     def isleaf(self):
@@ -884,7 +883,7 @@ class LVMSnapShotBase(object):
             pass
 
         udev.settle()
-        blockdev.lvm_lvsnapshotmerge(self.vg.name, self.lvname) # pylint: disable=no-member
+        blockdev.lvm.lvsnapshotmerge(self.vg.name, self.lvname) # pylint: disable=no-member
 
 
 class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
@@ -949,7 +948,7 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        blockdev.lvm_lvsnapshotcreate(self.vg.name, self.origin.lvname, self._name, self.size)
+        blockdev.lvm.lvsnapshotcreate(self.vg.name, self.origin.lvname, self._name, self.size)
 
     def _destroy(self):
         """ Destroy the device. """
@@ -957,7 +956,7 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         # old-style snapshots' status is tied to the origin's so we never
         # explicitly activate or deactivate them and we have to tell lvremove
         # that it is okay to remove the active snapshot
-        blockdev.lvm_lvremove(self.vg.name, self._name, force=True)
+        blockdev.lvm.lvremove(self.vg.name, self._name, force=True)
 
     def _getPartedDevicePath(self):
         return "%s-cow" % self.path
@@ -1011,11 +1010,11 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
         """
         if metadatasize is not None and \
-           not blockdev.lvm_is_valid_thpool_md_size(metadatasize):
+           not blockdev.lvm.is_valid_thpool_md_size(metadatasize):
             raise ValueError("invalid metadatasize value")
 
         if chunksize is not None and \
-           not blockdev.lvm_is_valid_thpool_chunk_size(chunksize):
+           not blockdev.lvm.is_valid_thpool_chunk_size(chunksize):
             raise ValueError("invalid chunksize value")
 
         super(LVMThinPoolDevice, self).__init__(name, parents=parents,
@@ -1057,7 +1056,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     @property
     def vgSpaceUsed(self):
         space = super(LVMThinPoolDevice, self).vgSpaceUsed
-        space += Size(blockdev.lvm_get_thpool_padding(space, self.vg.peSize))
+        space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.peSize))
         return space
 
     @property
@@ -1076,7 +1075,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         else:
             profile_name = None
         # TODO: chunk size, data/metadata split --> profile
-        blockdev.lvm_thpoolcreate(self.vg.name, self.lvname, self.size,
+        blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
                                   md_size=self.metaDataSize,
                                   chunk_size=self.chunkSize,
                                   profile=profile_name)
@@ -1145,7 +1144,7 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        blockdev.lvm_thlvcreate(self.vg.name, self.pool.lvname, self.lvname,
+        blockdev.lvm.thlvcreate(self.vg.name, self.pool.lvname, self.lvname,
                                 self.size)
 
     def removeHook(self, modparent=True):
@@ -1216,7 +1215,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm_lvactivate(self.vg.name, self._name, ignore_skip=True)
+        blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=True)
 
     def _create(self):
         """ Create the device. """
@@ -1227,7 +1226,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
             # to use
             pool_name = self.pool.lvname
 
-        blockdev.lvm_thsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
+        blockdev.lvm.thsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
                                       pool_name=pool_name)
 
     def dependsOn(self, dep):

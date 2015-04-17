@@ -23,7 +23,6 @@
 import os
 import re
 
-from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 
 from .actionlist import ActionList
@@ -148,7 +147,7 @@ class DeviceTree(object):
     @property
     def pvInfo(self):
         if self._pvs_cache is None:
-            pvs = blockdev.lvm_pvs()
+            pvs = blockdev.lvm.pvs()
             self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs) # pylint: disable=attribute-defined-outside-init
 
         return self._pvs_cache
@@ -156,7 +155,7 @@ class DeviceTree(object):
     @property
     def lvInfo(self):
         if self._lvs_cache is None:
-            lvs = blockdev.lvm_lvs()
+            lvs = blockdev.lvm.lvs()
             self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs) # pylint: disable=attribute-defined-outside-init
 
         return self._lvs_cache
@@ -582,7 +581,7 @@ class DeviceTree(object):
 
             try:
                 device.teardown(recursive=True)
-            except (StorageError, GLib.GError) as e:
+            except (StorageError, blockdev.BlockDevError) as e:
                 log.info("teardown of %s failed: %s", device.name, e)
 
     def teardownDiskImages(self):
@@ -910,8 +909,8 @@ class DeviceTree(object):
 
                 if devspec.startswith("/dev/dm-"):
                     try:
-                        dm_name = blockdev.dm_name_from_node(devspec[5:])
-                    except GLib.GError as e:
+                        dm_name = blockdev.dm.name_from_node(devspec[5:])
+                    except blockdev.DMError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         dm_name = None
 
@@ -920,8 +919,8 @@ class DeviceTree(object):
 
                 if re.match(r'/dev/md\d+(p\d+)?$', devspec):
                     try:
-                        md_name = blockdev.md_name_from_node(devspec[5:])
-                    except GLib.GError as e:
+                        md_name = blockdev.md.name_from_node(devspec[5:])
+                    except blockdev.MDRaidError as e:
                         log.info("failed to resolve %s: %s", devspec, e)
                         md_name = None
 

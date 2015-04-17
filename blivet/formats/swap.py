@@ -134,22 +134,22 @@ class SwapSpace(DeviceFormat):
     @property
     def status(self):
         """ Device status. """
-        return self.exists and blockdev.swap_swapstatus(self.device)
+        return self.exists and blockdev.swap.swapstatus(self.device)
 
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap_swapon(self.device, priority=self.priority)
+        blockdev.swap.swapon(self.device, priority=self.priority)
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, a device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap_swapoff(self.device)
+        blockdev.swap.swapoff(self.device)
 
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap_mkswap(self.device, label=self.label)
+        blockdev.swap.mkswap(self.device, label=self.label)
 
 register_device_format(SwapSpace)

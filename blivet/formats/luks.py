@@ -169,7 +169,7 @@ class LUKS(DeviceFormat):
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device, mapName=self.mapName,
                         type=self.type, status=self.status)
-        blockdev.crypto_luks_open(self.device, self.mapName,
+        blockdev.crypto.luks_open(self.device, self.mapName,
                                   passphrase=self.__passphrase,
                                   key_file=self._key_file)
 
@@ -178,7 +178,7 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         log.debug("unmapping %s", self.mapName)
-        blockdev.crypto_luks_close(self.mapName)
+        blockdev.crypto.luks_close(self.mapName)
 
     def _preCreate(self, **kwargs):
         super(LUKS, self)._preCreate(**kwargs)
@@ -189,7 +189,7 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         super(LUKS, self)._create(**kwargs) # set up the event sync
-        blockdev.crypto_luks_format(self.device,
+        blockdev.crypto.luks_format(self.device,
                                     passphrase=self.__passphrase,
                                     key_file=self._key_file,
                                     cipher=self.cipher,
@@ -198,7 +198,7 @@ class LUKS(DeviceFormat):
 
     def _postCreate(self, **kwargs):
         super(LUKS, self)._postCreate(**kwargs)
-        self.uuid = blockdev.crypto_luks_uuid(self.device)
+        self.uuid = blockdev.crypto.luks_uuid(self.device)
         if flags.installer_mode or not self.mapName:
             self.mapName = "luks-%s" % self.uuid
 
@@ -218,7 +218,7 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        blockdev.crypto_luks_add_key(self.device,
+        blockdev.crypto.luks_add_key(self.device,
                                      pass_=self.__passphrase,
                                      key_file=self._key_file,
                                      new_passphrase=passphrase)
@@ -235,13 +235,13 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        blockdev.crypto_luks_remove_key(self.device,
+        blockdev.crypto.luks_remove_key(self.device,
                                         passphrase=self.__passphrase,
                                         key_file=self._key_file)
 
     def escrow(self, directory, backupPassphrase):
         log.debug("escrow: escrowVolume start for %s", self.device)
-        blockdev.crypto_escrow_device(self.device, self.__passphrase, self.escrow_cert,
+        blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
                                       directory, backupPassphrase)
         log.debug("escrow: escrowVolume done for %s", repr(self.device))
 

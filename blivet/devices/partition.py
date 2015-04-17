@@ -23,7 +23,6 @@ import os
 import parted
 import _ped
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from .. import errors
 from .. import util
@@ -689,8 +688,8 @@ class PartitionDevice(StorageDevice):
             # self.exists has been unset, so don't use self.status
             if os.path.exists(self.path):
                 try:
-                    blockdev.dm_remove(self.name)
-                except GLib.GError:
+                    blockdev.dm.remove(self.name)
+                except blockdev.DMError:
                     pass
 
     def _getSize(self):

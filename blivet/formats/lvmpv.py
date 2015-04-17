@@ -22,7 +22,6 @@
 
 import os
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
@@ -107,19 +106,19 @@ class LVMPhysicalVolume(DeviceFormat):
         # XXX This format doesn't exist yet, so bypass the precondition checking
         #     for destroy by calling _destroy directly.
         DeviceFormat._destroy(self, **kwargs)
-        blockdev.lvm_pvscan(self.device)
-        blockdev.lvm_pvcreate(self.device, data_alignment=self.dataAlignment)
-        blockdev.lvm_pvscan(self.device)
+        blockdev.lvm.pvscan(self.device)
+        blockdev.lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
+        blockdev.lvm.pvscan(self.device)
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         try:
-            blockdev.lvm_pvremove(self.device)
-        except GLib.GError:
+            blockdev.lvm.pvremove(self.device)
+        except blockdev.LVMError:
             DeviceFormat.destroy(self, **kwargs)
         finally:
-            blockdev.lvm_pvscan(self.device)
+            blockdev.lvm.pvscan(self.device)
 
     @property
     def status(self):

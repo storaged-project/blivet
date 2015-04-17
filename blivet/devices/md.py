@@ -23,7 +23,6 @@ import os
 import six
 
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from ..devicelibs import mdraid, raid
 
@@ -133,8 +132,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         if self.uuid is not None:
             try:
-                formatted_uuid = blockdev.md_get_md_uuid(self.uuid)
-            except GLib.GError:
+                formatted_uuid = blockdev.md.get_md_uuid(self.uuid)
+            except blockdev.MDRaidError:
                 pass
 
         return formatted_uuid
@@ -196,7 +195,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
            :returns: estimated superblock size
            :rtype: :class:`~.size.Size`
         """
-        return blockdev.md_get_superblock_size(raw_array_size,
+        return blockdev.md.get_superblock_size(raw_array_size,
                                                version=self.metadataVersion)
 
     @property
@@ -210,7 +209,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                     self.memberDevices,
                     self.chunkSize,
                     self.getSuperBlockSize)
-            except (GLib.GError, errors.RaidError) as e:
+            except (blockdev.MDRaidError, errors.RaidError) as e:
                 log.info("could not calculate size of device %s for raid level %s: %s", self.name, self.level, e)
                 size = Size(0)
             log.debug("non-existent RAID %s size == %s", self.level, size)
@@ -429,7 +428,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             member.setup(orig=orig)
             disks.append(member.path)
 
-        blockdev.md_activate(self.path, members=disks, uuid=self.mdadmFormatUUID)
+        blockdev.md.activate(self.path, members=disks, uuid=self.mdadmFormatUUID)
 
     def _postTeardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._postTeardown(recursive=recursive)
@@ -450,7 +449,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # file exists, we want to deactivate it. mdraid has too many
         # states.
         if self.exists and os.path.exists(self.path):
-            blockdev.md_deactivate(self.path)
+            blockdev.md.deactivate(self.path)
 
         self._postTeardown(recursive=recursive)
 
@@ -478,7 +477,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         # update our uuid attribute with the new array's UUID
         # XXX this won't work for containers since no UUID is reported for them
-        info = blockdev.md_detail(self.path)
+        info = blockdev.md.detail(self.path)
         self.uuid = info.uuid
         for member in self.devices:
             member.format.mdUuid = self.uuid
@@ -491,7 +490,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         level = None
         if self.level:
             level = str(self.level)
-        blockdev.md_create(self.path, level, disks, spares,
+        blockdev.md.create(self.path, level, disks, spares,
                            version=self.metadataVersion,
                            bitmap=self.createBitmap)
         udev.settle()
@@ -500,14 +499,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self.setup()
         # see if the device must be marked as failed before it can be removed
         fail = (self.memberStatus(member) == "in_sync")
-        blockdev.md_remove(self.path, member.path, fail)
+        blockdev.md.remove(self.path, member.path, fail)
 
     def _add(self, member):
         """ Add a member device to an array.
 
            :param str member: the member's path
 
-           :raises: GLib.GError
+           :raises: blockdev.MDRaidError
         """
         self.setup()
 
@@ -515,11 +514,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         try:
             if not self.level.has_redundancy():
                 if self.level is not raid.Linear:
-                    raid_devices = int(blockdev.md_detail(self.name).raid_devices) + 1
+                    raid_devices = int(blockdev.md.detail(self.name).raid_devices) + 1
         except errors.RaidError:
             pass
 
-        blockdev.md_add(self.path, member.path, raid_devs=raid_devices)
+        blockdev.md.add(self.path, member.path, raid_devs=raid_devices)
 
     @property
     def formatArgs(self):

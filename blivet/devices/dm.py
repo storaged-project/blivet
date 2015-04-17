@@ -22,7 +22,6 @@
 
 import os
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from .. import errors
 from .. import util
@@ -98,8 +97,8 @@ class DMDevice(StorageDevice):
     @property
     def status(self):
         try:
-            return blockdev.dm_map_exists(self.mapName, True, True)
-        except GLib.GError as e:
+            return blockdev.dm.map_exists(self.mapName, True, True)
+        except blockdev.DMError as e:
             if "Not running as root" in e.message:
                 return False
             else:
@@ -114,7 +113,7 @@ class DMDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        return blockdev.dm_node_from_name(self.name)
+        return blockdev.dm.node_from_name(self.name)
 
     def setupPartitions(self):
         log_method_call(self, name=self.name, kids=self.kids)
@@ -132,7 +131,7 @@ class DMDevice(StorageDevice):
         for dev in os.listdir("/dev/mapper/"):
             prefix = self.name + "p"
             if dev.startswith(prefix) and dev[len(prefix):].isdigit():
-                blockdev.dm_remove(dev)
+                blockdev.dm.remove(dev)
 
     def _setName(self, value):
         """ Set the device's map name. """
@@ -183,7 +182,7 @@ class DMLinearDevice(DMDevice):
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
         slave_length = self.slave.currentSize / LINUX_SECTOR_SIZE
-        blockdev.dm_create_linear(self.name, self.slave.path, slave_length,
+        blockdev.dm.create_linear(self.name, self.slave.path, slave_length,
                                   self.dmUuid)
 
     def _postSetup(self):
@@ -194,7 +193,7 @@ class DMLinearDevice(DMDevice):
     def _teardown(self, recursive=False):
         self.teardownPartitions()
         udev.settle()
-        blockdev.dm_remove(self.name)
+        blockdev.dm.remove(self.name)
         udev.settle()
 
     def deactivate(self, recursive=False):

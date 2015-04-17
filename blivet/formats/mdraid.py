@@ -75,7 +75,7 @@ class MDRaidMember(DeviceFormat):
         return d
 
     def _destroy(self, **kwargs):
-        blockdev.md_destroy(self.device)
+        blockdev.md.destroy(self.device)
 
     @property
     def status(self):

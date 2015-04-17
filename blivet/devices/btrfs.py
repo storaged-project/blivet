@@ -23,7 +23,6 @@ import os
 import copy
 import tempfile
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from ..devicelibs import btrfs
 from ..devicelibs import raid
@@ -332,9 +331,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             return subvols
 
         try:
-            subvols = blockdev.btrfs_list_subvolumes(self.originalFormat.systemMountpoint,
+            subvols = blockdev.btrfs.list_subvolumes(self.originalFormat.systemMountpoint,
                                                      snapshots_only=snapshotsOnly)
-        except GLib.GError as e:
+        except blockdev.BtrfsError as e:
             log.debug("failed to list subvolumes: %s", e)
         else:
             self._getDefaultSubVolumeID()
@@ -359,8 +358,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     def _getDefaultSubVolumeID(self):
         subvolid = None
         try:
-            subvolid = blockdev.btrfs_get_default_subvolume_id(self.originalFormat.systemMountpoint)
-        except GLib.GError as e:
+            subvolid = blockdev.btrfs.get_default_subvolume_id(self.originalFormat.systemMountpoint)
+        except blockdev.BtrfsError as e:
             log.debug("failed to get default subvolume id: %s", e)
 
         self._defaultSubVolumeID = subvolid
@@ -371,8 +370,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             This writes the change to the filesystem, which must be mounted.
         """
         try:
-            blockdev.btrfs_set_default_subvolume(self.originalFormat.systemMountpoint, vol_id)
-        except GLib.GError as e:
+            blockdev.btrfs.set_default_subvolume(self.originalFormat.systemMountpoint, vol_id)
+        except blockdev.BtrfsError as e:
             log.error("failed to set new default subvolume id (%s): %s",
                       vol_id, e)
             # The only time we set a new default subvolume is so we can remove
@@ -414,7 +413,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             md_level = str(self.metaDataLevel)
         else:
             md_level = None
-        blockdev.btrfs_create_volume([d.path for d in self.parents],
+        blockdev.btrfs.create_volume([d.path for d in self.parents],
                                      label=self.format.label,
                                      data_level=data_level,
                                      md_level=md_level)
@@ -445,7 +444,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             raise
 
         try:
-            blockdev.btrfs_remove_device(self.originalFormat.systemMountpoint, member.path)
+            blockdev.btrfs.remove_device(self.originalFormat.systemMountpoint, member.path)
         finally:
             self._undo_temp_mount()
 
@@ -457,7 +456,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             raise
 
         try:
-            blockdev.btrfs_add_device(self.originalFormat.systemMountpoint, member.path)
+            blockdev.btrfs.add_device(self.originalFormat.systemMountpoint, member.path)
         finally:
             self._undo_temp_mount()
 
@@ -547,7 +546,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
             raise RuntimeError("btrfs subvol create requires mounted volume")
 
         try:
-            blockdev.btrfs_create_subvolume(mountpoint, self.name)
+            blockdev.btrfs.create_subvolume(mountpoint, self.name)
         finally:
             self.volume._undo_temp_mount()
 
@@ -565,7 +564,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
         mountpoint = self.volume.originalFormat.systemMountpoint
         if not mountpoint:
             raise RuntimeError("btrfs subvol destroy requires mounted volume")
-        blockdev.btrfs_delete_subvolume(mountpoint, self.name)
+        blockdev.btrfs.delete_subvolume(mountpoint, self.name)
         self.volume._undo_temp_mount()
 
     def removeHook(self, modparent=True):
@@ -649,7 +648,7 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
 
         dest_path = "%s/%s" % (mountpoint, self.name)
         try:
-            blockdev.btrfs_create_snapshot(source_path, dest_path, ro=self.readOnly)
+            blockdev.btrfs.create_snapshot(source_path, dest_path, ro=self.readOnly)
         finally:
             self.volume._undo_temp_mount()
 

@@ -27,8 +27,7 @@ import pprint
 import copy
 import parted
 
-from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
+from gi.repository import blockdev as blockdev
 
 from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
@@ -191,7 +190,7 @@ class Populator(object):
 
         if name.startswith("loop"):
             # ignore loop devices unless they're backed by a file
-            return (not blockdev.loop_get_backing_file(name))
+            return (not blockdev.loop.get_backing_file(name))
 
         # FIXME: check for virtual devices whose slaves are on the ignore list
 
@@ -385,8 +384,8 @@ class Populator(object):
 
             log.error("failed to scan md array %s", name)
             try:
-                blockdev.md_deactivate(path)
-            except GLib.GError:
+                blockdev.md.deactivate(path)
+            except blockdev.MDRaidError:
                 log.error("failed to stop broken md array %s", name)
 
         return device
@@ -397,7 +396,7 @@ class Populator(object):
         sysfs_path = udev.device_get_sysfs_path(info)
 
         if name.startswith("md"):
-            name = blockdev.md_name_from_node(name)
+            name = blockdev.md.name_from_node(name)
             device = self.getDeviceByName(name)
             if device:
                 return device
@@ -406,7 +405,7 @@ class Populator(object):
             disk_name = os.path.basename(os.path.dirname(sysfs_path))
             disk_name = disk_name.replace('!','/')
             if disk_name.startswith("md"):
-                disk_name = blockdev.md_name_from_node(disk_name)
+                disk_name = blockdev.md.name_from_node(disk_name)
 
             disk = self.getDeviceByName(disk_name)
 
@@ -517,7 +516,7 @@ class Populator(object):
             parentName = devicePathToName(parentPath)
             container = self.getDeviceByName(parentName)
             if not container:
-                parentSysName = blockdev.md_node_from_name(parentName)
+                parentSysName = blockdev.md.node_from_name(parentName)
                 container_sysfs = "/sys/class/block/" + parentSysName
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
@@ -651,8 +650,8 @@ class Populator(object):
                 devname = udev.device_get_devname(info)
                 if devname:
                     try:
-                        blockdev.md_run(devname)
-                    except GLib.GError as e:
+                        blockdev.md.run(devname)
+                    except blockdev.MDRaidError as e:
                         log.warning("Failed to start possibly degraded md array: %s", e)
                     else:
                         udev.settle()
@@ -671,7 +670,7 @@ class Populator(object):
                 device = None
 
         if device and device.isDisk and \
-           blockdev.mpath_is_mpath_member(device.path):
+           blockdev.mpath.is_mpath_member(device.path):
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
@@ -831,7 +830,7 @@ class Populator(object):
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
-                    except GLib.GError:
+                    except blockdev.blockdevError:
                         device.format.passphrase = None
                     else:
                         break
@@ -841,7 +840,7 @@ class Populator(object):
                                      exists=True)
             try:
                 luks_device.setup()
-            except (LUKSError, GLib.GError, DeviceError) as e:
+            except (LUKSError, blockdev.CryptoError, DeviceError) as e:
                 log.info("setup of %s failed: %s", device.format.mapName, e)
                 device.removeChild()
             else:
@@ -910,7 +909,7 @@ class Populator(object):
 
             if lv_attr[0] in 'Ss':
                 log.info("found lvm snapshot volume '%s'", name)
-                origin_name = blockdev.lvm_lvorigin(vg_name, lv_name)
+                origin_name = blockdev.lvm.lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin",
                                 vg_name, lv_name)
@@ -960,11 +959,11 @@ class Populator(object):
                 lv_class = LVMThinPoolDevice
             elif lv_attr[0] == 'V':
                 # thin volume
-                pool_name = blockdev.lvm_thlvpoolname(vg_name, lv_name)
+                pool_name = blockdev.lvm.thlvpoolname(vg_name, lv_name)
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
                 addRequiredLV(pool_device_name, "failed to look up thin pool")
 
-                origin_name = blockdev.lvm_lvorigin(vg_name, lv_name)
+                origin_name = blockdev.lvm.lvorigin(vg_name, lv_name)
                 if origin_name:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
                     addRequiredLV(origin_device_name, "failed to locate origin lv")
@@ -1082,7 +1081,7 @@ class Populator(object):
     def handleUdevMDMemberFormat(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        md_info = blockdev.md_examine(device.path)
+        md_info = blockdev.md.examine(device.path)
 
         # Use mdadm info if udev info is missing
         md_uuid = md_info.uuid
@@ -1162,7 +1161,7 @@ class Populator(object):
         minor = udev.device_get_minor(info)
 
         # Have we already created the DMRaidArrayDevice?
-        rs_names = blockdev.dm_get_member_raid_sets(uuid, name, major, minor)
+        rs_names = blockdev.dm.get_member_raid_sets(uuid, name, major, minor)
         if len(rs_names) == 0:
             log.warning("dmraid member %s does not appear to belong to any "
                         "array", device.name)
@@ -1175,7 +1174,7 @@ class Populator(object):
                 dm_array.parents.append(device)
             else:
                 # Activate the Raid set.
-                blockdev.dm_activate_raid_set(rs_name)
+                blockdev.dm.activate_raid_set(rs_name)
                 dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[device])
 
@@ -1276,7 +1275,7 @@ class Populator(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
-        is_multipath_member = blockdev.mpath_is_mpath_member(device.path)
+        is_multipath_member = blockdev.mpath.is_mpath_member(device.path)
         if is_multipath_member:
             format_type = "multipath_member"
 
@@ -1431,7 +1430,7 @@ class Populator(object):
                 filedev.setup()
                 log.debug("%s", filedev)
 
-                loop_name = blockdev.loop_get_loop_name(filedev.path)
+                loop_name = blockdev.loop.get_loop_name(filedev.path)
                 loop_sysfs = None
                 if loop_name:
                     loop_sysfs = "/class/block/%s" % loop_name
@@ -1549,7 +1548,7 @@ class Populator(object):
         self.devicetree.dropLVMCache()
 
         if flags.installer_mode and not flags.image_install:
-            blockdev.mpath_set_friendly_names(flags.multipath_friendly_names)
+            blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
         self.setupDiskImages()
 
