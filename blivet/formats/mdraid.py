@@ -89,7 +89,7 @@ class MDRaidMember(DeviceFormat):
         if not os.access(self.device, os.W_OK):
             raise MDMemberError("device path does not exist")
 
-        blockdev.md_destroy(self.device)
+        blockdev.md.destroy(self.device)
         self.exists = False
 
     @property

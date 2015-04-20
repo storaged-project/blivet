@@ -23,7 +23,6 @@
 
 import os
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
@@ -345,14 +344,14 @@ class DeviceFormat(ObjectID):
 
         if self.device.startswith("/dev/mapper/"):
             try:
-                name = blockdev.dm_node_from_name(os.path.basename(self.device))
-            except GLib.GError:
+                name = blockdev.dm.node_from_name(os.path.basename(self.device))
+            except blockdev.DMError:
                 log.warning("failed to get dm node for %s", self.device)
                 return
         elif self.device.startswith("/dev/md/"):
             try:
-                name = blockdev.md_node_from_name(os.path.basename(self.device))
-            except GLib.GError:
+                name = blockdev.md.node_from_name(os.path.basename(self.device))
+            except blockdev.MDRaidError:
                 log.warning("failed to get md node for %s", self.device)
                 return
         else:

@@ -22,7 +22,6 @@
 
 import os
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
 
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
@@ -120,12 +119,12 @@ class LVMPhysicalVolume(DeviceFormat):
             # lvm has issues with persistence of metadata, so here comes the
             # hammer...
             DeviceFormat.destroy(self, **kwargs)
-            blockdev.lvm_pvscan(self.device)
-            blockdev.lvm_pvcreate(self.device, data_alignment=self.dataAlignment)
+            blockdev.lvm.pvscan(self.device)
+            blockdev.lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
         except Exception:
             raise
         finally:
-            blockdev.lvm_pvscan(self.device)
+            blockdev.lvm.pvscan(self.device)
 
         self.exists = True
         self.notifyKernel()
@@ -146,11 +145,11 @@ class LVMPhysicalVolume(DeviceFormat):
 
         # FIXME: verify path exists?
         try:
-            blockdev.lvm_pvremove(self.device)
-        except GLib.GError:
+            blockdev.lvm.pvremove(self.device)
+        except blockdev.LVMError:
             DeviceFormat.destroy(self, **kwargs)
         finally:
-            blockdev.lvm_pvscan(self.device)
+            blockdev.lvm.pvscan(self.device)
 
         self.exists = False
         self.notifyKernel()

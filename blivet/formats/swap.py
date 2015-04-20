@@ -135,7 +135,7 @@ class SwapSpace(DeviceFormat):
     @property
     def status(self):
         """ Device status. """
-        return self.exists and blockdev.swap_swapstatus(self.device)
+        return self.exists and blockdev.swap.swapstatus(self.device)
 
     def setup(self, **kwargs):
         """ Activate the formatting.
@@ -159,7 +159,7 @@ class SwapSpace(DeviceFormat):
             return
 
         DeviceFormat.setup(self, **kwargs)
-        blockdev.swap_swapon(self.device, priority=self.priority)
+        blockdev.swap.swapon(self.device, priority=self.priority)
 
     def teardown(self):
         """ Close, or tear down, a device. """
@@ -169,7 +169,7 @@ class SwapSpace(DeviceFormat):
             raise SwapSpaceError("format has not been created")
 
         if self.status:
-            blockdev.swap_swapoff(self.device)
+            blockdev.swap.swapoff(self.device)
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -191,7 +191,7 @@ class SwapSpace(DeviceFormat):
 
         try:
             DeviceFormat.create(self, **kwargs)
-            blockdev.swap_mkswap(self.device, label=self.label)
+            blockdev.swap.mkswap(self.device, label=self.label)
         except Exception:
             raise
         else:

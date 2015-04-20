@@ -139,7 +139,7 @@ def get_mount_device(mountpoint):
 
     if mount_device and re.match(r'/dev/loop\d+$', mount_device):
         loop_name = os.path.basename(mount_device)
-        mount_device = blockdev.loop_get_backing_file(loop_name)
+        mount_device = blockdev.loop.get_backing_file(loop_name)
         log.debug("found backing file %s for loop device %s", mount_device,
                                                               loop_name)
 

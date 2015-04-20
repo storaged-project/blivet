@@ -1125,11 +1125,11 @@ class BTRFS(FS):
         self.volUUID = kwargs.pop("volUUID", None)
 
     def create(self, **kwargs):
-        # filesystem creation is done in blockdev.btrfs_create_volume
+        # filesystem creation is done in blockdev.btrfs.create_volume
         self.exists = True
 
     def destroy(self, **kwargs):
-        # filesystem deletion is done in blockdev.btrfs_delete_volume
+        # filesystem deletion is done in blockdev.btrfs.delete_volume
         self.exists = False
 
     def setup(self, **kwargs):

@@ -33,7 +33,6 @@ from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
 from .size import Size
 
-from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 
 import logging
@@ -596,7 +595,7 @@ class DeviceFactory(object):
         e = None
         try:
             self._post_create()
-        except (StorageError, GLib.GError) as e:
+        except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
         else:
             if not device.size:
@@ -652,7 +651,7 @@ class DeviceFactory(object):
 
         try:
             self._post_create()
-        except (StorageError, GLib.GError) as e:
+        except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
             raise
         else:
@@ -901,7 +900,7 @@ class PartitionFactory(DeviceFactory):
     def _post_create(self):
         try:
             doPartitioning(self.storage)
-        except (StorageError, GLib.GError) as e:
+        except (StorageError, blockdev.BlockDevError) as e:
             log.error("failed to allocate partitions: %s", e)
             raise
 
@@ -1057,7 +1056,7 @@ class PartitionSetFactory(PartitionFactory):
                 member = self.storage.newPartition(parents=[disk], grow=True,
                                            size=base_size,
                                            fmt_type=member_format)
-            except (StorageError, GLib.GError) as e:
+            except (StorageError, blockdev.BlockDevError) as e:
                 log.error("failed to create new member partition: %s", e)
                 continue
 
@@ -1145,7 +1144,7 @@ class LVMFactory(DeviceFactory):
 
     def _get_device_space(self):
         # XXX: should respect the real extent size
-        return blockdev.lvm_get_lv_physical_size(self.size, lvm.LVM_PE_SIZE)
+        return blockdev.lvm.get_lv_physical_size(self.size, lvm.LVM_PE_SIZE)
 
     def _get_device_size(self):
         size = self.size
@@ -1190,7 +1189,7 @@ class LVMFactory(DeviceFactory):
         else:
             # container_size is a request for a fixed size for the container
             # XXX: should respect the real extent size
-            size += blockdev.lvm_get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
+            size += blockdev.lvm.get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
 
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
@@ -1201,7 +1200,7 @@ class LVMFactory(DeviceFactory):
                 # since that's the basis for the current device's disk space
                 # usage.
                 # XXX: should respect the real extent size
-                size -= blockdev.lvm_get_lv_physical_size(self.device.size, lvm.LVM_PE_SIZE)
+                size -= blockdev.lvm.get_lv_physical_size(self.device.size, lvm.LVM_PE_SIZE)
                 log.debug("size cut to %s to omit old device space", size)
 
         if self.container_raid_level:
@@ -1392,7 +1391,7 @@ class LVMThinPFactory(LVMFactory):
         """
         space = super(LVMThinPFactory, self)._get_device_space()
         log.debug("calculated total disk space prior to padding: %s", space)
-        space += Size(blockdev.lvm_get_thpool_padding(space, self._pesize))
+        space += Size(blockdev.lvm.get_thpool_padding(space, self._pesize))
         log.debug("total disk space needed: %s", space)
         return space
 
@@ -1410,7 +1409,7 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.pool.freeSpace
                 log.debug("size cut to %s to omit pool free space", size)
 
-                pad = Size(blockdev.lvm_get_thpool_padding(self.pool.freeSpace, self._pesize))
+                pad = Size(blockdev.lvm.get_thpool_padding(self.pool.freeSpace, self._pesize))
                 size -= pad
                 log.debug("size cut to %s to omit pool padding from free "
                           "space", size)
@@ -1421,7 +1420,7 @@ class LVMThinPFactory(LVMFactory):
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
-                pad = Size(blockdev.lvm_get_thpool_padding(self.device.size, self._pesize))
+                pad = Size(blockdev.lvm.get_thpool_padding(self.device.size, self._pesize))
                 log.debug("old device size: %s ; old pad: %s", self.device.size, pad)
                 size -= pad
                 log.debug("size cut to %s to omit old device padding", size)
@@ -1485,7 +1484,7 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.device.poolSpaceUsed   # don't count our device
 
             # increase vg free space by the size of the current pool's pad
-            pad = Size(blockdev.lvm_get_thpool_padding(self.pool.size, self._pesize))
+            pad = Size(blockdev.lvm.get_thpool_padding(self.pool.size, self._pesize))
             log.debug("increasing free by current pool pad size (%s)", pad)
             free += pad
 
@@ -1493,11 +1492,11 @@ class LVMThinPFactory(LVMFactory):
         free = self.container.align(free + self.container.freeSpace)
         size = self.container.align(size, roundup=True)
 
-        pad = Size(blockdev.lvm_get_thpool_padding(size, self._pesize))
+        pad = Size(blockdev.lvm.get_thpool_padding(size, self._pesize))
 
         log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
         if free < (size + pad):
-            pad = Size(blockdev.lvm_get_thpool_padding(free, self._pesize, included=True))
+            pad = Size(blockdev.lvm.get_thpool_padding(free, self._pesize, included=True))
             free = self.container.align(free - pad) # round down
             log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s", size, free, self.container.name)
@@ -1576,7 +1575,7 @@ class MDFactory(DeviceFactory):
         return self.raid_level.get_space(self.size,
            len(self._get_member_devices()),
            None,
-           blockdev.md_get_superblock_size)
+           blockdev.md.get_superblock_size)
 
     def _get_total_space(self):
         return self._get_device_space()
