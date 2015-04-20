@@ -1336,7 +1336,8 @@ class Populator(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
-        is_multipath_member = blockdev.mpath.is_mpath_member(device.path)
+        is_multipath_member = (device.isDisk and
+                               blockdev.mpath_is_mpath_member(device.path))
         if is_multipath_member:
             format_type = "multipath_member"
 
