@@ -373,11 +373,12 @@ class Populator(object):
             else:
                 device = self.getDeviceByUuid(uuid, incomplete=flags.allow_imperfect_devices)
 
-        if device:
+        if device and name:
             # update the device instance with the real name in case we had to
             # look it up by something other than name
             device.name = name
-        else:
+
+        if device is None:
             # if we get here, we found all of the slave devices and
             # something must be wrong -- if all of the slaves are in
             # the tree, this device should be as well
