@@ -1,4 +1,6 @@
-^blivet/.*: \[E0611\(no\-name\-in\-module\).*\] No name 'GLib' in module 'gi.repository'$
+^(blivet|tests)/.*: \[E1101\(no-member\).*\] Instance of 'int' has no .* member
+^blivet/.*: \[E0611\(no\-name\-in\-module\).*\] No name 'blockdev' in module 'gi.repository'$
+^blivet/.*: \[E0712\(catching\-non\-exception\).*\] Catching an exception which doesn't inherit from BaseException: (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|)Error$
 ^blivet/.*: \[E0712\(catching\-non\-exception\).*\] Catching an exception which doesn't inherit from BaseException: GError$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'BootLoaderError' but no assignment is done$
 ^blivet/__init__.py:[[:digit:]]+: \[W0602\(global\-variable\-not\-assigned\), enable_installer_mode\] Using global for 'ERROR_RAISE' but no assignment is done$
