@@ -194,3 +194,7 @@ class UnknownSourceDeviceError(StorageError):
 # factories
 class DeviceFactoryError(StorageError):
     pass
+
+class AvailabilityError(StorageError):
+    """ Raised if problem determining availability of external resource. """
+    pass
