@@ -27,7 +27,7 @@ import pprint
 import copy
 import parted
 
-from gi.repository import blockdev as blockdev
+from gi.repository import BlockDev as blockdev
 
 from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
