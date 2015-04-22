@@ -437,6 +437,12 @@ class DeviceFormat(ObjectID):
         self.exists = False
         self.notifyKernel()
 
+    @property
+    def destroyable(self):
+        """ Do we have the facilities to destroy a format of this type. """
+        # assumes wipefs is always available
+        return True
+
     def setup(self, **kwargs):
         """ Activate the formatting.
 
@@ -457,6 +463,16 @@ class DeviceFormat(ObjectID):
 
         self._setup(**kwargs)
         self._postSetup(**kwargs)
+
+    @property
+    def controllable(self):
+        """ Are external utilities available to allow this format to be both
+            setup and teared down.
+
+            :returns: True if this format can be set up, otherwise False
+            :rtype: bool
+        """
+        return True
 
     def _preSetup(self, **kwargs):
         """ Return True if setup should proceed. """
