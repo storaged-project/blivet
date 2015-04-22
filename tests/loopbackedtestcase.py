@@ -1,7 +1,7 @@
 import unittest2 as unittest
 import os
-import random
 import subprocess
+import tempfile
 
 from blivet.size import Size
 
@@ -77,8 +77,6 @@ class LoopBackedTestCase(unittest.TestCase):
     DEFAULT_BLOCK_SIZE = Size("1 KiB")
     DEFAULT_STORE_SIZE = Size("100 MiB")
     _DEFAULT_DEVICE_SPEC = [DEFAULT_STORE_SIZE, DEFAULT_STORE_SIZE]
-    _STORE_FILE_TEMPLATE = 'test-virtdev%d-%s'
-    _STORE_FILE_PATH = '/var/tmp'
 
     def __init__(self, methodName='runTest', deviceSpec=None, block_size=None):
         """ DevicelibsTestCase manages loop devices.
@@ -101,10 +99,12 @@ class LoopBackedTestCase(unittest.TestCase):
             raise ValueError("Every device size must be a multiple of the block size.")
 
     def setUp(self):
-        random_str = '%06x' % random.randrange(16**6)
         for index, size in enumerate(self._deviceSpec):
-            store = os.path.join(self._STORE_FILE_PATH, self._STORE_FILE_TEMPLATE % (index, random_str))
             num_blocks = int(size / self.block_size)
+            tmpfile = tempfile.NamedTemporaryFile(suffix="-%d" % index, prefix="test-virtdev-", dir="/var/tmp", delete=False)
+            tmpfile.close()
+
+            store = tmpfile.name
             makeStore(store, num_blocks, int(self.block_size))
 
             dev = None
@@ -119,13 +119,26 @@ class LoopBackedTestCase(unittest.TestCase):
             self.loopDevices.append(dev)
 
     def tearDown(self):
-        l = len(self._loopMap)
-        for _ in range(3 * l):
+        # Guarantees that every item in _loopMap receives a minimum of
+        # three chances to be removed or deleted as appropriate.
+        num_tries = 3 * len(self._loopMap)
+        for _ in range(num_tries):
+            # If worklist is empty, quit
             if not self._loopMap:
                 break
+
+            # get worklist item from front
             dev, store = self._loopMap.pop(0)
-            try:
-                removeLoopDev(dev)
-                os.unlink(store)
-            except OSError:
-                self._loopMap.append((dev, store))
+
+            # try to clean up dev, store pair
+            # if cleanup fails, push pair onto back
+            # dev is None if removal has already succeeded
+            if dev is not None:
+                try:
+                    removeLoopDev(dev)
+                    try:
+                        os.unlink(store)
+                    except OSError:
+                        self._loopMap.append((None, store))
+                except OSError:
+                    self._loopMap.append((dev, store))
