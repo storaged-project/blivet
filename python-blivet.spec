@@ -34,12 +34,10 @@ Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
-Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: libselinux-python
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
 Requires: rpm
 
@@ -58,9 +56,7 @@ Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: util-linux >= %{utillinuxver}
-Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 
