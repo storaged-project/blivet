@@ -413,9 +413,9 @@ class FSSet(object):
         # the device's format we found matches what's in the fstab
         ftype = getattr(fmt, "mountType", fmt.type)
         dtype = getattr(device.format, "mountType", device.format.type)
-        if fstype != "auto" and ftype != dtype:
+        if hasattr(fmt, "testMount") and fstype != "auto" and ftype != dtype:
             log.info("fstab says %s at %s is %s", dtype, mountpoint, ftype)
-            if fmt.testMount():
+            if fmt.testMount():     # pylint: disable=no-member
                 device.format = fmt
             else:
                 device.teardown()
