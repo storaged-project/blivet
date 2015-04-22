@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.2
+Version: 1.3
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -104,6 +104,81 @@ popd
 %endif
 
 %changelog
+* Wed Apr 22 2015 Brian C. Lane <bcl@redhat.com> - 1.3-1
+- fix conf.py pylint errors (bcl)
+- Fix BlockDev import in populator.py (bcl)
+- Prevent pylint from going crazy because of libblockdev's ErrorProxy
+  (vpodzime)
+- Make use of the new libblockdev error reporting (vpodzime)
+- Add libselinux-python to package dependencies (#1211834) (vtrefny)
+- Introduce a new doReqPartition method that is similar to doAutoPartition.
+  (clumens)
+- Merge pull request #81 from mulkieran/master-mount-options (mulkieran)
+- Merge pull request #66 from vpodzime/master-py3_final (martin.kolman)
+- Encode input for os.write() (mkolman)
+- Build the python3-blivet subpackage (vpodzime)
+- Do not modify dict while iterating over its values (vpodzime)
+- Do not try to compare strings and Nones when sorting mountpoints (vpodzime)
+- Always return strings from regular capture output run functions (mkolman)
+- Do not use variable from an inner comprehension in tests (vpodzime)
+- Implement and test Python 3 division for the Size class (vpodzime)
+- Replace python 2 build-in-function cmp() with custom method (vtrefny)
+- Do not rely on __sub__ being implemented as __add__ (-1)* (vpodzime)
+- Transform our compare functions into key functions and use these instead
+  (vpodzime)
+- Fix the size_test to stop using byte strings (vpodzime)
+- Do not define unit strings as byte strings (vpodzime)
+- Do not pass context to Decimal numeric operations (vpodzime)
+- Don't call object's (as a class) __new__ with extra arguments (vpodzime)
+- Make translation to lowerASCII Python[23]-compatible (vpodzime)
+- Replace __import__ call with importlib.import_module (vpodzime)
+- In FS._postSetup() check the mountpoint options that were actually used.
+  (amulhern)
+- Add kwargs to unmount and move mountpoint check into _preSetup (bcl)
+- Do not try importing hidden/backup files as formats (vpodzime)
+- Add back DeviceTree's support for saving LUKS passphrases (vpodzime)
+- Do not try to stat FileDevice's path if it doesn't exist (vpodzime)
+- Merge pull request #76 from dwlehman/unusable-storage-branch (dlehman)
+- Add error handling around storageInitialize for unusable setups. (dlehman)
+- Include suggestions in error classes for unusable storage configurations.
+  (dlehman)
+- Use partially corrupt gpt disklabels. (dlehman)
+- Consolidate common code in DeviceFormat class methods. (dlehman)
+- Update get_mount_paths to use mountsCache (bcl)
+- Add multiple mountpoint handling to MountsCache (bcl)
+- Remove obsolete FIXME from FS.status (bcl)
+- Check to see if mountpoint is already mounted (bcl)
+- Add isMountpoint to MountsCache (bcl)
+- Add ability to unmount specific mountpoints (bcl)
+- Fix pylint errors for six.moves import (vtrefny)
+- Merge pull request #72 from vojtechtrefny/picklable-size (vpodzime)
+- Merge pull request #74 from mulkieran/master-trivia (mulkieran)
+- Fix two instances where check_equal() returned True incorrectly. (amulhern)
+- Fix typo in 66f2ddb11e85ec6f48535d670dd6f24cb60cbe55. (amulhern)
+- Make sure installer_mode is reset to original value. (amulhern)
+- Test for Size pickling support (vtrefny)
+- Pickling support for Size. (vtrefny)
+- Disable pylint bad-super-call in MDRaidArrayDevice.updateSize. (dlehman)
+- Merge pull request #68 from dwlehman/parted-device-branch (dlehman)
+- Require reallocation after changing an allocated partition's size. (dlehman)
+- Move mediaPresent out of Device and into StorageDevice. (dlehman)
+- Don't use parted.Device to obtain size info. (dlehman)
+- Merge pull request #70 from mulkieran/master-1208536 (mulkieran)
+- Prepend /sys to sysfs path for udev lookup (#1208536) (amulhern)
+- Fall back on mdadm info if udev info is missing for the array (#1208536)
+  (amulhern)
+- Catch DeviceError as well as ValueError (#1208536) (amulhern)
+- Make an MDContainerDevice if that is the right model (#1208536) (amulhern)
+- Change raid variable name to raid_items (#1208536) (amulhern)
+- Fix swapped args to processActions. (dlehman)
+- Merge pull request #63 from dwlehman/disk-selection-branch (dlehman)
+- Use VGname-LVname as key for LVinfo cache (vpodzime)
+- Add back DeviceTree's methods and properties used from the outside (vpodzime)
+- Wrap keys() with a list so that the dictionary can be changed (martin.kolman)
+- Add a method to list disks related by lvm/md/btrfs container membership.
+  (dlehman)
+- Make getDependentDevices work with hidden devices. (dlehman)
+
 * Fri Mar 27 2015 Brian C. Lane <bcl@redhat.com> - 1.2-1
 - Fix pylint unused variable warnings (vtrefny)
 - Add test for mountpoints (vtrefny)
