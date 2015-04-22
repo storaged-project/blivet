@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Blivet'
-copyright = u'2013-2014, Red Hat, Inc.'
+copyright = u'2013-2014, Red Hat, Inc.'     # pylint: disable=redefined-builtin
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -319,7 +319,7 @@ class Mock(object):
 
     @classmethod
     def __getitem__(cls, key):
-	return cls.__getattr__(key)
+        return cls.__getattr__(key)
 
 MOCK_MODULES = ['parted', 'block', 'pycryptsetup', 'pykickstart', 'pykickstart.constants', '_ped', 'selinux', 'pyudev']
 for mod_name in MOCK_MODULES:
