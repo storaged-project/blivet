@@ -36,6 +36,9 @@ coverage:
 	PYTHONPATH=.:tests/ coverage run --branch -m unittest discover -v -s tests/ -p '*_test.py'
 	coverage report --include="blivet/*"
 
+check:
+	PYTHONPATH=. tests/pylint/runpylint.py
+
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
 	$(MAKE) -C po clean

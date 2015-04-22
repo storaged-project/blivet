@@ -13,6 +13,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %define pykickstartver 1.99.22
+%define pocketlintver 0.4
 %define partedver 1.8.1
 %define pypartedver 3.10.3
 %define e2fsver 1.41.0
@@ -22,6 +23,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 BuildArch: noarch
 BuildRequires: gettext
 BuildRequires: python-setuptools
+BuildRequires: python3-pocketlint >= %{pocketlintver}
 
 %if 0%{with_python3}
 BuildRequires: python3-devel python3-setuptools
