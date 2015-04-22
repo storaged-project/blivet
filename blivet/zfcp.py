@@ -19,7 +19,7 @@
 # Author(s): Karsten Hopp <karsten@redhat.com>
 #
 
-import string
+import string               # pylint: disable=deprecated-module
 import os
 from . import udev
 from . import util
@@ -66,8 +66,8 @@ class ZFCPDevice:
         if dev is None or dev == "":
             return None
         dev = dev.lower()
-        bus = dev[:string.rfind(dev, ".") + 1]
-        dev = dev[string.rfind(dev, ".") + 1:]
+        bus = dev[:dev.rfind(".") + 1]
+        dev = dev[dev.rfind(".") + 1:]
         dev = "0" * (4 - len(dev)) + dev
         if not len(bus):
             return "0.0." + dev
@@ -220,7 +220,7 @@ class ZFCPDevice:
         for line in lines:
             if not line.startswith("Host"):
                 continue
-            scsihost = string.split(line)
+            scsihost = line.split()
             host = scsihost[1]
             channel = "0"
             devid = scsihost[5]

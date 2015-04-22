@@ -20,7 +20,7 @@
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
 import re
-import string
+import string           # pylint: disable=deprecated-module
 import locale
 import sys
 from collections import namedtuple
