@@ -99,7 +99,7 @@ class DMDevice(StorageDevice):
         try:
             return blockdev.dm.map_exists(self.mapName, True, True)
         except blockdev.DMError as e:
-            if "Not running as root" in e.message:
+            if "Not running as root" in str(e):
                 return False
             else:
                 raise
