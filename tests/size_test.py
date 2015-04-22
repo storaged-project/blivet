@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# pylint: disable=environment-modify
 #
 # tests/storage/size_tests.py
 # Size test cases for the blivet module
