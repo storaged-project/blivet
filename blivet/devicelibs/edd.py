@@ -27,6 +27,8 @@ import os
 import re
 import struct
 
+from .. import util
+
 log = logging.getLogger("blivet")
 
 re_host_bus = re.compile(r'^PCI\s*(\S*)\s*channel: (\S*)\s*$')
@@ -159,11 +161,11 @@ def collect_mbrs(devices):
     mbr_dict = {}
     for dev in devices:
         try:
-            fd = os.open(dev.path, os.O_RDONLY)
+            fd = util.eintr_retry_call(os.open, dev.path, os.O_RDONLY)
             # The signature is the unsigned integer at byte 440:
             os.lseek(fd, 440, 0)
-            mbrsig = struct.unpack('I', os.read(fd, 4))
-            os.close(fd)
+            mbrsig = struct.unpack('I', util.eintr_retry_call(os.read, fd, 4))
+            util.eintr_retry_call(os.close, fd)
         except OSError as e:
             log.warning("edd: error reading mbrsig from disk %s: %s",
                         dev.name, str(e))

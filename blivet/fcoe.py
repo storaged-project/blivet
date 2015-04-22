@@ -148,8 +148,8 @@ class fcoe(object):
             os.makedirs(root + "/etc/fcoe", 0o755)
 
         for nic, dcb, auto_vlan in self.nics:
-            fd = os.open(root + "/etc/fcoe/cfg-" + nic,
-                         os.O_RDWR | os.O_CREAT)
+            fd = util.eintr_retry_call(os.open, root + "/etc/fcoe/cfg-" + nic,
+                                                os.O_RDWR | os.O_CREAT)
             config = '# Created by anaconda\n'
             config += '# Enable/Disable FCoE service at the Ethernet port\n'
             config += 'FCOE_ENABLE="yes"\n'
@@ -164,8 +164,8 @@ class fcoe(object):
                 config += 'AUTO_VLAN="yes"\n'
             else:
                 config += 'AUTO_VLAN="no"\n'
-            os.write(fd, config.encode('utf-8'))
-            os.close(fd)
+            util.eintr_retry_call(os.write, fd, config.encode('utf-8'))
+            util.eintr_retry_call(os.close, fd)
 
         return
 

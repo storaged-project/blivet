@@ -104,7 +104,7 @@ class FileDevice(StorageDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+        fd = util.eintr_retry_call(os.open, self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
         # all this fuss is so we write the zeros 1MiB at a time
         zero = "\0"
         block_size = 1024 ** 2
@@ -112,14 +112,14 @@ class FileDevice(StorageDevice):
 
         zeros = zero * block_size
         for _n in range(count):
-            os.write(fd, zeros.encode("utf-8"))
+            util.eintr_retry_call(os.write, fd, zeros.encode("utf-8"))
 
         if rem:
             # write out however many more zeros it takes to hit our size target
             size_target = zero * rem
-            os.write(fd, size_target.encode("utf-8"))
+            util.eintr_retry_call(os.write, fd, size_target.encode("utf-8"))
 
-        os.close(fd)
+        util.eintr_retry_call(os.close, fd)
 
     def _destroy(self):
         """ Destroy the device. """
