@@ -435,6 +435,7 @@ def stringize(inputstr):
         encoded using utf-8.
     """
     if six.PY2:
+        # pylint: disable=undefined-variable
         if isinstance(inputstr, unicode):
             inputstr = inputstr.encode('utf-8')
 
@@ -456,6 +457,7 @@ def unicodeize(inputstr):
         be correctly passed through.
     """
     if six.PY2:
+        # pylint: disable=undefined-variable
         return unicode(inputstr)
     else:
         return str(inputstr)

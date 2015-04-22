@@ -205,6 +205,7 @@ def parseSpec(spec):
 
     # No English match found, try localized size specs.
     if six.PY2:
+        # pylint: disable=undefined-variable
         if isinstance(specifier, unicode):
             spec_local = specifier
         else:
