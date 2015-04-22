@@ -8,10 +8,18 @@ class BlivetLintConfig(PocketLintConfig):
     def __init__(self):
         PocketLintConfig.__init__(self)
 
-        self.falsePositives = [ FalsePositive(r"Catching an exception which doesn't inherit from BaseException: (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|)Error$"),
-                                FalsePositive(r"Instance of 'int' has no .* member$"),
+        self.falsePositives = [ FalsePositive(r"BTRFSVolumeDevice._create: Instance of 'DeviceFormat' has no 'label' member"),
+                                FalsePositive(r"Catching an exception which doesn't inherit from BaseException: (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|)Error$"),
+                                FalsePositive(r"Function 'run_program' has no 'called' member"),
+                                FalsePositive(r"(PartitioningTestCase|PartitionDeviceTestCase).*: Instance of 'DeviceFormat' has no .* member"),
+                                FalsePositive(r"Instance of 'int' has no .* member"),
+                                FalsePositive(r"Instance of 'LUKSDevice' has no .* member"),
                                 FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
                                 FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
+
+                                # FIXME:  These are temporary, until there's a python3 anaconda.
+                                FalsePositive(r"Unable to import 'pyanaconda'$"),
+                                FalsePositive(r"Unable to import 'pyanaconda.*'$"),
                               ]
 
     @property
