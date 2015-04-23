@@ -158,7 +158,7 @@ class LVMPhysicalVolume(DeviceFormat):
     def status(self):
         # XXX hack
         return (self.exists and self.vgName and
-                os.path.isdir("/dev/mapper/%s" % self.vgName))
+                os.path.isdir("/dev/%s" % self.vgName))
 
 register_device_format(LVMPhysicalVolume)
 
