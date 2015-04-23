@@ -50,7 +50,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         else:
             expected_size = _size
             # If the size can be obtained it will not be 0
-            if an_fs._info.implemented:
+            if not an_fs._sizeinfo.availabilityErrors:
                 self.assertNotEqual(expected_size, Size(0))
                 self.assertTrue(expected_size <= self._DEVICE_SIZE)
             # Otherwise it will be 0, assuming the device was not initialized
@@ -60,7 +60,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.size, expected_size)
 
         # Only the resizable filesystems can figure out their current min size
-        if an_fs._resize:
+        if not an_fs._sizeinfo.availabilityErrors:
             expected_min_size = min_size
         else:
             expected_min_size = an_fs._minSize
@@ -74,7 +74,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.currentSize, _size)
 
         # Free is the actual size - the minimum size
-        self.assertEqual(an_fs.free, _size - expected_min_size)
+        self.assertEqual(an_fs.free, max(Size(0), _size - expected_min_size))
 
         # target size is set by side-effect
         self.assertEqual(an_fs.targetSize, an_fs._targetSize)
