@@ -84,13 +84,13 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self._memberDevices = 0     # the number of active (non-spare) members
         self._totalDevices = 0      # the total number of members
 
+        # avoid attribute-defined-outside-init pylint warning
+        self._level = None
+
         super(MDRaidArrayDevice, self).__init__(name, fmt=fmt, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
-
-        # avoid attribute-defined-outside-init pylint warning
-        self._level = None
 
         try:
             self.level = level
