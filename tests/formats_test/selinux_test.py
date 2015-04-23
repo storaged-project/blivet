@@ -28,6 +28,10 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         """
         LOST_AND_FOUND_CONTEXT = 'system_u:object_r:lost_found_t:s0'
         an_fs = fs.Ext2FS(device=self.loopDevices[0], label="test")
+
+        if not an_fs.formattable or not an_fs.mountable:
+            self.skipTest("can not create or mount filesystem %s" % an_fs.name)
+
         self.assertIsNone(an_fs.create())
 
         blivet.flags.installer_mode = False
@@ -61,6 +65,10 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
     def testMountingXFS(self):
         """ XFS does not have a lost+found directory. """
         an_fs = fs.XFS(device=self.loopDevices[0], label="test")
+
+        if not an_fs.formattable or not an_fs.mountable:
+            self.skipTest("can not create or mount filesystem %s" % an_fs.name)
+
         self.assertIsNone(an_fs.create())
 
         blivet.flags.installer_mode = False
