@@ -295,7 +295,12 @@ class Size(Decimal):
     __rmul__ = __mul__
 
     def __div__(self, other, context=None):
-        return Size(Decimal.__div__(self, other))
+        if six.PY2:
+            # This still needs to be ignored by pylint, because it will get
+            # through the above guard.
+            return Size(Decimal.__div__(self, other))   # pylint: disable=no-member
+        else:
+            raise AttributeError
 
     def __truediv__(self, other, context=None):
         return Size(Decimal.__truediv__(self, other))
