@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.7
+Version: 1.0.8
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -58,6 +58,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Apr 23 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.8-1
+- Do not translate sizes in untranslated strings (#1205183) (dshea)
+- Use %%d format string for every value that should be an integer decimal.
+  (#1205183) (amulhern)
+- Merge pull request #85 from vpodzime/f22-libblockdev_error_proxy (vpodzime)
+- Add libselinux-python to package dependencies (#1211834) (vtrefny)
+- Make use of the new libblockdev error reporting (vpodzime)
+
 * Tue Apr 07 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.7-1
 - Merge pull request #67 from mulkieran/f22-1208536 (mulkieran)
 - Prepend /sys to sysfs path for udev lookup (#1208536) (amulhern)

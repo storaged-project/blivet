@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-07 15:29-0400\n"
+"POT-Creation-Date: 2015-04-23 21:54-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -184,60 +184,60 @@ msgid ""
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:816
+#: ../blivet/partitioning.py:818
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:839
+#: ../blivet/partitioning.py:841
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:846
+#: ../blivet/partitioning.py:848
 msgid "failed to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1022
+#: ../blivet/partitioning.py:1024
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1234
+#: ../blivet/partitioning.py:1236
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1247
+#: ../blivet/partitioning.py:1249
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1330
+#: ../blivet/partitioning.py:1332
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1815
+#: ../blivet/partitioning.py:1817
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/osinstall.py:226
+#: ../blivet/osinstall.py:225
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:231
+#: ../blivet/osinstall.py:230
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:233
+#: ../blivet/osinstall.py:232
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:236
+#: ../blivet/osinstall.py:235
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/devicetree.py:1309
+#: ../blivet/devicetree.py:1308
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -591,7 +591,7 @@ msgstr ""
 msgid "BIOS Boot"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:148
+#: ../blivet/formats/__init__.py:147
 msgid "Unknown"
 msgstr ""
 
@@ -611,7 +611,7 @@ msgstr ""
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:42
+#: ../blivet/formats/lvmpv.py:41
 msgid "physical volume (LVM)"
 msgstr ""
 
