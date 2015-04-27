@@ -130,7 +130,7 @@ class MakeBumpVer:
         elif len(ret) == 1:
             ret = ret[0]
         else:
-            ret = filter(lambda x: x != '', ret)
+            ret = [r for r in ret if r != '']
 
         return ret
 
@@ -148,7 +148,7 @@ class MakeBumpVer:
 
             bzclass = bugzilla.Bugzilla
             self.bz = bzclass(url=self.bzurl)
-            print
+            print()
 
         if not self.bz.logged_in:
             rc = self.bz.login(self.username, self.password)
