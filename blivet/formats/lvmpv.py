@@ -26,6 +26,7 @@ from gi.repository import BlockDev as blockdev
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
 from ..devicelibs import lvm
+from ..tasks import availability
 from ..i18n import N_
 from ..size import Size
 from . import DeviceFormat, register_device_format
@@ -46,6 +47,7 @@ class LVMPhysicalVolume(DeviceFormat):
     _minSize = lvm.LVM_PE_SIZE * 2      # one for metadata and one for data
     _packages = ["lvm2"]                # required packages
     _ksMountpoint = "pv."
+    _plugin = availability.BLOCKDEV_LVM_PLUGIN
 
     def __init__(self, **kwargs):
         """
@@ -94,6 +96,14 @@ class LVMPhysicalVolume(DeviceFormat):
                   "peStart": self.peStart, "dataAlignment": self.dataAlignment})
         return d
 
+    @property
+    def formattable(self):
+        return super(LVMPhysicalVolume, self).formattable and self._plugin.available
+
+    @property
+    def supported(self):
+        return super(LVMPhysicalVolume, self).supported and self._plugin.available
+
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
@@ -119,6 +129,10 @@ class LVMPhysicalVolume(DeviceFormat):
             DeviceFormat.destroy(self, **kwargs)
         finally:
             blockdev.lvm.pvscan(self.device)
+
+    @property
+    def destroyable(self):
+        return self._plugin.available
 
     @property
     def status(self):

@@ -41,10 +41,13 @@ from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
 
+from ..tasks import availability
+
 class BTRFSDevice(StorageDevice):
     """ Base class for BTRFS volume and sub-volume devices. """
     _type = "btrfs"
     _packages = ["btrfs-progs"]
+    _external_dependencies = [availability.BLOCKDEV_BTRFS_PLUGIN]
 
     def __init__(self, *args, **kwargs):
         """ Passing None or no name means auto-generate one like btrfs.%d """

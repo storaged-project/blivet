@@ -22,6 +22,7 @@
 
 from parted import PARTITION_SWAP, fileSystemType
 from ..storage_log import log_method_call
+from ..tasks import availability
 from . import DeviceFormat, register_device_format
 from ..size import Size
 from gi.repository import BlockDev as blockdev
@@ -40,6 +41,7 @@ class SwapSpace(DeviceFormat):
     _formattable = True                # can be formatted
     _supported = True                  # is supported
     _linuxNative = True                # for clearpart
+    _plugin = availability.BLOCKDEV_SWAP_PLUGIN
 
     #see rhbz#744129 for details
     _maxSize = Size("128 GiB")
@@ -80,13 +82,23 @@ class SwapSpace(DeviceFormat):
         d.update({"priority": self.priority, "label": self.label})
         return d
 
-    @classmethod
-    def labeling(cls):
+    @property
+    def formattable(self):
+        return super(SwapSpace, self).formattable and self._plugin.available
+
+    @property
+    def supported(self):
+        return super(SwapSpace, self).supported and self._plugin.available
+
+    @property
+    def controllable(self):
+        return super(SwapSpace, self).controllable and self._plugin.available
+
+    def labeling(self):
         """Returns True as mkswap can write a label to the swap space."""
         return True
 
-    @classmethod
-    def labelFormatOK(cls, label):
+    def labelFormatOK(self, label):
         """Returns True since no known restrictions on the label."""
         return True
 

@@ -22,6 +22,9 @@
 ^blivet/blivet.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__luksDevs' member$
 ^blivet/blivet.py:[[:digit:]]+: \[E1101\(no\-member\), Blivet.savePassphrase\] Instance of 'DeviceTree' has no '_DeviceTree__passphrases' member$
 ^blivet/formats/__init__.py:[[:digit:]]+: \[W0201\(attribute\-defined\-outside\-init\), DeviceFormat._setDevice\] Attribute '_device' defined outside __init__$
+^blivet/tasks/.*py:[[:digit:]]+: \[W0223\(abstract\-method\), .*\] Method 'available' is abstract in class 'Task' but is not overridden$
+^blivet/tasks/.*py:[[:digit:]]+: \[W0223\(abstract\-method\), .*\] Method 'doTask' is abstract in class 'Task' but is not overridden$
+^blivet/tasks/.*py:[[:digit:]]+: \[W0223\(abstract\-method\), .*\] Method 'doTask' is abstract in class 'UnimplementedTask' but is not overridden$
 ^dm.c: [[:digit:]]+: not running as root returning empty list$
 ^tests/devicelibs_test/mdraid_test.py:[[:digit:]]+: \[E1003\(bad\-super\-call\), ([[:alnum:]\.]+).__init__\] Bad first argument YES given to super\(\)$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value [[:alnum:] ]+ 'member_count' in [[:alnum:] ]+ call$
