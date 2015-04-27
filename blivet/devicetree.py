@@ -28,7 +28,7 @@ from gi.repository import BlockDev as blockdev
 from .actionlist import ActionList
 from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
-from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
+from .devices import BTRFSDevice, DASDDevice, LVM_DEVICE_TYPES, NoDevice, PartitionDevice
 from . import formats
 from .devicelibs import lvm
 from .devicelibs import edd
@@ -699,8 +699,9 @@ class DeviceTree(object):
         result = None
         if name:
             devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if d.name == name or \
-               ((d.type == "lvmlv" or d.type == "lvmvg") and d.name == name.replace("--","-"))),
+            result = next((d for d in devices \
+               if d.name == name or \
+               (d.type in LVM_DEVICE_TYPES and d.name == name.replace("--","-"))),
                None)
         log_method_return(self, result)
         return result
@@ -725,8 +726,9 @@ class DeviceTree(object):
             # The usual order of the devices list is one where leaves are at
             # the end. So that the search can prefer leaves to interior nodes
             # the list that is searched is the reverse of the devices list.
-            result = next((d for d in reversed(list(devices)) if d.path == path or \
-               ((d.type == "lvmlv" or d.type == "lvmvg") and d.path == path.replace("--","-"))),
+            result = next((d for d in reversed(list(devices)) \
+               if d.path == path or \
+               (d.type in LVM_DEVICE_TYPES and d.path == path.replace("--","-"))),
                None)
 
         log_method_return(self, result)
