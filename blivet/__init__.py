@@ -72,7 +72,7 @@ from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPA
 
 from .storage_log import log_exception_info, log_method_call
 from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, LUKSDeviceWithoutKeyError, UnknownSourceDeviceError, SanityError, SanityWarning, StorageError, UnrecognizedFSTabEntryError
-from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
+from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LUKSDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from .devicetree import DeviceTree
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .formats import getFormat
@@ -2147,6 +2147,11 @@ class Blivet(object):
         if self.doAutoPart:
             return
 
+        self._updateCustomStorageKSData()
+
+    def _updateCustomStorageKSData(self):
+        """ Update KSData for custom storage. """
+
         # custom storage
         ksMap = {PartitionDevice: ("PartData", "partition"),
                  TmpFSDevice: ("PartData", "partition"),
@@ -2158,6 +2163,10 @@ class Blivet(object):
         # make a list of ancestors of all used devices
         devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
                                 for a in d.ancestors))
+
+        # devices which share information with their distinct raw device
+        complementary_devices = [d for d in devices if d.raw_device is not d]
+
         devices.sort(key=lambda d: len(d.ancestors))
         for device in devices:
             cls = next((c for c in ksMap if isinstance(device, c)), None)
@@ -2169,6 +2178,10 @@ class Blivet(object):
 
             cls = getattr(self.ksdata, class_attr)
             data = cls()    # all defaults
+
+            # if this is the raw device of a complementary device use the
+            # complementary device instead.
+            device = next((d for d in complementary_devices if d.raw_device is device), device)
 
             device.populateKSData(data)
 
