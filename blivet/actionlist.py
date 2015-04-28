@@ -247,18 +247,21 @@ class ActionList(object):
         disks = []
         for action in self._actions:
             disk = None
-            if action.isDevice and isinstance(action.device, PartitionDevice):
-                disk = action.device.disk
-            elif action.isFormat and action.format.type == "disklabel":
+            if action.isFormat and action.format.type == "disklabel":
                 disk = action.device
 
             if disk is not None and disk not in disks:
                 disks.append(disk)
 
-        active = (dev for dev in devices
-                        if (dev.status and
-                            (not dev.isDisk and
-                             not isinstance(dev, PartitionDevice))))
+        active = []
+        for dev in devices:
+            if dev.status and not dev.isDisk and \
+               not isinstance(dev, PartitionDevice):
+                active.append(dev)
+
+            elif dev.format.status and not dev.isDisk:
+                active.append(dev)
+
         devices = [a.name for a in active if any(d in disks for d in a.disks)]
         return devices
 
