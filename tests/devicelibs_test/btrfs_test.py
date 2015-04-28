@@ -135,12 +135,16 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         self.assertEqual(btrfs.create_subvolume(self.mountpoint, "SV1"), 0)
         self.assertEqual(btrfs.create_subvolume(self.mountpoint, "SV2"), 0)
         subvolumes = btrfs.list_subvolumes(self.mountpoint)
+        while not subvolumes:
+            subvolumes = btrfs.list_subvolumes(self.mountpoint)
         self.assertIn("SV1", [v['path'] for v in subvolumes])
         self.assertIn("SV2", [v['path'] for v in subvolumes])
 
         # we can remove one subvolume
         self.assertEqual(btrfs.delete_subvolume(self.mountpoint, "SV1"), 0)
         subvolumes = btrfs.list_subvolumes(self.mountpoint)
+        while not subvolumes:
+            subvolumes = btrfs.list_subvolumes(self.mountpoint)
         self.assertNotIn("SV1", [v['path'] for v in subvolumes])
 
         # if the subvolume is already gone,  an error is raised by btrfs
