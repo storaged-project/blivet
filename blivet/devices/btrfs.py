@@ -587,6 +587,14 @@ class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
         data.name = self.name
         data.preexist = self.exists
 
+        # Identify the volume this subvolume belongs to by means of its
+        # label. If the volume has no label, do nothing.
+        # Note that doing nothing will create an invalid kickstart.
+        # See rhbz#1072060
+        label = self.parents[0].format.label
+        if label:
+            data.devices = ["LABEL=%s" % label]
+
 class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
     """ A btrfs snapshot pseudo-device.
 
