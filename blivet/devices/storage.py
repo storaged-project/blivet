@@ -628,7 +628,7 @@ class StorageDevice(Device):
                       lambda d,f: d._setFormat(f),
                       doc="The device's formatting.")
 
-    def preCommitFixup(self, *args, **kwargs):
+    def preCommitFixup(self):
         """ Do any necessary pre-commit fixups."""
         pass
 

@@ -22,7 +22,7 @@
 
 import copy
 
-from .deviceaction import ActionCreateDevice, ActionDestroyDevice
+from .deviceaction import ActionCreateDevice
 from .deviceaction import action_type_from_string, action_object_from_string
 from .devicelibs import lvm
 from .devices import PartitionDevice
@@ -184,16 +184,12 @@ class ActionList(object):
                device.originalFormat != device.format:
                 device.originalFormat.resetPartedDisk()
 
-        # Call preCommitFixup on all devices
-        mpoints = [getattr(d.format, 'mountpoint', "") for d in devices]
-        for device in devices:
-            device.preCommitFixup(mountpoints=mpoints)
-
-        # Also call preCommitFixup on any devices we're going to
+        # Call preCommitFixup on all devices, including those we're going to
         # destroy (these are already removed from the tree)
-        for action in self._actions:
-            if isinstance(action, ActionDestroyDevice):
-                action.device.preCommitFixup(mountpoints=mpoints)
+        fixup_devices = devices + [a.device for a in self._actions
+                                                if a.isDestroy and a.isDevice]
+        for device in fixup_devices:
+            device.preCommitFixup()
 
         # setup actions to create any extended partitions we added
         #
