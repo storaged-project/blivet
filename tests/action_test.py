@@ -24,6 +24,15 @@ from blivet.deviceaction import ActionDestroyFormat
 from blivet.deviceaction import ActionAddMember
 from blivet.deviceaction import ActionRemoveMember
 
+DEVICE_CLASSES = [
+   DiskDevice,
+   PartitionDevice,
+   MDRaidArrayDevice,
+   LVMVolumeGroupDevice,
+   LVMLogicalVolumeDevice
+]
+
+@unittest.skipUnless(all(not x.unavailableTypeDependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
     """ DeviceActionTestSuite """
 
