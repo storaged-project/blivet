@@ -351,7 +351,7 @@ class PartitionDevice(StorageDevice):
     partedPartition = property(lambda d: d._getPartedPartition(),
                                lambda d,p: d._setPartedPartition(p))
 
-    def preCommitFixup(self, *args, **kwargs):
+    def preCommitFixup(self):
         """ Re-get self.partedPartition from the original disklabel. """
         log_method_call(self, self.name)
         if not self.exists or not self.disklabelSupported:

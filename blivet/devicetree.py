@@ -38,7 +38,7 @@ from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice, LVMCache
 from .devices import MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
-from .deviceaction import ActionCreateDevice, ActionDestroyDevice, action_type_from_string, action_object_from_string
+from .deviceaction import ActionCreateDevice, action_type_from_string, action_object_from_string
 from . import formats
 from .formats import getFormat
 from .formats.fs import nodev_filesystems
@@ -283,16 +283,12 @@ class DeviceTree(object):
                device.originalFormat != device.format:
                 device.originalFormat.resetPartedDisk()
 
-        # Call preCommitFixup on all devices
-        mpoints = [getattr(d.format, 'mountpoint', "") for d in self.devices]
-        for device in self.devices:
-            device.preCommitFixup(mountpoints=mpoints)
-
-        # Also call preCommitFixup on any devices we're going to
+        # Call preCommitFixup on all devices, including those we're going to
         # destroy (these are already removed from the tree)
-        for action in self._actions:
-            if isinstance(action, ActionDestroyDevice):
-                action.device.preCommitFixup(mountpoints=mpoints)
+        fixup_devices = self.devices + [a.device for a in self._actions
+                                                     if a.isDestroy and a.isDevice]
+        for device in fixup_devices:
+            device.preCommitFixup()
 
         # setup actions to create any extended partitions we added
         #

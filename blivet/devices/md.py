@@ -547,10 +547,9 @@ class MDRaidArrayDevice(ContainerDevice):
 
         self._postTeardown(recursive=recursive)
 
-    def preCommitFixup(self, *args, **kwargs):
+    def preCommitFixup(self):
         """ Determine create parameters for this set """
-        mountpoints = kwargs.pop("mountpoints")
-        log_method_call(self, self.name, mountpoints)
+        log_method_call(self, self.name)
         # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays
         if getattr(self.format, "mountpoint", None) == "/boot/efi":
             self.metadataVersion = "1.0"
