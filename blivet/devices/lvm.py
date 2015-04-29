@@ -45,6 +45,9 @@ from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
 
+# All implemented device types that represent actual LVM devices.
+LVM_DEVICE_CLASSES = []
+
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group """
     _type = "lvmvg"
@@ -439,6 +442,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return True
 
+LVM_DEVICE_CLASSES.append(LVMVolumeGroupDevice)
+
 class LVMLogicalVolumeDevice(DMDevice):
     """ An LVM Logical Volume """
     _type = "lvmlv"
@@ -793,6 +798,8 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
+LVM_DEVICE_CLASSES.append(LVMLogicalVolumeDevice)
+
 @add_metaclass(abc.ABCMeta)
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
@@ -966,6 +973,8 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         return (self.origin == dep or
                 super(LVMSnapShotBase, self).dependsOn(dep))
 
+LVM_DEVICE_CLASSES.append(LVMSnapShotDevice)
+
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
     _type = "lvmthinpool"
@@ -1097,6 +1106,8 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         if self.profile:
             data.profile = self.profile.name
 
+LVM_DEVICE_CLASSES.append(LVMThinPoolDevice)
+
 class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Logical Volume """
     _type = "lvmthinlv"
@@ -1168,6 +1179,8 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         data.thin_volume = True
         data.pool_name = self.pool.lvname
 
+LVM_DEVICE_CLASSES.append(LVMThinLogicalVolumeDevice)
+
 class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
     """ An LVM Thin Snapshot """
     _type = "lvmthinsnapshot"
@@ -1233,3 +1246,6 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
         # once a thin snapshot exists it no longer depends on its origin
         return ((self.origin == dep and not self.exists) or
                 super(LVMThinSnapShotDevice, self).dependsOn(dep))
+
+LVM_DEVICE_CLASSES.append(LVMThinSnapShotDevice)
+LVM_DEVICE_TYPES = [c._type for c in LVM_DEVICE_CLASSES]
