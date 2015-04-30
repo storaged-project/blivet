@@ -22,7 +22,9 @@
 
 from .storage_log import log_method_call
 from .errors import DeviceFactoryError, StorageError
-from .devices import LUKSDevice
+from .devices import BTRFSDevice, DiskDevice
+from .devices import LUKSDevice, LVMLogicalVolumeDevice, LVMThinPoolDevice
+from .devices import PartitionDevice, MDRaidArrayDevice
 from .formats import getFormat
 from .devicelibs import btrfs
 from .devicelibs import mdraid
@@ -48,6 +50,29 @@ DEVICE_TYPE_PARTITION = 2
 DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
+
+def is_supported_device_type(device_type):
+    """ Return True if blivet supports this device type.
+
+        :param device_type: an enumeration indicating the device type
+        :type device_type: int
+
+        :returns: True if this device type is supported
+        :rtype: bool
+    """
+    devices = []
+    if device_type == DEVICE_TYPE_BTRFS:
+        devices = [BTRFSDevice]
+    elif device_type == DEVICE_TYPE_DISK:
+        devices = [DiskDevice]
+    elif device_type in (DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP):
+        devices = [LVMLogicalVolumeDevice, LVMThinPoolDevice]
+    elif device_type == DEVICE_TYPE_PARTITION:
+        devices = [PartitionDevice]
+    elif device_type == DEVICE_TYPE_MD:
+        devices = [MDRaidArrayDevice]
+
+    return not any(c.unavailableTypeDependencies() for c in devices)
 
 def get_supported_raid_levels(device_type):
     """ Return the supported raid levels for this device type.
