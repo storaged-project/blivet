@@ -22,6 +22,7 @@
 
 from . import raid
 from ..size import Size
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -35,3 +36,5 @@ MIN_MEMBER_SIZE = Size("16 MiB")
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single"])
 
 metadata_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single", "dup"])
+
+EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_BTRFS_PLUGIN]

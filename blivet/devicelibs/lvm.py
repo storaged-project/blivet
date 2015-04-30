@@ -48,6 +48,8 @@ ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
 KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
                          ThPoolProfile("thin-performance", N_("Performance")))
 
+EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_LVM_PLUGIN]
+
 # Start config_args handling code
 #
 # Theoretically we can handle all that can be handled with the LVM --config
