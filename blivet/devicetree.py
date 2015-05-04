@@ -29,6 +29,7 @@ from .actionlist import ActionList
 from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
+from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats
 from .devicelibs import lvm
 from .devicelibs import edd
@@ -40,6 +41,8 @@ from .storage_log import log_method_call, log_method_return
 
 import logging
 log = logging.getLogger("blivet")
+
+_LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 class DeviceTree(object):
     """ A quasi-tree that represents the devices in the system.
@@ -700,7 +703,7 @@ class DeviceTree(object):
         if name:
             devices = self._filterDevices(incomplete=incomplete, hidden=hidden)
             result = next((d for d in devices if d.name == name or \
-               ((d.type == "lvmlv" or d.type == "lvmvg") and d.name == name.replace("--","-"))),
+               (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--","-"))),
                None)
         log_method_return(self, result)
         return result
@@ -726,7 +729,7 @@ class DeviceTree(object):
             # the end. So that the search can prefer leaves to interior nodes
             # the list that is searched is the reverse of the devices list.
             result = next((d for d in reversed(list(devices)) if d.path == path or \
-               ((d.type == "lvmlv" or d.type == "lvmvg") and d.path == path.replace("--","-"))),
+               (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--","-"))),
                None)
 
         log_method_return(self, result)
