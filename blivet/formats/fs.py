@@ -40,6 +40,7 @@ from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..i18n import _, N_
 from .. import udev
 from ..mounts import mountsCache
+from ..devicelibs import btrfs
 
 import logging
 log = logging.getLogger("blivet")
@@ -1157,7 +1158,7 @@ class BTRFS(FS):
     def __init__(self, **kwargs):
         super(BTRFS, self).__init__(**kwargs)
         self.volUUID = kwargs.pop("volUUID", None)
-        self.subvolspec = kwargs.pop("subvolspec", None)
+        self.subvolspec = kwargs.pop("subvolspec", btrfs.MAIN_VOLUME_ID)
 
     def create(self, **kwargs):
         # filesystem creation is done in blockdev.btrfs.create_volume
