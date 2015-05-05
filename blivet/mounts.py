@@ -21,6 +21,7 @@
 #
 from collections import defaultdict
 from . import util
+from .devicelibs import btrfs
 
 import logging
 log = logging.getLogger("blivet")
@@ -40,7 +41,7 @@ class MountsCache(object):
             :param devscpec: device specification, eg. "/dev/vda1"
             :type devspec: str
             :param subvolspec: btrfs subvolume specification, eg. ID or name
-            :type subvolspec: str
+            :type subvolspec: object (may be NoneType)
             :returns: list of mountpoints (path)
             :rtype: list of str or empty list
 
@@ -49,6 +50,9 @@ class MountsCache(object):
                 devices mounted to them (hiding previous mounts). Callers should take this into account.
         """
         self._cacheCheck()
+
+        if subvolspec is not None:
+            subvolspec = str(subvolspec)
 
         return self.mountpoints[(devspec, subvolspec)]
 
@@ -60,6 +64,23 @@ class MountsCache(object):
         self._cacheCheck()
 
         return any(path in p for p in self.mountpoints.values())
+
+    def _getSubvolSpec(self, devspec, mountpoint):
+        """ Get the subvolume specification for this btrfs volume.
+
+            :param str devspec: the device specification
+            :param str mountpoint: the mountpoint
+
+            :returns: the subvolume specification, 5 for a top-level volume
+            :rtype: str or NoneType
+        """
+        for line in open("/proc/self/mountinfo").readlines():
+            fields = line.split()
+            if fields[4] == mountpoint and fields[9] == devspec:
+                # empty _subvol[1:] means it is a top-level volume
+                subvolspec = fields[3]
+                return subvolspec[1:] or str(btrfs.MAIN_VOLUME_ID)
+        return None
 
     def _getActiveMounts(self):
         """ Get information about mounted devices from /proc/mounts and
@@ -76,18 +97,11 @@ class MountsCache(object):
                 continue
 
             if fstype == "btrfs":
-                # get the subvol name from /proc/self/mountinfo
-                for line in open("/proc/self/mountinfo").readlines():
-                    fields = line.split()
-                    _subvol = fields[3]
-                    _mountpoint = fields[4]
-                    _devspec = fields[9]
-                    if _mountpoint == mountpoint and _devspec == devspec:
-                        # empty _subvol[1:] means it is a top-level volume
-                        subvolspec = _subvol[1:] or 5
-
-                        self.mountpoints[(devspec, subvolspec)].append(mountpoint)
-
+                subvolspec = self._getSubvolSpec(devspec, mountpoint)
+                if subvolspec is not None:
+                    self.mountpoints[(devspec, subvolspec)].append(mountpoint)
+                else:
+                    log.error("failed to obtain subvolspec for btrfs device %s", devspec)
             else:
                 self.mountpoints[(devspec, None)].append(mountpoint)
 
