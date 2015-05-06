@@ -89,21 +89,23 @@ class MountsCache(object):
             Refreshes self.mountpoints with current mountpoint information
         """
         self.mountpoints = defaultdict(list)
-        for line in open("/proc/mounts").readlines():
-            try:
-                (devspec, mountpoint, fstype, _rest) = line.split(None, 3)
-            except ValueError:
-                log.error("failed to parse /proc/mounts line: %s", line)
-                continue
 
-            if fstype == "btrfs":
-                subvolspec = self._getSubvolSpec(devspec, mountpoint)
-                if subvolspec is not None:
-                    self.mountpoints[(devspec, subvolspec)].append(mountpoint)
+        with open("/proc/mounts") as mounts:
+            for line in mounts:
+                try:
+                    (devspec, mountpoint, fstype, _rest) = line.split(None, 3)
+                except ValueError:
+                    log.error("failed to parse /proc/mounts line: %s", line)
+                    continue
+
+                if fstype == "btrfs":
+                    subvolspec = self._getSubvolSpec(devspec, mountpoint)
+                    if subvolspec is not None:
+                        self.mountpoints[(devspec, subvolspec)].append(mountpoint)
+                    else:
+                        log.error("failed to obtain subvolspec for btrfs device %s", devspec)
                 else:
-                    log.error("failed to obtain subvolspec for btrfs device %s", devspec)
-            else:
-                self.mountpoints[(devspec, None)].append(mountpoint)
+                    self.mountpoints[(devspec, None)].append(mountpoint)
 
     def _cacheCheck(self):
         """ Computes the MD5 hash on /proc/mounts and updates the cache on change
