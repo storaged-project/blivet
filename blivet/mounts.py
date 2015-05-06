@@ -65,7 +65,7 @@ class MountsCache(object):
         """ Get information about mounted devices from /proc/mounts and
             /proc/self/mountinfo
 
-            Refreshes self.mountpoints with current moutpoint information
+            Refreshes self.mountpoints with current mountpoint information
         """
         self.mountpoints = defaultdict(list)
         for line in open("/proc/mounts").readlines():
