@@ -26,6 +26,58 @@ from .devicelibs import btrfs
 import logging
 log = logging.getLogger("blivet")
 
+class _MountinfoCache(object):
+    """ Cache for info from /proc/self/mountinfo. Looks up the root of the
+        mount within the filesystem using a pair of mountpoint, mount
+        source as keys.
+
+        This is a very simple helper class for MountsCache, and would
+        have to be altered for general purpose use.
+
+        Note that only info for fstype btrfs is stored within the cache,
+        as MountsCache methods only require information for btrfs.
+    """
+
+    def __init__(self):
+        self._cache = None
+
+    def _getCache(self):
+        """ Reads lines in /proc/self/mountinfo and builds a table. """
+        cache = {}
+
+        with open("/proc/self/mountinfo") as mountinfos:
+            for line in mountinfos:
+                fields = line.split()
+                separator_index = fields.index("-")
+                fstype = fields[separator_index + 1]
+                if not fstype.startswith("btrfs"):
+                    continue
+
+                root = fields[3]
+                mountpoint = fields[4]
+                devspec = fields[separator_index + 2]
+                cache[(devspec, mountpoint)] = root
+
+        return cache
+
+    def reset(self):
+        """ Resets the cache. """
+        self._cache = None
+
+    def getRoot(self, devspec, mountpoint):
+        """ Retrieves the root of the mount within the filesystem
+            that corresponds to devspec and mountpoint.
+
+            :param str devspec: device specification
+            :param str mountpoint: mountpoint
+            :rtype: str or NoneType
+            :returns: the root of the mount within the filesystem, if available
+        """
+        if self._cache is None:
+            self._cache = self._getCache()
+
+        return self._cache.get((devspec, mountpoint))
+
 class MountsCache(object):
     """ Cache object for system mountpoints; checks /proc/mounts and
         /proc/self/mountinfo for up-to-date information.
@@ -34,6 +86,7 @@ class MountsCache(object):
     def __init__(self):
         self.mountsHash = 0
         self.mountpoints = defaultdict(list)
+        self._mountinfo = _MountinfoCache()
 
     def getMountpoints(self, devspec, subvolspec=None):
         """ Get mountpoints for selected device
@@ -74,13 +127,11 @@ class MountsCache(object):
             :returns: the subvolume specification, 5 for a top-level volume
             :rtype: str or NoneType
         """
-        for line in open("/proc/self/mountinfo").readlines():
-            fields = line.split()
-            if fields[4] == mountpoint and fields[9] == devspec:
-                # empty _subvol[1:] means it is a top-level volume
-                subvolspec = fields[3]
-                return subvolspec[1:] or str(btrfs.MAIN_VOLUME_ID)
-        return None
+        root = self._mountinfo.getRoot(devspec, mountpoint)
+        if root is not None:
+            return root[1:] or str(btrfs.MAIN_VOLUME_ID)
+        else:
+            return None
 
     def _getActiveMounts(self):
         """ Get information about mounted devices from /proc/mounts and
@@ -89,6 +140,7 @@ class MountsCache(object):
             Refreshes self.mountpoints with current mountpoint information
         """
         self.mountpoints = defaultdict(list)
+        self._mountinfo.reset()
 
         with open("/proc/mounts") as mounts:
             for line in mounts:
@@ -106,6 +158,8 @@ class MountsCache(object):
                         log.error("failed to obtain subvolspec for btrfs device %s", devspec)
                 else:
                     self.mountpoints[(devspec, None)].append(mountpoint)
+
+        self._mountinfo.reset()
 
     def _cacheCheck(self):
         """ Computes the MD5 hash on /proc/mounts and updates the cache on change
