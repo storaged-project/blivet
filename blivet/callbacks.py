@@ -35,13 +35,15 @@ _CallbacksRegister = namedtuple("_CallbacksRegister",
                                  "create_format_post",
                                  "resize_format_pre",
                                  "resize_format_post",
-                                 "wait_for_entropy"])
+                                 "wait_for_entropy",
+                                 "report_progress"])
 
 def create_new_callbacks_register(create_format_pre=None,
                                   create_format_post=None,
                                   resize_format_pre=None,
                                   resize_format_post=None,
-                                  wait_for_entropy=None):
+                                  wait_for_entropy=None,
+                                  report_progress=None):
     """
     A function for creating a new opaque object holding the references to
     callbacks. The point of this function is to hide the implementation of such
@@ -56,12 +58,13 @@ def create_new_callbacks_register(create_format_pre=None,
                              value indicates whether continuing regardless of
                              available entropy should be forced (True) or not (False)
     :type wait_for_entropy: :class:`.WaitForEntropyData` -> bool
+    :type report_progress: :class:`.ReportProgressData` -> NoneType
 
     """
 
     return _CallbacksRegister(create_format_pre, create_format_post,
                               resize_format_pre, resize_format_post,
-                              wait_for_entropy)
+                              wait_for_entropy, report_progress)
 
 CreateFormatPreData = namedtuple("CreateFormatPreData",
                                  ["msg"])
@@ -73,3 +76,5 @@ ResizeFormatPostData = namedtuple("ResizeFormatPostData",
                                   ["msg"])
 WaitForEntropyData = namedtuple("WaitForEntropyData",
                                 ["msg", "min_entropy"])
+ReportProgressData = namedtuple("ReportProgressData",
+                                 ["msg"])
