@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.8
+Version: 1.0.9
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -58,6 +58,9 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu May 07 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.9-1
+- Use VGname-LVname as key for LVinfo cache (#1214241) (vpodzime)
+
 * Thu Apr 23 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.8-1
 - Do not translate sizes in untranslated strings (#1205183) (dshea)
 - Use %%d format string for every value that should be an integer decimal.
