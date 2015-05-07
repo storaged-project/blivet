@@ -966,6 +966,11 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         return (self.origin == dep or
                 super(LVMSnapShotBase, self).dependsOn(dep))
 
+    def readCurrentSize(self):
+        # override StorageDevice.readCurrentSize because /sys reports wrong size
+        # for snapshots
+        return self._size
+
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
     _type = "lvmthinpool"
