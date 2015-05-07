@@ -39,6 +39,7 @@ from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyD
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .devicelibs.edd import get_edd_dict
 from .devicelibs.dasd import make_dasd_list, write_dasd_conf
+from .devicelibs.btrfs import MAIN_VOLUME_ID
 from .errors import StorageError
 from .size import Size
 from .devicetree import DeviceTree
@@ -1010,6 +1011,7 @@ class Blivet(object):
                 # already in use within the parent volume
                 name = self.suggestDeviceName(mountpoint=mountpoint)
             fmt_args["mountopts"] = "subvol=%s" % name
+            fmt_args["subvolspec"] = name
             kwargs.pop("metaDataLevel", None)
             kwargs.pop("dataLevel", None)
         else:
@@ -1023,6 +1025,7 @@ class Blivet(object):
                 name = self.suggestContainerName(hostname=hostname)
             if "label" not in fmt_args:
                 fmt_args["label"] = name
+            fmt_args["subvolspec"] = MAIN_VOLUME_ID
 
         # discard fmt_type since it's btrfs always
         kwargs.pop("fmt_type", None)
