@@ -168,7 +168,8 @@ class EddTestFS(object):
     def sda_vda_no_pcidev(self):
         self.sda_vda()
         entries = [e for e in self.fs.fs if e.startswith("/sys/devices/pci")]
-        map(self.fs.os_remove, entries)
+        for e in entries:
+            self.fs.os_remove(e)
         return self.fs
 
     def sda_vda_no_host_bus(self):
