@@ -32,7 +32,7 @@ from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
 from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
-from .callbacks import WaitForEntropyData
+from .callbacks import WaitForEntropyData, ReportProgressData
 from .size import Size
 
 import logging
@@ -168,6 +168,10 @@ class DeviceAction(util.ObjectID):
         if not self._applied:
             raise RuntimeError("cannot execute unapplied action")
 
+        if callbacks and callbacks.report_progress:
+            msg = _("Executing %(action)s") % {"action": str(self)}
+            callbacks.report_progress(ReportProgressData(msg))
+
     def cancel(self):
         """ cancel the action """
         self._applied = False
@@ -298,7 +302,7 @@ class ActionCreateDevice(DeviceAction):
         DeviceAction.__init__(self, device)
 
     def execute(self, callbacks=None):
-        super(ActionCreateDevice, self).execute(callbacks=None)
+        super(ActionCreateDevice, self).execute(callbacks=callbacks)
         self.device.create()
 
     def requires(self, action):
@@ -341,7 +345,7 @@ class ActionDestroyDevice(DeviceAction):
         DeviceAction.__init__(self, device)
 
     def execute(self, callbacks=None):
-        super(ActionDestroyDevice, self).execute(callbacks=None)
+        super(ActionDestroyDevice, self).execute(callbacks=callbacks)
         self.device.destroy()
 
     def requires(self, action):
@@ -444,7 +448,7 @@ class ActionResizeDevice(DeviceAction):
         super(ActionResizeDevice, self).apply()
 
     def execute(self, callbacks=None):
-        super(ActionResizeDevice, self).execute(callbacks=None)
+        super(ActionResizeDevice, self).execute(callbacks=callbacks)
         self.device.resize()
 
     def cancel(self):
@@ -525,7 +529,7 @@ class ActionCreateFormat(DeviceAction):
         super(ActionCreateFormat, self).apply()
 
     def execute(self, callbacks=None):
-        super(ActionCreateFormat, self).execute(callbacks=None)
+        super(ActionCreateFormat, self).execute(callbacks=callbacks)
         if callbacks and callbacks.create_format_pre:
             msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_pre(CreateFormatPreData(msg))
@@ -647,7 +651,7 @@ class ActionDestroyFormat(DeviceAction):
 
     def execute(self, callbacks=None):
         """ wipe the filesystem signature from the device """
-        super(ActionDestroyFormat, self).execute(callbacks=None)
+        super(ActionDestroyFormat, self).execute(callbacks=callbacks)
         status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
@@ -750,7 +754,7 @@ class ActionResizeFormat(DeviceAction):
         super(ActionResizeFormat, self).apply()
 
     def execute(self, callbacks=None):
-        super(ActionResizeFormat, self).execute(callbacks=None)
+        super(ActionResizeFormat, self).execute(callbacks=callbacks)
         if callbacks and callbacks.resize_format_pre:
             msg = _("Resizing filesystem on %(device)s") % {"device": self.device.path}
             callbacks.resize_format_pre(ResizeFormatPreData(msg))
@@ -823,7 +827,7 @@ class ActionAddMember(DeviceAction):
         super(ActionAddMember, self).cancel()
 
     def execute(self, callbacks=None):
-        super(ActionAddMember, self).execute(callbacks=None)
+        super(ActionAddMember, self).execute(callbacks=callbacks)
         self.container.add(self.device)
 
     def requires(self, action):
@@ -887,7 +891,7 @@ class ActionRemoveMember(DeviceAction):
         super(ActionRemoveMember, self).cancel()
 
     def execute(self, callbacks=None):
-        super(ActionRemoveMember, self).execute(callbacks=None)
+        super(ActionRemoveMember, self).execute(callbacks=callbacks)
         self.container.remove(self.device)
 
     def requires(self, action):
