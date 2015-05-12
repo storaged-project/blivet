@@ -4,7 +4,7 @@ import abc
 from six import add_metaclass
 
 from tests import loopbackedtestcase
-from blivet.errors import FSError
+from blivet.errors import FSError, FSReadLabelError
 from blivet.size import Size
 
 @add_metaclass(abc.ABCMeta)
@@ -26,8 +26,10 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
     def setUp(self):
         an_fs = self._fs_class()
-        if not an_fs.utilsAvailable:
-            self.skipTest("utilities unavailable for filesystem %s" % an_fs.name)
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        if not an_fs.labeling():
+            self.skipTest("can not label filesystem %s" % an_fs.name)
         super(LabelingAsRoot, self).setUp()
 
     def testLabeling(self):
@@ -38,13 +40,15 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
            * raise an exception when relabeling the filesystem
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
+        if an_fs._readlabel.availabilityErrors or not an_fs.relabels():
+            self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
 
-        with self.assertRaisesRegexp(FSError, "no application to read label"):
+        with self.assertRaises(FSReadLabelError):
             an_fs.readLabel()
 
         an_fs.label = "an fs"
-        with self.assertRaisesRegexp(FSError, "no application to set label for filesystem"):
+        with self.assertRaises(FSError):
             an_fs.writeLabel()
 
     def testCreating(self):
@@ -79,9 +83,11 @@ class LabelingWithRelabeling(LabelingAsRoot):
            * raise an exception when relabeling with an invalid label
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
+        if an_fs._readlabel.availabilityErrors or not an_fs.relabels():
+            self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
 
-        with self.assertRaisesRegexp(FSError, "no application to read label"):
+        with self.assertRaises(FSReadLabelError):
             an_fs.readLabel()
 
         an_fs.label = "an fs"
@@ -116,6 +122,8 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
            * raise an exception when relabeling with an invalid label
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
+        if an_fs._readlabel.availabilityErrors or not an_fs.relabels():
+            self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
@@ -140,6 +148,8 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
            Verify that the filesystem has that label.
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label="start")
+        if an_fs._readlabel.availabilityErrors:
+            self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), "start")
 
@@ -148,6 +158,8 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
            Verify that the filesystem has the default label.
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label=None)
+        if an_fs._readlabel.availabilityErrors:
+            self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
@@ -156,5 +168,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
            Verify that the filesystem has the empty label.
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label="")
+        if an_fs._readlabel.availabilityErrors:
+            self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.readLabel(), "")
