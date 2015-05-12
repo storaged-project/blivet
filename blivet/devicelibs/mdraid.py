@@ -22,6 +22,7 @@
 
 from ..size import Size
 from . import raid
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -40,3 +41,5 @@ class MDRaidLevels(raid.RAIDLevels):
            hasattr(level, 'get_size')
 
 RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "linear"])
+
+EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_MDRAID_PLUGIN]

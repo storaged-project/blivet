@@ -36,13 +36,12 @@ Requires: util-linux >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
-Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: libselinux-python
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
+Requires: rpm-python
 
 %description
 The python-blivet package is a python module for examining and modifying
@@ -59,11 +58,10 @@ Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: libblockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: util-linux >= %{utillinuxver}
-Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
+Requires: rpm-python3
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage

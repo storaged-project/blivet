@@ -30,6 +30,7 @@ from . import raid
 from ..size import Size
 from ..i18n import N_
 from ..flags import flags
+from ..tasks import availability
 
 # some of lvm's defaults that we have no way to ask it for
 LVM_PE_START = Size("1 MiB")
@@ -46,6 +47,8 @@ RAID_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
 ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
 KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
                          ThPoolProfile("thin-performance", N_("Performance")))
+
+EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_LVM_PLUGIN]
 
 # Start config_args handling code
 #
@@ -82,6 +85,9 @@ def _set_global_config():
     blockdev.lvm.set_global_config(config_string)
 
 def needs_config_refresh(fn):
+    if not availability.BLOCKDEV_LVM_PLUGIN.available:
+        return lambda *args, **kwargs: None
+
     def fn_with_refresh(*args, **kwargs):
         ret = fn(*args, **kwargs)
         _set_global_config()

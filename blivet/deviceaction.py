@@ -148,6 +148,12 @@ class DeviceAction(util.ObjectID):
         util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
+
+        unavailable_dependencies = device.unavailableDependencies
+        if unavailable_dependencies:
+            dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
+            raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, dependencies_str))
+
         self.device = device
         self.container = getattr(self.device, "container", None)
         self._applied = False
@@ -520,6 +526,9 @@ class ActionCreateFormat(DeviceAction):
         if self._format.exists:
             raise ValueError("specified format already exists")
 
+        if not self._format.formattable:
+            raise ValueError("resource to create this format %s is unavailable" % fmt)
+
     def apply(self):
         """ apply changes related to the action to the device(s) """
         if self._applied:
@@ -641,6 +650,9 @@ class ActionDestroyFormat(DeviceAction):
 
         DeviceAction.__init__(self, device)
         self.origFormat = self.device.format
+
+        if not device.format.destroyable:
+            raise ValueError("resource to destroy this format type %s is unavailable" % device.format.type)
 
     def apply(self):
         if self._applied:

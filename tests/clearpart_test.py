@@ -6,6 +6,12 @@ from pykickstart.constants import CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEA
 from parted import PARTITION_NORMAL
 from blivet.flags import flags
 
+DEVICE_CLASSES = [
+    blivet.devices.DiskDevice,
+    blivet.devices.PartitionDevice
+]
+
+@unittest.skipUnless(all(not x.unavailableTypeDependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class ClearPartTestCase(unittest.TestCase):
     def setUp(self):
         flags.testing = True

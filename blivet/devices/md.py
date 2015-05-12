@@ -32,6 +32,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -47,6 +48,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     _devDir = "/dev/md"
     _formatClassName = property(lambda s: "mdmember")
     _formatUUIDAttr = property(lambda s: "mdUuid")
+    _external_dependencies = [availability.BLOCKDEV_MDRAID_PLUGIN]
 
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  memberDevices=None, totalDevices=None,

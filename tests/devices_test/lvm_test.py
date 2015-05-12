@@ -14,6 +14,17 @@ from blivet.devices import LVMThinSnapShotDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.size import Size
 
+DEVICE_CLASSES = [
+   LVMLogicalVolumeDevice,
+   LVMSnapShotDevice,
+   LVMThinLogicalVolumeDevice,
+   LVMThinPoolDevice,
+   LVMThinSnapShotDevice,
+   LVMVolumeGroupDevice,
+   StorageDevice
+]
+
+@unittest.skipUnless(all(not x.unavailableTypeDependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class LVMDeviceTest(unittest.TestCase):
     def testLVMSnapShotDeviceInit(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),

@@ -11,14 +11,20 @@ from blivet.errors import FSError, FSResizeError
 from blivet.size import Size, ROUND_DOWN
 from blivet.formats import fs
 
+def can_resize(an_fs):
+    """ Returns True if this filesystem has all necessary resizing tools
+        available.
+
+        :param an_fs: a filesystem object
+    """
+    resize_tasks = (an_fs._resize, an_fs._sizeinfo, an_fs._minsize)
+    return all(not t.availabilityErrors for t in resize_tasks)
+
 @add_metaclass(abc.ABCMeta)
 class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
     _fs_class = abc.abstractproperty(
        doc="The class of the filesystem being tested on.")
-
-    _resizable = abc.abstractproperty(
-       doc="Should we expect to be able to resize this filesystem.")
 
     _DEVICE_SIZE = Size("100 MiB")
 
@@ -26,9 +32,6 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         super(FSAsRoot, self).__init__(methodName=methodName, deviceSpec=[self._DEVICE_SIZE])
 
     def setUp(self):
-        an_fs = self._fs_class()
-        if not an_fs.utilsAvailable:
-            self.skipTest("utilities unavailable for filesystem %s" % an_fs.name)
         super(FSAsRoot, self).setUp()
 
     def _test_sizes(self, an_fs):
@@ -47,7 +50,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         else:
             expected_size = _size
             # If the size can be obtained it will not be 0
-            if an_fs._infofs:
+            if not an_fs._sizeinfo.availabilityErrors:
                 self.assertNotEqual(expected_size, Size(0))
                 self.assertTrue(expected_size <= self._DEVICE_SIZE)
             # Otherwise it will be 0, assuming the device was not initialized
@@ -57,7 +60,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.size, expected_size)
 
         # Only the resizable filesystems can figure out their current min size
-        if an_fs._resizefs:
+        if not an_fs._sizeinfo.availabilityErrors:
             expected_min_size = min_size
         else:
             expected_min_size = an_fs._minSize
@@ -71,7 +74,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.currentSize, _size)
 
         # Free is the actual size - the minimum size
-        self.assertEqual(an_fs.free, _size - expected_min_size)
+        self.assertEqual(an_fs.free, max(Size(0), _size - expected_min_size))
 
         # target size is set by side-effect
         self.assertEqual(an_fs.targetSize, an_fs._targetSize)
@@ -82,11 +85,11 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertFalse(an_fs.exists)
         self.assertIsNone(an_fs.device)
         self.assertIsNone(an_fs.uuid)
-        self.assertEqual(an_fs.options, ",".join(an_fs.defaultMountOptions))
+        self.assertEqual(an_fs.options, ",".join(an_fs._mount.options))
         self.assertEqual(an_fs.resizable, False)
 
         # sizes
-        expected_min_size = Size(0) if self._resizable else an_fs._minSize
+        expected_min_size = Size(0) if can_resize(an_fs) else an_fs._minSize
         self.assertEqual(an_fs.minSize, expected_min_size)
 
         self.assertEqual(an_fs.maxSize, an_fs._maxSize)
@@ -100,7 +103,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class(size=NEW_SIZE)
 
         # sizes
-        expected_min_size = Size(0) if self._resizable else an_fs._minSize
+        expected_min_size = Size(0) if can_resize(an_fs) else an_fs._minSize
         self.assertEqual(an_fs.minSize, expected_min_size)
 
         self.assertEqual(an_fs.maxSize, an_fs._maxSize)
@@ -112,14 +115,14 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
     def testCreation(self):
         an_fs = self._fs_class()
         if not an_fs.formattable:
-            return
+            self.skipTest("can not create filesystem %s" % an_fs.name)
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         self.assertEqual(an_fs.resizable, False)
         self.assertTrue(an_fs.exists)
         self.assertIsNone(an_fs.doCheck())
 
-        expected_min_size = Size(0) if self._resizable else an_fs._minSize
+        expected_min_size = Size(0) if can_resize(an_fs) else an_fs._minSize
         self.assertEqual(an_fs.minSize, expected_min_size)
 
         self.assertEqual(an_fs.maxSize, an_fs._maxSize)
@@ -130,8 +133,8 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
     def testLabeling(self):
         an_fs = self._fs_class()
-        if not an_fs.labeling():
-            return
+        if not an_fs.formattable or not an_fs.labeling():
+            self.skipTest("can not label filesystem %s" % an_fs.name)
         an_fs.device = self.loopDevices[0]
         an_fs.label = "label"
         self.assertTrue(an_fs.labelFormatOK("label"))
@@ -144,8 +147,8 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
     def testRelabeling(self):
         an_fs = self._fs_class()
-        if not an_fs.labeling():
-            return
+        if not an_fs.formattable or not an_fs.labeling():
+            self.skipTest("can not label filesystem %s" % an_fs.name)
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.label = "label"
@@ -160,9 +163,9 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class()
         # FIXME: BTRFS fails to mount
         if isinstance(an_fs, fs.BTRFS):
-            return
+            self.skipTest("no mounting filesystem %s" % an_fs.name)
         if not an_fs.formattable:
-            return
+            self.skipTest("can not create filesystem %s" % an_fs.name)
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         self.assertTrue(an_fs.testMount())
@@ -171,9 +174,9 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class()
         # FIXME: BTRFS fails to mount
         if isinstance(an_fs, fs.BTRFS):
-            return
+            self.skipTest("no mounting filesystem %s" % an_fs.name)
         if not an_fs.formattable or not an_fs.mountable:
-            return
+            self.skipTest("can not create or mount filesystem %s" % an_fs.name)
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         mountpoint = tempfile.mkdtemp()
@@ -186,7 +189,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
     def testResize(self):
         an_fs = self._fs_class()
         if not an_fs.formattable:
-            return
+            self.skipTest("can not create filesystem %s" % an_fs.name)
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -195,7 +198,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         # CHECKME: target size is still 0 after updatedSizeInfo is called.
         self.assertEqual(an_fs.size, Size(0) if an_fs.resizable else an_fs._size)
 
-        if not self._resizable:
+        if not can_resize(an_fs):
             self.assertFalse(an_fs.resizable)
             # Not resizable, so can not do resizing actions.
             with self.assertRaises(FSError):
@@ -210,7 +213,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
             self.assertEqual(an_fs.targetSize, TARGET_SIZE)
             self.assertNotEqual(an_fs._size, TARGET_SIZE)
             self.assertIsNone(an_fs.doResize())
-            ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resizefsUnit, rounding=ROUND_DOWN)
+            ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resize.unit, rounding=ROUND_DOWN)
             self.assertEqual(an_fs.size, ACTUAL_SIZE)
             self.assertEqual(an_fs._size, ACTUAL_SIZE)
             self._test_sizes(an_fs)
@@ -224,10 +227,13 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         # _size if it is not set when size is calculated. Note that _targetSize
         # gets value of _size in constructor, so if _size is set to not-zero
         # in constructor call behavior would be different.
-        if not self._resizable:
-            return
 
         an_fs = self._fs_class()
+        if not can_resize(an_fs):
+            self.skipTest("Not checking resize for this test category.")
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -244,11 +250,13 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         """ Because _targetSize has been set to size in constructor the
             resize action resizes filesystem to that size.
         """
-        if not self._resizable:
-            return
-
         SIZE = Size("64 MiB")
         an_fs = self._fs_class(size=SIZE)
+        if not can_resize(an_fs):
+            self.skipTest("Not checking resize for this test category.")
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -263,10 +271,12 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self._test_sizes(an_fs)
 
     def testShrink(self):
-        if not self._resizable:
-            return
-
         an_fs = self._fs_class()
+        if not can_resize(an_fs):
+            self.skipTest("Not checking resize for this test category.")
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -288,15 +298,17 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         if isinstance(an_fs, fs.NTFS):
             return
         self.assertIsNone(an_fs.doResize())
-        ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resizefsUnit, rounding=ROUND_DOWN)
+        ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resize.unit, rounding=ROUND_DOWN)
         self.assertEqual(an_fs._size, ACTUAL_SIZE)
         self._test_sizes(an_fs)
 
     def testTooSmall(self):
-        if not self._resizable:
-            return
-
         an_fs = self._fs_class()
+        if not can_resize(an_fs):
+            self.skipTest("Not checking resize for this test category.")
+        if not an_fs.formattable:
+            self.skipTest("can not create or resize filesystem %s" % an_fs.name)
+
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -310,10 +322,12 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self._test_sizes(an_fs)
 
     def testTooBig(self):
-        if not self._resizable:
-            return
-
         an_fs = self._fs_class()
+        if not can_resize(an_fs):
+            self.skipTest("Not checking resize for this test category.")
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -327,10 +341,12 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self._test_sizes(an_fs)
 
     def testTooBig2(self):
-        if not self._resizable:
-            return
-
         an_fs = self._fs_class()
+        if not can_resize(an_fs):
+            self.skipTest("Not checking resize for this test category.")
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+
         an_fs.device = self.loopDevices[0]
         self.assertIsNone(an_fs.create())
         an_fs.updateSizeInfo()
@@ -345,7 +361,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
         # CHECKME: size and target size will be adjusted attempted values
         # while currentSize will be actual value
-        TARGET_SIZE = BIG_SIZE.roundToNearest(an_fs._resizefsUnit, rounding=ROUND_DOWN)
+        TARGET_SIZE = BIG_SIZE.roundToNearest(an_fs._resize.unit, rounding=ROUND_DOWN)
         self.assertEqual(an_fs.targetSize, TARGET_SIZE)
         self.assertEqual(an_fs.size, an_fs.targetSize)
         self.assertEqual(an_fs.currentSize, old_size)
