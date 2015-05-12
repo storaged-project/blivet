@@ -68,6 +68,7 @@ class FS(DeviceFormat):
     _fsck = ""                           # fs check utility
     _fsckErrors = {}                     # fs check command error codes & msgs
     _infofs = ""                         # fs info utility
+    _formatOptions = []
     _defaultFormatOptions = []           # default options passed to mkfs
     _defaultMountOptions = ["defaults"]  # default options passed to mount
     _defaultCheckOptions = []
@@ -361,6 +362,16 @@ class FS(DeviceFormat):
         """
         return max(Size(0), self.currentSize - self.minSize)
 
+    @property
+    def formatOptions(self):
+        """ Get format options passed to mkfs for this filesystem type. """
+        return self._formatOptions[:]
+
+    @formatOptions.setter
+    def formatOptions(self, options=[]):
+        """ Set format options passed to mkfs for this filesystem type. """
+        return self._formatOptions = options
+
     def _getFormatOptions(self, options=None, do_labeling=False):
         """Get a list of format options to be used when creating the
            filesystem.
@@ -373,7 +384,9 @@ class FS(DeviceFormat):
         argv = []
         if options and isinstance(options, list):
             argv.extend(options)
-        argv.extend(self.defaultFormatOptions)
+        if not self.formatOptions:
+            argv.extend(self.defaultFormatOptions)
+        argv.extend(self.formatOptions)
         if self._fsProfileSpecifier and self.fsprofile:
             argv.extend([self._fsProfileSpecifier, self.fsprofile])
 
