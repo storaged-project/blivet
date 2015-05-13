@@ -138,6 +138,8 @@ class FS(DeviceFormat):
 
         self._targetSize = self._size
 
+        self._chrootedMountpoint = None
+
         if self.supported:
             self.loadModule()
 
@@ -496,6 +498,9 @@ class FS(DeviceFormat):
         if not self.exists:
             return None
 
+        if self._chrootedMountpoint:
+            return self._chrootedMountpoint
+
         # It is possible to have multiple mountpoints, return the last one
         try:
             return mountsCache.getMountpoints(self.device,
@@ -572,6 +577,9 @@ class FS(DeviceFormat):
         chrootedMountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
         self._mount.doTask(chrootedMountpoint, options=options)
 
+        if chroot != "/":
+            self._chrootedMountpoint = chrootedMountpoint
+
     def _postSetup(self, **kwargs):
         options = kwargs.get("options", "")
         chroot = kwargs.get("chroot", "/")
@@ -614,12 +622,16 @@ class FS(DeviceFormat):
             by the system. Override this behavior by passing a specific mountpoint. FSError
             will be raised in either case if the path doesn't exist.
         """
+
         mountpoint = kwargs.get("mountpoint") or self.systemMountpoint
         rc = util.umount(mountpoint)
         if rc:
             # try and catch whatever is causing the umount problem
             util.run_program(["lsof", mountpoint])
             raise FSError("umount failed")
+
+        if mountpoint == self._chrootedMountpoint:
+            self._chrootedMountpoint = None
 
     def readLabel(self):
         """Read this filesystem's label.
