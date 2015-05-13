@@ -455,22 +455,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         self._postTeardown(recursive=recursive)
 
-    def preCommitFixup(self, *args, **kwargs):
-        """ Determine create parameters for this set """
-        mountpoints = kwargs.pop("mountpoints")
-        log_method_call(self, self.name, mountpoints)
-
-        if "/boot" in mountpoints:
-            bootmountpoint = "/boot"
-        else:
-            bootmountpoint = "/"
-
-        # If we are used to boot from we cannot use 1.1 metadata
-        if getattr(self.format, "mountpoint", None) == bootmountpoint or \
-           getattr(self.format, "mountpoint", None) == "/boot/efi" or \
-           self.format.type == "prepboot":
-            self.metadataVersion = "1.0"
-
     def _postCreate(self):
         # this is critical since our status method requires a valid sysfs path
         self.exists = True  # this is needed to run updateSysfsPath
