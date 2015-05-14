@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.0.26
+Version: 0.61.0.27
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -62,6 +62,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu May 14 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.27-1
+- Switch translations to use Zanata (bcl)
+  Related: rhbz#1205285
+- Allow passing KiB values to vgcreate -s option (tjeyasin)
+  Resolves: rhbz#1206526
+- Include LUKSDevice information in kickstart data (amulhern)
+  Resolves: rhbz#1139222
+- Fix "anaconda hangs while trying to discover iscsi..." (jkonecny)
+  Resolves: rhbz#1166652
+- If the parent volume has a label, use it in subvol's kickstart (amulhern)
+  Resolves: rhbz#1072060
+
 * Wed Feb 18 2015 Brian C. Lane <bcl@redhat.com> - 0.61.0.26-1
 - Use a safer method to get a dm partition's disk name. (dlehman)
   Resolves: rhbz#1190886
