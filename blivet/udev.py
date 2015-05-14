@@ -534,7 +534,7 @@ def device_get_dm_partition_disk(info):
         return None
 
     disk = None
-    majorminor = info["ID_PART_ENTRY_DISK"]
+    majorminor = info.get("ID_PART_ENTRY_DISK")
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
