@@ -24,7 +24,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("bugzilla")
 log.setLevel(logging.INFO)
-urllib_log = logging.getLogger("urllib3")
+urllib_log = logging.getLogger("requests.packages.urllib3")
 urllib_log.setLevel(logging.ERROR)
 
 import bugzilla
@@ -235,6 +235,7 @@ class MakeBumpVer:
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
         lines = filter(lambda x: x.find('l10n: ') != 41 and \
+                                 x.find('Merge pull') != 41 and \
                                  x.find('Merge commit') != 41 and \
                                  x.find('Merge branch') != 41,
                        proc[0].strip('\n').split('\n'))
