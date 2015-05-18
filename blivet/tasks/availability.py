@@ -21,8 +21,7 @@
 
 import abc
 from distutils.version import LooseVersion
-import rpm
-import six
+import hawkey
 
 from six import add_metaclass
 
@@ -136,19 +135,28 @@ class PackageMethod(Method):
 
     @property
     def packageVersion(self):
-        """ Returns the version of the package.
+        """ Returns the version of the installed package.
 
             :returns: the package version
             :rtype: LooseVersion
+            :raises AvailabilityError: on failure to obtain package version
         """
-        ts = rpm.TransactionSet()
-        info = ts.dbMatch("provides", self.package.package_name)
-        if len(info) == 0:
-            raise AvailabilityError("Could not determine package version for %s" % self.package.package_name)
-        version = next(info)['version']
-        if six.PY3:
-            version = version.decode()
-        return LooseVersion(version)
+        sack = hawkey.Sack()
+
+        try:
+            sack.load_system_repo()
+        except IOError as e:
+            # hawkey has been observed allowing an IOError to propagate to
+            # caller with message "Failed calculating RPMDB checksum."
+            # See: https://bugzilla.redhat.com/show_bug.cgi?id=1223914
+            raise AvailabilityError("Could not determine package version for %s: %s" % (self.package.package_name, e))
+
+        query = hawkey.Query(sack).filter(name=self.package.package_name, latest=True)
+        packages = query.run()
+        if len(packages) != 1:
+            raise AvailabilityError("Could not determine package version for %s: unable to obtain package information from repo" % self.package.package_name)
+
+        return LooseVersion(packages[0].version)
 
     def availabilityErrors(self, resource):
         if self._availabilityErrors is not None and CACHE_AVAILABILITY:
