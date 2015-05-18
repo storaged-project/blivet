@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.3
+Version: 1.4
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -108,6 +108,71 @@ popd
 %endif
 
 %changelog
+* Mon May 18 2015 Brian C. Lane <bcl@redhat.com> - 1.4-1
+- Workaround for chrooted mountpoints  (#1217578) (vtrefny)
+- Merge pull request #116 from mulkieran/master-gerror (mulkieran)
+- Filter GLib.GError instead of GLib.Error in pylint false positives.
+  (amulhern)
+- Merge pull request #113 from mulkieran/master-tasks-20150513 (mulkieran)
+- Guard tests against device support being missing. (amulhern)
+- Add checks for filesystem availability in selinux tests. (amulhern)
+- Fix some small mistakes in tests using availability information. (amulhern)
+- Get rid of abitrary _resizable variable in tests. (amulhern)
+- Don't use utilsAvailable to skip tests. (amulhern)
+- Treat a missing plugin as an OK situation. (amulhern)
+- Use availability information in device actions. (amulhern)
+- Add a check to determine whether the device type is supported. (amulhern)
+- If external dependencies are unavailable, cannot support RAID levels.
+  (amulhern)
+- Add availability information to devicelibs files. (amulhern)
+- Track external dependencies in devices. (amulhern)
+- If lvm is not available, do not do the filtering. (amulhern)
+- Add availability checking to non-FS formats. (amulhern)
+- Use filesystem tasks in filesystem. (amulhern)
+- Add filesystem tasks to tasks directory. (amulhern)
+- Add tasks infrastructure to tasks directory. (amulhern)
+- Add error to detect errors in discovering availability info. (amulhern)
+- Add errors about reading and writing labels to error heirarchy. (amulhern)
+- Make assignments that override abstract properties into simple attributes.
+  (amulhern)
+- Move kernel_filesystems functionality into a little library. (amulhern)
+- Make labeling(), relabels(), and labelFormatOK() instance methods. (amulhern)
+- Merge pull request #108 from vojtechtrefny/progress_callbacks (vtrefny)
+- Merge pull request #109 from mulkieran/master-btrfs-c (mulkieran)
+- Set a subvolspec format args when making a new BTRFS volume. (amulhern)
+- Cache data obtained from /proc/self/mountinfo. (amulhern)
+- Add progress report callback for action processing (vtrefny)
+- Do not have two ignored variables when one will do. (amulhern)
+- Fix a typo in comment. (amulhern)
+- Do not use type() in makebumpver. (clumens)
+- Merge pull request #100 from mulkieran/master-lvm-a (mulkieran)
+- Merge pull request #104 from mulkieran/master-1139222 (mulkieran)
+- Include LUKSDevice information in kickstart data (#1139222) (amulhern)
+- Un-escape '-'s in names or paths for _all_ lvm lv or vgs. (amulhern)
+- Fix a few miscellaneous pylint-caught problems. (clumens)
+- Only give Size objects a __div__ method under python2. (clumens)
+- Protect against calling testMount on an object that may not have it.
+  (clumens)
+- Add a bunch of false positives to make pylint succeed. (clumens)
+- e.message -> str(e) (clumens)
+- Disable a pointless override warning. (clumens)
+- Ignore the environment-modify pylint warnings for size_test.py. (clumens)
+- blockdevError -> BlockDevError (clumens)
+- Remove uses of the string module we don't need, ignore warnings on those we
+  do. (clumens)
+- unicode isn't undefined on the python2 code paths. (clumens)
+- Use eintr_retry_call from anaconda. (clumens)
+- Move blivet to using pocketlint. (clumens)
+- Merge pull request #97 from mulkieran/master-1072060 (mulkieran)
+- Merge pull request #93 from vojtechtrefny/fix_active_parted (vtrefny)
+- If the parent volume has a label, use it in subvol's kickstart (#1072060)
+  (amulhern)
+- Merge pull request #94 from mulkieran/master-raid (mulkieran)
+- Allow adding new partitions to disks with active devices (#1212841) (vtrefny)
+- Fix "anaconda hangs while trying to discover iscsi..." (#1166652) (jkonecny)
+- Move definition of _level attribute above super-constructor call. (amulhern)
+- Fix status for LVMPhysicalVolume format (vtrefny)
+
 * Wed Apr 22 2015 Brian C. Lane <bcl@redhat.com> - 1.3-1
 - fix conf.py pylint errors (bcl)
 - Fix BlockDev import in populator.py (bcl)
