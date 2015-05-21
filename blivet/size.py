@@ -178,7 +178,17 @@ def parseSpec(spec):
     if radix != '.':
         spec = spec.replace(radix, '.')
 
-    m = re.match(r'(?P<numeric>(-|\+)?\s*(?P<base>([0-9]+)|([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*))(?P<exp>(e|E)(-|\+)[0-9]+)?)\s*(?P<rest>[^\s]*)$', spec.strip())
+    spec_re = re.compile(
+       r"""(?P<numeric> # the numeric part consists of three parts, below
+           (-|\+)? # optional sign character
+           (?P<base>([0-9]*(\.[0-9]|[0-9]\.|[0-9])[0-9]*)) # the base
+           (?P<exp>(e|E)(-|\+)[0-9]+)?) # optional exponent
+           \s* # whitespace
+           (?P<rest>[^\s]*$) # the units specification
+        """,
+        re.VERBOSE
+    )
+    m = re.match(spec_re, spec.strip())
     if not m:
         raise ValueError("invalid size specification", spec)
 
