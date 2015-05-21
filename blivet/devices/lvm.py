@@ -1016,7 +1016,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             raise ValueError("invalid metadatasize value")
 
         if chunksize is not None and \
-           not blockdev.lvm.is_valid_thpool_chunk_size(chunksize):
+           not blockdev.lvm.is_valid_thpool_chunk_size(chunksize, False):
             raise ValueError("invalid chunksize value")
 
         super(LVMThinPoolDevice, self).__init__(name, parents=parents,
