@@ -178,7 +178,29 @@ def parseSpec(spec):
     if radix != '.':
         spec = spec.replace(radix, '.')
 
-    m = re.match(r'(?P<numeric>(-|\+)?\s*(?P<base>([0-9]+)|([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*))(?P<exp>(e|E)(-|\+)[0-9]+)?)\s*(?P<rest>[^\s]*)$', spec.strip())
+    # The purpose of this regular expression is to distinguish
+    # between the numeric part and the part that specifies the units.
+    # The regular expression that matches the numeric part of the spec
+    # should recognize all valid numbers and should not include any part
+    # of the unit specifier in the string that it recognizes. It may
+    # recognize strings that are not valid numbers as well, if it does
+    # some other part of the implementation is expected to recognize that
+    # the number is invalid and raise an exception.
+    # Specifically, the string "0.9.9 KiB" will be matched, and the numeric
+    # part will match "0.9.9". This is not a valid number, but that will
+    # be detected when an exception is raised during conversion of the numeric
+    # part to a numeric value.
+    spec_re = re.compile(
+       r"""(?P<numeric> # the numeric part consists of three parts, below
+           (-|\+)? # optional sign character
+           (?P<base>([0-9\.]+)) # the base
+           (?P<exp>(e|E)(-|\+)[0-9]+)?) # optional exponent
+           \s* # whitespace
+           (?P<rest>[^\s]*$) # the units specification
+        """,
+        re.VERBOSE
+    )
+    m = re.match(spec_re, spec.strip())
     if not m:
         raise ValueError("invalid size specification", spec)
 
