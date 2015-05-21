@@ -838,6 +838,7 @@ class LVMDeviceTest(unittest.TestCase):
 
 class PartitionDeviceTestCase(unittest.TestCase):
 
+    @unittest.skip("insufficient pyparted support for DiskFile")
     def testTargetSize(self):
         with sparsetmpfile("targetsizetest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)
@@ -912,6 +913,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             parted_size = Size(device.partedPartition.getSize(unit='b'))
             self.assertEqual(parted_size, device.targetSize)
 
+    @unittest.skip("insufficient pyparted support for DiskFile")
     def testMinMaxSizeAlignment(self):
         with sparsetmpfile("minsizetest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)

@@ -140,6 +140,7 @@ class PartitioningTestCase(unittest.TestCase):
         disk = self.getDisk(disk_type="mac")
         self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
 
+    @unittest.skip("insufficient pyparted support for DiskFile")
     def testAddPartition(self):
         with sparsetmpfile("addparttest", Size("50 MiB")) as disk_file:
             disk = DiskFile(disk_file)
@@ -285,6 +286,7 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(req2.growth, 0)
         self.assertEqual(req3.growth, 35)
 
+    @unittest.skip("insufficient pyparted support for DiskFile")
     def testDiskChunk1(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
@@ -336,6 +338,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(requests[0].growth, 30712)
             self.assertEqual(requests[1].growth, 92136)
 
+    @unittest.skip("insufficient pyparted support for DiskFile")
     def testDiskChunk2(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
