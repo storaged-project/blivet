@@ -27,7 +27,6 @@ from collections import namedtuple
 from decimal import Decimal
 from decimal import InvalidOperation
 from decimal import ROUND_DOWN, ROUND_UP, ROUND_HALF_UP
-import six
 
 from .errors import SizePlacesError
 from .i18n import _, P_, N_
@@ -136,14 +135,9 @@ def _parseSpec(spec):
     try:
         # This will raise UnicodeDecodeError if specifier contains non-ascii
         # characters
-        if six.PY2:
-            spec_ascii = specifier.decode("ascii")
-            # Convert back to a str type to match the _bytes and _prefixes arrays
-            spec_ascii = str(spec_ascii)
-        else:
-            # This will raise UnicodeEncodeError if specifier contains any non-ascii
-            # in Python3 `bytes` are new Python2 `str`
-            spec_ascii = bytes(specifier, 'ascii')
+        spec_ascii = specifier.decode("ascii")
+        # Convert back to a str type to match the _bytes and _prefixes arrays
+        spec_ascii = str(spec_ascii)
 
         # Use the ASCII-only lowercase mapping
         spec_ascii = _lowerASCII(spec_ascii)
@@ -164,11 +158,7 @@ def _parseSpec(spec):
 
     # No English match found, try localized size specs. Accept any utf-8
     # character and leave the result as a (unicode object.
-    if six.PY2:
-        spec_local = specifier.decode("utf-8")
-    else:
-        # str = unicode in Python3
-        spec_local = specifier
+    spec_local = specifier.decode("utf-8")
 
     # Use the locale-specific lowercasing
     spec_local = spec_local.lower()
@@ -210,9 +200,9 @@ class Size(Decimal):
             If you want to use a spec value to represent a bytes value,
             you can use the letter 'b' or 'B' or omit the size specifier.
         """
-        if isinstance(value, (six.string_types, bytes)):
+        if isinstance(value, str):
             size = _parseSpec(value)
-        elif isinstance(value, (six.integer_types, float, Decimal)):
+        elif isinstance(value, (int, long, float, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):
             size = Decimal(value.convertTo("b"))

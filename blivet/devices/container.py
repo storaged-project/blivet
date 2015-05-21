@@ -21,8 +21,6 @@
 
 import abc
 
-from six import add_metaclass
-
 from .. import errors
 from ..storage_log import log_method_call
 from ..formats import get_device_format_class
@@ -32,7 +30,6 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
-@add_metaclass(abc.ABCMeta)
 class ContainerDevice(StorageDevice):
     """ A device that aggregates a set of member devices.
 
@@ -49,6 +46,7 @@ class ContainerDevice(StorageDevice):
         within :meth:`.deviceaction.ActionAddMember.execute` and
         :meth:`.deviceaction.ActionRemoveMember.execute`.
     """
+    __metaclass__ = abc.ABCMeta
 
     _formatClassName = abc.abstractproperty(lambda s: None,
         doc="The type of member devices' required format")

@@ -12,8 +12,6 @@ import uuid
 from decimal import Decimal
 from contextlib import contextmanager
 
-import six
-
 from .size import Size
 
 import logging
@@ -326,7 +324,7 @@ def numeric_type(num):
     """
     if num is None:
         num = 0
-    elif not isinstance(num, (six.integer_types, float, Size, Decimal)):
+    elif not isinstance(num, (int, long, float, Size, Decimal)):
         raise ValueError("value (%s) must be either a number or None" % num)
 
     return num

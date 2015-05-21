@@ -20,7 +20,6 @@
 #
 
 from decimal import Decimal
-from six import add_metaclass
 import abc
 import pprint
 import re
@@ -803,7 +802,6 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
-@add_metaclass(abc.ABCMeta)
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
 
@@ -820,6 +818,7 @@ class LVMSnapShotBase(object):
         It is also impossible to set the format for a snapshot explicitly as it
         always has the same format as its origin.
     """
+    __metaclass__ = abc.ABCMeta
     _type = "lvmsnapshotbase"
 
     def __init__(self, origin=None, vorigin=False, exists=False):
