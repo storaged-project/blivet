@@ -226,6 +226,23 @@ def get_sysfs_path_by_name(dev_node, class_name="block"):
         raise RuntimeError("get_sysfs_path_by_name: Could not find sysfs path "
                            "for '%s' (it is not at '%s')" % (dev_node, dev_path))
 
+def get_cow_sysfs_path(dev_path, dev_sysfsPath):
+    """ Return sysfs path of cow device for a given device.
+    """
+
+    cow_path = dev_path + "-cow"
+    if not os.path.islink(cow_path):
+        raise RuntimeError("get_cow_sysfs_path: Could not find cow device for" %
+                            (dev_path))
+
+    # dev path for cow devices is actually a link to a dm device (e.g. /dev/dm-X)
+    # we need the 'dm-X' name for sysfsPath (e.g. /sys/devices/virtual/block/dm-X)
+    # where first part is the same as in sysfsPath of the original device
+    dm_name = os.path.basename(os.path.realpath(cow_path))
+    cow_sysfsPath = os.path.join(os.path.split(dev_sysfsPath)[0], dm_name)
+
+    return cow_sysfsPath
+
 ##
 ## SELinux functions
 ##

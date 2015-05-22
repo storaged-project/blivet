@@ -24,6 +24,7 @@ from six import add_metaclass
 import abc
 import pprint
 import re
+import os
 from gi.repository import BlockDev as blockdev
 
 # device backend modules
@@ -40,6 +41,7 @@ from ..tasks import availability
 import logging
 log = logging.getLogger("blivet")
 
+from .lib import LINUX_SECTOR_SIZE
 from .device import Device
 from .storage import StorageDevice
 from .container import ContainerDevice
@@ -967,6 +969,19 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         # pylint: disable=bad-super-call
         return (self.origin == dep or
                 super(LVMSnapShotBase, self).dependsOn(dep))
+
+    def readCurrentSize(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfsPath=self.sysfsPath)
+        size = Size(0)
+        if self.exists and os.path.isdir(self.sysfsPath):
+            cowSysfsPath = util.get_cow_sysfs_path(self.path, self.sysfsPath)
+
+            if os.path.exists(cowSysfsPath) and os.path.isdir(cowSysfsPath):
+                blocks = int(util.get_sysfs_attr(cowSysfsPath, "size"))
+                size = Size(blocks * LINUX_SECTOR_SIZE)
+
+        return size
 
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
