@@ -184,7 +184,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a logical partition to a primary free region
             #
-            with self.assertRaisesRegexp(parted.PartitionException,
+            with self.assertRaisesRegex(parted.PartitionException,
                                          "no extended partition"):
                 part = addPartition(disk.format, free, parted.PARTITION_LOGICAL,
                                     Size("10 MiB"))
@@ -216,7 +216,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a primary partition to an extended free region
             #
-            with self.assertRaisesRegexp(parted.PartitionException, "overlap"):
+            with self.assertRaisesRegex(parted.PartitionException, "overlap"):
                 part = addPartition(disk.format, all_free[1],
                                     parted.PARTITION_NORMAL,
                                     Size("10 MiB"), all_free[1].start)
@@ -296,7 +296,7 @@ class PartitioningTestCase(unittest.TestCase):
             disks = [disk]
             partitions = [p1, p2]
             free = getFreeRegions([disk])
-            self.assertEquals(len(free), 1,
+            self.assertEqual(len(free), 1,
                               "free region count %d not expected" % len(free))
 
             b = Mock()
@@ -359,7 +359,7 @@ class PartitioningTestCase(unittest.TestCase):
             disks = [disk]
             partitions = [p1, p2, p3, p4, p5]
             free = getFreeRegions([disk])
-            self.assertEquals(len(free), 1,
+            self.assertEqual(len(free), 1,
                               "free region count %d not expected" % len(free))
 
             b = Mock()

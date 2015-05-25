@@ -96,11 +96,11 @@ class LabelingWithRelabeling(LabelingAsRoot):
         self.assertIsNone(an_fs.writeLabel())
 
         an_fs.label = None
-        with self.assertRaisesRegexp(FSError, "default label"):
+        with self.assertRaisesRegex(FSError, "default label"):
             an_fs.writeLabel()
 
         an_fs.label = self._invalid_label
-        with self.assertRaisesRegexp(FSError, "bad label format"):
+        with self.assertRaisesRegex(FSError, "bad label format"):
             an_fs.writeLabel()
 
 class CompleteLabelingAsRoot(LabelingAsRoot):
@@ -135,11 +135,11 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         self.assertEqual(an_fs.readLabel(), an_fs.label)
 
         an_fs.label = None
-        with self.assertRaisesRegexp(FSError, "default label"):
+        with self.assertRaisesRegex(FSError, "default label"):
             an_fs.writeLabel()
 
         an_fs.label = "n" * 129
-        with self.assertRaisesRegexp(FSError, "bad label format"):
+        with self.assertRaisesRegex(FSError, "bad label format"):
             an_fs.writeLabel()
 
     def testCreating(self):

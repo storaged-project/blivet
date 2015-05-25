@@ -44,28 +44,28 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(device.maxSize, Size("9 MiB"))
 
             # ValueError if not Size
-            with self.assertRaisesRegexp(ValueError,
+            with self.assertRaisesRegex(ValueError,
                                          "new size must.*type Size"):
                 device.targetSize = 22
 
             self.assertEqual(device.targetSize, orig_size)
 
             # ValueError if size smaller than minSize
-            with self.assertRaisesRegexp(ValueError,
+            with self.assertRaisesRegex(ValueError,
                                          "size.*smaller than the minimum"):
                 device.targetSize = Size("1 MiB")
 
             self.assertEqual(device.targetSize, orig_size)
 
             # ValueError if size larger than maxSize
-            with self.assertRaisesRegexp(ValueError,
+            with self.assertRaisesRegex(ValueError,
                                          "size.*larger than the maximum"):
                 device.targetSize = Size("11 MiB")
 
             self.assertEqual(device.targetSize, orig_size)
 
             # ValueError if unaligned
-            with self.assertRaisesRegexp(ValueError, "new size.*not.*aligned"):
+            with self.assertRaisesRegex(ValueError, "new size.*not.*aligned"):
                 device.targetSize = Size("3.1 MiB")
 
             self.assertEqual(device.targetSize, orig_size)
