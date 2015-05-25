@@ -43,8 +43,12 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	-rm -f $(addprefix ./, tests.*)
 
 apidoc:
+	-rm -f $(addprefix ./, tests.* modules.rst)
+	$(SPHINXAPIDOC) -o . ../tests/
+	-cp modules.rst tests.modules.rst
 	-rm $(addprefix ./, $(MODULE_NAMES))
 	$(SPHINXAPIDOC) -o . $(SOURCEDIR)
 

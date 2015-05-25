@@ -13,6 +13,7 @@ Contents:
 
    intro
    modules
+   tests.modules
 
 Indices and tables
 ==================
