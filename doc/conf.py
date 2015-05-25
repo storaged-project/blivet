@@ -286,6 +286,9 @@ epub_copyright = u'2013, David Lehman'
 # Allow duplicate toc entries.
 #epub_tocdup = True
 
+# -- Options for inheritance graphs --------------------------------------------
+
+#extensions.extend(('sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz'))
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/2': None}
