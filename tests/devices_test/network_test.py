@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -36,5 +35,3 @@ class NetDevMountOptionTestCase(unittest.TestCase):
 
         self.assertTrue("_netdev" in dev.format.options.split(","))
 
-if __name__ == "__main__":
-    unittest.main()

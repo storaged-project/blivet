@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -30,5 +29,3 @@ class DevicePackagesTestCase(unittest.TestCase):
         for package in dev1.format.packages + dev2.format.packages + dev.format.packages:
             self.assertIn(package, packages)
 
-if __name__ == "__main__":
-    unittest.main()

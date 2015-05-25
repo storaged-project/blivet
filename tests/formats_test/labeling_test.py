@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import unittest
 
 from tests import loopbackedtestcase
@@ -104,5 +103,3 @@ class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
         swp = swap.SwapSpace(device=self.loopDevices[0], label="")
         self.assertIsNone(swp.create())
 
-if __name__ == "__main__":
-    unittest.main()

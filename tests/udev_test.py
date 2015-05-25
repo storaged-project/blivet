@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import unittest
 import mock
@@ -37,5 +36,3 @@ class UdevTest(unittest.TestCase):
         self.assertTrue(blivet.udev.util.run_program.called)
 
 
-if __name__ == "__main__":
-    unittest.main()

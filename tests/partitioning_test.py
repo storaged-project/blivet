@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import unittest
 from mock import Mock
@@ -587,5 +586,3 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
 
         self.blivet.doIt()
 
-if __name__ == "__main__":
-    unittest.main()

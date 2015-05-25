@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import unittest
 
@@ -1162,7 +1161,4 @@ class DeviceActionTestCase(StorageTestCase):
     def testActionSorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
         pass
-
-if __name__ == "__main__":
-    unittest.main()
 

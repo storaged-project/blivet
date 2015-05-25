@@ -82,6 +82,3 @@ def suite():
     return unittest.TestLoader().loadTestsFromTestCase(ParentListTestCase)
 
 
-if __name__ == "__main__":
-    unittest.main()
-

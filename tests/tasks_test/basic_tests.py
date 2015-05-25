@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import unittest
 
 import blivet.tasks.task as task

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import unittest
 
 import blivet
@@ -79,5 +78,3 @@ class DeviceValueTestCase(unittest.TestCase):
                 self.assertEqual(an_fs.type, typ)
                 self.assertEqual(an_fs.device, "/abc:/def")
 
-if __name__ == "__main__":
-    unittest.main()
