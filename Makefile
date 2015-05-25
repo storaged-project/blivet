@@ -7,6 +7,11 @@ RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 PYTHON=python2
+COVERAGE=coverage
+ifeq ($(PYTHON),python3)
+  COVERAGE=coverage3
+endif
+
 ZANATA_PULL_ARGS = --transdir ./po/
 ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
@@ -26,17 +31,26 @@ po-empty:
 		exit 1 ; \
 	done
 
-test:
-	@echo "*** Running unittests ***"
+check-requires:
+	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
+	@grep "^Requires:" python-blivet.spec | cut -f2 -d: | cut -f1 -d">" | xargs rpm -q
+	@rpm -q python-mock python3-mock
+	@rpm -q cryptsetup-python cryptsetup-python3
+	@rpm -q python3-gobject
+	@rpm -q python-coverage python3-coverage
+	@rpm -q xfsprogs hfsplus-tools
+	@rpm -q python3-pocketlint
+
+test: check-requires
+	@echo "*** Running unittests with $(PYTHON) ***"
 	PYTHONPATH=.:tests/ $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
 
-coverage:
-	@which coverage || (echo "*** Please install python-coverage ***"; exit 2)
-	@echo "*** Running unittests with coverage ***"
-	PYTHONPATH=.:tests/ coverage run --branch -m unittest discover -v -s tests/ -p '*_test.py'
-	coverage report --include="blivet/*"
+coverage: check-requires
+	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
+	PYTHONPATH=.:tests/ $(COVERAGE) run --branch -m unittest discover -v -s tests/ -p '*_test.py'
+	$(COVERAGE) report --include="blivet/*" --show-missing
 
-check:
+check: check-requires
 	PYTHONPATH=. tests/pylint/runpylint.py
 
 clean:
