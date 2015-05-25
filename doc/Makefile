@@ -8,7 +8,7 @@ SPHINXAPIDOC  = sphinx-apidoc
 PAPER         =
 BUILDDIR      = _build
 SOURCEDIR     = ../blivet
-MODULE_NAMES  = blivet.rst blivet.devicelibs.rst blivet.formats.rst modules.rst
+MODULE_NAMES  = blivet.rst blivet.devicelibs.rst blivet.devices.rst blivet.formats.rst blivet.tasks.rst modules.rst
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -43,6 +43,7 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	-rm -f $(addprefix ./, $(MODULE_NAMES))
 
 apidoc:
 	-rm $(addprefix ./, $(MODULE_NAMES))
