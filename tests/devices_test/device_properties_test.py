@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -709,6 +708,3 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         self.assertEqual(snap.dependsOn(vol), True)
         self.assertEqual(vol.dependsOn(snap), False)
-
-if __name__ == "__main__":
-    unittest.main()

@@ -76,12 +76,3 @@ class ParentListTestCase(unittest.TestCase):
 
         dev3.parents = []
         self.assertEqual(len(dev3.parents), 0)
-
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(ParentListTestCase)
-
-
-if __name__ == "__main__":
-    unittest.main()
-

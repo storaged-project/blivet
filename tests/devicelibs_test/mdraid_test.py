@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import unittest
 
 import blivet.devicelibs.mdraid as mdraid
@@ -16,6 +15,3 @@ class MDRaidTestCase(unittest.TestCase):
         self.assertEqual(mdraid.RAID_levels.raidLevel(5).name, "raid5")
         self.assertEqual(mdraid.RAID_levels.raidLevel("RAID6").name, "raid6")
         self.assertEqual(mdraid.RAID_levels.raidLevel("raid10").name, "raid10")
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import unittest
 
@@ -58,6 +57,3 @@ class MDFactoryTestCase(unittest.TestCase):
         self.assertEqual(self.factory2.container_list, [])
 
         self.assertIsNone(self.factory2.get_container())
-
-if __name__ == "__main__":
-    unittest.main()

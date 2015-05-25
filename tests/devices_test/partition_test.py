@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import os
@@ -155,6 +154,3 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(
                 disk.format.endAlignment.isAligned(free, max_end_sector),
                 True)
-
-if __name__ == "__main__":
-    unittest.main()
