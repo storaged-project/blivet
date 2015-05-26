@@ -43,7 +43,7 @@ class SizeTestCase(unittest.TestCase):
 
     def testExceptions(self):
         zero = Size(0)
-        self.assertEqual(zero, Size(0.0))
+        self.assertEqual(zero, Size("0.0"))
 
         s = Size(500)
         with self.assertRaises(SizePlacesError):
@@ -170,7 +170,7 @@ class SizeTestCase(unittest.TestCase):
 
         s = Size("0.5 GiB")
         self.assertEquals(s.humanReadable(max_places=2, min_value=1), "512 MiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(0.1)), "0.5 GiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal("0.1")), "0.5 GiB")
         self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(1)), "512 MiB")
 
     def testConvertToPrecision(self):
@@ -178,7 +178,7 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.convertTo(None), 1835008)
         self.assertEquals(s.convertTo(B), 1835008)
         self.assertEquals(s.convertTo(KiB), 1792)
-        self.assertEquals(s.convertTo(MiB), 1.75)
+        self.assertEquals(s.convertTo(MiB), Decimal("1.75"))
 
     def testNegative(self):
         s = Size("-500MiB")
@@ -186,7 +186,7 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.convertTo(B), -524288000)
 
     def testPartialBytes(self):
-        self.assertEquals(Size(1024.6), Size(1024))
+        self.assertEquals(Size("1024.6"), Size(1024))
         self.assertEquals(Size("%s KiB" % (1/1025.0,)), Size(0))
         self.assertEquals(Size("%s KiB" % (1/1023.0,)), Size(1))
 
@@ -199,6 +199,57 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(size.parseSpec("1e-1 KB"), Decimal(100))
         self.assertEqual(size.parseSpec("1E-4KB"), Decimal("0.1"))
         self.assertEqual(Size("1E-10KB"), Size(0))
+
+        with self.assertRaises(ValueError):
+            # this is an exponent w/out a base
+            size.parseSpec("e+0")
+
+    def testFloatingPointStr(self):
+        self.assertEqual(size.parseSpec("1.5e+0 KiB"), Decimal(1536))
+        self.assertEqual(size.parseSpec("0.0"), Decimal(0))
+        self.assertEqual(size.parseSpec("0.9 KiB"), Decimal("921.6"))
+        self.assertEqual(size.parseSpec("1.5 KiB"), Decimal(1536))
+        self.assertEqual(size.parseSpec("0.5 KiB"), Decimal(512))
+        self.assertEqual(size.parseSpec(".5 KiB"), Decimal(512))
+        self.assertEqual(size.parseSpec("1. KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec("-1. KiB"), Decimal(-1024))
+        self.assertEqual(size.parseSpec("+1. KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec("+1.0000000e+0 KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec("+.5 KiB"), Decimal(512))
+
+        with self.assertRaises(ValueError):
+            # this is a fragment of an arithmetic expression
+            size.parseSpec("+ 1 KiB")
+
+        with self.assertRaises(ValueError):
+            # this is a fragment of an arithmetic expression
+            size.parseSpec("- 1 KiB")
+
+        with self.assertRaises(ValueError):
+            # this is a lonely .
+            size.parseSpec(". KiB")
+
+        with self.assertRaises(ValueError):
+            # this has a fragmentary exponent
+            size.parseSpec("1.0e+ KiB")
+
+        with self.assertRaises(ValueError):
+            # this is a version string, not a number
+            size.parseSpec("1.0.0")
+
+    def testWhiteSpace(self):
+        self.assertEqual(size.parseSpec("1 KiB "), Decimal(1024))
+        self.assertEqual(size.parseSpec(" 1 KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec(" 1KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec(" 1e+0KiB"), Decimal(1024))
+        with self.assertRaises(ValueError):
+            size.parseSpec("1 KiB just a lot of stray characters")
+        with self.assertRaises(ValueError):
+            size.parseSpec("just 1 KiB")
+
+    def testLeadingZero(self):
+        self.assertEqual(size.parseSpec("001 KiB"), Decimal(1024))
+        self.assertEqual(size.parseSpec("1e+01"), Decimal(10))
 
     def testPickling(self):
         s = Size("10 MiB")
