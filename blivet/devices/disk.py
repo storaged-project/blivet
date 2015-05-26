@@ -106,7 +106,7 @@ class DiskDevice(StorageDevice):
 
     @property
     def description(self):
-        return self.model
+        return " ".join(s for s in (self.vendor, self.model) if s)
 
     def _preDestroy(self):
         """ Destroy the device. """

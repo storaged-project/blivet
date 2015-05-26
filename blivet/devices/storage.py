@@ -114,8 +114,8 @@ class StorageDevice(Device):
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
         self._serial = serial
-        self._vendor = vendor
-        self._model = model
+        self._vendor = vendor or ""
+        self._model = model or ""
         self.bus = bus
 
         self._readonly = False

@@ -476,12 +476,10 @@ class Populator(object):
         serial = udev.device_get_serial(info)
         bus = udev.device_get_bus(info)
 
-        # udev doesn't always provide a vendor.
-        vendor = udev.device_get_vendor(info)
-        if not vendor:
-            vendor = ""
+        vendor = util.get_sysfs_attr(sysfs_path, "device/vendor")
+        model = util.get_sysfs_attr(sysfs_path, "device/model")
 
-        kwargs = { "serial": serial, "vendor": vendor, "bus": bus }
+        kwargs = { "serial": serial, "vendor": vendor, "model": model, "bus": bus }
         if udev.device_is_iscsi(info):
             diskType = iScsiDiskDevice
             initiator = udev.device_get_iscsi_initiator(info)
@@ -561,7 +559,6 @@ class Populator(object):
         device = diskType(name,
                           major=udev.device_get_major(info),
                           minor=udev.device_get_minor(info),
-                          model=udev.device_get_model(info),
                           sysfsPath=sysfs_path, **kwargs)
 
         if diskType == DASDDevice:
