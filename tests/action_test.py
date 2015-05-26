@@ -940,7 +940,7 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that creates a format on a device should require an action
         # that resizes the device that will contain the format
         grow_lv = ActionResizeDevice(testlv, testlv.size + Size("1 GiB"))
-        fmt = self.newFormat("msdos", device=testlv.path)
+        fmt = self.newFormat("disklabel", device=testlv.path)
         format_lv = ActionCreateFormat(testlv, fmt)
         self.assertEqual(format_lv.requires(grow_lv), True)
         self.assertEqual(grow_lv.requires(format_lv), False)
