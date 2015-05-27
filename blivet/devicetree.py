@@ -53,7 +53,6 @@ from .platform import platform
 from . import tsort
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
-import parted
 from .i18n import _
 from .size import Size
 
@@ -172,6 +171,7 @@ class DeviceTree(object):
     @property
     def pvInfo(self):
         if self._pvInfo is None:
+            # pylint: disable=attribute-defined-outside-init
             self._pvInfo = lvm.pvinfo()
 
         return self._pvInfo
@@ -179,6 +179,7 @@ class DeviceTree(object):
     @property
     def lvInfo(self):
         if self._lvInfo is None:
+            # pylint: disable=attribute-defined-outside-init
             self._lvInfo = lvm.lvs()
 
         return self._lvInfo

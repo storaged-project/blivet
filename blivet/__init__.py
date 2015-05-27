@@ -132,8 +132,6 @@ def enable_installer_mode():
 
     flags.installer_mode = True
 
-    from . import deviceaction
-
 def getSysroot():
     """Returns the path to the target OS installation.
 
