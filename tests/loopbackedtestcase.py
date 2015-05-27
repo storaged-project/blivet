@@ -76,7 +76,7 @@ class LoopBackedTestCase(unittest.TestCase):
     _STORE_FILE_PATH = '/var/tmp'
 
     def __init__(self, methodName='runTest', deviceSpec=None, block_size=None):
-        """ DevicelibsTestCase manages loop devices.
+        """ LoopBackedTestCase manages loop devices.
 
             It constructs loop devices according to loopDeviceSpec,
             sets them up, and tears them down again.
