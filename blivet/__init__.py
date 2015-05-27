@@ -67,20 +67,13 @@ from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
-if not blockdev.is_initialized():
-    try:
-        blockdev.try_init(require_plugins=_requested_plugins, log_func=log_bd_message)
-    except GLib.GError:
-        pass
+try:
+    succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
+except GLib.GError as err:
+    raise RuntimeError("Failed to intialize the libblockdev library: %s" % err)
 else:
-    avail_plugs = set(blockdev.get_available_plugin_names())
-    if avail_plugs != _REQUESTED_PLUGIN_NAMES:
-        try:
-            blockdev.reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
-        except GLib.GError:
-            pass
+    avail_plugs = set(avail_plugs)
 
-avail_plugs = set(blockdev.get_available_plugin_names())
 missing_plugs =  _REQUESTED_PLUGIN_NAMES - avail_plugs
 for p in missing_plugs:
     log.info("Failed to load plugin %s", p)

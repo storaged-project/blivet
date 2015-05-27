@@ -18,7 +18,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define pypartedver 3.10.4
 %define e2fsver 1.41.0
 %define utillinuxver 2.15.1
-%define libblockdevver 0.10
+%define libblockdevver 1.0
 
 BuildArch: noarch
 BuildRequires: gettext
