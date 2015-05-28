@@ -25,6 +25,7 @@ from . import udev
 from . import util
 from .i18n import _
 from .util import stringize, unicodeize
+from gi.repository import BlockDev as blockdev
 
 import logging
 log = logging.getLogger("blivet")
@@ -41,15 +42,15 @@ zfcpconf = "/etc/zfcp.conf"
 
 class ZFCPDevice:
     def __init__(self, devnum, wwpn, fcplun):
-        self.devnum = self.sanitizeDeviceInput(devnum)
-        self.wwpn = self.sanitizeWWPNInput(wwpn)
-        self.fcplun = self.sanitizeFCPLInput(fcplun)
+        self.devnum = blockdev.s390.sanitize_dev_input(devnum)
+        self.wwpn = blockdev.s390.zfcp_sanitize_wwpn_input(wwpn)
+        self.fcplun = blockdev.s390.zfcp_sanitize_lun_input(fcplun)
 
-        if not self.checkValidDevice(self.devnum):
+        if not self.devnum:
             raise ValueError(_("You have not specified a device number or the number is invalid"))
-        if not self.checkValidWWPN(self.wwpn):
+        if not self.wwpn:
             raise ValueError(_("You have not specified a worldwide port name or the name is invalid."))
-        if not self.checkValidFCPLun(self.fcplun):
+        if not self.fcplun:
             raise ValueError(_("You have not specified a FCP LUN or the number is invalid."))
 
     # Force str and unicode types in case any of the properties are unicode
@@ -61,64 +62,6 @@ class ZFCPDevice:
 
     def __unicode__(self):
         return unicodeize(self._toString())
-
-    def sanitizeDeviceInput(self, dev):
-        if dev is None or dev == "":
-            return None
-        dev = dev.lower()
-        bus = dev[:dev.rfind(".") + 1]
-        dev = dev[dev.rfind(".") + 1:]
-        dev = "0" * (4 - len(dev)) + dev
-        if not len(bus):
-            return "0.0." + dev
-        else:
-            return bus + dev
-
-    def sanitizeWWPNInput(self, wwpn):
-        if wwpn is None or wwpn == "":
-            return None
-        wwpn = wwpn.lower()
-        if wwpn[:2] != "0x":
-            return "0x" + wwpn
-        return wwpn
-
-    # ZFCP LUNs are usually entered as 16 bit, sysfs accepts only 64 bit
-    # (#125632), expand with zeroes if necessary
-    def sanitizeFCPLInput(self, lun):
-        if lun is None or lun == "":
-            return None
-        lun = lun.lower()
-        if lun[:2] == "0x":
-            lun = lun[2:]
-        lun = "0x" + "0" * (4 - len(lun)) + lun
-        lun = lun + "0" * (16 - len(lun) + 2)
-        return lun
-
-    def _hextest(self, hexnum):
-        try:
-            int(hexnum, 16)
-            return True
-        except TypeError:
-            return False
-
-    def checkValidDevice(self, devnum):
-        if devnum is None or devnum == "":
-            return False
-        if len(devnum) != 8:             # p.e. 0.0.0600
-            return False
-        if devnum[0] not in string.digits or devnum[2] not in string.digits:
-            return False
-        if devnum[1] != "." or devnum[3] != ".":
-            return False
-        return self._hextest(devnum[4:])
-
-    def checkValid64BitHex(self, hexnum):
-        if hexnum is None or hexnum == "":
-            return False
-        if len(hexnum) != 18:
-            return False
-        return self._hextest(hexnum)
-    checkValidWWPN = checkValidFCPLun = checkValid64BitHex
 
     def onlineDevice(self):
         online = "%s/%s/online" %(zfcpsysfs, self.devnum)

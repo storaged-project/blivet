@@ -30,7 +30,7 @@ from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
-from . import formats
+from . import formats, arch
 from .devicelibs import lvm
 from .devicelibs import edd
 from . import udev
@@ -616,6 +616,42 @@ class DeviceTree(object):
         if not incomplete:
             devices = (d for d in devices if getattr(d, "complete", True))
         return devices
+
+    def make_dasd_list(self, dasds, disks):
+        """ Create a list of DASDs recognized by the system
+
+            :param list dasds: a list of DASD devices
+            :param list disks: a list of disks on the system
+            :returns: a list of DASD devices identified on the system
+            :rtype: list of :class:
+        """
+        if not arch.isS390():
+            return
+
+        log.info("Generating DASD list....")
+        for dev in (disk for disk in disks if disk.type == "dasd"):
+            if dev not in dasds:
+                dasds.append(dev)
+
+        return dasds
+
+    def make_unformatted_dasd_list(self, dasds):
+        """ Create a list of DASDs which are detected to require dasdfmt.
+
+            :param list dasds: a list of DASD devices
+            :returns: a list of DASDs which need dasdfmt in order to be used
+            :rtype: list of :class:
+        """
+        if not arch.isS390():
+            return
+
+        unformatted = []
+
+        for dasd in dasds:
+            if blockdev.s390.dasd_needs_format(dasd.busid):
+                unformatted.append(dasd)
+
+        return unformatted
 
     def getDeviceBySysfsPath(self, path, incomplete=False, hidden=False):
         """ Return a list of devices with a matching sysfs path.

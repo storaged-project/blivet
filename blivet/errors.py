@@ -179,10 +179,6 @@ class UnrecognizedFSTabEntryError(StorageError):
 class FSTabTypeMismatchError(StorageError):
     pass
 
-# dasd
-class DasdFormatError(StorageError):
-    pass
-
 # size
 class SizePlacesError(StorageError):
     pass

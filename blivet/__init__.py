@@ -52,7 +52,7 @@ get_bootloader = lambda: None
 import sys
 import importlib
 
-from . import util
+from . import util, arch
 from .flags import flags
 
 import logging
@@ -65,7 +65,11 @@ log_bd_message = lambda level, msg: program_log.info(msg)
 # initialize the libblockdev library
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
-_REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
+if arch.isS390():
+    _REQUIRED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390"))
+else:
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
+
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 try:
     succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)

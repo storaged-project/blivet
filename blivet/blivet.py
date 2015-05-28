@@ -38,7 +38,6 @@ from .devices import MDRaidArrayDevice, PartitionDevice, TmpFSDevice, devicePath
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .devicelibs.edd import get_edd_dict
-from .devicelibs.dasd import make_dasd_list, write_dasd_conf
 from .devicelibs.btrfs import MAIN_VOLUME_ID
 from .errors import StorageError
 from .size import Size
@@ -265,7 +264,7 @@ class Blivet(object):
             self.iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
-            self.dasd = make_dasd_list(self.dasd, self.devices)
+            self.dasd = self.devicetree.make_dasd_list(self.dasd, self.devices)
 
         if self.dasd:
             # Reset the internal dasd list (823534)
@@ -1380,7 +1379,19 @@ class Blivet(object):
         self.iscsi.write(getSysroot(), self)
         self.fcoe.write(getSysroot())
         self.zfcp.write(getSysroot())
-        write_dasd_conf(self.dasd, getSysroot())
+        self.write_dasd_conf(self.dasd, getSysroot())
+
+    def write_dasd_conf(self, disks, root):
+        """ Write /etc/dasd.conf to target system for all DASD devices
+            configured during installation.
+        """
+        if not (arch.isS390() and disks):
+            return
+
+        with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:
+            for dasd in sorted(disks, key=lambda d: d.name):
+                fields = [dasd.busid] + dasd.getOpts()
+                f.write("%s\n" % " ".join(fields),)
 
     def turnOnSwap(self):
         self.fsset.turnOnSwap(rootPath=getSysroot())
