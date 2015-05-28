@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-18 14:50-0700\n"
+"POT-Creation-Date: 2015-05-28 11:30-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -78,7 +78,7 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/populator.py:797
+#: ../blivet/populator.py:794
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -110,7 +110,7 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/zfcp.py:49 ../blivet/devicelibs/dasd.py:135
+#: ../blivet/zfcp.py:49
 msgid "You have not specified a device number or the number is invalid"
 msgstr ""
 
@@ -122,79 +122,79 @@ msgstr ""
 msgid "You have not specified a FCP LUN or the number is invalid."
 msgstr ""
 
-#: ../blivet/zfcp.py:136
+#: ../blivet/zfcp.py:78
 #, python-format
 msgid "zFCP device %s not found, not even in device ignore list."
 msgstr ""
 
-#: ../blivet/zfcp.py:146
+#: ../blivet/zfcp.py:88
 #, python-format
 msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:157
+#: ../blivet/zfcp.py:99
 #, python-format
 msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
 msgstr ""
 
 #. newer zfcp sysfs interface with auto port scan
-#: ../blivet/zfcp.py:164
+#: ../blivet/zfcp.py:106
 #, python-format
 msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
 msgstr ""
 
-#: ../blivet/zfcp.py:179
+#: ../blivet/zfcp.py:121
 #, python-format
 msgid ""
 "Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
 "(%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:185
+#: ../blivet/zfcp.py:127
 #, python-format
 msgid ""
 "LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
 msgstr ""
 
-#: ../blivet/zfcp.py:197
+#: ../blivet/zfcp.py:139
 #, python-format
 msgid ""
 "Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
 "device %(devnum)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:206
+#: ../blivet/zfcp.py:148
 #, python-format
 msgid ""
 "Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
 "again."
 msgstr ""
 
-#: ../blivet/zfcp.py:263
+#: ../blivet/zfcp.py:205
 #, python-format
 msgid ""
 "Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
 "%(fcplun)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:272
+#: ../blivet/zfcp.py:214
 #, python-format
 msgid ""
 "Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
 "(%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:290
+#: ../blivet/zfcp.py:232
 #, python-format
 msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:316
+#: ../blivet/zfcp.py:258
 #, python-format
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:378
+#: ../blivet/zfcp.py:320
 msgid "Error"
 msgstr ""
 
@@ -542,23 +542,8 @@ msgid ""
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
-#: ../blivet/blivet.py:1193
+#: ../blivet/blivet.py:1192
 msgid "You must create a new filesystem on the root device."
-msgstr ""
-
-#: ../blivet/devicelibs/dasd.py:158
-#, python-format
-msgid "DASD device %s not found, not even in device ignore list."
-msgstr ""
-
-#: ../blivet/devicelibs/dasd.py:165
-#, python-format
-msgid "Device %s is already online."
-msgstr ""
-
-#: ../blivet/devicelibs/dasd.py:171
-#, python-format
-msgid "Could not set DASD device %(dev)s online (%(e)s)."
 msgstr ""
 
 #: ../blivet/devicelibs/lvm.py:48

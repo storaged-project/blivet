@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.4
+Version: 1.5
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -108,6 +108,23 @@ popd
 %endif
 
 %changelog
+* Thu May 28 2015 Brian C. Lane <bcl@redhat.com> - 1.5-1
+- Get rid of an unused import in blivet.zfcp (sbueno+anaconda)
+- Make appropriate changes to adapt for s390 libblockdev plugin.
+  (sbueno+anaconda)
+- Drop check from the release build target (bcl)
+- Merge pull request #127 from vpodzime/master-libblockdev_1.0 (vpodzime)
+- Adapt to the new libblockdev initialization API (vpodzime)
+- Merge pull request #111 from dwlehman/disk-model-branch (dlehman)
+- Store vendor/model information for DiskDevice instances. (dlehman)
+- Require new version of pyparted with Python 3 related fixes (vpodzime)
+- Merge pull request #114 from vojtechtrefny/fix_lvmsnapshot_size2 (vtrefny)
+- Merge pull request #118 from mulkieran/master-hawkey (mulkieran)
+- Use python-hawkey instead of rpm-python. (amulhern)
+- Add a dead simple test for some basic task and resource functionality.
+  (amulhern)
+- Use COW device to get actual size of LVM snapshots (vtrefny)
+
 * Mon May 18 2015 Brian C. Lane <bcl@redhat.com> - 1.4-1
 - Workaround for chrooted mountpoints  (#1217578) (vtrefny)
 - Merge pull request #116 from mulkieran/master-gerror (mulkieran)
