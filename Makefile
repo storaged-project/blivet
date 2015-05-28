@@ -62,7 +62,7 @@ tag:
 	  echo "Tagged as $$tag" ; \
 	done
 
-release: check tag archive
+release: tag archive
 
 archive: po-pull
 	@rm -f ChangeLog
