@@ -72,6 +72,19 @@ class MDRaidArrayDevice(ContainerDevice):
             :type metadataVersion: str (eg: "0.90")
             :keyword minor: the device minor (obsolete?)
             :type minor: int
+
+            .. note::
+
+                An instance of this class whose :attr:`exists` attribute is
+                True and whose parent/member devices are all partitionable is
+                also considered to be partitionable.
+
+            .. note::
+
+                An instance of this class whose :attr:`exists` attribute is
+                True and whose parent/member devices are all disks is also
+                treated like a disk.
+
         """
         # pylint: disable=unused-argument
 
@@ -337,6 +350,13 @@ class MDRaidArrayDevice(ContainerDevice):
             self._totalDevices += 1
             self.memberDevices += 1
 
+        # The new member hasn't been added yet, so account for it explicitly.
+        is_disk = self.isDisk and member.isDisk
+        for p in self.parents:
+            p.format._hidden = is_disk
+
+        member.format._hidden = is_disk
+
     def _removeParent(self, member):
         """ If this is a raid array that is not actually redundant and it
             appears to have formatting and therefore probably data on it,
@@ -478,6 +498,10 @@ class MDRaidArrayDevice(ContainerDevice):
         if self.type == "mdcontainer" or self.type == "mdbiosraidarray":
             return
 
+        if self.isDisk:
+            # treat arrays whose members are disks as partitionable disks
+            return
+
         # We don't really care what the array's state is. If the device
         # file exists, we want to deactivate it. mdraid has too many
         # states.
@@ -567,11 +591,13 @@ class MDRaidArrayDevice(ContainerDevice):
 
     @property
     def partitionable(self):
-        return self.type == "mdbiosraidarray"
+        return (self.type == "mdbiosraidarray" or
+                (self.exists and all(p.partitionable for p in self.parents)))
 
     @property
     def isDisk(self):
-        return self.type == "mdbiosraidarray"
+        return (self.type == "mdbiosraidarray" or
+                (self.exists and all(p.isDisk for p in self.parents)))
 
     def dracutSetupArgs(self):
         return set(["rd.md.uuid=%s" % self.mdadmFormatUUID])
