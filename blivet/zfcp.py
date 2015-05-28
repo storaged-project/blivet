@@ -19,7 +19,6 @@
 # Author(s): Karsten Hopp <karsten@redhat.com>
 #
 
-import string               # pylint: disable=deprecated-module
 import os
 from . import udev
 from . import util
