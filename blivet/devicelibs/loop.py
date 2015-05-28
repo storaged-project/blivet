@@ -54,11 +54,17 @@ def get_backing_file(name):
 def get_loop_name(path):
     args = ["-j", path]
     buf = losetup(args, capture=True)
-    if len(buf.splitlines()) > 1:
-        # there should never be more than one loop device listed
-        raise LoopError("multiple loops associated with %s" % path)
 
-    name = os.path.basename(buf.split(":")[0])
+    entries = buf.splitlines()
+    if not entries:
+        return ""
+
+    first_entry = entries[0]
+    if len(entries) > 1:
+        # If there are multiple loop devices use the first one
+        log.warning("multiple loops associated with %s. Using %s", path, first_entry)
+
+    name = os.path.basename(first_entry.split(":")[0])
     return name
 
 def loop_setup(path):

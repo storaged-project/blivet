@@ -24,6 +24,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("bugzilla")
 log.setLevel(logging.INFO)
+urllib_log = logging.getLogger("requests.packages.urllib3")
+urllib_log.setLevel(logging.ERROR)
 
 import bugzilla
 import datetime
@@ -131,7 +133,7 @@ class MakeBumpVer:
 
         return ret
 
-    def _queryBug(self, bug):
+    def _queryBug(self, bugid):
         if not self.bz:
             sys.stdout.write("Connecting to %s...\n" % self.bzserver)
 
@@ -151,17 +153,17 @@ class MakeBumpVer:
             rc = self.bz.login(self.username, self.password)
             log.debug("login rc = %s", rc)
 
-        if bug in self._bz_cache:
-            return self._bz_cache[bug]
+        if bugid in self._bz_cache:
+            return self._bz_cache[bugid]
 
-        bugs = self.bz.query({'bug_id': bug})
-        log.debug("bugs = %s", bugs)
+        bug = self.bz.getbug(bugid, extra_fields="flags")
+        log.debug("bug = %s", bug)
 
-        if len(bugs) != 1:
+        if not bug:
             return None
         else:
-            self._bz_cache[bug] = bugs[0]
-            return bugs[0]
+            self._bz_cache[bugid] = bug
+            return bug
 
     def _isRHELBug(self, bug, commit, summary):
         bzentry = self._queryBug(bug)
@@ -233,6 +235,7 @@ class MakeBumpVer:
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
         lines = filter(lambda x: x.find('l10n: ') != 41 and \
+                                 x.find('Merge pull') != 41 and \
                                  x.find('Merge commit') != 41 and \
                                  x.find('Merge branch') != 41,
                        proc[0].strip('\n').split('\n'))
@@ -488,6 +491,7 @@ def main(argv):
             skip_acks = True
         elif o in ('-d', '--debug'):
             log.setLevel(logging.DEBUG)
+            urllib_log.setLevel(logging.DEBUG)
         elif o in ('-?', '--help'):
             show_help = True
         else:
