@@ -26,7 +26,7 @@ body {
   border: 1px solid #b3b3b3;
   border-radius: 4px;
   margin: 0 auto;
-  box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 white;
+  box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
   background: #fcfcfc; }
 
 /* google search */
@@ -41,11 +41,11 @@ body {
 
 /* line 38, /home/david/src/blivet-web/source/stylesheets/404.css.sass */
 #goog-wm-qt, #goog-wm-sb {
-  border: 1px solid #bbbbbb;
+  border: 1px solid #bbb;
   font-size: 16px;
   line-height: normal;
   vertical-align: top;
-  color: #444444;
+  color: #444;
   border-radius: 2px; }
 
 /* line 46, /home/david/src/blivet-web/source/stylesheets/404.css.sass */
@@ -53,7 +53,7 @@ body {
   width: 220px;
   padding: 5px;
   margin: 5px 10px 0 0;
-  box-shadow: inset 0 1px 1px #cccccc; }
+  box-shadow: inset 0 1px 1px #ccc; }
 
 /* line 53, /home/david/src/blivet-web/source/stylesheets/404.css.sass */
 #goog-wm-sb {
@@ -63,7 +63,7 @@ body {
   margin: 5px 0 0;
   white-space: nowrap;
   cursor: pointer;
-  background-color: whitesmoke;
+  background-color: #f5f5f5;
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0), #f1f1f1);
   background-image: -moz-linear-gradient(rgba(255, 255, 255, 0), #f1f1f1);
   background-image: -ms-linear-gradient(rgba(255, 255, 255, 0), #f1f1f1);
@@ -76,7 +76,7 @@ body {
   *zoom: 1; }
   /* line 71, /home/david/src/blivet-web/source/stylesheets/404.css.sass */
   #goog-wm-sb:hover, #goog-wm-sb:focus {
-    border-color: #aaaaaa;
+    border-color: #aaa;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     background-color: #f8f8f8; }
 
@@ -84,7 +84,7 @@ body {
 #goog-wm-qt:hover, #goog-wm-qt:focus {
   border-color: #105cb6;
   outline: 0;
-  color: #222222; }
+  color: #222; }
 
 /* line 82, /home/david/src/blivet-web/source/stylesheets/404.css.sass */
 input::-moz-focus-inner {

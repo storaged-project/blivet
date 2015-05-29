@@ -9,7 +9,8 @@
 <!-- <![endif] -->
 <head>
 <title>
-
+Blivet
+News &mdash;
 Blivet
 </title>
 <meta charset='utf-8'>
@@ -18,31 +19,35 @@ Blivet
 <meta content='initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width' name='viewport'>
 <link href='/blog/feed.xml' rel='alternate' title='Atom feed' type='application/atom+xml'>
 
-<link href="/blivet/stylesheets/application.css?1405103566" media="screen" rel="stylesheet" type="text/css" />
-<link href="/blivet/stylesheets/print.css?1405103566" media="print" rel="stylesheet" type="text/css" />
+<link href='/images/favicon.ico' rel='shortcut icon'>
+<link href='/images/apple-touch-icon-precomposed.png' rel='apple-touch-icon-precomposed'>
+<link href='/images/apple-touch-icon-57x57-precomposed.png' rel='apple-touch-icon-precomposed' sizes='57x57'>
+<link href='/images/apple-touch-icon-72x72-precomposed.png' rel='apple-touch-icon-precomposed' sizes='72x72'>
+<link href='/images/apple-touch-icon-114x114-precomposed.png' rel='apple-touch-icon-precomposed' sizes='114x114'>
+<link href="/blivet/stylesheets/application.css?1432929739" rel="stylesheet" type="text/css" />
+<link href="/blivet/stylesheets/print.css?1432135233" rel="stylesheet" type="text/css" media="print" />
 </head>
-<body class='pages pages_index source-haml'>
+<body class=' pages pages_index source-haml'>
 <header class='masthead hidden-print' id='branding' role='banner'>
 <section>
 <h1>
 <a href="/blivet/"><img id="rhlogo" class="logo" alt="Blivet" width="222" height="55" src="/blivet/images/blivet-logo.png?1405103565" />
-</a>
-</h1>
+</a></h1>
 <nav role='navigation'>
 <ul class=''>
-<li role='menuitem'>
+<li class='nav-link-home' role='menuitem'>
 <a href='/blivet/'>Home</a>
 </li>
 
-<li role='menuitem'>
+<li class='nav-link-about' role='menuitem'>
 <a href='/blivet/about'>About</a>
 </li>
 
-<li role='menuitem'>
+<li class='nav-link-development' role='menuitem'>
 <a href='/blivet/development'>Development</a>
 </li>
 
-<li role='menuitem'>
+<li class='nav-link-blog' role='menuitem'>
 <a href='/blivet/blog'>Blog</a>
 </li>
 
@@ -51,11 +56,11 @@ Blivet
 
 </section>
 </header>
-
 <header id='subhead'>
 <section>
 </section>
 </header>
+
 
 <section class='container' id='page-wrap'>
 <section id='page'>
@@ -77,6 +82,37 @@ News
 <article class='post hentry'>
 <header class='post-header'>
 <h2 class='post-title entry-title'>
+<a href="/blivet/blog/2015/03/blivet/">bcache and/vs. LVM cache</a>
+</h2>
+<header class='post-meta'>
+<span class='byline'>
+by
+<span class='author vcard'>
+<a href="/blivet/blog/author/vpodzime/">Vratislav Podzimek</a>
+</span>
+</span>
+&ndash;
+<time class='published' datetime='2015-03-20T00:00:00Z'>
+Thursday 19 March
+</time>
+</header>
+</header>
+<section class='post-content entry-content'>
+<h2 id="whats-going-on-here">What's going on here?</h2>
+
+<p>One of the bottlenecks of today's computers is storage. While CPUs,
+buses and other components of computers have really nice values of
+throughput going up to several GiBs/s, disks are really slow compared to
+them. HDDs give few...</p>
+<a class="more-link read-more" href="/blivet/blog/2015/03/blivet/">Read More &raquo;</a>
+</section>
+<footer class='post-meta'>
+</footer>
+</article>
+
+<article class='post hentry'>
+<header class='post-header'>
+<h2 class='post-title entry-title'>
 <a href="/blivet/blog/2014/07/blivet/">Introduction</a>
 </h2>
 <header class='post-meta'>
@@ -88,7 +124,7 @@ by
 </span>
 &ndash;
 <time class='published' datetime='2014-07-16T00:00:00Z'>
-Wednesday 16 July
+Tuesday 15 July 2014
 </time>
 </header>
 </header>
@@ -99,7 +135,7 @@ avoid going into too much detail.</p>
 <p>Blivet is a python module for configuring storage on Linux. It is also the
 storage backend for <a href="https://fedoraproject.org/wiki/Anaconda">Anaconda</a> –
 the <a href="http://fedoraproject.org">Fedora</a> OS installer. That...</p>
-<a class=".more-link.read-more" href="/blivet/blog/2014/07/blivet/">Read More &raquo;</a>
+<a class="more-link read-more" href="/blivet/blog/2014/07/blivet/">Read More &raquo;</a>
 </section>
 <footer class='post-meta'>
 </footer>
@@ -126,6 +162,8 @@ Thu 10 Jul 2014 22:35 UTC
 </div>
 </footer>
 
-<script src="/blivet/javascripts/application.js?1405103566" type="text/javascript"></script>
+
+<script src="/blivet/javascripts/application.js?1432135887" type="text/javascript"></script>
+
 </body>
 </html>

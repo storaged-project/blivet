@@ -21,7 +21,7 @@ Blivet
 <meta content='article' property='og:type'>
 <meta content='Introduction' property='og:title'>
 <meta content='In this first post I want to give a quick introduction to Blivet. I will try to&#x000A;avoid going into too much detail.&#x000A;&#x000A;Blivet is a python module for configuring storage on Linux. It is also the&#x000A;storage...' property='og:description'>
-<meta content='http://dwlehman.github.io/blivet/blog/2014/07/blivet/' property='og:url'>
+<meta content='http://rhinstaller.github.io/blivet/blog/2014/07/blivet/' property='og:url'>
 <meta content='2014-07-16T00:00:00Z' property='article:published_time'>
 <meta content='dlehman' property='article:author:username'>
 <!-- Twitter card -->
@@ -29,31 +29,35 @@ Blivet
 <meta content='Introduction' name='twitter:title'>
 <meta content='In this first post I want to give a quick introduction to Blivet. I will try to&#x000A;avoid going into too much detail.&#x000A;&#x000A;Blivet is a python module for configuring storage on Linux. It is also the&#x000A;storage...' name='twitter:description'>
 
-<link href="/blivet/stylesheets/application.css?1405103566" media="screen" rel="stylesheet" type="text/css" />
-<link href="/blivet/stylesheets/print.css?1405103566" media="print" rel="stylesheet" type="text/css" />
+<link href='/images/favicon.ico' rel='shortcut icon'>
+<link href='/images/apple-touch-icon-precomposed.png' rel='apple-touch-icon-precomposed'>
+<link href='/images/apple-touch-icon-57x57-precomposed.png' rel='apple-touch-icon-precomposed' sizes='57x57'>
+<link href='/images/apple-touch-icon-72x72-precomposed.png' rel='apple-touch-icon-precomposed' sizes='72x72'>
+<link href='/images/apple-touch-icon-114x114-precomposed.png' rel='apple-touch-icon-precomposed' sizes='114x114'>
+<link href="/blivet/stylesheets/application.css?1432929739" rel="stylesheet" type="text/css" />
+<link href="/blivet/stylesheets/print.css?1432135233" rel="stylesheet" type="text/css" media="print" />
 </head>
-<body class='blog blog_2014 blog_2014_07 blog_2014_07_blivet blog_2014_07_blivet_index source-md'>
+<body class=' blog blog_2014 blog_2014_07 blog_2014_07_blivet blog_2014_07_blivet_index source-md'>
 <header class='masthead hidden-print' id='branding' role='banner'>
 <section>
 <h1>
 <a href="/blivet/"><img id="rhlogo" class="logo" alt="Blivet" width="222" height="55" src="/blivet/images/blivet-logo.png?1405103565" />
-</a>
-</h1>
+</a></h1>
 <nav role='navigation'>
 <ul class=''>
-<li role='menuitem'>
+<li class='nav-link-home' role='menuitem'>
 <a href='/blivet/'>Home</a>
 </li>
 
-<li role='menuitem'>
+<li class='nav-link-about' role='menuitem'>
 <a href='/blivet/about'>About</a>
 </li>
 
-<li role='menuitem'>
+<li class='nav-link-development' role='menuitem'>
 <a href='/blivet/development'>Development</a>
 </li>
 
-<li role='menuitem'>
+<li class='nav-link-blog' role='menuitem'>
 <a href='/blivet/blog'>Blog</a>
 </li>
 
@@ -62,7 +66,6 @@ Blivet
 
 </section>
 </header>
-
 <header id='subhead'>
 <section>
 <h2 id='page-title'>
@@ -70,6 +73,7 @@ News
 </h2>
 </section>
 </header>
+
 
 <section class='container' id='page-wrap'>
 <section id='page'>
@@ -79,8 +83,8 @@ News
 <a href="http://browsehappy.com/">Upgrade your browser today</a> or
 <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
 <![endif]-->
-<div class='row'>
-<div class='col-lg-10 col-lg-offset-1'>
+<section class='blog-post-page row'>
+<div class='col-md-12'>
 <article class='post hentry'>
 <header class='post-header'>
 <h2 class='post-title entry-title'>
@@ -95,7 +99,7 @@ by
 </span>
 &ndash;
 <time class='published' datetime='2014-07-16T00:00:00Z'>
-Wednesday 16 July
+Tuesday 15 July 2014
 </time>
 </header>
 </header>
@@ -104,9 +108,9 @@ Wednesday 16 July
 avoid going into too much detail.</p>
 
 <p>Blivet is a python module for configuring storage on Linux. It is also the
-storage backend for <a href="https://fedoraproject.org/wiki/Anaconda">Anaconda</a> &ndash;
-the <a href="http://fedoraproject.org">Fedora</a> OS installer. That&rsquo;s where
-Blivet came from, so anything you&rsquo;ve done with storage while installing
+storage backend for <a href="https://fedoraproject.org/wiki/Anaconda">Anaconda</a> –
+the <a href="http://fedoraproject.org">Fedora</a> OS installer. That's where
+Blivet came from, so anything you've done with storage while installing
 Fedora (since Fedora 11) is something Blivet can do.</p>
 
 <p>It can create and manage LVM (including snapshots and thin provisioning), MD,
@@ -114,10 +118,10 @@ LUKS, BTRFS (including subvolumes, snapshots, and RAID), and a whole slew of
 other storage technologies.</p>
 
 <p>Blivet uses a model in which changes (like creating a new device) are
-represented by actions. Once an action has been registered, Blivet&rsquo;s device
+represented by actions. Once an action has been registered, Blivet's device
 tree will reflect the change as if it were already done. That allows you to
-stack changes &ndash; for example, remove existing partitions from a disk, then
-reinitialize the disk, then create a complex device stack on that disk &ndash; all
+stack changes – for example, remove existing partitions from a disk, then
+reinitialize the disk, then create a complex device stack on that disk – all
 without writing any changes to the disk. You can also cancel actions at any
 time before they are executed if you change your mind about what you want to
 do. Once you are satisfied with the overall layout you can write the changes to
@@ -147,7 +151,7 @@ About
 David Lehman
 </h2>
 <div class='author-blurb'>
-Original author of blivet, now an aspiring web developer.
+<p>Author of blivet, member of anaconda development team.</p>
 
 <div class='more-link'>
 <a href="/blivet/blog/author/dlehman/">View all posts by David Lehman &raquo;</a>
@@ -159,13 +163,19 @@ Original author of blivet, now an aspiring web developer.
 
 <section id='blog-comments'></section>
 </div>
-<div class='col-sm-4'>
+</section>
+<section class='row'>
+<div class='col-md-12'>
 <aside>
 <h3>Recent Articles</h3>
 <ol>
 <li>
+<a href="/blivet/blog/2015/03/blivet/">bcache and/vs. LVM cache</a>
+<span>Thursday 19 March</span>
+</li>
+<li>
 <a href="/blivet/blog/2014/07/blivet/">Introduction</a>
-<span>Wednesday 16 July</span>
+<span>Tuesday 15 July 2014</span>
 </li>
 </ol>
 <h3>Tags</h3>
@@ -176,13 +186,17 @@ Original author of blivet, now an aspiring web developer.
 <h3>By Year</h3>
 <ol>
 <li>
+<a href="/blivet/blog/2015/">2015</a>
+(1)
+</li>
+<li>
 <a href="/blivet/blog/2014/">2014</a>
 (1)
 </li>
 </ol>
 -->
 </div>
-</div>
+</section>
 
 </section>
 </section>
@@ -197,7 +211,8 @@ Wed 16 Jul 2014 21:30 UTC
 </div>
 </footer>
 
-<script src="/blivet/javascripts/application.js?1405103566" type="text/javascript"></script>
+
+<script src="/blivet/javascripts/application.js?1432135887" type="text/javascript"></script>
+
 </body>
 </html>
-

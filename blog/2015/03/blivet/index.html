@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie10 lt-ie9 lt-ie8 lt-ie7" lang="en-us"> <![endif]-->
+<!--[if IE 7]> <html class="no-js lt-ie10 lt-ie9 lt-ie8" lang="en-us"> <![endif]-->
+<!--[if IE 8]> <html class="no-js lt-ie10 lt-ie9" lang="en-us"> <![endif]-->
+<!--[if IE 9]> <html class="no-js lt-ie10 lt-ie9" lang="en-us"> <![endif]-->
+<!--[if lt IE 10]> <html class="no-js lt-ie10" lang="en-us"> <![endif]-->
+<!--[if !IE]> > <![endif]-->
+<html class='no-js' lang='en'>
+<!-- <![endif] -->
+<head>
+<title>
+bcache and/vs. LVM cache &mdash;
+Blivet
+</title>
+<meta charset='utf-8'>
+<meta content='' name='description'>
+<meta content='Vratislav Podzimek' name='author'>
+<meta content='initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width' name='viewport'>
+<link href='/blog/feed.xml' rel='alternate' title='Atom feed' type='application/atom+xml'>
+<!-- Open Graph (FB / G+) -->
+<meta content='article' property='og:type'>
+<meta content='bcache and/vs. LVM cache' property='og:title'>
+<meta content="What's going on here?&#x000A;&#x000A;One of the bottlenecks of today's computers is storage. While CPUs,&#x000A;buses and other components of computers have really nice values of&#x000A;throughput going up to several GiBs/s, disks..." property='og:description'>
+<meta content='http://rhinstaller.github.io/blivet/blog/2015/03/blivet/' property='og:url'>
+<meta content='2015-03-20T00:00:00Z' property='article:published_time'>
+<meta content='vpodzime' property='article:author:username'>
+<!-- Twitter card -->
+<meta content='summary' name='twitter:card'>
+<meta content='bcache and/vs. LVM cache' name='twitter:title'>
+<meta content="What's going on here?&#x000A;&#x000A;One of the bottlenecks of today's computers is storage. While CPUs,&#x000A;buses and other components of computers have really nice values of&#x000A;throughput going up to several GiBs/s, disks..." name='twitter:description'>
+
+<link href='/images/favicon.ico' rel='shortcut icon'>
+<link href='/images/apple-touch-icon-precomposed.png' rel='apple-touch-icon-precomposed'>
+<link href='/images/apple-touch-icon-57x57-precomposed.png' rel='apple-touch-icon-precomposed' sizes='57x57'>
+<link href='/images/apple-touch-icon-72x72-precomposed.png' rel='apple-touch-icon-precomposed' sizes='72x72'>
+<link href='/images/apple-touch-icon-114x114-precomposed.png' rel='apple-touch-icon-precomposed' sizes='114x114'>
+<link href="/blivet/stylesheets/application.css?1432929739" rel="stylesheet" type="text/css" />
+<link href="/blivet/stylesheets/print.css?1432135233" rel="stylesheet" type="text/css" media="print" />
+</head>
+<body class=' blog blog_2015 blog_2015_03 blog_2015_03_blivet blog_2015_03_blivet_index source-md'>
+<header class='masthead hidden-print' id='branding' role='banner'>
+<section>
+<h1>
+<a href="/blivet/"><img id="rhlogo" class="logo" alt="Blivet" width="222" height="55" src="/blivet/images/blivet-logo.png?1405103565" />
+</a></h1>
+<nav role='navigation'>
+<ul class=''>
+<li class='nav-link-home' role='menuitem'>
+<a href='/blivet/'>Home</a>
+</li>
+
+<li class='nav-link-about' role='menuitem'>
+<a href='/blivet/about'>About</a>
+</li>
+
+<li class='nav-link-development' role='menuitem'>
+<a href='/blivet/development'>Development</a>
+</li>
+
+<li class='nav-link-blog' role='menuitem'>
+<a href='/blivet/blog'>Blog</a>
+</li>
+
+</ul>
+</nav>
+
+</section>
+</header>
+<header id='subhead'>
+<section>
+<h2 id='page-title'>
+News
+</h2>
+</section>
+</header>
+
+
+<section class='container' id='page-wrap'>
+<section id='page'>
+<section class='container content' id='content'>
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an outdated browser.
+<a href="http://browsehappy.com/">Upgrade your browser today</a> or
+<a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+<![endif]-->
+<section class='blog-post-page row'>
+<div class='col-md-12'>
+<article class='post hentry'>
+<header class='post-header'>
+<h2 class='post-title entry-title'>
+bcache and/vs. LVM cache
+</h2>
+<header class='post-meta'>
+<span class='byline'>
+by
+<span class='author vcard'>
+<a href="/blivet/blog/author/vpodzime/">Vratislav Podzimek</a>
+</span>
+</span>
+&ndash;
+<time class='published' datetime='2015-03-20T00:00:00Z'>
+Thursday 19 March
+</time>
+</header>
+</header>
+<section class='post-content entry-content'>
+<h2 id="whats-going-on-here">What's going on here?</h2>
+
+<p>One of the bottlenecks of today's computers is storage. While CPUs,
+buses and other components of computers have really nice values of
+throughput going up to several GiBs/s, disks are really slow compared to
+them. HDDs give few hundreds of MiBs/s at most when performing
+sequential read/write and much less when doing random I/O operations.
+While SSDs are much faster than HDDs especially in doing random I/O
+operations they are much more expensive and thus not so great for big
+amounts of data. As usual in today's world, the key word for a win-win
+solution is the word "hybrid". In this case a combination of HDD and SSD
+(or just their technologies in a single piece of hardware) using a lot
+of HDD-based space together with small SSD-based space as a cache
+providing fast access to (typically) most frequently used data. There
+are many hardware solutions that provide such hybrid disks, but they
+have the same drawbacks as hardware RAIDs –they are not at all flexible
+and really good just for a particular use case. And as with the hardware
+RAIDs the solution for better flexibility and broader range of use cases
+is to use a software RAID, with hybrid disks software comes into to this
+game (to win it, maybe?) with multiple approaches. Two most widely used
+and probably also most advanced are <em>bcache</em> and <em>LVM-cache</em> (or
+<em>dm-cache</em> as explained below). So what these two are and how they
+differ? Let's focus on each separately and then compare them a bit.</p>
+
+<h2 id="bcache">bcache</h2>
+
+<h3 id="what-it-is">What it is?</h3>
+
+<p><em>bcache</em> or <em>Block (level) cache</em> is a software cache technology being
+developed and maintained as part of the Linux kernel codebase which as
+it's name suggests provides cache functionality on top of arbitrary
+(pair of) block devices. As with any other cache technology <em>bcache</em>
+needs some backing space (holding data that should be cached), typically
+on a slow device, and some cache space, typically on a fast device.
+Combined with the fact that <em>bcache</em> is a <em>block level</em> cache we get the
+fact that both backing space and cache space could be arbitrary block
+devices – i.e. disks, partitions, iSCSI LUNs, MD RAID devices, etc.</p>
+
+<h3 id="deployment-options">Deployment options</h3>
+
+<p>The simplest solution is to use an HDD (let's say <code>/dev/sda</code>) together
+with an SSD (let's say <code>/dev/sdb</code>), create a <em>bcache</em> on top of them (as
+described below) and then partition the bcache device for the system. A
+bit more complicated solution is to create partitions on the HDD and SSD
+and create one or more bcache devices on top of partitions that are
+desired to be cached. Why one should even think about this more
+complicated solution? It provides much better flexibility. While by
+creating bcache on top of the whole HDD and SSD devices gives us
+basically the same as hybrid disks except that we need two SATA ports
+and we can choose from more HDD and SSD sizes creating bcache(s) on top
+of partitions allows us e.g. to have some data (e.g. system data)
+directly on SSD and some other data in a bcache (HDD+SSD) or even have
+multiple bcache devices with different backing space and cache space
+sizes or even caching policies (see below for details).</p>
+
+<h3 id="setting-up">Setting up</h3>
+
+<p>So, let's say we have an HDD (<code>/dev/sda</code>) and an SSD (<code>/dev/sdb</code>) and we
+have some partitions created on them – let's say <code>/dev/sda1</code> on the
+whole HDD (to be used for <code>/mnt/data</code>) and <code>/dev/sdb1</code> used for system
+(<code>/</code>) plus <code>/dev/sdb2</code> (dedicated for cache) on SSD.</p>
+
+<p>First of all we need to install the tools that will allow us to create,
+configure and monitor the bcache. These are typically a part of a
+package called <code>bcache-tools</code> or similar. So on my Fedora 21 system, I
+need to run the following command to get it (<code>#</code> means it should be run
+as root):</p>
+
+<pre class="highlight plaintext"># dnf install bcache-tools</pre>
+
+<p>Another tool we will need is the <code>wipefs</code> tool which is part of the
+<code>util-linux</code> package that should already be installed in the system.</p>
+
+<p>With all the necessary tools available, we can now proceed to the
+<em>bcache</em> creation. But before we start creating something new we need to
+first wipe all old weird things from the block devices (in our case
+partitions) we want to use (<strong>WARNING: this removes all file system and
+other signatures from /dev/sda1 and /dev/sdb2 partitions</strong>):</p>
+
+<pre class="highlight plaintext"># wipefs -a /dev/sda1&#x000A;# wipefs -a /dev/sdb1</pre>
+
+<p>Cleaned up. Now, as is usual with basically all storage technologies, we
+need to write some metadata to the devices we want to use for our bcache
+so that the code providing the cache technology can identify such
+devices as bcache devices and so that it can store some configuration,
+status, etc. data there. Let's do it then:</p>
+
+<pre class="highlight plaintext"># make-bcache -B /dev/sda1</pre>
+
+<p>This command writes bcache metadata for the backing device (space) to
+the partition <code>/dev/sda1</code> (which is on the HDD). Believe it or not, but
+this is all we needed to create a bcache device. If <em>udev</em> is running
+and appropriate <em>udev</em> rules are effective (if not, we have to do it
+manually <sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup>), we should now be able to see the <code>/dev/bcache0</code> device
+node and the <code>/dev/bcache/</code> directory (try listing it to see what's
+inside) in our file system hierarchy which we could start using. Really?
+Is that everything that needs to be done? Well, it's not that easy.
+Remember that every cache technology needs backing space and cache space
+and with the command above we have only defined the backing device
+(space). So we now of course have to define the cache device (space)
+again by writing some metadata into it:</p>
+
+<pre class="highlight plaintext"># make-bcache -C /dev/sdb1</pre>
+
+<p>The result is that we now have the metadata written to both the backing
+device (space) and the cache device (space). However, these devices
+don't know about each other and the caching code (i.e. the kernel in
+case of bcache) has no idea about our intention of using <code>/dev/sdb1</code> as
+a cache device for <code>/dev/sda1</code>. Remember that the first <code>make-bcache</code>
+run created the <code>/dev/bcache0</code> device that was from the first moment
+usable? Well, it was usable as a <em>bcache</em> device, but without any
+caching device which is not really useful. The last step missing is to
+attach the cache device to our bcache device <code>bcache0</code> by writing the
+<code>Set UUID</code> from the <code>make-bcache -C</code> run to the appropriate file:</p>
+
+<pre class="highlight plaintext"># echo C_Set_UUID_VALUE &gt; /sys/block/bcache0/bcache/attach</pre>
+
+<p>From now on we can enjoy the speed, noise and other improvements
+provided by the use of our cache. The <code>/dev/bcache0</code> device is just a
+common block device and the easiest thing to do with it is to run e.g.
+<code>mkfs.xfs</code> on it, mount the file system to e.g. <code>/mnt/data</code> and copy
+some data to it. If we later want to detach the cache device from the
+bcache device, we just use the <code>detach</code> file instead of the <code>attach</code>
+file in the same directory under <code>/sys</code>.</p>
+
+<p>As I've mentioned in the beginning of this post, SW-based cache
+solutions provide more flexibility as HW solutions. One area of such
+flexibility is configuration because it is quite easy to make a SW
+solution configurable and extensible compared to a HW solutions. The
+configuration of our bcache can be controlled by reading and writing
+files under the <code>/sys</code> file system. The most useful and easiest example
+is changing the mode of cache – the default is <code>writethrough</code> which is
+the safest one, but which on the other hand doesn't save the backing
+device (HDD) from many random write operations. Another typical mode is
+<code>writeback</code> which keeps the data in the cache (SSD) and once in a while
+writes them back to the backing device. To change the mode we simply run
+the following command:</p>
+
+<pre class="highlight plaintext"># echo writeback &gt; /sys/block/bcache0/bcache/cache_mode</pre>
+
+<p>However, this change is only temporary and we have to do the same after
+every boot of the system if we want to always use the <code>writeback</code> mode
+(of course we can do this in a <em>udev</em> rule, <em>systemd</em> service, init
+script or whatever we prefer instead of doing it manually after each
+boot).</p>
+
+<h3 id="monitoring-and-maintenance">Monitoring and maintenance</h3>
+
+<p>Even though it is usually possible to see (and even hear <sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup>) the
+difference once <em>bcache</em> is created and used instead of just using the
+HDD people are curious and always want to know something more. A typical
+question is: <em>"How well is the new solution performing?"</em> In case of
+cache, the most clear performance metric is the ratio of read/write hits
+and misses. Of course, the more hits compared to misses the better. To
+find out more about the current state, status and stats of a <code>bcache</code>
+another tool from the <code>bcache-tools</code> package can be used:</p>
+
+<pre class="highlight plaintext"># bcache-status -s</pre>
+
+<p>In the output we should see quite a lot of interesting information and
+we can for example also check that the desired cache mode is being used.
+There are other configuration options and other stats that might be
+important for many users, but these are left to the kind reader for
+further exploration.</p>
+
+<h2 id="lvm-cache-dm-cache">LVM cache (dm-cache)</h2>
+
+<h3 id="why">Why?</h3>
+
+<p>We have seen in the previous part of this post that <em>bcache</em> is quite a
+powerful and flexible solution for using HDD and SSD in a combination
+giving us great performance (of the SSD) and big capacity (of the HDD).
+So one may ask why we even bother with a description of some other
+solution. What could possibly be better with <em>LVM cache</em> (<em>dm-cache</em>)
+compared to <em>bcache</em>?</p>
+
+<h3 id="a-little-bit-about-terminology">A little bit about terminology</h3>
+
+<p>First of all, let's start with clarification of why I up until now
+always referred to this technology as "<em>LVM cache</em> (<em>dm-cache</em>)". Some
+people know, some may not, that LVM (which stands for <em>Logical Volume
+Management</em>) is a technology of user space abstract volume management
+using the <em>Device Mapper</em> functionality (in both user space and kernel).
+As a result of that, everything that can be done with LVM can be done by
+directly using the Device Mapper (even though it is typically
+incomparably more complex) and anything that LVM does needs to have the
+underlying (or low-level if you prefer) support in the Device Mapper.
+The same applies to the caching technology which is provided by the
+<em>cache</em> Device Mapper target and made "consumable" by the LVM cache
+abstraction.</p>
+
+<h3 id="okay-okay-but-why">Okay, okay, but why?</h3>
+
+<p>Now, let's get back to the big question from the first paragraph of this
+section. The answer is clear and simple to people who like <em>LVM</em> – the
+<em>LVM cache</em> for <em>bcache</em> is what <em>LVM</em> is for plain partitions. For
+people who don't like, use or totally don't get <em>LVM</em> an example of
+quite a big difference could be the best argument. The first step we did
+in order to set our bcache up was wiping all signatures from block
+devices we wanted to use for both backing space and cache space. That
+means that any file systems that could potentially existed on those
+block devices would be removed leaving the data unreadable and
+practically lost. With <em>LVM cache</em> it is possible to take and existing
+LV (Logical Volume) with an existing (even mounted) file system and
+convert it to a cached LV without any need of moving the data to some
+temporary place and even without any downtime <sup id="fnref:3"><a href="#fn:3" class="footnote">3</a></sup>. And the same applies
+if we for example later decide that we want to stripe the cache pool to
+two SSDs (RAID 0) to get more cache space and really nice performance or
+on the other hand mirror the backing device to get better reliability
+(or both of course). So we may easily start with some basic setup and
+improve it later as we have more HW available or different requirements.
+The LVM cache also provides better control and even more flexibility by
+allowing user to manually define the data and metadata parts of the
+cache space with various different parameters (e.g. mirrored metadata
+part on more reliable devices with striped data part for more space and
+better performance).</p>
+
+<h3 id="setting-up-1">Setting up</h3>
+
+<p>Let's assume we have the same HW as in case of <em>bcache</em> – a HDD and a
+SSD –but this time let's also assume that we already have LVM set up on
+the HDD (or even multiple HDDs, that makes no difference for the
+commands we are going to use) and that the SSD provides 20 GiB of space
+. Setting up LVM on top of HDD(s) would be a nice topic for another blog
+post, so let me know if you are interested in such topic in the
+comments. Now we want to demonstrate one of the benefits of the <em>LVM
+cache</em> over <em>bcache</em> so let's assume all the basic LVM setup work is
+done and we have an <em>LV</em> (<em>Logical Volume</em>) with some file system and
+data on it using the HDD for its physical extents <sup id="fnref:4"><a href="#fn:4" class="footnote">4</a></sup> the name of which
+is <code>DataLV</code> and which is part of the <code>data</code> <em>VG</em> (<em>Volume Group</em>) (the
+backing space is called <em>Origin</em> in LVM's terminology). We will
+basically follow the steps described in the <code>lvmcache (7)</code> man page
+(another benefit over <em>bcache</em> from my point of view).</p>
+
+<p>As the first step, we need to add the SSD (<code>/dev/sdb</code>) into the same
+volume group as where our LV holding the data (<code>DataLV</code>) is. To do that,
+we need to tell LVM that the <code>/dev/sdb</code> block device should become an
+LVM member device (we could use a partition on <code>/dev/sdb</code> if we wanted
+to combine partitions and LVM on our disks):</p>
+
+<pre class="highlight plaintext"># pvcreate /dev/sdb</pre>
+
+<p>If that fails because of some old metadata (disk label, file system
+signature…) being left on the disk we could either use the <code>wipefs</code>
+tool (as in case of the <em>bcache</em>) or add the <code>--force</code> option to the
+<code>pvcreate</code> command.</p>
+
+<p>Once LVM marks the <code>/dev/sdb</code> device as an LVM member device <sup id="fnref:5"><a href="#fn:5" class="footnote">5</a></sup> we can
+now add it to the <code>data</code> VG:</p>
+
+<pre class="highlight plaintext"># vgextend /dev/sdb</pre>
+
+<p>The <code>data</code> VG now sees the SSD as a free space for allocation if we
+create more LVs in it or grow some existing ones. But we want to use it
+as a cache space, right? Well, LVM only knows <em>PVs</em> (<em>Physical
+Volumes</em>), VGs and LVs. However, LVs can be of various types (linear,
+striped, mirror, RAID, thin, thin pool,…) which can be changed online.
+So let's start with creation of a good old LV with the size we want for
+our cache space and with it's <em>PEs</em> (<em>Physical extents</em>) being allocated
+on the SSD:</p>
+
+<pre class="highlight plaintext"># lvcreate -n DataLVcache -L19.9G data /dev/sdb</pre>
+
+<p>I believe a concentrated reader now asks why only <code>19.9 GiB</code> when we
+have <code>20 GiB</code> of space on the SSD. The reason is that we are going the
+"hard" (more controlled) way and we need some space for a separate
+metadata volume which we can now create:</p>
+
+<pre class="highlight plaintext"># lvcreate -n DataLVcacheMeta -L20M data /dev/sdb</pre>
+
+<p>with the size of <code>20 MiB</code> because the LVM documentation (the man page)
+says it should be <em>1000 times smaller than the cache data LV, with a
+minimum size of 8MiB</em>. If we wanted to have the <code>DataLVcache</code> and/or
+<code>DataLVcacheMeta</code> more special (like mirrored), we could have created
+them as such right away now. Or we could convert them later if we want
+to. But for now, let's just follow our simple (and probably most common)
+case. The next step we need to do is to "engage" the data cache LV and
+metadata cache LV in a single LV called <em>cache pool</em>. A <em>cache pool</em> is
+an LV that provides the cache space for the backing space with metadata
+being written and kept in it. And as such, it is created from the data
+cache LV, more precisely converted:</p>
+
+<pre class="highlight plaintext"># lvconvert --type cache-pool --cachemode writethrough --poolmetadata data/DataLVcacheMeta data/DataLVcache</pre>
+
+<p>As you may see, we specify the cache mode on cache pool creation. The
+bad thing about it is that it cannot be changed later, but the good
+thing about it is that it is persistent. And honestly, other then
+playing with various technologies, how often one needs to change the
+cache mode? If it's really needed, the cache pool can be simply created
+again with a different cache mode.</p>
+
+<p>It's been a long way here, I know, but we are almost at the end now, I
+promise. The only missing step is to finally make our <code>DataLV</code> cached.
+And as usual with <em>LVM</em>, it is a conversion:</p>
+
+<pre class="highlight plaintext"># lvconvert --type cache --cachepool data/DataLVcache data/DataLV</pre>
+
+<p>And with that, we are done. We can now <strong>continue</strong> using the <code>DataLV</code>
+logical volume, but from now on as a cached volume using the cache space
+on the SSD.</p>
+
+<p>Unfortunately, there seems to be no nice tool shipped with the <em>LVM</em>
+that would give us all the cool stats just like <code>bcache-status</code> does for
+<em>bcache</em>. The only such tool I'm aware of is the <code>lvcache</code> tool written
+by Lars Kellogg-Stedman available from this git repository:
+<a href="https://github.com/larsks/lvcache">https://github.com/larsks/lvcache</a>. Hopefully this will change when the
+<em>LVM cache</em> starts to be more widely deployed and used.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>I know it probably seemed really complicated and much harder to set up
+<em>LVM cache</em> than setting up <em>bcache</em>, but if we wanted to, we could have
+dropped the separate data and metadata cache LVs creation and do it in a
+single step creating the cache pool right away. <sup id="fnref:6"><a href="#fn:6" class="footnote">6</a></sup> I just wanted to
+demonstrate extra control and possibilities the <em>LVM cache</em> provides.
+Without that, the <em>LVM cache</em> setup would really be very similar to the
+<em>bcache</em> setup, but still we a big advantage of doing everything online
+without any need to move data somewhere else and back.</p>
+
+<p>I don't think that any of the two SW cache technologies presented in
+this blog post is better than the other one. Just like I mentioned in
+the very beginning of the <em>LVM cache</em> description, <em>LVM cache</em> for
+<em>bcache</em> is what <em>LVM</em> is for partitions. So if somebody has some
+advanced knowledge and likes having things configured the exact complex
+way that they think is best for their use case or if somebody needs to
+deploy cache online without any downtime then <em>LVM cache</em> is probably
+the better choice. On the other hand, if somebody just wants to make use
+of their SSD by setting up SW cache on a fresh pair of SSD and HDD and
+they don't want to bother with all the <em>LVM</em> stuff and commands, the
+<em>bcache</em> is probably the better choice.</p>
+
+<p>And as usual, having to independent and separate solutions for a single
+problem leads into many new and great ideas that are in the end shared
+because what gets implemented in one of them usually sooner or later
+makes it to the other too, typically even improved somehow. Let's just
+hope that this will also apply to <em>bcache</em> and <em>LVM cache</em> and that both
+technologies are deployed widely enough to be massively supported,
+maintained and further developed.</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>by running <code># echo /dev/sda1 &gt; /sys/fs/bcache/register</code> <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:2">
+      <p>if the <code>writeback</code> mode is used many writes to the backing device
+are spared and the rest is serialized as most as possible which
+makes the HDD quite a lot less noisy due to R/W header not moving
+randomly <a href="#fnref:2" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:3">
+      <p>a typical approach to convert a block device into a "bcached"
+block device is to freeze the data on it, move/copy it somewhere
+else, set the bcache up and move the data back <a href="#fnref:3" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:4">
+      <p>LVM's units of physical space allocation <a href="#fnref:4" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:5">
+      <p>try running <code>wipefs</code> (<strong>without the <code>-a</code> option!</strong>) on it <a href="#fnref:5" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:6">
+      <p>with
+<code>lvcreate --type cache-pool -L20G -n DataLVcache data /dev/sdb</code> <a href="#fnref:6" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+</section>
+<footer class='post-meta'>
+<div class='author-info' id='author-info'>
+<h2>
+About
+Vratislav Podzimek
+</h2>
+<div class='author-blurb'>
+<p>Member of blivet and anaconda development teams, author of libblockdev.</p>
+
+<div class='more-link'>
+<a href="/blivet/blog/author/vpodzime/">View all posts by Vratislav Podzimek &raquo;</a>
+</div>
+</div>
+</div>
+</footer>
+</article>
+
+<section id='blog-comments'></section>
+</div>
+</section>
+<section class='row'>
+<div class='col-md-12'>
+<aside>
+<h3>Recent Articles</h3>
+<ol>
+<li>
+<a href="/blivet/blog/2015/03/blivet/">bcache and/vs. LVM cache</a>
+<span>Thursday 19 March</span>
+</li>
+<li>
+<a href="/blivet/blog/2014/07/blivet/">Introduction</a>
+<span>Tuesday 15 July 2014</span>
+</li>
+</ol>
+<h3>Tags</h3>
+<ol>
+</ol>
+</aside>
+<!--
+<h3>By Year</h3>
+<ol>
+<li>
+<a href="/blivet/blog/2015/">2015</a>
+(1)
+</li>
+<li>
+<a href="/blivet/blog/2014/">2014</a>
+(1)
+</li>
+</ol>
+-->
+</div>
+</section>
+
+</section>
+</section>
+</section>
+<footer class='text-center' id='footer'>
+<hr class='visible-print'>
+
+&copy; 2014 Red Hat, Inc.
+<div class='last-modified'>
+</div>
+</footer>
+
+
+<script src="/blivet/javascripts/application.js?1432135887" type="text/javascript"></script>
+
+</body>
+</html>
