@@ -56,40 +56,6 @@ class InitializationTestCase(unittest.TestCase):
         for _k, v  in device_formats.items():
             self.assertIsNotNone(v(label=None))
 
-class MethodsTestCase(unittest.TestCase):
-    """Test some methods that do not require actual images."""
-
-    def setUp(self):
-        self.fs = {}
-        for k, v  in device_formats.items():
-            if issubclass(v, fs.FS) and v().labeling():
-                self.fs[k] = v(device="/dev", label="myfs")
-
-
-    def testGetLabelArgs(self):
-        self.longMessage = True
-
-        # ReiserFS uses a -l flag
-        reiserfs = self.fs["reiserfs"]
-        self.assertEqual(reiserfs._writelabel._setCommand,
-           ["reiserfstune", "-l", "myfs", "/dev"], msg="reiserfs")
-
-        # JFS, XFS use a -L flag
-        lflag_classes = [fs.JFS, fs.XFS]
-        for name, klass in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in lflag_classes)]:
-            self.assertEqual(klass._writelabel._setCommand, [str(klass._writelabel.ext), "-L", "myfs", "/dev"], msg=name)
-
-        # Ext2FS and descendants and FATFS do not use a flag
-        noflag_classes = [fs.Ext2FS, fs.FATFS]
-        for name, klass in [(k, v) for k, v in self.fs.items() if any(isinstance(v, c) for c in noflag_classes)]:
-            self.assertEqual(klass._writelabel._setCommand, [str(klass._writelabel.ext), "/dev", "myfs"], msg=name)
-
-        # all of the remaining are non-labeling so will accept any label
-        label = "Houston, we have a problem!"
-        for name, klass in device_formats.items():
-            if issubclass(klass, fs.FS) and not klass().labeling() and not issubclass(klass, fs.NFS):
-                self.assertEqual(klass(device="/dev", label=label).label, label, msg=name)
-
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.XFS
     _invalid_label = "root filesystem"

@@ -47,6 +47,12 @@ def removeLoopDev(device_name, file_name):
     os.unlink(file_name)
 
 def getFreeLoopDev():
+    """ Get the name of the free loop device that losetup reports.
+
+        :returns: the name of the free loop device
+        :rtype: str
+        :raises OSError: on failure
+    """
     # There's a race condition here where another process could grab the loop
     # device losetup gives us before we have time to set it up, but that's just
     # a chance we'll have to take.
@@ -64,7 +70,7 @@ def getFreeLoopDev():
     if rc:
         raise OSError("losetup failed to find a free device")
 
-    return out
+    return out.decode("utf-8")
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class LoopBackedTestCase(unittest.TestCase):
