@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.0
+Version: 0.61.15.1
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,48 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri May 29 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.1-1
+- Add .0 to version -- 0.61.15.0 (bcl)
+  Related: rhbz#1202877
+- Ignore Merge pull commits and turn down logging level (bcl)
+  Related: rhbz#1202877
+- get_loop_name shoud return an empty name if it isn't found (#980510) (bcl)
+  Related: rhbz#1202877
+- Multiple loops shouldn't be fatal (#980510) (bcl)
+  Related: rhbz#1202877
+- Disable MacEFI platform type and hfs+ ESP (#1119305) (bcl)
+  Related: rhbz#1202877
+- Add a release make target (bcl)
+  Related: rhbz#1202877
+- Update makebumpver to include flags on first request (bcl)
+  Related: rhbz#1202877
+- Fix a couple of easy pylint errors. (dlehman)
+  Related: rhbz#1202877
+- Change required pyparted version to one that is in RHEL-7. (dlehman)
+  Related: rhbz#1202877
+- Remove python-six dependency. (dlehman)
+  Related: rhbz#1202877
+- Clean out the mock chroot before attempting to run the rest of the test. (clumens)
+  Related: rhbz#1202877
+- Put all mock results into the top-level source dir. (clumens)
+  Related: rhbz#1202877
+- Add scratch, scratch-bumpver and rc-release targets. (bcl)
+  Related: rhbz#1202877
+- Add --newrelease to makebumpver (bcl)
+  Related: rhbz#1202877
+- Add po-empty make target (bcl)
+  Related: rhbz#1202877
+- Switch translations to use Zanata (bcl)
+  Related: rhbz#1202877
+- Split up devices.py. (dlehman)
+  Related: rhbz#1202877
+- Split string of symlinks into array of strings (#1136214) (amulhern)
+  Related: rhbz#1202877
+- Keep lvm and md metadata separate from udev info. (dlehman)
+  Related: rhbz#1202877
+- Replace our pyudev with the package python-pyudev. (dlehman)
+  Related: rhbz#1202877
+
 * Mon Mar 09 2015 David Lehman <dlehman@redhat.com> - 0.61.15-1
 - Allow passing KiB values to vgcreate -s option (tjeyasin)
 - Add a script to rebase and merge pull requests (dshea)
