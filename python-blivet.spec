@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15
+Version: 0.61.15.0
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
