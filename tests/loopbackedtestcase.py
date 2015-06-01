@@ -85,7 +85,7 @@ class LoopBackedTestCase(unittest.TestCase):
     _DEFAULT_DEVICE_SPEC = [DEFAULT_STORE_SIZE, DEFAULT_STORE_SIZE]
 
     def __init__(self, methodName='runTest', deviceSpec=None, block_size=None):
-        """ DevicelibsTestCase manages loop devices.
+        """ LoopBackedTestCase manages loop devices.
 
             It constructs loop devices according to loopDeviceSpec,
             sets them up, and tears them down again.
