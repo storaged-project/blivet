@@ -179,6 +179,8 @@ class DeviceFormat(ObjectID):
                 it via the 'device' kwarg to the :meth:`create` method.
         """
         ObjectID.__init__(self)
+        self._device = None
+
         self.device = kwargs.get("device")
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists")
@@ -294,7 +296,7 @@ class DeviceFormat(ObjectID):
     def _setDevice(self, devspec):
         if devspec and not devspec.startswith("/"):
             raise ValueError("device must be a fully qualified path")
-        self._device = devspec # pylint: disable=attribute-defined-outside-init
+        self._device = devspec
 
     def _getDevice(self):
         return self._device

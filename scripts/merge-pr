@@ -103,7 +103,7 @@ def main():
 
     # Parse the web URL into something that can be used for an API call, make
     # sure all the pieces are there.
-    pr_url = six.moves.urllib.parse.urlparse(args.pr_url)
+    pr_url = six.moves.urllib.parse.urlparse(args.pr_url)        # pylint: disable=no-member
     # The path should be /:owner/:repo/pull/:numbero
     # The first part of the split will be empty since path starts with /
     pr_path = pr_url[2].split('/')

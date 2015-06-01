@@ -126,9 +126,9 @@ class MakeBumpVer:
         ret = proc[0].strip('\n').split('\n')
 
         if len(ret) == 1 and ret[0].find('@') != -1:
-            ret = ret[0].split('@')[0]
+            ret = [ret[0].split('@')[0]]
         elif len(ret) == 1:
-            ret = ret[0]
+            ret = [ret[0]]
         else:
             ret = filter(lambda x: x != '', ret)
 
@@ -243,7 +243,7 @@ class MakeBumpVer:
 
         if self.ignore and self.ignore != '':
             for commit in self.ignore.split(','):
-                lines = filter(lambda x: not x.startswith(commit), lines)
+                lines = filter(lambda x, c=commit: not x.startswith(c), lines)
 
         rpm_log = []
         bad_bump = False
@@ -255,11 +255,9 @@ class MakeBumpVer:
             fields = line.split(' ')
             commit = fields[0]
 
-            summary = self._getCommitDetail(commit, "%s")
+            summary = self._getCommitDetail(commit, "%s")[0]
             body = self._getCommitDetail(commit, "%b")
-            if type(body) is not list:
-                body = [body]
-            author = self._getCommitDetail(commit, "%aE")
+            author = self._getCommitDetail(commit, "%aE")[0]
 
             if self.rhel:
                 rhbz = set()
