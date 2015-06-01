@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.0.0
+Version: 1.0.0.1
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -63,6 +63,50 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jun 01 2015 mulhern <amulhern@redhat.com> - 1.0.0.1-1
+- New Zanata config file (amulhern)
+- Merge pull request #139 from mulkieran/master-rhel6-branch-a (mulkieran)
+- Add --newrelease to makebumpver (bcl)
+- Refine loopbackedtestcase a bit more. (amulhern)
+- Skip tests that use DiskFile. (amulhern)
+
+* Thu May 14 2015 Anne Mulhern <amulhern@redhat.com> - 1.0.0.0-1
+- Do not raise KeyError if ID_PART_ENTRY_DISK is missing. (amulhern)
+- Un-escape '-'s in names or paths for _all_ lvm lv or vgs. (amulhern)
+- Delay until non-empty subvolume list is returned. (amulhern)
+- Manage backing store more indepedently in loop backed test cases. (amulhern)
+- Let convertTo take a string spec as well as a defined constant. (amulhern)
+- Allow passing KiB values to vgcreate -s option (tjeyasin)
+- Require libselinux-python package. (amulhern)
+- Omit unsupported wipefs -f flag. (amulhern)
+- Get rid of pointless override pylint error. (amulhern)
+- Use previous version of devicelibs/crypto.py, with some modern changes.
+  (amulhern)
+- Remove python-six dependency. (amulhern)
+- RHEL6 does not support %license in spec files. (amulhern)
+- Change mock configuration to EPEL. (amulhern)
+- Update spec file. (amulhern)
+- Remove resizing tests for TmpFS and also its getExistingSize method.
+  (amulhern)
+- In RHEL6 the default label for FATFS was the empty string. (amulhern)
+- object's __new__ method takes only one parameter. (amulhern)
+- 8 MiB is the minimum member size on RHEL 6. (amulhern)
+- Change getLength() to prior getSize() method. (amulhern)
+- Pass floats as string to Decimal constructor everywhere. (amulhern)
+- DISK_PT_GMBR_BOOT is not defined in pyparted in RHEL6. (amulhern)
+- Import unittest2 as unittest everywhere. (amulhern)
+- There is no NullHandler() in 2.6 logging, so omit it. (amulhern)
+- Remove dependency on pykickstart by defining a few constants in blivet.
+  (amulhern)
+- Omit coverage target in Makefile. (amulhern)
+- Use unit2 script since python 2.6 can't load modules. (amulhern)
+- Clean out the mock chroot before attempting to run the rest of the test.
+  (clumens)
+- Put all mock results into the top-level source dir. (clumens)
+- Add scratch, scratch-bumpver and rc-release targets. (bcl)
+- Add po-empty make target (bcl)
+- Switch translations to use Zanata (bcl)
+
 * Fri Feb 13 2015 David Lehman <dlehman@redhat.com> - 1.0-1
 - Move autopart and installation-specific code outside of __init__.py
   (vpodzime)
