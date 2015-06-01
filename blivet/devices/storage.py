@@ -720,7 +720,8 @@ class StorageDevice(Device):
             False that are normally performed as part of the device constructor.
         """
         if not new:
-            map(lambda p: p.addChild(), self.parents)
+            for p in self.parents:
+                p.addChild()
 
     def populateKSData(self, data):
         # the common pieces are basically the formatting
