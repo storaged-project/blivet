@@ -22,8 +22,6 @@
 __all__ = ["_", "N_", "P_"]
 
 import gettext, locale
-import six
-
 # Create and cache a translations object for the current LC_MESSAGES value
 _cached_translations = {}
 def _get_translations():
@@ -44,9 +42,5 @@ N_ = lambda x: x
 # yes, pylint, the lambdas are necessary, because I want _get_translations()
 # evaluated on every call.
 # pylint: disable=unnecessary-lambda
-if six.PY2:
-    _ = lambda x: _get_translations().ugettext(x) if x != "" else u""
-    P_ = lambda x, y, z: _get_translations().ungettext(x, y, z)
-else:
-    _ = lambda x: _get_translations().gettext(x) if x != "" else ""
-    P_ = lambda x, y, z: _get_translations().ngettext(x, y, z)
+_ = lambda x: _get_translations().ugettext(x) if x != "" else u""
+P_ = lambda x, y, z: _get_translations().ungettext(x, y, z)

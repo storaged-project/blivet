@@ -594,7 +594,7 @@ class StorageDevice(Device):
         """
         size = Size(0)
         if self.exists and self.partedDevice:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = Size(self.partedDevice.getSize(unit="b"))
         elif self.exists:
             size = self._size
         return size

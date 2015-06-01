@@ -21,16 +21,14 @@
 
 import abc
 
-from six import add_metaclass
-
 from .. import errors
 from ..i18n import _, P_
 
 from .storage import StorageDevice
 
-@add_metaclass(abc.ABCMeta)
 class RaidDevice(StorageDevice):
     """ Metaclass for devices that support RAID in some form. """
+    __metaclass__ = abc.ABCMeta
 
     def _validateRaidLevel(self, level, parent_diff=0):
         """ Returns an error message if the RAID level is invalid for this

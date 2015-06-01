@@ -23,8 +23,6 @@
 
 import abc
 
-from six import add_metaclass
-
 from ..errors import RaidError
 from ..size import Size
 
@@ -36,7 +34,6 @@ def div_up(a,b):
     """
     return (a + (b - 1))//b
 
-@add_metaclass(abc.ABCMeta)
 class RAIDLevel(object):
     """An abstract class which is the parent of all classes which represent
        a RAID level.
@@ -44,6 +41,7 @@ class RAIDLevel(object):
        It ensures that RAIDLevel objects will really be singleton objects
        by overriding copy methods.
     """
+    __metaclass__ = abc.ABCMeta
 
     name = abc.abstractproperty(doc="The canonical name for this level")
     names = abc.abstractproperty(doc="List of recognized names for this level.")
@@ -74,8 +72,6 @@ class RAIDLevel(object):
         # pylint: disable=unused-argument
         return self
 
-
-@add_metaclass(abc.ABCMeta)
 class RAIDn(RAIDLevel):
 
     """An abstract class which is the parent of classes which represent a
@@ -101,7 +97,7 @@ class RAIDn(RAIDLevel):
         it is defined and using the same name, effectively yielding a
         singleton object of the class.
     """
-
+    __metaclass__ = abc.ABCMeta
 
     # ABSTRACT PROPERTIES
     level = abc.abstractproperty(doc="A code representing the level")

@@ -104,7 +104,7 @@ class DiskDevice(StorageDevice):
         # Some drivers (cpqarray <blegh>) make block device nodes for
         # controllers with no disks attached and then report a 0 size,
         # treat this as no media present
-        return Size(self.partedDevice.getLength(unit="B")) != Size(0)
+        return Size(self.partedDevice.getSize(unit="b")) != Size(0)
 
     @property
     def description(self):

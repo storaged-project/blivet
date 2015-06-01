@@ -66,7 +66,7 @@ class LUKSDevice(DMCryptDevice):
         if not self.exists or not self.partedDevice:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
         else:
-            size = Size(self.partedDevice.getLength(unit="B"))
+            size = Size(self.partedDevice.getSize(unit="b"))
         return size
 
     def _postCreate(self):

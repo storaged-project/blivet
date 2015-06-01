@@ -21,14 +21,12 @@
 
 import abc
 
-from six import add_metaclass
-
 from . import fslabel
 
-@add_metaclass(abc.ABCMeta)
 class FSLabeling(object):
     """An abstract class that represents filesystem labeling actions.
     """
+    __metaclass__ = abc.ABCMeta
 
     default_label = abc.abstractproperty(
        doc="Default label set on this filesystem at creation.")
@@ -72,7 +70,7 @@ class Ext2FSLabeling(FSLabeling):
 
 class FATFSLabeling(FSLabeling):
 
-    default_label = property(lambda s: "NO NAME")
+    default_label = property(lambda s: "")
     label_app = property(lambda s: fslabel.DosFsLabel)
 
     def labelFormatOK(self, label):

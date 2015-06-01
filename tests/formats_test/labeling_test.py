@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import unittest
+import unittest2 as unittest
 
 from tests import loopbackedtestcase
 from blivet.formats import device_formats

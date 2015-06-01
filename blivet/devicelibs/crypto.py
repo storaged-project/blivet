@@ -20,16 +20,17 @@
 #            Martin Sivak <msivak@redhat.com>
 #
 
+import os
 import random
 import time
 from pycryptsetup import CryptSetup
 
 from ..errors import CryptoError
 from ..size import Size
-from ..util import get_current_entropy
+from ..util import get_current_entropy, run_program
 
 LUKS_METADATA_SIZE = Size("2 MiB")
-MIN_CREATE_ENTROPY = 256 # bits
+MIN_CREATE_ENTROPY = 256
 
 # Keep the character set size a power of two to make sure all characters are
 # equally likely
@@ -44,70 +45,46 @@ def generateBackupPassphrase():
     raw = [random.choice(GENERATED_PASSPHRASE_CHARSET) for _ in range(GENERATED_PASSPHRASE_LENGTH)]
 
     # Insert a '-' after every five char chunk for easier reading
-    parts = []
-    for i in range(0, GENERATED_PASSPHRASE_LENGTH, 5):
-        parts.append(''.join(raw[i : i + 5]))
+    parts = [''.join(raw[i : i + 5]) for i in range(0, GENERATED_PASSPHRASE_LENGTH, 5)]
     return "-".join(parts)
 
 yesDialog = lambda q: True
 logFunc = lambda p, t: None
-passwordDialog = lambda t: None
 
 def is_luks(device):
-    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
-    return cs.isLuks()
+    cs = CryptSetup(yesDialog=yesDialog, logFunc=logFunc)
+    return cs.isLuks(device)
 
 def luks_uuid(device):
-    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
-    return cs.luksUUID()
+    cs = CryptSetup(yesDialog=yesDialog, logFunc=logFunc)
+    return cs.luksUUID(device).strip()
 
 def luks_status(name):
     """True means active, False means inactive (or non-existent)"""
-    cs = CryptSetup(name=name, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
-    return cs.status()
+    cs = CryptSetup(yesDialog=yesDialog, logFunc=logFunc)
+    return cs.luksStatus(name)!=0
 
 def luks_format(device,
-                passphrase=None,
-                cipher=None, key_size=None, key_file=None,
+                passphrase=None, key_file=None,
+                cipher=None, key_size=None,
                 min_entropy=0):
-    """
-    Format device as LUKS with the specified parameters.
 
-    :param str device: device to format
-    :param str passphrase: passphrase to add to the new LUKS device
-    :param str cipher: cipher mode to use
-    :param int keysize: keysize to use
-    :param str key_file: key file to use
-    :param int min_entropy: minimum random data entropy level required for LUKS
-                            format creation (0 means entropy level is not checked)
-
-    note::
-              If some minimum entropy is required (min_entropy > 0), the
-              function waits for enough entropy to be gathered by the kernel
-              which may potentially take very long time or even forever.
-    """
-
-    # pylint: disable=unused-argument
     if not passphrase:
         raise ValueError("luks_format requires passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
+    cs = CryptSetup(yesDialog=yesDialog, logFunc=logFunc)
+    key_file_unlink = False
+
+    key_file = cs.prepare_passphrase_file(passphrase)
+    key_file_unlink = True
 
     #None is not considered as default value and pycryptsetup doesn't accept it
     #so we need to filter out all Nones
     kwargs = {}
-
-    # Split cipher designator to cipher name and cipher mode
-    cipherType = None
-    cipherMode = None
-    if cipher:
-        cparts = cipher.split("-")
-        cipherType = "".join(cparts[0:1])
-        cipherMode = "-".join(cparts[1:])
-
-    if cipherType: kwargs["cipher"]  = cipherType
-    if cipherMode: kwargs["cipherMode"]  = cipherMode
-    if   key_size: kwargs["keysize"]  = key_size
+    kwargs["device"] = device
+    if   cipher: kwargs["cipher"]  = cipher
+    if key_file: kwargs["keyfile"] = key_file
+    if key_size: kwargs["keysize"] = key_size
 
     if min_entropy > 0:
         # min_entropy == 0 means "don't care"
@@ -116,55 +93,92 @@ def luks_format(device,
             time.sleep(1)
 
     rc = cs.luksFormat(**kwargs)
+    if key_file_unlink: os.unlink(key_file)
+
     if rc:
         raise CryptoError("luks_format failed for '%s'" % device)
-
-    # activate first keyslot
-    cs.addKeyByVolumeKey(newPassphrase=passphrase)
-    if rc:
-        raise CryptoError("luks_add_key_by_volume_key failed for '%s'" % device)
-
 
 def luks_open(device, name, passphrase=None, key_file=None):
     # pylint: disable=unused-argument
     if not passphrase:
-        raise ValueError("luks_format requires passphrase")
+        raise ValueError("luks_open requires a passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
+    cs = CryptSetup(yesDialog=yesDialog, logFunc=logFunc)
+    key_file_unlink = False
 
-    rc = cs.activate(passphrase=passphrase, name=name)
-    if rc<0:
-        raise CryptoError("luks_open failed for %s (%s) with errno %d" % (device, name, rc))
+    key_file = cs.prepare_passphrase_file(passphrase)
+    key_file_unlink = True
+
+    rc = cs.luksOpen(device=device, name=name, keyfile=key_file)
+    if key_file_unlink: os.unlink(key_file)
+    if rc:
+        raise CryptoError("luks_open failed for %s (%s)" % (device, name))
 
 def luks_close(name):
-    cs = CryptSetup(name=name, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
-    rc = cs.deactivate()
-
+    cs = CryptSetup(yesDialog=yesDialog, logFunc=logFunc)
+    rc = cs.luksClose(name)
     if rc:
         raise CryptoError("luks_close failed for %s" % name)
 
 def luks_add_key(device,
-                 new_passphrase=None,
+                 new_passphrase=None, new_key_file=None,
                  passphrase=None, key_file=None):
     # pylint: disable=unused-argument
     if not passphrase:
-        raise ValueError("luks_add_key requires passphrase")
+        raise ValueError("luks_add_key requires a passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
-    rc = cs.addKeyByPassphrase(passphrase=passphrase, newPassphrase=new_passphrase)
+    params = ["-q"]
 
-    if rc<0:
+    p = os.pipe()
+    os.write(p[1], "%s\n" % passphrase)
+
+    params.extend(["luksAddKey", device])
+
+    if new_passphrase:
+        os.write(p[1], "%s\n" % new_passphrase)
+    elif new_key_file and os.path.isfile(new_key_file):
+        params.append("%s" % new_key_file)
+    else:
+        raise CryptoError("luks_add_key requires either a passphrase or a key file to add")
+
+    os.close(p[1])
+
+    rc = run_program(["cryptsetup"] + params, stdin=p[0], stderr_to_stdout=True)
+
+    os.close(p[0])
+    if rc:
         raise CryptoError("luks add key failed with errcode %d" % (rc,))
 
 def luks_remove_key(device,
-                    del_passphrase=None,
+                    del_passphrase=None, del_key_file=None,
                     passphrase=None, key_file=None):
     # pylint: disable=unused-argument
     if not passphrase:
-        raise ValueError("luks_remove_key requires passphrase")
+        raise ValueError("luks_remove_key requires a passphrase")
 
-    cs = CryptSetup(device=device, yesDialog=yesDialog, logFunc=logFunc, passwordDialog=passwordDialog)
-    rc = cs.removePassphrase(passphrase = passphrase)
+    params = []
 
+    p = os.pipe()
+    if del_passphrase: #the first question is about the key we want to remove
+        os.write(p[1], "%s\n" % del_passphrase)
+
+    os.write(p[1], "%s\n" % passphrase)
+
+    params.extend(["luksRemoveKey", device])
+
+    if del_passphrase:
+        pass
+    elif del_key_file and os.path.isfile(del_key_file):
+        params.append("%s" % del_key_file)
+    else:
+        raise CryptoError("luks_remove_key requires either a passphrase or a key file to remove")
+
+    os.close(p[1])
+
+    rc = run_program(["cryptsetup"] + params, stdin=p[0], stderr_to_stdout=True)
+
+    os.close(p[0])
     if rc:
-        raise CryptoError("luks remove key failed with errcode %d" % (rc,))
+        raise CryptoError("luks_remove_key failed with errcode %d" % (rc,))
+
+

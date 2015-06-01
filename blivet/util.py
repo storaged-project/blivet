@@ -12,8 +12,6 @@ import uuid
 from decimal import Decimal
 from contextlib import contextmanager
 
-import six
-
 import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
@@ -340,7 +338,7 @@ def numeric_type(num):
 
     if num is None:
         num = 0
-    elif not isinstance(num, (six.integer_types, float, Size, Decimal)):
+    elif not isinstance(num, (int, long, float, Size, Decimal)):
         raise ValueError("value (%s) must be either a number or None" % num)
 
     return num
@@ -373,7 +371,8 @@ class ObjectID(object):
     _newid_gen = functools.partial(next, itertools.count())
 
     def __new__(cls, *args, **kwargs):
-        self = super(ObjectID, cls).__new__(cls, *args, **kwargs)
+        # pylint: disable=unused-argument
+        self = super(ObjectID, cls).__new__(cls)
         self.id = self._newid_gen() # pylint: disable=attribute-defined-outside-init
         return self
 
@@ -412,14 +411,11 @@ def stringize(inputstr):
         Python 2, it converts unicode into str. The returned str in python 2 is
         encoded using utf-8.
     """
-    if six.PY2:
-        if isinstance(inputstr, unicode):
-            inputstr = inputstr.encode('utf-8')
+    if isinstance(inputstr, unicode):
+        inputstr = inputstr.encode('utf-8')
 
     return str(inputstr)
 
-# Like six.u, but without the part where it raises an exception on unicode
-# objects
 def unicodeize(inputstr):
     """ Convert strings to a format compatible with Python 2's unicode.
 
@@ -433,10 +429,7 @@ def unicodeize(inputstr):
         in str parameters, but non-ASCII characters in unicode parameters will
         be correctly passed through.
     """
-    if six.PY2:
-        return unicode(inputstr)
-    else:
-        return str(inputstr)
+    return unicode(inputstr)
 
 ##
 ## Convenience functions for examples and tests

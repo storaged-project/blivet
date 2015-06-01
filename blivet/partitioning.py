@@ -201,7 +201,7 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
 
     for free_geom in disk.getFreeSpaceRegions():
         log.debug("checking %d-%d (%s)", free_geom.start, free_geom.end,
-                                         Size(free_geom.getLength(unit="B")))
+                                         Size(free_geom.getSize(unit="b")))
         if start is not None and not free_geom.containsSector(start):
             log.debug("free region does not contain requested start sector")
             continue
@@ -228,8 +228,8 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
 
         log.debug("current free range is %d-%d (%s)", free_geom.start,
                                                       free_geom.end,
-                                                      Size(free_geom.getLength(unit="B")))
-        free_size = Size(free_geom.getLength(unit="B"))
+                                                      Size(free_geom.getSize(unit="b")))
+        free_size = Size(free_geom.getSize(unit="b"))
 
         # For boot partitions, we want the first suitable region we find.
         # For growable or extended partitions, we want the largest possible
@@ -801,7 +801,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                     use_disk = _disk
                     log.debug("new free: %d-%d / %s", best.start,
                                                       best.end,
-                                                      Size(best.getLength(unit="B")))
+                                                      Size(best.getSize(unit="b")))
                     log.debug("new free allows for %d sectors of growth", growth)
                     free = best
 
@@ -847,7 +847,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
         log.debug("created partition %s of %s and added it to %s",
                 partition.getDeviceNodeName(),
-                Size(partition.getLength(unit="B")),
+                Size(partition.getSize(unit="b")),
                 disklabel.device)
 
         # this one sets the name

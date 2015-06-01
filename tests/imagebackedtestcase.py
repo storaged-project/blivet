@@ -1,6 +1,6 @@
 
 import os
-import unittest
+import unittest2 as unittest
 
 from blivet import Blivet
 from blivet import util

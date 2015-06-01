@@ -32,7 +32,7 @@ from .formats import getFormat
 from .partitioning import doPartitioning, getFreeRegions, growLVM
 from .i18n import _
 
-from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
+from .pykickstart_constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
 import logging
 log = logging.getLogger("anaconda")
@@ -125,7 +125,7 @@ def _getCandidateDisks(storage):
                 part = part.nextPartition()
                 continue
 
-            if Size(part.getLength(unit="B")) > PartitionDevice.defaultSize:
+            if Size(part.getSize(unit="b")) > PartitionDevice.defaultSize:
                 disks.append(disk)
                 break
 
@@ -196,7 +196,7 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0):
     """
     # basis for requests with requiredSpace is the sum of the sizes of the
     # two largest free regions
-    all_free = (Size(reg.getLength(unit="B")) for reg in getFreeRegions(disks))
+    all_free = (Size(reg.getSize(unit="b")) for reg in getFreeRegions(disks))
     all_free = sorted(all_free, reverse=True)
     if not all_free:
         # this should never happen since we've already filtered the disks

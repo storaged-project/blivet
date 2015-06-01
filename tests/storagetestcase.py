@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import unittest
+import unittest2 as unittest
 from mock import Mock
 
 import parted
@@ -59,7 +59,7 @@ class StorageTestCase(unittest.TestCase):
             else:
                 part_mock = Mock()
 
-            attrs = {"getLength.return_value": int(device._size),
+            attrs = {"getSize.return_value": int(device._size),
                      "getDeviceNodeName.return_value": device.name,
                      "type": parted.PARTITION_NORMAL}
             part_mock.configure_mock(**attrs)
@@ -96,7 +96,7 @@ class StorageTestCase(unittest.TestCase):
         if exists:
             # set up mock parted.Device w/ correct size
             device._partedDevice = Mock()
-            device._partedDevice.getLength = Mock(return_value=int(device._size.convertTo(B)))
+            device._partedDevice.getSize = Mock(return_value=int(device._size.convertTo(B)))
             device._partedDevice.sectorSize = 512
 
         if isinstance(device, blivet.devices.PartitionDevice):

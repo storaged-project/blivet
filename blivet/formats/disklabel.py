@@ -26,7 +26,6 @@ from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
 from ..errors import DeviceFormatError, DiskLabelCommitError, InvalidDiskLabelError
-from .. import arch
 from .. import udev
 from .. import util
 from ..flags import flags
@@ -157,17 +156,7 @@ class DiskLabel(DeviceFormat):
             if self._partedDisk.isFlagAvailable(parted.DISK_CYLINDER_ALIGNMENT):
                 self._partedDisk.unsetFlag(parted.DISK_CYLINDER_ALIGNMENT)
 
-            # Set the boot flag on the GPT PMBR, this helps some BIOS systems boot
-            if self._partedDisk.isFlagAvailable(parted.DISK_GPT_PMBR_BOOT):
-                # MAC can boot as EFI or as BIOS, neither should have PMBR boot set
-                if arch.isEfi() or arch.isMactel():
-                    self._partedDisk.unsetFlag(parted.DISK_GPT_PMBR_BOOT)
-                    log.debug("Clear pmbr_boot on %s", self._partedDisk)
-                else:
-                    self._partedDisk.setFlag(parted.DISK_GPT_PMBR_BOOT)
-                    log.debug("Set pmbr_boot on %s", self._partedDisk)
-            else:
-                log.debug("Did not change pmbr_boot on %s", self._partedDisk)
+            log.debug("Did not change pmbr_boot on %s", self._partedDisk)
 
         return self._partedDisk
 
@@ -217,7 +206,7 @@ class DiskLabel(DeviceFormat):
         size = self._size
         if not size:
             try:
-                size = Size(self.partedDevice.getLength(unit="B"))
+                size = Size(self.partedDevice.getSize(unit="b"))
             except Exception: # pylint: disable=broad-except
                 log_exception_info()
                 size = Size(0)
@@ -394,7 +383,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        return sum((Size(f.getLength(unit="B")) for f in self.partedDisk.getFreeSpacePartitions()), Size(0))
+        return sum((Size(f.getSize(unit="b")) for f in self.partedDisk.getFreeSpacePartitions()), Size(0))
 
     @property
     def magicPartitionNumber(self):

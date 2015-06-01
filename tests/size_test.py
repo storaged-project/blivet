@@ -23,7 +23,7 @@
 
 import locale
 import os
-import unittest
+import unittest2 as unittest
 
 from decimal import Decimal
 
@@ -37,7 +37,7 @@ class SizeTestCase(unittest.TestCase):
 
     def testExceptions(self):
         zero = Size(0)
-        self.assertEqual(zero, Size(0.0))
+        self.assertEqual(zero, Size("0.0"))
 
         s = Size(500)
         with self.assertRaises(SizePlacesError):
@@ -164,7 +164,7 @@ class SizeTestCase(unittest.TestCase):
 
         s = Size("0.5 GiB")
         self.assertEquals(s.humanReadable(max_places=2, min_value=1), "512 MiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(0.1)), "0.5 GiB")
+        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal("0.1")), "0.5 GiB")
         self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(1)), "512 MiB")
 
     def testConvertToPrecision(self):
@@ -172,7 +172,11 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.convertTo(None), 1835008)
         self.assertEquals(s.convertTo(B), 1835008)
         self.assertEquals(s.convertTo(KiB), 1792)
-        self.assertEquals(s.convertTo(MiB), 1.75)
+        self.assertEquals(s.convertTo(MiB), Decimal("1.75"))
+
+    def testConvertToString(self):
+        s = Size(1835008)
+        self.assertEquals(s.convertTo(MiB), s.convertTo("MiB"))
 
     def testNegative(self):
         s = Size("-500MiB")
@@ -180,7 +184,7 @@ class SizeTestCase(unittest.TestCase):
         self.assertEquals(s.convertTo(B), -524288000)
 
     def testPartialBytes(self):
-        self.assertEquals(Size(1024.6), Size(1024))
+        self.assertEquals(Size("1024.6"), Size(1024))
         self.assertEquals(Size("%s KiB" % (1/1025.0,)), Size(0))
         self.assertEquals(Size("%s KiB" % (1/1023.0,)), Size(1))
 

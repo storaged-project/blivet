@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0
+Version: 1.0.0.0
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -12,12 +12,11 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %define dmver 1.02.17-6
-%define pykickstartver 1.99.22
 %define partedver 1.8.1
 %define pypartedver 2.5-2
 %define pythonpyblockver 0.45
 %define e2fsver 1.41.0
-%define pythoncryptsetupver 0.1.1
+%define pythoncryptsetupver 0.0.11
 %define utillinuxver 2.15.1
 %define lvm2ver 2.02.99
 
@@ -26,9 +25,7 @@ BuildRequires: gettext
 BuildRequires: python-setuptools
 
 Requires: python
-Requires: python-six
-Requires: pykickstart >= %{pykickstartver}
-Requires: util-linux >= %{utillinuxver}
+Requires: util-linux-ng >= %{utillinuxver}
 Requires: python-pyudev
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
@@ -43,6 +40,7 @@ Requires: btrfs-progs
 Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
 Requires: lsof
+Requires: libselinux-python
 
 %description
 The python-blivet package is a python module for examining and modifying
@@ -61,8 +59,7 @@ make DESTDIR=%{buildroot} install
 
 %files -f %{realname}.lang
 %defattr(-,root,root,-)
-%license COPYING
-%doc README ChangeLog examples
+%doc COPYING README ChangeLog examples
 %{python_sitelib}/*
 
 %changelog
