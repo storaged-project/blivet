@@ -486,6 +486,9 @@ class StorageDevice(Device):
         """ Perform post-destruction operations. """
         self.exists = False
 
+    #
+    # parents' modifications/notifications
+    #
     def setupParents(self, orig=False):
         """ Run setup method of all parent devices. """
         log_method_call(self, name=self.name, orig=orig, kids=self.kids)
@@ -500,6 +503,37 @@ class StorageDevice(Device):
             if _format.type and _format.exists:
                 _format.setup()
 
+    # pylint: disable=unused-argument
+    def removeHook(self, modparent=True):
+        """ Perform actions related to removing a device from the devicetree.
+
+            :keyword bool modparent: whether to account for removal in parents
+
+            Parent child counts are adjusted regardless of modparent's value.
+            The intended use of modparent is to prevent doing things like
+            removing a parted.Partition from the disk that contains it as part
+            of msdos extended partition management. In general, you should not
+            override the default value of modparent in new code.
+        """
+        for parent in self.parents:
+            parent.removeChild()
+
+    def addHook(self, new=True):
+        """ Perform actions related to adding a device to the devicetree.
+
+            :keyword bool new: whether this device is new to the devicetree
+
+            The only intended use case for new=False is when unhiding a device
+            from the devicetree. Additional operations are performed when new is
+            False that are normally performed as part of the device constructor.
+        """
+        if not new:
+            for p in self.parents:
+                p.addChild()
+
+    #
+    # size manipulations
+    #
     def _getSize(self):
         """ Get the device's size, accounting for pending changes. """
         size = self._size
@@ -575,6 +609,29 @@ class StorageDevice(Device):
         return self.alignTargetSize(self.format.maxSize) if self.resizable else self.currentSize
 
     @property
+    def growable(self):
+        """ True if this device or its component devices are growable. """
+        return getattr(self, "req_grow", False) or any(p.growable for p in self.parents)
+
+    def checkSize(self):
+        """ Check to make sure the size of the device is allowed by the
+            format used.
+
+            Returns:
+            0  - ok
+            1  - Too large
+            -1 - Too small
+        """
+        if self.format.maxSize and self.size > self.format.maxSize:
+            return 1
+        elif self.format.minSize and self.size < self.format.minSize:
+            return -1
+        return 0
+
+    #
+    # status
+    #
+    @property
     def mediaPresent(self):
         """ True if this device contains usable media. """
         return True
@@ -591,6 +648,9 @@ class StorageDevice(Device):
             return False
         return os.access(self.path, os.W_OK)
 
+    #
+    # format manipulations
+    #
     def _setFormat(self, fmt):
         """ Set the Device's format. """
         if not fmt:
@@ -634,17 +694,20 @@ class StorageDevice(Device):
         pass
 
     @property
+    def formatImmutable(self):
+        """ Is it possible to execute format actions on this device? """
+        return self._formatImmutable or self.protected
+
+    #
+    # misc properties
+    #
+    @property
     def removable(self):
         devpath = os.path.normpath(self.sysfsPath)
         remfile = os.path.normpath("%s/removable" % devpath)
         return (self.sysfsPath and os.path.exists(devpath) and
                 os.access(remfile, os.R_OK) and
                 open(remfile).readline().strip() == "1")
-
-    @property
-    def formatImmutable(self):
-        """ Is it possible to execute format actions on this device? """
-        return self._formatImmutable or self.protected
 
     @property
     def direct(self):
@@ -675,54 +738,6 @@ class StorageDevice(Device):
     def vendor(self):
         return self._vendor
 
-    @property
-    def growable(self):
-        """ True if this device or its component devices are growable. """
-        return getattr(self, "req_grow", False) or any(p.growable for p in self.parents)
-
-    def checkSize(self):
-        """ Check to make sure the size of the device is allowed by the
-            format used.
-
-            Returns:
-            0  - ok
-            1  - Too large
-            -1 - Too small
-        """
-        if self.format.maxSize and self.size > self.format.maxSize:
-            return 1
-        elif self.format.minSize and self.size < self.format.minSize:
-            return -1
-        return 0
-
-    # pylint: disable=unused-argument
-    def removeHook(self, modparent=True):
-        """ Perform actions related to removing a device from the devicetree.
-
-            :keyword bool modparent: whether to account for removal in parents
-
-            Parent child counts are adjusted regardless of modparent's value.
-            The intended use of modparent is to prevent doing things like
-            removing a parted.Partition from the disk that contains it as part
-            of msdos extended partition management. In general, you should not
-            override the default value of modparent in new code.
-        """
-        for parent in self.parents:
-            parent.removeChild()
-
-    def addHook(self, new=True):
-        """ Perform actions related to adding a device to the devicetree.
-
-            :keyword bool new: whether this device is new to the devicetree
-
-            The only intended use case for new=False is when unhiding a device
-            from the devicetree. Additional operations are performed when new is
-            False that are normally performed as part of the device constructor.
-        """
-        if not new:
-            for p in self.parents:
-                p.addChild()
-
     def populateKSData(self, data):
         # the common pieces are basically the formatting
         self.format.populateKSData(data)
@@ -751,6 +766,9 @@ class StorageDevice(Device):
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
 
+    #
+    # dependencies
+    #
     @classmethod
     def typeExternalDependencies(cls):
         """ A list of external dependencies of this device type.
