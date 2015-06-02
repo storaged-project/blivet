@@ -161,6 +161,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         super(BTRFSVolumeDevice, self).__init__(*args, **kwargs)
 
+        # avoid attribute-defined-outside-init pylint warning
+        self._dataLevel = self._metaDataLevel = None
+
         # assign after constructor to avoid AttributeErrors in setter functions
         self.dataLevel = dataLevel
         self.metaDataLevel = metaDataLevel
@@ -180,6 +183,49 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
         self._defaultSubVolumeID = None
 
+    def _validateRaidLevel(self, level):
+        """ Returns an error message if the RAID level is invalid for this
+            device, otherwise None.
+
+            :param level: a RAID level
+            :type level: :class:`~.devicelibs.raid.RAIDLevel`
+            :returns: an error message if the RAID level is invalid, else None
+            :rtype: str or NoneType
+        """
+        if not self.exists and len(self.parents) < level.min_members:
+            return "RAID level %s requires that device have at least %d members, but device has only %d members." % (level, level.min_members, len(self.parents))
+        return None
+
+    def _setLevel(self, value, data):
+        """ Sets a valid level for this device and level type.
+
+            :param object value: value for this RAID level
+            :param bool data: True if for data, False if for metadata
+
+            :returns: a valid level for value, if any, else None
+            :rtype: :class:`~.devicelibs.raid.RAIDLevel` or NoneType
+
+            :raises: :class:`~.errors.BTRFSValueError` if value represents
+            an invalid level.
+        """
+        level = None
+        if value:
+            try:
+                levels = btrfs.RAID_levels if data else btrfs.metadata_levels
+                level = levels.raidLevel(value)
+            except errors.RaidError:
+                data_type_str = "data" if data else "metadata"
+                raise errors.BTRFSValueError("%s is an invalid value for %s RAID level." % (value, data_type_str))
+
+            error_msg = self._validateRaidLevel(level)
+            if error_msg:
+                raise errors.BTRFSValueError(error_msg)
+
+        if data:
+            self._dataLevel = level
+        else:
+            self._metaDataLevel = level
+
     @property
     def dataLevel(self):
         """ Return the RAID level for data.
@@ -193,12 +239,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     def dataLevel(self, value):
         """ Set the RAID level for data.
 
-            :param value: new raid level
-            :param type:  a valid raid level descriptor
+            :param object value: new raid level
             :returns:     None
+            :raises: :class:`~.errors.BTRFSValueError`
         """
-        # pylint: disable=attribute-defined-outside-init
-        self._dataLevel = btrfs.RAID_levels.raidLevel(value) if value else None
+        self._setLevel(value, True)
 
     @property
     def metaDataLevel(self):
@@ -213,12 +258,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     def metaDataLevel(self, value):
         """ Set the RAID level for metadata.
 
-            :param value: new raid level
-            :param type:  a valid raid level descriptor
+            :param object value: new raid level
             :returns:     None
+            :raises: :class:`~.errors.BTRFSValueError`
         """
-        # pylint: disable=attribute-defined-outside-init
-        self._metaDataLevel = btrfs.metadata_levels.raidLevel(value) if value else None
+        self._setLevel(value, False)
 
     @property
     def formatImmutable(self):
