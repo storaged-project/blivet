@@ -937,6 +937,9 @@ class Populator(object):
                 if lv_name.endswith("_pmspare]"):
                     # spare metadata area for any thin pool that needs repair
                     return
+                elif lv_name.endswith("_cmeta]"):
+                    # cache metadata volume (skip, we ignore cache volumes)
+                    return
 
                 # raid metadata volume
                 lv_name = re.sub(r'_[tr]meta.*', '', lv_name[1:-1])
@@ -974,7 +977,7 @@ class Populator(object):
             elif lv_name.endswith(']'):
                 # Internal LVM2 device
                 return
-            elif lv_attr[0] not in '-mMrRoO':
+            elif lv_attr[0] not in '-mMrRoOC':
                 # Ignore anything else except for the following:
                 #   - normal lv
                 #   m mirrored
@@ -983,6 +986,7 @@ class Populator(object):
                 #   R raid without initial sync
                 #   o origin
                 #   O origin with merging snapshot
+                #   C cached LV
                 return
 
             lv_dev = self.getDeviceByUuid(lv_uuid)
