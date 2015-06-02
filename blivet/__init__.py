@@ -1223,11 +1223,6 @@ class Blivet(object):
 
         if kwargs.pop("subvol", False):
             dev_class = BTRFSSubVolumeDevice
-            # make sure there's a valid parent device
-            parents = kwargs.get("parents", [])
-            if not parents or len(parents) != 1 or \
-               not isinstance(parents[0], BTRFSVolumeDevice):
-                raise ValueError("new btrfs subvols require a parent volume")
 
             # set up the subvol name, using mountpoint if necessary
             if not name:
