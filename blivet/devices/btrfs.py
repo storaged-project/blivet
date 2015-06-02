@@ -49,7 +49,7 @@ class BTRFSDevice(StorageDevice):
             args = ("btrfs.%d" % self.id,)
 
         if kwargs.get("parents") is None:
-            raise ValueError("BTRFSDevice must have at least one parent")
+            raise errors.BTRFSValueError("BTRFSDevice must have at least one parent")
 
         self.req_size = kwargs.pop("size", None)
         super(BTRFSDevice, self).__init__(*args, **kwargs)
@@ -263,13 +263,13 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def _addSubVolume(self, vol):
         if vol.name in [v.name for v in self.subvolumes]:
-            raise ValueError("subvolume %s already exists" % vol.name)
+            raise errors.BTRFSValueError("subvolume %s already exists" % vol.name)
 
         self.subvolumes.append(vol)
 
     def _removeSubVolume(self, name):
         if name not in [v.name for v in self.subvolumes]:
-            raise ValueError("cannot remove non-existent subvolume %s" % name)
+            raise errors.BTRFSValueError("cannot remove non-existent subvolume %s" % name)
 
         names = [v.name for v in self.subvolumes]
         self.subvolumes.pop(names.index(name))
@@ -566,13 +566,13 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
         source = kwargs.pop("source", None)
         if not kwargs.get("exists") and not source:
             # it is possible to remove a source subvol and keep snapshots of it
-            raise ValueError("non-existent btrfs snapshots must have a source")
+            raise errors.BTRFSValueError("non-existent btrfs snapshots must have a source")
 
         if source and not isinstance(source, BTRFSDevice):
-            raise ValueError("btrfs snapshot source must be a btrfs subvolume")
+            raise errors.BTRFSValueError("btrfs snapshot source must be a btrfs subvolume")
 
         if source and not source.exists:
-            raise ValueError("btrfs snapshot source must already exist")
+            raise errors.BTRFSValueError("btrfs snapshot source must already exist")
 
         self.source = source
         """ the snapshot's source subvolume """
@@ -584,7 +584,7 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
         if source and getattr(source, "volume", source) != self.volume:
             self.volume._removeSubVolume(self.name)
             self.parents = []
-            raise ValueError("btrfs snapshot and source must be in the same volume")
+            raise errors.BTRFSValueError("btrfs snapshot and source must be in the same volume")
 
     def _create(self):
         log_method_call(self, self.name, status=self.status)

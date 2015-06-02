@@ -146,6 +146,9 @@ class LoopError(StorageError):
 class BTRFSError(StorageError):
     pass
 
+class BTRFSValueError(BTRFSError, ValueError):
+    pass
+
 # DeviceTree
 class DeviceTreeError(StorageError):
     pass
