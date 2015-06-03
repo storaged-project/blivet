@@ -25,7 +25,7 @@ import re
 
 from . import raid
 from .. import util
-from ..errors import BTRFSError
+from ..errors import BTRFSError, BTRFSValueError
 
 import logging
 log = logging.getLogger("blivet")
@@ -64,9 +64,9 @@ def create_volume(devices, label=None, data=None, metadata=None):
        recognizes the string.
     """
     if not devices:
-        raise ValueError("no devices specified")
+        raise BTRFSValueError("no devices specified")
     elif any([not os.path.exists(d) for d in devices]):
-        raise ValueError("one or more specified devices not present")
+        raise BTRFSValueError("one or more specified devices not present")
 
     args = []
     if data:
@@ -90,20 +90,20 @@ def create_volume(devices, label=None, data=None, metadata=None):
 
 def add(mountpoint, device):
     if not os.path.ismount(mountpoint):
-        raise ValueError("volume not mounted")
+        raise BTRFSValueError("volume not mounted")
 
     return btrfs(["device", "add", device, mountpoint])
 
 def remove(mountpoint, device):
     if not os.path.ismount(mountpoint):
-        raise ValueError("volume not mounted")
+        raise BTRFSValueError("volume not mounted")
 
     return btrfs(["device", "delete", device, mountpoint])
 
 def create_subvolume(mountpoint, name):
     """Create a subvolume named name below mountpoint mountpoint."""
     if not os.path.ismount(mountpoint):
-        raise ValueError("volume not mounted")
+        raise BTRFSValueError("volume not mounted")
 
     path = os.path.normpath("%s/%s" % (mountpoint, name))
     args = ["subvol", "create", path]
@@ -111,7 +111,7 @@ def create_subvolume(mountpoint, name):
 
 def delete_subvolume(mountpoint, name):
     if not os.path.ismount(mountpoint):
-        raise ValueError("volume not mounted")
+        raise BTRFSValueError("volume not mounted")
 
     path = os.path.normpath("%s/%s" % (mountpoint, name))
     args = ["subvol", "delete", path]
@@ -123,7 +123,7 @@ _SUBVOL_REGEX = re.compile(_SUBVOL_REGEX_STR)
 # get a list of subvolumes from a mounted btrfs filesystem
 def list_subvolumes(mountpoint, snapshots_only=False):
     if not os.path.ismount(mountpoint):
-        raise ValueError("volume not mounted")
+        raise BTRFSValueError("volume not mounted")
 
     args = ["subvol", "list", "-p", mountpoint]
     if snapshots_only:
@@ -139,7 +139,7 @@ def list_subvolumes(mountpoint, snapshots_only=False):
 
 def get_default_subvolume(mountpoint):
     if not os.path.ismount(mountpoint):
-        raise ValueError("volume not mounted")
+        raise BTRFSValueError("volume not mounted")
 
     args = ["subvol", "get-default", mountpoint]
     buf = btrfs(args, capture=True)
@@ -170,7 +170,7 @@ def create_snapshot(source, dest, ro=False):
         :keyword bool ro: whether to create a read-only snapshot
     """
     if not os.path.ismount(source):
-        raise ValueError("source is not a mounted subvolume")
+        raise BTRFSValueError("source is not a mounted subvolume")
 
     args = ["subvol", "snapshot"]
     if ro:

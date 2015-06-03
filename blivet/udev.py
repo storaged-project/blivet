@@ -324,6 +324,9 @@ def device_get_major(info):
 def device_get_minor(info):
     return int(info["MINOR"])
 
+def device_get_devname(info):
+    return info.get('DEVNAME')
+
 def device_get_md_level(info):
     """ Returns the RAID level of the array of which this device is a member.
 
