@@ -748,7 +748,13 @@ class ActionResizeFormat(DeviceAction):
             self.dir = RESIZE_GROW
         else:
             self.dir = RESIZE_SHRINK
-        self.origSize = self.device.format.targetSize
+
+        if device.format.targetSize > Size(0):
+            self.origSize = device.format.targetSize
+        # no targetSize -- original size for device was its currentSize
+        else:
+            self.origSize = device.format.currentSize
+
         self._targetSize = newsize
 
     def apply(self):
