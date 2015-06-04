@@ -20,6 +20,8 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import re
+
 from collections import namedtuple
 from gi.repository import BlockDev as blockdev
 
@@ -115,3 +117,34 @@ def lvm_cc_removeFilterRejectRegexp(regexp):
 def lvm_cc_resetFilter():
     config_args_data["filterRejects"] = []
     config_args_data["filterAccepts"] = []
+
+def determine_parent_lv(vg_name, internal_lv, lvs):
+    """Try to determine which of the lvs is the parent of the internal_lv
+
+    :param str vg_name: name of the VG the internal_lv and lvs belong to
+    :type internal_lv: :class:`~.devices.lvm.LMVInternalLogicalVolumeDevice`
+    :type lvs: :class:`~.devices.lvm.LMVLogicalVolumeDevice`
+
+    """
+    for lv in lvs:
+        if internal_lv.lvname == lv.lvname:
+            # skip the internal_lv itself
+            continue
+
+        # check if the lv's name is the name of the internal LV without the suffix
+        # e.g. 'pool' and 'pool_tmeta'
+        if re.match(lv.lvname+internal_lv.name_suffix+"$", internal_lv.lvname):
+            return lv
+
+        # cache pools are internal LVs of cached LVs
+        try:
+            pool_name = blockdev.lvm.cache_pool_name(vg_name, lv.lvname)
+            if pool_name == internal_lv.lvname:
+                return lv
+        except blockdev.LVMError:
+            # doesn't have a pool
+            pass
+
+        # TODO: use 'data_lv' and 'metadata_lv' on appropriate internal LVs
+
+    return None

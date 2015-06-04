@@ -41,6 +41,7 @@ from .devices import MDContainerDevice
 from .devices import MultipathDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
+from .devices.lvm import get_internal_lv_class
 from . import formats
 from .devicelibs import lvm
 from .devicelibs import raid
@@ -863,6 +864,9 @@ class Populator(object):
             log.debug("no LVs listed for VG %s", vg_name)
             return
 
+        all_lvs = []
+        internal_lvs = []
+
         def addRequiredLV(name, msg):
             """ Add a prerequisite/parent LV.
 
@@ -879,7 +883,9 @@ class Populator(object):
             """
             vol = self.getDeviceByName(name)
             if vol is None:
-                addLV(lv_info[name])
+                new_lv = addLV(lv_info[name])
+                if new_lv:
+                    all_lvs.append(new_lv)
                 vol = self.getDeviceByName(name)
 
                 if vol is None:
@@ -926,33 +932,11 @@ class Populator(object):
             elif lv_attr[0] == 'v':
                 # skip vorigins
                 return
-            elif lv_attr[0] in 'Ii':
-                # mirror image
-                rname = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
-                name = "%s-%s" % (vg_name, rname)
-                addRequiredLV(name, "failed to look up raid lv")
-                raid_items[name]["copies"] += 1
-                return
-            elif lv_attr[0] == 'e':
-                if lv_name.endswith("_pmspare]"):
-                    # spare metadata area for any thin pool that needs repair
-                    return
-                elif lv_name.endswith("_cmeta]"):
-                    # cache metadata volume (skip, we ignore cache volumes)
-                    return
-
-                # raid metadata volume
-                lv_name = re.sub(r'_[tr]meta.*', '', lv_name[1:-1])
-                name = "%s-%s" % (vg_name, lv_name)
-                addRequiredLV(name, "failed to look up raid lv")
-                raid_items[name]["meta"] += lv_size
-                return
-            elif lv_attr[0] == 'l':
-                # log volume
-                rname = re.sub(r'_mlog.*', '', lv_name[1:-1])
-                name = "%s-%s" % (vg_name, rname)
-                addRequiredLV(name, "failed to look up log lv")
-                raid_items[name]["log"] = lv_size
+            elif lv_attr[0] in 'IielTCo' and lv_name.endswith(']'):
+                # an internal LV, add the an instance of the appropriate class
+                # to internal_lvs for later processing when non-internal LVs are
+                # processed
+                internal_lvs.append(lv_name)
                 return
             elif lv_attr[0] == 't':
                 # thin pool
@@ -975,7 +959,7 @@ class Populator(object):
 
                 lv_parents = [self.getDeviceByName(pool_device_name)]
             elif lv_name.endswith(']'):
-                # Internal LVM2 device
+                # unrecognized Internal LVM2 device
                 return
             elif lv_attr[0] not in '-mMrRoOC':
                 # Ignore anything else except for the following:
@@ -1004,30 +988,78 @@ class Populator(object):
                     lv_info = udev.get_device(lv_device.sysfsPath)
                     if not lv_info:
                         log.error("failed to get udev data for lv %s", lv_device.name)
-                        return
+                        return lv_device
 
                     # do format handling now
                     self.addUdevDevice(lv_info)
 
-        raid_items = dict((n.replace("[", "").replace("]", ""),
-                     {"copies": 0, "log": Size(0), "meta": Size(0)})
-                     for n in lv_info.keys())
+                return lv_device
+
+            return None
+
+        def createInternalLV(lv):
+            lv_name = lv.lv_name
+            lv_uuid = lv.uuid
+            lv_attr = lv.attr
+            lv_size = Size(lv.size)
+            lv_type = lv.segtype
+
+            matching_cls = get_internal_lv_class(lv_attr)
+            if matching_cls is None:
+                raise DeviceTreeError("No internal LV class supported for type '%s'" % lv_attr[0])
+
+            # strip the "[]"s marking the LV as internal
+            lv_name = lv_name.strip("[]")
+
+            # don't know the parent LV yet, will be set later
+            new_lv = matching_cls(lv_name, vg_device, parent_lv=None, size=lv_size, uuid=lv_uuid, exists=True, segType=lv_type)
+            if new_lv.status:
+                new_lv.updateSysfsPath()
+                new_lv.updateSize()
+
+                lv_info = udev.get_device(new_lv.sysfsPath)
+                if not lv_info:
+                    log.error("failed to get udev data for lv %s", new_lv.name)
+                    return new_lv
+
+            return new_lv
+
+        # add LVs
         for lv in lv_info.values():
-            addLV(lv)
+            # add the LV to the DeviceTree
+            new_lv = addLV(lv)
 
-        for name, data in raid_items.items():
-            lv_dev = self.getDeviceByName(name)
-            if not lv_dev:
-                # hidden lv, eg: pool00_tdata
-                continue
+            if new_lv:
+                # save the reference for later use
+                all_lvs.append(new_lv)
 
-            lv_dev.copies = data["copies"] or 1
-            lv_dev.metaDataSize = data["meta"]
-            lv_dev.logSize = data["log"]
-            log.debug("set %s copies to %d, metadata size to %s, log size "
-                      "to %s, total size %s",
-                        lv_dev.name, lv_dev.copies, lv_dev.metaDataSize,
-                        lv_dev.logSize, lv_dev.vgSpaceUsed)
+        # Instead of doing a topological sort on internal LVs to make sure the
+        # parent LV is always created before its internal LVs (an internal LV
+        # can have internal LVs), we just create all the instances here and
+        # assign their parents later. Those who are not assinged a parent (which
+        # would hold a reference to them) will get eaten by the garbage
+        # collector.
+
+        # create device instances for the internal LVs
+        orphan_lvs = dict()
+        for lv_name in internal_lvs:
+            full_name = "%s-%s" % (vg_name, lv_name)
+            try:
+                new_lv = createInternalLV(lv_info[full_name])
+            except DeviceTreeError as e:
+                log.warning("Failed to process an internal LV '%s': %s", full_name, e)
+            else:
+                orphan_lvs[full_name] = new_lv
+                all_lvs.append(new_lv)
+
+        # assign parents to internal LVs (and vice versa, see
+        # :class:`~.devices.lvm.LVMInternalLogicalVolumeDevice`)
+        for lv in orphan_lvs.values():
+            parent_lv = lvm.determine_parent_lv(vg_name, lv, all_lvs)
+            if parent_lv:
+                lv.parent_lv = parent_lv
+            else:
+                log.warning("Failed to determine parent LV for an internal LV '%s'", lv.name)
 
     def handleUdevLVMPVFormat(self, info, device):
         # pylint: disable=unused-argument

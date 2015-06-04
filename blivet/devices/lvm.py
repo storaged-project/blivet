@@ -48,7 +48,15 @@ from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
 
-INTERNAL_LV_CLASSES = []
+_INTERNAL_LV_CLASSES = []
+
+def get_internal_lv_class(lv_attr):
+    # XXX: need to do some heuristic on the LV name?
+    for cls in _INTERNAL_LV_CLASSES:
+        if lv_attr[0] in cls.attr_letters:
+            return cls
+
+    return None
 
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group """
@@ -452,10 +460,9 @@ class LVMLogicalVolumeDevice(DMDevice):
     _containerClass = LVMVolumeGroupDevice
     _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN]
 
-    def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=None, segType=None,
-                 fmt=None, exists=False, sysfsPath='',
-                 grow=None, maxsize=None, percent=None):
+    def __init__(self, name, parents=None, size=None, uuid=None, segType=None,
+                 fmt=None, exists=False, sysfsPath='', grow=None, maxsize=None,
+                 percent=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -516,6 +523,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._check_parents()
         self._add_to_parents()
 
+        self._metaDataSize = Size(0)
         self._internal_lvs = []
 
     def _check_parents(self):
@@ -537,6 +545,24 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         # a normal LV has only exactly parent -- the VG it belongs to
         self._parents[0]._addLogVol(self)
+
+    @property
+    def copies(self):
+        image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
+        return len(image_lvs) or 1
+
+    @property
+    def logSize(self):
+        log_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMLogLogicalVolumeDevice))
+        return sum(lv.size for lv in log_lvs)
+
+    @property
+    def metaDataSize(self):
+        if self._metaDataSize:
+            return self._metaDataSize
+
+        md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
+        return sum(lv.size for lv in md_lvs)
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
@@ -1135,11 +1161,9 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
     _type = "lvmsnapshot"
     _formatImmutable = True
 
-    def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=None, segType=None,
-                 fmt=None, exists=False, sysfsPath='',
-                 grow=None, maxsize=None, percent=None,
-                 origin=None, vorigin=False):
+    def __init__(self, name, parents=None, size=None, uuid=None, segType=None,
+                 fmt=None, exists=False, sysfsPath='', grow=None, maxsize=None,
+                 percent=None, origin=None, vorigin=False):
         """ Create an LVMSnapShotDevice instance.
 
             This class is for the old-style (not thin) lvm snapshots. The origin
@@ -1178,7 +1202,6 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
 
         LVMLogicalVolumeDevice.__init__(self, name, parents=parents, size=size,
                                         uuid=uuid, fmt=None, exists=exists,
-                                        copies=copies, logSize=logSize,
                                         segType=segType,
                                         sysfsPath=sysfsPath, grow=grow,
                                         maxsize=maxsize, percent=percent)
@@ -1282,7 +1305,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                 percent=percent,
                                                 segType=segType)
 
-        self.metaDataSize = metadatasize or Size(0)
+        self._metaDataSize = metadatasize or Size(0)
         self.chunkSize = chunksize or Size(0)
         self.profile = profile
         self._lvs = []
