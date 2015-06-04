@@ -489,16 +489,6 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type percent: int
 
         """
-        if isinstance(parents, list):
-            if len(parents) != 1:
-                raise ValueError("constructor requires a single %s instance" % self._containerClass.__name__)
-
-            container = parents[0]
-        else:
-            container = parents
-
-        if not isinstance(container, self._containerClass):
-            raise ValueError("constructor requires a %s instance" % self._containerClass.__name__)
 
         DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfsPath=sysfsPath, parents=parents,
@@ -523,8 +513,29 @@ class LVMLogicalVolumeDevice(DMDevice):
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
 
-        # here we go with the circular references
-        self.parents[0]._addLogVol(self)
+        # check that we got parents as expected and add this device to them
+        self._check_parents()
+        self._add_to_parents()
+
+    def _check_parents(self):
+        """Check that this device has parents as expected"""
+
+        if isinstance(self.parents, list):
+            if len(self.parents) != 1:
+                raise ValueError("constructor requires a single %s instance" % self._containerClass.__name__)
+
+            container = self.parents[0]
+        else:
+            container = self.parents
+
+        if not isinstance(container, self._containerClass):
+            raise ValueError("constructor requires a %s instance" % self._containerClass.__name__)
+
+    def _add_to_parents(self):
+        """Add this device to its parents"""
+
+        # a normal LV has only exactly parent -- the VG it belongs to
+        self._parents[0]._addLogVol(self)
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
