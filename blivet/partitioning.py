@@ -29,6 +29,7 @@ from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPA
 from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError
 from .flags import flags
 from .devices import PartitionDevice, LUKSDevice, devicePathToName
+from .devices.partition import FALLBACK_DEFAULT_PART_SIZE
 from .formats import getFormat
 from .devicelibs.lvm import get_pool_padding
 from .size import Size
@@ -115,7 +116,7 @@ def _scheduleImplicitPartitions(storage, disks, min_luks_entropy=0):
 
     return devs
 
-def _schedulePartitions(storage, disks, min_luks_entropy=0, requests=None):
+def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, requests=None):
     """ Schedule creation of autopart/reqpart partitions.
 
         This only schedules the requests for actual partitions.
@@ -138,17 +139,17 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0, requests=None):
 
     # basis for requests with requiredSpace is the sum of the sizes of the
     # two largest free regions
-    all_free = getFreeRegions(disks)
-    all_free.sort(key=lambda f: f.length, reverse=True)
+    all_free = (Size(reg.getLength(unit="B")) for reg in getFreeRegions(disks))
+    all_free = sorted(all_free, reverse=True)
     if not all_free:
         # this should never happen since we've already filtered the disks
         # to those with at least 500MiB free
         log.error("no free space on disks %s", [d.name for d in disks])
         return
 
-    free = Size(all_free[0].getLength(unit="B"))
+    free = all_free[0]
     if len(all_free) > 1:
-        free += Size(all_free[1].getLength(unit="B"))
+        free += all_free[1]
 
     # The boot disk must be set at this point. See if any platform-specific
     # stage1 device we might allocate already exists on the boot disk.
@@ -204,6 +205,11 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0, requests=None):
                 log.debug("%s", stage1_device)
                 continue
 
+        if request.size > all_free[0]:
+            # no big enough free space for the requested partition
+            raise NotEnoughFreeSpaceError(_("No big enough free space on disks for "
+                                            "automatic partitioning"))
+
         if request.encrypted and storage.encryptedAutoPart:
             fmt_type = "luks"
             fmt_args = {"passphrase": storage.encryptionPassphrase,
@@ -237,8 +243,19 @@ def _schedulePartitions(storage, disks, min_luks_entropy=0, requests=None):
                                   parents=dev)
             storage.createDevice(luks_dev)
 
-    # make sure preexisting broken lvm/raid configs get out of the way
-    return
+        if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
+                                    AUTOPART_TYPE_BTRFS):
+            # doing LVM/BTRFS -- make sure the newly created partition fits in some
+            # free space together with one of the implicitly requested partitions
+            smallest_implicit = sorted(implicit_devices, key=lambda d: d.size)[0]
+            if (request.size + smallest_implicit.size) > all_free[0]:
+                # not enough space to allocate the smallest implicit partition
+                # and the request, make the implicit partitions smaller in
+                # attempt to make space for the request
+                for implicit_req in implicit_devices:
+                    implicit_req.size = FALLBACK_DEFAULT_PART_SIZE
+
+    return implicit_devices
 
 def _scheduleVolumes(storage, devs):
     """ Schedule creation of autopart lvm/btrfs volumes.
@@ -414,7 +431,7 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                       "automatic partitioning"))
 
-    _schedulePartitions(storage, disks, min_luks_entropy=min_luks_entropy)
+    devs = _schedulePartitions(storage, disks, devs, min_luks_entropy=min_luks_entropy)
 
     # run the autopart function to allocate and grow partitions
     doPartitioning(storage)

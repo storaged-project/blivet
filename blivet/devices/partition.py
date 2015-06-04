@@ -42,6 +42,11 @@ from .storage import StorageDevice
 from .dm import DMDevice
 from .lib import devicePathToName, deviceNameToDiskByPath
 
+DEFAULT_PART_SIZE = Size("500MiB")
+
+# in case the default partition size doesn't fit
+FALLBACK_DEFAULT_PART_SIZE = Size("256MiB")
+
 class PartitionDevice(StorageDevice):
     """ A disk partition.
 
@@ -54,7 +59,7 @@ class PartitionDevice(StorageDevice):
     """
     _type = "partition"
     _resizable = True
-    defaultSize = Size("500MiB")
+    defaultSize = DEFAULT_PART_SIZE
 
     def __init__(self, name, fmt=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
@@ -736,7 +741,10 @@ class PartitionDevice(StorageDevice):
             raise ValueError("new size must of type Size")
 
         if not self.exists:
-            raise errors.DeviceError("device does not exist", self.name)
+            # device does not exist (a partition request), just set basic values
+            self._size = newsize
+            self.req_size = newsize
+            self.req_base_size = newsize
 
         if newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
