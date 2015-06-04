@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.1
+Version: 0.61.15.2
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,42 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jun 03 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.2-1
+- If allowing degraded array, attempt to start it (amulhern)
+  Resolves: rhbz#1090009
+  Related: rhbz#1202877
+- Add a method that looks at DEVNAME (amulhern)
+  Related: rhbz#1090009
+  Related: rhbz#1202877
+- Add mdrun method to just start, not assemble, an array. (amulhern)
+  Related: rhbz#1090009
+  Related: rhbz#1202877
+- Change allow_degraded_mdraid flag to allow_imperfect_devices (amulhern)
+  Related: rhbz#1090009
+  Related: rhbz#1202877
+- Check if device has enough members when setting RAID level (amulhern)
+  Related: rhbz#1019685
+  Related: rhbz#1202877
+- Add BTRFSValueError error and use in btrfs related code (amulhern)
+  Related: rhbz#1019685
+  Related: rhbz#1202877
+- Use a safer method to get a dm partition's disk name. (dlehman)
+  Resolves: rhbz#1190886
+  Related: rhbz#1181336
+- Don't raise an exception for failure to scan an ignored disk. (dlehman)
+  Related: rhbz#1123450
+- iscsi: mount partitions in initramfs for root on iscsi (rvykydal)
+  Related: rhbz#740106
+  Related: rhbz#1202877
+- iscsi: improve logging of failed logins (rvykydal)
+  Related: rhbz#1114820
+  Related: rhbz#1202877
+- Introduce a new doReqPartition method that is similar to doAutoPartition.
+  (clumens)
+  Related: rhbz#1164660
+- Fix "anaconda hangs while trying to discover iscsi..." (jkonecny)
+  Resolves: rhbz#1166652
+
 * Fri May 29 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.1-1
 - Add .0 to version -- 0.61.15.0 (bcl)
   Related: rhbz#1202877
