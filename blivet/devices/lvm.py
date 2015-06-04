@@ -41,7 +41,7 @@ from ..tasks import availability
 import logging
 log = logging.getLogger("blivet")
 
-from .lib import LINUX_SECTOR_SIZE
+from .lib import LINUX_SECTOR_SIZE, ParentList
 from .device import Device
 from .storage import StorageDevice
 from .container import ContainerDevice
@@ -529,7 +529,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def _check_parents(self):
         """Check that this device has parents as expected"""
 
-        if isinstance(self.parents, list):
+        if isinstance(self.parents, (list, ParentList)):
             if len(self.parents) != 1:
                 raise ValueError("constructor requires a single %s instance" % self._containerClass.__name__)
 
