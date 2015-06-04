@@ -279,5 +279,3 @@ class LVMOnMDTestCase(BlivetResetTestCase):
                                   disks=self.blivet.disks[:],
                                   container_raid_level="raid1")
 
-if __name__ == "__main__":
-    unittest.main()

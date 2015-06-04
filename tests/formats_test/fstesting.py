@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import abc
 from six import add_metaclass

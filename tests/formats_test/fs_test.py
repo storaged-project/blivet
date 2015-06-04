@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import os
 import tempfile
 import unittest
@@ -140,5 +139,3 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
             pass
         os.rmdir(self.mountpoint)
 
-if __name__ == "__main__":
-    unittest.main()

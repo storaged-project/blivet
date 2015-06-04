@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -86,5 +85,3 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
 
         availability.CACHE_AVAILABILITY = self.cache_availability
 
-if __name__ == "__main__":
-    unittest.main()

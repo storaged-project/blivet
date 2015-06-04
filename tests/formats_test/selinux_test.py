@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import os
 import selinux
 import tempfile
@@ -95,5 +94,3 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         super(SELinuxContextTestCase, self).tearDown()
         blivet.flags.installer_mode = self.installer_mode
 
-if __name__ == "__main__":
-    unittest.main()
