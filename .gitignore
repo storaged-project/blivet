@@ -2,10 +2,8 @@
 .*.swp
 blivet*.tar.gz
 blivet*.tar.bz2
-doc/blivet.devicelibs.rst
-doc/blivet.formats.rst
-doc/blivet.rst
-doc/modules.rst
+doc/blivet
+doc/tests
 doc/_build
 po/*.gmo
 po/*.po

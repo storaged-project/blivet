@@ -12,7 +12,8 @@ Contents:
    :maxdepth: 4
 
    intro
-   modules
+   blivet/modules
+   tests/modules
 
 Indices and tables
 ==================
