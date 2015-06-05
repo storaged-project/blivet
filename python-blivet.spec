@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.2
+Version: 0.61.15.3
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,26 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jun 05 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.3-1
+- Improve wording of the error message on autopart fail (vpodzime)
+  Related: rhbz#1202877
+- Fallback implicit partition size must be big enough for BTRFS (vpodzime)
+  Related: rhbz#1202877
+  Related: rhbz#1171116
+- Make implicit partitions smaller if real requests don't fit anywhere
+  (vpodzime)
+  Resolves: rhbz#1171116
+  Related: rhbz#1202877
+- Make sure autopart requests fit in somewhere (vpodzime)
+  Resolves: rhbz#978266
+  Related: rhbz#1202877
+- Work with free region sizes instead of parted.Geometry objects (vpodzime)
+  Related: rhbz#1202877
+  Related: rhbz#978266
+- Check that we have big enough free space for the partition request (vpodzime)
+  Related: rhbz#1202877
+  Related: rhbz#978266
+
 * Wed Jun 03 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.2-1
 - If allowing degraded array, attempt to start it (amulhern)
   Resolves: rhbz#1090009
