@@ -206,8 +206,8 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
                 continue
 
         if request.size > all_free[0]:
-            # no big enough free space for the requested partition
-            raise NotEnoughFreeSpaceError(_("No big enough free space on disks for "
+            # not enough free space for the requested partition
+            raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                             "automatic partitioning"))
 
         if request.encrypted and storage.encryptedAutoPart:
