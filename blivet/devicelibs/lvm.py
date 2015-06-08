@@ -126,6 +126,7 @@ def determine_parent_lv(vg_name, internal_lv, lvs):
     :type lvs: :class:`~.devices.lvm.LMVLogicalVolumeDevice`
 
     """
+    # try name matching first (fast, cheap, often works)
     for lv in lvs:
         if internal_lv.lvname == lv.lvname:
             # skip the internal_lv itself
@@ -136,15 +137,34 @@ def determine_parent_lv(vg_name, internal_lv, lvs):
         if re.match(lv.lvname+internal_lv.name_suffix+"$", internal_lv.lvname):
             return lv
 
+    # now try checking relations between LVs
+    for lv in lvs:
         # cache pools are internal LVs of cached LVs
         try:
             pool_name = blockdev.lvm.cache_pool_name(vg_name, lv.lvname)
+        except blockdev.LVMError:
+            # cannot determine, just go on
+            pass
+        else:
             if pool_name == internal_lv.lvname:
                 return lv
-        except blockdev.LVMError:
-            # doesn't have a pool
-            pass
 
-        # TODO: use 'data_lv' and 'metadata_lv' on appropriate internal LVs
+        # pools have internal data and metadata LVs
+        try:
+            data_lv_name = blockdev.lvm.data_lv_name(vg_name, lv.lvname)
+        except blockdev.LVMError:
+            # cannot determine, just go on
+            pass
+        else:
+            if data_lv_name == internal_lv.lvname:
+                return lv
+        try:
+            metadata_lv_name = blockdev.lvm.metadata_lv_name(vg_name, lv.lvname)
+        except blockdev.LVMError:
+            # cannot determine, just go on
+            pass
+        else:
+            if metadata_lv_name == internal_lv.lvname:
+                return lv
 
     return None
