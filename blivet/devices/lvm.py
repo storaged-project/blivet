@@ -1030,12 +1030,34 @@ _INTERNAL_LV_CLASSES.append(LVMDataLogicalVolumeDevice)
 class LVMMetadataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     """Internal metadata LV (used by thin/cache pools, RAIDs, etc.)"""
 
+    # thin pool metadata LVs can be resized directly
+    _resizable = True
+
     attr_letters = ["e"]
     # RAIDs can have multiple (numbered) metadata LVs
     name_suffix = r"_[trc]meta(_[0-9]+)?"
     takes_extra_space = True
 
-    # TODO: override and allow resize()
+    # (only) thin pool metadata LVs can be resized directly
+    @property
+    def resizable(self):
+        if self._parent_lv:
+            return isinstance(self._parent_lv, LVMThinPoolDevice)
+        else:
+            # hard to say at this point, just use the name
+            return not re.search(r'_[rc]meta', self.lvname)
+
+    # (only) thin pool metadata LVs can be resized directly
+    def resize(self):
+        if ((self._parent_lv and not isinstance(self._parent_lv, LVMThinPoolDevice)) or
+            re.search(r'_[rc]meta', self.lvname)):
+            raise errors.DeviceError("RAID and cache pool metadata LVs cannot be resized directly")
+
+        # skip the generic LVMInternalLogicalVolumeDevice class and call the
+        # resize() method of the LVMLogicalVolumeDevice
+        # pylint: disable=bad-super-call
+        super(LVMInternalLogicalVolumeDevice, self).resize()
+
 _INTERNAL_LV_CLASSES.append(LVMMetadataLogicalVolumeDevice)
 
 class LVMLogLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
