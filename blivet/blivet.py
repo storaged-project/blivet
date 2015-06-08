@@ -408,9 +408,8 @@ class Blivet(object):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        lvs = self.devicetree.getDevicesByType("lvmlv")
-        lvs.sort(key=lambda d: d.name)
-        return lvs
+        lvs = (d for d in self.devices if d.type in ("lvmlv", "lvmthinpool", "lvmthinlv"))
+        return sorted(lvs, key=lambda d: d.name)
 
     @property
     def thinlvs(self):
