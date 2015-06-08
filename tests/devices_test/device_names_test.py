@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -41,6 +40,3 @@ class DeviceNameTestCase(unittest.TestCase):
 
         for name in bad_names:
             self.assertFalse(LVMLogicalVolumeDevice.isNameValid(name))
-
-if __name__ == "__main__":
-    unittest.main()

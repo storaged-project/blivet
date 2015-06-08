@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -137,6 +136,3 @@ class LVMDeviceTest(unittest.TestCase):
         lv.targetSize = orig_size
         self.assertEqual(lv.targetSize, orig_size)
         self.assertEqual(lv.size, orig_size)
-
-if __name__ == "__main__":
-    unittest.main()

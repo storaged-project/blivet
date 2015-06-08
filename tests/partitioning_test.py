@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import unittest
 from mock import Mock
@@ -586,6 +585,3 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
                          "user-specified extended partition was removed")
 
         self.blivet.doIt()
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # vim:set fileencoding=utf-8
 
 import unittest
@@ -85,6 +84,3 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         availability.BLOCKDEV_DM_PLUGIN.available # pylint: disable=pointless-statement
 
         availability.CACHE_AVAILABILITY = self.cache_availability
-
-if __name__ == "__main__":
-    unittest.main()

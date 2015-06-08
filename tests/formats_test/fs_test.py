@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import os
 import tempfile
 import unittest
@@ -139,6 +138,3 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         except Exception: # pylint: disable=broad-except
             pass
         os.rmdir(self.mountpoint)
-
-if __name__ == "__main__":
-    unittest.main()

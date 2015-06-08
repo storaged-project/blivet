@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # pylint: disable=environment-modify
 #
 # tests/storage/size_tests.py
@@ -449,6 +448,3 @@ class UtilityMethodsTestCase(unittest.TestCase):
         self.assertIsInstance(2/s, Decimal)
         self.assertIsInstance(2**Size(2), Decimal)
         self.assertIsInstance(1024 % Size(127), Decimal)
-
-if __name__ == "__main__":
-    unittest.main()
