@@ -406,8 +406,16 @@ class ZFCP:
             except ValueError as e:
                 log.warn("%s", str(e))
 
-    def write(self, root):
-        if len(self.fcpdevs) == 0:
+    def write(self, root, zfcpdevs):
+        # make sure that any zfcp devices (not only those which were manually
+        # added) used during installation are included in /etc/zfcp.conf
+        if zfcpdevs:
+            for d in zfcpdevs:
+                dev = ZFCPDevice(d.hba_id, d.wwpn, d.fcp_lun)
+                if dev not in self.fcpdevs:
+                    self.fcpdevs.add(dev)
+
+        if not self.fcpdevs:
             return
         f = open(root + zfcpconf, "w")
         for d in self.fcpdevs:

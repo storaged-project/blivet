@@ -1597,7 +1597,7 @@ class Blivet(object):
         self.makeMtab()
         self.iscsi.write(_sysroot, self)
         self.fcoe.write(_sysroot)
-        self.zfcp.write(_sysroot)
+        self.zfcp.write(_sysroot, self.devicetree.getDevicesByType("zfcp"))
         write_dasd_conf(self.dasd, _sysroot)
 
     def turnOnSwap(self):
