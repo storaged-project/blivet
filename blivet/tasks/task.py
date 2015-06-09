@@ -71,6 +71,9 @@ class UnimplementedTask(Task):
 
     dependsOn = []
 
+    def __str__(self):
+        return "unimplemented task"
+
     def doTask(self, *args, **kwargs):
         raise NotImplementedError()
 
@@ -81,6 +84,9 @@ class BasicApplication(Task):
     ext = abc.abstractproperty(doc="The object representing the external resource.")
 
     # TASK methods
+
+    def __str__(self):
+        return str(self.ext)
 
     @property
     def _availabilityErrors(self):

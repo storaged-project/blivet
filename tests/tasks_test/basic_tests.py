@@ -38,3 +38,10 @@ class TasksTestCase(unittest.TestCase):
         available_app = BasicAvailableApplication()
         self.assertTrue(available_app.available)
         self.assertEqual(available_app.availabilityErrors, [])
+
+    def testNames(self):
+        # Every basic application takes its string representation from
+        # the external resource.
+        unavailable_app = BasicUnavailableApplication()
+        self.assertTrue(isinstance(unavailable_app, task.BasicApplication))
+        self.assertEqual(str(unavailable_app), str(unavailable_app.ext))
