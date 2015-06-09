@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.3
+Version: 0.61.15.4
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jun 08 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.4-1
+- Un-escape '-'s in names or paths for _all_ lvm lv or vgs (amulhern)
+  Related: rhbz#1223855
+- Include LUKSDevice information in kickstart data (amulhern)
+  Resolves: rhbz#1139222
+- If the parent volume has a label, use it in subvol's kickstart (amulhern)
+  Resolves: rhbz#1072060
+
 * Fri Jun 05 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.3-1
 - Improve wording of the error message on autopart fail (vpodzime)
   Related: rhbz#1202877

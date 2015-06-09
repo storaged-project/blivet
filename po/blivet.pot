@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-05 16:37-0700\n"
+"POT-Creation-Date: 2015-06-08 17:08-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,16 +21,16 @@ msgstr ""
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:2995
+#: ../blivet/__init__.py:3012
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3000
+#: ../blivet/__init__.py:3017
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3002
+#: ../blivet/__init__.py:3019
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -254,12 +254,12 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/devicetree.py:1302
-msgid "Invalid Disk Label"
-msgstr ""
-
 #: ../blivet/fcoe.py:108
 msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/devicetree.py:1304
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/platform.py:51
