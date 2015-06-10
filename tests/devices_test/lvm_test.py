@@ -32,16 +32,16 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.getFormat("xfs"))
 
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot devices require an origin lv"):
+        with self.assertRaisesRegex(ValueError, "lvm snapshot devices require an origin lv"):
             LVMSnapShotDevice("snap1", parents=[vg])
 
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot origin volume must already exist"):
+        with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
             LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
 
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot origin must be a logical volume"):
+        with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMSnapShotDevice("snap1", parents=[vg], origin=pv)
 
-        with self.assertRaisesRegexp(ValueError, "only existing vorigin snapshots are supported"):
+        with self.assertRaisesRegex(ValueError, "only existing vorigin snapshots are supported"):
             LVMSnapShotDevice("snap1", parents=[vg], vorigin=True)
 
         lv.exists = True
@@ -67,13 +67,13 @@ class LVMDeviceTest(unittest.TestCase):
         thinlv = LVMThinLogicalVolumeDevice("thinlv", parents=[pool],
                                             size=Size("200 MiB"))
 
-        with self.assertRaisesRegexp(ValueError, "lvm thin snapshots require an origin"):
+        with self.assertRaisesRegex(ValueError, "lvm thin snapshots require an origin"):
             LVMThinSnapShotDevice("snap1", parents=[pool])
 
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot origin volume must already exist"):
+        with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
             LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
 
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot origin must be a logical volume"):
+        with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMThinSnapShotDevice("snap1", parents=[pool], origin=pv)
 
         # now make the constructor succeed so we can test some properties
@@ -111,7 +111,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(lv.size, orig_size)
 
         # ValueError if size smaller than minSize
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      "size.*smaller than the minimum"):
             lv.targetSize = Size("1 MiB")
 
@@ -119,7 +119,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(lv.targetSize, orig_size)
 
         # ValueError if size larger than maxSize
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      "size.*larger than the maximum"):
             lv.targetSize = Size("1 GiB")
 

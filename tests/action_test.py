@@ -200,38 +200,30 @@ class DeviceActionTestCase(StorageTestCase):
         sdd = self.storage.devicetree.getDeviceByName("sdd")
         p = self.newDevice(device_class=PartitionDevice,
                            name="sdd1", size=Size("32 GiB"), parents=[sdd])
-        self.failUnlessRaises(ValueError,
-                              ActionResizeDevice,
-                              p,
-                              p.size + Size("7232 MiB"))
+        with self.assertRaises(ValueError):
+            ActionResizeDevice(p, p.size + Size("7232 MiB"))
 
         # instantiation of device resize action for non-resizable device
         # should fail
         vg = self.storage.devicetree.getDeviceByName("VolGroup")
         self.assertNotEqual(vg, None)
-        self.failUnlessRaises(ValueError,
-                              ActionResizeDevice,
-                              vg,
-                              vg.size + Size("32 MiB"))
+        with self.assertRaises(ValueError):
+            ActionResizeDevice(vg, vg.size + Size("32 MiB"))
 
         # instantiation of format resize action for non-resizable format type
         # should fail
         lv_swap = self.storage.devicetree.getDeviceByName("VolGroup-lv_swap")
         self.assertNotEqual(lv_swap, None)
-        self.failUnlessRaises(ValueError,
-                              ActionResizeFormat,
-                              lv_swap,
-                              lv_swap.size + Size("32 MiB"))
+        with self.assertRaises(ValueError):
+            ActionResizeFormat(lv_swap, lv_swap.size + Size("32 MiB"))
 
         # instantiation of format resize action for non-existent format
         # should fail
         lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
         lv_root.format.exists = False
-        self.failUnlessRaises(ValueError,
-                              ActionResizeFormat,
-                              lv_root,
-                              lv_root.size - Size("1000 MiB"))
+        with self.assertRaises(ValueError):
+            ActionResizeFormat(lv_root, lv_root.size - Size("1000 MiB"))
         lv_root.format.exists = True
 
         # instantiation of device create action for existing device should
@@ -239,9 +231,8 @@ class DeviceActionTestCase(StorageTestCase):
         lv_swap = self.storage.devicetree.getDeviceByName("VolGroup-lv_swap")
         self.assertNotEqual(lv_swap, None)
         self.assertEqual(lv_swap.exists, True)
-        self.failUnlessRaises(ValueError,
-                              ActionCreateDevice,
-                              lv_swap)
+        with self.assertRaises(ValueError):
+            ActionCreateDevice(lv_swap)
 
         # instantiation of format destroy action for device causes device's
         # format attribute to be a DeviceFormat instance
@@ -273,9 +264,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(vg, None)
         self.assertEqual(vg.isleaf, False)
         a = ActionDestroyDevice(vg)
-        self.failUnlessRaises(ValueError,
-                              self.storage.devicetree.registerAction,
-			      a)
+        with self.assertRaises(ValueError):
+            self.storage.devicetree.registerAction(a)
 
         # registering any action other than create for a device that's not in
         # the devicetree should fail
@@ -288,38 +278,33 @@ class DeviceActionTestCase(StorageTestCase):
         sdc1_format = self.newFormat("ext2", device=sdc1.path, mountpoint="/")
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
         create_sdc1_format.apply()
-        self.failUnlessRaises(blivet.errors.DeviceTreeError,
-                              self.storage.devicetree.registerAction,
-                              create_sdc1_format)
+        with self.assertRaises(blivet.errors.DeviceTreeError):
+             self.storage.devicetree.registerAction(create_sdc1_format)
 
         sdc1_format.exists = True
         sdc1_format._resizable = True
         resize_sdc1_format = ActionResizeFormat(sdc1,
                                                 sdc1.size - Size("10 GiB"))
         resize_sdc1_format.apply()
-        self.failUnlessRaises(blivet.errors.DeviceTreeError,
-                              self.storage.devicetree.registerAction,
-                              resize_sdc1_format)
+        with self.assertRaises(blivet.errors.DeviceTreeError):
+            self.storage.devicetree.registerAction(resize_sdc1_format)
 
         resize_sdc1 = ActionResizeDevice(sdc1, sdc1.size - Size("10 GiB"))
         resize_sdc1.apply()
-        self.failUnlessRaises(blivet.errors.DeviceTreeError,
-                              self.storage.devicetree.registerAction,
-                              resize_sdc1)
+        with self.assertRaises(blivet.errors.DeviceTreeError):
+            self.storage.devicetree.registerAction(resize_sdc1)
 
         resize_sdc1.cancel()
         resize_sdc1_format.cancel()
 
         destroy_sdc1_format = ActionDestroyFormat(sdc1)
-        self.failUnlessRaises(blivet.errors.DeviceTreeError,
-                              self.storage.devicetree.registerAction,
-                              destroy_sdc1_format)
+        with self.assertRaises(blivet.errors.DeviceTreeError):
+            self.storage.devicetree.registerAction(destroy_sdc1_format)
 
 
         destroy_sdc1 = ActionDestroyDevice(sdc1)
-        self.failUnlessRaises(blivet.errors.DeviceTreeError,
-                              self.storage.devicetree.registerAction,
-                              destroy_sdc1)
+        with self.assertRaises(blivet.errors.DeviceTreeError):
+            self.storage.devicetree.registerAction(destroy_sdc1)
 
         # registering a device destroy action should cause the device to be
         # removed from the devicetree

@@ -13,7 +13,7 @@ class RaidTestCase(unittest.TestCase):
 
     def testRaid(self):
 
-        with self.assertRaisesRegexp(TypeError, "Can't instantiate abstract class"):
+        with self.assertRaisesRegex(TypeError, "Can't instantiate abstract class"):
             raid.ErsatzRAID()
 
         ##
@@ -145,11 +145,11 @@ class RaidTestCase(unittest.TestCase):
         ##
         ## __init__
         ##
-        with self.assertRaisesRegexp(errors.RaidError, "invalid RAID level"):
+        with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
             self.levels_none.raidLevel(10)
 
-        with self.assertRaisesRegexp(errors.RaidError, "invalid RAID level"):
+        with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
             self.levels_some.raidLevel(10)
 
-        with self.assertRaisesRegexp(errors.RaidError, "invalid standard RAID level descriptor"):
+        with self.assertRaisesRegex(errors.RaidError, "invalid standard RAID level descriptor"):
             raid.RAIDLevels(["raid3.1415"])

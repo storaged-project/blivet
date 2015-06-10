@@ -59,17 +59,17 @@ class SizeTestCase(unittest.TestCase):
         c = numunits * unit.factor
 
         s = Size(c)
-        self.assertEquals(s, Size(c))
+        self.assertEqual(s, Size(c))
 
         u = size._makeSpec(unit.prefix, size._BYTES_WORDS[0], False)
         s = Size("%ld %s" % (numunits, u))
-        self.assertEquals(s, c)
-        self.assertEquals(s.convertTo(unit), numunits)
+        self.assertEqual(s, c)
+        self.assertEqual(s.convertTo(unit), numunits)
 
         u = size._makeSpec(unit.abbr, size._BYTES_SYMBOL, False)
         s = Size("%ld %s" % (numunits, u))
-        self.assertEquals(s, c)
-        self.assertEquals(s.convertTo(unit), numunits)
+        self.assertEqual(s, c)
+        self.assertEqual(s.convertTo(unit), numunits)
 
     def testPrefixes(self):
         numbytes = 47
@@ -79,115 +79,115 @@ class SizeTestCase(unittest.TestCase):
 
     def testHumanReadable(self):
         s = Size(58929971)
-        self.assertEquals(s.humanReadable(), "56.2 MiB")
+        self.assertEqual(s.humanReadable(), "56.2 MiB")
 
         s = Size(478360371)
-        self.assertEquals(s.humanReadable(), "456.2 MiB")
+        self.assertEqual(s.humanReadable(), "456.2 MiB")
 
         # humanReable output should be the same as input for big enough sizes
         # and enough places and integer values
         s = Size("12.68 TiB")
-        self.assertEquals(s.humanReadable(max_places=2), "12.68 TiB")
+        self.assertEqual(s.humanReadable(max_places=2), "12.68 TiB")
         s = Size("26.55 MiB")
-        self.assertEquals(s.humanReadable(max_places=2), "26.55 MiB")
+        self.assertEqual(s.humanReadable(max_places=2), "26.55 MiB")
         s = Size("300 MiB")
-        self.assertEquals(s.humanReadable(max_places=2), "300 MiB")
+        self.assertEqual(s.humanReadable(max_places=2), "300 MiB")
 
         # when min_value is 10 and single digit on left of decimal, display
         # with smaller unit.
         s = Size("9.68 TiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "9912.32 GiB")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "9912.32 GiB")
         s = Size("4.29 MiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "4392.96 KiB")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "4392.96 KiB")
         s = Size("7.18 KiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "7352 B")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "7352 B")
 
         # rounding should work with max_places limitted
         s = Size("12.687 TiB")
-        self.assertEquals(s.humanReadable(max_places=2), "12.69 TiB")
+        self.assertEqual(s.humanReadable(max_places=2), "12.69 TiB")
         s = Size("23.7874 TiB")
-        self.assertEquals(s.humanReadable(max_places=3), "23.787 TiB")
+        self.assertEqual(s.humanReadable(max_places=3), "23.787 TiB")
         s = Size("12.6998 TiB")
-        self.assertEquals(s.humanReadable(max_places=2), "12.7 TiB")
+        self.assertEqual(s.humanReadable(max_places=2), "12.7 TiB")
 
         # byte values close to multiples of 2 are shown without trailing zeros
         s = Size(0xff)
-        self.assertEquals(s.humanReadable(max_places=2), "255 B")
+        self.assertEqual(s.humanReadable(max_places=2), "255 B")
         s = Size(8193)
-        self.assertEquals(s.humanReadable(max_places=2, min_value=10), "8193 B")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "8193 B")
 
         # a fractional quantity is shown if the value deviates
         # from the whole number of units by more than 1%
         s = Size(16384 - (1024/100 + 1))
-        self.assertEquals(s.humanReadable(max_places=2), "15.99 KiB")
+        self.assertEqual(s.humanReadable(max_places=2), "15.99 KiB")
 
         # if max_places is set to None, all digits are displayed
         s = Size(0xfffffffffffff)
-        self.assertEquals(s.humanReadable(max_places=None), "3.9999999999999991118215803 PiB")
+        self.assertEqual(s.humanReadable(max_places=None), "3.9999999999999991118215803 PiB")
         s = Size(0x10000)
-        self.assertEquals(s.humanReadable(max_places=None), "64 KiB")
+        self.assertEqual(s.humanReadable(max_places=None), "64 KiB")
         s = Size(0x10001)
-        self.assertEquals(s.humanReadable(max_places=None), "64.0009765625 KiB")
+        self.assertEqual(s.humanReadable(max_places=None), "64.0009765625 KiB")
 
         # test a very large quantity with no associated abbreviation or prefix
         s = Size(1024**9)
-        self.assertEquals(s.humanReadable(max_places=2), "1024 YiB")
+        self.assertEqual(s.humanReadable(max_places=2), "1024 YiB")
         s = Size(1024**9 - 1)
-        self.assertEquals(s.humanReadable(max_places=2), "1024 YiB")
+        self.assertEqual(s.humanReadable(max_places=2), "1024 YiB")
         s = Size(1024**9 + 1)
-        self.assertEquals(s.humanReadable(max_places=2, strip=False), "1024.00 YiB")
+        self.assertEqual(s.humanReadable(max_places=2, strip=False), "1024.00 YiB")
         s = Size(1024**10)
-        self.assertEquals(s.humanReadable(max_places=2), "1048576 YiB")
+        self.assertEqual(s.humanReadable(max_places=2), "1048576 YiB")
 
     def testHumanReadableFractionalQuantities(self):
         s = Size(0xfffffffffffff)
-        self.assertEquals(s.humanReadable(max_places=2), "4 PiB")
+        self.assertEqual(s.humanReadable(max_places=2), "4 PiB")
         s = Size(0xfffff)
-        self.assertEquals(s.humanReadable(max_places=2, strip=False), "1024.00 KiB")
+        self.assertEqual(s.humanReadable(max_places=2, strip=False), "1024.00 KiB")
         s = Size(0xffff)
         # value is not exactly 64 KiB, but w/ 2 places, value is 64.00 KiB
         # so the trailing 0s are stripped.
-        self.assertEquals(s.humanReadable(max_places=2), "64 KiB")
+        self.assertEqual(s.humanReadable(max_places=2), "64 KiB")
         # since all significant digits are shown, there are no trailing 0s.
-        self.assertEquals(s.humanReadable(max_places=None), "63.9990234375 KiB")
+        self.assertEqual(s.humanReadable(max_places=None), "63.9990234375 KiB")
 
         # deviation is less than 1/2 of 1% of 1024
         s = Size(16384 - (1024/100//2))
-        self.assertEquals(s.humanReadable(max_places=2), "16 KiB")
+        self.assertEqual(s.humanReadable(max_places=2), "16 KiB")
         # deviation is greater than 1/2 of 1% of 1024
         s = Size(16384 - ((1024/100//2) + 1))
-        self.assertEquals(s.humanReadable(max_places=2), "15.99 KiB")
+        self.assertEqual(s.humanReadable(max_places=2), "15.99 KiB")
 
         s = Size(0x10000000000000)
-        self.assertEquals(s.humanReadable(max_places=2), "4 PiB")
+        self.assertEqual(s.humanReadable(max_places=2), "4 PiB")
 
 
     def testMinValue(self):
         s = Size("9 MiB")
-        self.assertEquals(s.humanReadable(), "9 MiB")
-        self.assertEquals(s.humanReadable(min_value=10), "9216 KiB")
+        self.assertEqual(s.humanReadable(), "9 MiB")
+        self.assertEqual(s.humanReadable(min_value=10), "9216 KiB")
 
         s = Size("0.5 GiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=1), "512 MiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal("0.1")), "0.5 GiB")
-        self.assertEquals(s.humanReadable(max_places=2, min_value=Decimal(1)), "512 MiB")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=1), "512 MiB")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=Decimal("0.1")), "0.5 GiB")
+        self.assertEqual(s.humanReadable(max_places=2, min_value=Decimal(1)), "512 MiB")
 
     def testConvertToPrecision(self):
         s = Size(1835008)
-        self.assertEquals(s.convertTo(None), 1835008)
-        self.assertEquals(s.convertTo(B), 1835008)
-        self.assertEquals(s.convertTo(KiB), 1792)
-        self.assertEquals(s.convertTo(MiB), Decimal("1.75"))
+        self.assertEqual(s.convertTo(None), 1835008)
+        self.assertEqual(s.convertTo(B), 1835008)
+        self.assertEqual(s.convertTo(KiB), 1792)
+        self.assertEqual(s.convertTo(MiB), Decimal("1.75"))
 
     def testNegative(self):
         s = Size("-500MiB")
-        self.assertEquals(s.humanReadable(), "-500 MiB")
-        self.assertEquals(s.convertTo(B), -524288000)
+        self.assertEqual(s.humanReadable(), "-500 MiB")
+        self.assertEqual(s.convertTo(B), -524288000)
 
     def testPartialBytes(self):
-        self.assertEquals(Size("1024.6"), Size(1024))
-        self.assertEquals(Size("%s KiB" % (1/1025.0,)), Size(0))
-        self.assertEquals(Size("%s KiB" % (1/1023.0,)), Size(1))
+        self.assertEqual(Size("1024.6"), Size(1024))
+        self.assertEqual(Size("%s KiB" % (1/1025.0,)), Size(0))
+        self.assertEqual(Size("%s KiB" % (1/1023.0,)), Size(1))
 
     def testNoUnitsInString(self):
         self.assertEqual(Size("1024"), Size("1 KiB"))
@@ -332,25 +332,25 @@ class TranslationTestCase(unittest.TestCase):
             locale.setlocale(locale.LC_ALL, '')
 
             # Check English parsing
-            self.assertEquals(s, Size("56.19 MiB"))
+            self.assertEqual(s, Size("56.19 MiB"))
 
             # Check native parsing
-            self.assertEquals(s, Size("56.19 %s%s" % (_("Mi"), _("B"))))
+            self.assertEqual(s, Size("56.19 %s%s" % (_("Mi"), _("B"))))
 
             # Check native parsing, all lowercase
-            self.assertEquals(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).lower()))
+            self.assertEqual(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).lower()))
 
             # Check native parsing, all uppercase
-            self.assertEquals(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).upper()))
+            self.assertEqual(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).upper()))
 
             # If the radix separator is not a period, repeat the tests with the
             # native separator
             radix = locale.nl_langinfo(locale.RADIXCHAR)
             if radix != '.':
-                self.assertEquals(s, Size("56%s19 MiB" % radix))
-                self.assertEquals(s, Size("56%s19 %s%s" % (radix, _("Mi"), _("B"))))
-                self.assertEquals(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
-                self.assertEquals(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
+                self.assertEqual(s, Size("56%s19 MiB" % radix))
+                self.assertEqual(s, Size("56%s19 %s%s" % (radix, _("Mi"), _("B"))))
+                self.assertEqual(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
+                self.assertEqual(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
 
     def testHumanReadableTranslation(self):
         s = Size("56.19 MiB")

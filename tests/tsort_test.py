@@ -15,15 +15,13 @@ class TopologicalSortTestCase(unittest.TestCase):
 
         edges = [(5, 4), (4, 3), (3, 2), (2, 1), (3, 5)]
         graph = blivet.tsort.create_graph(items, edges)
-        self.failUnlessRaises(blivet.tsort.CyclicGraphError,
-                              blivet.tsort.tsort,
-                              graph)
+        with self.assertRaises(blivet.tsort.CyclicGraphError):
+            blivet.tsort.tsort(graph)
 
         edges = [(5, 4), (4, 3), (3, 2), (2, 1), (2, 3)]
         graph = blivet.tsort.create_graph(items, edges)
-        self.failUnlessRaises(blivet.tsort.CyclicGraphError,
-                              blivet.tsort.tsort,
-                              graph)
+        with self.assertRaises(blivet.tsort.CyclicGraphError):
+            blivet.tsort.tsort(graph)
 
         items = ['a', 'b', 'c', 'd']
         edges = [('a', 'c'), ('c', 'b')]
@@ -45,9 +43,9 @@ class TopologicalSortTestCase(unittest.TestCase):
             self.fail(e)
 
         # verify output list is of the correct length
-        self.failIf(len(order) != len(graph['items']),
+        self.assertFalse(len(order) != len(graph['items']),
                     "sorted list length is incorrect")
 
         # verify that all ordering constraints are satisfied
-        self.failUnless(check_order(order, graph),
+        self.assertTrue(check_order(order, graph),
                         "ordering constraints not satisfied")

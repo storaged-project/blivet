@@ -29,16 +29,16 @@ class MDFactoryTestCase(unittest.TestCase):
            raid_level=0)
 
     def testMDFactory(self):
-        with self.assertRaisesRegexp(devicefactory.DeviceFactoryError, "must have some RAID level"):
+        with self.assertRaisesRegex(devicefactory.DeviceFactoryError, "must have some RAID level"):
             devicefactory.get_device_factory(
                self.b,
                devicefactory.DEVICE_TYPE_MD,
                Size("1 GiB"))
 
-        with self.assertRaisesRegexp(RaidError, "requires at least"):
+        with self.assertRaisesRegex(RaidError, "requires at least"):
             self.factory1._get_device_space()
 
-        with self.assertRaisesRegexp(RaidError, "requires at least"):
+        with self.assertRaisesRegex(RaidError, "requires at least"):
             self.factory1._configure()
 
         self.assertEqual(self.factory1.container_list, [])
@@ -51,7 +51,7 @@ class MDFactoryTestCase(unittest.TestCase):
         ]
         self.assertIsNotNone(self.factory1._get_new_device(parents=parents))
 
-        with self.assertRaisesRegexp(RaidError, "requires at least"):
+        with self.assertRaisesRegex(RaidError, "requires at least"):
             self.factory2._get_device_space()
 
         self.assertEqual(self.factory2.container_list, [])
