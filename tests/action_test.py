@@ -279,7 +279,7 @@ class DeviceActionTestCase(StorageTestCase):
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
         create_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-             self.storage.devicetree.registerAction(create_sdc1_format)
+            self.storage.devicetree.registerAction(create_sdc1_format)
 
         sdc1_format.exists = True
         sdc1_format._resizable = True
