@@ -6,7 +6,7 @@ import os
 import tempfile
 
 from tests import loopbackedtestcase
-from blivet.errors import FSError, FSResizeError
+from blivet.errors import DeviceFormatError, FSError, FSResizeError
 from blivet.size import Size, ROUND_DOWN
 from blivet.formats import fs
 
@@ -197,9 +197,9 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         if not can_resize(an_fs):
             self.assertFalse(an_fs.resizable)
             # Not resizable, so can not do resizing actions.
-            with self.assertRaises(FSError):
+            with self.assertRaises(DeviceFormatError):
                 an_fs.targetSize = Size("64 MiB")
-            with self.assertRaises(FSError):
+            with self.assertRaises(DeviceFormatError):
                 an_fs.doResize()
         else:
             self.assertTrue(an_fs.resizable)

@@ -122,7 +122,6 @@ class FS(DeviceFormat):
         self.fsprofile = kwargs.get("fsprofile")
 
         # filesystem size does not necessarily equal device size
-        self._size = kwargs.get("size", Size(0))
         self._minInstanceSize = Size(0)    # min size of this FS instance
 
         # Resize operations are limited to error-free filesystems whose current
@@ -146,11 +145,9 @@ class FS(DeviceFormat):
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         s += ("  mountpoint = %(mountpoint)s  mountopts = %(mountopts)s\n"
-              "  label = %(label)s  size = %(size)s"
-              "  targetSize = %(targetSize)s\n" %
+              "  label = %(label)s\n" %
               {"mountpoint": self.mountpoint, "mountopts": self.mountopts,
-               "label": self.label, "size": self._size,
-               "targetSize": self.targetSize})
+               "label": self.label})
         return s
 
     @property
@@ -163,8 +160,8 @@ class FS(DeviceFormat):
     @property
     def dict(self):
         d = super(FS, self).dict
-        d.update({"mountpoint": self.mountpoint, "size": self._size,
-                  "label": self.label, "targetSize": self.targetSize,
+        d.update({"mountpoint": self.mountpoint,
+                  "label": self.label,
                   "mountable": self.mountable})
         return d
 
@@ -195,42 +192,6 @@ class FS(DeviceFormat):
 
     label = property(lambda s: s._getLabel(), lambda s,l: s._setLabel(l),
        doc="this filesystem's label")
-
-    def _setTargetSize(self, newsize):
-        """ Set the target size for this filesystem.
-
-            :param :class:`~.size.Size` newsize: the newsize
-        """
-        if not isinstance(newsize, Size):
-            raise ValueError("new size must be of type Size")
-
-        if not self.exists:
-            raise FSError("filesystem has not been created")
-
-        if not self.resizable:
-            raise FSError("filesystem is not resizable")
-
-        if newsize < self.minSize:
-            raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.minSize))
-
-        if self.maxSize and newsize >= self.maxSize:
-            raise ValueError("requested size %s must be less than maximum size %s" % (newsize, self.maxSize))
-
-        self._targetSize = newsize
-
-    def _getTargetSize(self):
-        """ Get this filesystem's target size. """
-        return self._targetSize
-
-    targetSize = property(_getTargetSize, _setTargetSize,
-                          doc="Target size for this filesystem")
-
-    def _getSize(self):
-        """ Get this filesystem's size. """
-        return self.targetSize if self.resizable else self._size
-
-    size = property(_getSize, doc="This filesystem's size, accounting "
-                                  "for pending changes")
 
     def updateSizeInfo(self):
         """ Update this filesystem's current and minimum size (for resize). """
@@ -324,11 +285,6 @@ class FS(DeviceFormat):
         padded = min(padded.roundToNearest(self._resize.unit, rounding=ROUND_UP), self.currentSize)
 
         return padded
-
-    @property
-    def currentSize(self):
-        """ The filesystem's current actual size. """
-        return self._size if self.exists else Size(0)
 
     @property
     def free(self):

@@ -183,6 +183,9 @@ class DeviceFormat(ObjectID):
         self._options = None
         self._device = None
 
+        self._size = kwargs.get("size", Size(0))
+        self._targetSize = self._size
+
         self.device = kwargs.get("device")
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists", False)
@@ -193,13 +196,15 @@ class DeviceFormat(ObjectID):
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
              "  device = %(device)s  uuid = %(uuid)s  exists = %(exists)s\n"
              "  options = %(options)s  supported = %(supported)s"
-             "  formattable = %(format)s  resizable = %(resize)s\n" %
+             "  formattable = %(format)s  resizable = %(resize)s"
+             "  size = %(size)s  targetSize = %(targetSize)s\n" %
              {"classname": self.__class__.__name__, "id": "%#x" % id(self),
               "object_id": self.id,
               "type": self.type, "name": self.name, "status": self.status,
               "device": self.device, "uuid": self.uuid, "exists": self.exists,
               "options": self.options, "supported": self.supported,
-              "format": self.formattable, "resize": self.resizable})
+              "format": self.formattable, "resize": self.resizable,
+              "size": self._size, "targetSize": self.targetSize})
         return s
 
     @property
@@ -218,7 +223,8 @@ class DeviceFormat(ObjectID):
         d = {"type": self.type, "name": self.name, "device": self.device,
              "uuid": self.uuid, "exists": self.exists,
              "options": self.options, "supported": self.supported,
-             "resizable": self.resizable}
+             "resizable": self.resizable, "size": self._size,
+             "targetSize": self.targetSize}
         return d
 
     def labeling(self):
@@ -278,6 +284,15 @@ class DeviceFormat(ObjectID):
         """
         return self._label
 
+    def _getSize(self):
+        """ Get this format's size. """
+        return self.targetSize if self.resizable else self._size
+
+    size = property(
+       lambda s: s._getSize(),
+       doc="This format's size, accounting for pending changes"
+    )
+
     def _setOptions(self, options):
         self._options = options
 
@@ -289,6 +304,55 @@ class DeviceFormat(ObjectID):
        lambda s,v: s._setOptions(v),
        doc="fstab entry option string"
     )
+
+    def _getTargetSize(self):
+        """ Get the target size.
+
+            :returns: the target size
+            :rtype: :class:`~.size.Size`
+        """
+        return self._targetSize
+
+    def _setTargetSize(self, newsize):
+        """ Set the target size.
+
+            :param :class:`~.size.Size` newsize: a size value
+
+            This is the size which the format is set to when the
+            format is resized.
+        """
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must be of type Size")
+
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        if not self.resizable:
+            raise DeviceFormatError("format is not resizable")
+
+        if newsize < self.minSize:
+            raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.minSize))
+
+        if self.maxSize and newsize >= self.maxSize:
+            raise ValueError("requested size %s must be less than maximum size %s" % (newsize, self.maxSize))
+
+        self._targetSize = newsize
+
+    targetSize = property(
+      lambda s: s._getTargetSize(),
+      lambda s, v: s._setTargetSize(v),
+      doc="target size for a resize operation"
+    )
+
+    def updateSizeInfo(self):
+        """ Update this format's current size.
+
+            May also update this format's minimum size.
+
+            May also affect whether or not this filesystem is considered
+            resizable by setting self._resizable or other attributes.
+        """
+        pass
 
     def _deviceCheck(self, devspec):
         """ Verifies that device spec has a proper format.
@@ -588,6 +652,11 @@ class DeviceFormat(ObjectID):
             A value of 0 indicates an unknown size.
         """
         return self._minSize
+
+    @property
+    def currentSize(self):
+        """ The format's current actual size. """
+        return self._size if self.exists else Size(0)
 
     @property
     def hidden(self):
