@@ -184,3 +184,21 @@ def write_dasd_conf(disks, root):
         for dasd in sorted(disks, key=lambda d: d.name):
             fields = [dasd.busid] + dasd.getOpts()
             f.write("%s\n" % " ".join(fields),)
+
+    # check for hyper PAV aliases; they need to get added to dasd.conf as well
+    sysfs = "/sys/bus/ccw/drivers/dasd-eckd"
+    # this does catch every DASD, even non-aliases, but we're only going to be
+    # checking for a very specific flag, so there won't be any duplicate entries
+    # in dasd.conf
+    devs = [d for d in os.listdir(sysfs) if d.startswith("0.0")]
+    with open(os.path.realpath(root + "/etc/dasd.conf"), "a") as f:
+        for d in devs:
+            aliasfile = "%s/%s/alias" % (sysfs, d)
+            with open(aliasfile, "r") as falias:
+                alias = falias.read().strip()
+
+            # if alias == 1, then the device is an alias; otherwise it is a
+            # normal dasd (alias == 0) and we can skip it, since it will have
+            # been added to dasd.conf in the above block of code
+            if alias == "1":
+                f.write("%s\n" % d)
