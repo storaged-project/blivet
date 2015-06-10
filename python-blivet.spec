@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.5
+Version: 1.6
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -108,6 +108,38 @@ popd
 %endif
 
 %changelog
+* Wed Jun 10 2015 Brian C. Lane <bcl@redhat.com> - 1.6-1
+- Fix indentation in action_test.py (dlehman)
+- Merge pull request #133 from atodorov/fix_deprecation_warnings (mulkieran)
+- Merge pull request #147 from vojtechtrefny/master_fix_undo_resize (vtrefny)
+- Fix setting original size for format resize action. (#1225352) (vtrefny)
+- Make unit test assertion expressions fully Python2/3 compatible. (atodorov)
+- Merge pull request #151 from mulkieran/master-120 (mulkieran)
+- Merge pull request #122 from atodorov/remove_doctest (mulkieran)
+- Parameterize Makefile test targets on Python version. (atodorov)
+- Merge pull request #148 from mulkieran/master-132 (mulkieran)
+- Merge pull request #144 from mulkieran/master-128 (mulkieran)
+- Remove facilities for running tests as standalone modules. (atodorov)
+- Include automatic and manual test documentation. (atodorov)
+- Remove an accidental variable assignment in LVMLogicalVolumeDevice (vpodzime)
+- Merge pull request #143 from mulkieran/master-134 (mulkieran)
+- Remove two files in tests directory. (atodorov)
+- Fix typo in docstring. (atodorov)
+- Merge pull request #112 from vpodzime/master-fixed_maps (vpodzime)
+- Merge pull request #129 from mulkieran/master-keepers-c (mulkieran)
+- Merge pull request #135 from mulkieran/master-test-fixes (mulkieran)
+- Convert bytes value to str. (amulhern)
+- Change new format lookup name from "msdos" to "disklabel". (amulhern)
+- Get rid of pointless test case about arguments for labeling apps. (amulhern)
+- Do not raise KeyError if ID_PART_ENTRY_DISK is missing. (amulhern)
+- Manage backing store more independently in loop backed test cases. (amulhern)
+- Pass floats as string to Decimal constructor everywhere. (amulhern)
+- Fix a bug in reading a size specification with a radix in the numeric part.
+  (amulhern)
+- remove mention of doctest b/c target was removed in
+  fed53d969af0eddaeeca58cdf3e40916497aa305 (atodorov)
+- Beware of Python 3's version of the map() built-in function (vpodzime)
+
 * Thu May 28 2015 Brian C. Lane <bcl@redhat.com> - 1.5-1
 - Get rid of an unused import in blivet.zfcp (sbueno+anaconda)
 - Make appropriate changes to adapt for s390 libblockdev plugin.
