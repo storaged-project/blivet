@@ -285,4 +285,5 @@ XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")
 
+LSBLK_APP = application("lsblk")
 MOUNT_APP = application("mount")
