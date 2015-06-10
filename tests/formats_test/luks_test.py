@@ -1,4 +1,5 @@
 import blivet.formats.luks as luks
+from blivet.size import Size
 
 from tests import loopbackedtestcase
 
@@ -27,3 +28,36 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         # test that the device can be closed again
         self.assertIsNone(self.fmt.teardown())
         self.assertFalse(self.fmt.status)
+
+    def testSize(self):
+        """ Test that sizes are calculated correctly. """
+        device = self.loopDevices[0]
+
+        # create the device
+        self.fmt.device = device
+        self.assertIsNone(self.fmt.create())
+
+        # the size is 0
+        self.assertEqual(self.fmt.size, Size(0))
+        self.assertEqual(self.fmt.currentSize, Size(0))
+        self.assertEqual(self.fmt.targetSize, Size(0))
+
+        # open the luks device
+        self.assertIsNone(self.fmt.setup())
+
+        # size is unchanged
+        self.assertEqual(self.fmt.size, Size(0))
+        self.assertEqual(self.fmt.currentSize, Size(0))
+        self.assertEqual(self.fmt.targetSize, Size(0))
+
+        # update the size info
+        self.fmt.updateSizeInfo()
+
+        # the size is greater than zero and less than the size of the device
+        self.assertLess(self.fmt.size, self.DEFAULT_STORE_SIZE)
+        self.assertGreater(self.fmt.size, Size(0))
+
+        self.assertEqual(self.fmt.currentSize, self.fmt.size)
+        self.assertEqual(self.fmt.targetSize, Size(0))
+
+        self.fmt.teardown()
