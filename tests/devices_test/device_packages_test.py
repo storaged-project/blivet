@@ -20,7 +20,7 @@ class DevicePackagesTestCase(unittest.TestCase):
         packages = luks.packages
 
         # no duplicates in list of packages
-        self.assertListEqual(packages, list(set(packages)))
+        self.assertEqual(len(packages), len(set(packages)))
 
         # several packages that ought to be included are
         for package in dev1.packages + dev2.packages + dev.packages:
