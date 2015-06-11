@@ -26,6 +26,7 @@ import re
 import shutil
 import pprint
 import copy
+import parted
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError, UnusableConfigurationError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
@@ -60,6 +61,18 @@ import logging
 log = logging.getLogger("blivet")
 
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
+
+def parted_exn_handler(exn_type, exn_options, exn_msg):
+    """ Answer any of parted's yes/no questions in the affirmative.
+
+        This allows us to proceed with partially corrupt gpt disklabels.
+    """
+    log.info("parted exception: %s", exn_msg)
+    ret = parted.EXCEPTION_RESOLVE_UNHANDLED
+    if exn_type == parted.EXCEPTION_TYPE_ERROR and \
+       exn_options == parted.EXCEPTION_OPT_YES_NO:
+        ret = parted.EXCEPTION_RESOLVE_YES
+    return ret
 
 class DeviceTree(object):
     """ A quasi-tree that represents the devices in the system.
@@ -2139,11 +2152,13 @@ class DeviceTree(object):
         if cleanupOnly:
             self._cleanup = True
 
+        parted.register_exn_handler(parted_exn_handler)
         try:
             self._populate()
         except Exception:
             raise
         finally:
+            parted.clear_exn_handler()
             self._hideIgnoredDisks()
             self.restoreConfigs()
 
