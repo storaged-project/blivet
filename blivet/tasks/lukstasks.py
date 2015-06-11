@@ -19,8 +19,11 @@
 #
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
+from gi.repository import BlockDev as blockdev
+
 from .. import util
 
+from ..devicelibs import crypto
 from ..errors import LUKSError
 from ..size import Size
 
@@ -101,3 +104,27 @@ class LUKSSize(task.BasicApplication):
         if error_msg:
             raise LUKSError(error_msg)
         return self._extractSize(out)
+
+class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
+    """ Handle resize of LUKS device. """
+
+    description = "resize luks device"
+
+    ext = availability.BLOCKDEV_CRYPTO_PLUGIN
+
+    # units for specifying new size
+    unit = crypto.SECTOR_SIZE
+
+    def __init__(self, a_luks):
+        """ Initializer.
+
+            :param :class:`~.formats.luks.LUKS` a_luks: a LUKS format object
+        """
+        self.luks = a_luks
+
+    def doTask(self):
+        """ Resizes the LUKS format. """
+        try:
+            blockdev.crypto.luks_resize(self.luks.mapName, self.luks.targetSize.convertTo(self.unit))
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
