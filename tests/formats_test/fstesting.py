@@ -30,9 +30,6 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
     def __init__(self, methodName='runTest'):
         super(FSAsRoot, self).__init__(methodName=methodName, deviceSpec=[self._DEVICE_SIZE])
 
-    def setUp(self):
-        super(FSAsRoot, self).setUp()
-
     def _test_sizes(self, an_fs):
         """ Test relationships between different size values.
 

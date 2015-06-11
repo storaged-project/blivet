@@ -61,7 +61,7 @@ class DiskLabel(DeviceFormat):
         else:
             self._labelType = ""
 
-        self._size = None
+        self._size = Size(0)
 
         self._partedDevice = None
         self._partedDisk = None
