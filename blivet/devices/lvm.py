@@ -47,11 +47,18 @@ from .storage import StorageDevice
 from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
+from .cache import Cache, CacheStats
 
 _INTERNAL_LV_CLASSES = []
 
 def get_internal_lv_class(lv_attr):
-    # XXX: need to do some heuristic on the LV name?
+    if lv_attr[0] == "C":
+        # cache pools and internal data LV of cache pools need a more complicated check
+        if lv_attr[6] == "C":
+            # target type == cache -> cache pool
+            return LVMCachePoolLogicalVolumeDevice
+        else:
+            return LVMDataLogicalVolumeDevice
     for cls in _INTERNAL_LV_CLASSES:
         if lv_attr[0] in cls.attr_letters:
             return cls
@@ -1085,6 +1092,14 @@ class LVMOriginLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     takes_extra_space = False
 _INTERNAL_LV_CLASSES.append(LVMOriginLogicalVolumeDevice)
 
+class LVMCachePoolLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+    """Internal cache pool logical volume"""
+
+    attr_letters = ["C"]
+    name_suffix = r"_cache(_?pool)?"
+    takes_extra_space = True
+_INTERNAL_LV_CLASSES.append(LVMCachePoolLogicalVolumeDevice)
+
 @add_metaclass(abc.ABCMeta)
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
@@ -1535,3 +1550,139 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
         # once a thin snapshot exists it no longer depends on its origin
         return ((self.origin == dep and not self.exists) or
                 super(LVMThinSnapShotDevice, self).dependsOn(dep))
+
+class LVMCache(Cache):
+    """Class providing the cache-related functionality of a cached LV"""
+
+    def __init__(self, cached_lv, size=None, exists=False, mode=None):
+        """
+        :param cached_lv: the LV the cache functionality of which to provide
+        :type cached_lv: :class:`LVMLogicalVolumeDevice`
+        :param size: size of the cache (useful mainly for non-existing caches
+                     that cannot determine their size dynamically)
+        :type size: :class:`~.size.Size`
+        :param bool exists: whether the cache exists or not
+        :param str mode: desired mode for non-existing cache (ignored for existing)
+
+        """
+        self._cached_lv = cached_lv
+        self._size = size
+        self._exists = exists
+        if not exists:
+            self._mode = mode or "writethrough"
+        else:
+            self._mode = None
+
+    @property
+    def size(self):
+        if self.exists:
+            return self.stats.size
+        else:
+            return self._size
+
+    @property
+    def exists(self):
+        return self._exists
+
+    @property
+    def stats(self):
+        if not self._exists:
+            return None
+        return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
+
+    @property
+    def mode(self):
+        if not self._exists:
+            return self._mode
+        else:
+            stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
+            return blockdev.lvm.cache_get_mode_str(stats.mode)
+
+    @property
+    def backing_device_name(self):
+        if self._exists:
+            return self._cached_lv.name
+        else:
+            return None
+
+    @property
+    def cache_device_name(self):
+        if self._exists:
+            vg_name = self._cached_lv.vg.name
+            return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
+        else:
+            return None
+
+    def detach(self):
+        vg_name = self._cached_lv.vg.name
+        ret = blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname)
+        blockdev.lvm.cache_detach(vg_name, self._cached_lv.lvname, False)
+        return ret
+
+class LVMCacheStats(CacheStats):
+    def __init__(self, stats_data):
+        """
+        :param stats_data: cache stats data
+        :type stats_data: :class:`blockdev.LVMCacheStats`
+
+        """
+        self._block_size = stats_data.block_size
+        self._cache_size = stats_data.cache_size
+        self._cache_used = stats_data.cache_used
+        self._md_block_size = stats_data.md_block_size
+        self._md_size = stats_data.md_size
+        self._md_used = stats_data.md_used
+        self._read_hits = stats_data.read_hits
+        self._read_misses = stats_data.read_misses
+        self._write_hits = stats_data.write_hits
+        self._write_misses = stats_data.write_misses
+
+    # common properties for all caches
+    @property
+    def block_size(self):
+        return self._block_size
+
+    @property
+    def size(self):
+        return self._cache_size
+
+    @property
+    def used(self):
+        return self._cache_used
+
+    @property
+    def hits(self):
+        return self._read_hits + self._write_hits
+
+    @property
+    def misses(self):
+        return self._read_misses + self._write_misses
+
+    # LVM cache specific properties
+    @property
+    def md_block_size(self):
+        return self._md_block_size
+
+    @property
+    def md_size(self):
+        return self._md_size
+
+    @property
+    def md_used(self):
+        return self._md_used
+
+    @property
+    def read_hits(self):
+        return self._read_hits
+
+    @property
+    def read_misses(self):
+        return self._read_misses
+
+    @property
+    def write_hits(self):
+        return self._write_hits
+
+    @property
+    def write_misses(self):
+        return self._write_misses
