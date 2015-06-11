@@ -53,11 +53,14 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         # update the size info
         self.fmt.updateSizeInfo()
 
+        # set target size to imitate FS constructor
+        self.fmt.targetSize = self.fmt._size
+
         # the size is greater than zero and less than the size of the device
         self.assertLess(self.fmt.size, self.DEFAULT_STORE_SIZE)
         self.assertGreater(self.fmt.size, Size(0))
 
         self.assertEqual(self.fmt.currentSize, self.fmt.size)
-        self.assertEqual(self.fmt.targetSize, Size(0))
+        self.assertEqual(self.fmt.targetSize, self.fmt.size)
 
         self.fmt.teardown()

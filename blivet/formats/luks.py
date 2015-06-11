@@ -48,6 +48,8 @@ class LUKS(DeviceFormat):
     _minSize = crypto.LUKS_METADATA_SIZE
     _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
     _sizeinfoClass = lukstasks.LUKSSize
+    _resizeClass = lukstasks.LUKSResize
+    _resizable = True
 
     def __init__(self, **kwargs):
         """
