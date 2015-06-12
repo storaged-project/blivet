@@ -532,6 +532,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         self._metaDataSize = Size(0)
         self._internal_lvs = []
+        self._cache = None
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
@@ -622,8 +623,12 @@ class LVMLogicalVolumeDevice(DMDevice):
     @property
     def vgSpaceUsed(self):
         """ Space occupied by this LV, not including snapshots. """
+        if self.cached:
+            cache_size = self.cache.size
+        else:
+            cache_size = Size(0)
         return (self.vg.align(self.size, roundup=True) * self.copies
-                + self.logSize + self.metaDataSize)
+                + self.logSize + self.metaDataSize + cache_size)
 
     @property
     def vg(self):
@@ -853,6 +858,29 @@ class LVMLogicalVolumeDevice(DMDevice):
             msg = "the specified internal LV '%s' doesn't belong to this LV ('%s')" % (int_lv.lv_name,
                                                                                        self.name)
             raise ValueError(msg)
+
+    @property
+    def cached(self):
+        return bool(self.cache)
+
+    @property
+    def cache(self):
+        if self.exists and not self._cache:
+            # check if we have a cache pool internal LV
+            pool = None
+            for lv in self._internal_lvs:
+                if isinstance(lv, LVMCachePoolLogicalVolumeDevice):
+                    pool = lv
+
+            if pool is not None:
+                self._cache = LVMCache(self, size=pool.size, exists=True)
+
+        return self._cache
+
+    def attach_cache(self, cache_pool_lv):
+        blockdev.lvm.cache_attach(self.vg.name, self.lvname, cache_pool_lv.lvname)
+        self._cache = LVMCache(self, size=cache_pool_lv.size, exists=True)
+
 
 @add_metaclass(abc.ABCMeta)
 class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
