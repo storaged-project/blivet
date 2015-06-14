@@ -283,6 +283,7 @@ class StorageDiscoveryConfig(object):
         self.protectedDevSpecs = []
         self.diskImages = {}
         self.zeroMbr = False
+        self.dasd = []
 
         # Whether clearPartitions removes scheduled/non-existent devices and
         # disklabels depends on this flag.

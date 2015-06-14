@@ -117,7 +117,7 @@ class DeviceTree(object):
         self.exclusiveDisks = getattr(conf, "exclusiveDisks", [])
         self.ignoredDisks = getattr(conf, "ignoredDisks", [])
         self.iscsi = iscsi
-        self.dasd = dasd
+        self.dasd = getattr(conf, "dasd", dasd)
 
         self.diskImages = {}
         images = getattr(conf, "diskImages", {})
