@@ -165,7 +165,8 @@ def getNextPartitionType(disk, no_primary=None):
     return part_type
 
 def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
-                           boot=None, best_free=None, grow=None):
+                           boot=None, best_free=None, grow=None,
+                           alignment=None):
     """ Return the "best" free region on the specified disk.
 
         For non-boot partitions, we return the largest free region on the
@@ -194,6 +195,8 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
         :type best_free: :class:`parted.Geometry`
         :keyword grow: indicates whether this is a growable request
         :type grow: bool
+        :keyword alignment: disk alignment requirements
+        :type alignment: :class:`parted.Alignment`
 
     """
     log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%s "
@@ -201,8 +204,32 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
               disk.device.path, part_type, req_size, boot, best_free, grow,
               start)
     extended = disk.getExtendedPartition()
+    alignment = alignment or parted.Alignment(offset=0, grainSize=1)
 
     for free_geom in disk.getFreeSpaceRegions():
+        # align the start sector of the free region since we will be aligning
+        # the start sector of the partition
+        if start is not None and \
+           not alignment.isAligned(free_geom, free_geom.start):
+            log.debug("aligning start sector of region %d-%d", free_geom.start,
+                                                               free_geom.end)
+            try:
+                aligned_start = alignment.alignUp(free_geom, free_geom.start)
+            except ArithmeticError:
+                aligned_start = None
+            else:
+                # parted tends to align down when it cannot align up
+                if aligned_start < free_geom.start:
+                    aligned_start = None
+
+            if aligned_start is None:
+                log.debug("failed to align start sector -- skipping region")
+                continue
+
+            free_geom = parted.Geometry(device=free_geom.device,
+                                        start=aligned_start,
+                                        end=free_geom.end)
+
         log.debug("checking %d-%d (%s)", free_geom.start, free_geom.end,
                                          Size(free_geom.getLength(unit="B")))
         if start is not None and not free_geom.containsSector(start):
@@ -687,7 +714,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                           start=_part.req_start_sector,
                                           best_free=current_free,
                                           boot=boot,
-                                          grow=_part.req_grow)
+                                          grow=_part.req_grow,
+                                          alignment=disklabel.alignment)
 
             if best == free and not _part.req_primary and \
                new_part_type == parted.PARTITION_NORMAL:
@@ -702,7 +730,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                   start=_part.req_start_sector,
                                                   best_free=current_free,
                                                   boot=boot,
-                                                  grow=_part.req_grow)
+                                                  grow=_part.req_grow,
+                                                  alignment=disklabel.alignment)
 
             if best and free != best:
                 update = True
@@ -738,7 +767,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                                req_size,
                                                                start=_part.req_start_sector,
                                                                boot=boot,
-                                                               grow=_part.req_grow)
+                                                               grow=_part.req_grow,
+                                                               alignment=disklabel.alignment)
                                 if not _free:
                                     log.info("not enough space after adding "
                                              "extended partition for growth test")
@@ -858,7 +888,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                           aligned_size,
                                           start=_part.req_start_sector,
                                           boot=boot,
-                                          grow=_part.req_grow)
+                                          grow=_part.req_grow,
+                                          alignment=disklabel.alignment)
             if not free:
                 raise PartitioningError(_("not enough free space after "
                                         "creating extended partition"))
