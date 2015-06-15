@@ -1127,7 +1127,16 @@ class DeviceTree(object):
         self._addDevice(device)
         return device
 
-    def addUdevDevice(self, info):
+    def addUdevDevice(self, info, updateOrigFmt=False):
+        """
+            :param :class:`pyudev.Device` info: udev info for the device
+            :keyword bool updateOrigFmt: update original format unconditionally
+
+            If a device is added to the tree based on info its original format
+            will be saved after the format has been detected. If the device
+            that corresponds to info is already in the tree, its original format
+            will not be updated unless updateOrigFmt is True.
+        """
         name = udev.device_get_name(info)
         log_method_call(self, name=name, info=pprint.pformat(dict(info)))
         uuid = udev.device_get_uuid(info)
@@ -1266,7 +1275,7 @@ class DeviceTree(object):
 
         # now handle the device's formatting
         self.handleUdevDeviceFormat(info, device)
-        if device_added:
+        if device_added or updateOrigFmt:
             device.originalFormat = copy.copy(device.format)
         device.deviceLinks = udev.device_get_symlinks(info)
 
@@ -1364,6 +1373,12 @@ class DeviceTree(object):
             else:
                 luks_device.updateSysfsPath()
                 self._addDevice(luks_device)
+                luks_info = udev.get_device(luks_device.sysfsPath)
+                if not luks_info:
+                    log.error("failed to get udev data for %s", luks_device.name)
+                    return
+
+                self.addUdevDevice(luks_info, updateOrigFmt=True)
         else:
             log.warning("luks device %s already in the tree",
                         device.format.mapName)
@@ -1534,7 +1549,7 @@ class DeviceTree(object):
                         return
 
                     # do format handling now
-                    self.addUdevDevice(lv_info)
+                    self.addUdevDevice(lv_info, updateOrigFmt=True)
 
         raid = dict((n.replace("[", "").replace("]", ""),
                      {"copies": 0, "log": Size(0), "meta": Size(0)})
@@ -1694,6 +1709,13 @@ class DeviceTree(object):
             md_array.updateSysfsPath()
             md_array.parents.append(device)
             self._addDevice(md_array)
+            if md_array.status:
+                array_info = udev.get_device(md_array.sysfsPath)
+                if not array_info:
+                    log.error("failed to get udev data for %s", md_array.name)
+                    return
+
+                self.addUdevDevice(array_info, updateOrigFmt=True)
 
     def handleUdevDMRaidMemberFormat(self, info, device):
         # if dmraid usage is disabled skip any dmraid set activation
@@ -2103,7 +2125,7 @@ class DeviceTree(object):
                 self._addDevice(loopdev)
                 self._addDevice(dmdev)
                 info = udev.get_device(dmdev.sysfsPath)
-                self.addUdevDevice(info)
+                self.addUdevDevice(info, updateOrigFmt=True)
 
     def backupConfigs(self, restore=False):
         """ Create a backup copies of some storage config files. """
