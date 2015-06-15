@@ -688,6 +688,7 @@ class DeviceTree(object):
         log_method_return(self, result)
         return result
 
+    @util.deprecated('1.7', '')
     def getDevicesBySerial(self, serial, incomplete=False, hidden=False):
         """ Return a list of devices with a matching serial.
 
@@ -772,6 +773,7 @@ class DeviceTree(object):
         log_method_return(self, result)
         return result
 
+    @util.deprecated('1.7', '')
     def getDevicesByType(self, device_type, incomplete=False, hidden=False):
         """ Return a list of devices with a matching device type.
 
@@ -787,6 +789,7 @@ class DeviceTree(object):
         log_method_return(self, [r.name for r in result])
         return result
 
+    @util.deprecated('1.7', '')
     def getDevicesByInstance(self, device_class, incomplete=False, hidden=False):
         """ Return a list of devices with a matching device class.
 
