@@ -16,7 +16,7 @@ def can_resize(an_fs):
 
         :param an_fs: a filesystem object
     """
-    resize_tasks = (an_fs._resize, an_fs._sizeinfo, an_fs._minsize)
+    resize_tasks = (an_fs._resizeTask, an_fs._sizeinfo, an_fs._minsize)
     return not any(t.availabilityErrors for t in resize_tasks)
 
 @add_metaclass(abc.ABCMeta)
@@ -209,7 +209,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
             self.assertEqual(an_fs.targetSize, TARGET_SIZE)
             self.assertNotEqual(an_fs._size, TARGET_SIZE)
             self.assertIsNone(an_fs.doResize())
-            ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resize.unit, rounding=ROUND_DOWN)
+            ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resizeTask.unit, rounding=ROUND_DOWN)
             self.assertEqual(an_fs.size, ACTUAL_SIZE)
             self.assertEqual(an_fs._size, ACTUAL_SIZE)
             self._test_sizes(an_fs)
@@ -294,7 +294,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         if isinstance(an_fs, fs.NTFS):
             return
         self.assertIsNone(an_fs.doResize())
-        ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resize.unit, rounding=ROUND_DOWN)
+        ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resizeTask.unit, rounding=ROUND_DOWN)
         self.assertEqual(an_fs._size, ACTUAL_SIZE)
         self._test_sizes(an_fs)
 
@@ -357,7 +357,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
         # CHECKME: size and target size will be adjusted attempted values
         # while currentSize will be actual value
-        TARGET_SIZE = BIG_SIZE.roundToNearest(an_fs._resize.unit, rounding=ROUND_DOWN)
+        TARGET_SIZE = BIG_SIZE.roundToNearest(an_fs._resizeTask.unit, rounding=ROUND_DOWN)
         self.assertEqual(an_fs.targetSize, TARGET_SIZE)
         self.assertEqual(an_fs.size, an_fs.targetSize)
         self.assertEqual(an_fs.currentSize, old_size)

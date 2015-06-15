@@ -106,7 +106,7 @@ class FS(DeviceFormat):
         self._mkfs = self._mkfsClass(self)
         self._mount = self._mountClass(self)
         self._readlabel = self._readlabelClass(self)
-        self._resize = self._resizeClass(self)
+        self._resizeTask = self._resizeClass(self)
         self._sync = self._syncClass(self)
         self._writelabel = self._writelabelClass(self)
 
@@ -127,7 +127,7 @@ class FS(DeviceFormat):
         # Resize operations are limited to error-free filesystems whose current
         # size is known.
         self._resizable = False
-        if flags.installer_mode and self._resize.available:
+        if flags.installer_mode and self._resizeTask.available:
             # if you want current/min size you have to call updateSizeInfo
             try:
                 self.updateSizeInfo()
@@ -282,7 +282,7 @@ class FS(DeviceFormat):
 
         # make sure the padded and rounded min size is not larger than
         # the current size
-        padded = min(padded.roundToNearest(self._resize.unit, rounding=ROUND_UP), self.currentSize)
+        padded = min(padded.roundToNearest(self._resizeTask.unit, rounding=ROUND_UP), self.currentSize)
 
         return padded
 
@@ -341,7 +341,7 @@ class FS(DeviceFormat):
         if self.targetSize == self.currentSize:
             return
 
-        if not self._resize.available:
+        if not self._resizeTask.available:
             return
 
         # tmpfs mounts don't need an existing device node
@@ -367,7 +367,7 @@ class FS(DeviceFormat):
         # We always round down because the fs has to fit on whatever device
         # contains it. To round up would risk quietly setting a target size too
         # large for the device to hold.
-        rounded = self.targetSize.roundToNearest(self._resize.unit,
+        rounded = self.targetSize.roundToNearest(self._resizeTask.unit,
                                                  rounding=ROUND_DOWN)
 
         # 1. target size was between the min size and max size values prior to
@@ -388,13 +388,13 @@ class FS(DeviceFormat):
         # early.
         if self.targetSize > self.currentSize and rounded < self.currentSize:
             log.info("rounding target size down to next %s obviated resize of "
-                     "filesystem on %s", unitStr(self._resize.unit), self.device)
+                     "filesystem on %s", unitStr(self._resizeTask.unit), self.device)
             return
         else:
             self.targetSize = rounded
 
         try:
-            self._resize.doTask()
+            self._resizeTask.doTask()
         except FSError as e:
             raise FSResizeError(e, self.device)
 
@@ -639,7 +639,7 @@ class FS(DeviceFormat):
     @property
     def utilsAvailable(self):
         # we aren't checking for fsck because we shouldn't need it
-        tasks = (self._mkfs, self._resize, self._writelabel, self._info)
+        tasks = (self._mkfs, self._resizeTask, self._writelabel, self._info)
         return all(not t.implemented or t.available for t in tasks)
 
     @property
@@ -662,7 +662,7 @@ class FS(DeviceFormat):
     @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
-        return super(FS, self).resizable and self._resize.available
+        return super(FS, self).resizable and self._resizeTask.available
 
     def _getOptions(self):
         return self.mountopts or ",".join(self._mount.options)
@@ -1178,7 +1178,7 @@ class TmpFS(NoDevFS):
             This is not impossible, since a special option for mounting
             is size=<percentage>%.
         """
-        return "size=%s" % (self._resize.size_fmt % size.convertTo(self._resize.unit))
+        return "size=%s" % (self._resizeTask.size_fmt % size.convertTo(self._resizeTask.unit))
 
     def _getOptions(self):
         # Returns the regular mount options with the special size option,
