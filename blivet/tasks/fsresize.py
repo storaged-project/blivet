@@ -80,7 +80,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
             raise FSError(e)
 
         if ret:
-            raise FSError("resize failed: %s" % ret)
+            raise FSError("resize of format on device %s failed: %s" % (self.fs.device, ret))
 
 class Ext2FSResize(FSResize):
     ext = availability.RESIZE2FS_APP

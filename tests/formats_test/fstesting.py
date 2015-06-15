@@ -6,7 +6,7 @@ import os
 import tempfile
 
 from tests import loopbackedtestcase
-from blivet.errors import DeviceFormatError, FSError, FSResizeError
+from blivet.errors import DeviceFormatError, FSError
 from blivet.size import Size, ROUND_DOWN
 from blivet.formats import fs
 
@@ -200,7 +200,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
             with self.assertRaises(DeviceFormatError):
                 an_fs.targetSize = Size("64 MiB")
             with self.assertRaises(DeviceFormatError):
-                an_fs.doResize()
+                an_fs.resize()
         else:
             self.assertTrue(an_fs.resizable)
             # Try a reasonable target size
@@ -208,7 +208,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
             an_fs.targetSize = TARGET_SIZE
             self.assertEqual(an_fs.targetSize, TARGET_SIZE)
             self.assertNotEqual(an_fs._size, TARGET_SIZE)
-            self.assertIsNone(an_fs.doResize())
+            self.assertIsNone(an_fs.resize())
             ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resizeTask.unit, rounding=ROUND_DOWN)
             self.assertEqual(an_fs.size, ACTUAL_SIZE)
             self.assertEqual(an_fs._size, ACTUAL_SIZE)
@@ -237,7 +237,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertNotEqual(an_fs.currentSize, an_fs.targetSize)
         self.assertEqual(an_fs.currentSize, an_fs._size)
         self.assertEqual(an_fs.targetSize, Size(0))
-        self.assertIsNone(an_fs.doResize())
+        self.assertIsNone(an_fs.resize())
         self.assertEqual(an_fs.currentSize, an_fs.minSize)
         self.assertEqual(an_fs.targetSize, an_fs.minSize)
         self._test_sizes(an_fs)
@@ -261,7 +261,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         # set in the constructor.
         self.assertNotEqual(an_fs.currentSize, an_fs.targetSize)
         self.assertEqual(an_fs.targetSize, SIZE)
-        self.assertIsNone(an_fs.doResize())
+        self.assertIsNone(an_fs.resize())
         self.assertEqual(an_fs.currentSize, SIZE)
         self.assertEqual(an_fs.targetSize, SIZE)
         self._test_sizes(an_fs)
@@ -279,7 +279,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
         TARGET_SIZE = Size("64 MiB")
         an_fs.targetSize = TARGET_SIZE
-        self.assertIsNone(an_fs.doResize())
+        self.assertIsNone(an_fs.resize())
 
         TARGET_SIZE = TARGET_SIZE / 2
         self.assertTrue(TARGET_SIZE > an_fs.minSize)
@@ -287,13 +287,13 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.targetSize, TARGET_SIZE)
         self.assertNotEqual(an_fs._size, TARGET_SIZE)
         # FIXME:
-        # doCheck() in updateSizeInfo() in doResize() does not complete tidily
+        # doCheck() in updateSizeInfo() in resize() does not complete tidily
         # here, so resizable becomes False and self.targetSize can not be
         # assigned to. This alerts us to the fact that now min size
         # and size are both incorrect values.
         if isinstance(an_fs, fs.NTFS):
             return
-        self.assertIsNone(an_fs.doResize())
+        self.assertIsNone(an_fs.resize())
         ACTUAL_SIZE = TARGET_SIZE.roundToNearest(an_fs._resizeTask.unit, rounding=ROUND_DOWN)
         self.assertEqual(an_fs._size, ACTUAL_SIZE)
         self._test_sizes(an_fs)
@@ -352,8 +352,8 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         BIG_SIZE = an_fs.maxSize - Size(1)
         an_fs.targetSize = BIG_SIZE
         self.assertEqual(an_fs.targetSize, BIG_SIZE)
-        with self.assertRaises(FSResizeError):
-            an_fs.doResize()
+        with self.assertRaises(FSError):
+            an_fs.resize()
 
         # CHECKME: size and target size will be adjusted attempted values
         # while currentSize will be actual value

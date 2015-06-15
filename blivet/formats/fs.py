@@ -46,7 +46,7 @@ from ..flags import flags
 from parted import fileSystemType
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
-from ..size import Size, ROUND_UP, ROUND_DOWN, unitStr
+from ..size import Size, ROUND_UP
 from ..i18n import N_
 from .. import udev
 from ..mounts import mountsCache
@@ -106,7 +106,6 @@ class FS(DeviceFormat):
         self._mkfs = self._mkfsClass(self)
         self._mount = self._mountClass(self)
         self._readlabel = self._readlabelClass(self)
-        self._resizeTask = self._resizeClass(self)
         self._sync = self._syncClass(self)
         self._writelabel = self._writelabelClass(self)
 
@@ -330,23 +329,19 @@ class FS(DeviceFormat):
     def doResize(self):
         """ Resize this filesystem based on this instance's targetSize attr.
 
-            :raises: FSResizeError, FSError
+            :raises: FSResizeError, FSError, DeviceFormatError
+
+            .. versionchanged:: 1.5
+               Raises :class:`~.errors.DeviceFormatError`
+
+            .. deprecated:: 1.5
+               Use :func:`resize` instead.
         """
-        if not self.exists:
-            raise FSResizeError("filesystem does not exist", self.device)
+        self.resize()
 
-        if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
-
-        if self.targetSize == self.currentSize:
-            return
-
-        if not self._resizeTask.available:
-            return
-
-        # tmpfs mounts don't need an existing device node
-        if not self.device == "tmpfs" and not os.path.exists(self.device):
-            raise FSResizeError("device does not exist", self.device)
+    def _preResize(self, **kwargs):
+        if not super(FS, self)._preResize(**kwargs):
+            return False
 
         # The first minimum size can be incorrect if the fs was not
         # properly unmounted. After doCheck the minimum size will be correct
@@ -362,47 +357,11 @@ class FS(DeviceFormat):
             self.targetSize = self.minSize
             log.info("Minimum size changed, setting targetSize on %s to %s",
                      self.device, self.targetSize)
+        return True
 
-        # Bump target size to nearest whole number of the resize tool's units.
-        # We always round down because the fs has to fit on whatever device
-        # contains it. To round up would risk quietly setting a target size too
-        # large for the device to hold.
-        rounded = self.targetSize.roundToNearest(self._resizeTask.unit,
-                                                 rounding=ROUND_DOWN)
-
-        # 1. target size was between the min size and max size values prior to
-        #    rounding (see _setTargetSize)
-        # 2. we've just rounded the target size down (or not at all)
-        # 3. the minimum size is already either rounded (see _getMinSize) or is
-        #    equal to the current size (see updateSizeInfo)
-        # 5. the minimum size is less than or equal to the current size (see
-        #    _getMinSize)
-        #
-        # This, I think, is sufficient to guarantee that the rounded target size
-        # is greater than or equal to the minimum size.
-
-        # It is possible that rounding down a target size greater than the
-        # current size would move it below the current size, thus changing the
-        # direction of the resize. That means the target size was less than one
-        # unit larger than the current size, and we should do nothing and return
-        # early.
-        if self.targetSize > self.currentSize and rounded < self.currentSize:
-            log.info("rounding target size down to next %s obviated resize of "
-                     "filesystem on %s", unitStr(self._resizeTask.unit), self.device)
-            return
-        else:
-            self.targetSize = rounded
-
-        try:
-            self._resizeTask.doTask()
-        except FSError as e:
-            raise FSResizeError(e, self.device)
-
+    def _postResize(self, **kwargs):
         self.doCheck()
-
-        # XXX must be a smarter way to do this
-        self._size = self.targetSize
-        self.notifyKernel()
+        super(FS, self)._postResize(**kwargs)
 
     def doCheck(self):
         """ Run a filesystem check.
@@ -658,11 +617,6 @@ class FS(DeviceFormat):
     @property
     def formattable(self):
         return super(FS, self).formattable and self._mkfs.available
-
-    @property
-    def resizable(self):
-        """ Can formats of this filesystem type be resized? """
-        return super(FS, self).resizable and self._resizeTask.available
 
     def _getOptions(self):
         return self.mountopts or ",".join(self._mount.options)
@@ -1224,12 +1178,15 @@ class TmpFS(NoDevFS):
         # same, nothing actually needs to be set
         pass
 
-    def doResize(self):
+    def _resize(self, **kwargs):
         # Override superclass method to record whether mount options
         # should include an explicit size specification.
         original_size = self._size
-        FS.doResize(self)
+        super(TmpFS, self)._resize(**kwargs)
         self._accept_default_size = self._accept_default_size and original_size == self._size
+
+    def _deviceRequiredForResize(self):
+        return False
 
 register_device_format(TmpFS)
 

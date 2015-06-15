@@ -32,7 +32,8 @@ from ..util import ObjectID
 from ..storage_log import log_method_call
 from ..errors import DeviceFormatError, FormatCreateError, FormatDestroyError, FormatSetupError
 from ..i18n import N_
-from ..size import Size
+from ..size import Size, unitStr, ROUND_DOWN
+from ..tasks import dfresize
 
 import logging
 log = logging.getLogger("blivet")
@@ -160,6 +161,7 @@ class DeviceFormat(ObjectID):
     _check = False
     _hidden = False                     # hide devices with this formatting?
     _ksMountpoint = None
+    _resizeClass = dfresize.UnimplementedDFResize
 
     def __init__(self, **kwargs):
         """
@@ -179,6 +181,9 @@ class DeviceFormat(ObjectID):
                 it via the 'device' kwarg to the :meth:`create` method.
         """
         ObjectID.__init__(self)
+
+        self._resizeTask = self._resizeClass(self)
+
         self._label = None
         self._options = None
         self._device = None
@@ -584,6 +589,85 @@ class DeviceFormat(ObjectID):
     def _postTeardown(self, **kwargs):
         pass
 
+    def resize(self, **kwargs):
+        log_method_call(self, device=self.device,
+                        type=self.type, status=self.status)
+        if not self._preResize(**kwargs):
+            return
+
+        self._resize(**kwargs)
+        self._postResize(**kwargs)
+
+    def _resize(self, **kwargs):
+        """ Do generic resizing actions. """
+        # Bump target size to nearest whole number of the resize tool's units.
+        # We always round down because the fs has to fit on whatever device
+        # contains it. To round up would risk quietly setting a target size too
+        # large for the device to hold.
+        rounded = self.targetSize.roundToNearest(self._resizeTask.unit,
+                                                 rounding=ROUND_DOWN)
+
+        # 1. target size was between the min size and max size values prior to
+        #    rounding (see _setTargetSize)
+        # 2. we've just rounded the target size down (or not at all)
+        # 3. the minimum size is already either rounded (see _getMinSize) or is
+        #    equal to the current size (see updateSizeInfo)
+        # 5. the minimum size is less than or equal to the current size (see
+        #    _getMinSize)
+        #
+        # This, I think, is sufficient to guarantee that the rounded target size
+        # is greater than or equal to the minimum size.
+
+        # It is possible that rounding down a target size greater than the
+        # current size would move it below the current size, thus changing the
+        # direction of the resize. That means the target size was less than one
+        # unit larger than the current size, and we should do nothing and return
+        # early.
+        if self.targetSize > self.currentSize and rounded < self.currentSize:
+            log.info("rounding target size down to next %s obviated resize of "
+                     "format on %s", unitStr(self._resizeTask.unit), self.device)
+            return
+        else:
+            self.targetSize = rounded
+
+        self._resizeTask.doTask()
+
+    def _deviceRequiredForResize(self):
+        """ Does this format need a device to be resized.
+
+            :rtype: bool
+            :returns: True if this format needs a device, otherwise False
+        """
+        return True
+
+    def _preResize(self, **kwargs):
+        """ Do all preparatory checks for resizing a format.
+
+            :rtype: bool
+            :returns: True if resize should proceed, otherwise False
+        """
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        if not self.resizable:
+            raise DeviceFormatError("format is not resizable")
+
+        if self.targetSize == self.currentSize:
+            return False
+
+        if not self._resizeTask.available:
+            return False
+
+        if self._deviceRequiredForResize() and not os.path.exists(self.device):
+            raise DeviceFormatError("device %s does not exist" % self.device)
+
+        return True
+
+    def _postResize(self, **kwargs):
+        """ Do what must be done after resizing a format. """
+        self._size = self.targetSize
+        self.notifyKernel()
+
     @property
     def status(self):
         return (self.exists and
@@ -615,7 +699,7 @@ class DeviceFormat(ObjectID):
     @property
     def resizable(self):
         """ Can formats of this type be resized? """
-        return self._resizable and self.exists
+        return self._resizable and self.exists and self._resizeTask.available
 
     @property
     def linuxNative(self):
