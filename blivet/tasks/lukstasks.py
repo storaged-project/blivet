@@ -26,6 +26,7 @@ from ..size import Size
 
 from . import availability
 from . import task
+from . import dfresize
 
 class LUKSSize(task.BasicApplication):
     """ Obtain information about the size of a LUKS format. """

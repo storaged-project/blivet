@@ -29,12 +29,12 @@ from ..import util
 
 from . import availability
 from . import task
+from . import dfresize
 
 @add_metaclass(abc.ABCMeta)
-class FSResizeTask(task.Task):
+class FSResizeTask(dfresize.DFResizeTask):
     """ The abstract properties that any resize task must have. """
 
-    unit = abc.abstractproperty(doc="Resize unit.")
     size_fmt = abc.abstractproperty(doc="Size format string.")
 
 @add_metaclass(abc.ABCMeta)
@@ -133,18 +133,7 @@ class TmpFSResize(FSResize):
         options = ("remount", opts, self.sizeSpec())
         return ['-o', ",".join(options), self.fs._type, self.fs.systemMountpoint]
 
-class UnimplementedFSResize(task.UnimplementedTask, FSResizeTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
-
-    @property
-    def unit(self):
-        raise NotImplementedError()
+class UnimplementedFSResize(dfresize.UnimplementedDFResize, FSResizeTask):
 
     @property
     def size_fmt(self):
