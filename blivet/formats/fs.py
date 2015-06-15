@@ -1093,6 +1093,7 @@ class Ext4FS(Ext3FS):
     _defaultFormatOptions = ["-t", "ext4"]
     _modules = ["ext4"]
     partedSystem = fileSystemType["ext4"]
+    _maxSize = Size("1 EiB")
 
 register_device_format(Ext4FS)
 
