@@ -518,6 +518,11 @@ def set_up_logging(log_file='/tmp/blivet.log'):
     handler.setFormatter(formatter)
     log.addHandler(handler)
     program_log.addHandler(handler)
+
+    # capture python warnings in our logs
+    warning_log = logging.getLogger("py.warnings")
+    warning_log.addHandler(handler)
+
     log.info("sys.argv = %s", sys.argv)
 
 def create_sparse_tempfile(name, size):
