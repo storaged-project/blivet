@@ -831,6 +831,7 @@ class Ext4FS(Ext3FS):
     _modules = ["ext4"]
     _mkfsClass = fsmkfs.Ext4FSMkfs
     partedSystem = fileSystemType["ext4"]
+    _maxSize = Size("1 EiB")
 
 register_device_format(Ext4FS)
 
