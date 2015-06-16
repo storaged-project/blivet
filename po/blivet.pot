@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-08 17:08-0700\n"
+"POT-Creation-Date: 2015-06-15 17:58-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -608,19 +608,6 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:52
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:53
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:435
-#, python-format
-msgid "vginfo failed for %s"
-msgstr ""
-
 #: ../blivet/devicelibs/dasd.py:160
 #, python-format
 msgid "DASD device %s not found, not even in device ignore list."
@@ -634,4 +621,17 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:173
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:52
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:53
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:435
+#, python-format
+msgid "vginfo failed for %s"
 msgstr ""

@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.4
+Version: 0.61.15.5
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jun 15 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.5-1
+- If any zFCP devices are used, always write /etc/zfcp.conf (sbueno+anaconda)
+  Resolves: rhbz#1194241
+
 * Mon Jun 08 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.4-1
 - Un-escape '-'s in names or paths for _all_ lvm lv or vgs (amulhern)
   Related: rhbz#1223855
