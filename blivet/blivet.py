@@ -917,10 +917,12 @@ class Blivet(object):
         """
         thin_volume = kwargs.pop("thin_volume", False)
         thin_pool = kwargs.pop("thin_pool", False)
-        vg = kwargs.get("parents", [None])[0]
-        if thin_volume and vg:
+        parent = kwargs.get("parents", [None])[0]
+        if thin_volume and parent:
             # kwargs["parents"] will contain the pool device, so...
-            vg = vg.vg
+            vg = parent.vg
+        else:
+            vg = parent
 
         mountpoint = kwargs.pop("mountpoint", None)
         if 'fmt_type' in kwargs:
