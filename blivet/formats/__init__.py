@@ -359,6 +359,24 @@ class DeviceFormat(ObjectID):
         """
         pass
 
+    def _alignToResizeUnit(self, newsize, direction=ROUND_DOWN):
+        """ Returns a new size aligned to the units of the resize tool.
+
+           :param :class:`~.Size` newsize: the proposed new size
+           :returns: newsize modified to yield an aligned size
+           :param direction: one of (decimal.ROUND_UP, decimal.ROUND_DOWN)
+           :rtype: :class:`~.Size`
+
+           The default is to round down.
+
+           If no resize unit available, returns newsize.
+        """
+        try:
+            return newsize.roundToNearest(self._resizeTask.unit, rounding=direction)
+        except NotImplementedError:
+            log.warning("Trying to align size to resize unit, but no resize unit available.")
+            return newsize
+
     def _deviceCheck(self, devspec):
         """ Verifies that device spec has a proper format.
 
@@ -600,12 +618,11 @@ class DeviceFormat(ObjectID):
 
     def _resize(self, **kwargs):
         """ Do generic resizing actions. """
-        # Bump target size to nearest whole number of the resize tool's units.
+
         # We always round down because the fs has to fit on whatever device
         # contains it. To round up would risk quietly setting a target size too
         # large for the device to hold.
-        rounded = self.targetSize.roundToNearest(self._resizeTask.unit,
-                                                 rounding=ROUND_DOWN)
+        rounded = self._alignToResizeUnit(self.targetSize)
 
         # 1. target size was between the min size and max size values prior to
         #    rounding (see _setTargetSize)

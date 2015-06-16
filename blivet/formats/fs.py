@@ -281,7 +281,7 @@ class FS(DeviceFormat):
 
         # make sure the padded and rounded min size is not larger than
         # the current size
-        padded = min(padded.roundToNearest(self._resizeTask.unit, rounding=ROUND_UP), self.currentSize)
+        padded = min(self._alignToResizeUnit(padded, ROUND_UP), self.currentSize)
 
         return padded
 
