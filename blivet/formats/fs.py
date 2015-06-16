@@ -197,7 +197,10 @@ class FS(DeviceFormat):
        doc="this filesystem's label")
 
     def _setTargetSize(self, newsize):
-        """ Set a target size for this filesystem. """
+        """ Set the target size for this filesystem.
+
+            :param :class:`~.size.Size` newsize: the newsize
+        """
         if not isinstance(newsize, Size):
             raise ValueError("new size must be of type Size")
 
@@ -207,13 +210,11 @@ class FS(DeviceFormat):
         if not self.resizable:
             raise FSError("filesystem is not resizable")
 
-        if newsize is None:
-            # unset any outstanding resize request
-            self._targetSize = self._size
-            return
+        if newsize < self.minSize:
+            raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.minSize))
 
-        if not self.minSize <= newsize < self.maxSize:
-            raise ValueError("requested size %s must fall between minimum size %s and maximum size %s" % (newsize, self.minSize, self.maxSize))
+        if self.maxSize and newsize >= self.maxSize:
+            raise ValueError("requested size %s must be less than maximum size %s" % (newsize, self.maxSize))
 
         self._targetSize = newsize
 
