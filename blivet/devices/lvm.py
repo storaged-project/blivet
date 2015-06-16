@@ -492,10 +492,6 @@ class LVMLogicalVolumeDevice(DMDevice):
 
             For existing LVs only:
 
-            :keyword copies: number of copies in the vg (>1 for mirrored lvs)
-            :type copies: int
-            :keyword logSize: size of log volume (for mirrored lvs)
-            :type logSize: :class:`~.size.Size`
             :keyword segType: segment type (eg: "linear", "raid1")
             :type segType: str
 
@@ -505,7 +501,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type grow: bool
             :keyword maxsize: maximum size for growable LV
             :type maxsize: :class:`~.size.Size`
-            :keyword percent -- percent of VG space to take
+            :keyword percent: percent of VG space to take
             :type percent: int
 
         """
