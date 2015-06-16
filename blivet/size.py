@@ -438,12 +438,11 @@ class Size(Decimal):
         if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_DEFAULT):
             raise ValueError("invalid rounding specifier")
 
-        factor = getattr(unit, "factor", unit)
+        factor = Decimal(getattr(unit, "factor", unit))
 
-        if factor == Size(0):
+        if factor == 0:
             return Size(0)
 
-        factor = Decimal(factor)
         if factor < 0:
             raise ValueError("invalid rounding unit: %s" % factor)
 
