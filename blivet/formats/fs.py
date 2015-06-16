@@ -38,7 +38,7 @@ from ..tasks import fssize
 from ..tasks import fssync
 from ..tasks import fswritelabel
 from ..errors import FormatCreateError, FSError, FSReadLabelError
-from ..errors import FSWriteLabelError, FSResizeError
+from ..errors import FSWriteLabelError
 from . import DeviceFormat, register_device_format
 from .. import util
 from .. import platform
@@ -329,7 +329,7 @@ class FS(DeviceFormat):
     def doResize(self):
         """ Resize this filesystem based on this instance's targetSize attr.
 
-            :raises: FSResizeError, FSError, DeviceFormatError
+            :raises: FSError, DeviceFormatError
 
             .. versionchanged:: 1.5
                Raises :class:`~.errors.DeviceFormatError`
@@ -338,26 +338,6 @@ class FS(DeviceFormat):
                Use :func:`resize` instead.
         """
         self.resize()
-
-    def _preResize(self, **kwargs):
-        if not super(FS, self)._preResize(**kwargs):
-            return False
-
-        # The first minimum size can be incorrect if the fs was not
-        # properly unmounted. After doCheck the minimum size will be correct
-        # so run the check one last time and bump up the size if it was too
-        # small.
-        self.updateSizeInfo()
-
-        # Check again if resizable is True, as updateSizeInfo() can change that
-        if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
-
-        if self.targetSize < self.minSize:
-            self.targetSize = self.minSize
-            log.info("Minimum size changed, setting targetSize on %s to %s",
-                     self.device, self.targetSize)
-        return True
 
     def _postResize(self, **kwargs):
         self.doCheck()
