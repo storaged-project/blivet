@@ -114,3 +114,24 @@ class CacheStats(object):
     def misses(self):
         """number of misses"""
         pass
+
+@add_metaclass(abc.ABCMeta)
+class CacheRequest(object):
+    """Abstract base class for cache requests specifying cache parameters for a
+    cached device
+
+    """
+    @abc.abstractproperty
+    def size(self):
+        """Requested size"""
+        pass
+
+    @abc.abstractproperty
+    def fast_devs(self):
+        """Devices (type-specific) to allocate/create the cache on"""
+        pass
+
+    @abc.abstractproperty
+    def mode(self):
+        """Mode the cache should use"""
+        pass
