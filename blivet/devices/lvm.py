@@ -51,7 +51,7 @@ from .storage import StorageDevice
 from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
-from .cache import Cache, CacheStats
+from .cache import Cache, CacheStats, CacheRequest
 
 _INTERNAL_LV_CLASSES = []
 
@@ -473,7 +473,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def __init__(self, name, parents=None, size=None, uuid=None, segType=None,
                  fmt=None, exists=False, sysfsPath='', grow=None, maxsize=None,
-                 percent=None):
+                 percent=None, cacheRequest=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -503,6 +503,8 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type maxsize: :class:`~.size.Size`
             :keyword percent: percent of VG space to take
             :type percent: int
+            :keyword cacheRequest: parameters of requested cache (if any)
+            :type cacheRequest: :class:`~.devices.lvm.LVMCacheRequest`
 
         """
 
@@ -535,6 +537,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._metaDataSize = Size(0)
         self._internal_lvs = []
         self._cache = None
+
+        if cacheRequest and not self.exists:
+            self._cache = LVMCache(self, size=cacheRequest.size, exists=False,
+                                   fast_pvs=cacheRequest.fast_devs, mode=cacheRequest.mode)
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
@@ -735,7 +741,36 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         # should we use --zero for safety's sake?
-        blockdev.lvm.lvcreate(self.vg.name, self._name, self.size)
+        if not self.cache:
+            # just a plain LV
+            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size)
+        else:
+            mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
+            # prepare the list of fast PV devices
+            fast_pvs = []
+            for pv_name in (pv.name for pv in self.cache.fast_pvs):
+                # make sure we have the full device paths
+                if not pv_name.startswith("/dev/"):
+                    fast_pvs.append("/dev/%s" % pv_name)
+                else:
+                    fast_pvs.append(pv_name)
+
+            # get the list of all fast PV devices used in the VG so that we can
+            # consider the rest to be slow PVs and generate a list of them
+            all_fast_pvs_names = set()
+            for lv in self.vg.lvs:
+                if lv.cached and lv.cache.fast_pvs:
+                    all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
+            slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
+
+            # TODO: allow specification of metadata size
+            # for now, we just make the metadata+data parts take the requested cache space together
+            md_size = blockdev.lvm.cache_get_default_md_size(self.cache.size)
+            data_size = self.cache.size - md_size
+
+            # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
+            blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, data_size, md_size,
+                                                mode, 0, slow_pvs, fast_pvs)
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
@@ -1615,7 +1650,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
 class LVMCache(Cache):
     """Class providing the cache-related functionality of a cached LV"""
 
-    def __init__(self, cached_lv, size=None, exists=False, mode=None):
+    def __init__(self, cached_lv, size=None, exists=False, fast_pvs=None, mode=None):
         """
         :param cached_lv: the LV the cache functionality of which to provide
         :type cached_lv: :class:`LVMLogicalVolumeDevice`
@@ -1623,6 +1658,8 @@ class LVMCache(Cache):
                      that cannot determine their size dynamically)
         :type size: :class:`~.size.Size`
         :param bool exists: whether the cache exists or not
+        :param fast_pvs: PVs to allocate the cache on/from (ignored for existing)
+        :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
         :param str mode: desired mode for non-existing cache (ignored for existing)
 
         """
@@ -1631,8 +1668,10 @@ class LVMCache(Cache):
         self._exists = exists
         if not exists:
             self._mode = mode or "writethrough"
+            self._fast_pvs = fast_pvs
         else:
             self._mode = None
+            self._fast_pvs = None
 
     @property
     def size(self):
@@ -1673,6 +1712,10 @@ class LVMCache(Cache):
             return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
         else:
             return None
+
+    @property
+    def fast_pvs(self):
+        return self._fast_pvs
 
     def detach(self):
         vg_name = self._cached_lv.vg.name
@@ -1747,3 +1790,30 @@ class LVMCacheStats(CacheStats):
     @property
     def write_misses(self):
         return self._write_misses
+
+class LVMCacheRequest(CacheRequest):
+    """Class representing the LVM cache creation request"""
+    def __init__(self, size, fast_pvs, mode=None):
+        """
+        :param size: requested size of the cache
+        :type size: :class:`~.size.Size`
+        :param fast_pvs: PVs to allocate the cache on/from
+        :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
+        :param str mode: requested mode for the cache (``None`` means the default is used)
+
+        """
+        self._size = size
+        self._fast_pvs = fast_pvs
+        self._mode = mode or "writethrough"
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def fast_devs(self):
+        return self._fast_pvs
+
+    @property
+    def mode(self):
+        return self._mode
