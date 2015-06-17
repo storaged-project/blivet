@@ -455,20 +455,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         self._postTeardown(recursive=recursive)
 
-    def preCommitFixup(self, *args, **kwargs):
+    def preCommitFixup(self):
         """ Determine create parameters for this set """
-        mountpoints = kwargs.pop("mountpoints")
-        log_method_call(self, self.name, mountpoints)
-
-        if "/boot" in mountpoints:
-            bootmountpoint = "/boot"
-        else:
-            bootmountpoint = "/"
-
-        # If we are used to boot from we cannot use 1.1 metadata
-        if getattr(self.format, "mountpoint", None) == bootmountpoint or \
-           getattr(self.format, "mountpoint", None) == "/boot/efi" or \
-           self.format.type == "prepboot":
+        log_method_call(self, self.name)
+        # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays
+        if getattr(self.format, "mountpoint", None) == "/boot/efi":
             self.metadataVersion = "1.0"
 
     def _postCreate(self):
