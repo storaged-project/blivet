@@ -1252,7 +1252,7 @@ class DeviceTree(object):
                     if parent.name not in self.exclusiveDisks:
                         self.exclusiveDisks.append(parent.name)
 
-        log.info("got device: %r", device)
+        log.info("got device: %r", device.name)
 
         # now handle the device's formatting
         self.handleUdevDeviceFormat(info, device)
@@ -2374,7 +2374,7 @@ class DeviceTree(object):
             result = next((d for d in devices if d.name == name or \
                (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--","-"))),
                None)
-        log_method_return(self, result)
+        log_method_return(self, getattr(result, "name", None))
         return result
 
     def getDeviceByPath(self, path, incomplete=False, hidden=False):
