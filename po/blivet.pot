@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-07 15:00-0400\n"
+"POT-Creation-Date: 2015-06-17 10:07-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -237,7 +237,7 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/devicetree.py:1308
+#: ../blivet/devicetree.py:1311
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -489,21 +489,21 @@ msgstr ""
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:764
+#: ../blivet/deviceaction.py:770
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:771
+#: ../blivet/deviceaction.py:777
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:814
+#: ../blivet/deviceaction.py:820
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:878
+#: ../blivet/deviceaction.py:884
 msgid "remove container member"
 msgstr ""
 

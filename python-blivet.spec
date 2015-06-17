@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.9
+Version: 1.0.10
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -58,6 +58,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jun 17 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.10-1
+- Fix setting original size for format resize action. (#1225352) (vtrefny)
+- Merge pull request #141 from vojtechtrefny/f22-branch-fix_active_parted
+  (vtrefny)
+- Fix status for LVMPhysicalVolume format (vtrefny)
+- Allow adding new partitions to disks with active devices (vtrefny)
+
 * Thu May 07 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.0.9-1
 - Use VGname-LVname as key for LVinfo cache (#1214241) (vpodzime)
 
