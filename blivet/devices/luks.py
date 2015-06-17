@@ -59,6 +59,16 @@ class LUKSDevice(DMCryptDevice):
     def raw_device(self):
         return self.slave
 
+    def _setTargetSize(self, newsize):
+        if newsize > self.slave.size:
+            raise ValueError("requested size %s is larger than size of slave device %s" % (newsize, self.slave.name))
+
+        if newsize < self.format.size:
+            raise ValueError("requested size %s is smaller size of existing format %s on device" % (newsize, self.format))
+
+        super(LUKSDevice, self)._setTargetSize(newsize)
+        self.slave.format.targetSize = newsize
+
     @property
     def size(self):
         if not self.exists:
@@ -81,6 +91,9 @@ class LUKSDevice(DMCryptDevice):
 
     def dracutSetupArgs(self):
         return set(["rd.luks.uuid=luks-%s" % self.slave.format.uuid])
+
+    def resize(self):
+        self.slave.format.resize()
 
     def populateKSData(self, data):
         self.slave.populateKSData(data)
