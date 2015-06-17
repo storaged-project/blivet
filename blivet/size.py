@@ -337,10 +337,21 @@ class Size(Decimal):
         """ Return the size in the units indicated by the specifier.
 
             :param spec: a units specifier
+            :type spec: a units specifier or :class:`Size`
             :returns: a numeric value in the units indicated by the specifier
             :rtype: Decimal
+            :raises ValueError: if Size unit specifier is non-positive
+
+            .. versionadded:: 1.6
+               spec parameter may be Size as well as units specifier.
         """
-        return Decimal(self) / Decimal((spec or B).factor)
+        spec = B if spec is None else spec
+        factor = Decimal(getattr(spec, "factor", spec))
+
+        if factor <= 0:
+            raise ValueError("invalid conversion unit: %s" % factor)
+
+        return Decimal(self) / factor
 
     def humanReadable(self, max_places=2, strip=True, min_value=1, xlate=True):
         """ Return a string representation of this size with appropriate
@@ -427,12 +438,11 @@ class Size(Decimal):
         if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_DEFAULT):
             raise ValueError("invalid rounding specifier")
 
-        factor = getattr(unit, "factor", unit)
+        factor = Decimal(getattr(unit, "factor", unit))
 
-        if factor == Size(0):
+        if factor == 0:
             return Size(0)
 
-        factor = Decimal(factor)
         if factor < 0:
             raise ValueError("invalid rounding unit: %s" % factor)
 
