@@ -29,7 +29,7 @@ from .. import util
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
-from ..formats import getFormat
+from ..formats import getFormat, DeviceFormat
 from ..size import Size
 
 import logging
@@ -592,9 +592,29 @@ class StorageDevice(Device):
         return os.access(self.path, os.W_OK)
 
     def _setFormat(self, fmt):
-        """ Set the Device's format. """
+        """ Set the Device's format.
+
+            :param fmt: the new format or None
+            :type fmt: :class:`~.formats.DeviceFormat` or NoneType
+
+            A value of None will effectively mark the device as unformatted,
+            but this is accomplished by setting it to an instance of the base
+            :class:`~.formats.DeviceFormat` class.
+
+            .. note::
+                :attr:`format` should always be an instance of
+                :class:`~.formats.DeviceFormat`. To ensure this continues to be
+                the case, all subclasses that define their own :attr:`format`
+                setter should call :meth:`StorageDevice._setFormat` from their
+                setter.
+
+        """
         if not fmt:
             fmt = getFormat(None, device=self.path, exists=self.exists)
+
+        if not isinstance(fmt, DeviceFormat):
+            raise ValueError("format must be a DeviceFormat instance")
+
         log_method_call(self, self.name, type=fmt.type,
                         current=getattr(self._format, "type", None))
         if self._format and self._format.status:
@@ -623,6 +643,17 @@ class StorageDevice(Device):
             self._format.options = ",".join(option_list)
 
     def _getFormat(self):
+        """ Get the device's format instance.
+
+            :returns: this device's format instance
+            :rtype: :class:`~.formats.DeviceFormat`
+
+            .. note::
+                :attr:`format` should always be an instance of
+                :class:`~.formats.DeviceFormat`. Under no circumstances should
+                a programmer directly set :attr:`_format` to any other type.
+
+        """
         return self._format
 
     format = property(lambda d: d._getFormat(),
