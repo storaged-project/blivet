@@ -1,7 +1,7 @@
 #
 # dasd.py - DASD functions
 #
-# Copyright (C) 2013 Red Hat, Inc.  All rights reserved.
+# Copyright (C) 2015 Red Hat, Inc.  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Red Hat Author(s): Samantha N. Bueno
+# Red Hat Author(s): Samantha N. Bueno <sbueno@redhat.com>
+#                    Peter Jones <pjones@redhat.com>
 #
 
+import fcntl
+import ctypes
 import os
 from blivet.errors import DasdFormatError
 from blivet.devices import deviceNameToDiskByPath
@@ -31,6 +34,111 @@ log = logging.getLogger("blivet")
 import gettext
 _ = lambda x: gettext.ldgettext("blivet", x)
 P_ = lambda x, y, z: gettext.ldngettext("blivet", x, y, z)
+
+# ioctl crap that the fcntl module should really do for us...
+_IOC_NRBITS = 8
+_IOC_TYPEBITS = 8
+_IOC_SIZEBITS = 14
+_IOC_DIRBITS = 2
+
+_IOC_NRMASK = ((1 << _IOC_NRBITS)-1)
+_IOC_TYPEMASK = ((1 << _IOC_TYPEBITS)-1)
+_IOC_SIZEMASK = ((1 << _IOC_SIZEBITS)-1)
+_IOC_DIRMASK = ((1 << _IOC_DIRBITS)-1)
+
+_IOC_NRSHIFT = 0
+_IOC_TYPESHIFT = (_IOC_NRSHIFT+_IOC_NRBITS)
+_IOC_SIZESHIFT = (_IOC_TYPESHIFT+_IOC_TYPEBITS)
+_IOC_DIRSHIFT = (_IOC_SIZESHIFT+_IOC_SIZEBITS)
+
+_IOC_NONE = 0
+_IOC_WRITE = 1
+_IOC_READ = 2
+
+def _IOC(dir, typ, nr, size):
+    return (((dir)  << _IOC_DIRSHIFT) | \
+            ((typ)  << _IOC_TYPESHIFT) | \
+            ((nr)   << _IOC_NRSHIFT) | \
+            ((size) << _IOC_SIZESHIFT))
+
+def _IO(typ, nr):
+    return _IOC(_IOC_NONE, typ, nr, 0)
+def _IOR(typ, nr, size):
+    return _IOC(_IOC_READ, typ, nr, size)
+def _IOW(typ, nr, size):
+    return _IOC(_IOC_WRITE, typ, nr, size)
+def _IOWR(typ, nr, size):
+    return _IOC(_IOC_WRITE|_IOC_READ, typ, nr, size)
+
+BLKSSZGET = int(_IO(0x12, 104))
+BIODASDINFO2 = int(_IOR(ord('D'), 3, 416))
+
+# and now just do our thing
+class blksize(ctypes.Structure):
+    _fields_ = [
+        ('blksize', ctypes.c_uint),
+    ]
+
+class dasd_info(ctypes.Structure):
+    _fields_ = [
+        ('devno', ctypes.c_uint),
+        ('real_devno', ctypes.c_uint),
+        ('schid', ctypes.c_uint),
+        ('cu_type_model', ctypes.c_uint),
+        ('dev_type_model', ctypes.c_uint),
+        ('open_count', ctypes.c_uint),
+        ('req_queue_len', ctypes.c_uint),
+        ('chanq_len', ctypes.c_uint),
+        ('type', ctypes.c_char * 4),
+        ('status', ctypes.c_uint),
+        ('label_block', ctypes.c_uint),
+        ('FBA_layout', ctypes.c_uint),
+        ('characteristics_size', ctypes.c_uint),
+        ('confdata_size', ctypes.c_uint),
+        ('characteristics', ctypes.c_char * 64),
+        ('configuration_data', ctypes.c_char * 256),
+        ('format', ctypes.c_uint),
+        ('features', ctypes.c_uint),
+        ('reserved0', ctypes.c_uint),
+        ('reserved1', ctypes.c_uint),
+        ('reserved2', ctypes.c_uint),
+        ('reserved3', ctypes.c_uint),
+        ('reserved4', ctypes.c_uint),
+        ('reserved5', ctypes.c_uint),
+        ('reserved6', ctypes.c_uint),
+        ('reserved7', ctypes.c_uint),
+        ('reserved8', ctypes.c_uint),
+    ]
+
+DASD_FORMAT_CDL = 2
+
+def is_ldl_dasd(device):
+    """Determine whether or not a DASD is LDL formatted."""
+    device = "/dev/%s" % (device,)
+
+    f = open(device, "r")
+
+    # poorly check if this is even a block device...
+    arg = blksize()
+    rc = fcntl.ioctl(f.fileno(), BLKSSZGET, arg, True)
+    if rc < 0:
+        return False
+
+    # alright, it's a block device, so get some info about DASD...
+    arg = dasd_info()
+    rc = fcntl.ioctl(f.fileno(), BIODASDINFO2, arg)
+    if rc < 0:
+        return False
+
+    # check we're not on an FBA DASD, since dasdfmt can't run on them
+    if arg.type[0:2] == 'FBA':
+        return False
+
+    # check DASD volume label; "VOL1" is CDL formatted DASD, won't
+    # require formatting
+    if arg.format == DASD_FORMAT_CDL:
+        return False
+    return True
 
 def get_dasd_ports():
     """ Return comma delimited string of valid DASD ports. """
