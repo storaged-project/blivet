@@ -41,12 +41,22 @@ from ..tasks import availability
 import logging
 log = logging.getLogger("blivet")
 
-from .lib import LINUX_SECTOR_SIZE
+from .lib import LINUX_SECTOR_SIZE, ParentList
 from .device import Device
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
+
+_INTERNAL_LV_CLASSES = []
+
+def get_internal_lv_class(lv_attr):
+    # XXX: need to do some heuristic on the LV name?
+    for cls in _INTERNAL_LV_CLASSES:
+        if lv_attr[0] in cls.attr_letters:
+            return cls
+
+    return None
 
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group """
@@ -450,10 +460,9 @@ class LVMLogicalVolumeDevice(DMDevice):
     _containerClass = LVMVolumeGroupDevice
     _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN]
 
-    def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=None, segType=None,
-                 fmt=None, exists=False, sysfsPath='',
-                 grow=None, maxsize=None, percent=None):
+    def __init__(self, name, parents=None, size=None, uuid=None, segType=None,
+                 fmt=None, exists=False, sysfsPath='', grow=None, maxsize=None,
+                 percent=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -489,25 +498,12 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type percent: int
 
         """
-        if isinstance(parents, list):
-            if len(parents) != 1:
-                raise ValueError("constructor requires a single %s instance" % self._containerClass.__name__)
-
-            container = parents[0]
-        else:
-            container = parents
-
-        if not isinstance(container, self._containerClass):
-            raise ValueError("constructor requires a %s instance" % self._containerClass.__name__)
 
         DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfsPath=sysfsPath, parents=parents,
                           exists=exists)
 
         self.uuid = uuid
-        self.copies = copies
-        self.logSize = logSize or Size(0)
-        self.metaDataSize = Size(0)
         self.segType = segType or "linear"
         self.snapshots = []
 
@@ -523,8 +519,50 @@ class LVMLogicalVolumeDevice(DMDevice):
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
 
-        # here we go with the circular references
-        self.parents[0]._addLogVol(self)
+        # check that we got parents as expected and add this device to them
+        self._check_parents()
+        self._add_to_parents()
+
+        self._metaDataSize = Size(0)
+        self._internal_lvs = []
+
+    def _check_parents(self):
+        """Check that this device has parents as expected"""
+
+        if isinstance(self.parents, (list, ParentList)):
+            if len(self.parents) != 1:
+                raise ValueError("constructor requires a single %s instance" % self._containerClass.__name__)
+
+            container = self.parents[0]
+        else:
+            container = self.parents
+
+        if not isinstance(container, self._containerClass):
+            raise ValueError("constructor requires a %s instance" % self._containerClass.__name__)
+
+    def _add_to_parents(self):
+        """Add this device to its parents"""
+
+        # a normal LV has only exactly parent -- the VG it belongs to
+        self._parents[0]._addLogVol(self)
+
+    @property
+    def copies(self):
+        image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
+        return len(image_lvs) or 1
+
+    @property
+    def logSize(self):
+        log_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMLogLogicalVolumeDevice))
+        return sum(lv.size for lv in log_lvs)
+
+    @property
+    def metaDataSize(self):
+        if self._metaDataSize:
+            return self._metaDataSize
+
+        md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
+        return sum(lv.size for lv in md_lvs)
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
@@ -797,6 +835,256 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         return True
 
+    def addInternalLV(self, int_lv):
+        if int_lv not in self._internal_lvs:
+            self._internal_lvs.append(int_lv)
+
+    def removeInternalLV(self, int_lv):
+        if int_lv in self._internal_lvs:
+            self._internal_lvs.remove(int_lv)
+        else:
+            msg = "the specified internal LV '%s' doesn't belong to this LV ('%s')" % (int_lv.lv_name,
+                                                                                       self.name)
+            raise ValueError(msg)
+
+@add_metaclass(abc.ABCMeta)
+class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
+    """Abstract base class for internal LVs
+
+    A common class for all classes representing internal Logical Volumes like
+    data and metadata parts of pools, RAID images, etc.
+
+    Internal LVs are only referenced by their "parent" LVs (normal LVs they
+    back) as all queries and manipulations with them should be done via their
+    parent LVs.
+
+    """
+
+    _type = "lvminternallv"
+
+    # generally changes should be done on the parent LV (exceptions should
+    # override these)
+    _resizable = False
+    _readonly = True
+
+    attr_letters = abc.abstractproperty(doc="letters representing the type of the internal LV in the attrs")
+    name_suffix = abc.abstractproperty(doc="pattern matching typical/default suffices for internal LVs of this type")
+    takes_extra_space = abc.abstractproperty(doc="whether LVs of this type take space in a VG or are part of their parent LVs")
+
+    @classmethod
+    def isNameValid(cls, name):
+        # override checks for normal LVs, internal LVs typically have names that
+        # are forbidden for normal LVs
+        return True
+
+    def __init__(self, name, vg, parent_lv=None, size=None, uuid=None,
+                 exists=False, segType=None, sysfsPath=''):
+        """
+        :param vg: the VG this internal LV belongs to
+        :type vg: :class:`LVMVolumeGroupDevice`
+        :param parent_lv: the parent LV of this internal LV
+        :type parent_lv: :class:`LVMLogicalVolumeDevice`
+
+        See :method:`LVMLogicalVolumeDevice.__init__` for details about the
+        rest of the parameters.
+        """
+
+        # VG name has to be set for parent class' constructors
+        self._vg = vg
+
+        # so does the parent LV
+        self._parent_lv = parent_lv
+
+        # construct the internal LV just like a normal one just with no parents
+        # and some parameters set to values reflecting the fact that this is an
+        # internal LV
+        super(LVMInternalLogicalVolumeDevice, self).__init__(name, parents=None,
+              size=size, uuid=uuid, segType=segType, fmt=None, exists=exists,
+              sysfsPath=sysfsPath, grow=None, maxsize=None, percent=None)
+
+        if parent_lv:
+            self._parent_lv.addInternalLV(self)
+
+    def _check_parents(self):
+        # an internal LV should have no parents
+        if self._parents:
+            raise ValueError("an internal LV should have no parents")
+
+    def _add_to_parents(self):
+        # nothing to do here, an internal LV has no parents (in the DeviceTree's
+        # meaning of 'parents')
+        pass
+
+    @property
+    def vg(self):
+        return self._vg
+
+    @vg.setter
+    def vg(self, vg):
+        # pylint: disable=arguments-differ
+        self._vg = vg
+
+    @property
+    def parent_lv(self):
+        return self._parent_lv
+
+    @parent_lv.setter
+    def parent_lv(self, parent_lv):
+        if self._parent_lv:
+            self._parent_lv.removeInternalLV(self)
+        self._parent_lv = parent_lv
+        if self._parent_lv:
+            self._parent_lv.addInternalLV(self)
+
+    # internal LVs follow different rules limitting size
+    def _setSize(self, size):
+        if not isinstance(size, Size):
+            raise ValueError("new size must of type Size")
+
+        if not self.takes_extra_space:
+            if size <= self.parent_lv.size:
+                self._size = size
+            else:
+                raise ValueError("Internal LV cannot be bigger than its parent LV")
+        else:
+            # same rules apply as for any other LV
+            super(LVMInternalLogicalVolumeDevice, self)._setSize(size)
+
+    @property
+    def maxSize(self):
+        # no format, so maximum size is only limitted by either the parent LV or the VG
+        if not self.takes_extra_space:
+            return self._parent_lv.maxSize()
+        else:
+            return self.size + self.vg.freeSpace
+
+    def __repr__(self):
+        s = "%s:\n" % self.__class__.__name__
+        s += ("  name = %s, status = %s exists = %s\n" % (self.lvname, self.status, self.exists))
+        s += ("  uuid = %s, size = %s\n" % (self.uuid, self.size))
+        s += ("  parent LV = %r\n" % self.parent_lv)
+        s += ("  VG device = %(vgdev)r\n"
+              "  segment type = %(type)s percent = %(percent)s\n"
+              "  mirror copies = %(copies)d"
+              "  VG space used = %(vgspace)s" %
+              {"vgdev": self.vg, "percent": self.req_percent,
+               "copies": self.copies, "type": self.segType,
+               "vgspace": self.vgSpaceUsed })
+        return s
+
+    # generally changes should be done on the parent LV (exceptions should
+    # override these)
+    def setup(self, orig=False):
+        raise errors.DeviceError("An internal LV cannot be set up separately")
+
+    def teardown(self, recursive=None):
+        raise errors.DeviceError("An internal LV cannot be torn down separately")
+
+    def destroy(self):
+        raise errors.DeviceError("An internal LV cannot be destroyed separately")
+
+    def resize(self):
+        raise errors.DeviceError("An internal LV cannot be resized")
+
+    @property
+    def growable(self):
+        return False
+
+    @property
+    def display_lvname(self):
+        """Name of the internal LV as displayed by the lvm utilities"""
+        return "[%s]" % self.lvname
+
+    # these two methods are not needed right now, because they are only called
+    # when devices are added/removed to/from the DeviceTree, but they may come
+    # handy in the future
+    def addHook(self, new=True):
+        # skip LVMLogicalVolumeDevice in the class hierarchy -- we don't want to
+        # add an internal LV to the VG (it's only referenced by the parent LV)
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeDevice, self).addHook(new=new)
+        self._parent_lv.addInternalLV(self)
+
+    def removeHook(self, modparent=True):
+        if modparent:
+            self._parent_lv.removeInternalLV(self)
+
+        # skip LVMLogicalVolumeDevice in the class hierarchy -- we cannot remove
+        # an internal LV from the VG (it's only referenced by the parent LV)
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeDevice, self).removeHook(modparent=modparent)
+
+    @property
+    def direct(self):
+        # internal LVs are not directly accessible
+        return False
+
+class LVMDataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+    """Internal data LV (used by thin/cache pools)"""
+
+    attr_letters = ["T", "C"]
+    name_suffix = r"_[tc]data"
+    takes_extra_space = False
+_INTERNAL_LV_CLASSES.append(LVMDataLogicalVolumeDevice)
+
+class LVMMetadataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+    """Internal metadata LV (used by thin/cache pools, RAIDs, etc.)"""
+
+    # thin pool metadata LVs can be resized directly
+    _resizable = True
+
+    attr_letters = ["e"]
+    # RAIDs can have multiple (numbered) metadata LVs
+    name_suffix = r"_[trc]meta(_[0-9]+)?"
+    takes_extra_space = True
+
+    # (only) thin pool metadata LVs can be resized directly
+    @property
+    def resizable(self):
+        if self._parent_lv:
+            return isinstance(self._parent_lv, LVMThinPoolDevice)
+        else:
+            # hard to say at this point, just use the name
+            return not re.search(r'_[rc]meta', self.lvname)
+
+    # (only) thin pool metadata LVs can be resized directly
+    def resize(self):
+        if ((self._parent_lv and not isinstance(self._parent_lv, LVMThinPoolDevice)) or
+            re.search(r'_[rc]meta', self.lvname)):
+            raise errors.DeviceError("RAID and cache pool metadata LVs cannot be resized directly")
+
+        # skip the generic LVMInternalLogicalVolumeDevice class and call the
+        # resize() method of the LVMLogicalVolumeDevice
+        # pylint: disable=bad-super-call
+        super(LVMInternalLogicalVolumeDevice, self).resize()
+
+_INTERNAL_LV_CLASSES.append(LVMMetadataLogicalVolumeDevice)
+
+class LVMLogLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+    """Internal log LV (used by mirrored LVs)"""
+
+    attr_letters = ["l", "L"]
+    name_suffix = "_mlog"
+    takes_extra_space = True
+_INTERNAL_LV_CLASSES.append(LVMLogLogicalVolumeDevice)
+
+class LVMImageLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+    """Internal image LV (used by mirror/RAID LVs)"""
+
+    attr_letters = ["i"]
+    # RAIDs have multiple (numbered) image LVs
+    name_suffix = r"_[rm]image(_[0-9]+)?"
+    takes_extra_space = False
+_INTERNAL_LV_CLASSES.append(LVMImageLogicalVolumeDevice)
+
+class LVMOriginLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+    """Internal origin LV (e.g. the raw/uncached part of a cached LV)"""
+
+    attr_letters = ["o"]
+    name_suffix = r"_c?orig"
+    takes_extra_space = False
+_INTERNAL_LV_CLASSES.append(LVMOriginLogicalVolumeDevice)
+
 @add_metaclass(abc.ABCMeta)
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
@@ -895,11 +1183,9 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
     _type = "lvmsnapshot"
     _formatImmutable = True
 
-    def __init__(self, name, parents=None, size=None, uuid=None,
-                 copies=1, logSize=None, segType=None,
-                 fmt=None, exists=False, sysfsPath='',
-                 grow=None, maxsize=None, percent=None,
-                 origin=None, vorigin=False):
+    def __init__(self, name, parents=None, size=None, uuid=None, segType=None,
+                 fmt=None, exists=False, sysfsPath='', grow=None, maxsize=None,
+                 percent=None, origin=None, vorigin=False):
         """ Create an LVMSnapShotDevice instance.
 
             This class is for the old-style (not thin) lvm snapshots. The origin
@@ -938,7 +1224,6 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
 
         LVMLogicalVolumeDevice.__init__(self, name, parents=parents, size=size,
                                         uuid=uuid, fmt=None, exists=exists,
-                                        copies=copies, logSize=logSize,
                                         segType=segType,
                                         sysfsPath=sysfsPath, grow=grow,
                                         maxsize=maxsize, percent=percent)
@@ -1042,7 +1327,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                 percent=percent,
                                                 segType=segType)
 
-        self.metaDataSize = metadatasize or Size(0)
+        self._metaDataSize = metadatasize or Size(0)
         self.chunkSize = chunksize or Size(0)
         self.profile = profile
         self._lvs = []
