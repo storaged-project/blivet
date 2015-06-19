@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-15 17:58-0700\n"
+"POT-Creation-Date: 2015-06-18 17:03-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1410
+#: ../blivet/__init__.py:1411
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3012
+#: ../blivet/__init__.py:3013
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3017
+#: ../blivet/__init__.py:3018
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3019
+#: ../blivet/__init__.py:3020
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -254,12 +254,12 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
-msgstr ""
-
 #: ../blivet/devicetree.py:1304
 msgid "Invalid Disk Label"
+msgstr ""
+
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -285,7 +285,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:226 ../blivet/formats/fs.py:1134
+#: ../blivet/platform.py:226 ../blivet/formats/fs.py:1135
 msgid "EFI System Partition"
 msgstr ""
 
@@ -550,21 +550,21 @@ msgstr ""
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1107
+#: ../blivet/formats/fs.py:1108
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1109
+#: ../blivet/formats/fs.py:1110
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1356
+#: ../blivet/formats/fs.py:1357
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1388
+#: ../blivet/formats/fs.py:1389
 msgid "Linux HFS+ ESP"
 msgstr ""
 
@@ -608,6 +608,19 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
+#: ../blivet/devicelibs/lvm.py:52
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:53
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:435
+#, python-format
+msgid "vginfo failed for %s"
+msgstr ""
+
 #: ../blivet/devicelibs/dasd.py:160
 #, python-format
 msgid "DASD device %s not found, not even in device ignore list."
@@ -621,17 +634,4 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:173
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:52
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:53
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:435
-#, python-format
-msgid "vginfo failed for %s"
 msgstr ""

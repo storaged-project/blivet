@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.5
+Version: 0.61.15.6
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jun 18 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.6-1
+- Fix up some logging methods. (sbueno+anaconda)
+  Resolves: rhbz#1155984
+- Make sure to add hyperPAV aliases to dasd.conf (sbueno+anaconda)
+  Resolves: rhbz#1031589
+- Fix a traceback with anaconda-cleanup on s390x. (sbueno+anaconda)
+  Resolves: rhbz#1173101
+- Increase ext4 maximum size from 16 TiB to 1 EiB (bcl)
+  Resolves: rhbz#1231049
+
 * Mon Jun 15 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.5-1
 - If any zFCP devices are used, always write /etc/zfcp.conf (sbueno+anaconda)
   Resolves: rhbz#1194241
