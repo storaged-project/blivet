@@ -62,6 +62,10 @@ program_log = logging.getLogger("program")
 # XXX: respect the level? Need to translate between C and Python log levels.
 log_bd_message = lambda level, msg: program_log.info(msg)
 
+import gi
+gi.require_version("GLib", "2.0")
+gi.require_version("BlockDev", "1.0")
+
 # initialize the libblockdev library
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
