@@ -187,19 +187,22 @@ class DeviceFormat(ObjectID):
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists", False)
         self.options = kwargs.get("options")
+        self._createOptions = kwargs.get("createOptions")
 
     def __repr__(self):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
              "  device = %(device)s  uuid = %(uuid)s  exists = %(exists)s\n"
-             "  options = %(options)s  supported = %(supported)s"
+             "  options = %(options)s\n"
+             "  createOptions = %(createOptions)s  supported = %(supported)s"
              "  formattable = %(format)s  resizable = %(resize)s\n" %
              {"classname": self.__class__.__name__, "id": "%#x" % id(self),
-              "object_id": self.id,
+              "object_id": self.id, "createOptions": self.createOptions,
               "type": self.type, "name": self.name, "status": self.status,
               "device": self.device, "uuid": self.uuid, "exists": self.exists,
               "options": self.options, "supported": self.supported,
-              "format": self.formattable, "resize": self.resizable})
+              "format": self.formattable, "resize": self.resizable,
+              "createOptions": self.createOptions})
         return s
 
     @property
@@ -218,7 +221,7 @@ class DeviceFormat(ObjectID):
         d = {"type": self.type, "name": self.name, "device": self.device,
              "uuid": self.uuid, "exists": self.exists,
              "options": self.options, "supported": self.supported,
-             "resizable": self.resizable}
+             "resizable": self.resizable, "createOptions": self.createOptions}
         return d
 
     def labeling(self):
@@ -289,6 +292,18 @@ class DeviceFormat(ObjectID):
        lambda s,v: s._setOptions(v),
        doc="fstab entry option string"
     )
+
+    def _setCreateOptions(self, options):
+        self._createOptions = options
+
+    def _getCreateOptions(self):
+        return self._createOptions
+
+    createOptions = property(
+        lambda s: s._getCreateOptions(),
+        lambda s,v: s._setCreateOptions(v),
+        doc="options to be used when running mkfs"
+    }
 
     def _deviceCheck(self, devspec):
         """ Verifies that device spec has a proper format.

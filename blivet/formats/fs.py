@@ -782,6 +782,7 @@ class FS(DeviceFormat):
         else:
             data.fsopts = ""
 
+        data.mkfsopts = self.createOptions or ""
         data.fsprofile = self.fsprofile or ""
 
 class Ext2FS(FS):

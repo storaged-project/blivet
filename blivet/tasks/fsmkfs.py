@@ -20,6 +20,7 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
+import shlex
 
 from six import add_metaclass
 
@@ -90,7 +91,8 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
             raise FSError("options parameter must be a list.")
 
         label_options = self._labelOptions if label else []
-        return options + self.args + label_options + [self.fs.device]
+        create_options = shlex.split(self.fs.createOptions or "")
+        return options + self.args + label_options + create_options + [self.fs.device]
 
     def _mkfsCommand(self, options, label):
         """Return the command to make the filesystem.
