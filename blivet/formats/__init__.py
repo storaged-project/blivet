@@ -185,6 +185,7 @@ class DeviceFormat(ObjectID):
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists")
         self.options = kwargs.get("options")
+        self._createOptions = kwargs.get("createOptions")
 
         # don't worry about existence if this is a DeviceFormat instance
         #if self.__class__ is DeviceFormat:
@@ -194,14 +195,16 @@ class DeviceFormat(ObjectID):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
              "  device = %(device)s  uuid = %(uuid)s  exists = %(exists)s\n"
-             "  options = %(options)s  supported = %(supported)s"
+             "  options = %(options)s\n"
+             "  createOptions = %(createOptions)s  supported = %(supported)s"
              "  formattable = %(format)s  resizable = %(resize)s\n" %
              {"classname": self.__class__.__name__, "id": "%#x" % id(self),
-              "object_id": self.id,
+              "object_id": self.id, "createOptions": self.createOptions,
               "type": self.type, "name": self.name, "status": self.status,
               "device": self.device, "uuid": self.uuid, "exists": self.exists,
               "options": self.options, "supported": self.supported,
-              "format": self.formattable, "resize": self.resizable})
+              "format": self.formattable, "resize": self.resizable,
+              "createOptions": self.createOptions})
         return s
 
     @property
@@ -223,7 +226,7 @@ class DeviceFormat(ObjectID):
         d = {"type": self.type, "name": self.name, "device": self.device,
              "uuid": self.uuid, "exists": self.exists,
              "options": self.options, "supported": self.supported,
-             "resizable": self.resizable}
+             "resizable": self.resizable, "createOptions": self.createOptions}
         return d
 
     @classmethod
@@ -292,6 +295,14 @@ class DeviceFormat(ObjectID):
         return self._options
 
     options = property(_getOptions, _setOptions)
+
+    def _setCreateOptions(self, options):
+        self._createOptions = options
+
+    def _getCreateOptions(self):
+        return self._createOptions
+
+    createOptions = property(_getCreateOptions, _setCreateOptions)
 
     def _setDevice(self, devspec):
         if devspec and not devspec.startswith("/"):

@@ -24,6 +24,7 @@
 """ Filesystem classes. """
 from decimal import Decimal
 import os
+import shlex
 import tempfile
 
 from . import fslabeling
@@ -401,6 +402,9 @@ class FS(DeviceFormat):
                 argv.extend(self._labelfs.labelingArgs(self.label))
             else:
                 log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
+
+        if self.createOptions:
+            argv.extend(shlex.split(self.createOptions))
 
         argv.append(self.device)
         return argv
@@ -930,6 +934,7 @@ class FS(DeviceFormat):
         else:
             data.fsopts = ""
 
+        data.mkfsopts = self.createOptions or ""
         data.fsprofile = self.fsprofile or ""
 
 class Ext2FS(FS):
