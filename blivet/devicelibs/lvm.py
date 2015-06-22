@@ -634,3 +634,9 @@ def thinlvpoolname(vg_name, lv_name):
         pool = ''
 
     return pool
+
+def cachepoolname(vg_name, lv_name):
+    """Get the name of the cache pool attached to the vg_name/lv_name LV or "" """
+    # exactly the same as thin pool name
+    return thinlvpoolname(vg_name, lv_name)
+

@@ -515,6 +515,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         self.metaDataSize = 0
         self.segType = segType or "linear"
         self.snapshots = []
+        self._cache = None
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -582,8 +583,11 @@ class LVMLogicalVolumeDevice(DMDevice):
     @property
     def vgSpaceUsed(self):
         """ Space occupied by this LV, not including snapshots. """
+        cache_size = Size(0)
+        if self.cached:
+            cache_size = self.cache.size
         return (self.vg.align(self.size, roundup=True) * self.copies
-                + self.logSize + self.metaDataSize)
+                + self.logSize + self.metaDataSize + cache_size)
 
     @property
     def vg(self):
@@ -801,6 +805,18 @@ class LVMLogicalVolumeDevice(DMDevice):
                 return False
 
         return True
+
+    @property
+    def cached(self):
+        return bool(self._cache)
+
+    @property
+    def cache(self):
+        return self._cache
+
+    @cache.setter
+    def cache(self, val):
+        self._cache = val
 
 class LVMSnapShotBase(object):
     """ Abstract base class for lvm snapshots
@@ -1243,3 +1259,42 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
         # once a thin snapshot exists it no longer depends on its origin
         return ((self.origin == dep and not self.exists) or
                 super(LVMThinSnapShotDevice, self).dependsOn(dep))
+
+class LVMCache(object):
+    """Class providing the cache-related functionality of a cached LV"""
+
+    def __init__(self, cached_lv, size=None, exists=False, fast_pv_names=None, mode=None):
+        """
+        :param cached_lv: the LV the cache functionality of which to provide
+        :type cached_lv: :class:`LVMLogicalVolumeDevice`
+        :param size: size of the cache (useful mainly for non-existing caches
+                     that cannot determine their size dynamically)
+        :type size: :class:`~.size.Size`
+        :param bool exists: whether the cache exists or not
+        :param fast_pv_names: PVs to allocate the cache on/from (ignored for existing)
+        :type fast_pv_names: list of str
+        :param str mode: desired mode for non-existing cache (ignored for existing)
+
+        """
+        self._cached_lv = cached_lv
+        self._size = size
+        self._exists = exists
+        self._fast_pvs = fast_pv_names
+        self._mode = mode
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def exists(self):
+        return self._exists
+
+    @property
+    def fast_pv_names(self):
+        return self._fast_pvs
+
+    @property
+    def mode(self):
+        return self._mode
+

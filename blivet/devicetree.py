@@ -34,7 +34,7 @@ from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, Di
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
-from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice
+from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice, LVMCache
 from .devices import MDRaidArrayDevice, MultipathDevice, NoDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
 from .devices import devicePathToName
@@ -1517,6 +1517,12 @@ class DeviceTree(object):
                 lv_device = lv_class(lv_name, parents=lv_parents,
                                      uuid=lv_uuid, size=lv_size,segType=lv_type,
                                      exists=True, **lv_kwargs)
+                if lv_attr[0] == "C":
+                    cache_pool_name = lvm.cachepoolname(vg_name, lv_name)
+                    if cache_pool_name:
+                        cache_pool_info = self.lvInfo["%s-%s" % (vg_name, cache_pool_name)]
+                        cache_size = udev.device_get_lv_size(cache_pool_info)
+                        lv_device.cache = LVMCache(lv_dev, cache_size, exists=True)
                 self._addDevice(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
