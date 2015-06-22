@@ -46,6 +46,8 @@ LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 
+LVM_MIN_CACHE_MD_SIZE = Size("8 MiB")
+
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
 
 ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
@@ -640,3 +642,75 @@ def cachepoolname(vg_name, lv_name):
     # exactly the same as thin pool name
     return thinlvpoolname(vg_name, lv_name)
 
+def cachepool_default_md_size(cache_size):
+    """Get the default metadata size for the cache (pool) of size cache_size
+    :param cache_size: size of the cache (pool)
+    :type cache_size: :class:`~.size.Size`
+
+    """
+    # according to lvmcache(7)
+    return max(cache_size / 1000, LVM_MIN_CACHE_MD_SIZE)
+
+def cachepool_create(vg_name, lv_name, data_size, md_size, mode, pvs):
+    """Create a cache pool LV with the given parameters
+    :param str vg_name: name of the VG to create the pool in
+    :param str lv_name: name of the cache pool LV
+    :param data_size: size of the cache pool's data part
+    :type data_size: :class:`~.size.Size`
+    :param md_size: size of the cache pool's metadata part
+    :type md_size: :class:`~.size.Size`
+    :param str mode: mode for the cache pool
+    :param pvs: names of the PVs to allocate the cache pool on
+    :type pvs: list of str
+
+    """
+
+    args = ["lvcreate", "--type", "cache-pool", "-L", "%dm" % data_size.convertTo(spec="MiB"),
+            "--poolmetadatasize", "%dm" % md_size.convertTo(spec="MiB"),
+            "-n", lv_name]
+    if mode:
+        args.extend(["--cachemode", mode])
+    args.append(vg_name)
+    args.extend(pvs)
+
+    try:
+        lvm(args)
+    except LVMError as msg:
+        raise LVMError("Failed to create cache pool '%s-%s': %s" % (vg_name, lv_name, msg))
+
+def lvcreate_cached(vg_name, lv_name, lv_size, cache_data_size, cache_md_size,
+                    mode, slow_pvs, fast_pvs):
+    """Create a cached LV with the given parameters
+    :param str vg_name: name of the VG to create the LV in
+    :param str lv_name: name of the LV
+    :param lv_size: size of the LV
+    :type lv_size: :class:`~.size.Size`
+    :param cache_data_size: size of the cache (pool)'s data part
+    :type cache_data_size: :class:`~.size.Size`
+    :param cache_md_size: size of the cache (pool)'s metadata part
+    :type cache_md_size: :class:`~.size.Size`
+    :param str mode: mode for the cache pool
+    :param slow_pvs: names of the PVs to allocate the LV on
+    :type slow_pvs: list of str
+    :param fast_pvs: names of the PVs to allocate the cache (pool) on
+    :type fast_pvs: list of str
+
+    """
+
+    # create the cache pool first (so that it gets allocated on the fast PVs)
+    cachepool_create(vg_name, lv_name+"_cache", cache_data_size, cache_md_size, mode, fast_pvs)
+
+    # create the LV itself on all PVs, preferring the slow ones
+    lvcreate(vg_name, lv_name, lv_size, slow_pvs + fast_pvs)
+
+    vg_lv_name = lambda lv_name: "%s/%s" % (vg_name, lv_name)
+
+    # attach the cache pool to the LV
+    args = ["lvconvert", "--type", "cache", "--cachepool", vg_lv_name(lv_name+"_cache"), vg_lv_name(lv_name)]
+    try:
+        lvm(args)
+    except LVMError as msg:
+        msg = "Failed to attach cache pool '%s' to the LV '%s': %s" % (vg_lv_name(lv_name+"_cache"),
+                                                                       vg_lv_name(lv_name),
+                                                                       msg)
+        raise LVMError(msg)

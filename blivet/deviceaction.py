@@ -26,7 +26,7 @@ from . import util
 from . import udev
 from .util import get_current_entropy
 from .devices import StorageDevice
-from .devices import PartitionDevice
+from .devices import PartitionDevice, LVMLogicalVolumeDevice
 from .formats import getFormat, luks
 from .storage_log import log_exception_info
 from parted import partitionFlag, PARTITION_LBA
@@ -315,6 +315,14 @@ class ActionCreateDevice(DeviceAction):
             selfNum = self.device.partedPartition.number
             otherNum = action.device.partedPartition.number
             if selfNum > otherNum:
+                rc = True
+        elif (action.isCreate and action.isDevice and
+              isinstance(self.device, LVMLogicalVolumeDevice) and
+              isinstance(action.device, LVMLogicalVolumeDevice) and
+              self.device.vg == action.device.vg):
+            # create cached LVs before non-cached LVs so that fast cache space
+            # is not taken by non-cached LVs
+            if not self.device.cached and action.device.cached:
                 rc = True
         elif (action.isAdd and action.container == self.container):
             rc = True

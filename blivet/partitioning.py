@@ -1728,6 +1728,10 @@ class VGChunk(Chunk):
             if max_raid_disks:
                 self.pool -= 5 * max_raid_disks
 
+        if req.device.cached:
+            # cached LV -> reserve space for the cache
+            self.pool -= int(self.vg.align(req.device.cache.size, roundup=True) / self.vg.peSize)
+
         super(VGChunk, self).addRequest(req)
 
     def lengthToSize(self, length):
