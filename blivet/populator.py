@@ -47,6 +47,7 @@ from .devicelibs import lvm
 from .devicelibs import raid
 from . import udev
 from . import util
+from .util import open  # pylint: disable=redefined-builtin
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call
 from .i18n import _

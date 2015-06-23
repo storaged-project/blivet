@@ -22,6 +22,7 @@
 import os
 from . import udev
 from . import util
+from .util import open  # pylint: disable=redefined-builtin
 from .i18n import _
 from .util import stringize, unicodeize
 from gi.repository import BlockDev as blockdev

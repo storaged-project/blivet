@@ -35,6 +35,7 @@ import os
 
 from .flags import flags
 from .storage_log import log_exception_info
+from .util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")

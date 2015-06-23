@@ -651,3 +651,8 @@ def eintr_ignore(func, *args, **kwargs):
         if e.errno == errno.EINTR:
             pass
         raise
+
+_open = open
+def open(*args, **kwargs):  # pylint: disable=redefined-builtin
+    """Open a file, and retry on EINTR."""
+    return eintr_retry_call(_open, *args, **kwargs)

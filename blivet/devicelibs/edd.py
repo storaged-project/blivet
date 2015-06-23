@@ -28,6 +28,7 @@ import re
 import struct
 
 from .. import util
+from ..util import open # pylint: disable=redefined-builtin
 
 log = logging.getLogger("blivet")
 

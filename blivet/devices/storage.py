@@ -31,6 +31,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import getFormat
 from ..size import Size
+from ..util import open # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
