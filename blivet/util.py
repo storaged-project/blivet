@@ -628,11 +628,11 @@ def power_of_two(value):
     return True
 
 # Copied from python's subprocess.py
-def eintr_retry_call(func, *args):
+def eintr_retry_call(func, *args, **kwargs):
     """Retry an interruptible system call if interrupted."""
     while True:
         try:
-            return func(*args)
+            return func(*args, **kwargs)
         except (OSError, IOError) as e:
             if e.errno == errno.EINTR:
                 continue
