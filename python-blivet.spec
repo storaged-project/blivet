@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.6
+Version: 0.61.15.7
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Jun 22 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.7-1
+- Require pyparted with exception handler support (bcl)
+  Related: rhbz#1188163
+- Use partially corrupt gpt disklabels. (bcl)
+  Resolves: rhbz#1188163
+
 * Thu Jun 18 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.6-1
 - Fix up some logging methods. (sbueno+anaconda)
   Resolves: rhbz#1155984
