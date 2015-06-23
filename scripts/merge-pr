@@ -47,6 +47,8 @@
 # request against f22-branch but you don't have f22-branch locally, it won't
 # work.
 
+# pylint: disable=interruptible-system-call
+
 import argparse
 import subprocess
 import sys
