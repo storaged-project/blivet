@@ -272,7 +272,7 @@ class iscsi(object):
         fd = util.eintr_retry_call(os.open, INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
         initiator_name = "InitiatorName=%s\n" % self.initiator
         util.eintr_retry_call(os.write, fd, initiator_name.encode("utf-8"))
-        util.eintr_retry_call(os.close, fd)
+        util.eintr_ignore(os.close, fd)
         self.initiatorSet = True
 
         for fulldir in (os.path.join("/var/lib/iscsi", d) for d in \
@@ -493,7 +493,7 @@ class iscsi(object):
         fd = util.eintr_retry_call(os.open, root + INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
         initiator_name = "InitiatorName=%s\n" % self.initiator
         util.eintr_retry_call(os.write, fd, initiator_name.encode("utf-8"))
-        util.eintr_retry_call(os.close, fd)
+        util.eintr_ignore(os.close, fd)
 
         # copy "db" files.  *sigh*
         if os.path.isdir(root + "/var/lib/iscsi"):

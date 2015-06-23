@@ -63,7 +63,7 @@ class OpticalDevice(StorageDevice):
             else:
                 return True
         else:
-            util.eintr_retry_call(os.close, fd)
+            util.eintr_ignore(os.close, fd)
             return True
 
     def eject(self):
