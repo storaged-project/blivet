@@ -53,6 +53,7 @@ from . import fcoe
 from . import zfcp
 from . import devicefactory
 from . import get_bootloader, getSysroot, shortProductName, __version__
+from .util import open  # pylint: disable=redefined-builtin
 
 from .i18n import _
 

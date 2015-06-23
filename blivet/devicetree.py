@@ -35,6 +35,7 @@ from .devicelibs import lvm
 from .devicelibs import edd
 from . import udev
 from . import util
+from .util import open  # pylint: disable=redefined-builtin
 from .flags import flags
 from .populator import Populator
 from .storage_log import log_method_call, log_method_return

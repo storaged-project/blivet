@@ -25,6 +25,7 @@ import os
 import re
 
 from . import util
+from .util import open  # pylint: disable=redefined-builtin
 from .size import Size
 from .flags import flags
 
