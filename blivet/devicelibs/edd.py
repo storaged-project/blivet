@@ -28,6 +28,7 @@ import re
 import struct
 
 from .. import util
+from ..util import open # pylint: disable=redefined-builtin
 
 log = logging.getLogger("blivet")
 
@@ -165,7 +166,7 @@ def collect_mbrs(devices):
             # The signature is the unsigned integer at byte 440:
             os.lseek(fd, 440, 0)
             mbrsig = struct.unpack('I', util.eintr_retry_call(os.read, fd, 4))
-            util.eintr_retry_call(os.close, fd)
+            util.eintr_ignore(os.close, fd)
         except OSError as e:
             log.warning("edd: error reading mbrsig from disk %s: %s",
                         dev.name, str(e))

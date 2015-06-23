@@ -21,6 +21,7 @@
 #
 from collections import defaultdict
 from . import util
+from .util import open  # pylint: disable=redefined-builtin
 from .devicelibs import btrfs
 
 import logging

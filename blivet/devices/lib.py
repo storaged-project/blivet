@@ -23,6 +23,7 @@ import os
 from .. import errors
 from .. import udev
 from ..size import Size
+from ..util import open # pylint: disable=redefined-builtin
 
 LINUX_SECTOR_SIZE = Size(512)
 

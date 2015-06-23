@@ -28,6 +28,7 @@ from gi.repository import BlockDev as blockdev
 
 from . import util
 from . import getSysroot, getTargetPhysicalRoot, errorHandler, ERROR_RAISE
+from .util import open  # pylint: disable=redefined-builtin
 
 from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
@@ -644,7 +645,7 @@ class FSSet(object):
         dev = "%s/%s" % (getSysroot(), root.path)
         if not os.path.exists("%s/dev/root" %(getSysroot(),)) and os.path.exists(dev):
             rdev = os.stat(dev).st_rdev
-            os.mknod("%s/dev/root" % (getSysroot(),), stat.S_IFBLK | 0o600, rdev)
+            util.eintr_retry_call(os.mknod, "%s/dev/root" % (getSysroot(),), stat.S_IFBLK | 0o600, rdev)
 
     @property
     def swapDevices(self):

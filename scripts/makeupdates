@@ -20,6 +20,8 @@
 #
 # Author: David Cantrell <dcantrell@redhat.com>
 
+# pylint: disable=interruptible-system-call
+
 import getopt
 import os
 import shutil

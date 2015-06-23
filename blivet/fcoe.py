@@ -20,6 +20,7 @@
 import os
 from . import udev
 from . import util
+from .util import open  # pylint: disable=redefined-builtin
 import logging
 import time
 from .i18n import _
@@ -165,7 +166,7 @@ class fcoe(object):
             else:
                 config += 'AUTO_VLAN="no"\n'
             util.eintr_retry_call(os.write, fd, config.encode('utf-8'))
-            util.eintr_retry_call(os.close, fd)
+            util.eintr_ignore(os.close, fd)
 
         return
 

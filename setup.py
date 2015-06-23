@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+# pylint: disable=interruptible-system-call
 
 from distutils.core import setup
 import subprocess

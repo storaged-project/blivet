@@ -119,7 +119,7 @@ class FileDevice(StorageDevice):
             size_target = zero * rem
             util.eintr_retry_call(os.write, fd, size_target.encode("utf-8"))
 
-        util.eintr_retry_call(os.close, fd)
+        util.eintr_ignore(os.close, fd)
 
     def _destroy(self):
         """ Destroy the device. """
