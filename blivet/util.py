@@ -528,7 +528,7 @@ def create_sparse_tempfile(name, size):
         :returns: the path to the newly created file
     """
     (fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-%s" % name)
-    eintr_retry_call(os.close, fd)
+    eintr_ignore(os.close, fd)
     create_sparse_file(path, size)
     return path
 
@@ -541,7 +541,7 @@ def create_sparse_file(path, size):
     """
     fd = eintr_retry_call(os.open, path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
     eintr_retry_call(os.ftruncate, fd, size)
-    eintr_retry_call(os.close, fd)
+    eintr_ignore(os.close, fd)
 
 @contextmanager
 def sparsetmpfile(name, size):
@@ -637,3 +637,17 @@ def eintr_retry_call(func, *args, **kwargs):
             if e.errno == errno.EINTR:
                 continue
             raise
+
+def eintr_ignore(func, *args, **kwargs):
+    """Call a function and ignore EINTR.
+
+       This is useful for calls to close() and dup2(), which can return EINTR
+       but which should *not* be retried, since by the time they return the
+       file descriptor is already closed.
+    """
+    try:
+        return func(*args, **kwargs)
+    except (OSError, IOError) as e:
+        if e.errno == errno.EINTR:
+            pass
+        raise

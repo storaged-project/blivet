@@ -165,7 +165,7 @@ class fcoe(object):
             else:
                 config += 'AUTO_VLAN="no"\n'
             util.eintr_retry_call(os.write, fd, config.encode('utf-8'))
-            util.eintr_retry_call(os.close, fd)
+            util.eintr_ignore(os.close, fd)
 
         return
 
