@@ -21,6 +21,7 @@
 
 from decimal import Decimal
 import abc
+import copy
 import pprint
 import re
 
@@ -30,7 +31,6 @@ from ..devicelibs import dm
 
 from .. import errors
 from .. import util
-from ..formats import getFormat
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB
@@ -491,6 +491,9 @@ class LVMLogicalVolumeDevice(DMDevice):
         if not isinstance(container, self._containerClass):
             raise ValueError("constructor requires a %s instance" % self._containerClass.__name__)
 
+        # When this device's format is set in the superclass constructor it will
+        # try to access self.snapshots.
+        self.snapshots = []
         DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfsPath=sysfsPath, parents=parents,
                           exists=exists)
@@ -500,7 +503,6 @@ class LVMLogicalVolumeDevice(DMDevice):
         self.logSize = logSize or Size(0)
         self.metaDataSize = Size(0)
         self.segType = segType or "linear"
-        self.snapshots = []
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -570,6 +572,11 @@ class LVMLogicalVolumeDevice(DMDevice):
         """ Space occupied by this LV, not including snapshots. """
         return (self.vg.align(self.size, roundup=True) * self.copies
                 + self.logSize + self.metaDataSize)
+
+    def _setFormat(self, fmt):
+        super(LVMLogicalVolumeDevice, self)._setFormat(fmt)
+        for snapshot in (s for s in self.snapshots if not s.exists):
+            snapshot._updateFormatFromOrigin()
 
     @property
     def vg(self):
@@ -801,8 +808,8 @@ class LVMSnapShotBase(object):
         Normal/old snapshots must be removed with their origin, while thin
         snapshots can remain after their origin is removed.
 
-        It is also impossible to set the format for a snapshot explicitly as it
-        always has the same format as its origin.
+        It is also impossible to set the format for a non-existent snapshot
+        explicitly as it always has the same format as its origin.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -847,15 +854,33 @@ class LVMSnapShotBase(object):
         if vorigin and not exists:
             raise ValueError("only existing vorigin snapshots are supported")
 
-    def _setFormat(self, fmt):
-        pass
+    def _updateFormatFromOrigin(self):
+        """ Update the snapshot's format to reflect the origin's.
 
-    def _getFormat(self):
-        if self.origin is None:
-            fmt = getFormat(None)
+            .. note::
+                This should only be called for non-existent snapshot devices.
+                Once a snapshot exists its format is distinct from that of its
+                origin.
+
+        """
+        fmt = copy.deepcopy(self.origin.format)
+        fmt.exists = False
+        if hasattr(fmt, "mountpoint"):
+            fmt.mountpoint = ""
+            fmt._chrootedMountpoint = None
+            fmt.device = self.path # pylint: disable=no-member
+
+        super(LVMSnapShotBase, self)._setFormat(fmt)
+
+    def _setFormat(self, fmt):
+        # If a snapshot exists it can have a format that is distinct from its
+        # origin's. If it does not exist its format must be a copy of its
+        # origin's.
+        if self.exists: # pylint: disable=no-member
+            super(LVMSnapShotBase, self)._setFormat(fmt)
         else:
-            fmt = self.origin.format
-        return fmt
+            log.info("copying %s origin's format", self.name) # pylint: disable=no-member
+            self._updateFormatFromOrigin()
 
     @abc.abstractmethod
     def _create(self):
@@ -1200,7 +1225,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
 
         LVMSnapShotBase.__init__(self, origin=origin, exists=exists)
         LVMThinLogicalVolumeDevice.__init__(self, name, parents=parents,
-                                            sysfsPath=sysfsPath,fmt=None,
+                                            sysfsPath=sysfsPath,fmt=fmt,
                                             segType=segType,
                                             uuid=uuid, size=size, exists=exists)
 
