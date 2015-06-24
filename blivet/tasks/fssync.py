@@ -27,20 +27,14 @@ from ..errors import FSError
 from .. import util
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSSync(task.BasicApplication):
+class FSSync(task.BasicApplication, fstask.FSTask):
     """ An abstract class that represents syncing a filesystem. """
 
     description = "filesystem syncing"
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     @abc.abstractmethod
     def doTask(self):
@@ -79,11 +73,5 @@ class XFSSync(FSSync):
         if error_msg:
             raise FSError(error_msg)
 
-class UnimplementedFSSync(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSSync(fstask.UnimplementedFSTask):
+    pass

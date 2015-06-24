@@ -29,25 +29,19 @@ from ..size import Size
 from .. import util
 
 from . import availability
+from . import fstask
 from . import task
 
 _tags = ("count", "size")
 _Tags = namedtuple("_Tags", _tags)
 
 @add_metaclass(abc.ABCMeta)
-class FSSize(task.Task):
+class FSSize(fstask.FSTask):
     """ An abstract class that represents size information extraction. """
     description = "current filesystem size"
 
     tags = abc.abstractproperty(
         doc="Strings used for extracting components of size.")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     # TASK methods
 
@@ -121,17 +115,10 @@ class ReiserFSSize(FSSize):
 class XFSSize(FSSize):
     tags = _Tags(size="blocksize =", count="dblocks =")
 
-class TmpFSSize(task.BasicApplication):
+class TmpFSSize(task.BasicApplication, fstask.FSTask):
     description = "current filesystem size"
 
     ext = availability.DF_APP
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-           :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     @property
     def _sizeCommand(self):
@@ -156,11 +143,5 @@ class TmpFSSize(task.BasicApplication):
         return Size("%s KiB" % lines[1])
 
 
-class UnimplementedFSSize(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSSize(fstask.UnimplementedFSTask):
+    pass

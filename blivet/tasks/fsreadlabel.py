@@ -28,10 +28,11 @@ from ..errors import FSReadLabelError
 from .. import util
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSReadLabel(task.BasicApplication):
+class FSReadLabel(task.BasicApplication, fstask.FSTask):
     """ An abstract class that represents reading a filesystem's label. """
     description = "read filesystem label"
 
@@ -39,13 +40,6 @@ class FSReadLabel(task.BasicApplication):
         doc="Matches the string output by the reading application.")
 
     args = abc.abstractproperty(doc="arguments for reading a label.")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-           :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     # IMPLEMENTATION methods
 
@@ -123,11 +117,5 @@ class XFSReadLabel(FSReadLabel):
     def args(self):
         return ["-l", self.fs.device]
 
-class UnimplementedFSReadLabel(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSReadLabel(fstask.UnimplementedFSTask):
+    pass

@@ -28,10 +28,11 @@ from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..import util
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSResizeTask(task.Task):
+class FSResizeTask(fstask.FSTask):
     """ The abstract properties that any resize task must have. """
 
     unit = abc.abstractproperty(doc="Resize unit.")
@@ -44,13 +45,6 @@ class FSResize(task.BasicApplication, FSResizeTask):
     description = "resize filesystem"
 
     args = abc.abstractproperty(doc="Resize arguments.")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     # IMPLEMENTATION methods
 
@@ -134,13 +128,6 @@ class TmpFSResize(FSResize):
         return ['-o', ",".join(options), self.fs._type, self.fs.systemMountpoint]
 
 class UnimplementedFSResize(task.UnimplementedTask, FSResizeTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     @property
     def unit(self):
