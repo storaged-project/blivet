@@ -756,7 +756,7 @@ class Populator(object):
         # now handle the device's formatting
         self.handleUdevDeviceFormat(info, device)
         if device_added or updateOrigFmt:
-            device.originalFormat = copy.copy(device.format)
+            device.originalFormat = copy.deepcopy(device.format)
         device.deviceLinks = udev.device_get_symlinks(info)
 
     def handleUdevDiskLabelFormat(self, info, device):

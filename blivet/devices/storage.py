@@ -124,7 +124,7 @@ class StorageDevice(Device):
         self.controllable = not flags.testing
 
         self.format = fmt
-        self.originalFormat = copy.copy(self.format)
+        self.originalFormat = copy.deepcopy(self.format)
         self.fstabComment = ""
         self._targetSize = self._size
 
