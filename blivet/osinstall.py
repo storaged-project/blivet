@@ -606,7 +606,7 @@ class FSSet(object):
         devices = list(self.mountpoints.values()) + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.usb, self.selinux, self.run])
-        devices.sort(key=lambda d: getattr(d.format, "mountpoint", None))
+        devices.sort(key=lambda d: getattr(d.format, "mountpoint", ""))
         devices.reverse()
         for device in devices:
             if (not device.format.mountable) or \
