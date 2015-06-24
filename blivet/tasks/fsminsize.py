@@ -28,22 +28,16 @@ from .. import util
 from ..size import Size
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSMinSize(task.BasicApplication):
+class FSMinSize(task.BasicApplication, fstask.FSTask):
     """ An abstract class that represents min size information extraction. """
 
     description = "minimum filesystem size"
 
     options = abc.abstractproperty(doc="Options for use with app.")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     def _resizeCommand(self):
         return [str(self.ext)] + self.options + [self.fs.device]
@@ -177,11 +171,5 @@ class NTFSMinSize(FSMinSize):
             raise FSError("Unable to discover minimum size of filesystem on %s" % self.fs.device)
         return minSize
 
-class UnimplementedFSMinSize(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSMinSize(fstask.UnimplementedFSTask):
+    pass
