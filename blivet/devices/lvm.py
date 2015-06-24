@@ -1596,7 +1596,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
             # to use
             pool_name = self.pool.lvname
 
-        blockdev.lvm.thsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
+        blockdev.lvm.thsnapshotcreate(self.vg.name, self.origin.lvname, self._name,
                                       pool_name=pool_name)
 
     def _postCreate(self):
