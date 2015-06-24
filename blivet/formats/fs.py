@@ -147,6 +147,16 @@ class FS(DeviceFormat):
         self._minsize = self._minsizeClass(self)
         self._sizeinfo = self._sizeinfoClass(self)
 
+    def __copy__(self):
+        # Constructs new task objects for the copied FS.
+        # This ensures that each task object refers back to the newly
+        # constructed object, result, rather than self.
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        result._createTaskObjects()
+        return result
+
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         s += ("  mountpoint = %(mountpoint)s  mountopts = %(mountopts)s\n"
