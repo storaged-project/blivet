@@ -1599,6 +1599,11 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
         blockdev.lvm.thsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
                                       pool_name=pool_name)
 
+    def _postCreate(self):
+        super(LVMThinSnapShotDevice, self)._postCreate()
+        # A snapshot's format exists as soon as the snapshot has been created.
+        self.format.exists = True
+
     def dependsOn(self, dep):
         # once a thin snapshot exists it no longer depends on its origin
         return ((self.origin == dep and not self.exists) or
