@@ -27,10 +27,11 @@ from ..errors import FSError, FSWriteLabelError
 from .. import util
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSMkfsTask(task.Task):
+class FSMkfsTask(fstask.FSTask):
 
     canLabel = abc.abstractproperty(doc="whether this task labels")
 
@@ -43,13 +44,6 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
        doc="Option for setting a filesystem label.")
 
     args = abc.abstractproperty(doc="options for creating filesystem")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     # IMPLEMENTATION methods
 
@@ -218,13 +212,6 @@ class XFSMkfs(FSMkfs):
         return ["-f"]
 
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     @property
     def canLabel(self):

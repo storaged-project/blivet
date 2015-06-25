@@ -27,23 +27,17 @@ from ..errors import FSError
 from .. import util
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSInfo(task.BasicApplication):
+class FSInfo(task.BasicApplication, fstask.FSTask):
     """ An abstract class that represents an information gathering app. """
 
     description = "filesystem info"
 
     options = abc.abstractproperty(
        doc="Options for invoking the application.")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     @property
     def _infoCommand(self):
@@ -96,11 +90,5 @@ class XFSInfo(FSInfo):
     ext = availability.XFSDB_APP
     options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize"]
 
-class UnimplementedFSInfo(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSInfo(fstask.UnimplementedFSTask):
+    pass

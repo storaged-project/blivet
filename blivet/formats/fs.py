@@ -100,19 +100,7 @@ class FS(DeviceFormat):
 
         DeviceFormat.__init__(self, **kwargs)
 
-        # Create task objects
-        self._info = self._infoClass(self)
-        self._fsck = self._fsckClass(self)
-        self._mkfs = self._mkfsClass(self)
-        self._mount = self._mountClass(self)
-        self._readlabel = self._readlabelClass(self)
-        self._resize = self._resizeClass(self)
-        self._sync = self._syncClass(self)
-        self._writelabel = self._writelabelClass(self)
-
-        # These two may depend on info class, so create them after
-        self._minsize = self._minsizeClass(self)
-        self._sizeinfo = self._sizeinfoClass(self)
+        self._createTaskObjects()
 
         self._current_info = None # info obtained by _info task
 
@@ -142,6 +130,32 @@ class FS(DeviceFormat):
 
         if self.supported:
             self.loadModule()
+
+    def _createTaskObjects(self):
+        """ Create task objects belonging to this master object. """
+        # pylint: disable=attribute-defined-outside-init
+        self._info = self._infoClass(self)
+        self._fsck = self._fsckClass(self)
+        self._mkfs = self._mkfsClass(self)
+        self._mount = self._mountClass(self)
+        self._readlabel = self._readlabelClass(self)
+        self._resize = self._resizeClass(self)
+        self._sync = self._syncClass(self)
+        self._writelabel = self._writelabelClass(self)
+
+        # These two may depend on info class, so create them after
+        self._minsize = self._minsizeClass(self)
+        self._sizeinfo = self._sizeinfoClass(self)
+
+    def __copy__(self):
+        # Constructs new task objects for the copied FS.
+        # This ensures that each task object refers back to the newly
+        # constructed object, result, rather than self.
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        result._createTaskObjects()
+        return result
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)

@@ -27,12 +27,13 @@ from ..errors import FSError
 from .. import util
 
 from . import availability
+from . import fstask
 from . import task
 
 _UNKNOWN_RC_MSG = "Unknown return code: %d"
 
 @add_metaclass(abc.ABCMeta)
-class FSCK(task.BasicApplication):
+class FSCK(task.BasicApplication, fstask.FSTask):
     """An abstract class that represents actions associated with
        checking consistency of a filesystem.
     """
@@ -40,13 +41,6 @@ class FSCK(task.BasicApplication):
 
     options = abc.abstractproperty(
        doc="Options for invoking the application.")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     # IMPLEMENTATION methods
 
@@ -147,11 +141,5 @@ class NTFSFSCK(FSCK):
     def _errorMessage(self, rc):
         return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
 
-class UnimplementedFSCK(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSCK(fstask.UnimplementedFSTask):
+    pass
