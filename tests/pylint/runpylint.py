@@ -18,6 +18,7 @@ class BlivetLintConfig(PocketLintConfig):
                                 FalsePositive(r"Method 'doTask' is abstract in class 'UnimplementedTask' but is not overridden"),
                                 FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
                                 FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
+                                FalsePositive(r"TmpFS._sizeOption: Instance of 'UnimplementedDFResize' has no 'size_fmt' member$"),
 
                                 # FIXME:  These are temporary, until there's a python3 anaconda.
                                 FalsePositive(r"Unable to import 'pyanaconda'$"),

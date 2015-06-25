@@ -30,6 +30,7 @@ from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import _, N_
 from ..tasks import availability
+from ..tasks import lukstasks
 
 import logging
 log = logging.getLogger("blivet")
@@ -46,6 +47,9 @@ class LUKS(DeviceFormat):
     _packages = ["cryptsetup"]          # required packages
     _minSize = crypto.LUKS_METADATA_SIZE
     _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
+    _sizeinfoClass = lukstasks.LUKSSize
+    _resizeClass = lukstasks.LUKSResize
+    _resizable = True
 
     def __init__(self, **kwargs):
         """
@@ -80,6 +84,9 @@ class LUKS(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
+
+        self._sizeinfo = self._sizeinfoClass(self)
+
         self.cipher = kwargs.get("cipher")
         self.key_size = kwargs.get("key_size")
         self.mapName = kwargs.get("name")
@@ -263,6 +270,12 @@ class LUKS(DeviceFormat):
                                       directory, backupPassphrase)
         log.debug("escrow: escrowVolume done for %s", repr(self.device))
 
+    def updateSizeInfo(self):
+        """ Update this format's current size. """
+        try:
+            self._size = self._sizeinfo.doTask()
+        except LUKSError as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
 
 register_device_format(LUKS)
 

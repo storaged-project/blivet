@@ -25,5 +25,6 @@ from ..tasks import availability
 
 LUKS_METADATA_SIZE = Size("2 MiB")
 MIN_CREATE_ENTROPY = 256 # bits
+SECTOR_SIZE = Size("512 B")
 
 EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_CRYPTO_PLUGIN]

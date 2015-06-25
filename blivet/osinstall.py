@@ -32,7 +32,7 @@ from .util import open  # pylint: disable=redefined-builtin
 
 from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
-from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
+from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, UnknownSourceDeviceError
 from .formats import get_device_format_class
 from .formats import getFormat
 from .flags import flags
@@ -1056,10 +1056,7 @@ def turnOnFilesystems(storage, mountOnly=False, callbacks=None):
 
         try:
             storage.doIt(callbacks)
-        except FSResizeError as e:
-            if errorHandler.cb(e) == ERROR_RAISE:
-                raise
-        except Exception as e:
+        except Exception:
             raise
 
         storage.turnOnSwap()

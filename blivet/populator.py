@@ -29,7 +29,7 @@ import parted
 
 from gi.repository import BlockDev as blockdev
 
-from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
+from .errors import CorruptGPTError, DeviceError, DeviceFormatError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, InvalidDiskLabelError, LUKSError
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -1427,7 +1427,7 @@ class Populator(object):
             device.format = formats.getFormat(format_designator, **kwargs)
             if device.format.type:
                 log.info("got format: %s", device.format)
-        except FSError:
+        except DeviceFormatError:
             log.warning("type '%s' on '%s' invalid, assuming no format",
                       format_designator, name)
             device.format = formats.DeviceFormat()

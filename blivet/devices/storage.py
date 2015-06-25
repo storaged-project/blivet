@@ -288,9 +288,9 @@ class StorageDevice(Device):
     @property
     def resizable(self):
         """ Can this device be resized? """
+        fmt = self.raw_device.format
         return (self._resizable and self.exists and
-                (self.format.type is None or self.format.resizable or
-                 not self.format.exists))
+                (fmt.type is None or fmt.resizable or not fmt.exists))
 
     def notifyKernel(self):
         """ Send a 'change' uevent to the kernel for this device. """

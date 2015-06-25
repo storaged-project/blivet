@@ -778,7 +778,7 @@ class ActionResizeFormat(DeviceAction):
             callbacks.resize_format_pre(ResizeFormatPreData(msg))
 
         self.device.setup(orig=True)
-        self.device.format.doResize()
+        self.device.format.resize()
 
         if callbacks and callbacks.resize_format_post:
             msg = _("Resized filesystem on %(device)s") % {"device": self.device.path}
