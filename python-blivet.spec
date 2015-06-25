@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.7
+Version: 0.61.15.8
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jun 25 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.8-1
+- LVMFactory: raise exception when adding LV to full fixed size VG (vtrefny)
+  Resolves: rhbz#1170660
+- Do not unhide devices with hidden parents (vtrefny)
+  Resolves: rhbz#1158643
+- Add support for creation of cached LVs (vpodzime)
+  Related: rhbz#1120421
+- Recognize and process cached logical volumes (vpodzime)
+  Related: rhbz#1120421
+- Don't crash when processing cached LVs (vpodzime)
+  Related: rhbz#1120421
+
 * Mon Jun 22 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.7-1
 - Require pyparted with exception handler support (bcl)
   Related: rhbz#1188163

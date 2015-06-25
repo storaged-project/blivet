@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-22 17:46-0700\n"
+"POT-Creation-Date: 2015-06-25 16:20-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -250,7 +250,7 @@ msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2207
+#: ../blivet/partitioning.py:2211
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -467,56 +467,56 @@ msgstr ""
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:329
+#: ../blivet/deviceaction.py:337
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:411
+#: ../blivet/deviceaction.py:419
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:493
+#: ../blivet/deviceaction.py:501
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:530
+#: ../blivet/deviceaction.py:538
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:557
+#: ../blivet/deviceaction.py:565
 #, python-format
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:585
+#: ../blivet/deviceaction.py:593
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:631
+#: ../blivet/deviceaction.py:639
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:724
+#: ../blivet/deviceaction.py:732
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:754
+#: ../blivet/deviceaction.py:762
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:761
+#: ../blivet/deviceaction.py:769
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:804
+#: ../blivet/deviceaction.py:812
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:868
+#: ../blivet/deviceaction.py:876
 msgid "remove container member"
 msgstr ""
 
@@ -608,15 +608,15 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:52
+#: ../blivet/devicelibs/lvm.py:54
 msgid "Generic"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:53
+#: ../blivet/devicelibs/lvm.py:55
 msgid "Performance"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:435
+#: ../blivet/devicelibs/lvm.py:437
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""
