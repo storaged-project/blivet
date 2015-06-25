@@ -204,7 +204,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                                     device=self.path,
                                     subvolspec=self.vol_id,
                                     mountopts="subvolid=%d" % self.vol_id)
-            self.originalFormat = copy.copy(self.format)
+            self.originalFormat = copy.deepcopy(self.format)
 
         self._defaultSubVolumeID = None
 

@@ -1121,7 +1121,7 @@ class Blivet(object):
             self.devicetree.cancelAction(action)
 
         # make sure any random overridden attributes are reset
-        device.format = copy.copy(device.originalFormat)
+        device.format = copy.deepcopy(device.originalFormat)
 
     def resizeDevice(self, device, new_size):
         """ Schedule a resize of a device and its formatting, if any.

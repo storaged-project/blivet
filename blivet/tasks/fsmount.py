@@ -27,9 +27,10 @@ from .. import util
 from ..formats import fslib
 
 from . import availability
+from . import fstask
 from . import task
 
-class FSMount(task.BasicApplication):
+class FSMount(task.BasicApplication, fstask.FSTask):
     """An abstract class that represents filesystem mounting actions. """
     description = "mount a filesystem"
 
@@ -38,9 +39,6 @@ class FSMount(task.BasicApplication):
     fstype = None
 
     ext = availability.MOUNT_APP
-
-    def __init__(self, an_fs):
-        self.fs = an_fs
 
     # TASK methods
 

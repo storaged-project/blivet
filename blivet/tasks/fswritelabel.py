@@ -27,22 +27,16 @@ from .. import util
 from ..errors import FSWriteLabelError
 
 from . import availability
+from . import fstask
 from . import task
 
 @add_metaclass(abc.ABCMeta)
-class FSWriteLabel(task.BasicApplication):
+class FSWriteLabel(task.BasicApplication, fstask.FSTask):
     """ An abstract class that represents writing a label for a filesystem. """
 
     description = "write filesystem label"
 
     args = abc.abstractproperty(doc="arguments for writing a label")
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
 
     # IMPLEMENTATION methods
 
@@ -106,11 +100,5 @@ class XFSWriteLabel(FSWriteLabel):
     def args(self):
         return ["-L", self.fs.label if self.fs.label != "" else "--", self.fs.device]
 
-class UnimplementedFSWriteLabel(task.UnimplementedTask):
-
-    def __init__(self, an_fs):
-        """ Initializer.
-
-            :param FS an_fs: a filesystem object
-        """
-        self.fs = an_fs
+class UnimplementedFSWriteLabel(fstask.UnimplementedFSTask):
+    pass
