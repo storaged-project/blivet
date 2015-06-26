@@ -59,7 +59,7 @@ def has_iscsi():
     return True
 
 
-def _call_discover_targets(conn_pipe, ipaddr, port, authinfo):
+def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
     """ Function to separate iscsi :py:func:`libiscsi.discover_sendtargets` call to it's own process.
 
         The call must be started on special process because the :py:mod:`libiscsi`
@@ -72,20 +72,29 @@ def _call_discover_targets(conn_pipe, ipaddr, port, authinfo):
 
         .. note::
 
-            To transfer data to main process ``conn_pipe`` (write only) is used.
+            To transfer data to main process ``con_write`` (write only) is used.
             Pipe returns tuple (ok, data).
+
+            ``con_recv`` should be immediately closed so that the reading end
+            of the pipe is not used in the child process.
 
             * ``ok``: True if everything was ok
             * ``data``: Dictionary with :py:func:`libiscsi.node` parameters if ``ok`` was True.
               Exception if ``ok`` was False
 
-        :param conn_pipe: Pipe to the main process (write only)
-        :type conn_pipe: :py:func:`multiprocessing.Pipe`
+        :param con_write: Pipe to the main process (write only)
+        :type con_write: :py:func:`multiprocessing.Pipe`
+        :param con_recv: Reading end of pipe from main process (close only)
+        :type con_recv: :py:func:`multiprocessing.Pipe`
         :param str ipaddr: target IP address
         :param str port: target port
         :param authinfo: CHAP authentication data for node login
         :type authinfo: Object returned by :py:func:`libiscsi.chapAuthInfo` or None
     """
+
+    # Close the reading end of the pipe in the child process
+    con_recv.close()
+
     try:
         found_nodes = libiscsi.discover_sendtargets(address=ipaddr,
                                                     port=int(port),
@@ -94,8 +103,8 @@ def _call_discover_targets(conn_pipe, ipaddr, port, authinfo):
             found_nodes = []
 
     except IOError as ex:
-        conn_pipe.send((False, ex))
-        conn_pipe.close()
+        con_write.send((False, ex))
+        con_write.close()
         return
 
     nodes = []
@@ -109,7 +118,7 @@ def _call_discover_targets(conn_pipe, ipaddr, port, authinfo):
                      'port': node.port,
                      'iface': node.iface})
 
-    conn_pipe.send((True, nodes))
+    con_write.send((True, nodes))
 
 
 class iscsi(object):
@@ -337,10 +346,14 @@ class iscsi(object):
             # using signals internally which are send to bad thread
             (con_recv, con_write) = Pipe(False)
             p = Process(target=_call_discover_targets, args=(con_write,
+                                                             con_recv,
                                                              ipaddr,
                                                              port,
                                                              authinfo, ))
             p.start()
+
+            # Close the writing end of the pipe in the parent
+            con_write.close()
 
             try:
                 (ok, data) = con_recv.recv()
