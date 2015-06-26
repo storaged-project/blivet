@@ -103,22 +103,21 @@ def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
             if found_nodes is None:
                 found_nodes = []
 
-        except IOError as ex:
+            nodes = []
+
+            # the node object is not pickable so it can't be send with pipe
+            # TODO: change libiscsi.node to pickable object
+            for node in found_nodes:
+                nodes.append({'name': node.name,
+                             'tpgt': node.tpgt,
+                             'address': node.address,
+                             'port': node.port,
+                             'iface': node.iface})
+
+            con_write.send((True, nodes))
+
+        except Exception as ex: # pylint: disable=broad-except
             con_write.send((False, ex))
-            return
-
-        nodes = []
-
-        # the node object is not pickable so it can't be send with pipe
-        # TODO: change libiscsi.node to pickable object
-        for node in found_nodes:
-            nodes.append({'name': node.name,
-                         'tpgt': node.tpgt,
-                         'address': node.address,
-                         'port': node.port,
-                         'iface': node.iface})
-
-        con_write.send((True, nodes))
 
 class iscsi(object):
     """ iSCSI utility class.
