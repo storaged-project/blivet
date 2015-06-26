@@ -95,31 +95,30 @@ def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
     # Close the reading end of the pipe in the child process
     con_recv.close()
 
-    try:
-        found_nodes = libiscsi.discover_sendtargets(address=ipaddr,
-                                                    port=int(port),
-                                                    authinfo=authinfo)
-        if found_nodes is None:
-            found_nodes = []
+    with con_write:
+        try:
+            found_nodes = libiscsi.discover_sendtargets(address=ipaddr,
+                                                        port=int(port),
+                                                        authinfo=authinfo)
+            if found_nodes is None:
+                found_nodes = []
 
-    except IOError as ex:
-        con_write.send((False, ex))
-        con_write.close()
-        return
+        except IOError as ex:
+            con_write.send((False, ex))
+            return
 
-    nodes = []
+        nodes = []
 
-    # the node object is not pickable so it can't be send with pipe
-    # TODO: change libiscsi.node to pickable object
-    for node in found_nodes:
-        nodes.append({'name': node.name,
-                     'tpgt': node.tpgt,
-                     'address': node.address,
-                     'port': node.port,
-                     'iface': node.iface})
+        # the node object is not pickable so it can't be send with pipe
+        # TODO: change libiscsi.node to pickable object
+        for node in found_nodes:
+            nodes.append({'name': node.name,
+                         'tpgt': node.tpgt,
+                         'address': node.address,
+                         'port': node.port,
+                         'iface': node.iface})
 
-    con_write.send((True, nodes))
-
+        con_write.send((True, nodes))
 
 class iscsi(object):
     """ iSCSI utility class.
@@ -355,16 +354,17 @@ class iscsi(object):
             # Close the writing end of the pipe in the parent
             con_write.close()
 
-            try:
-                (ok, data) = con_recv.recv()
-                if not ok:
-                    log.debug("iSCSI: exception raised when "
-                              "discover_sendtargets process called: %s",
-                              str(data))
-            except EOFError:
-                ok = False
-                log.error("iSCSI: can't receive response from "
-                          "_call_discover_targets")
+            with con_recv:
+                try:
+                    (ok, data) = con_recv.recv()
+                    if not ok:
+                        log.debug("iSCSI: exception raised when "
+                                  "discover_sendtargets process called: %s",
+                                  str(data))
+                except EOFError:
+                    ok = False
+                    log.error("iSCSI: can't receive response from "
+                              "_call_discover_targets")
 
             p.join()
 
