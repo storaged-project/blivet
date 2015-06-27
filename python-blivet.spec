@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.6
+Version: 1.7
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -108,6 +108,54 @@ popd
 %endif
 
 %changelog
+* Fri Jun 26 2015 Brian C. Lane <bcl@redhat.com> - 1.7-1
+- Merge pull request #167 from mulkieran/master-format-copy-b (mulkieran)
+- Merge pull request #156 from vpodzime/master-lvm_cache_actually (vpodzime)
+- Add cache support to the LVMLogicalVolumeDevice class (vpodzime)
+- Copy all DeviceFormat objects using deepcopy. (amulhern)
+- Make use of FSTask and FSUnimplementedTask in FS* tasks. (amulhern)
+- Add an abstract parent of all filesystem tasks. (amulhern)
+- Merge pull request #162 from dwlehman/storage-device-format-type-consistency
+  (dlehman)
+- Merge pull request #138 from dwlehman/partitionable-md (dlehman)
+- Document the fact that StorageDevice.format is always a DeviceFormat.
+  (dlehman)
+- Ignore some interruptible system call warnings (dshea)
+- Retry interruptible calls (dshea)
+- Ignore EINTR from os.close instead of retrying the call (dshea)
+- Add kwargs to eintr_retry_call (dshea)
+- Specify required version of GI-imported packages (vpodzime)
+- Add classes for LVM cache related functionality (vpodzime)
+- Add generic classes for cache and cache stats (vpodzime)
+- Merge pull request #149 from vpodzime/master-lvm_cache (vpodzime)
+- Implement the support for resizing internal metadata LVs of thin pools
+  (vpodzime)
+- Use relations between LVs to determine parent LV (vpodzime)
+- Make Blivet.lvs return all LVs not just traditional/thick LVs (vpodzime)
+- Accept both list and ParentList when checking LVs parents (vpodzime)
+- Create and use internal LVs instead of static values (vpodzime)
+- Add classes for the internal LVs of various types (vpodzime)
+- Merge pull request #137 from dwlehman/md-boot-metadata-branch (dlehman)
+- Treat existing md arrays whose members are all disks like disks. (dlehman)
+- Handle formatting after adding devices from format handlers. (dlehman)
+- Merge pull request #158 from mulkieran/master-target-size (mulkieran)
+- Move parents checking and update into a seprarate methods (vpodzime)
+- Rearrange and group some of the StorageDevice's methods/properties (vpodzime)
+- Don't crash when processing cached LVs (vpodzime)
+- Make roundToNearest() slightly more robust. (amulhern)
+- Extend Size.convertTo() to work with arbitrary Size() values. (amulhern)
+- Changes to FS._setTargetSize(). (amulhern)
+- Increase ext4 maximum size from 16 TiB to 1 EiB (#1231049) (bcl)
+- Merge pull request #155 from atodorov/fix_issue_154 (mulkieran)
+- Use len of set to check for duplicates in list of packages. (atodorov)
+- Merge pull request #153 from mulkieran/master-task-names (mulkieran)
+- Omit completely pointless setUp method. (amulhern)
+- Make a size refer to a Size object. (amulhern)
+- Add __str__ method to various subclasses of Task. (amulhern)
+- Don't pass unused mountpoint dict to preCommitFixup. (dlehman)
+- Use the default md metadata version for everything except /boot/efi.
+  (dlehman)
+
 * Wed Jun 10 2015 Brian C. Lane <bcl@redhat.com> - 1.6-1
 - Fix indentation in action_test.py (dlehman)
 - Merge pull request #133 from atodorov/fix_deprecation_warnings (mulkieran)
