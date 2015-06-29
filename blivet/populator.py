@@ -482,7 +482,7 @@ class Populator(object):
         model = util.get_sysfs_attr(sysfs_path, "device/model")
 
         kwargs = { "serial": serial, "vendor": vendor, "model": model, "bus": bus }
-        if udev.device_is_iscsi(info):
+        if udev.device_is_iscsi(info) and not self._cleanup:
             diskType = iScsiDiskDevice
             initiator = udev.device_get_iscsi_initiator(info)
             target = udev.device_get_iscsi_name(info)
@@ -538,7 +538,7 @@ class Populator(object):
             del kwargs["serial"]
             del kwargs["vendor"]
             del kwargs["bus"]
-        elif udev.device_is_dasd(info):
+        elif udev.device_is_dasd(info) and not self._cleanup:
             diskType = DASDDevice
             kwargs["busid"] = udev.device_get_dasd_bus_id(info)
             kwargs["opts"] = {}
