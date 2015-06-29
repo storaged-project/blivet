@@ -1892,15 +1892,10 @@ class DeviceTree(object):
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
             # mdraid
-            try:
-                kwargs["mdUuid"] = udev.device_get_md_uuid(info)
-            except KeyError:
-                log.warning("mdraid member %s has no md uuid", name)
-
             # reset the uuid to the member-specific value
             # this will be None for members of v0 metadata arrays
-            kwargs["uuid"] = udev.device_get_md_device_uuid(info)
-
+            kwargs["uuid"] = info.get("ID_FS_UUID_SUB")
+            kwargs["mdUuid"] = uuid
             kwargs["biosraid"] = udev.device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
