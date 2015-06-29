@@ -2979,7 +2979,14 @@ def getReleaseString():
 
     return (relArch, relName, relVer)
 
-def findExistingInstallations(devicetree):
+def findExistingInstallations(devicetree, teardown_all=True):
+    """Find existing GNU/Linux installations on devices from the devicetree.
+    :param devicetree: devicetree to find existing installations in
+    :type devicetree: :class:`~.devicetree.DeviceTree`
+    :param bool teardown_all: whether to tear down all devices in the
+                              devicetree in the end
+
+    """
     if not os.path.exists(getTargetPhysicalRoot()):
         util.makedirs(getTargetPhysicalRoot())
 
@@ -3026,6 +3033,9 @@ def findExistingInstallations(devicetree):
             # empty /etc/fstab. weird, but I've seen it happen.
             continue
         roots.append(Root(mounts=mounts, swaps=swaps, name=name))
+
+    if teardown_all:
+        devicetree.teardownAll()
 
     return roots
 
