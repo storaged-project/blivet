@@ -51,6 +51,7 @@ get_bootloader = lambda: None
 
 import sys
 import importlib
+import warnings
 
 from . import util, arch
 from .flags import flags
@@ -58,6 +59,13 @@ from .flags import flags
 import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
+
+# Tell the warnings module not to ignore DeprecationWarning, which it does by
+# default since python-2.7.
+warnings.simplefilter('module', DeprecationWarning)
+
+# Enable logging of python warnings.
+logging.captureWarnings(True)
 
 # XXX: respect the level? Need to translate between C and Python log levels.
 log_bd_message = lambda level, msg: program_log.info(msg)

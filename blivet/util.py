@@ -11,9 +11,11 @@ import sys
 import tempfile
 import uuid
 import hashlib
+import warnings
 from decimal import Decimal
 from contextlib import contextmanager
 from gi.repository import BlockDev as blockdev
+from functools import wraps
 
 import six
 
@@ -24,7 +26,6 @@ program_log = logging.getLogger("program")
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
-
 
 def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False, binary_output=False):
     if env_prune is None:
@@ -518,6 +519,11 @@ def set_up_logging(log_file='/tmp/blivet.log'):
     handler.setFormatter(formatter)
     log.addHandler(handler)
     program_log.addHandler(handler)
+
+    # capture python warnings in our logs
+    warning_log = logging.getLogger("py.warnings")
+    warning_log.addHandler(handler)
+
     log.info("sys.argv = %s", sys.argv)
 
 def create_sparse_tempfile(name, size):
@@ -656,3 +662,113 @@ _open = open
 def open(*args, **kwargs):  # pylint: disable=redefined-builtin
     """Open a file, and retry on EINTR."""
     return eintr_retry_call(_open, *args, **kwargs)
+
+#
+# Deprecation decorator.
+#
+_DEPRECATION_MESSAGE = "will be removed in a future version."
+def _default_deprecation_msg(func):
+    return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
+
+def indent(text, spaces=4):
+    """ Indent text by a specified number of spaces.
+
+        :param str text: the text to indent
+        :keyword int spaces: the number of spaces to indent text
+
+        It would be nice if we could use textwrap.indent for this but, since it
+        does not exist in python2, I prefer to just use this.
+    """
+    if not text or not text.strip():
+        return text
+
+    indentation = " " * spaces
+    indented = []
+    for line in text.splitlines():
+        indented.append("%s%s" % (indentation, line))
+
+    return "\n".join(indented)
+
+_SPHINX_DEPRECATE = """.. deprecated:: %(version)s
+    %(message)s
+"""
+def _add_deprecation_doc_text(func, version=None, message=None):
+    """ Add sphinx 'deprecated' markup to a function's docstring.
+
+        :param :class:`function` func: the function
+        :param str version: version in which the deprecation is effective
+        :param str message: message suggesting a preferred alternative
+
+        If your doctext is indented with something other than spaces the added
+        doctext's indentation will probably not match. That'd be your fault.
+    """
+    base_text = func.__doc__
+    if base_text is None:
+        base_text = " " # They contain leading and trailing spaces. *shrug*
+    else:
+        base_text = base_text[:-1] # Trim the trailing space.
+
+    if ".. deprecated::" in base_text:
+        # Don't add multiple deprecation directives.
+        return
+
+    # Figure out the number of spaces to indent docstring text. We are looking
+    # for the minimum indentation, not including the first line or empty lines.
+    indent_spaces = None
+    for l in base_text.splitlines()[1:]:
+        if not l.strip():
+            continue
+
+        spaces = 0
+        _l = l[:]
+        while _l and _l.startswith(" "):
+            spaces += 1
+            _l = _l[1:]
+
+        if indent_spaces is None or indent_spaces > spaces:
+            indent_spaces = spaces
+
+    if indent_spaces is None:
+        indent_spaces = 0
+
+    text = ""
+    if not re.search(r'\n\s*$', base_text):
+        # Make sure there's a newline after the last text.
+        text = "\n"
+
+    message = message or ""
+    text += _SPHINX_DEPRECATE % {"version": version, "message": message}
+    func.__doc__ = base_text + "\n" + indent(text, indent_spaces)
+
+def deprecated(version, message):
+    """ Decorator to deprecate a function or method via warning and docstring.
+
+        :param str version: version in which the deprecation is effective
+        :param str message: message suggesting a preferred alternative
+
+        .. note::
+            At the point this decorator gets applied to a method in a class the
+            method is just a function. It becomes a method later.
+
+        The docstring manipulation is performed only once for each decorated
+        function/method, but the warning is issued every time the decorated
+        function is called.
+    """
+    def deprecate_func(func):
+        @wraps(func)
+        def the_func(*args, **kwargs):
+            """ Issue a deprecation warning for, then call, a function. """
+            # Warnings look much better with default warning text than with
+            # no text. The sphinx doesn't benefit from it, so don't use it
+            # there.
+            warn_msg = _default_deprecation_msg(func)
+            if message:
+                warn_msg += " %s" % message
+
+            warnings.warn(warn_msg, DeprecationWarning, stacklevel=2)
+            return func(*args, **kwargs)
+
+        _add_deprecation_doc_text(the_func, message=message, version=version)
+        return the_func
+
+    return deprecate_func
