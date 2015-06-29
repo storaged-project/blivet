@@ -42,7 +42,15 @@ po-empty:
 
 check-requires:
 	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
-	@echo $(TEST_DEPENDENCIES) | xargs rpm -q
+	@status=0 ; \
+	for pkg in $(TEST_DEPENDENCIES) ; do \
+		test_output="$$(rpm -q "$$pkg")" ; \
+		if [ $$? != 0 ]; then \
+			echo "$$test_output" ; \
+			status=1 ; \
+		fi ; \
+	done ; \
+	exit $$status
 
 test: check-requires
 	@echo "*** Running unittests with $(PYTHON) ***"
