@@ -686,6 +686,13 @@ class StorageDevice(Device):
             # FIXME: self.format.status doesn't mean much
             raise errors.DeviceError("cannot replace active format", self.name)
 
+        # check device size against format limits
+        if not fmt.exists:
+            if fmt.maxSize and fmt.maxSize < self.size:
+                raise errors.DeviceError("device is too large for new format")
+            elif fmt.minSize and fmt.minSize > self.size:
+                raise errors.DeviceError("device is too small for new format")
+
         self._format = fmt
         self._format.device = self.path
         self._updateNetDevMountOption()
