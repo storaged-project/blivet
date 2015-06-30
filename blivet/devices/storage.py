@@ -552,15 +552,19 @@ class StorageDevice(Device):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        # only calculate these once
-        max_size = self.maxSize
-        min_size = self.minSize
-        if max_size and newsize > max_size:
-            raise errors.DeviceError("device cannot be larger than %s" %
-                                     max_size, self.name)
-        elif min_size and newsize < min_size:
-            raise errors.DeviceError("device cannot be smaller than %s" %
-                                     min_size, self.name)
+        # There's no point in checking limits here for existing devices since
+        # the only way to change their size is by setting target size. Any call
+        # to this setter for an existing device should be to reflect existing
+        # state.
+        if not self.exists:
+            max_size = self.format.maxSize
+            min_size = self.format.minSize
+            if max_size and newsize > max_size:
+                raise errors.DeviceError("device cannot be larger than %s" %
+                                         max_size, self.name)
+            elif min_size and newsize < min_size:
+                raise errors.DeviceError("device cannot be smaller than %s" %
+                                         min_size, self.name)
 
         self._size = newsize
 
