@@ -402,7 +402,9 @@ class StorageDevice(Device):
             raise errors.DeviceError("device has not been created", self.name)
 
         if not self.status or not self.controllable:
-            return False
+            # nothing to do for this particular device, but we need to continue
+            # with the teardown if recursive is 'True' (to tear down parents)
+            return bool(recursive)
 
         if self.originalFormat.exists:
             self.originalFormat.teardown()
