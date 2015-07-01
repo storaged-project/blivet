@@ -197,7 +197,7 @@ class DeviceFormat(ObjectID):
              "  createOptions = %(createOptions)s  supported = %(supported)s"
              "  formattable = %(format)s  resizable = %(resize)s\n" %
              {"classname": self.__class__.__name__, "id": "%#x" % id(self),
-              "object_id": self.id, "createOptions": self.createOptions,
+              "object_id": self.id,
               "type": self.type, "name": self.name, "status": self.status,
               "device": self.device, "uuid": self.uuid, "exists": self.exists,
               "options": self.options, "supported": self.supported,
