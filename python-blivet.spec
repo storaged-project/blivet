@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.8
+Version: 0.61.15.9
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,35 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jul 01 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.9-1
+- Improve format handling for lvm snapshots. (dlehman)
+  Resolves: rhbz#1234454
+- Don't crash on cleanup with DASDs or iSCSI devices present. (dlehman)
+  Resolves: rhbz#1166506
+- Fix handling of UUIDs for existing MD devices. (dlehman)
+  Resolves: rhbz#1234333
+- Treat existing md arrays whose members are all disks like disks. (dlehman)
+  Resolves: rhbz#1197582
+- Handle formatting immediately after adding devices from format handlers.
+  (dlehman)
+  Related: rhbz#1192004
+- Be more careful about overwriting device.originalFormat. (dlehman)
+  Resolves: rhbz#1192004
+- Store vendor/model information for DiskDevice instances. (dlehman)
+  Related: rhbz#1069597
+- Move mediaPresent out of Device and into StorageDevice. (dlehman)
+  Related: rhbz#1069597
+- Don't use parted.Device to obtain size info. (dlehman)
+  Resolves: rhbz#1069597
+- Align free regions before choosing one. (dlehman)
+  Related: rhbz#1181494
+- Align partition sizes earlier in the allocation process. (dlehman)
+  Resolves: rhbz#1181494
+- Fix a duplicate key caused by patch merging. (clumens)
+  Related: rhbz#1220898
+- Add support for specifying arbitrary mkfs options. (clumens)
+  Resolves: rhbz#1220898
+
 * Thu Jun 25 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.8-1
 - LVMFactory: raise exception when adding LV to full fixed size VG (vtrefny)
   Resolves: rhbz#1170660
