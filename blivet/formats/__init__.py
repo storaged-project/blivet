@@ -303,7 +303,7 @@ class DeviceFormat(ObjectID):
         lambda s: s._getCreateOptions(),
         lambda s,v: s._setCreateOptions(v),
         doc="options to be used when running mkfs"
-    }
+    )
 
     def _deviceCheck(self, devspec):
         """ Verifies that device spec has a proper format.
