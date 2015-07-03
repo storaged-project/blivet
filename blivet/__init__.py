@@ -486,11 +486,7 @@ class Blivet(object):
 
         self.roots = []
         if flags.installer_mode:
-            try:
-                self.roots = findExistingInstallations(self.devicetree)
-            except Exception: # pylint: disable=broad-except
-                log_exception_info(log.info, "failure detecting existing installations")
-
+            self.roots = findExistingInstallations(self.devicetree)
             self.dumpState("initial")
 
         if not flags.installer_mode:
@@ -2987,6 +2983,17 @@ def findExistingInstallations(devicetree, teardown_all=True):
                               devicetree in the end
 
     """
+
+    try:
+        roots = _findExistingInstallations(devicetree)
+        return roots
+    except Exception: # pylint: disable=broad-except
+        log_exception_info(log.info, "failure detecting existing installations")
+    finally:
+        if teardown_all:
+            devicetree.teardownAll()
+
+def _findExistingInstallations(devicetree):
     if not os.path.exists(getTargetPhysicalRoot()):
         util.makedirs(getTargetPhysicalRoot())
 
@@ -3033,9 +3040,6 @@ def findExistingInstallations(devicetree, teardown_all=True):
             # empty /etc/fstab. weird, but I've seen it happen.
             continue
         roots.append(Root(mounts=mounts, swaps=swaps, name=name))
-
-    if teardown_all:
-        devicetree.teardownAll()
 
     return roots
 
