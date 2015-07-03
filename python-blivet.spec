@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.0.0.1
+Version: 1.0.0.2
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -63,6 +63,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jul 03 2015 Vojtech Trefny <vtrefny@redhat.com> - 1.0.0.2-1
+- Improve format handling for lvm snapshots. (dlehman)
+- New version: 1.0.0.1 (amulhern)
+
 * Mon Jun 01 2015 mulhern <amulhern@redhat.com> - 1.0.0.1-1
 - New Zanata config file (amulhern)
 - Merge pull request #139 from mulkieran/master-rhel6-branch-a (mulkieran)
