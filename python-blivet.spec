@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.9
+Version: 0.61.15.10
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,18 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jul 07 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.10-1
+- Add a function to devicelibs.dasd to detect LDL DASDs. (sbueno+anaconda)
+  Resolves: rhbz#1233438
+- Make sure devices are always torn down in findExistingInstallations if
+  requested (vpodzime)
+  Related: rhbz#1182229
+- Do not break the chain when an inactive device is torn down recursively
+  (vpodzime)
+  Related: rhbz#1182229
+- Tear down all devices after finding existing installations (vpodzime)
+  Resolves: rhbz#1182229
+
 * Wed Jul 01 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.9-1
 - Improve format handling for lvm snapshots. (dlehman)
   Resolves: rhbz#1234454

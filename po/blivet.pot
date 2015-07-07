@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-01 17:12-0700\n"
+"POT-Creation-Date: 2015-07-07 16:37-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1411
+#: ../blivet/__init__.py:1407
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3013
+#: ../blivet/__init__.py:3027
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3018
+#: ../blivet/__init__.py:3032
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3020
+#: ../blivet/__init__.py:3034
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -347,7 +347,7 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/zfcp.py:48 ../blivet/devicelibs/dasd.py:137
+#: ../blivet/zfcp.py:48 ../blivet/devicelibs/dasd.py:245
 msgid "You have not specified a device number or the number is invalid"
 msgstr ""
 
@@ -621,17 +621,17 @@ msgstr ""
 msgid "vginfo failed for %s"
 msgstr ""
 
-#: ../blivet/devicelibs/dasd.py:160
+#: ../blivet/devicelibs/dasd.py:268
 #, python-format
 msgid "DASD device %s not found, not even in device ignore list."
 msgstr ""
 
-#: ../blivet/devicelibs/dasd.py:167
+#: ../blivet/devicelibs/dasd.py:275
 #, python-format
 msgid "Device %s is already online."
 msgstr ""
 
-#: ../blivet/devicelibs/dasd.py:173
+#: ../blivet/devicelibs/dasd.py:281
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
 msgstr ""
