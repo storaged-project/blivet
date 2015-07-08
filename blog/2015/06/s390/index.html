@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie10 lt-ie9 lt-ie8 lt-ie7" lang="en-us"> <![endif]-->
+<!--[if IE 7]> <html class="no-js lt-ie10 lt-ie9 lt-ie8" lang="en-us"> <![endif]-->
+<!--[if IE 8]> <html class="no-js lt-ie10 lt-ie9" lang="en-us"> <![endif]-->
+<!--[if IE 9]> <html class="no-js lt-ie10 lt-ie9" lang="en-us"> <![endif]-->
+<!--[if lt IE 10]> <html class="no-js lt-ie10" lang="en-us"> <![endif]-->
+<!--[if !IE]> > <![endif]-->
+<html class='no-js' lang='en'>
+<!-- <![endif] -->
+<head>
+<title>
+s390 storage &mdash;
+Blivet
+</title>
+<meta charset='utf-8'>
+<meta content='' name='description'>
+<meta content='Samantha Bueno' name='author'>
+<meta content='initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width' name='viewport'>
+<link href='/blog/feed.xml' rel='alternate' title='Atom feed' type='application/atom+xml'>
+<!-- Open Graph (FB / G+) -->
+<meta content='article' property='og:type'>
+<meta content='s390 storage' property='og:title'>
+<meta content="Introduction&#x000A;&#x000A;IBM's System z has been around for a long time – since the mid 1960s. Since this time, the mainframe has evolved and adapted new technology while still maintaining complete backward compatibility..." property='og:description'>
+<meta content='http://rhinstaller.github.io/blivet/blog/2015/06/s390/' property='og:url'>
+<meta content='2015-06-19T00:00:00Z' property='article:published_time'>
+<meta content='sbueno' property='article:author:username'>
+<!-- Twitter card -->
+<meta content='summary' name='twitter:card'>
+<meta content='s390 storage' name='twitter:title'>
+<meta content="Introduction&#x000A;&#x000A;IBM's System z has been around for a long time – since the mid 1960s. Since this time, the mainframe has evolved and adapted new technology while still maintaining complete backward compatibility..." name='twitter:description'>
+
+<link href='/images/favicon.ico' rel='shortcut icon'>
+<link href='/images/apple-touch-icon-precomposed.png' rel='apple-touch-icon-precomposed'>
+<link href='/images/apple-touch-icon-57x57-precomposed.png' rel='apple-touch-icon-precomposed' sizes='57x57'>
+<link href='/images/apple-touch-icon-72x72-precomposed.png' rel='apple-touch-icon-precomposed' sizes='72x72'>
+<link href='/images/apple-touch-icon-114x114-precomposed.png' rel='apple-touch-icon-precomposed' sizes='114x114'>
+<link href="/blivet/stylesheets/application.css?1436385144" rel="stylesheet" type="text/css" />
+<link href="/blivet/stylesheets/print.css?1436385142" rel="stylesheet" type="text/css" media="print" />
+</head>
+<body class=' blog blog_2015 blog_2015_06 blog_2015_06_s390 blog_2015_06_s390_index source-md'>
+<header class='masthead hidden-print' id='branding' role='banner'>
+<section>
+<h1>
+<a href="/blivet/"><img id="rhlogo" class="logo" alt="Blivet" width="222" height="55" src="/blivet/images/blivet-logo.png?1405103565" />
+</a></h1>
+<nav role='navigation'>
+<ul class=''>
+<li class='nav-link-home' role='menuitem'>
+<a href='/blivet/'>Home</a>
+</li>
+
+<li class='nav-link-about' role='menuitem'>
+<a href='/blivet/about'>About</a>
+</li>
+
+<li class='nav-link-development' role='menuitem'>
+<a href='/blivet/development'>Development</a>
+</li>
+
+<li class='nav-link-blog' role='menuitem'>
+<a href='/blivet/blog'>Blog</a>
+</li>
+
+</ul>
+</nav>
+
+</section>
+</header>
+<header id='subhead'>
+<section>
+<h2 id='page-title'>
+News
+</h2>
+</section>
+</header>
+
+
+<section class='container' id='page-wrap'>
+<section id='page'>
+<section class='container content' id='content'>
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an outdated browser.
+<a href="http://browsehappy.com/">Upgrade your browser today</a> or
+<a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+<![endif]-->
+<section class='blog-post-page row'>
+<div class='col-md-12'>
+<article class='post hentry'>
+<header class='post-header'>
+<h2 class='post-title entry-title'>
+s390 storage
+</h2>
+<header class='post-meta'>
+<span class='byline'>
+by
+<span class='author vcard'>
+<a href="/blivet/blog/author/sbueno/">Samantha Bueno</a>
+</span>
+</span>
+&ndash;
+<time class='published' datetime='2015-06-19T00:00:00Z'>
+Thursday 18 June
+</time>
+</header>
+</header>
+<section class='post-content entry-content'>
+<h2 id="introduction">Introduction</h2>
+
+<p>IBM's System z has been around for a long time – since the mid 1960s. Since this time, the mainframe has evolved and adapted new technology while still maintaining complete backward compatibility. Most people are unaware that services they use everyday rely on mainframe technology in order to function – banks, insurance companies, universities, various entities within the transportation industry, and so on.</p>
+
+<p>Due to their size (vast) and cost (astronomical), System z does not see as much use among individuals as other architectures such as x86, arm, etc. So if you ever do find yourself plunged into the world of mainframes, it can be confusing for a while as you attempt to sort out the various idiosyncracies. One thing you'll notice right away is that storage is quite different from what you're used to seeing, with a lot more acronyms. The aim of this post is to give a very brief overview of System z storage, so if you ever find yourself having to interface directly with an IBM mainframe someday, you'll hopefully be a little less lost.</p>
+
+<h2 id="channel-io">Channel I/O</h2>
+
+<p>IBM's System z employs channel I/O, a high performance I/O architecture. This means that special hardware exists to specifically handle I/O bound tasks, independent of the CPU(s). All devices are connected to the channel, which itself is a programmable device. I/O operations which the channel must execute are called a channel program. Channel programs contain specific I/O instructions (channel command words, or CCWs) such as "read", "write", or "seek".</p>
+
+<h2 id="dasds">DASDs</h2>
+
+<p>The standard "disk" found on a mainframe is a DASD (daz-dee), a Direct Access Storage Device. IBM has done a significant amount of work over the years to add DASD support in the kernel and various other applications (parted, anaconda). There are various types of DASDs. They all vary to some extent in their disk geometry, which will be discussed briefly.</p>
+
+<p>Physically, a DASD is a set of circular platters like in ordinary disk drives you are probably more familiar with. If you split the surface of each platter into concentric circles, these are called tracks. Corresponding tracks on each platter make up a cylinder. Tracks themselves can be divided into blocks.</p>
+
+<p>The different types of DASDs can be identified by their four-digit device type number, and often, an additional suffix to note different models among the types, e.g. 3390-1, 3390-2, and 3390-3. The differences among each type are among the number of cylinders, tracks per cylinder, channel speed, seek time, etc. By far, the most popular type of DASD today is the 3390-3, which has 3339 cylinders.</p>
+
+<p>In the past, FBA (Fixed Block Architecture) DASDs were more common. FBA is the equivalent to LBA in the non-mainframe world. The blocks are all a fixed size. Today, actual FBA DASD hardware is no longer available, although FBA DASDs can be simulated from within a mainframe operating system.</p>
+
+<p>In contrast, CKD DASDs can have different block sizes. Each block is composed of a count block, a data block, and sometimes a key block. The count block contains the size of the data block, and the key is a string, which can aid in the search for a data record via some channel command word. ECKD DASDs are more modern; they are Extended CKD DASDs, which means there is support for extra, high-performance functionality. Most DASDs in use today are ECKD. Within Linux, (E)CKD DASDs have three different formats which are recognized by the kernel – LDL (Linux Disk Layout), CDL (Compatibility Disk Layout), or CMS.</p>
+
+<p>LDL (volume label LNX1) is rarely used, and if it were there would be one immutable partition on the disk. LDL is a format that is not officially supported by Red Hat in the installer, although the kernel does detect LDL DASDs. In contrast to CDL, there is no VTOC present on LDL DASDs, and it is not strictly necessary that a volume label be assigned.</p>
+
+<p>CDL (volume label VOL1) is the default format; this has been the industry standard for well over at least a decade at the time of writing this post. The first few tracks of CDL DASDs contain information about the volume label and a Volume Table of Contents (VTOC), a structure which contains pointers to every data set on the DASD. On Linux, these data sets contain partition information.</p>
+
+<p>A CMS DASD (volume label CMS1) has a CMS file system on it. A CMS DASD is treated exactly like an LDL DASD on Linux, so there can only be one partition on this type of disk.</p>
+
+<p>A DASD can also be "unformatted", which means it has no format or volume label. DASDs in this state are completely unusable on Linux and must be low-level formatted using the "dasdfmt" command from the s390utils package first.</p>
+
+<h2 id="other-devices">Other Devices</h2>
+
+<p>An EDEV is an Emulated Device. These are zFCP (z Fiber Channel Protocol) devices masquerading as FBA volumes. To use one under Linux, you would first fabricate an EDEV in z/OS (a mainframe operating system). When you boot into Linux, it should appear and behave as an FBA DASD.</p>
+
+<p>An EAV is an Extended Address Volumes. These are ECKD DASDs with over 65520 cylinders.
+Although I am not an authority on mainframe storage, in my experience thus far interacting with our s390x at Red Hat and working on numerous customer bug reports, EDEV and EAV are not commonly used.</p>
+
+<p>zFCP devices are essentially SCSI devices operating via FCP (Fiber Channel Protocol).</p>
+
+<p>On z/OS, one can also construct minidisks if they wish. A minidisk is some range of continguous cylinders on a DASD.</p>
+
+<h2 id="final-notes">Final Notes</h2>
+
+<p>These days, mainframe storage is almost entirely virtualized. Most mainframes consist of some giant RAID configuration utilizing standard PC disks which emulate DASDs. If this confuses you, and you wonder why doesn't IBM just use standard disks – remember that everything must be backware compatible, back to the days when actual DASD hardware was used. Also, IBM's most popular OS for its mainframe, z/OS, can not run on standard disks.</p>
+
+<p><em>Thanks to the IBM Knowledgebase, IBM Redbooks, and various posts from the S390@marist.edu mailing list for knowledge I learned previously and/or had to look up for the purposes of this post.</em></p>
+
+</section>
+<footer class='post-meta'>
+<div class='author-info' id='author-info'>
+<h2>
+About
+Samantha Bueno
+</h2>
+<div class='author-blurb'>
+<p>Resident mainframe specialist on the anaconda development team.</p>
+
+<div class='more-link'>
+<a href="/blivet/blog/author/sbueno/">View all posts by Samantha Bueno &raquo;</a>
+</div>
+</div>
+</div>
+</footer>
+</article>
+
+<section id='blog-comments'></section>
+</div>
+</section>
+<section class='row'>
+<div class='col-md-12'>
+<aside>
+<h3>Recent Articles</h3>
+<ol>
+<li>
+<a href="/blivet/blog/2015/06/s390/">s390 storage</a>
+<span>Thursday 18 June</span>
+</li>
+<li>
+<a href="/blivet/blog/2015/03/blivet/">bcache and/vs. LVM cache</a>
+<span>Thursday 19 March</span>
+</li>
+<li>
+<a href="/blivet/blog/2014/07/blivet/">Introduction</a>
+<span>Tuesday 15 July 2014</span>
+</li>
+</ol>
+<h3>Tags</h3>
+<ol>
+</ol>
+</aside>
+<!--
+<h3>By Year</h3>
+<ol>
+<li>
+<a href="/blivet/blog/2015/">2015</a>
+(2)
+</li>
+<li>
+<a href="/blivet/blog/2014/">2014</a>
+(1)
+</li>
+</ol>
+-->
+</div>
+</section>
+
+</section>
+</section>
+</section>
+<footer class='text-center' id='footer'>
+<hr class='visible-print'>
+
+&copy; 2014 Red Hat, Inc.
+<div class='last-modified'>
+</div>
+</footer>
+
+
+<script src="/blivet/javascripts/application.js?1436385144" type="text/javascript"></script>
+
+</body>
+</html>

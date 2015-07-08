@@ -34,8 +34,8 @@ Blivet
 <link href='/images/apple-touch-icon-57x57-precomposed.png' rel='apple-touch-icon-precomposed' sizes='57x57'>
 <link href='/images/apple-touch-icon-72x72-precomposed.png' rel='apple-touch-icon-precomposed' sizes='72x72'>
 <link href='/images/apple-touch-icon-114x114-precomposed.png' rel='apple-touch-icon-precomposed' sizes='114x114'>
-<link href="/blivet/stylesheets/application.css?1432929739" rel="stylesheet" type="text/css" />
-<link href="/blivet/stylesheets/print.css?1432135233" rel="stylesheet" type="text/css" media="print" />
+<link href="/blivet/stylesheets/application.css?1436385144" rel="stylesheet" type="text/css" />
+<link href="/blivet/stylesheets/print.css?1436385142" rel="stylesheet" type="text/css" media="print" />
 </head>
 <body class=' blog blog_2015 blog_2015_03 blog_2015_03_blivet blog_2015_03_blivet_index source-md'>
 <header class='masthead hidden-print' id='branding' role='banner'>
@@ -172,7 +172,7 @@ package called <code>bcache-tools</code> or similar. So on my Fedora 21 system, 
 need to run the following command to get it (<code>#</code> means it should be run
 as root):</p>
 
-<pre class="highlight plaintext"># dnf install bcache-tools</pre>
+<pre class="highlight plaintext"><code># dnf install bcache-tools&#x000A;</code></pre>
 
 <p>Another tool we will need is the <code>wipefs</code> tool which is part of the
 <code>util-linux</code> package that should already be installed in the system.</p>
@@ -183,7 +183,7 @@ first wipe all old weird things from the block devices (in our case
 partitions) we want to use (<strong>WARNING: this removes all file system and
 other signatures from /dev/sda1 and /dev/sdb2 partitions</strong>):</p>
 
-<pre class="highlight plaintext"># wipefs -a /dev/sda1&#x000A;# wipefs -a /dev/sdb1</pre>
+<pre class="highlight plaintext"><code># wipefs -a /dev/sda1&#x000A;# wipefs -a /dev/sdb1&#x000A;</code></pre>
 
 <p>Cleaned up. Now, as is usual with basically all storage technologies, we
 need to write some metadata to the devices we want to use for our bcache
@@ -191,7 +191,7 @@ so that the code providing the cache technology can identify such
 devices as bcache devices and so that it can store some configuration,
 status, etc. data there. Let's do it then:</p>
 
-<pre class="highlight plaintext"># make-bcache -B /dev/sda1</pre>
+<pre class="highlight plaintext"><code># make-bcache -B /dev/sda1&#x000A;</code></pre>
 
 <p>This command writes bcache metadata for the backing device (space) to
 the partition <code>/dev/sda1</code> (which is on the HDD). Believe it or not, but
@@ -206,7 +206,7 @@ and with the command above we have only defined the backing device
 (space). So we now of course have to define the cache device (space)
 again by writing some metadata into it:</p>
 
-<pre class="highlight plaintext"># make-bcache -C /dev/sdb1</pre>
+<pre class="highlight plaintext"><code># make-bcache -C /dev/sdb1&#x000A;</code></pre>
 
 <p>The result is that we now have the metadata written to both the backing
 device (space) and the cache device (space). However, these devices
@@ -219,7 +219,7 @@ caching device which is not really useful. The last step missing is to
 attach the cache device to our bcache device <code>bcache0</code> by writing the
 <code>Set UUID</code> from the <code>make-bcache -C</code> run to the appropriate file:</p>
 
-<pre class="highlight plaintext"># echo C_Set_UUID_VALUE &gt; /sys/block/bcache0/bcache/attach</pre>
+<pre class="highlight plaintext"><code># echo C_Set_UUID_VALUE &gt; /sys/block/bcache0/bcache/attach&#x000A;</code></pre>
 
 <p>From now on we can enjoy the speed, noise and other improvements
 provided by the use of our cache. The <code>/dev/bcache0</code> device is just a
@@ -242,7 +242,7 @@ device (HDD) from many random write operations. Another typical mode is
 writes them back to the backing device. To change the mode we simply run
 the following command:</p>
 
-<pre class="highlight plaintext"># echo writeback &gt; /sys/block/bcache0/bcache/cache_mode</pre>
+<pre class="highlight plaintext"><code># echo writeback &gt; /sys/block/bcache0/bcache/cache_mode&#x000A;</code></pre>
 
 <p>However, this change is only temporary and we have to do the same after
 every boot of the system if we want to always use the <code>writeback</code> mode
@@ -261,7 +261,7 @@ and misses. Of course, the more hits compared to misses the better. To
 find out more about the current state, status and stats of a <code>bcache</code>
 another tool from the <code>bcache-tools</code> package can be used:</p>
 
-<pre class="highlight plaintext"># bcache-status -s</pre>
+<pre class="highlight plaintext"><code># bcache-status -s&#x000A;</code></pre>
 
 <p>In the output we should see quite a lot of interesting information and
 we can for example also check that the desired cache mode is being used.
@@ -344,7 +344,7 @@ we need to tell LVM that the <code>/dev/sdb</code> block device should become an
 LVM member device (we could use a partition on <code>/dev/sdb</code> if we wanted
 to combine partitions and LVM on our disks):</p>
 
-<pre class="highlight plaintext"># pvcreate /dev/sdb</pre>
+<pre class="highlight plaintext"><code># pvcreate /dev/sdb&#x000A;</code></pre>
 
 <p>If that fails because of some old metadata (disk label, file system
 signature…) being left on the disk we could either use the <code>wipefs</code>
@@ -354,7 +354,7 @@ tool (as in case of the <em>bcache</em>) or add the <code>--force</code> option 
 <p>Once LVM marks the <code>/dev/sdb</code> device as an LVM member device <sup id="fnref:5"><a href="#fn:5" class="footnote">5</a></sup> we can
 now add it to the <code>data</code> VG:</p>
 
-<pre class="highlight plaintext"># vgextend /dev/sdb</pre>
+<pre class="highlight plaintext"><code># vgextend /dev/sdb&#x000A;</code></pre>
 
 <p>The <code>data</code> VG now sees the SSD as a free space for allocation if we
 create more LVs in it or grow some existing ones. But we want to use it
@@ -365,14 +365,14 @@ So let's start with creation of a good old LV with the size we want for
 our cache space and with it's <em>PEs</em> (<em>Physical extents</em>) being allocated
 on the SSD:</p>
 
-<pre class="highlight plaintext"># lvcreate -n DataLVcache -L19.9G data /dev/sdb</pre>
+<pre class="highlight plaintext"><code># lvcreate -n DataLVcache -L19.9G data /dev/sdb&#x000A;</code></pre>
 
 <p>I believe a concentrated reader now asks why only <code>19.9 GiB</code> when we
 have <code>20 GiB</code> of space on the SSD. The reason is that we are going the
 "hard" (more controlled) way and we need some space for a separate
 metadata volume which we can now create:</p>
 
-<pre class="highlight plaintext"># lvcreate -n DataLVcacheMeta -L20M data /dev/sdb</pre>
+<pre class="highlight plaintext"><code># lvcreate -n DataLVcacheMeta -L20M data /dev/sdb&#x000A;</code></pre>
 
 <p>with the size of <code>20 MiB</code> because the LVM documentation (the man page)
 says it should be <em>1000 times smaller than the cache data LV, with a
@@ -386,7 +386,7 @@ an LV that provides the cache space for the backing space with metadata
 being written and kept in it. And as such, it is created from the data
 cache LV, more precisely converted:</p>
 
-<pre class="highlight plaintext"># lvconvert --type cache-pool --cachemode writethrough --poolmetadata data/DataLVcacheMeta data/DataLVcache</pre>
+<pre class="highlight plaintext"><code># lvconvert --type cache-pool --cachemode writethrough --poolmetadata data/DataLVcacheMeta data/DataLVcache&#x000A;</code></pre>
 
 <p>As you may see, we specify the cache mode on cache pool creation. The
 bad thing about it is that it cannot be changed later, but the good
@@ -399,7 +399,7 @@ again with a different cache mode.</p>
 promise. The only missing step is to finally make our <code>DataLV</code> cached.
 And as usual with <em>LVM</em>, it is a conversion:</p>
 
-<pre class="highlight plaintext"># lvconvert --type cache --cachepool data/DataLVcache data/DataLV</pre>
+<pre class="highlight plaintext"><code># lvconvert --type cache --cachepool data/DataLVcache data/DataLV&#x000A;</code></pre>
 
 <p>And with that, we are done. We can now <strong>continue</strong> using the <code>DataLV</code>
 logical volume, but from now on as a cached volume using the cache space
@@ -499,6 +499,10 @@ Vratislav Podzimek
 <h3>Recent Articles</h3>
 <ol>
 <li>
+<a href="/blivet/blog/2015/06/s390/">s390 storage</a>
+<span>Thursday 18 June</span>
+</li>
+<li>
 <a href="/blivet/blog/2015/03/blivet/">bcache and/vs. LVM cache</a>
 <span>Thursday 19 March</span>
 </li>
@@ -516,7 +520,7 @@ Vratislav Podzimek
 <ol>
 <li>
 <a href="/blivet/blog/2015/">2015</a>
-(1)
+(2)
 </li>
 <li>
 <a href="/blivet/blog/2014/">2014</a>
@@ -539,7 +543,7 @@ Vratislav Podzimek
 </footer>
 
 
-<script src="/blivet/javascripts/application.js?1432135887" type="text/javascript"></script>
+<script src="/blivet/javascripts/application.js?1436385144" type="text/javascript"></script>
 
 </body>
 </html>

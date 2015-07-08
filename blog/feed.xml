@@ -5,10 +5,67 @@
   <id>http://rhinstaller.github.io/blog/</id>
   <link href="http://rhinstaller.github.io/blog/"/>
   <link href="http://rhinstaller.github.io/blog/feed.xml" rel="self"/>
-  <updated>2015-03-19T19:00:00-05:00</updated>
+  <updated>2015-06-18T19:00:00-05:00</updated>
   <author>
     <name/>
   </author>
+  <entry>
+    <title>s390 storage</title>
+    <link rel="alternate" href="http://rhinstaller.github.io/blivet/blog/2015/06/s390/"/>
+    <id>http://rhinstaller.github.io/blivet/blog/2015/06/s390/</id>
+    <published>2015-06-18T19:00:00-05:00</published>
+    <updated>2015-07-08T14:49:09-05:00</updated>
+    <author>
+      <name>Samantha Bueno</name>
+    </author>
+    <content type="html">&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;IBM's System z has been around for a long time – since the mid 1960s. Since this time, the mainframe has evolved and adapted new technology while still maintaining complete backward compatibility. Most people are unaware that services they use everyday rely on mainframe technology in order to function – banks, insurance companies, universities, various entities within the transportation industry, and so on.&lt;/p&gt;
+
+&lt;p&gt;Due to their size (vast) and cost (astronomical), System z does not see as much use among individuals as other architectures such as x86, arm, etc. So if you ever do find yourself plunged into the world of mainframes, it can be confusing for a while as you attempt to sort out the various idiosyncracies. One thing you'll notice right away is that storage is quite different from what you're used to seeing, with a lot more acronyms. The aim of this post is to give a very brief overview of System z storage, so if you ever find yourself having to interface directly with an IBM mainframe someday, you'll hopefully be a little less lost.&lt;/p&gt;
+
+&lt;h2 id="channel-io"&gt;Channel I/O&lt;/h2&gt;
+
+&lt;p&gt;IBM's System z employs channel I/O, a high performance I/O architecture. This means that special hardware exists to specifically handle I/O bound tasks, independent of the CPU(s). All devices are connected to the channel, which itself is a programmable device. I/O operations which the channel must execute are called a channel program. Channel programs contain specific I/O instructions (channel command words, or CCWs) such as "read", "write", or "seek".&lt;/p&gt;
+
+&lt;h2 id="dasds"&gt;DASDs&lt;/h2&gt;
+
+&lt;p&gt;The standard "disk" found on a mainframe is a DASD (daz-dee), a Direct Access Storage Device. IBM has done a significant amount of work over the years to add DASD support in the kernel and various other applications (parted, anaconda). There are various types of DASDs. They all vary to some extent in their disk geometry, which will be discussed briefly.&lt;/p&gt;
+
+&lt;p&gt;Physically, a DASD is a set of circular platters like in ordinary disk drives you are probably more familiar with. If you split the surface of each platter into concentric circles, these are called tracks. Corresponding tracks on each platter make up a cylinder. Tracks themselves can be divided into blocks.&lt;/p&gt;
+
+&lt;p&gt;The different types of DASDs can be identified by their four-digit device type number, and often, an additional suffix to note different models among the types, e.g. 3390-1, 3390-2, and 3390-3. The differences among each type are among the number of cylinders, tracks per cylinder, channel speed, seek time, etc. By far, the most popular type of DASD today is the 3390-3, which has 3339 cylinders.&lt;/p&gt;
+
+&lt;p&gt;In the past, FBA (Fixed Block Architecture) DASDs were more common. FBA is the equivalent to LBA in the non-mainframe world. The blocks are all a fixed size. Today, actual FBA DASD hardware is no longer available, although FBA DASDs can be simulated from within a mainframe operating system.&lt;/p&gt;
+
+&lt;p&gt;In contrast, CKD DASDs can have different block sizes. Each block is composed of a count block, a data block, and sometimes a key block. The count block contains the size of the data block, and the key is a string, which can aid in the search for a data record via some channel command word. ECKD DASDs are more modern; they are Extended CKD DASDs, which means there is support for extra, high-performance functionality. Most DASDs in use today are ECKD. Within Linux, (E)CKD DASDs have three different formats which are recognized by the kernel – LDL (Linux Disk Layout), CDL (Compatibility Disk Layout), or CMS.&lt;/p&gt;
+
+&lt;p&gt;LDL (volume label LNX1) is rarely used, and if it were there would be one immutable partition on the disk. LDL is a format that is not officially supported by Red Hat in the installer, although the kernel does detect LDL DASDs. In contrast to CDL, there is no VTOC present on LDL DASDs, and it is not strictly necessary that a volume label be assigned.&lt;/p&gt;
+
+&lt;p&gt;CDL (volume label VOL1) is the default format; this has been the industry standard for well over at least a decade at the time of writing this post. The first few tracks of CDL DASDs contain information about the volume label and a Volume Table of Contents (VTOC), a structure which contains pointers to every data set on the DASD. On Linux, these data sets contain partition information.&lt;/p&gt;
+
+&lt;p&gt;A CMS DASD (volume label CMS1) has a CMS file system on it. A CMS DASD is treated exactly like an LDL DASD on Linux, so there can only be one partition on this type of disk.&lt;/p&gt;
+
+&lt;p&gt;A DASD can also be "unformatted", which means it has no format or volume label. DASDs in this state are completely unusable on Linux and must be low-level formatted using the "dasdfmt" command from the s390utils package first.&lt;/p&gt;
+
+&lt;h2 id="other-devices"&gt;Other Devices&lt;/h2&gt;
+
+&lt;p&gt;An EDEV is an Emulated Device. These are zFCP (z Fiber Channel Protocol) devices masquerading as FBA volumes. To use one under Linux, you would first fabricate an EDEV in z/OS (a mainframe operating system). When you boot into Linux, it should appear and behave as an FBA DASD.&lt;/p&gt;
+
+&lt;p&gt;An EAV is an Extended Address Volumes. These are ECKD DASDs with over 65520 cylinders.
+Although I am not an authority on mainframe storage, in my experience thus far interacting with our s390x at Red Hat and working on numerous customer bug reports, EDEV and EAV are not commonly used.&lt;/p&gt;
+
+&lt;p&gt;zFCP devices are essentially SCSI devices operating via FCP (Fiber Channel Protocol).&lt;/p&gt;
+
+&lt;p&gt;On z/OS, one can also construct minidisks if they wish. A minidisk is some range of continguous cylinders on a DASD.&lt;/p&gt;
+
+&lt;h2 id="final-notes"&gt;Final Notes&lt;/h2&gt;
+
+&lt;p&gt;These days, mainframe storage is almost entirely virtualized. Most mainframes consist of some giant RAID configuration utilizing standard PC disks which emulate DASDs. If this confuses you, and you wonder why doesn't IBM just use standard disks – remember that everything must be backware compatible, back to the days when actual DASD hardware was used. Also, IBM's most popular OS for its mainframe, z/OS, can not run on standard disks.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Thanks to the IBM Knowledgebase, IBM Redbooks, and various posts from the S390@marist.edu mailing list for knowledge I learned previously and/or had to look up for the purposes of this post.&lt;/em&gt;&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>bcache and/vs. LVM cache</title>
     <link rel="alternate" href="http://rhinstaller.github.io/blivet/blog/2015/03/blivet/"/>
@@ -86,8 +143,8 @@ package called &lt;code&gt;bcache-tools&lt;/code&gt; or similar. So on my Fedora
 need to run the following command to get it (&lt;code&gt;#&lt;/code&gt; means it should be run
 as root):&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# dnf install bcache-tools
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# dnf install bcache-tools
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Another tool we will need is the &lt;code&gt;wipefs&lt;/code&gt; tool which is part of the
 &lt;code&gt;util-linux&lt;/code&gt; package that should already be installed in the system.&lt;/p&gt;
@@ -98,9 +155,9 @@ first wipe all old weird things from the block devices (in our case
 partitions) we want to use (&lt;strong&gt;WARNING: this removes all file system and
 other signatures from /dev/sda1 and /dev/sdb2 partitions&lt;/strong&gt;):&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# wipefs -a /dev/sda1
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# wipefs -a /dev/sda1
 # wipefs -a /dev/sdb1
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Cleaned up. Now, as is usual with basically all storage technologies, we
 need to write some metadata to the devices we want to use for our bcache
@@ -108,8 +165,8 @@ so that the code providing the cache technology can identify such
 devices as bcache devices and so that it can store some configuration,
 status, etc. data there. Let's do it then:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# make-bcache -B /dev/sda1
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# make-bcache -B /dev/sda1
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This command writes bcache metadata for the backing device (space) to
 the partition &lt;code&gt;/dev/sda1&lt;/code&gt; (which is on the HDD). Believe it or not, but
@@ -124,8 +181,8 @@ and with the command above we have only defined the backing device
 (space). So we now of course have to define the cache device (space)
 again by writing some metadata into it:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# make-bcache -C /dev/sdb1
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# make-bcache -C /dev/sdb1
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The result is that we now have the metadata written to both the backing
 device (space) and the cache device (space). However, these devices
@@ -138,8 +195,8 @@ caching device which is not really useful. The last step missing is to
 attach the cache device to our bcache device &lt;code&gt;bcache0&lt;/code&gt; by writing the
 &lt;code&gt;Set UUID&lt;/code&gt; from the &lt;code&gt;make-bcache -C&lt;/code&gt; run to the appropriate file:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# echo C_Set_UUID_VALUE &amp;gt; /sys/block/bcache0/bcache/attach
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# echo C_Set_UUID_VALUE &amp;gt; /sys/block/bcache0/bcache/attach
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;From now on we can enjoy the speed, noise and other improvements
 provided by the use of our cache. The &lt;code&gt;/dev/bcache0&lt;/code&gt; device is just a
@@ -162,8 +219,8 @@ device (HDD) from many random write operations. Another typical mode is
 writes them back to the backing device. To change the mode we simply run
 the following command:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# echo writeback &amp;gt; /sys/block/bcache0/bcache/cache_mode
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# echo writeback &amp;gt; /sys/block/bcache0/bcache/cache_mode
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;However, this change is only temporary and we have to do the same after
 every boot of the system if we want to always use the &lt;code&gt;writeback&lt;/code&gt; mode
@@ -182,8 +239,8 @@ and misses. Of course, the more hits compared to misses the better. To
 find out more about the current state, status and stats of a &lt;code&gt;bcache&lt;/code&gt;
 another tool from the &lt;code&gt;bcache-tools&lt;/code&gt; package can be used:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# bcache-status -s
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# bcache-status -s
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;In the output we should see quite a lot of interesting information and
 we can for example also check that the desired cache mode is being used.
@@ -266,8 +323,8 @@ we need to tell LVM that the &lt;code&gt;/dev/sdb&lt;/code&gt; block device shou
 LVM member device (we could use a partition on &lt;code&gt;/dev/sdb&lt;/code&gt; if we wanted
 to combine partitions and LVM on our disks):&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# pvcreate /dev/sdb
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# pvcreate /dev/sdb
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If that fails because of some old metadata (disk label, file system
 signature…) being left on the disk we could either use the &lt;code&gt;wipefs&lt;/code&gt;
@@ -277,8 +334,8 @@ tool (as in case of the &lt;em&gt;bcache&lt;/em&gt;) or add the &lt;code&gt;--fo
 &lt;p&gt;Once LVM marks the &lt;code&gt;/dev/sdb&lt;/code&gt; device as an LVM member device &lt;sup id="fnref:5"&gt;&lt;a href="#fn:5" class="footnote"&gt;5&lt;/a&gt;&lt;/sup&gt; we can
 now add it to the &lt;code&gt;data&lt;/code&gt; VG:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# vgextend /dev/sdb
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# vgextend /dev/sdb
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The &lt;code&gt;data&lt;/code&gt; VG now sees the SSD as a free space for allocation if we
 create more LVs in it or grow some existing ones. But we want to use it
@@ -289,16 +346,16 @@ So let's start with creation of a good old LV with the size we want for
 our cache space and with it's &lt;em&gt;PEs&lt;/em&gt; (&lt;em&gt;Physical extents&lt;/em&gt;) being allocated
 on the SSD:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# lvcreate -n DataLVcache -L19.9G data /dev/sdb
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# lvcreate -n DataLVcache -L19.9G data /dev/sdb
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;I believe a concentrated reader now asks why only &lt;code&gt;19.9 GiB&lt;/code&gt; when we
 have &lt;code&gt;20 GiB&lt;/code&gt; of space on the SSD. The reason is that we are going the
 "hard" (more controlled) way and we need some space for a separate
 metadata volume which we can now create:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# lvcreate -n DataLVcacheMeta -L20M data /dev/sdb
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# lvcreate -n DataLVcacheMeta -L20M data /dev/sdb
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;with the size of &lt;code&gt;20 MiB&lt;/code&gt; because the LVM documentation (the man page)
 says it should be &lt;em&gt;1000 times smaller than the cache data LV, with a
@@ -312,8 +369,8 @@ an LV that provides the cache space for the backing space with metadata
 being written and kept in it. And as such, it is created from the data
 cache LV, more precisely converted:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# lvconvert --type cache-pool --cachemode writethrough --poolmetadata data/DataLVcacheMeta data/DataLVcache
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# lvconvert --type cache-pool --cachemode writethrough --poolmetadata data/DataLVcacheMeta data/DataLVcache
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;As you may see, we specify the cache mode on cache pool creation. The
 bad thing about it is that it cannot be changed later, but the good
@@ -326,8 +383,8 @@ again with a different cache mode.&lt;/p&gt;
 promise. The only missing step is to finally make our &lt;code&gt;DataLV&lt;/code&gt; cached.
 And as usual with &lt;em&gt;LVM&lt;/em&gt;, it is a conversion:&lt;/p&gt;
 
-&lt;pre class="highlight plaintext"&gt;# lvconvert --type cache --cachepool data/DataLVcache data/DataLV
-&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;# lvconvert --type cache --cachepool data/DataLVcache data/DataLV
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;And with that, we are done. We can now &lt;strong&gt;continue&lt;/strong&gt; using the &lt;code&gt;DataLV&lt;/code&gt;
 logical volume, but from now on as a cached volume using the cache space
