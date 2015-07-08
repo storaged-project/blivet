@@ -1,15 +1,15 @@
-/*! normalize.css v3.0.2 | MIT License | git.io/normalize */
-/* line 9, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
+/* line 9, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 html {
   font-family: sans-serif;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%; }
 
-/* line 19, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 19, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 body {
   margin: 0; }
 
-/* line 33, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 33, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 article,
 aside,
 details,
@@ -25,7 +25,7 @@ section,
 summary {
   display: block; }
 
-/* line 54, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 54, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 audio,
 canvas,
 progress,
@@ -33,53 +33,53 @@ video {
   display: inline-block;
   vertical-align: baseline; }
 
-/* line 67, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 67, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 audio:not([controls]) {
   display: none;
   height: 0; }
 
-/* line 77, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 77, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 [hidden],
 template {
   display: none; }
 
-/* line 89, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 89, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 a {
   background-color: transparent; }
 
-/* line 97, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 98, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 a:active,
 a:hover {
   outline: 0; }
 
-/* line 109, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 110, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 abbr[title] {
   border-bottom: 1px dotted; }
 
-/* line 117, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 118, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 b,
 strong {
   font-weight: bold; }
 
-/* line 126, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 127, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 dfn {
   font-style: italic; }
 
-/* line 135, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 136, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 h1 {
   font-size: 2em;
   margin: 0.67em 0; }
 
-/* line 144, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 145, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 mark {
   background: #ff0;
   color: #000; }
 
-/* line 153, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 154, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 small {
   font-size: 80%; }
 
-/* line 161, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 162, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 sub,
 sup {
   font-size: 75%;
@@ -87,37 +87,36 @@ sup {
   position: relative;
   vertical-align: baseline; }
 
-/* line 169, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 170, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 sup {
   top: -0.5em; }
 
-/* line 173, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 174, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 sub {
   bottom: -0.25em; }
 
-/* line 184, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 185, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 img {
   border: 0; }
 
-/* line 192, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 193, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 svg:not(:root) {
   overflow: hidden; }
 
-/* line 203, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 204, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 figure {
   margin: 1em 40px; }
 
-/* line 211, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 212, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 hr {
-  -moz-box-sizing: content-box;
   box-sizing: content-box;
   height: 0; }
 
-/* line 221, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 221, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 pre {
   overflow: auto; }
 
-/* line 229, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 229, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 code,
 kbd,
 pre,
@@ -125,7 +124,7 @@ samp {
   font-family: monospace, monospace;
   font-size: 1em; }
 
-/* line 252, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 252, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 button,
 input,
 optgroup,
@@ -135,16 +134,16 @@ textarea {
   font: inherit;
   margin: 0; }
 
-/* line 266, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 266, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 button {
   overflow: visible; }
 
-/* line 277, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 277, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 button,
 select {
   text-transform: none; }
 
-/* line 290, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 290, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 button,
 html input[type="button"],
 input[type="reset"],
@@ -152,76 +151,74 @@ input[type="submit"] {
   -webkit-appearance: button;
   cursor: pointer; }
 
-/* line 302, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 302, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 button[disabled],
 html input[disabled] {
   cursor: default; }
 
-/* line 311, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 311, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 button::-moz-focus-inner,
 input::-moz-focus-inner {
   border: 0;
   padding: 0; }
 
-/* line 322, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 322, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 input {
   line-height: normal; }
 
-/* line 334, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 334, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 input[type="checkbox"],
 input[type="radio"] {
   box-sizing: border-box;
   padding: 0; }
 
-/* line 346, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 346, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   height: auto; }
 
-/* line 357, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 356, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 input[type="search"] {
   -webkit-appearance: textfield;
-  -moz-box-sizing: content-box;
-  -webkit-box-sizing: content-box;
   box-sizing: content-box; }
 
-/* line 370, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 367, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-decoration {
   -webkit-appearance: none; }
 
-/* line 379, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 376, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 fieldset {
   border: 1px solid #c0c0c0;
   margin: 0 2px;
   padding: 0.35em 0.625em 0.75em; }
 
-/* line 390, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 387, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 legend {
   border: 0;
   padding: 0; }
 
-/* line 399, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 396, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 textarea {
   overflow: auto; }
 
-/* line 408, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 405, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 optgroup {
   font-weight: bold; }
 
-/* line 419, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 416, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 table {
   border-collapse: collapse;
   border-spacing: 0; }
 
-/* line 424, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_normalize.scss */
+/* line 421, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_normalize.scss */
 td,
 th {
   padding: 0; }
 
 /*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.css */
 @media print {
-  /* line 9, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 9, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   *,
   *:before,
   *:after {
@@ -230,103 +227,99 @@ th {
     box-shadow: none !important;
     text-shadow: none !important; }
 
-  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   a,
   a:visited {
     text-decoration: underline; }
 
-  /* line 23, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 23, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   a[href]:after {
     content: " (" attr(href) ")"; }
 
-  /* line 27, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 27, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   abbr[title]:after {
     content: " (" attr(title) ")"; }
 
-  /* line 33, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 33, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   a[href^="#"]:after,
   a[href^="javascript:"]:after {
     content: ""; }
 
-  /* line 38, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 38, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   pre,
   blockquote {
     border: 1px solid #999;
     page-break-inside: avoid; }
 
-  /* line 44, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 44, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   thead {
     display: table-header-group; }
 
-  /* line 48, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 48, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   tr,
   img {
     page-break-inside: avoid; }
 
-  /* line 53, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 53, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   img {
     max-width: 100% !important; }
 
-  /* line 57, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 57, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   p,
   h2,
   h3 {
     orphans: 3;
     widows: 3; }
 
-  /* line 64, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 64, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   h2,
   h3 {
     page-break-after: avoid; }
 
-  /* line 73, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
-  select {
-    background: #fff !important; }
-
-  /* line 78, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 72, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   .navbar {
     display: none; }
 
-  /* line 83, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 77, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   .btn > .caret,
   .dropup > .btn > .caret {
     border-top-color: #000 !important; }
 
-  /* line 87, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 81, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   .label {
     border: 1px solid #000; }
 
-  /* line 91, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 85, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   .table {
     border-collapse: collapse !important; }
-    /* line 94, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+    /* line 88, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
     .table td,
     .table th {
       background-color: #fff !important; }
 
-  /* line 100, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_print.scss */
+  /* line 94, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_print.scss */
   .table-bordered th,
   .table-bordered td {
     border: 1px solid #ddd !important; } }
 @-ms-viewport {
   width: device-width; }
-/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
 .visible-xs {
   display: none !important; }
 
-/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
 .visible-sm {
   display: none !important; }
 
-/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
 .visible-md {
   display: none !important; }
 
-/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
 .visible-lg {
   display: none !important; }
 
-/* line 34, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+/* line 36, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
 .visible-xs-block,
 .visible-xs-inline,
 .visible-xs-inline-block,
@@ -342,195 +335,195 @@ th {
   display: none !important; }
 
 @media (max-width: 767px) {
-  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .visible-xs {
     display: block !important; }
 
-  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   table.visible-xs {
-    display: table; }
+    display: table !important; }
 
-  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   tr.visible-xs {
     display: table-row !important; }
 
-  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   th.visible-xs,
   td.visible-xs {
     display: table-cell !important; } }
 @media (max-width: 767px) {
-  /* line 52, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 54, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-xs-block {
     display: block !important; } }
 
 @media (max-width: 767px) {
-  /* line 57, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 59, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-xs-inline {
     display: inline !important; } }
 
 @media (max-width: 767px) {
-  /* line 62, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 64, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-xs-inline-block {
     display: inline-block !important; } }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .visible-sm {
     display: block !important; }
 
-  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   table.visible-sm {
-    display: table; }
+    display: table !important; }
 
-  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   tr.visible-sm {
     display: table-row !important; }
 
-  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   th.visible-sm,
   td.visible-sm {
     display: table-cell !important; } }
 @media (min-width: 768px) and (max-width: 991px) {
-  /* line 71, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 73, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-sm-block {
     display: block !important; } }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  /* line 76, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 78, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-sm-inline {
     display: inline !important; } }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  /* line 81, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 83, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-sm-inline-block {
     display: inline-block !important; } }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .visible-md {
     display: block !important; }
 
-  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   table.visible-md {
-    display: table; }
+    display: table !important; }
 
-  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   tr.visible-md {
     display: table-row !important; }
 
-  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   th.visible-md,
   td.visible-md {
     display: table-cell !important; } }
 @media (min-width: 992px) and (max-width: 1199px) {
-  /* line 90, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 92, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-md-block {
     display: block !important; } }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  /* line 95, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 97, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-md-inline {
     display: inline !important; } }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  /* line 100, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 102, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-md-inline-block {
     display: inline-block !important; } }
 
 @media (min-width: 1200px) {
-  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .visible-lg {
     display: block !important; }
 
-  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   table.visible-lg {
-    display: table; }
+    display: table !important; }
 
-  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   tr.visible-lg {
     display: table-row !important; }
 
-  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   th.visible-lg,
   td.visible-lg {
     display: table-cell !important; } }
 @media (min-width: 1200px) {
-  /* line 109, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 111, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-lg-block {
     display: block !important; } }
 
 @media (min-width: 1200px) {
-  /* line 114, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 116, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-lg-inline {
     display: inline !important; } }
 
 @media (min-width: 1200px) {
-  /* line 119, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+  /* line 121, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
   .visible-lg-inline-block {
     display: inline-block !important; } }
 
 @media (max-width: 767px) {
-  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .hidden-xs {
     display: none !important; } }
 @media (min-width: 768px) and (max-width: 991px) {
-  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .hidden-sm {
     display: none !important; } }
 @media (min-width: 992px) and (max-width: 1199px) {
-  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .hidden-md {
     display: none !important; } }
 @media (min-width: 1200px) {
-  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .hidden-lg {
     display: none !important; } }
-/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+/* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
 .visible-print {
   display: none !important; }
 
 @media print {
-  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 7, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .visible-print {
     display: block !important; }
 
-  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 10, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   table.visible-print {
-    display: table; }
+    display: table !important; }
 
-  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 11, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   tr.visible-print {
     display: table-row !important; }
 
-  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 12, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   th.visible-print,
   td.visible-print {
     display: table-cell !important; } }
-/* line 153, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+/* line 155, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
 .visible-print-block {
   display: none !important; }
   @media print {
-    /* line 153, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+    /* line 155, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
     .visible-print-block {
       display: block !important; } }
 
-/* line 160, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+/* line 162, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
 .visible-print-inline {
   display: none !important; }
   @media print {
-    /* line 160, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+    /* line 162, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
     .visible-print-inline {
       display: inline !important; } }
 
-/* line 167, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+/* line 169, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
 .visible-print-inline-block {
   display: none !important; }
   @media print {
-    /* line 167, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
+    /* line 169, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/_responsive-utilities.scss */
     .visible-print-inline-block {
       display: inline-block !important; } }
 
 @media print {
-  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.4.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
+  /* line 18, /home/david/.gem/ruby/gems/bootstrap-sass-3.3.5.1/assets/stylesheets/bootstrap/mixins/_responsive-visibility.scss */
   .hidden-print {
     display: none !important; } }
