@@ -538,7 +538,7 @@ class StorageDevice(Device):
     def _getSize(self):
         """ Get the device's size, accounting for pending changes. """
         size = self._size
-        if self.exists and self.resizable:
+        if self.exists and self.resizable and self.targetSize != Size(0):
             size = self.targetSize
 
         return size
@@ -552,15 +552,19 @@ class StorageDevice(Device):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        # only calculate these once
-        max_size = self.maxSize
-        min_size = self.minSize
-        if max_size and newsize > max_size:
-            raise errors.DeviceError("device cannot be larger than %s" %
-                                     max_size, self.name)
-        elif min_size and newsize < min_size:
-            raise errors.DeviceError("device cannot be smaller than %s" %
-                                     min_size, self.name)
+        # There's no point in checking limits here for existing devices since
+        # the only way to change their size is by setting target size. Any call
+        # to this setter for an existing device should be to reflect existing
+        # state.
+        if not self.exists:
+            max_size = self.format.maxSize
+            min_size = self.format.minSize
+            if max_size and newsize > max_size:
+                raise errors.DeviceError("device cannot be larger than %s" %
+                                         max_size, self.name)
+            elif min_size and newsize < min_size:
+                raise errors.DeviceError("device cannot be smaller than %s" %
+                                         min_size, self.name)
 
         self._size = newsize
 
@@ -681,6 +685,13 @@ class StorageDevice(Device):
         if self._format and self._format.status:
             # FIXME: self.format.status doesn't mean much
             raise errors.DeviceError("cannot replace active format", self.name)
+
+        # check device size against format limits
+        if not fmt.exists:
+            if fmt.maxSize and fmt.maxSize < self.size:
+                raise errors.DeviceError("device is too large for new format")
+            elif fmt.minSize and fmt.minSize > self.size:
+                raise errors.DeviceError("device is too small for new format")
 
         self._format = fmt
         self._format.device = self.path

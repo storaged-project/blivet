@@ -606,12 +606,14 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         size = self.vg.align(size)
         log.debug("trying to set lv %s size to %s", self.name, size)
-        if size <= self.vg.freeSpace + self.vgSpaceUsed:
-            self._size = size
-            self.targetSize = size
-        else:
-            log.debug("failed to set size: %s short", size - (self.vg.freeSpace + self.vgSpaceUsed))
+        # Don't refuse to set size if we think there's not enough space in the
+        # VG for an existing LV, since it's existence proves there is enough
+        # space for it.
+        if not self.exists and size > self.vg.freeSpace + self.vgSpaceUsed:
+            log.error("failed to set size: %s short", size - (self.vg.freeSpace + self.vgSpaceUsed))
             raise ValueError("not enough free space in volume group")
+
+        super(LVMLogicalVolumeDevice, self)._setSize(size)
 
     size = property(StorageDevice._getSize, _setSize)
 
@@ -1500,8 +1502,7 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
 
         size = self.vg.align(size)
         size = self.vg.align(util.numeric_type(size))
-        self._size = size
-        self.targetSize = size
+        super(LVMThinLogicalVolumeDevice, self)._setSize(size)
 
     size = property(StorageDevice._getSize, _setSize)
 

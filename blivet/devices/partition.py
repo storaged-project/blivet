@@ -714,13 +714,11 @@ class PartitionDevice(StorageDevice):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
+        super(PartitionDevice, self)._setSize(newsize)
         if not self.exists:
-            # device does not exist (a partition request), just set basic value
-            self._size = newsize
+            # also update size fields used for partition allocation
             self.req_size = newsize
             self.req_base_size = newsize
-        else:
-            super(PartitionDevice, self)._setSize(newsize)
 
     def _getDisk(self):
         """ The disk that contains this partition."""
