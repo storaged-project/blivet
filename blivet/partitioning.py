@@ -22,8 +22,12 @@
 
 from operator import gt, lt
 from decimal import Decimal
-from gi.repository import BlockDev as blockdev
 import functools
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
+from gi.repository import BlockDev as blockdev
 
 import parted
 

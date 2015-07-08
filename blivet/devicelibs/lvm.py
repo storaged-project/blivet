@@ -23,6 +23,10 @@
 import re
 
 from collections import namedtuple
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 import logging

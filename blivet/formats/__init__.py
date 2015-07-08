@@ -21,9 +21,13 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import gi
+gi.require_version("BlockDev", "1.0")
+
+from gi.repository import BlockDev as blockdev
+
 import os
 import importlib
-from gi.repository import BlockDev as blockdev
 
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name

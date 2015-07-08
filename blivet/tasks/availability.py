@@ -25,6 +25,9 @@ import hawkey
 
 from six import add_metaclass
 
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 from .. import util

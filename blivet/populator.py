@@ -27,6 +27,9 @@ import pprint
 import copy
 import parted
 
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError

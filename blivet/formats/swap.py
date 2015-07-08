@@ -25,6 +25,10 @@ from ..storage_log import log_method_call
 from ..tasks import availability
 from . import DeviceFormat, register_device_format
 from ..size import Size
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 import logging
