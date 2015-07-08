@@ -55,8 +55,8 @@ _IOC_NONE = 0
 _IOC_WRITE = 1
 _IOC_READ = 2
 
-def _IOC(dir, typ, nr, size):
-    return (((dir)  << _IOC_DIRSHIFT) | \
+def _IOC(direction, typ, nr, size):
+    return (((direction)  << _IOC_DIRSHIFT) | \
             ((typ)  << _IOC_TYPESHIFT) | \
             ((nr)   << _IOC_NRSHIFT) | \
             ((size) << _IOC_SIZESHIFT))
