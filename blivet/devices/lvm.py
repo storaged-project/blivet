@@ -26,6 +26,10 @@ import copy
 import pprint
 import re
 import os
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 # device backend modules

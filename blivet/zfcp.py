@@ -25,6 +25,10 @@ from . import util
 from .util import open  # pylint: disable=redefined-builtin
 from .i18n import _
 from .util import stringize, unicodeize
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 import logging

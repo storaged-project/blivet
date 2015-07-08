@@ -22,6 +22,10 @@
 import os
 import copy
 import tempfile
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 from ..devicelibs import btrfs

@@ -20,8 +20,12 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-import os
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
+
+import os
 
 from .. import errors
 from .. import util

@@ -14,8 +14,12 @@ import hashlib
 import warnings
 from decimal import Decimal
 from contextlib import contextmanager
-from gi.repository import BlockDev as blockdev
 from functools import wraps
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
+from gi.repository import BlockDev as blockdev
 
 import six
 

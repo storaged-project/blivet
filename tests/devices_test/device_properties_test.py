@@ -1,6 +1,10 @@
 # vim:set fileencoding=utf-8
 
 import unittest
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 from mock import Mock

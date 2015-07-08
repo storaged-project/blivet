@@ -24,6 +24,10 @@ import shlex
 import os
 import stat
 import time
+
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 from . import util
