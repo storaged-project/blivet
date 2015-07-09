@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.10
+Version: 0.61.15.11
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,17 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jul 09 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.11-1
+- Add error handling around storageInitialize for unusable setups. (dlehman)
+  Related: rhbz#1236995
+  Related: rhbz#1198367
+- Include suggestions in error classes for unusable storage configurations.
+  (dlehman)
+  Related: rhbz#1236995
+  Related: rhbz#1198367
+- x-initrd.mount should only be set for /var (bcl)
+  Resolves: rhbz#1238603
+
 * Tue Jul 07 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.10-1
 - Add a function to devicelibs.dasd to detect LDL DASDs. (sbueno+anaconda)
   Resolves: rhbz#1233438
