@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.7
+Version: 1.8
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -108,6 +108,40 @@ popd
 %endif
 
 %changelog
+* Fri Jul 10 2015 Brian C. Lane <bcl@redhat.com> - 1.8-1
+- Add a bunch more gi.require_version calls (dshea)
+- Merge pull request #170 from dwlehman/size-cleanups (dlehman)
+- Add unit tests for device size setters and getters. (dlehman)
+- Only return target size if it is set to something meaningful. (dlehman)
+- Validate new formats against current device size. (dlehman)
+- Device size checks do not apply to existing devices. (dlehman)
+- Make sure subclasses size setters use the base setter as appropriate.
+  (dlehman)
+- x-initrd.mount should only be set for /var (#1238603) (bcl)
+- There's a python3 anaconda now, so ditch the temporary false positives.
+  (clumens)
+- Fix a syntax error caused by my previous commit. (clumens)
+- Fix a duplicate key caused by patch merging. (clumens)
+- Add support for specifying arbitrary mkfs options. (clumens)
+- Align free regions before choosing one. (dlehman)
+- Align partition sizes earlier in the allocation process. (dlehman)
+- Don't crash on cleanup with DASDs or iSCSI devices present. (#1166506)
+  (dlehman)
+- Make check-requires errors more readable. (dshea)
+- Merge pull request #166 from dwlehman/autopart-snapshot-branch (dlehman)
+- Default to a string when sorting mountpoints in FSSet.umountFilesystems.
+  (dlehman)
+- Fix order of arguments to blockdev.thsnapshotcreate. (dlehman)
+- Snapshot format exists upon snapshot creation. (dlehman)
+- Improve format handling for lvm snapshots. (dlehman)
+- Merge pull request #160 from dwlehman/lookup-method-deprecations (dlehman)
+- Deprecate some little-used devicetree lookup methods. (dlehman)
+- Add a decorator to mark deprecated functions/methods. (dlehman)
+- Log python warnings, including DeprecationWarning. (dlehman)
+- Catch and relay more exception types from the iscsi process (dshea)
+- Use the pipes as contextmanagers to ensure they are closed (dshea)
+- Close the unused half of pipes after the fork (dshea)
+
 * Fri Jun 26 2015 Brian C. Lane <bcl@redhat.com> - 1.7-1
 - Merge pull request #167 from mulkieran/master-format-copy-b (mulkieran)
 - Merge pull request #156 from vpodzime/master-lvm_cache_actually (vpodzime)
