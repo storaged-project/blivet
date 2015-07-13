@@ -134,6 +134,12 @@ class PartitionDevice(StorageDevice):
         self._partedPartition = None
         self._origPath = None
 
+        if not exists and size is None:
+            if start is not None and end is not None:
+                size = Size(0)
+            else:
+                size = self.defaultSize
+
         StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                major=major, minor=minor, exists=exists,
                                sysfsPath=sysfsPath, parents=parents)
@@ -168,13 +174,6 @@ class PartitionDevice(StorageDevice):
             # XXX It might be worthwhile to create a shit-simple
             #     PartitionRequest class and pass one to this constructor
             #     for new partitions.
-            if not self._size:
-                if start is not None and end is not None:
-                    self._size = Size(0)
-                else:
-                    # default size for new partition requests
-                    self._size = self.defaultSize
-
             self.req_name = name
             self.req_partType = partType
             self.req_primary = primary
