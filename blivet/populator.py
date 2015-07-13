@@ -538,6 +538,7 @@ class Populator(object):
             kwargs["memberDevices"] = udev.device_get_md_devices(info)
             kwargs["uuid"] = udev.device_get_md_uuid(info)
             kwargs["exists"]  = True
+            del kwargs["model"]
             del kwargs["serial"]
             del kwargs["vendor"]
             del kwargs["bus"]
