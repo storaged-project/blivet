@@ -1062,6 +1062,7 @@ class DeviceTree(object):
             kwargs["exists"]  = True
             del kwargs["serial"]
             del kwargs["vendor"]
+            del kwargs["model"]
             del kwargs["bus"]
         elif udev.device_is_dasd(info) and not self._cleanup:
             diskType = DASDDevice
