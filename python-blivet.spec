@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.11
+Version: 0.61.15.12
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jul 15 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.12-1
+- Fix two pylint problems. (clumens)
+  Related: rhbz#1233438
+
 * Thu Jul 09 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.11-1
 - Add error handling around storageInitialize for unusable setups. (dlehman)
   Related: rhbz#1236995
