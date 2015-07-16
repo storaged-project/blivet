@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.8
+Version: 1.9
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -108,6 +108,10 @@ popd
 %endif
 
 %changelog
+* Thu Jul 16 2015 Brian C. Lane <bcl@redhat.com> - 1.9-1
+- Apply default size for new partition earlier in constructor. (dlehman)
+- Don't pass model to md fwraid constructor. (#1242610) (dlehman)
+
 * Fri Jul 10 2015 Brian C. Lane <bcl@redhat.com> - 1.8-1
 - Add a bunch more gi.require_version calls (dshea)
 - Merge pull request #170 from dwlehman/size-cleanups (dlehman)

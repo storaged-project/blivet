@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-10 17:13-0700\n"
+"POT-Creation-Date: 2015-07-16 16:14-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,7 +82,7 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/populator.py:808
+#: ../blivet/populator.py:809
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -346,6 +346,40 @@ msgstr ""
 msgid "Yi"
 msgstr ""
 
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:273
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:436 ../blivet/autopart.py:487
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:441 ../blivet/autopart.py:495
+msgid "Not enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/errors.py:143
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
+msgstr ""
+
+#: ../blivet/errors.py:149
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
+msgstr ""
+
+#: ../blivet/errors.py:154
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
 #: ../blivet/platform.py:51
 msgid "bootloader device"
 msgstr ""
@@ -431,19 +465,6 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:273
-msgid "No big enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/autopart.py:436 ../blivet/autopart.py:487
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/autopart.py:441 ../blivet/autopart.py:495
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
 #: ../blivet/osinstall.py:230
 #, python-format
 msgid "Linux on %s"
@@ -461,27 +482,6 @@ msgstr ""
 #: ../blivet/osinstall.py:240
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/errors.py:143
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:149
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:154
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
 #: ../blivet/deviceaction.py:178
