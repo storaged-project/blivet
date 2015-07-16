@@ -108,6 +108,16 @@ class StorageDevice(Device):
 
         self._format = None
 
+        # For non-existent devices, make sure the initial size is enough for
+        # the format's metadata. This is mostly relevant for growable
+        # partitions and lvs with thoughtless initial sizes.
+        if not self.exists and fmt and fmt.minSize:
+            min_size = max(util.numeric_type(size), fmt.minSize)
+            if min_size > size:
+                log.info("%s: using size %s instead of %s to accommodate "
+                         "format minimum size", name, min_size, size)
+                size = min_size
+
         # The size will be overridden by a call to updateSize at the end of this
         # method for existing and active devices.
         self._size = Size(util.numeric_type(size))
