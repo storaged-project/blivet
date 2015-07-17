@@ -179,6 +179,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         # unrecognized keyword error in superclass constructor
         dataLevel = kwargs.pop("dataLevel", None)
         metaDataLevel = kwargs.pop("metaDataLevel", None)
+        createOptions = kwargs.pop("createOptions", None)
 
         super(BTRFSVolumeDevice, self).__init__(*args, **kwargs)
 
@@ -207,7 +208,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                                     volUUID=self.uuid,
                                     device=self.path,
                                     subvolspec=self.vol_id,
-                                    mountopts="subvolid=%d" % self.vol_id)
+                                    mountopts="subvolid=%d" % self.vol_id,
+                                    createOptions=createOptions)
             self.originalFormat = copy.deepcopy(self.format)
 
         self._defaultSubVolumeID = None
