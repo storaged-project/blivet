@@ -1238,6 +1238,7 @@ class Blivet(object):
             fmt_args["mountopts"] = "subvol=%s" % name
             kwargs.pop("metaDataLevel", None)
             kwargs.pop("dataLevel", None)
+            kwargs.pop("createOptions", None)
         else:
             dev_class = BTRFSVolumeDevice
             # set up the volume label, using hostname if necessary
