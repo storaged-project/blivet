@@ -52,6 +52,10 @@ check-requires:
 	done ; \
 	exit $$status
 
+install-requires:
+	@echo "*** Installing the dependencies required for testing and analysis ***"
+	dnf install -y $(TEST_DEPENDENCIES)
+
 test: check-requires
 	@echo "*** Running unittests with $(PYTHON) ***"
 	PYTHONPATH=.:tests/ $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
