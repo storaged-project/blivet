@@ -15,6 +15,8 @@ from blivet.devices import PartitionDevice
 
 from blivet.formats import getFormat
 
+from blivet.size import Size
+
 from blivet.tasks import availability
 
 class DeviceDependenciesTestCase(unittest.TestCase):
@@ -37,10 +39,10 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
     """Test availability of external device dependencies. """
 
     def setUp(self):
-        dev1 = DiskDevice("name", fmt=getFormat("mdmember"))
+        dev1 = DiskDevice("name", fmt=getFormat("mdmember"), size=Size("1 GiB"))
         dev2 = DiskDevice("other")
         self.part = PartitionDevice("part", fmt=getFormat("mdmember"), parents=[dev2])
-        self.dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1, self.part], fmt=getFormat("luks"))
+        self.dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1, self.part], fmt=getFormat("luks"), totalDevices=2, memberDevices=2)
         self.luks = LUKSDevice("luks", parents=[self.dev], fmt=getFormat("ext4"))
 
         self.mdraid_method = availability.BLOCKDEV_MDRAID_PLUGIN._method
