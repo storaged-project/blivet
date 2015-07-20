@@ -106,7 +106,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # avoid attribute-defined-outside-init pylint warning
         self._level = None
 
-        super(MDRaidArrayDevice, self).__init__(name, fmt=fmt, uuid=uuid,
+        super(MDRaidArrayDevice, self).__init__(name, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
@@ -130,6 +130,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             self.metadataVersion = "default"
         else:
             self.metadataVersion = metadataVersion
+
+        self.format = fmt
 
         if self.parents and self.parents[0].type == "mdcontainer" and self.type != "mdbiosraidarray":
             raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
