@@ -106,7 +106,7 @@ class StorageDevice(Device):
 
         super(StorageDevice, self).__init__(name, parents=parents)
 
-        self._format = None
+        self._format = getFormat(None)
 
         # For non-existent devices, make sure the initial size is enough for
         # the format's metadata. This is mostly relevant for growable
