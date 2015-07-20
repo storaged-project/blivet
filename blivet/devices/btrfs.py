@@ -212,6 +212,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         self._defaultSubVolumeID = None
 
+    @property
+    def members(self):
+        return list(self.parents)
+
     def _setLevel(self, value, data):
         """ Sets a valid level for this device and level type.
 

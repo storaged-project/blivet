@@ -112,12 +112,12 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         state_functions = {
            "createBitmap" : xform(lambda d, a: self.assertFalse),
            "description" : xform(self.assertIsNotNone),
-           "devices" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
-                                    self.assertIsInstance(x, ParentList, m)),
            "formatClass" : xform(self.assertIsNotNone),
            "level" : xform(self.assertIsNone),
            "mdadmFormatUUID" : xform(self.assertIsNone),
            "memberDevices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "members" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+                                    self.assertIsInstance(x, list, m)),
            "metadataVersion" : xform(lambda x, m: self.assertEqual(x, "default", m)),
            "spares" : xform(lambda x, m: self.assertEqual(x, 0, m)),
            "totalDevices" : xform(lambda x, m: self.assertEqual(x, 0, m))
@@ -365,35 +365,35 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ## level tests
         ##
         self.stateCheck(self.dev1,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            level=xform(lambda x, m: self.assertEqual(x.name, "container", m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            mediaPresent=xform(self.assertFalse),
+           members=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            type=xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
         self.stateCheck(self.dev2,
            createBitmap=xform(self.assertFalse),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)))
         self.stateCheck(self.dev3,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)))
         self.stateCheck(self.dev4,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 4, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 3, m)))
         self.stateCheck(self.dev5,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 5, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 3, m)))
         self.stateCheck(self.dev6,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 6, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
         self.stateCheck(self.dev7,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
 
         ##
@@ -410,10 +410,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         self.stateCheck(self.dev9,
            createBitmap=xform(self.assertFalse),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            isDisk=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            partitionable=xform(self.assertTrue),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
@@ -424,16 +424,16 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         self.stateCheck(self.dev10,
            createBitmap=xform(self.assertFalse),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)))
 
         self.stateCheck(self.dev11,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            isDisk=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            partitionable=xform(self.assertTrue),
            targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
@@ -441,10 +441,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            type=xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
         self.stateCheck(self.dev12,
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            isDisk=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            partitionable=xform(self.assertTrue),
            targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
@@ -453,9 +453,9 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
         self.stateCheck(self.dev13,
            createBitmap=xform(self.assertFalse),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("3 MiB"), m)),
            targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
@@ -463,60 +463,60 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
         self.stateCheck(self.dev14,
            createBitmap=xform(self.assertTrue),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 4, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
         self.stateCheck(self.dev15,
            createBitmap=xform(self.assertTrue),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 5, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
         self.stateCheck(self.dev16,
            createBitmap=xform(self.assertTrue),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 6, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 4, m)))
 
         self.stateCheck(self.dev17,
            createBitmap=xform(self.assertTrue),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 4, m)))
 
         self.stateCheck(self.dev18,
            createBitmap=xform(self.assertTrue),
-           devices=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
            memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("2 MiB"), m)),
            spares=xform(lambda x, m: self.assertEqual(x, 1, m)),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 5, m)))
 
         self.stateCheck(self.dev19,
-                        devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
                         mdadmFormatUUID=xform(lambda x, m: self.assertEqual(x, blockdev.md.get_md_uuid(self.dev19.uuid), m)),
+                        members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         uuid=xform(lambda x, m: self.assertEqual(x, self.dev19.uuid, m)))
 
         self.stateCheck(self.dev20,
-                        devices=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
+                        members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         uuid=xform(lambda x, m: self.assertEqual(x, self.dev20.uuid, m)))
 

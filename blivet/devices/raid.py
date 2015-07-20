@@ -31,6 +31,8 @@ from .storage import StorageDevice
 @add_metaclass(abc.ABCMeta)
 class RaidDevice(StorageDevice):
     """ Metaclass for devices that support RAID in some form. """
+    members = abc.abstractproperty(lambda s: [],
+                                   doc="A list of the member device instances")
 
     def _validateRaidLevel(self, level, parent_diff=0):
         """ Returns an error message if the RAID level is invalid for this
@@ -47,8 +49,8 @@ class RaidDevice(StorageDevice):
             number of parents. The number is positive for added parents,
             negative for removed parents.
         """
-        num_parents = len(self.parents) + parent_diff
-        if not self.exists and num_parents < level.min_members:
+        num_members = len(self.members) + parent_diff # pylint: disable=no-member
+        if not self.exists and num_members < level.min_members:
             message = P_(
                "RAID level %(raidLevel)s requires that device have at least %(minMembers)d member.",
                "RAID level %(raidLevel)s requires that device have at least %(minMembers)d members.",
