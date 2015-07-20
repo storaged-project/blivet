@@ -576,9 +576,9 @@ class LVMDeviceTest(unittest.TestCase):
         lv.exists = True
         snap1 = LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
 
-        self.assertEqual(snap1.format, lv.format)
-        snap1.format = blivet.formats.getFormat("DM_snapshot_cow", exists=True)
-        self.assertEqual(snap1.format, lv.format)
+        self.assertEqual(snap1.format.type, lv.format.type)
+        lv.format = blivet.formats.getFormat("DM_snapshot_cow", exists=True)
+        self.assertEqual(snap1.format.type, lv.format.type)
 
         self.assertEqual(snap1.isleaf, True)
         self.assertEqual(snap1.direct, True)
