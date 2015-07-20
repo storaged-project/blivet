@@ -224,7 +224,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         if not self.exists or not self.mediaPresent:
             try:
-                size = self.level.get_size([d.size for d in self.devices],
+                size = self.level.get_size([d.size for d in self.members],
                     self.memberDevices,
                     self.chunkSize,
                     self.getSuperBlockSize)
@@ -436,11 +436,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         return (self.memberDevices <= len(self.members)) or not self.exists
 
-    @property
-    def devices(self):
-        """ Return a list of this array's member device instances. """
-        return self.parents
-
     def _postSetup(self):
         super(MDRaidArrayDevice, self)._postSetup()
         self.updateSysfsPath()
@@ -450,7 +445,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
         disks = []
-        for member in self.devices:
+        for member in self.members:
             member.setup(orig=orig)
             disks.append(member.path)
 
@@ -500,14 +495,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # XXX this won't work for containers since no UUID is reported for them
         info = blockdev.md.detail(self.path)
         self.uuid = info.uuid
-        for member in self.devices:
+        for member in self.members:
             member.format.mdUuid = self.uuid
 
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        disks = [disk.path for disk in self.devices]
-        spares = len(self.devices) - self.memberDevices
+        disks = [disk.path for disk in self.members]
+        spares = len(self.members) - self.memberDevices
         level = None
         if self.level:
             level = str(self.level)
