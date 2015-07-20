@@ -44,6 +44,7 @@ Requires: libblockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
 Requires: python-hawkey
+Requires: pygobject3
 
 %description
 The python-blivet package is a python module for examining and modifying
@@ -66,6 +67,7 @@ Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
+Requires: python3-gobject
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
