@@ -476,7 +476,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
         data.preexist = self.exists
 
-class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
+class BTRFSSubVolumeDevice(BTRFSDevice):
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
     _formatImmutable = True
