@@ -297,7 +297,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise ValueError("memberDevices cannot be greater than totalDevices")
         self._memberDevices = number
 
-    memberDevices = property(_getMemberDevices, _setMemberDevices,
+    memberDevices = property(lambda d: d._getMemberDevices(),
+                             lambda d, m: d._setMemberDevices(m),
                              doc="number of member devices")
 
     def _getSpares(self):
@@ -655,7 +656,35 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         # If the array is a BIOS RAID array then its unique parent
         # is a container and its actual member devices are the
         # container's parents.
-        return list(self.parents[0].parents)
+        return self.parents[0].members
+
+    @property
+    def devices(self):
+        return self.parents[0].devices
+
+    @property
+    def totalDevices(self):
+        return self.parents[0].totalDevices
+
+    def _getMemberDevices(self):
+        return self.parents[0].memberDevices
+
+    def _addParent(self, member):
+        # pylint: disable=bad-super-call
+        super(MDRaidArrayDevice, self)._addParent(member)
+
+        if self.status and member.format.exists:
+            # we always probe since the device may not be set up when we want
+            # information about it
+            self._size = self.currentSize
+
+    def _removeParent(self, member):
+        error_msg = self._validateParentRemoval(self.level, member)
+        if error_msg:
+            raise errors.DeviceError(error_msg)
+
+        # pylint: disable=bad-super-call
+        super(MDRaidArrayDevice, self)._removeParent(member)
 
     def teardown(self, recursive=None):
         log_method_call(self, self.name, status=self.status,
