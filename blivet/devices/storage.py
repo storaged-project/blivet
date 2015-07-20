@@ -106,7 +106,7 @@ class StorageDevice(Device):
 
         super(StorageDevice, self).__init__(name, parents=parents)
 
-        self._format = None
+        self._format = getFormat(None)
 
         # The size will be overridden by a call to updateSize at the end of this
         # method for existing and active devices.
