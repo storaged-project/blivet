@@ -106,7 +106,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # avoid attribute-defined-outside-init pylint warning
         self._level = None
 
-        super(MDRaidArrayDevice, self).__init__(name, fmt=fmt, uuid=uuid,
+        super(MDRaidArrayDevice, self).__init__(name, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfsPath=sysfsPath)
@@ -130,6 +130,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             self.metadataVersion = "default"
         else:
             self.metadataVersion = metadataVersion
+
+        self.format = fmt
 
         if self.parents and self.parents[0].type == "mdcontainer" and self.type != "mdbiosraidarray":
             raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
@@ -224,7 +226,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         if not self.exists or not self.mediaPresent:
             try:
-                size = self.level.get_size([d.size for d in self.devices],
+                size = self.level.get_size([d.size for d in self.members],
                     self.memberDevices,
                     self.chunkSize,
                     self.getSuperBlockSize)
@@ -297,7 +299,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise ValueError("memberDevices cannot be greater than totalDevices")
         self._memberDevices = number
 
-    memberDevices = property(_getMemberDevices, _setMemberDevices,
+    memberDevices = property(lambda d: d._getMemberDevices(),
+                             lambda d, m: d._setMemberDevices(m),
                              doc="number of member devices")
 
     def _getSpares(self):
@@ -436,11 +439,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         return (self.memberDevices <= len(self.members)) or not self.exists
 
-    @property
-    def devices(self):
-        """ Return a list of this array's member device instances. """
-        return self.parents
-
     def _postSetup(self):
         super(MDRaidArrayDevice, self)._postSetup()
         self.updateSysfsPath()
@@ -450,7 +448,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
         disks = []
-        for member in self.devices:
+        for member in self.members:
             member.setup(orig=orig)
             disks.append(member.path)
 
@@ -500,14 +498,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # XXX this won't work for containers since no UUID is reported for them
         info = blockdev.md.detail(self.path)
         self.uuid = info.uuid
-        for member in self.devices:
+        for member in self.members:
             member.format.mdUuid = self.uuid
 
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        disks = [disk.path for disk in self.devices]
-        spares = len(self.devices) - self.memberDevices
+        disks = [disk.path for disk in self.members]
+        spares = len(self.members) - self.memberDevices
         level = None
         if self.level:
             level = str(self.level)
@@ -556,11 +554,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     @property
     def partitionable(self):
-        return self.exists and all(p.partitionable for p in self.parents)
+        return self.exists and self.parents and all(p.partitionable for p in self.members)
 
     @property
     def isDisk(self):
-        return self.exists and all(p.isDisk for p in self.parents)
+        return self.exists and self.parents and all(p.isDisk for p in self.members)
 
     def dracutSetupArgs(self):
         return set(["rd.md.uuid=%s" % self.mdadmFormatUUID])
@@ -660,7 +658,35 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         # If the array is a BIOS RAID array then its unique parent
         # is a container and its actual member devices are the
         # container's parents.
-        return list(self.parents[0].parents)
+        return self.parents[0].members
+
+    @property
+    def devices(self):
+        return self.parents[0].devices
+
+    @property
+    def totalDevices(self):
+        return self.parents[0].totalDevices
+
+    def _getMemberDevices(self):
+        return self.parents[0].memberDevices
+
+    def _addParent(self, member):
+        # pylint: disable=bad-super-call
+        super(MDRaidArrayDevice, self)._addParent(member)
+
+        if self.status and member.format.exists:
+            # we always probe since the device may not be set up when we want
+            # information about it
+            self._size = self.currentSize
+
+    def _removeParent(self, member):
+        error_msg = self._validateParentRemoval(self.level, member)
+        if error_msg:
+            raise errors.DeviceError(error_msg)
+
+        # pylint: disable=bad-super-call
+        super(MDRaidArrayDevice, self)._removeParent(member)
 
     def teardown(self, recursive=None):
         log_method_call(self, self.name, status=self.status,

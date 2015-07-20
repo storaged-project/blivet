@@ -106,7 +106,7 @@ class StorageDevice(Device):
 
         super(StorageDevice, self).__init__(name, parents=parents)
 
-        self._format = None
+        self._format = getFormat(None)
 
         # For non-existent devices, make sure the initial size is enough for
         # the format's metadata. This is mostly relevant for growable
@@ -121,6 +121,7 @@ class StorageDevice(Device):
         # The size will be overridden by a call to updateSize at the end of this
         # method for existing and active devices.
         self._size = Size(util.numeric_type(size))
+        self._targetSize = self._size
         self._currentSize = self._size if self.exists else Size(0)
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
@@ -136,7 +137,6 @@ class StorageDevice(Device):
         self.format = fmt
         self.originalFormat = copy.deepcopy(self.format)
         self.fstabComment = ""
-        self._targetSize = self._size
 
         self.deviceLinks = []
 

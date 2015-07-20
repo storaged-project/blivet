@@ -214,6 +214,10 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         self._defaultSubVolumeID = None
 
+    @property
+    def members(self):
+        return list(self.parents)
+
     def _setLevel(self, value, data):
         """ Sets a valid level for this device and level type.
 
@@ -476,7 +480,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
         data.preexist = self.exists
 
-class BTRFSSubVolumeDevice(BTRFSDevice, RaidDevice):
+class BTRFSSubVolumeDevice(BTRFSDevice):
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
     _formatImmutable = True

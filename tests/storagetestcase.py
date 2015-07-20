@@ -68,6 +68,9 @@ class StorageTestCase(unittest.TestCase):
         self.partition_probe = PartitionDevice.probe
         PartitionDevice.probe = partition_probe
 
+        self.get_active_mounts = blivet.formats.fs.mountsCache._getActiveMounts
+        blivet.formats.fs.mountsCache._getActiveMounts = Mock()
+
     def tearDown(self):
         blivet.devices.StorageDevice.status = self.storage_status
         blivet.devices.DMDevice.status = self.dm_status
@@ -82,6 +85,8 @@ class StorageTestCase(unittest.TestCase):
         blivet.devices.PartitionDevice.minSize = self.partition_min
 
         blivet.devices.PartitionDevice.probe = self.partition_probe
+
+        blivet.formats.fs.mountsCache._getActiveMounts = self.get_active_mounts
 
     def newDevice(self, *args, **kwargs):
         """ Return a new Device instance suitable for testing. """
