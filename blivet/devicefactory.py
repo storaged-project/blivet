@@ -643,6 +643,10 @@ class DeviceFactory(object):
         pass
 
     def _set_size(self):
+        # reset the device's format before allocating partitions, &c
+        if self.device.format.type != self.fstype:
+            self.device.format = None
+
         # this is setting the device size based on the factory size and the
         # current size of the container
         self._set_device_size()
