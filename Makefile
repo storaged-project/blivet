@@ -15,7 +15,7 @@ endif
 ZANATA_PULL_ARGS = --transdir ./po/
 ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
-MOCKCHROOT ?= fedora-rawhide-$(uname -m)
+MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 TEST_DEPENDENCIES = $(shell grep "^Requires:" python-blivet.spec | cut -f2 -d: | cut -f1 -d">")
 TEST_DEPENDENCIES += python-mock python3-mock
