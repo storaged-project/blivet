@@ -15,7 +15,7 @@ endif
 ZANATA_PULL_ARGS = --transdir ./po/
 ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
-MOCKCHROOT ?= fedora-rawhide-x86_64
+MOCKCHROOT ?= fedora-rawhide-$(uname -m)
 
 TEST_DEPENDENCIES = $(shell grep "^Requires:" python-blivet.spec | cut -f2 -d: | cut -f1 -d">")
 TEST_DEPENDENCIES += python-mock python3-mock
@@ -170,5 +170,9 @@ rc-release: scratch-bumpver scratch
 	mock -r $(MOCKCHROOT) --scrub all || exit 1
 	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
 	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
+
+ci: check rc-release
+	@mkdir -p repo
+	@mv *rpm repo
 
 .PHONY: check clean install tag archive local
