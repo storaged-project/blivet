@@ -324,6 +324,15 @@ class DiskLabel(DeviceFormat):
         return logicals
 
     @property
+    def primaryPartitions(self):
+        try:
+            primaries = self.partedDisk.getPrimaryPartitions()
+        except Exception: # pylint: disable=broad-except
+            log_exception_info()
+            primaries = []
+        return primaries
+
+    @property
     def firstPartition(self):
         try:
             part = self.partedDisk.getFirstPartition()
