@@ -1587,7 +1587,7 @@ def manageSizeSets(size_sets, chunks):
                     if ss.needed < 0:
                         # it would be good to take back some from each device
                         # instead of taking all from the last one(s)
-                        extra = -chunk.sizeToLength(needed) / len(ss.devices)
+                        extra = -chunk.sizeToLength(needed) // len(ss.devices)
                         if extra > request.growth and i == 0:
                             log.debug("not reclaiming from this request")
                             continue
