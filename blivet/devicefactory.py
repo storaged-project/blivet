@@ -350,6 +350,22 @@ class DeviceFactory(object):
         free_info = self.storage.getFreeSpace(disks=self.disks)
         return sum(d[0] for d in free_info.values())
 
+    def _normalize_size(self):
+        if self.size is None:
+            self._handle_no_size()
+
+        size = self.size
+        fmt = getFormat(self.fstype)
+        if size < fmt.minSize:
+            size = fmt.minSize
+        elif fmt.maxSize and size > fmt.maxSize:
+            size = fmt.maxSize
+
+        if self.size != size:
+            log.debug("adjusted size from %s to %s to honor format limits",
+                      self.size, size)
+            self.size = size
+
     def _handle_no_size(self):
         """ Set device size so that it grows to the largest size possible. """
         if self.size is not None:
@@ -779,7 +795,7 @@ class DeviceFactory(object):
         if self.container and self.container.exists:
             self.disks = self.container.disks
 
-        self._handle_no_size()
+        self._normalize_size()
         self._set_up_child_factory()
 
         # Configure any devices this device will use as building blocks, except
