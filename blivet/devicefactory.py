@@ -706,7 +706,9 @@ class DeviceFactory(object):
             log.error("device post-create method failed: %s", e)
             raise
         else:
-            if self.device.size <= self.device.format.minSize:
+            if (self.device.size < self.device.format.minSize or
+                (self.device.size == self.device.format.minSize and
+                 self.size > self.device.format.minSize)):
                 raise StorageError("failed to adjust device -- not enough free space in specified disks?")
 
     def _set_format(self):
