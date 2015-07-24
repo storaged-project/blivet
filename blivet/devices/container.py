@@ -84,7 +84,7 @@ class ContainerDevice(StorageDevice):
         member_fmt_uuid = getattr(member.format, self._formatUUIDAttr)
 
         # If either UUID can not be obtained, nothing to check.
-        if not member_fmt_uuid or not self.uuid:
+        if self.exists and (not member_fmt_uuid or not self.uuid):
             log.warning("At least one UUID missing.")
             return None
 
