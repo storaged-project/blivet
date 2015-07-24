@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.9
+Version: 1.10
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -110,6 +110,29 @@ popd
 %endif
 
 %changelog
+* Fri Jul 24 2015 Brian C. Lane <bcl@redhat.com> - 1.10-1
+- Merge pull request #177 from AdamWill/1245446 (dlehman)
+- use floor division in calculating amount to reclaim (#1245446) (awilliam)
+- Remember to use the shell command when calling external stuff in Makefile.
+  (clumens)
+- Add a new makefile target that does everything needed for jenkins. (clumens)
+- Add missing gobject introspection Requires (bcl)
+- Add install-requires Makefile target (bcl)
+- Update md and btrfs unit tests to run with recent size changes. (dlehman)
+- Set format attr after super ctor for md. (dlehman)
+- Account for container layer in md fwraid array properties. (dlehman)
+- Ensure format is a DeviceFormat during initialization. (dlehman)
+- Set target size when setting other size attrs. (dlehman)
+- Use 'members' attribute to list RAID member devices. (dlehman)
+- BTRFS subvolumes shouldn't inherit from RAIDDevice. (dlehman)
+- Require a non-empty member set for md disks. (dlehman)
+- Mock mount cache while running action tests. (dlehman)
+- Account for recent lvm snapshot format changes in tests. (dlehman)
+- Bump size of non-existent devices to format minimum. (dlehman)
+- Don't pass createOptions along when creating the btrfs device. (clumens)
+- Merge pull request #59 from vpodzime/master-tab_tab (vpodzime)
+- Implement the __dir__ method of the LazyImportObject class (vpodzime)
+
 * Thu Jul 16 2015 Brian C. Lane <bcl@redhat.com> - 1.9-1
 - Apply default size for new partition earlier in constructor. (dlehman)
 - Don't pass model to md fwraid constructor. (#1242610) (dlehman)
