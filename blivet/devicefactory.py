@@ -735,11 +735,13 @@ class DeviceFactory(object):
             orig_device = self.device
             raw_device = self.raw_device
             leaf_format = self.device.format
+            if parent_container:
+                parent_container.parents.remove(orig_device)
             self.storage.destroyDevice(self.device)
             self.storage.formatDevice(self.raw_device, leaf_format)
             self.device = raw_device
             if parent_container:
-                parent_container.parents.replace(orig_device, self.device)
+                parent_container.parents.append(self.device)
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
             orig_device = self.device
             leaf_format = self.device.format
