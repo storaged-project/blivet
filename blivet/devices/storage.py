@@ -113,7 +113,7 @@ class StorageDevice(Device):
         # partitions and lvs with thoughtless initial sizes.
         if not self.exists and fmt and fmt.minSize:
             min_size = max(util.numeric_type(size), fmt.minSize)
-            if min_size > size:
+            if min_size > util.numeric_type(size):
                 log.info("%s: using size %s instead of %s to accommodate "
                          "format minimum size", name, min_size, size)
                 size = min_size
