@@ -45,10 +45,18 @@ Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
 Requires: python-hawkey
 Requires: pygobject3-base
+Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 %description
 The python-blivet package is a python module for examining and modifying
 storage configuration.
+
+%package -n %{realname}-data
+Summary: Data for the %{realname} python module.
+
+%description -n %{realname}-data
+The %{realname}-data package provides data files required by the %{realname}
+python module.
 
 %if 0%{with_python3}
 %package -n python3-%{realname}
@@ -68,6 +76,7 @@ Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
 Requires: python3-gobject-base
+Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
@@ -96,11 +105,13 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 popd
 %endif
 
-%files -f %{realname}.lang
+%files
 %defattr(-,root,root,-)
 %license COPYING
 %doc README ChangeLog examples
 %{python_sitelib}/*
+
+%files -n %{realname}-data -f %{realname}.lang
 
 %if 0%{?with_python3}
 %files -n python3-%{realname}
