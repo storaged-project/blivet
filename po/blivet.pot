@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-15 16:37-0700\n"
+"POT-Creation-Date: 2015-07-28 16:55-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -254,10 +254,6 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
-msgstr ""
-
 #: ../blivet/errors.py:166
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
@@ -281,6 +277,10 @@ msgstr ""
 
 #: ../blivet/devicetree.py:1326
 msgid "Invalid Disk Label"
+msgstr ""
+
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
