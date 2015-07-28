@@ -17,7 +17,7 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
-TEST_DEPENDENCIES = $(shell grep "^Requires:" python-blivet.spec | cut -f2 -d: | cut -f1 -d">")
+TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
 TEST_DEPENDENCIES += python-mock python3-mock
 TEST_DEPENDENCIES += cryptsetup-python cryptsetup-python3
 TEST_DEPENDENCIES += python3-gobject
