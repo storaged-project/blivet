@@ -1630,7 +1630,7 @@ class MDFactory(DeviceFactory):
 
     def _set_raid_level(self):
         # set the new level
-        self.device.level = self.raid_level
+        self.raw_device.level = self.raid_level
 
         # adjust the bitmap setting
 
