@@ -735,11 +735,13 @@ class DeviceFactory(object):
             orig_device = self.device
             raw_device = self.raw_device
             leaf_format = self.device.format
+            if parent_container:
+                parent_container.parents.remove(orig_device)
             self.storage.destroyDevice(self.device)
             self.storage.formatDevice(self.raw_device, leaf_format)
             self.device = raw_device
             if parent_container:
-                parent_container.parents.replace(orig_device, self.device)
+                parent_container.parents.append(self.device)
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
             orig_device = self.device
             leaf_format = self.device.format
@@ -1306,13 +1308,6 @@ class LVMFactory(DeviceFactory):
 
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
-
-        if self.container_raid_level and self.container_size in [SIZE_POLICY_AUTO,
-                                                                 SIZE_POLICY_MAX]:
-            # container pushed to the limit, but we need some extra space for
-            # metadata, so we need to make the LV smaller
-            extra_md_space = lvm.LVM_PE_SIZE * len(self.disks) * 5
-            kwargs["size"] -= extra_md_space
         return self.storage.newLV(*args, **kwargs)
 
     def _set_name(self):
@@ -1635,7 +1630,7 @@ class MDFactory(DeviceFactory):
 
     def _set_raid_level(self):
         # set the new level
-        self.device.level = self.raid_level
+        self.raw_device.level = self.raid_level
 
         # adjust the bitmap setting
 
