@@ -169,12 +169,19 @@ class ParentList(object):
 
             .. note::
 
+                This method does update the child counts for the two devices.
+
+            .. note::
+
                 It is usually a bad idea to bypass the callbacks. This is
                 intended for specific circumstances like toggling encryption of
                 container member devices in the devicefactory classes.
+
         """
         if x not in self.items:
             raise ValueError("item to be replaced is not in the list")
 
         idx = self.items.index(x)
         self.items[idx] = y
+        x.removeChild()
+        y.addChild()
