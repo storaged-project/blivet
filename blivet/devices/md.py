@@ -433,6 +433,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return list(self.parents)
 
     @property
+    @util.deprecated('1.11', "Use 'members' instead.")
+    def devices(self):
+        return self.members
+
+    @property
     def complete(self):
         """ An MDRaidArrayDevice is complete if it has at least as many
             component devices as its count of active devices.
@@ -661,6 +666,7 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         return self.parents[0].members
 
     @property
+    @util.deprecated('1.11', "Use 'members' instead.")
     def devices(self):
         return self.parents[0].devices
 
