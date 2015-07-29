@@ -243,7 +243,7 @@ class LUKS(DeviceFormat):
         blockdev.crypto.luks_add_key(self.device,
                                      pass_=self.__passphrase,
                                      key_file=self._key_file,
-                                     new_passphrase=passphrase)
+                                     npass=passphrase)
 
     def removePassphrase(self):
         """
@@ -258,7 +258,7 @@ class LUKS(DeviceFormat):
             raise LUKSError("format has not been created")
 
         blockdev.crypto.luks_remove_key(self.device,
-                                        passphrase=self.__passphrase,
+                                        pass_=self.__passphrase,
                                         key_file=self._key_file)
 
     def escrow(self, directory, backupPassphrase):
