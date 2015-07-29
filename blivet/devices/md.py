@@ -485,7 +485,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """ Determine create parameters for this set """
         log_method_call(self, self.name)
         # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays
-        if getattr(self.format, "mountpoint", None) == "/boot/efi":
+        # The EXTLINUX can read 0.9 or 1.0 RAID1 metadata
+        if getattr(self.format, "mountpoint", None) == "/boot/efi" or \
+           getattr(self.format, "mountpoint", None) == "/boot":
             self.metadataVersion = "1.0"
 
     def _postCreate(self):
