@@ -617,8 +617,8 @@ class FSSet(object):
                (device.format.type == "swap" and not swapoff):
                 continue
 
+            # Unmount the devices
             device.format.teardown()
-            device.teardown()
 
         self.active = False
 
