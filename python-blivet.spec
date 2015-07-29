@@ -77,11 +77,9 @@ make DESTDIR=%{buildroot} install
 * Thu Jul 09 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.11-1
 - Add error handling around storageInitialize for unusable setups. (dlehman)
   Related: rhbz#1236995
-  Related: rhbz#1198367
 - Include suggestions in error classes for unusable storage configurations.
   (dlehman)
   Related: rhbz#1236995
-  Related: rhbz#1198367
 - x-initrd.mount should only be set for /var (bcl)
   Resolves: rhbz#1238603
 
