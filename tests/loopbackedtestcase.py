@@ -124,7 +124,9 @@ class LoopBackedTestCase(unittest.TestCase):
             self._loopMap.append((dev, store))
             self.loopDevices.append(dev)
 
-    def tearDown(self):
+        self.addCleanup(self._cleanUp)
+
+    def _cleanUp(self):
         # Guarantees that every item in _loopMap receives a minimum of
         # three chances to be removed or deleted as appropriate.
         num_tries = 3 * len(self._loopMap)

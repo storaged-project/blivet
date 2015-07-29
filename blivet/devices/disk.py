@@ -161,6 +161,14 @@ class DiskFile(DiskDevice):
     def updateSysfsPath(self):
         pass
 
+    def readCurrentSize(self):
+        size = Size(0)
+        if self.exists and os.path.exists(self.path):
+            st = os.stat(self.path)
+            size = Size(st.st_size)
+
+        return size
+
 class DMRaidArrayDevice(DMDevice, ContainerDevice):
     """ A dmraid (device-mapper RAID) device """
     _type = "dm-raid array"
