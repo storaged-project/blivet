@@ -225,8 +225,11 @@ class MDRaidArrayDevice(ContainerDevice):
         return size
 
     def updateSize(self):
-        # pylint: disable=bad-super-call
-        super(ContainerDevice, self).updateSize()
+        # container size is determined by the member disks, so there is nothing
+        # to update in that case
+        if self.type != "mdcontainer":
+            # pylint: disable=bad-super-call
+            super(ContainerDevice, self).updateSize()
 
     @property
     def description(self):
