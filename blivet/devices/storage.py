@@ -104,8 +104,6 @@ class StorageDevice(Device):
         self.sysfsPath = sysfsPath
         self._partedDevice = None
 
-        super(StorageDevice, self).__init__(name, parents=parents)
-
         self._format = getFormat(None)
 
         # For non-existent devices, make sure the initial size is enough for
@@ -133,6 +131,8 @@ class StorageDevice(Device):
         self._readonly = False
         self._protected = False
         self.controllable = not flags.testing
+
+        super(StorageDevice, self).__init__(name, parents=parents)
 
         self.format = fmt
         self.originalFormat = copy.deepcopy(self.format)
