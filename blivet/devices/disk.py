@@ -111,7 +111,11 @@ class DiskDevice(StorageDevice):
 
     @property
     def description(self):
-        return " ".join(s for s in (self.vendor, self.model) if s)
+        # On Virtio block devices the vendor is 0x1af4, make it more friendly
+        if self.vendor == "0x1af4":
+            return "Virtio Block Device"
+        else:
+            return " ".join(s for s in (self.vendor, self.model) if s)
 
     def _preDestroy(self):
         """ Destroy the device. """
