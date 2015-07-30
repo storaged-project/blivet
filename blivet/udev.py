@@ -872,7 +872,7 @@ def device_get_iscsi_initiator(info):
 # Ethernet interface.
 
 def _detect_broadcom_fcoe(info):
-    re_pci_host = re.compile(r'/(.*)/(host\d+)')
+    re_pci_host = re.compile(r'(.*)/(host\d+)')
     match = re_pci_host.match(device_get_sysfs_path(info))
     if match:
         sysfs_pci, host = match.groups()
