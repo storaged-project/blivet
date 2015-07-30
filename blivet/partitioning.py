@@ -1448,7 +1448,7 @@ def getDiskChunks(disk, partitions, free):
     disk_free = [f for f in free if f.device.path == disk.path]
 
     chunks = []
-    for f in disk_free:
+    for f in disk_free[:]:
         # Align the geometry so we have a realistic view of the free space.
         # alignUp and alignDown can align in the reverse direction if the only
         # aligned sector within the geometry is in that direction, so we have to
@@ -1458,11 +1458,13 @@ def getDiskChunks(disk, partitions, free):
         al_start = disk.format.alignment.alignUp(f, f.start)
         al_end = disk.format.endAlignment.alignDown(f, f.end)
         if al_start >= al_end:
+            disk_free.remove(f)
             continue
         geom = parted.Geometry(device=f.device,
                                start=al_start,
                                end=al_end)
         if geom.length < disk.format.alignment.grainSize:
+            disk_free.remove(f)
             continue
 
         chunks.append(DiskChunk(geom))
