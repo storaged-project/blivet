@@ -101,8 +101,6 @@ class StorageDevice(Device):
         self.sysfsPath = sysfsPath
         self._partedDevice = None
 
-        Device.__init__(self, name, parents=parents)
-
         self._format = None
 
         # The size will be overridden by a call to updateSize at the end of this
@@ -118,6 +116,8 @@ class StorageDevice(Device):
 
         self.protected = False
         self.controllable = not flags.testing
+
+        Device.__init__(self, name, parents=parents)
 
         self.format = fmt
         self.originalFormat = copy.copy(self.format)
