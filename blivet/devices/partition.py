@@ -753,7 +753,7 @@ class PartitionDevice(StorageDevice):
 
         # the rest is for changing the size of an allocated-but-not-existing
         # partition, which I'm not sure is advisable
-        if newsize > self.disk.size:
+        if self.disk and newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
 
         maxAvailableSize = Size(self.partedPartition.getMaxAvailableSize(unit="B"))
