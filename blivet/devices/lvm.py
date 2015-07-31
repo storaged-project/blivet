@@ -769,8 +769,11 @@ class LVMLogicalVolumeDevice(DMDevice):
             data_size = self.cache.size - md_size
 
             # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
+            # XXX: we need to pass slow_pvs+fast_pvs as slow PVs because parts
+            # of the fast PVs may be required for allocation of the LV (it may
+            # span over the slow PVs and parts of fast PVs)
             blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, data_size, md_size,
-                                                mode, 0, slow_pvs, fast_pvs)
+                                                mode, 0, slow_pvs+fast_pvs, fast_pvs)
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
