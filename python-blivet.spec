@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.10
+Version: 1.11
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,42 @@ popd
 %endif
 
 %changelog
+* Fri Jul 31 2015 Brian C. Lane <bcl@redhat.com> - 1.11-1
+- Put MDRaidArrayDevice.devices back, but mark it as deprecated. (dlehman)
+- Skip tearing down devices when unmounting filesystems (bcl)
+- Include details when umount fails (bcl)
+- Merge pull request #183 from dwlehman/tests-20150728 (dlehman)
+- Merge pull request #182 from dwlehman/devicefactory-20150728 (dlehman)
+- Merge pull request #184 from dwlehman/misc-20150728 (dlehman)
+- Enable unit test suite in jenkins. (dlehman)
+- Disable image-backed unit tests temporarily. (dlehman)
+- Add some tests for DeviceFactory. (dlehman)
+- Do basic child accounting when replacing a parent. (dlehman)
+- Set new raid level on correct device in MDFactory. (dlehman)
+- Fix container member switching when toggling member encryption. (dlehman)
+- Don't adjust actual lv size based on md metadata space requirements.
+  (dlehman)
+- Merge pull request #57 from vpodzime/master-luks_npass (vpodzime)
+- Fix names of the keyword arguments for luks_add_key and luks_remove_key
+  (vpodzime)
+- Make a better effort to clean up loop devices on failure. (dlehman)
+- Correctly get current size of disk files. (dlehman)
+- Don't warn about missing UUIDs for non-existent containers. (dlehman)
+- Only check disks for membership in a multipath. (dlehman)
+- Only update md array name if MD_DEVNAME is set. (#1212073) (dlehman)
+- Weed out unresolved macros in the check-requires target. (clumens)
+- Merge pull request #126 from vpodzime/master-translations_subpackage
+  (vpodzime)
+- Put translations into a subpackage shared by Python 2 and 3 (vpodzime)
+- Require pygobject3-base instead of pygobject (#1246842) (dshea)
+- Add method to list primary partitions (vtrefny)
+- Merge pull request #179 from dwlehman/size-followups (dlehman)
+- Fix test for failure to find space for device. (dlehman)
+- Make sure factory target size is within the limits of the fstype. (dlehman)
+- Unset obsolete format before updating device size. (dlehman)
+- Make sure size is numeric before comparing it with format minimum. (dlehman)
+- Don't constrain thin lv sizes to vg free space. (dlehman)
+
 * Fri Jul 24 2015 Brian C. Lane <bcl@redhat.com> - 1.10-1
 - Merge pull request #177 from AdamWill/1245446 (dlehman)
 - use floor division in calculating amount to reclaim (#1245446) (awilliam)
