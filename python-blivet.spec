@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.13
+Version: 0.61.15.14
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jul 31 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.14-1
+- Don't pass createOptions along when creating the btrfs device. (clumens)
+  Resolves: rhbz#1248313
+- Pass a sysfs path to MultipathDevice constructor (rvykydal)
+  Resolves: rhbz#1245201
+
 * Tue Jul 28 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.13-1
 - Enforce size range on factory fstypes (dlehman)
   Resolves: rhbz#1178884

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-28 16:55-0700\n"
+"POT-Creation-Date: 2015-07-31 17:23-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1416
+#: ../blivet/__init__.py:1417
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3036
+#: ../blivet/__init__.py:3037
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3041
+#: ../blivet/__init__.py:3042
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3043
+#: ../blivet/__init__.py:3044
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -254,6 +254,10 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
+#: ../blivet/fcoe.py:108
+msgid "FCoE not available"
+msgstr ""
+
 #: ../blivet/errors.py:166
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
@@ -275,12 +279,8 @@ msgid ""
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
-#: ../blivet/devicetree.py:1326
+#: ../blivet/devicetree.py:1327
 msgid "Invalid Disk Label"
-msgstr ""
-
-#: ../blivet/fcoe.py:108
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
