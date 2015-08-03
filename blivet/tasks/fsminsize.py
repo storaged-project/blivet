@@ -51,9 +51,9 @@ class FSMinSize(task.BasicApplication, fstask.FSTask):
         error_msg = None
         try:
             (rc, out) = util.run_program_and_capture_output(self._resizeCommand())
+            if rc:
+                error_msg = "failed to gather info from resize program: %d" % rc
         except OSError as e:
-            error_msg = "failed to gather info from resize program: %s" % e
-        if rc:
             error_msg = "failed to gather info from resize program: %s" % e
 
         if error_msg:
