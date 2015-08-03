@@ -1158,8 +1158,30 @@ class Populator(object):
             # if MD_METADATA is missing, assume metadata version is 0.90
             md_metadata = md_info.metadata or "0.90"
             md_name = None
+
+            # check the list of devices udev knows about to see if the array
+            # this device belongs to is already active
+            # XXX This is mainly for containers now since their name/device is
+            #     not given by mdadm examine as we run it.
+            for dev in udev.get_devices():
+                if not udev.device_is_md(dev):
+                    continue
+
+                try:
+                    dev_uuid = udev.device_get_md_uuid(dev)
+                    dev_level = udev.device_get_md_level(dev)
+                except KeyError:
+                    continue
+
+                if dev_uuid is None or dev_level is None:
+                    continue
+
+                if dev_uuid == md_uuid and dev_level == md_level:
+                    md_name = udev.device_get_md_name(dev)
+                    break
+
             md_path = md_info.device or ""
-            if md_path:
+            if md_path and not md_name:
                 md_name = devicePathToName(md_path)
                 if re.match(r'md\d+$', md_name):
                     # md0 -> 0
