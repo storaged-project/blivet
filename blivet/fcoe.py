@@ -23,6 +23,7 @@ from . import util
 #from pyanaconda import isys
 import logging
 import time
+import shutil
 from .i18n import _
 log = logging.getLogger("blivet")
 
@@ -96,7 +97,7 @@ class fcoe(object):
         if self.lldpadStarted:
             return
 
-        util.run_program(["lldpad", "-d"])
+        util.run_program(["systemctl", "start", "lldpad.service"])
         self.lldpadStarted = True
 
     def addSan(self, nic, dcb=False, auto_vlan=True):
@@ -110,27 +111,74 @@ class fcoe(object):
         log.info("Activating FCoE SAN attached to %s, dcb: %s autovlan: %s",
                  nic, dcb, auto_vlan)
 
-        util.run_program(["ip", "link", "set", nic, "up"])
-
         rc = 0
+        out = ""
+        timeout = 60
         error_msg = ""
         if dcb:
+
             self._startLldpad()
-            util.run_program(["dcbtool", "sc", nic, "dcb", "on"])
-            util.run_program(["dcbtool", "sc", nic, "app:fcoe",
-                                                "e:1", "a:1", "w:1"])
-            rc, out = util.run_program_and_capture_output(["fipvlan", "-c", "-s", "-f",
-                                               "-fcoe", nic])
-        else:
-            if auto_vlan:
-                # certain network configrations require the VLAN layer module:
-                util.run_program(["modprobe", "8021q"])
-                rc, out = util.run_program_and_capture_output(["fipvlan", '-c', '-s', '-f',
-                                                   "-fcoe",  nic])
+
+            timeout_msg = "waiting for lldpad to be ready"
+            while timeout > 0:
+                rc, out = util.run_program_and_capture_output(
+                    ["lldptool", "-p"])
+                if rc == 0:
+                    break
+                timeout -= 1
+                time.sleep(1)
+
+            timeout_msg = "retrying to turn dcb on"
+            while timeout > 0:
+                rc, out = util.run_program_and_capture_output(
+                    ["dcbtool", "sc", nic, "dcb", "on"])
+                if rc == 0:
+                    break
+                timeout -= 1
+                time.sleep(1)
+
+            timeout_msg = "retrying to set up dcb with pfc"
+            while timeout > 0:
+                rc, out = util.run_program_and_capture_output(
+                    ["dcbtool", "sc", nic, "pfc", "e:1", "a:1", "w:1"])
+                if rc == 0:
+                    break
+                timeout -= 1
+                time.sleep(1)
+
+            timeout_msg = "retrying to set up dcb for fcoe"
+            while timeout > 0:
+                rc, out = util.run_program_and_capture_output(
+                    ["dcbtool", "sc", nic, "app:fcoe", "e:1", "a:1", "w:1"])
+                if rc == 0:
+                    break
+                timeout -= 1
+                time.sleep(1)
+
+            time.sleep(1)
+
+            if rc == 0:
+                self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
+                rc, out = util.run_program_and_capture_output(
+                    ["systemctl", "restart", "fcoe.service"])
             else:
-                f = open("/sys/module/libfcoe/parameters/create", "w")
-                f.write(nic)
-                f.close()
+                log.info("Timed out when %s", timeout_msg)
+
+        else:
+            dpath = os.readlink("/sys/class/net/%s/device/driver" % nic)
+            driver = os.path.basename(dpath)
+            if driver == "bnx2x":
+                util.run_program(["ip", "link", "set", nic, "up"])
+                util.run_program(["modprobe", "8021q"])
+                udev.settle()
+                # Sleep for 3 s to allow dcb negotiation (#813057)
+                time.sleep(3)
+                rc, out = util.run_program_and_capture_output(
+                    ["fipvlan", '-c', '-s', '-f', 'fcoe', nic])
+            else:
+                self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
+                rc, out = util.run_program_and_capture_output(
+                    ["systemctl", "restart", "fcoe.service"])
 
         if rc == 0:
             self._stabilize()
@@ -145,28 +193,46 @@ class fcoe(object):
         if not self.nics:
             return
 
-        if not os.path.isdir(root + "/etc/fcoe"):
-            os.makedirs(root + "/etc/fcoe", 0o755)
+        # Done before packages are installed so don't call
+        # write_nic_fcoe_cfg in target root but just copy the cfgs
+        shutil.copytree("/etc/fcoe", root + "/etc/fcoe")
 
-        for nic, dcb, auto_vlan in self.nics:
-            fd = os.open(root + "/etc/fcoe/cfg-" + nic,
-                         os.O_RDWR | os.O_CREAT)
-            os.write(fd, '# Created by anaconda\n')
-            os.write(fd, '# Enable/Disable FCoE service at the Ethernet port\n')
-            os.write(fd, 'FCOE_ENABLE="yes"\n')
-            os.write(fd, '# Indicate if DCB service is required at the Ethernet port\n')
-            if dcb:
-                os.write(fd, 'DCB_REQUIRED="yes"\n')
-            else:
-                os.write(fd, 'DCB_REQUIRED="no"\n')
-            os.write(fd, '# Indicate if VLAN discovery should be handled by fcoemon\n')
-            if auto_vlan:
-                os.write(fd, 'AUTO_VLAN="yes"\n')
-            else:
-                os.write(fd, 'AUTO_VLAN="no"\n')
-            os.close(fd)
+    def write_nic_fcoe_cfg(self, nic, dcb=True, auto_vlan=True, enable=True, mode=None, root=""):
+        cfg_dir = root + "/etc/fcoe"
+        example_cfg = os.path.join(cfg_dir, "cfg-ethx")
+        if os.access(example_cfg, os.R_OK):
+            lines = open(example_cfg, "r").readlines()
+        else:
+            anaconda_cfg = """FCOE_ENABLE="yes"\n
+DCB_REQUIRED="yes"\n
+AUTO_VLAN="yes"\n
+MODE="fabric"\n
+"""
+            lines = anaconda_cfg.splitlines(True)
 
-        return
+        new_cfg = open(os.path.join(cfg_dir, "cfg-%s" % nic), "w")
+        new_cfg.write("# Generated by Anaconda installer\n")
+        for line in lines:
+            if not line.strip().startswith("#"):
+                if line.startswith("FCOE_ENABLE"):
+                    if enable:
+                        line = 'FCOE_ENABLE="yes"'
+                    else:
+                        line = 'FCOE_ENABLE="no"'
+                elif line.startswith("DCB_REQUIRED"):
+                    if dcb:
+                        line = 'DCB_REQUIRED="yes"'
+                    else:
+                        line = 'DCB_REQUIRED="no"'
+                elif line.startswith("AUTO_VLAN"):
+                    if auto_vlan:
+                        line = 'AUTO_VLAN="yes"'
+                    else:
+                        line = 'AUTO_VLAN="no"'
+                elif line.startswith("MODE"):
+                    if mode:
+                        line = 'MODE="%s"' % mode
+            new_cfg.write(line)
 
 # Create FCoE singleton
 fcoe = fcoe()
