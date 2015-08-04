@@ -902,10 +902,10 @@ class BTRFS(FS):
 
     def _preSetup(self, **kwargs):
         log_method_call(self, type=self.mountType, device=self.device,
-                        mountpoint=self.mountpoint)
+                        mountpoint=self.mountpoint or kwargs.get("mountpoint"))
         # Since btrfs vols have subvols the format setup is automatic.
         # Don't try to mount it if there's no mountpoint.
-        return self.mountpoint or kwargs.get("mountpoint")
+        return bool(self.mountpoint or kwargs.get("mountpoint"))
 
 register_device_format(BTRFS)
 
