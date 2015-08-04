@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.14
+Version: 0.61.15.15
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Aug 03 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.15-1
+- PartitionDevice may not have a disk set (bcl)
+  Resolves: rhbz#1248973
+
 * Fri Jul 31 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.14-1
 - Don't pass createOptions along when creating the btrfs device. (clumens)
   Resolves: rhbz#1248313
