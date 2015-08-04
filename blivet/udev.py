@@ -68,12 +68,14 @@ def trigger(subsystem=None, action="add", name=None):
     util.run_program(["udevadm"] + argv)
     settle()
 
-def resolve_devspec(devspec):
+def resolve_devspec(devspec, sysname=False):
     if not devspec:
         return None
 
     # import devices locally to avoid cyclic import (devices <-> udev)
     from . import devices
+
+    devname = devices.devicePathToName(devspec)
 
     ret = None
     for dev in get_devices():
@@ -85,7 +87,7 @@ def resolve_devspec(devspec):
             if device_get_uuid(dev) == devspec[5:]:
                 ret = dev
                 break
-        elif device_get_name(dev) == devices.devicePathToName(devspec):
+        elif device_get_name(dev) == devname or dev.sys_name == devname:
             ret = dev
             break
         else:
@@ -99,7 +101,7 @@ def resolve_devspec(devspec):
                     break
 
     if ret:
-        return device_get_name(ret)
+        return ret.sys_name if sysname else device_get_name(ret)
 
 def resolve_glob(glob):
     import fnmatch
