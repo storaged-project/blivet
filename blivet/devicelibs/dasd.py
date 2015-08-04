@@ -285,7 +285,7 @@ def write_dasd_conf(disks, root):
     """ Write /etc/dasd.conf to target system for all DASD devices
         configured during installation.
     """
-    if not (arch.isS390() or disks):
+    if not (arch.isS390() and disks):
         return
 
     with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:

@@ -1605,7 +1605,7 @@ class Blivet(object):
         self.iscsi.write(_sysroot, self)
         self.fcoe.write(_sysroot)
         self.zfcp.write(_sysroot, self.devicetree.getDevicesByType("zfcp"))
-        write_dasd_conf(self.dasd, _sysroot)
+        write_dasd_conf(self.devicetree.dasd, _sysroot)
 
     def turnOnSwap(self):
         self.fsset.turnOnSwap(rootPath=_sysroot)
