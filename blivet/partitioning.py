@@ -424,11 +424,13 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
                                       constraint=constraint)
     return partition
 
-def getFreeRegions(disks):
+def getFreeRegions(disks, align=False):
     """ Return a list of free regions on the specified disks.
 
         :param disks: list of disks
         :type disks: list of :class:`~.devices.Disk`
+        :param align: align the region length to disk grainSize
+        :type align: bool
         :returns: list of free regions
         :rtype: list of :class:`parted.Geometry`
 
@@ -439,7 +441,13 @@ def getFreeRegions(disks):
     free = []
     for disk in disks:
         for f in disk.format.partedDisk.getFreeSpaceRegions():
-            if f.length >= disk.format.alignment.grainSize:
+            grain_size = disk.format.alignment.grainSize
+            if f.length >= grain_size:
+                if align:
+                    aligned_length = f.length - (f.length % grain_size)
+                    log.debug("length of free region aligned from %d to %d",
+                              f.length, aligned_length)
+                    f.length = aligned_length
                 free.append(f)
 
     return free
