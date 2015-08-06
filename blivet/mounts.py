@@ -20,6 +20,7 @@
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 from collections import defaultdict
+from .udev import resolve_devspec
 from . import util
 from .util import open  # pylint: disable=redefined-builtin
 from .devicelibs import btrfs
@@ -56,7 +57,9 @@ class _MountinfoCache(object):
 
                 root = fields[3]
                 mountpoint = fields[4]
-                devspec = fields[separator_index + 2]
+                # store the canonical device path
+                devspec = resolve_devspec(fields[separator_index + 2],
+                                          sysname=True)
                 cache[(devspec, mountpoint)] = root
 
         return cache
@@ -73,6 +76,8 @@ class _MountinfoCache(object):
         if self._cache is None:
             self._cache = self._getCache()
 
+        # get the canonical device path
+        devspec = resolve_devspec(devspec, sysname=True)
         return self._cache.get((devspec, mountpoint))
 
 class MountsCache(object):
@@ -103,6 +108,9 @@ class MountsCache(object):
         if subvolspec is not None:
             subvolspec = str(subvolspec)
 
+        # use the canonical device path
+        devspec = resolve_devspec(devspec, sysname=True)
+
         return self.mountpoints[(devspec, subvolspec)]
 
     def isMountpoint(self, path):
@@ -130,6 +138,9 @@ class MountsCache(object):
                 except ValueError:
                     log.error("failed to parse /proc/mounts line: %s", line)
                     continue
+
+                # use the canonical device path
+                devspec = resolve_devspec(devspec, sysname=True)
 
                 if fstype == "btrfs":
                     root = mountinfo.getRoot(devspec, mountpoint)
