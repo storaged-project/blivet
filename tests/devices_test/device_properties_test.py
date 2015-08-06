@@ -193,7 +193,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            level="container",
            parents=parents_1,
            totalDevices=2,
-           memberDevices=2
+           memberDevices=2,
+           exists=True
         )
         self.dev9 = MDBiosRaidArrayDevice(
            "dev9",
@@ -407,10 +408,30 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            metadataVersion=xform(lambda x, m: self.assertEqual(x, None, m)),
-           parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            partitionable=xform(self.assertTrue),
            totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            type = xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
+
+        ##
+        ## mdcontainer tests
+        ##
+        dev9_container = self.dev9.parents[0]
+        self.stateCheck(dev9_container,
+           createBitmap=xform(self.assertFalse),
+           direct=xform(self.assertFalse),
+           isDisk=xform(self.assertFalse),
+           isleaf=xform(self.assertFalse),
+           exists=xform(self.assertTrue),
+           level=xform(lambda x, m: self.assertEqual(x.name, "container", m)),
+           mediaPresent=xform(self.assertFalse),
+           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           metadataVersion=xform(lambda x, m: self.assertEqual(x, None, m)),
+           parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
+           partitionable=xform(self.assertFalse),
+           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           type = xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
 
         ##
         ## size tests

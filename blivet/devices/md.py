@@ -241,8 +241,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return size
 
     def updateSize(self):
-        # pylint: disable=bad-super-call
-        super(ContainerDevice, self).updateSize()
+        # container size is determined by the member disks, so there is nothing
+        # to update in that case
+        if self.type != "mdcontainer":
+            # pylint: disable=bad-super-call
+            super(ContainerDevice, self).updateSize()
 
     @property
     def description(self):
@@ -625,6 +628,14 @@ class MDContainerDevice(MDRaidArrayDevice):
         # (the device node does not allow read / write calls)
         return False
 
+    @property
+    def isDisk(self):
+        return False
+
+    @property
+    def partitionable(self):
+        return False
+
 class MDBiosRaidArrayDevice(MDRaidArrayDevice):
 
     _type = "mdbiosraidarray"
@@ -638,6 +649,18 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         # For container members probe size now, as we cannot determine it
         # when teared down.
         self._size = self.currentSize
+
+    @property
+    def isDisk(self):
+        # pylint: disable=bad-super-call
+        # skip MDRaidArrayDevice and use the version in StorageDevice
+        return super(MDRaidArrayDevice, self).isDisk
+
+    @property
+    def partitionable(self):
+        # pylint: disable=bad-super-call
+        # skip MDRaidArrayDevice and use the version in StorageDevice
+        return super(MDRaidArrayDevice, self).partitionable
 
     @property
     def size(self):
