@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.15
+Version: 0.61.15.16
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Aug 06 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.16-1
+- Fall back on mdadm info if udev info is missing for the array (amulhern)
+  Related: rhbz#1246003
+- Call superclass ctor a bit later to get size attrs set up first. (dlehman)
+  Resolves: rhbz#1246003
+- updateSize for md containers is a no-op. (dlehman)
+  Related: rhbz#1246003
+- Don't pass model to md fwraid constructor. (dlehman)
+  Related: rhbz#1246003
+
 * Mon Aug 03 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.15-1
 - PartitionDevice may not have a disk set (bcl)
   Resolves: rhbz#1248973
