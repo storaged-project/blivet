@@ -504,6 +504,21 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(req2.growth, 3956)
         self.assertEqual(req3.growth, 512)
 
+    def testAlignFreeRegions(self):
+        # disk with two free regions -- first unaligned, second aligned
+        disk = Mock()
+        disk.format.alignment.grainSize = 2048
+        disk.format.partedDisk.getFreeSpaceRegions.return_value = [Mock(start=1, end=2049, length=2049),
+                                                                   Mock(start=1, end=2048, length=2048)]
+
+        free = getFreeRegions([disk])
+        self.assertEqual(free[0].length, 2049)
+        self.assertEqual(free[1].length, 2048)
+
+        free = getFreeRegions([disk], align=True)
+        self.assertEqual(free[0].length, 2048)
+        self.assertEqual(free[1].length, 2048)
+
 class ExtendedPartitionTestCase(ImageBackedTestCase):
 
     disks = {"disk1": Size("2 GiB")}
