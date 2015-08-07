@@ -755,14 +755,22 @@ class PartitionDevice(StorageDevice):
         #     partition on disk. We don't care about leading free space --
         #     a filesystem cannot be relocated, so if you want to use space
         #     before and after your partition, remove it and create a new one.
-        sector = self.partedPartition.geometry.end + 1
         maxPartSize = self.size
+
+        if self.isLogical:
+            # logical partition is at the very end of the extended partition
+            extended = self.partedPartition.disk.getExtendedPartition()
+            if self.partedPartition.geometry.end == extended.geometry.end:
+                return maxPartSize
+
+        sector = self.partedPartition.geometry.end + 1
         try:
             partition = self.partedPartition.disk.getPartitionBySector(sector)
         except _ped.PartitionException:
             pass
         else:
-            if partition.type == parted.PARTITION_FREESPACE:
+            # next partition is free space or 'logical' free space
+            if partition.type & parted.PARTITION_FREESPACE:
                 maxPartSize += Size(partition.getLength(unit="B"))
 
         return maxPartSize
