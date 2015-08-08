@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.11
+Version: 1.12
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,30 @@ popd
 %endif
 
 %changelog
+* Fri Aug 07 2015 Brian C. Lane <bcl@redhat.com> - 1.12-1
+- Remove unusable free regions from list when setting up growth. (dlehman)
+- Merge pull request #190 from vpodzime/master-lvm_cache_creation (dlehman)
+- Merge pull request #194 from dwlehman/mount-cache-symlinks (dlehman)
+- Merge pull request #193 from dwlehman/md-fwraid-detection (dlehman)
+- Add unit tests to cover md containers. (dlehman)
+- Minor cleanup of blivet.formats.fs.BTRFS._preSetup. (dlehman)
+- Fix isDisk and partitionable properties for md fwraid. (dlehman)
+- Don't use MD_DEVNAME as device name for md partitions. (dlehman)
+- Use udev to find name of md members' container. (dlehman)
+- Call superclass ctor a bit later to get size attrs set up first. (dlehman)
+- updateSize for md containers is a no-op. (dlehman)
+- Fix UnboundLocalError in FSMinSize (#1249304) (vtrefny)
+- Fix mount cache resolution of devices with symlinks. (#1247803) (dlehman)
+- Add kwarg to udev.resolve_devspec to return canonical device name. (dlehman)
+- Use slow as well as fast PVs for cached LV's non-cache part (vpodzime)
+- Make VG determination in Blivet.newLV() less cryptic (vpodzime)
+- Reserve space for LVM cache(s) when growing LVM requests (vpodzime)
+- Create cached LVs before non-cached LVs (vpodzime)
+- Add support for LVM cache creation to LVM device classes (vpodzime)
+- Add generic class for cache creation requests (vpodzime)
+- Two minor fixes in LVMLogicalVolumeDevice's constructor's docstring
+  (vpodzime)
+
 * Fri Jul 31 2015 Brian C. Lane <bcl@redhat.com> - 1.11-1
 - Put MDRaidArrayDevice.devices back, but mark it as deprecated. (dlehman)
 - Skip tearing down devices when unmounting filesystems (bcl)
