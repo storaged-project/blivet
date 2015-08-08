@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.16
+Version: 0.61.15.17
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Aug 07 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.17-1
+- Fix some logical problems in write_dasd_conf (sbueno+anaconda)
+  Resolves: rhbz#1248949
+- Remove unusable free regions from list when setting up growth. (dlehman)
+  Resolves: rhbz#1248487
+
 * Thu Aug 06 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.16-1
 - Fall back on mdadm info if udev info is missing for the array (amulhern)
   Related: rhbz#1246003
