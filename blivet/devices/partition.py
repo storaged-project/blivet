@@ -756,6 +756,10 @@ class PartitionDevice(StorageDevice):
         if self.disk and newsize > self.disk.size:
             raise ValueError("partition size would exceed disk size")
 
+        if not self.partedPartition:
+            log.warn("No partedPartition, not adjusting geometry")
+            return
+
         maxAvailableSize = Size(self.partedPartition.getMaxAvailableSize(unit="B"))
 
         if newsize > maxAvailableSize:
