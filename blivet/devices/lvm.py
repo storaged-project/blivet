@@ -1757,11 +1757,11 @@ class LVMCacheStats(CacheStats):
         :type stats_data: :class:`blockdev.LVMCacheStats`
 
         """
-        self._block_size = stats_data.block_size
-        self._cache_size = stats_data.cache_size
+        self._block_size = Size(stats_data.block_size)
+        self._cache_size = Size(stats_data.cache_size)
         self._cache_used = stats_data.cache_used
-        self._md_block_size = stats_data.md_block_size
-        self._md_size = stats_data.md_size
+        self._md_block_size = Size(stats_data.md_block_size)
+        self._md_size = Size(stats_data.md_size)
         self._md_used = stats_data.md_used
         self._read_hits = stats_data.read_hits
         self._read_misses = stats_data.read_misses
