@@ -576,6 +576,8 @@ class LVMLogicalVolumeDevice(DMDevice):
     def metaDataSize(self):
         if self._metaDataSize:
             return self._metaDataSize
+        elif self.cached:
+            return self.cache.md_size
 
         md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
         return Size(sum(lv.size for lv in md_lvs))
@@ -763,16 +765,11 @@ class LVMLogicalVolumeDevice(DMDevice):
                     all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
             slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
 
-            # TODO: allow specification of metadata size
-            # for now, we just make the metadata+data parts take the requested cache space together
-            md_size = blockdev.lvm.cache_get_default_md_size(self.cache.size)
-            data_size = self.cache.size - md_size
-
             # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
             # XXX: we need to pass slow_pvs+fast_pvs as slow PVs because parts
             # of the fast PVs may be required for allocation of the LV (it may
             # span over the slow PVs and parts of fast PVs)
-            blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, data_size, md_size,
+            blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
                                                 mode, 0, slow_pvs+fast_pvs, fast_pvs)
 
     def _preDestroy(self):
@@ -1653,21 +1650,37 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
 class LVMCache(Cache):
     """Class providing the cache-related functionality of a cached LV"""
 
-    def __init__(self, cached_lv, size=None, exists=False, fast_pvs=None, mode=None):
+    def __init__(self, cached_lv, size=None, md_size=None, exists=False, fast_pvs=None, mode=None):
         """
         :param cached_lv: the LV the cache functionality of which to provide
         :type cached_lv: :class:`LVMLogicalVolumeDevice`
         :param size: size of the cache (useful mainly for non-existing caches
                      that cannot determine their size dynamically)
         :type size: :class:`~.size.Size`
+        :param md_size: size of the metadata part (LV) of the cache (for
+                        non-existing caches that cannot determine their metadata
+                        size dynamically) or None to use the default (see note below)
+        :type md_size: :class:`~.size.Size` or NoneType
         :param bool exists: whether the cache exists or not
         :param fast_pvs: PVs to allocate the cache on/from (ignored for existing)
         :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
         :param str mode: desired mode for non-existing cache (ignored for existing)
 
+        .. note::
+            If :param:`md_size` is None for a an unexisting cache, the default
+            is used and it is subtracted from the requested :param:`size` so
+            that the whole cache (data+metadata) fits in the space of size
+            :param:`size`.
+
         """
         self._cached_lv = cached_lv
-        self._size = size
+        if not exists and not md_size:
+            default_md_size = Size(blockdev.lvm.cache_get_default_md_size(size))
+            self._size = size - default_md_size
+            self._md_size = default_md_size
+        else:
+            self._size = size
+            self._md_size = md_size
         self._exists = exists
         if not exists:
             self._mode = mode or "writethrough"
@@ -1682,6 +1695,17 @@ class LVMCache(Cache):
             return self.stats.size
         else:
             return self._size
+
+    @property
+    def md_size(self):
+        if self.exists:
+            return self.stats.md_size
+        else:
+            return self._md_size
+
+    @property
+    def vgSpaceUsed(self):
+        return self.size + self.md_size
 
     @property
     def exists(self):
