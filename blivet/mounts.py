@@ -108,8 +108,16 @@ class MountsCache(object):
         if subvolspec is not None:
             subvolspec = str(subvolspec)
 
-        # use the canonical device path
-        devspec = resolve_devspec(devspec, sysname=True)
+        # devspec == None means "get 'nodev' mount points"
+        if devspec is not None:
+            # use the canonical device path (if available)
+            canon_devspec = resolve_devspec(devspec, sysname=True)
+            if canon_devspec is not None:
+                devspec = canon_devspec
+            else:
+                # udev doesn't know about the given device, it can hardly be
+                # mounted
+                return []
 
         return self.mountpoints[(devspec, subvolspec)]
 
@@ -139,8 +147,8 @@ class MountsCache(object):
                     log.error("failed to parse /proc/mounts line: %s", line)
                     continue
 
-                # use the canonical device path
-                devspec = resolve_devspec(devspec, sysname=True)
+                # use the canonical device path (if available)
+                devspec = resolve_devspec(devspec, sysname=True) or devspec
 
                 if fstype == "btrfs":
                     root = mountinfo.getRoot(devspec, mountpoint)
