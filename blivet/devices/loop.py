@@ -102,9 +102,8 @@ class LoopDevice(StorageDevice):
         loop.loop_setup(self.slave.path)
 
     def _postSetup(self):
-        StorageDevice._postSetup(self)
         self.updateName()
-        self.updateSysfsPath()
+        StorageDevice._postSetup(self)
 
     def _teardown(self, recursive=False):
         """ Close, or tear down, a device. """
