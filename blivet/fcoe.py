@@ -123,7 +123,7 @@ class fcoe(object):
                     ["lldptool", "-p"])
                 if not rc:
                     break
-                log.info("Waiting for lldpad to be ready")
+                timeout_msg = "waiting for lldpad to be ready"
                 timeout -= 1
                 time.sleep(1)
 
@@ -132,7 +132,7 @@ class fcoe(object):
                     ["dcbtool", "sc", nic, "dcb", "on"])
                 if not rc:
                     break
-                log.info("Retrying to turn dcb on")
+                timeout_msg = "retrying to turn dcb on"
                 timeout -= 1
                 time.sleep(1)
 
@@ -141,7 +141,7 @@ class fcoe(object):
                     ["dcbtool", "sc", nic, "pfc", "e:1", "a:1", "w:1"])
                 if not rc:
                     break
-                log.info("Retrying to set up dcb with pfc")
+                timeout_msg = "retrying to set up dcb with pfc"
                 timeout -= 1
                 time.sleep(1)
 
@@ -151,7 +151,7 @@ class fcoe(object):
                 if not rc:
                     break
                 time.sleep(1)
-                log.info("Retrying to set up dcb for fcoe")
+                timeout_msg = "retrying to set up dcb for fcoe"
 
             time.sleep(1)
 
@@ -159,6 +159,8 @@ class fcoe(object):
                 self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
                 rc, out = util.run_program_and_capture_output(
                     ["systemctl", "restart", "fcoe.service"])
+            else:
+                log.info("Timed out when %s" % timeout_msg)
 
         else:
             dpath = os.readlink("/sys/class/net/%s/device/driver" % nic)
