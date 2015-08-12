@@ -24,6 +24,7 @@ from blivet.devices import MDRaidArrayDevice
 from blivet.devices import OpticalDevice
 from blivet.devices import StorageDevice
 from blivet.devices import ParentList
+from blivet.devices import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
 from blivet.devicelibs import btrfs
 from blivet.devicelibs import mdraid
 from blivet.size import Size
@@ -723,3 +724,54 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         self.assertEqual(snap.dependsOn(vol), True)
         self.assertEqual(vol.dependsOn(snap), False)
+
+class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
+    def __init__(self, methodName="runTest"):
+        super(LVMLogicalVolumeDeviceTestCase, self).__init__(methodName=methodName)
+        state_functions = {
+            "type": xform(lambda x, m: self.assertEqual(x, "lvmlv", m)),
+            "parents": xform(lambda x, m: self.assertEqual(len(x), 1, m) and
+                             self.assertIsInstance(x, ParentList) and
+                             self.assertIsInstance(x[0], LVMVolumeGroupDevice)),
+            }
+
+        self._state_functions.update(state_functions)
+
+    def setUp(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),
+                           size=Size("1 GiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        self.lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
+                                         fmt=blivet.formats.getFormat("xfs"))
+
+    def testLVMLogicalVolumeDeviceInit(self):
+        self.stateCheck(self.lv,
+            # 1 GiB - one extent
+            maxSize=xform(lambda x, m: self.assertEqual(x, Size("1020 MiB"), m) and
+                          self.assertIsInstance(x, Size, m)),
+            snapshots=xform(lambda x, m: self.assertEqual(x, [], m)),
+            segType=xform(lambda x, m: self.assertEqual(x, "linear", m)),
+            req_grow=xform(lambda x, m: self.assertEqual(x, None, m)),
+            req_max_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+                               self.assertIsInstance(x, Size, m)),
+            req_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+                           self.assertIsInstance(x, Size, m)),
+            req_percent=xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+            copies=xform(lambda x, m: self.assertEqual(x, 1, m)),
+            logSize=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+                          self.assertIsInstance(x, Size, m)),
+            metaDataSize=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+                               self.assertIsInstance(x, Size, m)),
+            mirrored=xform(lambda x, m: self.assertFalse(x, m)),
+            vgSpaceUsed=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+                              self.assertIsInstance(x, Size, m)),
+            vg=xform(lambda x, m: self.assertIsInstance(x, LVMVolumeGroupDevice)),
+            container=xform(lambda x, m: self.assertIsInstance(x, LVMVolumeGroupDevice)),
+            mapName=xform(lambda x, m: self.assertEqual(x, "testvg-testlv", m)),
+            path=xform(lambda x, m: self.assertEqual(x, "/dev/mapper/testvg-testlv", m)),
+            lvname=xform(lambda x, m: self.assertEqual(x, "testlv", m)),
+            complete=xform(lambda x, m: self.assertTrue(x, m)),
+            isleaf=xform(lambda x, m: self.assertTrue(x, m)),
+            direct=xform(lambda x, m: self.assertTrue(x, m)),
+            cached=xform(lambda x, m: self.assertFalse(x, m)),
+        )
