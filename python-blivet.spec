@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.17
+Version: 0.61.15.18
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Aug 12 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.18-1
+- Partition requests may not have partedPartition (bcl)
+  Resolves: rhbz#1248973
+
 * Fri Aug 07 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.17-1
 - Fix some logical problems in write_dasd_conf (sbueno+anaconda)
   Resolves: rhbz#1248949
