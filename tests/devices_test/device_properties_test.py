@@ -34,6 +34,8 @@ from blivet.formats import getFormat
 
 BTRFS_MIN_MEMBER_SIZE = getFormat("btrfs").minSize
 
+# pylint: disable=unnecessary-lambda
+
 def xform(func):
     """ Simple wrapper function that transforms a function that takes
         a precalculated value and a message to a function that takes
