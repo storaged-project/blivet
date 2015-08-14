@@ -21,6 +21,7 @@ from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
+from blivet.devices.lvm import LVMCacheRequest
 
 from tests.imagebackedtestcase import ImageBackedTestCase
 from blivet.util import sparsetmpfile
@@ -502,6 +503,94 @@ class PartitioningTestCase(unittest.TestCase):
         # lv3 should grow by 512 extents, or 2 GiB
         self.assertEqual(req1.growth, 395)
         self.assertEqual(req2.growth, 3956)
+        self.assertEqual(req3.growth, 512)
+
+    def testVGChunkWithCache(self):
+        pv = StorageDevice("pv1", size=Size("40 GiB"),
+                           fmt=getFormat("lvmpv"))
+        # 1025 MiB so that the PV provides 1024 MiB of free space (see LVMVolumeGroupDevice.extents)
+        pv2 = StorageDevice("pv2", size=Size("1025 MiB"),
+                           fmt=getFormat("lvmpv"))
+        vg = LVMVolumeGroupDevice("vg", parents=[pv, pv2])
+
+        cache_req1 = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
+        lv1 = LVMLogicalVolumeDevice("lv1", parents=[vg],
+                                     size=Size("1 GiB"), grow=True,
+                                     cacheRequest=cache_req1)
+
+        cache_req2 = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
+        lv2 = LVMLogicalVolumeDevice("lv2", parents=[vg],
+                                     size=Size("10 GiB"), grow=True,
+                                     cacheRequest=cache_req2)
+
+        lv3 = LVMLogicalVolumeDevice("lv3", parents=[vg],
+                                     size=Size("10 GiB"), grow=True,
+                                     maxsize=Size("12 GiB"))
+
+        req1 = LVRequest(lv1)
+        req2 = LVRequest(lv2)
+        req3 = LVRequest(lv3)
+        chunk = VGChunk(vg, requests=[req1, req2, req3])
+
+        chunk.growRequests()
+
+        # the chunk is done growing since its pool has been exhausted
+        self.assertEqual(chunk.done, True)
+
+        # there are still two requests remaining since lv1 and lv2 have no max
+        self.assertEqual(chunk.remaining, 2)
+
+        # All the sizes should be the same as without the caches (see the
+        # testVGChunk test for their "rationales") because the space for the
+        # caches should just be reserved.
+        self.assertEqual(req1.growth, 395)
+        self.assertEqual(req2.growth, 3956)
+        self.assertEqual(req3.growth, 512)
+
+    def testVGChunkWithCachePVfree(self):
+        pv = StorageDevice("pv1", size=Size("40 GiB"),
+                           fmt=getFormat("lvmpv"))
+        # 1069 MiB so that the PV provides 1068 MiB of free space (see
+        # LVMVolumeGroupDevice.extents) which is 44 MiB more than the caches
+        # need and which should thus be split into the LVs
+        pv2 = StorageDevice("pv2", size=Size("1069 MiB"),
+                           fmt=getFormat("lvmpv"))
+        vg = LVMVolumeGroupDevice("vg", parents=[pv, pv2])
+
+        cache_req1 = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
+        lv1 = LVMLogicalVolumeDevice("lv1", parents=[vg],
+                                     size=Size("1 GiB"), grow=True,
+                                     cacheRequest=cache_req1)
+
+        cache_req2 = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
+        lv2 = LVMLogicalVolumeDevice("lv2", parents=[vg],
+                                     size=Size("10 GiB"), grow=True,
+                                     cacheRequest=cache_req2)
+
+        lv3 = LVMLogicalVolumeDevice("lv3", parents=[vg],
+                                     size=Size("10 GiB"), grow=True,
+                                     maxsize=Size("12 GiB"))
+
+        req1 = LVRequest(lv1)
+        req2 = LVRequest(lv2)
+        req3 = LVRequest(lv3)
+        chunk = VGChunk(vg, requests=[req1, req2, req3])
+
+        chunk.growRequests()
+
+        # the chunk is done growing since its pool has been exhausted
+        self.assertEqual(chunk.done, True)
+
+        # there are still two requests remaining since lv1 and lv2 have no max
+        self.assertEqual(chunk.remaining, 2)
+
+        # All the sizes should be the same as without the caches (see the
+        # testVGChunk test for their "rationales") because the space for the
+        # caches should just be reserved.
+        # The extra 11 extents available on the pv2 should go in the 1:10 ratio
+        # to req1 and req2.
+        self.assertEqual(req1.growth, 395 + 1)
+        self.assertEqual(req2.growth, 3956 + 10)
         self.assertEqual(req3.growth, 512)
 
     def testAlignFreeRegions(self):

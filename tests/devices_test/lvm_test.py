@@ -11,6 +11,7 @@ from blivet.devices import LVMThinLogicalVolumeDevice
 from blivet.devices import LVMThinPoolDevice
 from blivet.devices import LVMThinSnapShotDevice
 from blivet.devices import LVMVolumeGroupDevice
+from blivet.devices.lvm import LVMCacheRequest
 from blivet.size import Size
 
 DEVICE_CLASSES = [
@@ -90,6 +91,33 @@ class LVMDeviceTest(unittest.TestCase):
         # existing thin snapshots do not depend on their origin
         snap1.exists = True
         self.assertEqual(snap1.dependsOn(thinlv), False)
+
+    def testLVMCachedLogicalVolumeInit(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),
+                           size=Size("1 GiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.getFormat("lvmpv"),
+                           size=Size("512 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        cache_req = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
+                                    fmt=blivet.formats.getFormat("xfs"),
+                                    exists=False, cacheRequest=cache_req)
+        self.assertEqual(lv.vgSpaceUsed, Size("512 MiB"))
+
+        # check that the LV behaves like a cached LV
+        self.assertTrue(lv.cached)
+        cache = lv.cache
+        self.assertIsNotNone(cache)
+
+        # check parameters reported by the (non-existing) cache
+        self.assertEqual(cache.size, Size("512 MiB"))
+        self.assertFalse(cache.exists)
+        self.assertIsNone(cache.stats)
+        self.assertEqual(cache.mode, "writethrough")
+        self.assertIsNone(cache.backing_device_name)
+        self.assertIsNone(cache.cache_device_name)
+        self.assertEqual(set(cache.fast_pvs), set([pv2]))
 
     def testTargetSize(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),

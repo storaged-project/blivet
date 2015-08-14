@@ -570,7 +570,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     @property
     def logSize(self):
         log_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMLogLogicalVolumeDevice))
-        return sum(lv.size for lv in log_lvs)
+        return Size(sum(lv.size for lv in log_lvs))
 
     @property
     def metaDataSize(self):
@@ -578,7 +578,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             return self._metaDataSize
 
         md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
-        return sum(lv.size for lv in md_lvs)
+        return Size(sum(lv.size for lv in md_lvs))
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
