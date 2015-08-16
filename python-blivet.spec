@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.19
+Version: 0.61.15.20
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Sun Aug 16 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.20-1
+- Update dmdev size when setting up disk images (bcl)
+  Resolves: rhbz#1252703
+- Setup LoopDevice's name before updating sysfs path (bcl)
+  Resolves: rhbz#1252703
+- Add likely to be raised exceptions to catch block (amulhern)
+  Related: rhbz#1252703
+- Fix setupDiskImages when the devices are already in the tree. (dlehman)
+  Related: rhbz#1252703
+
 * Thu Aug 13 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.19-1
 - fcoe: replace fipvlan with fcoemon (rvykydal)
   Resolves: rhbz#1085325
