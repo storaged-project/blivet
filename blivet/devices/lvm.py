@@ -418,6 +418,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return [l for l in self._lvs if isinstance(l, LVMThinLogicalVolumeDevice)]
 
     @property
+    def cachedLVs(self):
+        return [l for l in self._lvs if l.cached]
+
+    @property
     def complete(self):
         """Check if the vg has all its pvs in the system
         Return True if complete.
