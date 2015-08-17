@@ -347,6 +347,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
         elif self.reserved_space > Size(0):
             reserved = self.reserved_space
 
+        # reserve space for the pmspare LV LVM creates behind our back
+        reserved += self.pmSpareSize
+
         return self.align(reserved, roundup=True)
 
     @property
@@ -420,6 +423,16 @@ class LVMVolumeGroupDevice(ContainerDevice):
     @property
     def cachedLVs(self):
         return [l for l in self._lvs if l.cached]
+
+    @property
+    def pmSpareSize(self):
+        """Size of the pmspare LV LVM creates in every VG that contains some metadata
+        (even internal) LV. The size of such LV is equal to the size of the
+        biggest metadata LV in the VG.
+
+        """
+        # TODO: report correctly/better for existing VGs
+        return max([lv.metaDataSize for lv in self.lvs] + [Size(0)])
 
     @property
     def complete(self):

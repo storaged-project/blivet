@@ -791,8 +791,9 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
 
     def testLVMLogicalVolumeDeviceInitCached(self):
         self.stateCheck(self.cached_lv,
-            # 2 * (1 GiB - one extent) - 512 MiB
-            maxSize=xform(lambda x, m: self.assertEqual(x, Size("1528 MiB"), m) and
+            # 2 * (1 GiB - one extent) - 512 MiB - 8 MiB
+            #       PVfree               cache     pmspare
+            maxSize=xform(lambda x, m: self.assertEqual(x, Size("1520 MiB"), m) and
                           self.assertIsInstance(x, Size, m)),
             snapshots=xform(lambda x, m: self.assertEqual(x, [], m)),
             segType=xform(lambda x, m: self.assertEqual(x, "linear", m)),
