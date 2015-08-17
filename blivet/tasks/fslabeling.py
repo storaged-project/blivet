@@ -45,54 +45,62 @@ class Ext2FSLabeling(FSLabeling):
 
     default_label = ""
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return len(label) < 17
 
 class FATFSLabeling(FSLabeling):
 
     default_label = "NO NAME"
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return len(label) < 12
 
 class JFSLabeling(FSLabeling):
 
     default_label = ""
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return len(label) < 17
 
 class ReiserFSLabeling(FSLabeling):
 
     default_label = ""
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return len(label) < 17
 
 class XFSLabeling(FSLabeling):
 
     default_label = ""
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return ' ' not in label and len(label) < 13
 
 class HFSLabeling(FSLabeling):
 
     default_label = "Untitled"
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return ':' not in label and len(label) < 28 and len(label) > 0
 
 class HFSPlusLabeling(FSLabeling):
 
     default_label = "Untitled"
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return ':' not in label and 0 < len(label) < 129
 
 class NTFSLabeling(FSLabeling):
 
     default_label = ""
 
-    def labelFormatOK(self, label):
+    @classmethod
+    def labelFormatOK(cls, label):
         return len(label) < 129
