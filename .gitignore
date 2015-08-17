@@ -16,4 +16,5 @@ po/remove-potcdate.sed
 po/stamp-po
 updates.img
 updates/
-
+build/
+.directory
