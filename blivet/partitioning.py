@@ -945,6 +945,13 @@ class Request(object):
         self.base = 0                       # base sectors
 
     @property
+    def reserveRequest(self):
+        """ Requested reserved fixed extra space for the request (in sectors) """
+
+        # generic requests don't need any such extra space
+        return 0
+
+    @property
     def growable(self):
         """ True if this request is growable. """
         return getattr(self.device, "req_grow", True)
@@ -1014,6 +1021,14 @@ class LVRequest(Request):
                     # max size is less than or equal to base, so we're done
                     self.done = True
 
+    @property
+    def reserveRequest(self):
+        reserve = super(LVRequest, self).reserveRequest
+        if self.device.cached:
+            total_cache_size = self.device.cache.size + self.device.cache.md_size
+            reserve += int(self.device.vg.align(total_cache_size, roundup=True) / self.device.vg.peSize)
+
+        return reserve
 
 class Chunk(object):
     """ A free region from which devices will be allocated """
@@ -1068,6 +1083,7 @@ class Chunk(object):
 
         self.requests.append(req)
         self.pool -= req.base
+        self.pool -= req.reserveRequest
 
         if not req.done:
             self.base += req.base
@@ -1403,10 +1419,6 @@ class VGChunk(Chunk):
             max_raid_disks = max(len(pv.disks) for pv in req.device.vg.pvs)
             if max_raid_disks > 1:
                 self.pool -= 5 * max_raid_disks
-
-        if req.device.cached:
-            # cached LV -> reserve space for the cache
-            self.pool -= int(self.vg.align(req.device.cache.size, roundup=True) / self.vg.peSize)
 
         super(VGChunk, self).addRequest(req)
 
