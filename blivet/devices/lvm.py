@@ -616,10 +616,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         log.debug("trying to set lv %s size to %s", self.name, size)
         # Don't refuse to set size if we think there's not enough space in the
         # VG for an existing LV, since it's existence proves there is enough
-        # space for it.
+        # space for it. A similar reasoning applies to shrinking the LV.
         if not self.exists and \
            not isinstance(self, LVMThinLogicalVolumeDevice) and \
-           size > self.vg.freeSpace + self.vgSpaceUsed:
+           size > self.size and size > self.vg.freeSpace + self.vgSpaceUsed:
             log.error("failed to set size: %s short", size - (self.vg.freeSpace + self.vgSpaceUsed))
             raise ValueError("not enough free space in volume group")
 
