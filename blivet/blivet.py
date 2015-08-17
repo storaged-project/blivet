@@ -1700,8 +1700,8 @@ class Blivet(object):
             root.swaps = [new.devicetree.getDeviceByID(d.id, hidden=True) for d in root.swaps]
             root.swaps = [s for s in root.swaps if s]
 
+            removed = set()
             for (mountpoint, old_dev) in root.mounts.items():
-                removed = set()
                 if old_dev is None:
                     continue
 
