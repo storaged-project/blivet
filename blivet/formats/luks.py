@@ -187,9 +187,12 @@ class LUKS(DeviceFormat):
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device, mapName=self.mapName,
                         type=self.type, status=self.status)
-        blockdev.crypto.luks_open(self.device, self.mapName,
-                                  passphrase=self.__passphrase,
-                                  key_file=self._key_file)
+        try:
+            blockdev.crypto.luks_open(self.device, self.mapName,
+                                      passphrase=self.__passphrase,
+                                      key_file=self._key_file)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, the format. """
