@@ -959,6 +959,11 @@ class Blivet(object):
         if "%s-%s" % (vg.name, name) in self.names:
             raise ValueError("name already in use")
 
+        if thin_pool or thin_volume:
+            cache_req = kwargs.pop("cacheRequest", None)
+            if cache_req:
+                raise ValueError("Creating cached thin volumes and pools is not supported")
+
         if thin_pool:
             device_class = LVMThinPoolDevice
         elif thin_volume:
