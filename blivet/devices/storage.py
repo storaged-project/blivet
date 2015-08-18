@@ -300,7 +300,7 @@ class StorageDevice(Device):
         # ValueErrors and EnvironmentErrors that may be raised. So catch
         # those errors, but also catch DeviceNotFoundError, which is the
         # appropriate exception and which it may raise in future.
-        except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError) as e:
+        except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError, OSError) as e:
             log.error("failed to update sysfs path for %s: %s", self.name, e)
             self.sysfsPath = ''
         else:
