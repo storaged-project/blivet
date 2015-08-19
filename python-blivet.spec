@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.21
+Version: 0.61.15.22
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Aug 18 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.22-1
+- Add OSError to list of errors in updateSysfsPath (bcl)
+  Resolves: rhbz#1252949
+
 * Mon Aug 17 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.21-1
 - Add a property for read-only devices. (dshea)
   Resolves: rhbz#1250608
