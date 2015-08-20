@@ -171,6 +171,10 @@ def device_get_label(udev_info):
     """ Get the label from the device's format as reported by udev. """
     return udev_info.get("ID_FS_LABEL")
 
+def device_get_part_size(udev_info):
+    """ Get size for specified partition as reported by udev. """
+    return udev_info.get("ID_PART_ENTRY_SIZE")
+
 def device_is_dm(info):
     """ Return True if the device is a device-mapper device. """
     dm_dir = os.path.join(device_get_sysfs_path(info), "dm")

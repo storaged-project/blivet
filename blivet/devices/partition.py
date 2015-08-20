@@ -43,7 +43,7 @@ log = logging.getLogger("blivet")
 from .device import Device
 from .storage import StorageDevice
 from .dm import DMDevice
-from .lib import devicePathToName, deviceNameToDiskByPath
+from .lib import devicePathToName, deviceNameToDiskByPath, LINUX_SECTOR_SIZE
 
 DEFAULT_PART_SIZE = Size("500MiB")
 
@@ -191,6 +191,11 @@ class PartitionDevice(StorageDevice):
 
             self.req_start_sector = start
             self.req_end_sector = end
+
+        # update currentSize again now when we have partedPartition and
+        # information about partType
+        if self.exists and self.status:
+            self.updateSize()
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
@@ -774,6 +779,23 @@ class PartitionDevice(StorageDevice):
                 maxPartSize += Size(partition.getLength(unit="B"))
 
         return maxPartSize
+
+    def readCurrentSize(self):
+        # sys reports wrong size for extended partitions (1 KiB)
+        if self.isExtended:
+            log_method_call(self, exists=self.exists, path=self.path,
+                            sysfsPath=self.sysfsPath)
+            size = Size(0)
+            if self.exists and os.path.exists(self.path) and \
+               os.path.isdir(self.sysfsPath):
+                blocks = udev.device_get_part_size(udev.get_device(self.sysfsPath))
+                if blocks:
+                    size = Size(int(blocks) * LINUX_SECTOR_SIZE)
+
+        else:
+            size = super(PartitionDevice, self).readCurrentSize()
+
+        return size
 
     @property
     def minSize(self):
