@@ -1950,6 +1950,12 @@ class DeviceTree(object):
             # overarching volume UUID will be stored as volUUID
             kwargs["uuid"] = info["ID_FS_UUID_SUB"]
             kwargs["volUUID"] = uuid
+        elif format_type == "multipath_member":
+            # blkid does not care that the UUID it sees on a multipath member is
+            # for the multipath set's (and not the member's) formatting, so we
+            # have to discard it.
+            kwargs.pop("uuid")
+            kwargs.pop("label")
 
         try:
             log.info("type detected on '%s' is '%s'", name, format_type)
