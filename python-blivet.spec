@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.22
+Version: 0.61.15.23
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Aug 19 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.23-1
+- Remove the cacheRequest kwarg for thin(pool) LVs (vpodzime)
+  Resolves: rhbz#1254567
+
 * Tue Aug 18 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.22-1
 - Add OSError to list of errors in updateSysfsPath (bcl)
   Resolves: rhbz#1252949
