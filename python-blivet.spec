@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12
+Version: 1.12.1
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,19 @@ popd
 %endif
 
 %changelog
+* Thu Aug 20 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.1-1
+- Change labelFormatOK to classmethods (vtrefny)
+- Remove the cacheRequest kwarg for thin(pool) LVs (#1254567) (vpodzime)
+- Fix copy method (#1254135) (bcl)
+- Add OSError to list of errors in updateSysfsPath (#1252949) (bcl)
+- Make sure LV's properties reporting size return a Size instance (#1253787)
+  (vpodzime)
+- Use device name from udev only if it's available (#1252052) (vpodzime)
+- Fix _unalignedMaxPartSize for logical partitions (#1250890) (vtrefny)
+- Allow aligning free regions to disk grainSize (#1244671) (vtrefny)
+- Add test for getFreeSpace aligning (vtrefny)
+- Change zanata.xml to match new f23-branch name. (sbueno+anaconda)
+
 * Fri Aug 07 2015 Brian C. Lane <bcl@redhat.com> - 1.12-1
 - Remove unusable free regions from list when setting up growth. (dlehman)
 - Merge pull request #190 from vpodzime/master-lvm_cache_creation (dlehman)
