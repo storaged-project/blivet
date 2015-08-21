@@ -607,7 +607,7 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
         :type alignment: :class:`parted.Alignment`
 
     """
-    log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%s "
+    log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%d "
               "boot=%s best=%s grow=%s start=%s",
               disk.device.path, part_type, req_size, boot, best_free, grow,
               start)
@@ -638,8 +638,8 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
                                         start=aligned_start,
                                         end=free_geom.end)
 
-        log.debug("checking %d-%d (%s)", free_geom.start, free_geom.end,
-                                         Size(free_geom.getLength(unit="B")))
+        log.debug("checking %d-%d (%d)", free_geom.start, free_geom.end,
+                                         free_geom.getSize())
         if start is not None and not free_geom.containsSector(start):
             log.debug("free region does not contain requested start sector")
             continue
@@ -664,9 +664,9 @@ def getBestFreeSpaceRegion(disk, part_type, req_size, start=None,
                             max_boot)
                 continue
 
-        log.debug("current free range is %d-%d (%s)", free_geom.start,
+        log.debug("current free range is %d-%d (%d)", free_geom.start,
                                                       free_geom.end,
-                                                      Size(free_geom.getLength(unit="B")))
+                                                      free_geom.getSize())
         free_size = Size(free_geom.getLength(unit="B"))
 
         # For boot partitions, we want the first suitable region we find.
@@ -1065,7 +1065,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
         boot = _part.req_base_weight > 1000
 
         log.debug("allocating partition: %s ; id: %d ; disks: %s ;\n"
-                  "boot: %s ; primary: %s ; size: %s ; grow: %s ; "
+                  "boot: %s ; primary: %s ; size: %d ; grow: %s ; "
                   "max_size: %s ; start: %s ; end: %s", _part.name, _part.id,
                                     [d.name for d in req_disks],
                                     boot, _part.req_primary,
@@ -1219,8 +1219,8 @@ def allocatePartitions(storage, disks, partitions, freespace):
                             new_growth += chunk.growth
                             disk_growth += chunk.growth
                             for req in chunk.requests:
-                                log.debug("request %d (%s) growth: %d (%s) "
-                                          "size: %s",
+                                log.debug("request %s (%s) growth: %d (%dMB) "
+                                          "size: %d",
                                           req.device.id,
                                           req.device.name,
                                           req.growth,
@@ -1228,7 +1228,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                         disk_sector_size),
                                           sectorsToSize(req.growth + req.base,
                                                         disk_sector_size))
-                        log.debug("disk %s growth: %d (%s)",
+                        log.debug("disk %s growth: %d (%d)",
                                         disk_path, disk_growth,
                                         sectorsToSize(disk_growth,
                                                       disk_sector_size))
@@ -1259,9 +1259,9 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                 _disk.name, new_part_type)
                     part_type = new_part_type
                     use_disk = _disk
-                    log.debug("new free: %d-%d / %s", best.start,
+                    log.debug("new free: %d-%d / %d", best.start,
                                                       best.end,
-                                                      Size(best.getLength(unit="B")))
+                                                      best.getSize())
                     log.debug("new free allows for %d sectors of growth", growth)
                     free = best
 
@@ -1307,9 +1307,9 @@ def allocatePartitions(storage, disks, partitions, freespace):
 
         partition = addPartition(disklabel, free, part_type, aligned_size,
                                  _part.req_start_sector, _part.req_end_sector)
-        log.debug("created partition %s of %s and added it to %s",
+        log.debug("created partition %s of %d and added it to %s",
                 partition.getDeviceNodeName(),
-                Size(partition.getLength(unit="B")),
+                partition.getSize(),
                 disklabel.device)
 
         # this one sets the name
@@ -1434,7 +1434,7 @@ class Chunk(object):
 
     def __repr__(self):
         s = ("%(type)s instance --\n"
-             "device = %(device)s  length = %(length)d  size = %(size)s\n"
+             "device = %(device)s  length = %(length)d  size = %(size)d\n"
              "remaining = %(rem)d  pool = %(pool)d" %
              {"type": self.__class__.__name__, "device": self.path,
               "length": self.length, "size": self.lengthToSize(self.length),
@@ -1470,7 +1470,7 @@ class Chunk(object):
             :raises: ValueError
             :returns: None
         """
-        log.debug("reclaim: %s %d (%s)", request, amount, self.lengthToSize(amount))
+        log.debug("reclaim: %s %d (%d)", request, amount, self.lengthToSize(amount))
         if request.growth < amount:
             log.error("tried to reclaim %d from request with %d of growth",
                         amount, request.growth)
@@ -1531,7 +1531,7 @@ class Chunk(object):
             if req.growth > max_growth:
                 # we've grown beyond the maximum. put some back.
                 extra = req.growth - max_growth
-                log.debug("taking back %d (%s) from %d (%s)",
+                log.debug("taking back %d (%d) from %s (%s)",
                             extra, self.lengthToSize(extra),
                             req.device.id, req.device.name)
                 self.pool += extra
@@ -1580,7 +1580,7 @@ class Chunk(object):
             if uniform:
                 growth = int(last_pool / self.remaining)
 
-            log.debug("%d requests and %s (%s) left in chunk",
+            log.debug("%d requests and %d (%d) left in chunk",
                         self.remaining, self.pool, self.lengthToSize(self.pool))
             for p in self.requests:
                 if p.done or p in self.skip_list:
@@ -1595,13 +1595,13 @@ class Chunk(object):
 
                 p.growth += growth
                 self.pool -= growth
-                log.debug("adding %s (%s) to %d (%s)",
+                log.debug("adding %d (%d) to %s (%s)",
                             growth, self.lengthToSize(growth),
                             p.device.id, p.device.name)
 
                 new_base = self.trimOverGrownRequest(p, base=new_base)
-                log.debug("new grow amount for request %d (%s) is %s "
-                          "units, or %s",
+                log.debug("new grow amount for request %s (%s) is %s "
+                          "units, or %d",
                             p.device.id, p.device.name, p.growth,
                             self.lengthToSize(p.growth))
 
@@ -1615,13 +1615,13 @@ class Chunk(object):
                 growth = self.pool
                 p.growth += growth
                 self.pool = 0
-                log.debug("adding %s (%s) to %d (%s)",
+                log.debug("adding %d (%d) to %s (%s)",
                             growth, self.lengthToSize(growth),
                             p.device.id, p.device.name)
 
                 self.trimOverGrownRequest(p)
-                log.debug("new grow amount for request %d (%s) is %s "
-                          "units, or %s",
+                log.debug("new grow amount for request %s (%s) is %d "
+                          "units, or %d",
                             p.device.id, p.device.name, p.growth,
                             self.lengthToSize(p.growth))
 
@@ -2272,7 +2272,7 @@ def growLVM(storage):
             log.debug("vg %s has no free space", vg.name)
             continue
 
-        log.debug("vg %s: %s free ; lvs: %s", vg.name, total_free,
+        log.debug("vg %s: %d free ; lvs: %s", vg.name, total_free,
                                               [l.lvname for l in vg.lvs])
 
         # don't include thin lvs in the vg's growth calculation
