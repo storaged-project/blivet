@@ -405,7 +405,7 @@ class StorageDevice(Device):
         if not self.exists and not recursive:
             raise errors.DeviceError("device has not been created", self.name)
 
-        if not self.status or not self.controllable:
+        if not self.status or not self.controllable or self.protected:
             return False
 
         if self.originalFormat.exists:
