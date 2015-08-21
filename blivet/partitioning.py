@@ -1027,6 +1027,10 @@ def allocatePartitions(storage, disks, partitions, freespace):
     new_partitions = [p for p in partitions if not p.exists]
     new_partitions.sort(cmp=partitionCompare)
 
+    # set this here instead of repeatedly calling storage.bootDisk further on,
+    # which adds a lot of noise in the logs
+    boot_disk = storage.bootDisk
+
     # the following dicts all use device path strings as keys
     disklabels = {}     # DiskLabel instances for each disk
     all_disks = {}      # StorageDevice for each disk
@@ -1054,7 +1058,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
         # sort the disks, making sure the boot disk is first
         req_disks.sort(key=lambda d: d.name, cmp=storage.compareDisks)
         for disk in req_disks:
-            if storage.bootDisk and disk == storage.bootDisk:
+            if boot_disk and disk == boot_disk:
                 boot_index = req_disks.index(disk)
                 req_disks.insert(0, req_disks.pop(boot_index))
 
