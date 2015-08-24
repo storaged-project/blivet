@@ -78,7 +78,7 @@ gi.require_version("BlockDev", "1.0")
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 if arch.isS390():
-    _REQUIRED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390"))
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390"))
 else:
     _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
 
