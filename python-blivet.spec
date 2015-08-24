@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12
+Version: 1.13
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,32 @@ popd
 %endif
 
 %changelog
+* Mon Aug 24 2015 Brian C. Lane <bcl@redhat.com> - 1.13-1
+- Add CONTRIBUTING file to blivet. (sbueno+anaconda)
+- Merge pull request #208 from vpodzime/master-luks_catch_exceptions (vpodzime)
+- Fix the name of the variable specifying requested libblockdev plugins
+  (#1256273) (jstodola)
+- Merge pull request #209 from vpodzime/master-thinp_fix (vpodzime)
+- Change labelFormatOK to classmethods (vtrefny)
+- Add 'build' and '.directory' to gitignore (vtrefny)
+- Fix copy method (#1254135) (bcl)
+- Add OSError to list of errors in updateSysfsPath (#1252949) (bcl)
+- Remove the cacheRequest kwarg for thin(pool) LVs (#1254567) (vpodzime)
+- Do not propagate low-level blockdev.CryptoError when setting up LUKS
+  (#1253925) (vpodzime)
+- Merge pull request #199 from vpodzime/master-lvm_cache_tests (vpodzime)
+- Merge pull request #201 from vpodzime/master-mountsCache_resolve_devspec
+  (vpodzime)
+- Prefer code consistency over pylint's complaints in tests (vpodzime)
+- Add a basic test for cached LVMLogicalVolumeDevice's properties (vpodzime)
+- Add a basic test for LVMLogicalVolumeDevice's properties (vpodzime)
+- Make sure LV's properties reporting size return a Size instance (vpodzime)
+- Add unit tests for the LVM cache support (vpodzime)
+- Use device name from udev only if it's available (#1252052) (vpodzime)
+- Add test for getFreeSpace aligning (vtrefny)
+- Allow aligning free regions to disk grainSize (#1244671) (vtrefny)
+- Fix _unalignedMaxPartSize for logical partitions (#1250890) (vtrefny)
+
 * Fri Aug 07 2015 Brian C. Lane <bcl@redhat.com> - 1.12-1
 - Remove unusable free regions from list when setting up growth. (dlehman)
 - Merge pull request #190 from vpodzime/master-lvm_cache_creation (dlehman)
