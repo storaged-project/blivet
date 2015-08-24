@@ -105,6 +105,7 @@ class Populator(object):
         # protected device specs as provided by the user
         self.protectedDevSpecs = getattr(conf, "protectedDevSpecs", [])
         self.liveBackingDevice = None
+        self.mountedIsoBackingDevice = None
 
         # names of protected devices at the time of tree population
         self.protectedDevNames = []
@@ -743,7 +744,8 @@ class Populator(object):
             device.protected = True
             # if this is the live backing device we want to mark its parents
             # as protected also
-            if device.name == self.liveBackingDevice:
+            if (device.name == self.liveBackingDevice or
+                device.name == self.mountedIsoBackingDevice):
                 for parent in device.parents:
                     parent.protected = True
 
@@ -1647,19 +1649,25 @@ class Populator(object):
             if name:
                 self.protectedDevNames.append(name)
 
-        # FIXME: the backing dev for the live image can't be used as an
-        # install target.  note that this is a little bit of a hack
-        # since we're assuming that /run/initramfs/live will exist
+        # FIXME: the backing dev for the live image and mounted isodir
+        # can't be used as an install target.
+        # note that this is a little bit of a hack since we're
+        # assuming that the path will exist
         for mnt in open("/proc/mounts").readlines():
-            if " /run/initramfs/live " not in mnt:
+            if " /run/initramfs/live " not in mnt and " /run/install/isodir " not in mnt:
                 continue
 
-            live_device_name = mnt.split()[0].split("/")[-1]
-            log.info("%s looks to be the live device; marking as protected",
-                     live_device_name)
-            self.protectedDevNames.append(live_device_name)
-            self.liveBackingDevice = live_device_name
-            break
+            protected_device_name = mnt.split()[0].split("/")[-1]
+            if " /run/initramfs/live " in mnt:
+                log.info("%s looks to be the live device; marking as protected",
+                     protected_device_name)
+                self.protectedDevNames.append(protected_device_name)
+                self.liveBackingDevice = protected_device_name
+            # iso device is already in protected devices now
+            elif " /run/install/isodir " in mnt:
+                log.info("%s looks to be the device with the mounted iso",
+                     protected_device_name)
+                self.mountedIsoBackingDevice = protected_device_name
 
         old_devices = {}
 
