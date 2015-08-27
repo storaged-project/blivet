@@ -224,8 +224,11 @@ def isMactel():
     elif not os.path.isfile(DMI_CHASSIS_VENDOR):
         mactel = False
     else:
-        buf = open(DMI_CHASSIS_VENDOR).read()
-        mactel = ("apple" in buf.lower())
+        try:
+            buf = open(DMI_CHASSIS_VENDOR).read()
+            mactel = ("apple" in buf.lower())
+        except UnicodeDecodeError:
+            mactel = False
     return mactel
 
 def isEfi():
