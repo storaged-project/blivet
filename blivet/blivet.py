@@ -1352,7 +1352,7 @@ class Blivet(object):
             if device.format.exists:
                 free += device.format.free
             else:
-                free += device.size
+                free += device.format.freeSpaceEstimate(device.size)
 
         return free
 
