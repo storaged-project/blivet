@@ -326,9 +326,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
     # its PVs already exist.
-    #
-    #        -- liblvm may contain support for in-memory devices
-
     @property
     def isModified(self):
         """ Return True if the VG has changes queued that LVM is unaware of. """

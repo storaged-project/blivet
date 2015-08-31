@@ -78,8 +78,6 @@ class LVMPhysicalVolume(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
         self.vgName = kwargs.get("vgName")
         self.vgUuid = kwargs.get("vgUuid")
-        # liblvm may be able to tell us this at some point, even
-        # for not-yet-created devices
         self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)
         self.dataAlignment = kwargs.get("dataAlignment", Size(0))
 
