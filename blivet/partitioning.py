@@ -1413,13 +1413,6 @@ class VGChunk(Chunk):
             raise ValueError(_("VGChunk requests must be of type "
                              "LVRequest"))
 
-        # (only) we allocate (5 * num_disks) extra extents for LV metadata
-        # on RAID (see the devicefactory.LVMFactory._get_total_space method)
-        if not req.device.exists and req.device.vg.pvs:
-            max_raid_disks = max(len(pv.disks) for pv in req.device.vg.pvs)
-            if max_raid_disks > 1:
-                self.pool -= 5 * max_raid_disks
-
         super(VGChunk, self).addRequest(req)
 
     def lengthToSize(self, length):
