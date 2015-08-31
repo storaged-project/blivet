@@ -268,8 +268,7 @@ class RAIDn(RAIDLevel):
             raise RaidError("superblock_size_func value of None is not acceptable")
 
         min_size = min(member_sizes)
-        total_space = self.get_net_array_size(num_members, min_size)
-        superblock_size = superblock_size_func(total_space)
+        superblock_size = superblock_size_func(min_size)
         min_data_size = self._trim(min_size - superblock_size, chunk_size)
         return self.get_net_array_size(num_members, min_data_size)
 
