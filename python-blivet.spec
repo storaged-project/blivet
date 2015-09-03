@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.23
+Version: 0.61.15.24
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,13 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 02 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.24-1
+- Add a method to list disks related by lvm/md/btrfs container membership.
+  (dlehman)
+  Related: rhbz#1254548
+- Make getDependentDevices work with hidden devices. (dlehman)
+  Related: rhbz#1254548
+
 * Wed Aug 19 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.23-1
 - Remove the cacheRequest kwarg for thin(pool) LVs (vpodzime)
   Resolves: rhbz#1254567
