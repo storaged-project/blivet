@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12.1
+Version: 1.12.2
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,15 @@ popd
 %endif
 
 %changelog
+* Thu Sep 03 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.2-1
+- Fix currentSize for extended partitions (#1254899) (vtrefny)
+- Catch problems with chassis vendor names (#1256072) (bcl)
+- Don't teardown protected devices (jkonecny)
+- Do not propagate low-level blockdev.CryptoError when setting up LUKS
+  (#1253925) (vpodzime)
+- Fix the name of the variable specifying requested libblockdev plugins
+  (#1256273) (jstodola)
+
 * Thu Aug 20 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.1-1
 - Change labelFormatOK to classmethods (vtrefny)
 - Remove the cacheRequest kwarg for thin(pool) LVs (#1254567) (vpodzime)
