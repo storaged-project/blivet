@@ -1102,9 +1102,7 @@ class Populator(object):
             vg_device.parents.append(device)
         else:
             same_name = self.getDeviceByName(vg_name)
-            if isinstance(same_name, LVMVolumeGroupDevice) and \
-               not (all(self._isIgnoredDisk(d) for d in same_name.disks) or
-                    all(self._isIgnoredDisk(d) for d in device.disks)):
+            if isinstance(same_name, LVMVolumeGroupDevice):
                 raise DuplicateVGError("multiple LVM volume groups with the same name (%s)" % vg_name)
 
             try:
