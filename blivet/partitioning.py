@@ -243,7 +243,8 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
                                   parents=dev)
             storage.createDevice(luks_dev)
 
-        if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
+        if storage.doAutoPart and \
+           storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
                                     AUTOPART_TYPE_BTRFS):
             # doing LVM/BTRFS -- make sure the newly created partition fits in some
             # free space together with one of the implicitly requested partitions
