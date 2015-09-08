@@ -1297,3 +1297,9 @@ class USBFS(NoDevFS):
     _type = "usbfs"
 
 register_device_format(USBFS)
+
+
+class EFIVarFS(NoDevFS):
+    _type = "efivarfs"
+
+register_device_format(EFIVarFS)
