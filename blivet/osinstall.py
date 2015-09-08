@@ -41,6 +41,7 @@ from .formats import get_device_format_class
 from .formats import getFormat
 from .flags import flags
 from .platform import platform as _platform
+from .platform import EFI
 
 from .i18n import _
 
@@ -265,6 +266,7 @@ class FSSet(object):
         self._usb = None
         self._selinux = None
         self._run = None
+        self._efivars = None
         self._fstab_swaps = set()
         self.preserveLines = []     # lines we just ignore and preserve
 
@@ -312,6 +314,12 @@ class FSSet(object):
         if not self._selinux:
             self._selinux = NoDevice(fmt=getFormat("selinuxfs", device="selinuxfs", mountpoint="/sys/fs/selinux"))
         return self._selinux
+
+    @property
+    def efivars(self):
+        if not self._efivars:
+            self._efivars = NoDevice(fmt=getFormat("efivarfs", device="efivarfs", mountpoint="/sys/firmware/efi/efivars"))
+        return self._efivars
 
     @property
     def run(self):
@@ -390,7 +398,7 @@ class FSSet(object):
                                       device=device.path,
                                       exists=True)
         elif mountpoint in ("/proc", "/sys", "/dev/shm", "/dev/pts",
-                            "/sys/fs/selinux", "/proc/bus/usb"):
+                            "/sys/fs/selinux", "/proc/bus/usb", "/sys/firmware/efi/efivars"):
             # drop these now -- we'll recreate later
             return None
         else:
@@ -553,6 +561,8 @@ class FSSet(object):
         devices = list(self.mountpoints.values()) + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.selinux, self.usb, self.run])
+        if isinstance(_platform, EFI):
+            devices.append(self.efivars)
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", ""))
 
         for device in devices:
@@ -610,6 +620,8 @@ class FSSet(object):
         devices = list(self.mountpoints.values()) + self.swapDevices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.usb, self.selinux, self.run])
+        if isinstance(_platform, EFI):
+            devices.append(self.efivars)
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", ""))
         devices.reverse()
         for device in devices:
