@@ -70,7 +70,7 @@ class NoDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         self._preDestroy()
 
-    def udpateSize(self):
+    def updateSize(self):
         pass
 
 class TmpFSDevice(NoDevice):
