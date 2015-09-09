@@ -286,11 +286,7 @@ class Blivet(object):
 
         self.roots = []
         if flags.installer_mode:
-            try:
-                self.roots = findExistingInstallations(self.devicetree)
-            except Exception: # pylint: disable=broad-except
-                log_exception_info(log.info, "failure detecting existing installations")
-
+            self.roots = findExistingInstallations(self.devicetree)
             self.dumpState("initial")
 
         if not flags.installer_mode:
