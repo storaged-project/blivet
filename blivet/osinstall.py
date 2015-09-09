@@ -197,7 +197,28 @@ def parseFSTab(devicetree, chroot=None):
 
     return (mounts, swaps)
 
-def findExistingInstallations(devicetree):
+def findExistingInstallations(devicetree, teardown_all=True):
+    """Find existing GNU/Linux installations on devices from the devicetree.
+    :param devicetree: devicetree to find existing installations in
+    :type devicetree: :class:`~.devicetree.DeviceTree`
+    :param bool teardown_all: whether to tear down all devices in the
+                              devicetree in the end
+    :return: roots of all found installations
+    :rtype: list of :class:`Root`
+
+    """
+    try:
+        roots = _findExistingInstallations(devicetree)
+        return roots
+    except Exception: # pylint: disable=broad-except
+        log_exception_info(log.info, "failure detecting existing installations")
+    finally:
+        if teardown_all:
+            devicetree.teardownAll()
+
+    return []
+
+def _findExistingInstallations(devicetree):
     if not os.path.exists(getTargetPhysicalRoot()):
         util.makedirs(getTargetPhysicalRoot())
 
