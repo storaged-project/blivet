@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12.2
+Version: 1.12.3
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,13 @@ popd
 %endif
 
 %changelog
+* Thu Sep 10 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.3-1
+- Mount efivarfs during os installation (#1260799) (bcl)
+- Add method for estimated size of formated device (#1224048) (jkonecny)
+- Add support for mul,div,sub,add by float to Size (jkonecny)
+- Exclude isodir from valid disks (jkonecny)
+- fix typo in NoDevice: updateSize not udpateSize (awilliam)
+
 * Thu Sep 03 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.2-1
 - Fix currentSize for extended partitions (#1254899) (vtrefny)
 - Catch problems with chassis vendor names (#1256072) (bcl)

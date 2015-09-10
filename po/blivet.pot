@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-03 15:17-0400\n"
+"POT-Creation-Date: 2015-09-10 15:57-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -78,7 +78,7 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/populator.py:810
+#: ../blivet/populator.py:812
 msgid "Invalid Disk Label"
 msgstr ""
 
@@ -355,21 +355,21 @@ msgstr ""
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/osinstall.py:230
+#: ../blivet/osinstall.py:231
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:235
+#: ../blivet/osinstall.py:236
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:237
+#: ../blivet/osinstall.py:238
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:240
+#: ../blivet/osinstall.py:241
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -418,7 +418,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:229 ../blivet/formats/fs.py:863
+#: ../blivet/platform.py:229 ../blivet/formats/fs.py:883
 msgid "EFI System Partition"
 msgstr ""
 
@@ -565,11 +565,11 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1018
+#: ../blivet/formats/fs.py:1042
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1051
+#: ../blivet/formats/fs.py:1075
 msgid "Linux HFS+ ESP"
 msgstr ""
 
