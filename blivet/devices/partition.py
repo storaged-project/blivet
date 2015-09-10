@@ -799,7 +799,18 @@ class PartitionDevice(StorageDevice):
 
     @property
     def minSize(self):
-        min_size = super(PartitionDevice, self).minSize
+        if self.isExtended:
+            logicals = self.disk.format.logicalPartitions
+            if logicals:
+                end_free = Size((self.partedPartition.geometry.end - logicals[-1].geometry.end) * \
+                                self.disk.format.sectorSize)
+                min_size = self.alignTargetSize(self.currentSize - end_free)
+            else:
+                min_size = self.alignTargetSize(max(Size("1 KiB"), self.disk.format.alignment.grainSize))
+
+        else:
+            min_size = super(PartitionDevice, self).minSize
+
         if self.resizable and min_size:
             # Adjust the min size as needed so that aligning the end sector
             # won't drive the actual size below the formatting's minimum.
