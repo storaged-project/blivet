@@ -24,6 +24,7 @@ import os
 import copy
 import pyudev
 
+from .. import arch
 from .. import errors
 from .. import util
 from ..flags import flags
@@ -37,6 +38,15 @@ log = logging.getLogger("blivet")
 
 from .device import Device
 from .lib import LINUX_SECTOR_SIZE
+
+# openlmi-storage was using StorageDevice.partedDevice, which I invited by
+# naming it as a public attribute. We have removed it, and aren't bringing it
+# back, so this allows us to put back just the bits that openlmi-storage expects
+# to find.
+from collections import namedtuple
+PartedAlignment = namedtuple('PartedAlignment', ['grainSize'])
+PartedDevice = namedtuple('PartedDevice',
+                          ['length', 'sectorSize', 'optimumAlignment'])
 
 class StorageDevice(Device):
     """ A generic storage device.
@@ -99,7 +109,6 @@ class StorageDevice(Device):
         # Set these fields before super call as MDRaidArrayDevice._addParent()
         # reads them, through calls to status() and partedDevice().
         self.sysfsPath = sysfsPath
-        self._partedDevice = None
 
         self._format = None
 
@@ -127,6 +136,7 @@ class StorageDevice(Device):
 
         self.deviceLinks = []
 
+        self.partedDevice = None
         if self.exists and self.status:
             self.updateSize()
 
@@ -563,6 +573,47 @@ class StorageDevice(Device):
                     lambda x, y: x._setSize(y),
                     doc="The device's size, accounting for pending changes")
 
+    def _mockPartedDevice(self, size):
+        # mock up a partedDevice for openlmi-storage
+        sector_size_str = util.get_sysfs_attr(self.sysfsPath,
+                                              "queue/logical_block_size")
+        if sector_size_str is not None:
+            sector_size = int(sector_size_str)
+        else:
+            sector_size = int(LINUX_SECTOR_SIZE)
+
+        length = size // sector_size
+
+        # XXX Here, we duplicate linux_get_optimum_alignment from libparted in
+        #     its entirety.
+        default_io_size = int(Size("1MiB"))
+        optimum_io_size = int(util.get_sysfs_attr(self.sysfsPath,
+                                                  "queue/optimal_io_size")
+                              or '0')
+        minimum_io_size = int(util.get_sysfs_attr(self.sysfsPath,
+                                                  "queue/minimum_io_size")
+                              or '0')
+        optimum_divides_default = (optimum_io_size and
+                                   default_io_size % optimum_io_size == 0)
+        minimum_divides_default = (minimum_io_size and
+                                   default_io_size % minimum_io_size == 0)
+        io_size = optimum_io_size
+        if ((not optimum_io_size and not minimum_io_size) or
+            (optimum_divides_default and minimum_divides_default) or
+            (not minimum_io_size and optimum_divides_default) or
+            (not optimum_io_size and minimum_divides_default)):
+            if arch.isS390():
+                io_size = minimum_io_size
+            else:
+                io_size = default_io_size
+        elif io_size == 0:
+            io_size = minimum_io_size
+
+        alignment = PartedAlignment(io_size // sector_size)
+        self.partedDevice = PartedDevice(length=length,
+                                         sectorSize=sector_size,
+                                         optimumAlignment=alignment)
+
     def readCurrentSize(self):
         log_method_call(self, exists=self.exists, path=self.path,
                         sysfsPath=self.sysfsPath)
@@ -571,6 +622,8 @@ class StorageDevice(Device):
            os.path.isdir(self.sysfsPath):
             blocks = int(util.get_sysfs_attr(self.sysfsPath, "size"))
             size = Size(blocks * LINUX_SECTOR_SIZE)
+
+            self._mockPartedDevice(size)
 
         return size
 
