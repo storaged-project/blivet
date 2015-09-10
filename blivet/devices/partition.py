@@ -640,7 +640,7 @@ class PartitionDevice(StorageDevice):
 
     def resize(self):
         log_method_call(self, self.name, status=self.status)
-        self._preDestroy()
+        self._preResize()
 
         # partedDisk has been restored to _origPartedDisk, so
         # recalculate resize geometry because we may have new
@@ -656,6 +656,20 @@ class PartitionDevice(StorageDevice):
 
         self.disk.format.commit()
         self.updateSize()
+
+    def _preResize(self):
+        if not self.exists:
+            raise errors.DeviceError("device has not been created", self.name)
+
+        if not self.isleaf and not self.isExtended:
+            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
+
+        self.teardown()
+
+        if not self.sysfsPath:
+            return
+
+        self.setupParents(orig=True)
 
     def _preDestroy(self):
         StorageDevice._preDestroy(self)
