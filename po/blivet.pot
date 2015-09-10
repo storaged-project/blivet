@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-09 17:36-0700\n"
+"POT-Creation-Date: 2015-09-10 16:48-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1422
+#: ../blivet/__init__.py:1423
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3042
+#: ../blivet/__init__.py:3054
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3047
+#: ../blivet/__init__.py:3059
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3049
+#: ../blivet/__init__.py:3061
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""

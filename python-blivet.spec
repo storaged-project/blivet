@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.26
+Version: 0.61.15.27
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Sep 10 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.27-1
+- Mount efivarfs during os installation (bcl)
+  Resolves: rhbz#1261559
+
 * Wed Sep 09 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.26-1
 - When handling implicit partitions, first check autopart was requested.
   (clumens)
