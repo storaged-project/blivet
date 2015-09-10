@@ -424,6 +424,8 @@ class StorageDevice(Device):
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
         if not self._preTeardown(recursive=recursive):
+            if recursive:
+                self.teardownParents(recursive=recursive)
             return
 
         self._teardown(recursive=recursive)
