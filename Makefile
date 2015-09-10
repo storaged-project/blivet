@@ -44,7 +44,7 @@ check-requires:
 	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
 	@status=0 ; \
 	for pkg in $(TEST_DEPENDENCIES) ; do \
-		test_output="$$(rpm -q "$$pkg")" ; \
+		test_output="$$(rpm -q --whatprovides "$$pkg")" ; \
 		if [ $$? != 0 ]; then \
 			echo "$$test_output" ; \
 			status=1 ; \
