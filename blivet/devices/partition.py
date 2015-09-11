@@ -840,6 +840,7 @@ class PartitionDevice(StorageDevice):
         unalignedMax = min(maxFormatSize, maxPartSize) if maxFormatSize else maxPartSize
         return self.alignTargetSize(unalignedMax)
 
+    @property
     def resizable(self):
         return super(PartitionDevice, self).resizable and \
                self.disk.type != 'dasd'
