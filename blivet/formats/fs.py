@@ -523,6 +523,14 @@ class FS(DeviceFormat):
             raise FSResizeError(e, self.device)
 
         if ret:
+            # fs check may be needed first so give it a try
+            self.doCheck()
+            try:
+                ret = util.run_program([self.resizefsProg] + self.resizeArgs)
+            except OSError as e:
+                raise FSResizeError(e, self.device)
+
+        if ret:
             raise FSResizeError("resize failed: %s" % ret, self.device)
 
         self.doCheck()
