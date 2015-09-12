@@ -32,7 +32,7 @@ if os.environ.get("READTHEDOCS", False):
     api_doc_files = rst_files + ["doc/conf.py"]
     data_files.append(("docs/blivet", api_doc_files))
 
-setup(name='blivet', version='1.13',
+setup(name='blivet', version='1.14',
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',

@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.13
+Version: 1.14
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,35 @@ popd
 %endif
 
 %changelog
+* Fri Sep 11 2015 Brian C. Lane <bcl@redhat.com> - 1.14-1
+- Make sure devices are torn down in findExistingInstallations (#1261439)
+  (vpodzime)
+- Merge pull request #211 from dwlehman/multipath-member-metadata (dlehman)
+- Merge pull request #212 from dwlehman/recursive-teardown (dlehman)
+- Mount efivarfs during os installation (#1260799) (bcl)
+- Use --whatprovides when querying for if all requirements are installed.
+  (clumens)
+- Add method for estimated size of formated device (#1224048) (jkonecny)
+- Add support for mul,div,sub,add by float to Size (jkonecny)
+- Merge pull request #220 from AdamWill/nodev-typo (vpodzime)
+- fix typo in NoDevice: updateSize not udpateSize (awilliam)
+- Duplicate VG names are problem even if their disks are ignored (#1198367)
+  (vpodzime)
+- Merge pull request #215 from vpodzime/master-lvm_on_raid (vpodzime)
+- Do not reserve extra space for metadata in a VG with RAID PVs (vpodzime)
+- Merge pull request #207 from vpodzime/master-lvm_pmspare (vpodzime)
+- Fix currentSize for extended partitions (#1254899) (vtrefny)
+- Catch problems with chassis vendor names (#1256072) (bcl)
+- Don't teardown protected devices (jkonecny)
+- Don't store UUIDs or labels of multipath members. (dlehman)
+- Continue with recursive teardown beyond inactive devices. (dlehman)
+- Reserve space for the 'pmspare' LV in a VG (vpodzime)
+- Add a property to get cached LVs in a VG (vpodzime)
+- Fix VG free space check when shrinking an LV (vpodzime)
+- Add a property for Requests to reserve some extra space (vpodzime)
+- Use Size instances for sizes in LVM cache's stats (vpodzime)
+- Implement metadata size reporting for the LVM cache (vpodzime)
+
 * Mon Aug 24 2015 Brian C. Lane <bcl@redhat.com> - 1.13-1
 - Add CONTRIBUTING file to blivet. (sbueno+anaconda)
 - Merge pull request #208 from vpodzime/master-luks_catch_exceptions (vpodzime)
