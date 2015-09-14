@@ -88,7 +88,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            "major" : lambda x, m: self.assertEqual(x, 0, m),
            "maxSize" : lambda x, m: self.assertEqual(x, Size(0), m),
            "mdadmFormatUUID" : self.assertIsNone,
-           "mediaPresent" : self.assertFalse,
+           "mediaPresent" : self.assertTrue,
            "metadataVersion" : lambda x, m: self.assertEqual(x, "default", m),
            "minor" : lambda x, m: self.assertEqual(x, 0, m),
            "parents" : lambda x, m: self.assertEqual(len(x), 0, m) and
@@ -262,6 +262,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         self.stateCheck(self.dev1,
                         level=lambda x, m: self.assertEqual(x.name, "container", m),
+                        mediaPresent=self.assertFalse,
                         type=lambda x, m: self.assertEqual(x, "mdcontainer", m))
         self.stateCheck(self.dev2,
                         createBitmap=self.assertFalse,
@@ -294,7 +295,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         isDisk=self.assertTrue,
                         level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        mediaPresent=self.assertTrue,
                         memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
@@ -313,7 +313,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         isDisk=self.assertTrue,
                         level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        mediaPresent=self.assertTrue,
                         memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
@@ -325,7 +324,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         devices=lambda x, m: self.assertEqual(len(x), 2, m),
                         isDisk=self.assertTrue,
                         level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        mediaPresent=self.assertTrue,
                         memberDevices=lambda x, m: self.assertEqual(x, 2, m),
                         parents=lambda x, m: self.assertNotEqual(x, [], m),
                         partitionable=self.assertTrue,
