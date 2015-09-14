@@ -594,15 +594,17 @@ class MDRaidArrayDevice(ContainerDevice):
 
     @property
     def partitionable(self):
-        return (self.type == "mdbiosraidarray" or
-                (self.exists and self.parents and
-                 all(p.partitionable for p in self.parents)))
+        return (self.type != "mdcontainer" and
+                (self.type == "mdbiosraidarray" or
+                 (self.exists and self.parents and
+                  all(p.partitionable for p in self.parents))))
 
     @property
     def isDisk(self):
-        return (self.type == "mdbiosraidarray" or
-                (self.exists and self.parents and
-                 all(p.isDisk for p in self.parents)))
+        return (self.type != "mdcontainer" and
+                (self.type == "mdbiosraidarray" or
+                 (self.exists and self.parents and
+                  all(p.isDisk for p in self.parents))))
 
     def dracutSetupArgs(self):
         return set(["rd.md.uuid=%s" % self.mdadmFormatUUID])
