@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-10 15:57-0400\n"
+"POT-Creation-Date: 2015-09-14 13:07-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -355,21 +355,21 @@ msgstr ""
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/osinstall.py:231
+#: ../blivet/osinstall.py:252
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:236
+#: ../blivet/osinstall.py:257
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:238
+#: ../blivet/osinstall.py:259
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:241
+#: ../blivet/osinstall.py:262
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -480,7 +480,7 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/blivet.py:1200
+#: ../blivet/blivet.py:1196
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 

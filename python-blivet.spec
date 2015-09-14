@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12.3
+Version: 1.12.4
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,10 @@ popd
 %endif
 
 %changelog
+* Mon Sep 14 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.4-1
+- Make sure devices are torn down in findExistingInstallations (#1261439)
+  (vpodzime)
+
 * Thu Sep 10 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.3-1
 - Mount efivarfs during os installation (#1260799) (bcl)
 - Add method for estimated size of formated device (#1224048) (jkonecny)
