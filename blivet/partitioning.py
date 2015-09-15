@@ -936,7 +936,7 @@ def doPartitioning(storage):
             storage.devicetree._removeDevice(partition, modparent=False, force=True)
 
     partitions = storage.partitions[:]
-    for part in storage.partitions:
+    for part in partitions:
         part.req_bootable = False
         if not part.exists:
             # start over with flexible-size requests
