@@ -326,9 +326,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
     # its PVs already exist.
-    #
-    #        -- liblvm may contain support for in-memory devices
-
     @property
     def isModified(self):
         """ Return True if the VG has changes queued that LVM is unaware of. """
@@ -357,8 +354,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ The size of this VG """
         # TODO: just ask lvm if isModified returns False
 
-        # sum up the sizes of the PVs and align to pesize
-        return sum((max(Size(0), self.align(pv.size - pv.format.peStart)) for pv in self.pvs), Size(0))
+        # sum up the sizes of the PVs, subtract the unusable (meta data) space
+        # and align to pesize
+        # NOTE: we either specify data alignment in a PV or the default is used
+        #       which is both handled by pv.format.peStart, but LVM takes into
+        #       account also the underlying block device which means that e.g.
+        #       for an MD RAID device, it tries to align everything also to chunk
+        #       size and alignment offset of such device which may result in up
+        #       to a twice as big non-data area
+        # TODO: move this to either LVMPhysicalVolume's peStart property once
+        #       formats know about their devices or to a new LVMPhysicalVolumeDevice
+        #       class once it exists
+        avail = Size(0)
+        for pv in self.pvs:
+            if isinstance(pv, MDRaidArrayDevice):
+                avail += self.align(pv.size - 2 * pv.format.peStart)
+            else:
+                avail += self.align(pv.size - pv.format.peStart)
+
+        return avail
 
     @property
     def extents(self):
