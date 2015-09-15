@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-10 16:48-0700\n"
+"POT-Creation-Date: 2015-09-15 16:44-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -224,33 +224,33 @@ msgid ""
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:1272
+#: ../blivet/partitioning.py:1276
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:1301
+#: ../blivet/partitioning.py:1305
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1473
+#: ../blivet/partitioning.py:1477
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1678
+#: ../blivet/partitioning.py:1682
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1691
+#: ../blivet/partitioning.py:1695
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1774
+#: ../blivet/partitioning.py:1778
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2266
+#: ../blivet/partitioning.py:2270
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:228 ../blivet/formats/fs.py:1140
+#: ../blivet/platform.py:228 ../blivet/formats/fs.py:1148
 msgid "EFI System Partition"
 msgstr ""
 
@@ -541,51 +541,51 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/formats/fs.py:545
+#: ../blivet/formats/fs.py:553
 #, python-format
 msgid "Unknown return code: %d."
 msgstr ""
 
-#: ../blivet/formats/fs.py:567
+#: ../blivet/formats/fs.py:575
 #, python-format
 msgid "%(type)s filesystem check failure on %(device)s: "
 msgstr ""
 
-#: ../blivet/formats/fs.py:948
+#: ../blivet/formats/fs.py:956
 msgid "File system errors left uncorrected."
 msgstr ""
 
-#: ../blivet/formats/fs.py:949
+#: ../blivet/formats/fs.py:957
 msgid "Operational error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:950
+#: ../blivet/formats/fs.py:958
 msgid "Usage or syntax error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:951
+#: ../blivet/formats/fs.py:959
 msgid "e2fsck cancelled by user request."
 msgstr ""
 
-#: ../blivet/formats/fs.py:952
+#: ../blivet/formats/fs.py:960
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1113
+#: ../blivet/formats/fs.py:1121
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1115
+#: ../blivet/formats/fs.py:1123
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1362
+#: ../blivet/formats/fs.py:1370
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1394
+#: ../blivet/formats/fs.py:1402
 msgid "Linux HFS+ ESP"
 msgstr ""
 

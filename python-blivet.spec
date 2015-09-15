@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.27
+Version: 0.61.15.28
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,26 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Sep 15 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.28-1
+- Minimize number of times storage.partitions is accessed. (sbueno+anaconda)
+  Resolves: rhbz#1155984
+- Get rid of Size.__str__ calls in logging. (sbueno+anaconda)
+  Resolves: rhbz#1155984
+- Only access storage.bootDisk once (sbueno+anaconda)
+  Resolves: rhbz#1155984
+- Fix isDisk and partitionable properties for fwraid arrays. (dlehman)
+  Related: rhbz#1197582
+- Require a non-empty member set for md disks. (dlehman)
+  Related: rhbz#1197582
+- Replace property decorator on PartitionDevice.resizable. (dlehman)
+  Related: rhbz#1069597
+- Update unit tests related to mediaPresent. (dlehman)
+  Related: rhbz#1069597
+- Don't store UUIDs or labels of multipath members. (dlehman)
+  Resolves: rhbz#1254232
+- Try to do fsck if resize fails before giving up (vpodzime)
+  Resolves: rhbz#1251396
+
 * Thu Sep 10 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.27-1
 - Mount efivarfs during os installation (bcl)
   Resolves: rhbz#1261559
