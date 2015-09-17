@@ -441,12 +441,11 @@ class Populator(object):
                not self._isIgnoredDisk(disk):
                 if info.get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
-                    cls = CorruptGPTError
                 else:
                     msg = "failed to scan disk %s" % disk.name
-                    cls = DiskLabelScanError
 
-                raise cls(msg)
+                log.error(msg)
+                return
 
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
