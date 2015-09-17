@@ -26,6 +26,7 @@ import copy
 import pprint
 import re
 import os
+import time
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -720,6 +721,38 @@ class LVMLogicalVolumeDevice(DMDevice):
     def setupParents(self, orig=False):
         # parent is a vg, which has no formatting (or device for that matter)
         Device.setupParents(self, orig=orig)
+
+    def _preSetup(self, orig=False):
+        # If the lvmetad socket exists and any PV is inactive before we call
+        # setupParents (via _preSetup, below), we should wait for auto-
+        # activation before trying to manually activate this LV.
+        auto_activate = (lvm.lvmetad_socket_exists() and
+                         any(not pv.status for pv in self.vg.pvs))
+        if not super(LVMLogicalVolumeDevice, self)._preSetup(orig=orig):
+            return False
+
+        if auto_activate:
+            log.debug("waiting for lvm auto-activation of %s", self.name)
+            # Wait for auto-activation for up to 30 seconds. If this LV hasn't
+            # been activated when the timeout is reached, there may be some
+            # lvm.conf content preventing auto-activation of this LV, so we
+            # have to do it ourselves.
+            # The timeout value of 30 seconds was suggested by prajnoha. He
+            # noted that udev uses the same value, for whatever that's worth.
+            timeout = 30 # seconds
+            start = time.time()
+            while time.time() - start < timeout:
+                if self.status:
+                    # already active -- don't try to activate it manually
+                    log.debug("%s has been auto-activated", self.name)
+                    return False
+                else:
+                    log.debug("%s not active yet; sleeping...", self.name)
+                    time.sleep(0.5)
+
+            log.debug("lvm auto-activation timeout reached for %s", self.name)
+
+        return True
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """

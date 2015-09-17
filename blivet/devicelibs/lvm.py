@@ -20,6 +20,7 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import os
 import re
 
 from collections import namedtuple
@@ -55,6 +56,8 @@ KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
                          ThPoolProfile("thin-performance", N_("Performance")))
 
 EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_LVM_PLUGIN]
+
+LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 
 # Start config_args handling code
 #
@@ -172,3 +175,6 @@ def determine_parent_lv(vg_name, internal_lv, lvs):
                 return lv
 
     return None
+
+def lvmetad_socket_exists():
+    return os.path.exists(LVMETAD_SOCKET_PATH)
