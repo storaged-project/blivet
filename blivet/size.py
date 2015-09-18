@@ -305,23 +305,23 @@ class Size(Decimal):
     def __add__(self, other, context=None):
         # because float is not automatically converted to Decimal type
         if isinstance(other, float):
-            other = Decimal(other)
+            other = Decimal(str(other))
         return Size(Decimal.__add__(self, other))
 
     # needed to make sum() work with Size arguments
     def __radd__(self, other, context=None):
         if isinstance(other, float):
-            other = Decimal(other)
+            other = Decimal(str(other))
         return Size(Decimal.__radd__(self, other))
 
     def __sub__(self, other, context=None):
         if isinstance(other, float):
-            other = Decimal(other)
+            other = Decimal(str(other))
         return Size(Decimal.__sub__(self, other))
 
     def __mul__(self, other, context=None):
         if isinstance(other, float):
-            other = Decimal(other)
+            other = Decimal(str(other))
         return Size(Decimal.__mul__(self, other))
     __rmul__ = __mul__
 
