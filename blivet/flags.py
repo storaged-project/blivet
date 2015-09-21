@@ -31,6 +31,7 @@ class Flags(object):
         #
         self.testing = False
         self.installer_mode = False
+        self.debug = False
 
         #
         # minor modes (installer-specific)
@@ -92,6 +93,9 @@ class Flags(object):
 
     def update_from_anaconda_flags(self, anaconda_flags):
         self.installer_mode = True
+        # always enable the debug mode when in the installer mode so that we
+        # have more data in the logs for rare cases that are hard to reproduce
+        self.debug = True
         self.testing = anaconda_flags.testing
         self.automated_install = anaconda_flags.automatedInstall
         self.live_install = anaconda_flags.livecdInstall

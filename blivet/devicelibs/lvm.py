@@ -90,6 +90,8 @@ def _set_global_config():
     config_string = " devices { %s } " % (devices_string) # strings can be added
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
+    if flags.debug:
+        config_string += "log {level=7 file=/tmp/lvm.log}"
 
     blockdev.lvm.set_global_config(config_string)
 
