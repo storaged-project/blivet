@@ -22,6 +22,8 @@
 
 import math
 from decimal import Decimal
+import os
+
 from collections import namedtuple
 
 import logging
@@ -61,6 +63,8 @@ def has_lvm():
                 return True
 
     return False
+
+LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 
 # Start config_args handling code
 #
@@ -714,3 +718,6 @@ def lvcreate_cached(vg_name, lv_name, lv_size, cache_data_size, cache_md_size,
                                                                        vg_lv_name(lv_name),
                                                                        msg)
         raise LVMError(msg)
+
+def lvmetad_socket_exists():
+    return os.path.exists(LVMETAD_SOCKET_PATH)
