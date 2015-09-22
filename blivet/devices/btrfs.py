@@ -303,11 +303,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             self.format.mountopts = self.parents[0].format.mountopts
 
     def _getSize(self):
-        size = sum((d.size for d in self.parents), Size(0))
-        if self.dataLevel in (raid.RAID1, raid.RAID10):
-            size /= len(self.parents)
-
-        return size
+        # Calculate the size as if it were a RAID with no superblock and a chunk_size of 1
+        dataLevel = self.dataLevel or raid.Single
+        return dataLevel.get_size([d.size for d in self.parents],
+                chunk_size=Size(1),
+                superblock_size_func=lambda x: 0)
 
     def _removeParent(self, member):
         levels = (l for l in (self.dataLevel, self.metaDataLevel) if l)
