@@ -2,6 +2,9 @@
 
 import os
 import unittest
+import parted
+
+from unittest.mock import patch
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
@@ -154,3 +157,42 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(
                 disk.format.endAlignment.isAligned(free, max_end_sector),
                 True)
+
+    @patch("blivet.devices.partition.PartitionDevice.readCurrentSize", lambda part: part.size)
+    def testExtendedMinSize(self):
+        with sparsetmpfile("extendedtest", Size("10 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = getFormat("disklabel", device=disk.path)
+            grain_size = Size(disk.format.alignment.grainSize)
+            sector_size = Size(disk.format.partedDevice.sectorSize)
+
+            extended_start = int(grain_size)
+            extended_end = extended_start + int(Size("6 MiB") / sector_size)
+            disk.format.addPartition(extended_start, extended_end, parted.PARTITION_EXTENDED)
+            extended = disk.format.extendedPartition
+            self.assertNotEqual(extended, None)
+
+            extended_device = PartitionDevice(os.path.basename(extended.path))
+            extended_device.disk = disk
+            extended_device.exists = True
+            extended_device.partedPartition = extended
+
+            # no logical partitions --> min size should be max of 1 KiB and grainSize
+            self.assertEqual(extended_device.minSize,
+                             extended_device.alignTargetSize(max(grain_size, Size("1 KiB"))))
+
+            logical_start = extended_start + 1
+            logical_end = extended_end // 2
+            disk.format.addPartition(logical_start, logical_end, parted.PARTITION_LOGICAL)
+            logical = disk.format.partedDisk.getPartitionBySector(logical_start)
+            self.assertNotEqual(logical, None)
+
+            logical_device = PartitionDevice(os.path.basename(logical.path))
+            logical_device.disk = disk
+            logical_device.exists = True
+            logical_device.partedPartition = logical
+
+            # logical partition present --> min size should be based on its end sector
+            end_free = (extended_end - logical_end)*sector_size
+            self.assertEqual(extended_device.minSize,
+                             extended_device.alignTargetSize(extended_device.currentSize - end_free))
