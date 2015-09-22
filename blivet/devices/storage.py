@@ -620,7 +620,7 @@ class StorageDevice(Device):
         size = Size(0)
         if self.exists and os.path.exists(self.path) and \
            os.path.isdir(self.sysfsPath):
-            blocks = int(util.get_sysfs_attr(self.sysfsPath, "size"))
+            blocks = int(util.get_sysfs_attr(self.sysfsPath, "size") or '0')
             size = Size(blocks * LINUX_SECTOR_SIZE)
 
             self._mockPartedDevice(size)
