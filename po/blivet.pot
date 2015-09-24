@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-14 13:07-0400\n"
+"POT-Creation-Date: 2015-09-24 19:12-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -355,21 +355,21 @@ msgstr ""
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/osinstall.py:252
+#: ../blivet/osinstall.py:253
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:257
+#: ../blivet/osinstall.py:258
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:259
+#: ../blivet/osinstall.py:260
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:262
+#: ../blivet/osinstall.py:263
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
