@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.31
+Version: 0.61.15.32
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Sep 24 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.32-1
+- Wait for auto-activation of LVs when lvmetad is running. (dlehman)
+  Resolves: rhbz#1261621
+- Add a function to tell us if the lvmetad socket exists (dlehman)
+  Related: rhbz#1261621
+
 * Wed Sep 23 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.31-1
 - Handle sysfs size if it is missing (bcl)
   Resolves: rhbz#1265090
