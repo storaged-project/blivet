@@ -239,11 +239,11 @@ def _findExistingInstallations(devicetree):
             device.format.mount(options=options, mountpoint=getSysroot())
         except Exception: # pylint: disable=broad-except
             log_exception_info(log.warning, "mount of %s as %s failed", [device.name, device.format.type])
-            device.format.umount(mountpoint=getSysroot())
+            util.umount(mountpoint=getSysroot())
             continue
 
         if not os.access(getSysroot() + "/etc/fstab", os.R_OK):
-            device.format.umount(mountpoint=getSysroot())
+            util.umount(mountpoint=getSysroot())
             device.teardown(recursive=True)
             continue
 
@@ -264,7 +264,7 @@ def _findExistingInstallations(devicetree):
                         {"product": product, "version": version, "arch": architecture}
 
         (mounts, swaps) = parseFSTab(devicetree, chroot=getSysroot())
-        device.format.umount(mountpoint=getSysroot())
+        util.umount(mountpoint=getSysroot())
         if not mounts and not swaps:
             # empty /etc/fstab. weird, but I've seen it happen.
             continue
