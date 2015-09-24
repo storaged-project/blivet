@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.30
+Version: 0.61.15.31
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 23 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.31-1
+- Handle sysfs size if it is missing (bcl)
+  Resolves: rhbz#1265090
+
 * Tue Sep 22 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.30-1
 - Pull in new translations
   Related: rhbz#1047457
