@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.32
+Version: 0.61.15.33
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Sep 25 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.33-1
+- Pull in new translations
+  Related: rhbz#1047457
+
 * Thu Sep 24 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.32-1
 - Wait for auto-activation of LVs when lvmetad is running. (dlehman)
   Resolves: rhbz#1261621
