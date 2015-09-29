@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-25 18:21-0700\n"
+"POT-Creation-Date: 2015-09-29 16:47-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -254,8 +254,8 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:109
-msgid "FCoE not available"
+#: ../blivet/devicetree.py:1332
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/errors.py:166
@@ -279,8 +279,8 @@ msgid ""
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
-#: ../blivet/devicetree.py:1332
-msgid "Invalid Disk Label"
+#: ../blivet/fcoe.py:109
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
