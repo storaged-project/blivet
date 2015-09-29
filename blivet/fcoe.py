@@ -174,7 +174,7 @@ class fcoe(object):
                 # Sleep for 3 s to allow dcb negotiation (#813057)
                 time.sleep(3)
                 rc, out = util.run_program_and_capture_output(
-                    ["fipvlan", '-c', '-s', '-f', 'fcoe', nic])
+                    ["fipvlan", '-c', '-s', '-f', '-fcoe', nic])
             else:
                 self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
                 rc, out = util.run_program_and_capture_output(
