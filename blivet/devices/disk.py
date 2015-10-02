@@ -440,7 +440,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
                                       iface_spec,
                                       self.node.name)
 
-        initiator = "iscsi_initiator=%s" % self.initiator
+        initiator = "rd.iscsi.initiator=%s" % self.initiator
 
         return set([netroot, initiator])
 
