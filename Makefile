@@ -6,7 +6,7 @@ RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
 RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-PYTHON=python2
+PYTHON=python3
 COVERAGE=coverage
 ifeq ($(PYTHON),python3)
   COVERAGE=coverage3
