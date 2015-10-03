@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.14
+Version: 1.15
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,25 @@ popd
 %endif
 
 %changelog
+* Fri Oct 02 2015 Brian C. Lane <bcl@redhat.com> - 1.15-1
+- Update Makefile to default to python3. (dlehman)
+- Add test for extended partition minSize (vtrefny)
+- Allow resizing of non-leaf partitions (vtrefny)
+- Fix minSize for extended partitions (#1254875) (vtrefny)
+- Fix calling non-existing method (#1252902) (jkonecny)
+- Use the RAID classes to calculate btrfs sizes (#1264696) (dshea)
+- Handle sysfs size if it is missing (#1265090) (bcl)
+- Convert float to str for better precision in Size (jkonecny)
+- Merge pull request #226 from dwlehman/lvactivate-lvmetad (dlehman)
+- Wait for auto-activation of LVs when lvmetad is running. (#1261621) (dlehman)
+- Add a function to tell us if the lvmetad socket exists. (dlehman)
+- Don't teardown FSs when searching for installed systems (#1252902) (jkonecny)
+- Merge pull request #218 from vpodzime/master-lvm_on_raid_improvements
+  (vpodzime)
+- Account for bigger LVM meta data due to alignment on MD RAID (vpodzime)
+- Calculate the MD RAID superblock size from the right size (vpodzime)
+- Don't be naïve about liblvm (vpodzime)
+
 * Fri Sep 11 2015 Brian C. Lane <bcl@redhat.com> - 1.14-1
 - Make sure devices are torn down in findExistingInstallations (#1261439)
   (vpodzime)

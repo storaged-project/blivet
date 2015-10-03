@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-11 17:53-0700\n"
+"POT-Creation-Date: 2015-10-02 17:22-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -206,6 +206,19 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:273
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:436 ../blivet/autopart.py:487
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:441 ../blivet/autopart.py:495
+msgid "Not enough free space on disks for automatic partitioning"
+msgstr ""
+
 #: ../blivet/size.py:45
 msgid "B"
 msgstr ""
@@ -346,17 +359,23 @@ msgstr ""
 msgid "Yi"
 msgstr ""
 
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:273
-msgid "No big enough free space on disks for automatic partitioning"
+#: ../blivet/osinstall.py:253
+#, python-format
+msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/autopart.py:436 ../blivet/autopart.py:487
-msgid "No usable disks selected"
+#: ../blivet/osinstall.py:258
+msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/autopart.py:441 ../blivet/autopart.py:495
-msgid "Not enough free space on disks for automatic partitioning"
+#: ../blivet/osinstall.py:260
+#, python-format
+msgid "%(product)s %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/osinstall.py:263
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/errors.py:143
@@ -465,25 +484,6 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/osinstall.py:252
-#, python-format
-msgid "Linux on %s"
-msgstr ""
-
-#: ../blivet/osinstall.py:257
-msgid "Unknown Linux"
-msgstr ""
-
-#: ../blivet/osinstall.py:259
-#, python-format
-msgid "%(product)s %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/osinstall.py:262
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
 #: ../blivet/deviceaction.py:178
 #, python-format
 msgid "Executing %(action)s"
@@ -546,11 +546,11 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:54
+#: ../blivet/devicelibs/lvm.py:55
 msgid "Generic"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:55
+#: ../blivet/devicelibs/lvm.py:56
 msgid "Performance"
 msgstr ""
 
@@ -577,16 +577,16 @@ msgstr ""
 msgid "PPC PReP Boot"
 msgstr ""
 
+#: ../blivet/formats/mdraid.py:42
+msgid "software RAID"
+msgstr ""
+
 #: ../blivet/formats/luks.py:45
 msgid "LUKS"
 msgstr ""
 
 #: ../blivet/formats/luks.py:46
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:152
-msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:33
@@ -597,12 +597,12 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/disklabel.py:44
-msgid "partition table"
+#: ../blivet/formats/__init__.py:152
+msgid "Unknown"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:42
-msgid "software RAID"
+#: ../blivet/formats/disklabel.py:44
+msgid "partition table"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:38
