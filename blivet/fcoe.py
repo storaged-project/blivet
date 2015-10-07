@@ -53,6 +53,10 @@ class fcoe(object):
         daemons and connecting to firmware discovered SAN's only happens once
         and as it keeps a global list of all FCoE devices it is
         implemented as a Singleton.
+
+        .. warning::
+            Since this is a singleton class, calling deepcopy() on the instance
+            just returns ``self`` with no copy being created.
     """
 
     def __init__(self):
@@ -63,6 +67,9 @@ class fcoe(object):
 
     # So that users can write fcoe() to get the singleton instance
     def __call__(self):
+        return self
+
+    def __deepcopy__(self, memo_dict):
         return self
 
     def _stabilize(self):
