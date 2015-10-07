@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.34
+Version: 0.61.15.35
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Oct 07 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.35-1
+- Pull in new translations
+  Related: rhbz#1047457
+
 * Tue Sep 29 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.34-1
 - fcoe: fix -fcoe suffix of vlan devices created by fipvlan (rvykydal)
   Resolves: rhbz#1265946
