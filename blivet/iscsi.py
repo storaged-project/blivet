@@ -131,6 +131,10 @@ class iscsi(object):
         and logging in to firmware discovered disks only happens once
         and as it keeps a global list of all iSCSI devices it is implemented as
         a Singleton.
+
+        .. warning::
+            Since this is a singleton class, calling deepcopy() on the instance
+            just returns ``self`` with no copy being created.
     """
 
     def __init__(self):
@@ -154,6 +158,9 @@ class iscsi(object):
 
     # So that users can write iscsi() to get the singleton instance
     def __call__(self):
+        return self
+
+    def __deepcopy__(self, memo_dict):
         return self
 
     def _getInitiator(self):

@@ -45,6 +45,12 @@ scsidevsysfs = "/sys/bus/scsi/devices"
 zfcpconf = "/etc/zfcp.conf"
 
 class ZFCPDevice:
+    """
+        .. warning::
+            Since this is a singleton class, calling deepcopy() on the instance
+            just returns ``self`` with no copy being created.
+    """
+
     def __init__(self, devnum, wwpn, fcplun):
         self.devnum = blockdev.s390.sanitize_dev_input(devnum)
         self.wwpn = blockdev.s390.zfcp_sanitize_wwpn_input(wwpn)
@@ -286,6 +292,9 @@ class ZFCP:
 
     # So that users can write zfcp() to get the singleton instance
     def __call__(self):
+        return self
+
+    def __deepcopy__(self, memo_dict):
         return self
 
     def readConfig(self):
