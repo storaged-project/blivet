@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12.5
+Version: 1.12.6
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,9 @@ popd
 %endif
 
 %changelog
+* Thu Oct 08 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.6-1
+- Fix calling non-existing method (#1252902) (jkonecny)
+
 * Thu Sep 24 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.5-1
 - Convert float to str for better precision in Size (jkonecny)
 - Don't teardown FSs when searching for installed systems (#1252902) (jkonecny)
