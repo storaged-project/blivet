@@ -352,14 +352,12 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         return subvols
 
+    @util.deprecated('1.16', '')
     def createSubVolumes(self):
-        self._do_temp_mount()
-
         for _name, subvol in self.subvolumes:
             if subvol.exists:
                 continue
-            subvol.create(mountpoint=self._temp_dir_prefix)
-        self._undo_temp_mount()
+            subvol.create()
 
     def removeSubVolume(self, name):
         raise NotImplementedError()
