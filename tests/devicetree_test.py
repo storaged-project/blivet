@@ -1,4 +1,5 @@
 import unittest
+from mock import patch
 
 from tests.imagebackedtestcase import ImageBackedTestCase
 
@@ -8,6 +9,9 @@ from blivet import devicefactory
 from blivet import util
 from blivet.udev import trigger
 from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
+from blivet.devices import StorageDevice
+from blivet.devicetree import DeviceTree
+from blivet.formats import getFormat
 
 """
     TODO:
@@ -17,6 +21,37 @@ from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
             - raid lvs
             - raid thin pool
 """
+
+class DeviceTreeTestCase(unittest.TestCase):
+    def testResolveDevice(self):
+        dt = DeviceTree()
+
+        dev1_label = "dev1_label"
+        dev1_uuid = "1234-56-7890"
+        fmt1 = getFormat("ext4", label=dev1_label, uuid=dev1_uuid)
+        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1)
+        dt._addDevice(dev1)
+
+        dev2_label = "dev2_label"
+        fmt2 = getFormat("swap", label=dev2_label)
+        dev2 = StorageDevice("dev2", exists=True, fmt=fmt2)
+        dt._addDevice(dev2)
+
+        dev3 = StorageDevice("sdp2", exists=True)
+        dt._addDevice(dev3)
+
+        self.assertEqual(dt.resolveDevice(dev1.name), dev1)
+        self.assertEqual(dt.resolveDevice("LABEL=%s" % dev1_label), dev1)
+        self.assertEqual(dt.resolveDevice("UUID=%s" % dev1_label), None)
+        self.assertEqual(dt.resolveDevice("UUID=%s" % dev1_uuid), dev1)
+        self.assertEqual(dt.resolveDevice("/dev/dev1"), dev1)
+
+        self.assertEqual(dt.resolveDevice("dev2"), dev2)
+        with patch("blivet.devicetree.edd") as patched_edd:
+            patched_edd.edd_dict = {"dev1": 0x81, "dev2": 0x82}
+            self.assertEqual(dt.resolveDevice("0x82"), dev2)
+
+        self.assertEqual(dt.resolveDevice(dev3.name), dev3)
 
 def recursive_getattr(x, attr, default=None):
     """ Resolve a possibly-dot-containing attribute name. """

@@ -2655,12 +2655,13 @@ class DeviceTree(object):
                 (label.startswith("'") and label.endswith("'"))):
                 label = label[1:-1]
             device = self.labels.get(label)
-        elif re.match(r'(0x)?[A-Za-z0-9]{2}(p\d+)?$', devspec):
+        elif re.match(r'(0x)?[A-Fa-f0-9]{2}(p\d+)?$', devspec):
             # BIOS drive number
-            spec = int(devspec, 16)
+            (drive, _p, partnum) = devspec.partition("p")
+            spec = int(drive, 16)
             for (edd_name, edd_number) in edd.edd_dict.items():
                 if edd_number == spec:
-                    device = self.getDeviceByName(edd_name)
+                    device = self.getDeviceByName(edd_name + partnum)
                     break
         elif options and "nodev" in options.split(","):
             device = self.getDeviceByName(devspec)
