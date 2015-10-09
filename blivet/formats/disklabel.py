@@ -25,7 +25,7 @@ import os
 from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
-from ..errors import DiskLabelCommitError, InvalidDiskLabelError
+from ..errors import DiskLabelCommitError, InvalidDiskLabelError, AlignmentError
 from .. import arch
 from .. import udev
 from .. import util
@@ -66,8 +66,10 @@ class DiskLabel(DeviceFormat):
         self._partedDevice = None
         self._partedDisk = None
         self._origPartedDisk = None
-        self._alignment = None
-        self._endAlignment = None
+
+        self._diskLabelAlignment = None
+        self._minimalAlignment = None
+        self._optimalAlignment = None
 
         if self.partedDevice:
             # set up the parted objects and raise exception on failure
@@ -79,7 +81,7 @@ class DiskLabel(DeviceFormat):
             We can't do copy.deepcopy on parted objects, which is okay.
         """
         return util.variable_copy(self, memo,
-           shallow=('_partedDevice', '_alignment', '_endAlignment'),
+           shallow=('_partedDevice', '_optimalAlignment', '_minimalAlignment',),
            duplicate=('_partedDisk', '_origPartedDisk'))
 
     def __repr__(self):
@@ -94,8 +96,8 @@ class DiskLabel(DeviceFormat):
               "  partedDevice = %(dev)s\n" %
               {"type": self.labelType, "count": len(self.partitions),
                "sectorSize": self.sectorSize,
-               "offset": self.alignment.offset,
-               "grain": self.alignment.grainSize,
+               "offset": self.getAlignment().offset,
+               "grain": self.getAlignment().grainSize,
                "disk": self.partedDisk, "orig_disk": self._origPartedDisk,
                "dev": self.partedDevice})
         return s
@@ -113,8 +115,8 @@ class DiskLabel(DeviceFormat):
         d.update({"labelType": self.labelType,
                   "partitionCount": len(self.partitions),
                   "sectorSize": self.sectorSize,
-                  "offset": self.alignment.offset,
-                  "grainSize": self.alignment.grainSize})
+                  "offset": self.getAlignment().offset,
+                  "grainSize": self.getAlignment().grainSize})
         return d
 
     def updateOrigPartedDisk(self):
@@ -345,45 +347,123 @@ class DiskLabel(DeviceFormat):
     def partitions(self):
         return self.partedDisk.partitions
 
+    def _getDiskLabelAlignment(self):
+        """ Return the disklabel's required alignment for new partitions.
+
+            :rtype: :class:`parted.Alignment`
+        """
+        if not self._diskLabelAlignment:
+            try:
+                self._diskLabelAlignment = self.partedDisk.partitionAlignment
+            except _ped.CreateException:
+                self._diskLabelAlignment = parted.Alignment(offset=0,
+                                                            grainSize=1)
+
+        return self._diskLabelAlignment
+
+    def _getMinimalAlignment(self):
+        """ Return the device's minimal alignment for new partitions.
+
+            :rtype: :class:`parted.Alignment`
+        """
+        if not self._minimalAlignment:
+            disklabel_alignment = self._getDiskLabelAlignment()
+            try:
+                minimal_alignment = self.partedDevice.minimumAlignment
+            except _ped.CreateException:
+                # handle this in the same place we'd handle an ArithmeticError
+                minimal_alignment = None
+
+            try:
+                alignment = minimal_alignment.intersect(disklabel_alignment)
+            except (ArithmeticError, AttributeError):
+                alignment = disklabel_alignment
+
+            self._minimalAlignment = alignment
+
+        return self._minimalAlignment
+
+    def _getOptimalAlignment(self):
+        """ Return the device's optimal alignment for new partitions.
+
+            :rtype: :class:`parted.Alignment`
+
+            .. note::
+
+                If there is no device-supplied optimal alignment this method
+                returns the minimal device alignment.
+        """
+        if not self._optimalAlignment:
+            disklabel_alignment = self._getDiskLabelAlignment()
+            try:
+                optimal_alignment = self.partedDevice.optimumAlignment
+            except _ped.CreateException:
+                # if there is no optimal alignment, use the minimal alignment,
+                # which has already been intersected with the disklabel
+                # alignment
+                alignment = self._getMinimalAlignment()
+            else:
+                try:
+                    alignment = optimal_alignment.intersect(disklabel_alignment)
+                except ArithmeticError:
+                    alignment = disklabel_alignment
+
+            self._optimalAlignment = alignment
+
+        return self._optimalAlignment
+
+    def getAlignment(self, size=None):
+        """ Return an appropriate alignment for a new partition.
+
+            :keyword size: proposed partition size (optional)
+            :type size: :class:`~.size.Size`
+            :returns: the appropriate alignment to use
+            :rtype: :class:`parted.Alignment`
+            :raises :class:`~.errors.AlignmentError`: if the partition is too
+                                                         small to be aligned
+        """
+        # default to the optimal alignment
+        alignment = self._getOptimalAlignment()
+        if size is None:
+            return alignment
+
+        # use the minimal alignment if the requested size is smaller than the
+        # optimal io size
+        minimal_alignment = self._getMinimalAlignment()
+        optimal_grain_size = Size(alignment.grainSize * self.sectorSize)
+        minimal_grain_size = Size(minimal_alignment.grainSize * self.sectorSize)
+        if size < minimal_grain_size:
+            raise AlignmentError("requested size cannot be aligned")
+        elif size < optimal_grain_size:
+            alignment = minimal_alignment
+
+        return alignment
+
+    def getEndAlignment(self, size=None, alignment=None):
+        """ Return an appropriate end-alignment for a new partition.
+
+            :keyword size: proposed partition size (optional)
+            :type size: :class:`~.size.Size`
+            :keyword alignment: the start alignment (optional)
+            :type alignment: :class:`parted.Alignment`
+            :returns: the appropriate alignment to use
+            :rtype: :class:`parted.Alignment`
+            :raises :class:`~.errors.AlignmentError`: if the partition is too
+                                                         small to be aligned
+        """
+        if alignment is None:
+            alignment = self.getAlignment(size=size)
+
+        return parted.Alignment(offset=alignment.offset - 1,
+                            grainSize=alignment.grainSize)
+
     @property
     def alignment(self):
-        """ Alignment requirements for this device. """
-        if not self._alignment:
-            try:
-                disklabel_alignment = self.partedDisk.partitionAlignment
-            except _ped.CreateException:
-                disklabel_alignment = parted.Alignment(offset=0, grainSize=1)
-
-            try:
-                optimum_device_alignment = self.partedDevice.optimumAlignment
-            except _ped.CreateException:
-                optimum_device_alignment = None
-
-            try:
-                minimum_device_alignment = self.partedDevice.minimumAlignment
-            except _ped.CreateException:
-                minimum_device_alignment = None
-
-            try:
-                a = optimum_device_alignment.intersect(disklabel_alignment)
-            except (ArithmeticError, AttributeError):
-                try:
-                    a = minimum_device_alignment.intersect(disklabel_alignment)
-                except (ArithmeticError, AttributeError):
-                    a = disklabel_alignment
-
-            self._alignment = a
-
-        return self._alignment
+        return self.getAlignment()
 
     @property
     def endAlignment(self):
-        if not self._endAlignment:
-            self._endAlignment = parted.Alignment(
-                                        offset = self.alignment.offset - 1,
-                                        grainSize = self.alignment.grainSize)
-
-        return self._endAlignment
+        return self.getEndAlignment()
 
     @property
     def free(self):
