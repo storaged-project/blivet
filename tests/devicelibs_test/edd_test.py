@@ -1,41 +1,77 @@
 import unittest
 import mock
+import os
+import inspect
+
+from blivet.devicelibs.edd import EddEntry
+
+class FakeDevice(object):
+    def __init__(self, name):
+        self.name = name
+
+class FakeEddEntry(EddEntry):
+    def __init__(self, sysfspath, **kw):
+        EddEntry.__init__(self, sysfspath)
+        for (name,value) in kw.items():
+            self.__dict__[name] = value
+
+    def load(self):
+        pass
+
+    def __lt__(self, other):
+        return self.__dict__ < other.__dict__
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 class EddTestCase(unittest.TestCase):
-    @unittest.skip("not implemented")
+    def _set_fs_root(self, edd_module, fsroot):
+        if fsroot is None:
+            edd_module.fsroot = ""
+        else:
+            dirname = os.path.dirname(inspect.getfile(edd_module))
+            edd_module.fsroot = os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot)
+
     def test_biosdev_to_edd_dir(self):
         from blivet.devicelibs import edd
+        self._set_fs_root(edd, None)
         path = edd.biosdev_to_edd_dir(138)
         self.assertEqual("/sys/firmware/edd/int13_dev8a", path)
 
-    @unittest.skip("not implemented")
-    def test_collect_edd_data(self):
+    def test_collect_edd_data_sata_usb(self):
+        # test with sata sda, usb sdb
+        from blivet.devicelibs import edd
+        self._set_fs_root(edd, "sata_usb")
+        edd_dict = edd.collect_edd_data()
+        dev80 = FakeEddEntry(version="0x30", mbr_sig="0x00000000",
+                             sectors=312581808, host_bus="PCI", type="SATA",
+                             pci_dev="00:1f.2", channel=255, ata_device=1,
+                             interface="SATA    \tdevice: 1",
+                             sysfspath=os.path.join(edd.fsroot,
+                                            "sys/firmware/edd/int13_dev80"))
+        dev81 = FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
+                             sectors=31293440, host_bus="PCI", type="USB",
+                             pci_dev="ff:ff.255", channel=255,
+                             usb_serial=0x30302e31,
+                             interface="USB     \tserial_number: 30302e31",
+                             sysfspath=os.path.join(edd.fsroot,
+                                            "sys/firmware/edd/int13_dev81"))
+        self.assertEqual(len(edd_dict), 2)
+        self.assertEqual(dev80, edd_dict[0x80])
+        self.assertEqual(dev81, edd_dict[0x81])
+
+    def test_get_edd_dict_sata_usb(self):
         from blivet.devicelibs import edd
 
-        # test with vda, vdb
-        EddTestFS(self, edd).vda_vdb()
-        edd_dict = edd.collect_edd_data()
+        # test with sata sda, usb sdb
+        self._set_fs_root(edd, "sata_usb")
+        devices=(FakeDevice("sda"),
+                 FakeDevice("sdb"),
+                 )
+        edd_dict = edd.get_edd_dict(devices)
         self.assertEqual(len(edd_dict), 2)
-        self.assertEqual(edd_dict[0x80].type, "SCSI")
-        self.assertEqual(edd_dict[0x80].scsi_id, 0)
-        self.assertEqual(edd_dict[0x80].scsi_lun, 0)
-        self.assertEqual(edd_dict[0x80].pci_dev, "00:05.0")
-        self.assertEqual(edd_dict[0x80].channel, 0)
-        self.assertEqual(edd_dict[0x80].sectors, 16777216)
-        self.assertEqual(edd_dict[0x81].pci_dev, "00:06.0")
-
-        # test with sda, vda
-        EddTestFS(self, edd).sda_vda()
-        edd_dict = edd.collect_edd_data()
-        self.assertEqual(len(edd_dict), 2)
-        self.assertEqual(edd_dict[0x80].type, "ATA")
-        self.assertEqual(edd_dict[0x80].scsi_id, None)
-        self.assertEqual(edd_dict[0x80].scsi_lun, None)
-        self.assertEqual(edd_dict[0x80].pci_dev, "00:01.1")
-        self.assertEqual(edd_dict[0x80].channel, 0)
-        self.assertEqual(edd_dict[0x80].sectors, 2097152)
-        self.assertEqual(edd_dict[0x80].ata_device, 0)
-        self.assertEqual(edd_dict[0x80].mbr_signature, "0x000ccb01")
+        self.assertEqual(edd_dict["sda"], 0x80)
+        self.assertEqual(edd_dict["sdb"], 0x81)
 
     @unittest.skip("not implemented")
     def test_collect_edd_data_cciss(self):
