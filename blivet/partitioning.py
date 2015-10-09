@@ -26,7 +26,7 @@ from decimal import Decimal
 import parted
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
-from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError
+from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, PartitioningError, AlignmentError
 from .flags import flags
 from .devices import PartitionDevice, LUKSDevice, devicePathToName
 from .devices.partition import FALLBACK_DEFAULT_PART_SIZE
@@ -782,6 +782,21 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
             alignment unless a start sector is provided.
 
     """
+    # get alignment information based on disklabel, device, and partition size
+    if start is None:
+        if size is None:
+            # implicit request for extended partition (will use full free area)
+            _size = sectorsToSize(free.length, disklabel.sectorSize)
+        else:
+            _size = size
+
+        alignment = disklabel.getAlignment(size=_size)
+        end_alignment = disklabel.getEndAlignment(alignment=alignment)
+    else:
+        alignment = parted.Alignment(grainSize=1, offset=0)
+        end_alignment = parted.Alignment(grainSize=1, offset=-1)
+    log.debug("using alignment: %s", alignment)
+
     sectorSize = Size(disklabel.partedDevice.sectorSize)
     if start is not None:
         if end is None:
@@ -789,15 +804,15 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
     else:
         start = free.start
 
-        if not disklabel.alignment.isAligned(free, start):
-            start = disklabel.alignment.alignNearest(free, start)
+        if not alignment.isAligned(free, start):
+            start = alignment.alignNearest(free, start)
 
         if disklabel.labelType == "sun" and start == 0:
-            start = disklabel.alignment.alignUp(free, start)
+            start = alignment.alignUp(free, start)
 
         if part_type == parted.PARTITION_LOGICAL:
             # make room for logical partition's metadata
-            start += disklabel.alignment.grainSize
+            start += alignment.grainSize
 
         if start != free.start:
             log.debug("adjusted start sector from %d to %d", free.start, start)
@@ -809,8 +824,8 @@ def addPartition(disklabel, free, part_type, size, start=None, end=None):
             length = sizeToSectors(size, sectorSize)
             end = start + length - 1
 
-        if not disklabel.endAlignment.isAligned(free, end):
-            end = disklabel.endAlignment.alignUp(free, end)
+        if not end_alignment.isAligned(free, end):
+            end = end_alignment.alignUp(free, end)
             log.debug("adjusted length from %d to %d", length, end - start + 1)
             if start > end:
                 raise PartitioningError(_("unable to allocate aligned partition"))
@@ -1084,6 +1099,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
             disklabel = disklabels[_disk.path]
             best = None
             current_free = free
+            alignment = disklabel.getAlignment(size=_part.req_size)
 
             # for growable requests, we don't want to pass the current free
             # geometry to getBestFreeRegion -- this allows us to try the
@@ -1131,7 +1147,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                           best_free=current_free,
                                           boot=boot,
                                           grow=_part.req_grow,
-                                          alignment=disklabel.alignment)
+                                          alignment=alignment)
 
             if best == free and not _part.req_primary and \
                new_part_type == parted.PARTITION_NORMAL:
@@ -1147,7 +1163,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                   best_free=current_free,
                                                   boot=boot,
                                                   grow=_part.req_grow,
-                                                  alignment=disklabel.alignment)
+                                                  alignment=alignment)
 
             if best and free != best:
                 update = True
@@ -1184,7 +1200,7 @@ def allocatePartitions(storage, disks, partitions, freespace):
                                                                start=_part.req_start_sector,
                                                                boot=boot,
                                                                grow=_part.req_grow,
-                                                               alignment=disklabel.alignment)
+                                                               alignment=alignment)
                                 if not _free:
                                     log.info("not enough space after adding "
                                              "extended partition for growth test")
@@ -1836,15 +1852,23 @@ def getDiskChunks(disk, partitions, free):
         # also check that the resulting aligned geometry has a non-zero length.
         # (It is possible that both will align to the same sector in a small
         #  enough region.)
-        al_start = disk.format.alignment.alignUp(f, f.start)
-        al_end = disk.format.endAlignment.alignDown(f, f.end)
+        try:
+            size = sectorsToSize(f.length, disk.format.sectorSize)
+            alignment = disk.format.getAlignment(size=size)
+            end_alignment = disk.format.getEndAlignment(alignment=alignment)
+        except AlignmentError:
+            disk_free.remove(f)
+            continue
+
+        al_start = alignment.alignUp(f, f.start)
+        al_end = end_alignment.alignDown(f, f.end)
         if al_start >= al_end:
             disk_free.remove(f)
             continue
         geom = parted.Geometry(device=f.device,
                                start=al_start,
                                end=al_end)
-        if geom.length < disk.format.alignment.grainSize:
+        if geom.length < alignment.grainSize:
             disk_free.remove(f)
             continue
 
@@ -2093,6 +2117,7 @@ def growPartitions(disks, partitions, free, size_sets=None):
             # recalculate partition geometries
             disklabel = disk.format
             start = chunk.geometry.start
+            default_alignment = disklabel.getAlignment()
 
             # find any extended partition on this disk
             extended_geometry = getattr(disklabel.extendedPartition,
@@ -2100,8 +2125,8 @@ def growPartitions(disks, partitions, free, size_sets=None):
                                         None)  # parted.Geometry
 
             # align start sector as needed
-            if not disklabel.alignment.isAligned(chunk.geometry, start):
-                start = disklabel.alignment.alignUp(chunk.geometry, start)
+            if not default_alignment.isAligned(chunk.geometry, start):
+                start = default_alignment.alignUp(chunk.geometry, start)
             new_partitions = []
             for p in chunk.requests:
                 ptype = p.device.partedPartition.type
@@ -2110,17 +2135,19 @@ def growPartitions(disks, partitions, free, size_sets=None):
                 if ptype == parted.PARTITION_EXTENDED:
                     continue
 
+                new_length = p.base + p.growth
+                alignment = disklabel.getAlignment(size=chunk.lengthToSize(new_length))
+                end_alignment = disklabel.getEndAlignment(alignment=alignment)
                 # XXX since we need one metadata sector before each
                 #     logical partition we burn one logical block to
                 #     safely align the start of each logical partition
                 if ptype == parted.PARTITION_LOGICAL:
-                    start += disklabel.alignment.grainSize
+                    start += alignment.grainSize
 
-                new_length = p.base + p.growth
                 end = start + new_length - 1
                 # align end sector as needed
-                if not disklabel.endAlignment.isAligned(chunk.geometry, end):
-                    end = disklabel.endAlignment.alignDown(chunk.geometry, end)
+                if not end_alignment.isAligned(chunk.geometry, end):
+                    end = end_alignment.alignDown(chunk.geometry, end)
                 new_geometry = parted.Geometry(device=disklabel.partedDevice,
                                                start=start,
                                                end=end)
@@ -2152,7 +2179,7 @@ def growPartitions(disks, partitions, free, size_sets=None):
                         # account for the logical block difference in start
                         # sector for the extended -v- first logical
                         # (partition.geometry.start is already aligned)
-                        ext_start = partition.geometry.start - disklabel.alignment.grainSize
+                        ext_start = partition.geometry.start - default_alignment.grainSize
 
                 new_geometry = parted.Geometry(device=disklabel.partedDevice,
                                                start=ext_start,

@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 import unittest
-from mock import Mock
+from mock import Mock, patch
 
 import parted
 
+from blivet.partitioning import addPartition
 from blivet.partitioning import getNextPartitionType
 from blivet.partitioning import doPartitioning
 from blivet.partitioning import Request
@@ -12,6 +13,7 @@ from blivet.partitioning import Chunk
 from blivet.partitioning import LVRequest
 from blivet.partitioning import VGChunk
 
+from blivet.devices import DiskFile
 from blivet.devices import StorageDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
@@ -20,6 +22,7 @@ from tests.imagebackedtestcase import ImageBackedTestCase
 from blivet.formats import getFormat
 from blivet.size import Size
 from blivet.flags import flags
+from blivet.util import sparsetmpfile
 
 # disklabel-type-specific constants
 # keys: disklabel type string
@@ -131,6 +134,119 @@ class PartitioningTestCase(unittest.TestCase):
         # no_primary -> None
         disk = self.getDisk(disk_type="mac")
         self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
+
+    def testAddPartition(self):
+        with sparsetmpfile("addparttest", Size("50 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = getFormat("disklabel", device=disk.path, exists=False)
+
+            free = disk.format.partedDisk.getFreeSpaceRegions()[0]
+
+            #
+            # add a partition with an unaligned size
+            #
+            self.assertEqual(len(disk.format.partitions), 0)
+            part = addPartition(disk.format, free, parted.PARTITION_NORMAL,
+                                Size("10 MiB") - Size(37))
+            self.assertEqual(len(disk.format.partitions), 1)
+
+            # an unaligned size still yields an aligned partition
+            alignment = disk.format.alignment
+            geom = part.geometry
+            sector_size = Size(geom.device.sectorSize)
+            self.assertEqual(alignment.isAligned(free, geom.start), True)
+            self.assertEqual(alignment.isAligned(free, geom.end + 1), True)
+            self.assertEqual(part.geometry.length, int(Size("10 MiB") // sector_size))
+
+            disk.format.removePartition(part)
+            self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # adding a partition smaller than the optimal io size should yield
+            # a partition aligned using the minimal io size instead
+            #
+            opt_str = 'parted.Device.optimumAlignment'
+            min_str = 'parted.Device.minimumAlignment'
+            opt_al = parted.Alignment(offset=0, grainSize=8192) # 4 MiB
+            min_al = parted.Alignment(offset=0, grainSize=2048) # 1 MiB
+            with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
+                optimal_end = disk.format.getEndAlignment(alignment=optimal)
+                minimal_end = disk.format.getEndAlignment(alignment=minimal)
+
+                sector_size = Size(disk.format.sectorSize)
+                length = 4096 # 2 MiB
+                size = Size(sector_size * length)
+                part = addPartition(disk.format, free, parted.PARTITION_NORMAL,
+                                    size)
+                self.assertEqual(part.geometry.length, length)
+                self.assertEqual(optimal.isAligned(free, part.geometry.start),
+                                 False)
+                self.assertEqual(minimal.isAligned(free, part.geometry.start),
+                                 True)
+                self.assertEqual(optimal_end.isAligned(free, part.geometry.end),
+                                 False)
+                self.assertEqual(minimal_end.isAligned(free, part.geometry.end),
+                                 True)
+
+                disk.format.removePartition(part)
+                self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # add a partition with an unaligned start sector
+            #
+            start_sector = 5003
+            end_sector = 15001
+            part = addPartition(disk.format, free, parted.PARTITION_NORMAL,
+                                None, start_sector, end_sector)
+            self.assertEqual(len(disk.format.partitions), 1)
+
+            # start and end sectors are exactly as specified
+            self.assertEqual(part.geometry.start, start_sector)
+            self.assertEqual(part.geometry.end, end_sector)
+
+            disk.format.removePartition(part)
+            self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # fail: add a logical partition to a primary free region
+            #
+            with self.assertRaisesRegexp(parted.PartitionException,
+                                         "no extended partition"):
+                part = addPartition(disk.format, free, parted.PARTITION_LOGICAL,
+                                    Size("10 MiB"))
+
+            ## add an extended partition to the disk
+            placeholder = addPartition(disk.format, free,
+                                       parted.PARTITION_NORMAL, Size("10 MiB"))
+            all_free = disk.format.partedDisk.getFreeSpaceRegions()
+            addPartition(disk.format, all_free[1],
+                         parted.PARTITION_EXTENDED, Size("30 MiB"),
+                         alignment.alignUp(all_free[1],
+                                           placeholder.geometry.end))
+
+            disk.format.removePartition(placeholder)
+            self.assertEqual(len(disk.format.partitions), 1)
+            all_free = disk.format.partedDisk.getFreeSpaceRegions()
+
+            #
+            # add a logical partition to an extended free regions
+            #
+            part = addPartition(disk.format, all_free[1],
+                                parted.PARTITION_LOGICAL,
+                                Size("10 MiB"), all_free[1].start)
+            self.assertEqual(part.type, parted.PARTITION_LOGICAL)
+
+            disk.format.removePartition(part)
+            self.assertEqual(len(disk.format.partitions), 1)
+
+            #
+            # fail: add a primary partition to an extended free region
+            #
+            with self.assertRaisesRegexp(parted.PartitionException, "overlap"):
+                part = addPartition(disk.format, all_free[1],
+                                    parted.PARTITION_NORMAL,
+                                    Size("10 MiB"), all_free[1].start)
+
 
     def testChunk(self):
         dev1 = Mock()
