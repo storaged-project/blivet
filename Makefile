@@ -64,6 +64,7 @@ coverage: check-requires
 	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
 	PYTHONPATH=.:tests/ $(COVERAGE) run --branch -m unittest discover -v -s tests/ -p '*_test.py'
 	$(COVERAGE) report --include="blivet/*" --show-missing
+	$(COVERAGE) report --include="blivet/*" > coverage-report.log
 
 check: check-requires
 	PYTHONPATH=. tests/pylint/runpylint.py
@@ -171,7 +172,7 @@ rc-release: scratch-bumpver scratch
 	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
 	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
 
-ci: check test rc-release
+ci: check coverage rc-release
 	@mkdir -p repo
 	@mv *rpm repo
 

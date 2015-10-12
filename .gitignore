@@ -18,3 +18,5 @@ updates.img
 updates/
 build/
 .directory
+.coverage
+coverage-report.log
