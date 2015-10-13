@@ -256,7 +256,7 @@ class Blivet(object):
             self.encryptionPassphrase = None
             for device in self.devices:
                 if device.format.type == "luks" and device.format.exists:
-                    self.__luksDevs[device.format.uuid] = device.format._LUKS__passphrase
+                    self.savePassphrase(device)
 
         if self.ksdata:
             self.config.update(self.ksdata)
@@ -1319,8 +1319,9 @@ class Blivet(object):
     def savePassphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
         passphrase = device.format._LUKS__passphrase
-        self.__luksDevs[device.format.uuid] = passphrase
-        self.devicetree.saveLUKSpassphrase(device)
+        if passphrase:
+            self.__luksDevs[device.format.uuid] = passphrase
+            self.devicetree.saveLUKSpassphrase(device)
 
     def setupDiskImages(self):
         self.devicetree.setDiskImages(self.config.diskImages)
@@ -1883,4 +1884,3 @@ class Blivet(object):
         """
 
         self.fsset.setFstabSwaps(devices)
-
