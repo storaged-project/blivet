@@ -2,7 +2,9 @@ import unittest
 import mock
 import os
 import inspect
+import copy
 
+import blivet
 from blivet.devicelibs import edd
 
 class FakeDevice(object):
@@ -33,7 +35,14 @@ class FakeEddEntry(edd.EddEntry):
 
 class EddTestCase(unittest.TestCase):
     _edd_logger = None
+    maxDiff = None
+
     def setUp(self):
+        try:
+            ws = os.environ['WORKSPACE']
+        except KeyError:
+            ws = "/tmp"
+        blivet.util.set_up_logging(log_file=os.path.join(ws, "blivet.log"))
         super(EddTestCase, self).setUp()
         self._edd_logger = edd.log
         edd.log = mock.MagicMock(name='log')
@@ -53,6 +62,27 @@ class EddTestCase(unittest.TestCase):
             dirname = os.path.dirname(inspect.getfile(edd_module))
             edd_module.fsroot = os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot)
 
+    def _respool_logs(self):
+        log = edd.log
+        edd.log = mock.MagicMock(name='log')
+        for logname in ["debug", "info", "warning", "error"]:
+            logger = getattr(log, logname)
+            newlogger = getattr(self._edd_logger, logname)
+            for call in logger.call_args_list:
+                newlogger(*call[0])
+            setattr(edd.log, logname, mock.MagicMock(name=logname))
+
+    def _check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
+        for (left, right) in ((debugs, edd.log.debug),
+                            (infos, edd.log.info),
+                            (warnings, edd.log.warning),
+                            (errors, edd.log.error)):
+            left = [mock.call(*x) for x in left or []]
+            left.sort()
+            right = copy.copy(right.call_args_list) or []
+            right.sort()
+            self.assertEqual(left, right)
+
     def test_biosdev_to_edd_dir(self):
         self._set_fs_root(edd, None)
         path = edd.biosdev_to_edd_dir(138)
@@ -61,6 +91,7 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(edd.log.info.called, False)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._respool_logs()
 
     def test_collect_edd_data_sata_usb(self):
         # test with sata sda, usb sdb
@@ -83,10 +114,12 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(len(edd_dict), 2)
         self.assertEqual(fakeedd[0x80], edd_dict[0x80])
         self.assertEqual(fakeedd[0x81], edd_dict[0x81])
+        self._check_logs()
         self.assertEqual(edd.log.debug.called, False)
         self.assertEqual(edd.log.info.called, False)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._respool_logs()
 
     def test_get_edd_dict_sata_usb(self):
         # test with sata sda, usb sdb
@@ -129,13 +162,9 @@ class EddTestCase(unittest.TestCase):
                 "/sys/firmware/edd/int13_dev81"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
             ]
-        for debug in debugs:
-            self.assertIn(mock.call(*debug), edd.log.debug.call_args_list)
-        for info in infos:
-            self.assertIn(mock.call(*info), edd.log.info.call_args_list)
-        for warning in warnings:
-            self.assertIn(mock.call(*warning), edd.log.warning.call_args_list)
+        self._check_logs(debugs, infos, warnings)
         self.assertEqual(edd.log.error.called, False)
+        self._respool_logs()
 
     def test_collect_edd_data_absurd_virt(self):
         self._set_fs_root(edd, "absurd_virt")
@@ -176,10 +205,12 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(fakeedd[0x83], edd_dict[0x83])
         self.assertEqual(fakeedd[0x84], edd_dict[0x84])
         self.assertEqual(fakeedd[0x85], edd_dict[0x85])
+        self._check_logs()
         self.assertEqual(edd.log.debug.called, False)
         self.assertEqual(edd.log.info.called, False)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._respool_logs()
 
     def test_get_edd_dict_absurd_virt(self):
         self._set_fs_root(edd, "absurd_virt")
@@ -247,6 +278,13 @@ class EddTestCase(unittest.TestCase):
             ("edd: data extracted from 0x%x:\n%s", 0x85, fakeedd[0x85]),
             ]
         infos = [
+            ("edd: collected mbr signatures: %s", { 'vda': '0x86531966',
+                                                    'sda': '0xe3bf124b',
+                                                    'sdb': '0x7dfff0db',
+                                                    'sdc': '0x63f1d7d8',
+                                                    'sdd': '0xee331b19',
+                                                    'sde': '0xfa0a111d',
+                                                    }),
             ("edd: matched 0x%x to %s using PCI dev", 0x80, "vda"),
             ("edd: matched 0x%x to %s using PCI dev", 0x81, "sdb"),
             ("edd: matched 0x%x to %s using MBR sig", 0x82, "sda"),
@@ -254,9 +292,7 @@ class EddTestCase(unittest.TestCase):
             ("edd: matched 0x%x to %s using PCI dev", 0x84, "sdc"),
             ("edd: matched 0x%x to %s using MBR sig", 0x85, "sdd"),
             ]
-        for debug in debugs:
-            self.assertIn(mock.call(*debug), edd.log.debug.call_args_list)
-        for info in infos:
-            self.assertIn(mock.call(*info), edd.log.info.call_args_list)
+        self._check_logs(debugs, infos)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._respool_logs()
