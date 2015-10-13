@@ -395,8 +395,10 @@ class EddMatcher(object):
                 # channel if applicable. We already checked print_id above.
                 if match.group(3) is None:
                     channel = int(match.group(1))
-                    if (self.edd.channel == 255 and channel == 0) or \
-                            (self.edd.channel == channel):
+                    if (self.edd.channel == 255 and \
+                            channel == self.edd.ata_device) or \
+                       (self.edd.channel != 255 and \
+                            self.edd.channel == channel):
                         self.edd.sysfslink = link
                         return path[len(fsroot):].split('/')[-1]
                 else:
@@ -504,22 +506,15 @@ class EddMatcher(object):
                 return name
         return None
 
-def biosdev_to_edd_dir(biosdev):
-    return "/sys/firmware/edd/int13_dev%(biosdev)x" % {
-        'biosdev' : biosdev
-        }
-
 def collect_edd_data():
     edd_data_dict = {}
-    # BIOS dev numbers are 0-127 , with 0x80 unset for floppies and set
-    # for hard drives.  In practice, the kernel has had EDDMAXNR (the limit
-    # on how many EDD structures it will load) set to 6 since before the
-    # import into git, so that's good enough.
-    for biosdev in range(0x80, 0x86):
-        sysfspath = biosdev_to_edd_dir(biosdev)
-        if not os.path.exists("%s/%s" % (fsroot, sysfspath[1:])):
-            break
-        edd_data_dict[biosdev] = EddEntry(sysfspath)
+    exp = re.compile(r'.*/int13_dev(\d+)$')
+    globstr = os.path.join(fsroot, "sys/firmware/edd/int13_dev*")
+    for path in glob.glob(globstr):
+        match = exp.match(path)
+        biosdev = int("0x%s" % (match.group(1),), base=16)
+        log.debug("edd: found device 0x%x at %s", biosdev, path[len(fsroot):])
+        edd_data_dict[biosdev] = EddEntry(path[len(fsroot):])
     return edd_data_dict
 
 def collect_mbrs(devices):
@@ -583,7 +578,7 @@ def get_edd_dict(devices):
         matcher = EddMatcher(edd_entry)
         # first try to match through the pci dev etc.
         name = matcher.devname_from_pci_dev()
-        log.debug("edd: data extracted from 0x%x:\n%s", edd_number, edd_entry)
+        log.debug("edd: data extracted from 0x%x:\n%r", edd_number, edd_entry)
         if name:
             log.info("edd: matched 0x%x to %s using PCI dev", edd_number, name)
         # next try to compare mbr signatures
