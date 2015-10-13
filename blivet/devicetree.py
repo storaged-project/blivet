@@ -35,7 +35,6 @@ from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats, arch
 from .devicelibs import lvm
-from .devicelibs import edd
 from . import udev
 from . import util
 from .util import open  # pylint: disable=redefined-builtin
@@ -101,6 +100,8 @@ class DeviceTree(object):
         self.dropLVMCache()
 
         lvm.lvm_cc_resetFilter()
+
+        self.eddDict = {}
 
         self._populator = Populator(self,
                                     conf=conf,
@@ -935,7 +936,7 @@ class DeviceTree(object):
         elif re.match(r'(0x)?[A-Za-z0-9]{2}(p\d+)?$', devspec):
             # BIOS drive number
             spec = int(devspec, 16)
-            for (edd_name, edd_number) in edd.edd_dict.items():
+            for (edd_name, edd_number) in self.eddDict.items():
                 if edd_number == spec:
                     device = self.getDeviceByName(edd_name)
                     break
