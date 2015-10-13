@@ -432,11 +432,11 @@ class EddMatcher(object):
                                 block_entries[0])
                 name = block_entries[0]
         elif len(matching_paths) > 1:
-            log.error("edd: Too many devices match for pci dev "\
-                        "%(pci_dev)s channel %(chan)s scsi "\
-                        "id %(dev)s lun %(lun)s: " % args)
+            log.error("edd: Too many devices match for pci dev %s channel %s "\
+                      "scsi id %s lun %s: ", self.edd.pci_dev, self.edd.channel,
+                      self.edd.scsi_id, self.edd.scsi_lun)
             for matching_path in matching_paths:
-                log.error("edd:   %s" % (matching_path,))
+                log.error("edd:   %s", matching_path)
         elif len(matching_paths) == 1 and os.path.exists(matching_paths[0]):
             block_entries = os.listdir(matching_paths[0])
             if len(block_entries) == 1:
@@ -445,9 +445,9 @@ class EddMatcher(object):
                                 block_entries[0])
                 name = block_entries[0]
         else:
-            log.warning("edd: Could not find SCSI device for pci dev "\
-                        "%(pci_dev)s channel %(chan)s scsi "\
-                        "id %(dev)s lun %(lun)s" % args)
+            log.warning("edd: Could not find SCSI device for pci dev %s "\
+                        "channel %s scsi id %s lun %s", self.edd.pci_dev,
+                        self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
         return name
 
     def devname_from_virt_pci_dev(self):
