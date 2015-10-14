@@ -53,15 +53,6 @@ class EddTestCase(unittest.TestCase):
             dirname = os.path.dirname(inspect.getfile(edd_module))
             edd_module.fsroot = os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot)
 
-    def test_biosdev_to_edd_dir(self):
-        self._set_fs_root(edd, None)
-        path = edd.biosdev_to_edd_dir(138)
-        self.assertEqual("/sys/firmware/edd/int13_dev8a", path)
-        self.assertEqual(edd.log.debug.called, False)
-        self.assertEqual(edd.log.info.called, False)
-        self.assertEqual(edd.log.warning.called, False)
-        self.assertEqual(edd.log.error.called, False)
-
     def test_collect_edd_data_sata_usb(self):
         # test with sata sda, usb sdb
         self._set_fs_root(edd, "sata_usb")
