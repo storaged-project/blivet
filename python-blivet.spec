@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.35
+Version: 0.61.15.36
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Oct 13 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.36-1
+- Add a udev settle call after instantiating parted.Disk. (dlehman)
+  Resolves: rhbz#1267858
+
 * Wed Oct 07 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.35-1
 - Pull in new translations
   Related: rhbz#1047457
