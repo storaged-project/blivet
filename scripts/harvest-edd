@@ -1,0 +1,68 @@
+#!/bin/bash
+set -e
+
+dir=$(mktemp -d edd.XXXXXXXX)
+echo "Directory is $dir"
+mkdir -vp $dir/sys/firmware/ $dir/dev/ $dir/sys/block/ $dir/sys/devices
+cp -avP /sys/firmware/edd/ $dir/sys/firmware/edd/
+for x in $(find /sys/block -type l) ; do
+	cp -avP $x $dir$x
+	link=$(readlink $x)
+	mkdir -vp $dir/sys/block/$link
+	devlink=/sys/block/$link/device
+	[ -e $devlink ] || continue
+	cp -avP $devlink $dir$devlink
+	devdir=$(realpath $(dirname $devlink)/$(readlink $devlink))/
+	mkdir -vp $dir$devdir
+	if [ -d ${devdir}scsi_device ]; then
+		for y in ${devdir}scsi_device/*/ ; do
+			[ -d $dir$y ] && continue
+			mkdir -p $dir$y
+			[ -e ${y}device ] && cp -avP ${y}device $dir${y}device || :
+		done
+	fi
+	if [ -d ${devdir}scsi_disk ]; then
+		for y in ${devdir}scsi_disk/*/ ; do
+			[ -d $dir$y ] && continue
+			mkdir -p $dir$y
+			cp -avP ${y}device $dir${y}device
+		done
+	fi
+	devdir=$(realpath ${devdir}../..)/
+	if [ -d ${devdir}scsi_host/ ]; then
+		for y in ${devdir}scsi_host/host*/ ; do
+			[ -d $dir$y ] && continue
+			mkdir -vp $dir$y
+			cp -avP ${y}device $dir${y}device
+		done
+	fi
+	devdir=$(realpath ${devdir}../..)/
+	for y in $(ls -d1 ${devdir}ata*/ 2>/dev/null || : ) ; do
+		[ -d $y ] || continue
+		mkdir -vp $dir$y
+		for z in ${y}ata_port/ata*/{device,nr_pmp_links,port_no} ; do
+			[ -e $z ] || continue
+			[ -e $dir$z ] && continue
+			mkdir -vp $dir$(dirname $z)
+			cp -avP $z $dir$z
+		done
+		for z in ${y}link*/ata_link/*/ ${y}/link*/dev*/ata_device/dev*/ ; do
+			[ -d $z ] || continue
+			[ -d $dir$z ] && continue
+			mkdir -vp $dir$z
+			cp -avP ${z}device $dir${z}device
+		done
+	done
+	devname=/dev${x#/sys/block}
+	devname=${devname/\!/\/}
+	mkdir -vp $dir$(dirname $devname)
+	if [[ $x =~ /sys/block/sr.* ]]; then
+		touch $dir$devname
+	else
+		dd bs=512 count=1 if=$devname of=$dir$devname
+	fi
+done
+
+olddir=$PWD
+( cd $dir ; tar cf ${olddir}/${dir%/}.tar.xz . )
+echo ${dir%/}.tar.xz
