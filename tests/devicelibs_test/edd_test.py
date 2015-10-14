@@ -2,7 +2,9 @@ import unittest
 import mock
 import os
 import inspect
+import copy
 
+import blivet
 from blivet.devicelibs import edd
 
 class FakeDevice(object):
@@ -33,6 +35,8 @@ class FakeEddEntry(edd.EddEntry):
 
 class EddTestCase(unittest.TestCase):
     _edd_logger = None
+    maxDiff = None
+
     def setUp(self):
         super(EddTestCase, self).setUp()
         self._edd_logger = edd.log
@@ -43,8 +47,8 @@ class EddTestCase(unittest.TestCase):
         edd.log.debug = mock.MagicMock(name='debug')
 
     def tearDown(self):
-        super(EddTestCase, self).tearDown()
         edd.log = self._edd_logger
+        super(EddTestCase, self).tearDown()
 
     def _set_fs_root(self, edd_module, fsroot):
         if fsroot is None:
@@ -53,16 +57,34 @@ class EddTestCase(unittest.TestCase):
             dirname = os.path.dirname(inspect.getfile(edd_module))
             edd_module.fsroot = os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot)
 
-    def test_biosdev_to_edd_dir(self):
-        self._set_fs_root(edd, None)
-        path = edd.biosdev_to_edd_dir(138)
-        self.assertEqual("/sys/firmware/edd/int13_dev8a", path)
-        self.assertEqual(edd.log.debug.called, False)
-        self.assertEqual(edd.log.info.called, False)
-        self.assertEqual(edd.log.warning.called, False)
-        self.assertEqual(edd.log.error.called, False)
+    def _respool_logs(self):
+        log = edd.log
+        for logname in ["debug", "info", "warning", "error"]:
+            logger = getattr(log, logname)
+            newlogger = getattr(self._edd_logger, logname)
+            for call in logger.call_args_list:
+                newlogger(*call[0])
+
+    def _clear_logs(self):
+        edd.log = mock.MagicMock(name='log')
+        edd.log.info = mock.MagicMock(name='info')
+        edd.log.warning = mock.MagicMock(name='warning')
+        edd.log.error = mock.MagicMock(name='error')
+        edd.log.debug = mock.MagicMock(name='debug')
+
+    def _check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
+        for (left, right) in ((debugs, edd.log.debug),
+                            (infos, edd.log.info),
+                            (warnings, edd.log.warning),
+                            (errors, edd.log.error)):
+            left = [mock.call(*x) for x in left or []]
+            left.sort()
+            right = copy.copy(right.call_args_list) or []
+            right.sort()
+            self.assertEqual(left, right)
 
     def test_collect_edd_data_sata_usb(self):
+        self._edd_logger.info("starting test test_collect_edd_data_sata_usb")
         # test with sata sda, usb sdb
         self._set_fs_root(edd, "sata_usb")
         fakeedd = {
@@ -80,15 +102,24 @@ class EddTestCase(unittest.TestCase):
             }
 
         edd_dict = edd.collect_edd_data()
+        self._respool_logs()
         self.assertEqual(len(edd_dict), 2)
         self.assertEqual(fakeedd[0x80], edd_dict[0x80])
         self.assertEqual(fakeedd[0x81], edd_dict[0x81])
-        self.assertEqual(edd.log.debug.called, False)
+        debugs = [
+            ("edd: found device 0x%x at %s", 0x80,
+                    "/sys/firmware/edd/int13_dev80"),
+            ("edd: found device 0x%x at %s", 0x81,
+                    "/sys/firmware/edd/int13_dev81"),
+            ]
+        self._check_logs(debugs=debugs)
         self.assertEqual(edd.log.info.called, False)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._clear_logs()
 
     def test_get_edd_dict_sata_usb(self):
+        self._edd_logger.info("starting test test_get_edd_dict_sata_usb")
         # test with sata sda, usb sdb
         self._set_fs_root(edd, "sata_usb")
         devices=(FakeDevice("sda"),
@@ -115,8 +146,12 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(edd_dict["sda"], 0x80)
         self.assertEqual(edd_dict["sdb"], 0x81)
         debugs = [
-            ("edd: data extracted from 0x%x:\n%s", 0x80, fakeedd[0x80]),
-            ("edd: data extracted from 0x%x:\n%s", 0x81, fakeedd[0x81]),
+            ("edd: data extracted from 0x%x:\n%r", 0x80, fakeedd[0x80]),
+            ("edd: data extracted from 0x%x:\n%r", 0x81, fakeedd[0x81]),
+            ("edd: found device 0x%x at %s", 0x80,
+                    "/sys/firmware/edd/int13_dev80"),
+            ("edd: found device 0x%x at %s", 0x81,
+                    "/sys/firmware/edd/int13_dev81"),
             ]
         infos = [
             ("edd: MBR signature on %s is zero. new disk image?", "sda"),
@@ -129,15 +164,13 @@ class EddTestCase(unittest.TestCase):
                 "/sys/firmware/edd/int13_dev81"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
             ]
-        for debug in debugs:
-            self.assertIn(mock.call(*debug), edd.log.debug.call_args_list)
-        for info in infos:
-            self.assertIn(mock.call(*info), edd.log.info.call_args_list)
-        for warning in warnings:
-            self.assertIn(mock.call(*warning), edd.log.warning.call_args_list)
+        self._respool_logs()
+        self._check_logs(debugs, infos, warnings)
         self.assertEqual(edd.log.error.called, False)
+        self._clear_logs()
 
     def test_collect_edd_data_absurd_virt(self):
+        self._edd_logger.info("starting test test_collect_edd_data_absurd_virt")
         self._set_fs_root(edd, "absurd_virt")
         # siiiigh - this is actually the data out of sysfs on a virt I have
         # created.  Apparently even qemu claims 3.0 sometimes and gives us
@@ -169,6 +202,7 @@ class EddTestCase(unittest.TestCase):
                                sysfspath="/sys/firmware/edd/int13_dev85"),
             }
         edd_dict = edd.collect_edd_data()
+        self._respool_logs()
         self.assertEqual(len(edd_dict), 6)
         self.assertEqual(fakeedd[0x80], edd_dict[0x80])
         self.assertEqual(fakeedd[0x81], edd_dict[0x81])
@@ -176,12 +210,28 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(fakeedd[0x83], edd_dict[0x83])
         self.assertEqual(fakeedd[0x84], edd_dict[0x84])
         self.assertEqual(fakeedd[0x85], edd_dict[0x85])
-        self.assertEqual(edd.log.debug.called, False)
+        debugs = [
+            ("edd: found device 0x%x at %s", 0x80,
+                    "/sys/firmware/edd/int13_dev80"),
+            ("edd: found device 0x%x at %s", 0x81,
+                    "/sys/firmware/edd/int13_dev81"),
+            ("edd: found device 0x%x at %s", 0x82,
+                    "/sys/firmware/edd/int13_dev82"),
+            ("edd: found device 0x%x at %s", 0x83,
+                    "/sys/firmware/edd/int13_dev83"),
+            ("edd: found device 0x%x at %s", 0x84,
+                    "/sys/firmware/edd/int13_dev84"),
+            ("edd: found device 0x%x at %s", 0x85,
+                    "/sys/firmware/edd/int13_dev85"),
+            ]
+        self._check_logs(debugs=debugs)
         self.assertEqual(edd.log.info.called, False)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._clear_logs()
 
     def test_get_edd_dict_absurd_virt(self):
+        self._edd_logger.info("starting test test_get_edd_dict_absurd_virt")
         self._set_fs_root(edd, "absurd_virt")
         # siiiigh - this is actually the data out of sysfs on a virt I have
         # created.  Apparently even qemu claims 3.0 sometimes and gives us
@@ -229,6 +279,7 @@ class EddTestCase(unittest.TestCase):
                  )
 
         edd_dict = edd.get_edd_dict(devices)
+        self._edd_logger.debug(edd_dict)
         self.assertEqual(len(edd_dict), 6)
         # this order is *completely unlike* the order in virt-manager,
         # but it does appear to be what EDD is displaying.
@@ -239,14 +290,33 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(edd_dict["sdc"], 0x84)
         self.assertEqual(edd_dict["sdd"], 0x85)
         debugs = [
-            ("edd: data extracted from 0x%x:\n%s", 0x80, fakeedd[0x80]),
-            ("edd: data extracted from 0x%x:\n%s", 0x81, fakeedd[0x81]),
-            ("edd: data extracted from 0x%x:\n%s", 0x82, fakeedd[0x82]),
-            ("edd: data extracted from 0x%x:\n%s", 0x83, fakeedd[0x83]),
-            ("edd: data extracted from 0x%x:\n%s", 0x84, fakeedd[0x84]),
-            ("edd: data extracted from 0x%x:\n%s", 0x85, fakeedd[0x85]),
+            ("edd: data extracted from 0x%x:\n%r", 0x80, fakeedd[0x80]),
+            ("edd: data extracted from 0x%x:\n%r", 0x81, fakeedd[0x81]),
+            ("edd: data extracted from 0x%x:\n%r", 0x82, fakeedd[0x82]),
+            ("edd: data extracted from 0x%x:\n%r", 0x83, fakeedd[0x83]),
+            ("edd: data extracted from 0x%x:\n%r", 0x84, fakeedd[0x84]),
+            ("edd: data extracted from 0x%x:\n%r", 0x85, fakeedd[0x85]),
+            ("edd: found device 0x%x at %s", 0x80,
+                    "/sys/firmware/edd/int13_dev80"),
+            ("edd: found device 0x%x at %s", 0x81,
+                    "/sys/firmware/edd/int13_dev81"),
+            ("edd: found device 0x%x at %s", 0x82,
+                    "/sys/firmware/edd/int13_dev82"),
+            ("edd: found device 0x%x at %s", 0x83,
+                    "/sys/firmware/edd/int13_dev83"),
+            ("edd: found device 0x%x at %s", 0x84,
+                    "/sys/firmware/edd/int13_dev84"),
+            ("edd: found device 0x%x at %s", 0x85,
+                    "/sys/firmware/edd/int13_dev85"),
             ]
         infos = [
+            ("edd: collected mbr signatures: %s", { 'vda': '0x86531966',
+                                                    'sda': '0xe3bf124b',
+                                                    'sdb': '0x7dfff0db',
+                                                    'sdc': '0x63f1d7d8',
+                                                    'sdd': '0xee331b19',
+                                                    'sde': '0xfa0a111d',
+                                                    }),
             ("edd: matched 0x%x to %s using PCI dev", 0x80, "vda"),
             ("edd: matched 0x%x to %s using PCI dev", 0x81, "sdb"),
             ("edd: matched 0x%x to %s using MBR sig", 0x82, "sda"),
@@ -254,9 +324,14 @@ class EddTestCase(unittest.TestCase):
             ("edd: matched 0x%x to %s using PCI dev", 0x84, "sdc"),
             ("edd: matched 0x%x to %s using MBR sig", 0x85, "sdd"),
             ]
-        for debug in debugs:
-            self.assertIn(mock.call(*debug), edd.log.debug.call_args_list)
-        for info in infos:
-            self.assertIn(mock.call(*info), edd.log.info.call_args_list)
+        self._respool_logs()
+        self._check_logs(debugs, infos)
         self.assertEqual(edd.log.warning.called, False)
         self.assertEqual(edd.log.error.called, False)
+        self._clear_logs()
+
+try:
+    blivet.util.set_up_logging(log_file=os.path.join(os.environ['WORKSPACE'],
+                                                     "blivet.log"))
+except KeyError:
+    blivet.util.set_up_logging("/tmp/blivet.log")

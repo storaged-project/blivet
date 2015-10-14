@@ -279,6 +279,7 @@ class Blivet(object):
         self.devicetree.populate(cleanupOnly=cleanupOnly)
         self.fsset = FSSet(self.devicetree)
         self.eddDict = get_edd_dict(self.partitioned)
+        self.devicetree.eddDict = self.eddDict
         if self.bootloader:
             # clear out bootloader attributes that refer to devices that are
             # no longer in the tree
