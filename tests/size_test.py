@@ -35,7 +35,7 @@ from decimal import Decimal
 from blivet.i18n import _
 from blivet.errors import SizePlacesError
 from blivet import size
-from blivet.size import Size, _EMPTY_PREFIX, _BINARY_PREFIXES, _DECIMAL_PREFIXES
+from blivet.size import Size
 from blivet.size import B, KiB, MiB, GiB, TiB
 
 class SizeTestCase(unittest.TestCase):
@@ -46,36 +46,9 @@ class SizeTestCase(unittest.TestCase):
 
         s = Size(500)
         with self.assertRaises(SizePlacesError):
-            s.humanReadable(max_places=-1)
+            s.humanReadable(max_places=-2)
 
         self.assertEqual(s.humanReadable(max_places=0), "500 B")
-
-    def _prefixTestHelper(self, numunits, unit):
-        """ Test that units and prefix or abbreviation agree.
-
-            :param int numunits: this value times factor yields number of bytes
-            :param unit: a unit specifier
-        """
-        c = numunits * unit.factor
-
-        s = Size(c)
-        self.assertEqual(s, Size(c))
-
-        u = size._makeSpec(unit.prefix, size._BYTES_WORDS[0], False)
-        s = Size("%ld %s" % (numunits, u))
-        self.assertEqual(s, c)
-        self.assertEqual(s.convertTo(unit), numunits)
-
-        u = size._makeSpec(unit.abbr, size._BYTES_SYMBOL, False)
-        s = Size("%ld %s" % (numunits, u))
-        self.assertEqual(s, c)
-        self.assertEqual(s.convertTo(unit), numunits)
-
-    def testPrefixes(self):
-        numbytes = 47
-
-        for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
-            self._prefixTestHelper(numbytes, unit)
 
     def testHumanReadable(self):
         s = Size(58929971)
@@ -93,15 +66,6 @@ class SizeTestCase(unittest.TestCase):
         s = Size("300 MiB")
         self.assertEqual(s.humanReadable(max_places=2), "300 MiB")
 
-        # when min_value is 10 and single digit on left of decimal, display
-        # with smaller unit.
-        s = Size("9.68 TiB")
-        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "9912.32 GiB")
-        s = Size("4.29 MiB")
-        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "4392.96 KiB")
-        s = Size("7.18 KiB")
-        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "7352 B")
-
         # rounding should work with max_places limitted
         s = Size("12.687 TiB")
         self.assertEqual(s.humanReadable(max_places=2), "12.69 TiB")
@@ -113,8 +77,6 @@ class SizeTestCase(unittest.TestCase):
         # byte values close to multiples of 2 are shown without trailing zeros
         s = Size(0xff)
         self.assertEqual(s.humanReadable(max_places=2), "255 B")
-        s = Size(8193)
-        self.assertEqual(s.humanReadable(max_places=2, min_value=10), "8193 B")
 
         # a fractional quantity is shown if the value deviates
         # from the whole number of units by more than 1%
@@ -123,7 +85,7 @@ class SizeTestCase(unittest.TestCase):
 
         # if max_places is set to None, all digits are displayed
         s = Size(0xfffffffffffff)
-        self.assertEqual(s.humanReadable(max_places=None), "3.9999999999999991118215803 PiB")
+        self.assertEqual(s.humanReadable(max_places=None), "3.99999999999999911182158029987476766109466552734375 PiB")
         s = Size(0x10000)
         self.assertEqual(s.humanReadable(max_places=None), "64 KiB")
         s = Size(0x10001)
@@ -134,16 +96,12 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(s.humanReadable(max_places=2), "1024 YiB")
         s = Size(1024**9 - 1)
         self.assertEqual(s.humanReadable(max_places=2), "1024 YiB")
-        s = Size(1024**9 + 1)
-        self.assertEqual(s.humanReadable(max_places=2, strip=False), "1024.00 YiB")
         s = Size(1024**10)
         self.assertEqual(s.humanReadable(max_places=2), "1048576 YiB")
 
     def testHumanReadableFractionalQuantities(self):
         s = Size(0xfffffffffffff)
         self.assertEqual(s.humanReadable(max_places=2), "4 PiB")
-        s = Size(0xfffff)
-        self.assertEqual(s.humanReadable(max_places=2, strip=False), "1024.00 KiB")
         s = Size(0xffff)
         # value is not exactly 64 KiB, but w/ 2 places, value is 64.00 KiB
         # so the trailing 0s are stripped.
@@ -161,16 +119,6 @@ class SizeTestCase(unittest.TestCase):
         s = Size(0x10000000000000)
         self.assertEqual(s.humanReadable(max_places=2), "4 PiB")
 
-
-    def testMinValue(self):
-        s = Size("9 MiB")
-        self.assertEqual(s.humanReadable(), "9 MiB")
-        self.assertEqual(s.humanReadable(min_value=10), "9216 KiB")
-
-        s = Size("0.5 GiB")
-        self.assertEqual(s.humanReadable(max_places=2, min_value=1), "512 MiB")
-        self.assertEqual(s.humanReadable(max_places=2, min_value=Decimal("0.1")), "0.5 GiB")
-        self.assertEqual(s.humanReadable(max_places=2, min_value=Decimal(1)), "512 MiB")
 
     def testConvertToPrecision(self):
         s = Size(1835008)
@@ -203,78 +151,80 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(Size("1024"), Size("1 KiB"))
 
     def testScientificNotation(self):
-        self.assertEqual(size.parseSpec("1e+0 KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec("1e-0 KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec("1e-1 KB"), Decimal(100))
-        self.assertEqual(size.parseSpec("1E-4KB"), Decimal("0.1"))
+        self.assertEqual(Size("1e+0 KiB"), Decimal(1024))
+        self.assertEqual(Size("1e-0 KiB"), Decimal(1024))
+        self.assertEqual(Size("1e-1 KB"), Decimal(100))
+        self.assertEqual(Size("1E-4KB"), Decimal("0.1"))
         self.assertEqual(Size("1E-10KB"), Size(0))
 
         with self.assertRaises(ValueError):
             # this is an exponent w/out a base
-            size.parseSpec("e+0")
+            Size("e+0")
 
     def testFloatingPointStr(self):
-        self.assertEqual(size.parseSpec("1.5e+0 KiB"), Decimal(1536))
-        self.assertEqual(size.parseSpec("0.0"), Decimal(0))
-        self.assertEqual(size.parseSpec("0.9 KiB"), Decimal("921.6"))
-        self.assertEqual(size.parseSpec("1.5 KiB"), Decimal(1536))
-        self.assertEqual(size.parseSpec("0.5 KiB"), Decimal(512))
-        self.assertEqual(size.parseSpec(".5 KiB"), Decimal(512))
-        self.assertEqual(size.parseSpec("1. KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec("-1. KiB"), Decimal(-1024))
-        self.assertEqual(size.parseSpec("+1. KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec("+1.0000000e+0 KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec("+.5 KiB"), Decimal(512))
+        self.assertEqual(Size("1.5e+0 KiB"), Decimal(1536))
+        self.assertEqual(Size("0.0"), Decimal(0))
+        self.assertEqual(Size("0.9 KiB"), Decimal("921.6"))
+        self.assertEqual(Size("1.5 KiB"), Decimal(1536))
+        self.assertEqual(Size("0.5 KiB"), Decimal(512))
+        self.assertEqual(Size(".5 KiB"), Decimal(512))
+        self.assertEqual(Size("1. KiB"), Decimal(1024))
+        self.assertEqual(Size("-1. KiB"), Decimal(-1024))
+        self.assertEqual(Size("+1. KiB"), Decimal(1024))
+        self.assertEqual(Size("+1.0000000e+0 KiB"), Decimal(1024))
+        self.assertEqual(Size("+.5 KiB"), Decimal(512))
 
         with self.assertRaises(ValueError):
             # this is a fragment of an arithmetic expression
-            size.parseSpec("+ 1 KiB")
+            Size("+ 1 KiB")
 
         with self.assertRaises(ValueError):
             # this is a fragment of an arithmetic expression
-            size.parseSpec("- 1 KiB")
+            Size("- 1 KiB")
 
         with self.assertRaises(ValueError):
             # this is a lonely .
-            size.parseSpec(". KiB")
+            Size(". KiB")
 
         with self.assertRaises(ValueError):
             # this has a fragmentary exponent
-            size.parseSpec("1.0e+ KiB")
+            Size("1.0e+ KiB")
 
         with self.assertRaises(ValueError):
             # this is a version string, not a number
-            size.parseSpec("1.0.0")
+            Size("1.0.0")
 
     def testWhiteSpace(self):
-        self.assertEqual(size.parseSpec("1 KiB "), Decimal(1024))
-        self.assertEqual(size.parseSpec(" 1 KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec(" 1KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec(" 1e+0KiB"), Decimal(1024))
+        self.assertEqual(Size("1 KiB "), Decimal(1024))
+        self.assertEqual(Size(" 1 KiB"), Decimal(1024))
+        self.assertEqual(Size(" 1KiB"), Decimal(1024))
+        self.assertEqual(Size(" 1e+0KiB"), Decimal(1024))
         with self.assertRaises(ValueError):
-            size.parseSpec("1 KiB just a lot of stray characters")
+            Size("1 KiB just a lot of stray characters")
         with self.assertRaises(ValueError):
-            size.parseSpec("just 1 KiB")
+            Size("just 1 KiB")
 
     def testLeadingZero(self):
-        self.assertEqual(size.parseSpec("001 KiB"), Decimal(1024))
-        self.assertEqual(size.parseSpec("1e+01"), Decimal(10))
+        self.assertEqual(Size("001 KiB"), Decimal(1024))
+        self.assertEqual(Size("1e+01"), Decimal(10))
 
     def testPickling(self):
         s = Size("10 MiB")
         self.assertEqual(s, cPickle.loads(cPickle.dumps(s)))
 
+
+# es_ES uses latin-characters but a comma as the radix separator
+# kk_KZ uses non-latin characters and is case-sensitive
+# ml_IN uses a lot of non-letter modifier characters
+# fa_IR uses non-ascii digits, or would if python supported that, but
+#       you know, just in case
+TEST_LANGS = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
+LANGS_AVAILABLE = all(os.path.exists("/usr/share/locale/%s/LC_MESSAGES/libbytesize.mo" % lang.split("_")[0]) for lang in TEST_LANGS)
+@unittest.skipUnless(LANGS_AVAILABLE, "libbytesize's translations are not available, cannot test now")
 class TranslationTestCase(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
         super(TranslationTestCase, self).__init__(methodName=methodName)
-
-        # es_ES uses latin-characters but a comma as the radix separator
-        # kk_KZ uses non-latin characters and is case-sensitive
-        # ml_IN uses a lot of non-letter modifier characters
-        # fa_IR uses non-ascii digits, or would if python supported that, but
-        #       you know, just in case
-        self.TEST_LANGS = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
 
     def setUp(self):
         self.saved_lang = os.environ.get('LANG', None)
@@ -283,61 +233,9 @@ class TranslationTestCase(unittest.TestCase):
         os.environ['LANG'] = self.saved_lang
         locale.setlocale(locale.LC_ALL, '')
 
-    def testMakeSpec(self):
-        """ Tests for _makeSpecs(). """
-        for lang in  self.TEST_LANGS:
-            os.environ['LANG'] = lang
-            locale.setlocale(locale.LC_ALL, '')
-
-            # untranslated specs
-            self.assertEqual(size._makeSpec("", "BYTES", False), "bytes")
-            self.assertEqual(size._makeSpec("Mi", "b", False), "mib")
-
-            # un-lower-cased specs
-            self.assertEqual(size._makeSpec("", "BYTES", False, False), "BYTES")
-            self.assertEqual(size._makeSpec("Mi", "b", False, False), "Mib")
-            self.assertEqual(size._makeSpec("Mi", "B", False, False), "MiB")
-
-            # translated specs
-            res = size._makeSpec("", "bytes", True)
-
-            # Note that exp != _("bytes").lower() as one might expect
-            exp = (_("") + _("bytes")).lower()
-            self.assertEqual(res, exp)
-
-    def testParseSpec(self):
-        """ Tests for parseSpec(). """
-        for lang in  self.TEST_LANGS:
-            os.environ['LANG'] = lang
-            locale.setlocale(locale.LC_ALL, '')
-
-            # Test parsing English spec in foreign locales
-            self.assertEqual(size.parseSpec("1 kibibytes"), Decimal(1024))
-            self.assertEqual(size.parseSpec("2 kibibyte"), Decimal(2048))
-            self.assertEqual(size.parseSpec("2 kilobyte"), Decimal(2000))
-            self.assertEqual(size.parseSpec("2 kilobytes"), Decimal(2000))
-            self.assertEqual(size.parseSpec("2 KB"), Decimal(2000))
-            self.assertEqual(size.parseSpec("2 K"), Decimal(2048))
-            self.assertEqual(size.parseSpec("2 k"), Decimal(2048))
-            self.assertEqual(size.parseSpec("2 Ki"), Decimal(2048))
-            self.assertEqual(size.parseSpec("2 g"), Decimal(2 * 1024 ** 3))
-            self.assertEqual(size.parseSpec("2 G"), Decimal(2 * 1024 ** 3))
-
-            # Test parsing foreign spec
-            self.assertEqual(size.parseSpec("1 %s%s" % (_("kibi"), _("bytes"))), Decimal(1024))
-
-            # Can't parse a valueless number
-            with self.assertRaises(ValueError):
-                size.parseSpec("Ki")
-
-            self.assertEqual(size.parseSpec("2 %s" % _("K")), Decimal(2048))
-            self.assertEqual(size.parseSpec("2 %s" % _("Ki")), Decimal(2048))
-            self.assertEqual(size.parseSpec("2 %s" % _("g")), Decimal(2 * 1024 ** 3))
-            self.assertEqual(size.parseSpec("2 %s" % _("G")), Decimal(2 * 1024 ** 3))
-
     def testTranslated(self):
         s = Size("56.19 MiB")
-        for lang in  self.TEST_LANGS:
+        for lang in  TEST_LANGS:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
@@ -365,7 +263,7 @@ class TranslationTestCase(unittest.TestCase):
     def testHumanReadableTranslation(self):
         s = Size("56.19 MiB")
         size_str = s.humanReadable()
-        for lang in self.TEST_LANGS:
+        for lang in TEST_LANGS:
 
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
@@ -373,7 +271,7 @@ class TranslationTestCase(unittest.TestCase):
             self.assertEqual(s.humanReadable(xlate=False), size_str)
 
     def testRoundToNearest(self):
-        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_HALF_UP)
+        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_UP)
 
         s = Size("10.3 GiB")
         self.assertEqual(s.roundToNearest(GiB), Size("10 GiB"))
@@ -425,20 +323,13 @@ class TranslationTestCase(unittest.TestCase):
 
 class UtilityMethodsTestCase(unittest.TestCase):
 
-    def testLowerASCII(self):
-        """ Tests for _lowerASCII. """
-        self.assertEqual(size._lowerASCII(""), "")
-        self.assertEqual(size._lowerASCII("B"), "b")
-
     def testArithmetic(self):
         s = Size("2GiB")
 
         # Make sure arithmatic operations with Size always result in the expected type
         self.assertIsInstance(s+s, Size)
         self.assertIsInstance(s-s, Size)
-        self.assertIsInstance(s*s, Size)
-        self.assertIsInstance(s/s, Size)
-        self.assertIsInstance(s**Size(2), Decimal)
+        self.assertIsInstance(s/s, Decimal)
         self.assertIsInstance(s % Size(7), Size)
 
 
@@ -448,13 +339,8 @@ class UtilityMethodsTestCase(unittest.TestCase):
         self.assertIsInstance(s*2, Size)
         self.assertIsInstance(s/2, Size)
         self.assertIsInstance(s//2, Size)
-        self.assertIsInstance(s**2, Decimal)
-        self.assertIsInstance(s % 127, Size)
+        self.assertIsInstance(s % Size(127), Size)
 
         # Make sure operations with non-Size on the left result in the expected type
         self.assertIsInstance(2+s, Size)
-        self.assertIsInstance(2-s, Decimal)
-        self.assertIsInstance(2*s, Size)
-        self.assertIsInstance(2/s, Decimal)
-        self.assertIsInstance(2**Size(2), Decimal)
-        self.assertIsInstance(1024 % Size(127), Decimal)
+        self.assertIsInstance(2-s, Size)

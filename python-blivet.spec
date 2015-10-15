@@ -17,6 +17,7 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 %define e2fsver 1.41.0
 %define utillinuxver 2.15.1
 %define libblockdevver 1.1
+%define libbytesizever 0.3
 
 BuildArch: noarch
 BuildRequires: gettext
@@ -39,6 +40,7 @@ Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
 Requires: python-hawkey
 Requires: pygobject3-base
+Requires: python-bytesize >= %{libbytesizever}
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 %description
@@ -69,6 +71,7 @@ Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
 Requires: python3-gobject-base
+Requires: python3-bytesize >= %{libbytesizever}
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 %description -n python3-%{realname}
