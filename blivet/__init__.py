@@ -20,7 +20,7 @@
 #                    Vratislav Podzimek <vpodzime@redhat.com>
 #
 
-__version__ = '1.12.6'
+__version__ = '1.12.7'
 
 ##
 ## Default stub values for installer-specific stuff that gets set up in

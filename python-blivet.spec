@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.12.6
+Version: 1.12.7
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -121,6 +121,10 @@ popd
 %endif
 
 %changelog
+* Thu Oct 15 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.7-1
+- Deprecate createSubVolumes method (vtrefny)
+- Change btrfs.do_self_mount to contextmanager (#1266673) (vtrefny)
+
 * Thu Oct 08 2015 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.12.6-1
 - Fix calling non-existing method (#1252902) (jkonecny)
 
