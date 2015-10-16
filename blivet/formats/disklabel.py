@@ -170,7 +170,7 @@ class DiskLabel(DeviceFormat):
             else:
                 log.debug("Did not change pmbr_boot on %s", self._partedDisk)
 
-        udev.settle()
+        udev.settle(quiet=True)
         return self._partedDisk
 
     @property
