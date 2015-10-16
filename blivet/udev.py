@@ -23,6 +23,7 @@
 
 import os
 import re
+import subprocess
 
 from . import util
 from .util import open  # pylint: disable=redefined-builtin
@@ -52,11 +53,19 @@ def get_devices(subsystem="block"):
     return [d for d in global_udev.list_devices(subsystem=subsystem)
                         if not __is_blacklisted_blockdev(d.sys_name)]
 
-def settle():
+def settle(quiet=False):
+    """ Wait for the udev queue to settle.
+
+        :keyword bool quiet: bypass :meth:`blivet.util.run_program`
+    """
     # wait maximal 300 seconds for udev to be done running blkid, lvm,
     # mdadm etc. This large timeout is needed when running on machines with
     # lots of disks, or with slow disks
-    util.run_program(["udevadm", "settle", "--timeout=300"])
+    argv = ["udevadm", "settle", "--timeout=300"]
+    if quiet:
+        subprocess.call(argv, close_fds=True)
+    else:
+        util.run_program(argv)
 
 def trigger(subsystem=None, action="add", name=None):
     argv = ["trigger", "--action=%s" % action]
