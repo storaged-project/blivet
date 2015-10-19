@@ -112,6 +112,9 @@ class InvalidDiskLabelError(DiskLabelError):
 class DiskLabelCommitError(DiskLabelError):
     pass
 
+class AlignmentError(DiskLabelError):
+    pass
+
 # devicelibs
 class RaidError(StorageError):
     pass

@@ -1,6 +1,6 @@
 
 import unittest
-from mock import Mock
+from mock import Mock, patch
 
 import parted
 
@@ -165,6 +165,36 @@ class PartitioningTestCase(unittest.TestCase):
 
             disk.format.removePartition(part)
             self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # adding a partition smaller than the optimal io size should yield
+            # a partition aligned using the minimal io size instead
+            #
+            opt_str = 'parted.Device.optimumAlignment'
+            min_str = 'parted.Device.minimumAlignment'
+            opt_al = parted.Alignment(offset=0, grainSize=8192) # 4 MiB
+            min_al = parted.Alignment(offset=0, grainSize=2048) # 1 MiB
+            with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
+                optimal_end = disk.format.getEndAlignment(alignment=optimal)
+                minimal_end = disk.format.getEndAlignment(alignment=minimal)
+
+                sector_size = Size(disk.format.sectorSize)
+                length = 4096 # 2 MiB
+                size = Size(sector_size * length)
+                part = addPartition(disk.format, free, parted.PARTITION_NORMAL,
+                                    size)
+                self.assertEqual(part.geometry.length, length)
+                self.assertEqual(optimal.isAligned(free, part.geometry.start),
+                                 False)
+                self.assertEqual(minimal.isAligned(free, part.geometry.start),
+                                 True)
+                self.assertEqual(optimal_end.isAligned(free, part.geometry.end),
+                                 False)
+                self.assertEqual(minimal_end.isAligned(free, part.geometry.end),
+                                 True)
+
+                disk.format.removePartition(part)
+                self.assertEqual(len(disk.format.partitions), 0)
 
             #
             # add a partition with an unaligned start sector
