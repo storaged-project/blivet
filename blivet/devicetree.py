@@ -652,6 +652,9 @@ class DeviceTree(object):
         unformatted = []
 
         for dasd in dasds:
+            # make absolutely sure we're only operating on a DASD
+            if not isinstance(dasd, DASDDevice):
+                continue
             if blockdev.s390.dasd_needs_format(dasd.busid):
                 unformatted.append(dasd)
 
