@@ -66,7 +66,7 @@ make DESTDIR=%{buildroot} install
 %changelog
 * Fri Oct 16 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.37-1
 - Bypass util.run_program to avoid logging deadlock.
-  Resolves: rhbz#1272133
+  Resolves: rhbz#1272113
 
 * Tue Oct 13 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.36-1
 - Add a udev settle call after instantiating parted.Disk. (dlehman)
