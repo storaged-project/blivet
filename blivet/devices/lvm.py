@@ -265,7 +265,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.exists:
                 lv.setup()
 
-        blockdev.lvm.pvmove(member.path)
+        # do not run pvmove on empty pvs
+        if (member.size - member.format.peStart - member.format.pvFree) >= self.peSize:
+            blockdev.lvm.pvmove(member.path)
         blockdev.lvm.vgreduce(self.name, member.path)
 
         for (lv, status) in zip(self.lvs, status):

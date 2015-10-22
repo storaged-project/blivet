@@ -79,6 +79,7 @@ class LVMPhysicalVolume(DeviceFormat):
         self.vgName = kwargs.get("vgName")
         self.vgUuid = kwargs.get("vgUuid")
         self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)
+        self.pvFree = kwargs.get("pvFree", Size(0))
         self.dataAlignment = kwargs.get("dataAlignment", Size(0))
 
         self.inconsistentVG = False
@@ -143,4 +144,3 @@ class LVMPhysicalVolume(DeviceFormat):
                 os.path.isdir("/dev/%s" % self.vgName))
 
 register_device_format(LVMPhysicalVolume)
-

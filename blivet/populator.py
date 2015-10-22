@@ -1424,6 +1424,10 @@ class Populator(object):
                     kwargs["peStart"] = Size(pv_info.pe_start)
                 else:
                     log.warning("PV %s has no pe_start", name)
+                if pv_info.pv_free:
+                    kwargs["pvFree"] = Size(pv_info.pv_free)
+                else:
+                    log.warning("PV %s has no pv_free", name)
         elif format_type == "vfat":
             # efi magic
             if isinstance(device, PartitionDevice) and device.bootable:
