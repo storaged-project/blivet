@@ -76,7 +76,7 @@ class FS(DeviceFormat):
     # and it's giving us percentage of space left after the format.
     # This number is more guess then precise number because this
     # value is already unpredictable and can change in the future...
-    _MetadataSizeFactor = 1.0
+    MetadataSizeFactor = 1.0
 
     def __init__(self, **kwargs):
         """
@@ -177,13 +177,16 @@ class FS(DeviceFormat):
     def freeSpaceEstimate(cls, device_size):
         """ Get estimated free space when format will be done on device
             with size ``device_size``.
-            This is more guess then precise number.
+
+            .. NOTE::
+                This is more guess then precise number. To get precise
+                space taken the FS must provide this number to us.
 
             :param device_size: original device size
             :type device_size: ``Size`` object
             :return: estimated free size after format
         """
-        return device_size * cls._MetadataSizeFactor
+        return device_size * cls.MetadataSizeFactor
 
     def labeling(self):
         """Returns True if this filesystem uses labels, otherwise False.
@@ -823,7 +826,7 @@ class Ext2FS(FS):
     _sizeinfoClass = fssize.Ext2FSSize
     _writelabelClass = fswritelabel.Ext2FSWriteLabel
     partedSystem = fileSystemType["ext2"]
-    _MetadataSizeFactor = 0.93 # ext2 metadata may take 7% of space
+    MetadataSizeFactor = 0.93 # ext2 metadata may take 7% of space
 
 register_device_format(Ext2FS)
 
@@ -840,7 +843,7 @@ class Ext3FS(Ext2FS):
     # with regard to this maximum filesystem size, but if they're doing such
     # things they should know the implications of their chosen block size.
     _maxSize = Size("16 TiB")
-    _MetadataSizeFactor = 0.90 # ext3 metadata may take 10% of space
+    MetadataSizeFactor = 0.90 # ext3 metadata may take 10% of space
 
 register_device_format(Ext3FS)
 
@@ -852,7 +855,7 @@ class Ext4FS(Ext3FS):
     _mkfsClass = fsmkfs.Ext4FSMkfs
     partedSystem = fileSystemType["ext4"]
     _maxSize = Size("1 EiB")
-    _MetadataSizeFactor = 0.85 # ext4 metadata may take 15% of space
+    MetadataSizeFactor = 0.85 # ext4 metadata may take 15% of space
 
 register_device_format(Ext4FS)
 
@@ -871,7 +874,7 @@ class FATFS(FS):
     _mountClass = fsmount.FATFSMount
     _readlabelClass = fsreadlabel.DosFSReadLabel
     _writelabelClass = fswritelabel.DosFSWriteLabel
-    _MetadataSizeFactor = 0.99 # fat metadata may take 1% of space
+    MetadataSizeFactor = 0.99 # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     partedSystem = fileSystemType["fat16"]
 
@@ -903,7 +906,7 @@ class BTRFS(FS):
     _minSize = Size("256 MiB")
     _maxSize = Size("16 EiB")
     _mkfsClass = fsmkfs.BTRFSMkfs
-    _MetadataSizeFactor = 0.80 # btrfs metadata may take 20% of space
+    MetadataSizeFactor = 0.80 # btrfs metadata may take 20% of space
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # partedSystem = fileSystemType["btrfs"]
@@ -967,7 +970,7 @@ class JFS(FS):
     _mkfsClass = fsmkfs.JFSMkfs
     _sizeinfoClass = fssize.JFSSize
     _writelabelClass = fswritelabel.JFSWriteLabel
-    _MetadataSizeFactor = 0.99 # jfs metadata may take 1% of space
+    MetadataSizeFactor = 0.99 # jfs metadata may take 1% of space
     partedSystem = fileSystemType["jfs"]
 
     @property
@@ -993,7 +996,7 @@ class ReiserFS(FS):
     _mkfsClass = fsmkfs.ReiserFSMkfs
     _sizeinfoClass = fssize.ReiserFSSize
     _writelabelClass = fswritelabel.ReiserFSWriteLabel
-    _MetadataSizeFactor = 0.98 # reiserfs metadata may take 2% of space
+    MetadataSizeFactor = 0.98 # reiserfs metadata may take 2% of space
     partedSystem = fileSystemType["reiserfs"]
 
     @property
@@ -1020,7 +1023,7 @@ class XFS(FS):
     _sizeinfoClass = fssize.XFSSize
     _syncClass = fssync.XFSSync
     _writelabelClass = fswritelabel.XFSWriteLabel
-    _MetadataSizeFactor = 0.97 # xfs metadata may take 3% of space
+    MetadataSizeFactor = 0.97 # xfs metadata may take 3% of space
     partedSystem = fileSystemType["xfs"]
 
 
