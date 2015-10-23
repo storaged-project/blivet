@@ -375,7 +375,7 @@ class EddMatcher(object):
                     continue
 
             fn = components[0:6] + ['link%d' % (ata_port_idx,),]
-            exp = [r'^']+fn+[r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
+            exp = [r'.*']+fn+[r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
             exp = os.path.join(*exp)
             expmatcher = re.compile(exp)
             pmp_glob = fn + ['dev%d.*.*' % (ata_port_idx,)]
