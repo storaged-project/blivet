@@ -33,6 +33,8 @@ import copy
 from .. import util
 
 log = logging.getLogger("blivet")
+testdata_log = logging.getLogger("testdata")
+testdata_log.setLevel(logging.DEBUG)
 
 re_host_bus_pci = re.compile(r'^(PCIX|PCI|XPRS|HTPT)\s*(\S*)\s*channel: (\S*)\s*$')
 re_interface_atapi = re.compile(r'^ATAPI\s*device: (\S*)\s*lun: (\S*)\s*$')
@@ -322,8 +324,12 @@ class EddMatcher(object):
 
     def devname_from_ata_pci_dev(self):
         pattern = '%s/sys/block/*' % (fsroot,)
+        testdata_log.debug("sysfs glob: %s", pattern[len(fsroot):])
         for path in glob.iglob(pattern):
+            testdata_log.debug("sysfs glob match: %s", path[len(fsroot):])
             link = os.readlink(path)
+            testdata_log.debug("sysfs link: \"%s\" -> \"%s\"",
+                               path[len(fsroot):], link)
             # just add /sys/block/ at the beginning so it's always valid
             # paths in the filesystem...
             components = ['%s/sys/block' % (fsroot,)] + link.split('/')
@@ -382,28 +388,32 @@ class EddMatcher(object):
             pmp_glob = os.path.join(*pmp_glob)
             dev_glob = fn + ['dev%d.*' % (ata_port_idx,)]
             dev_glob = os.path.join(*dev_glob)
-            atapaths = tuple(glob.iglob(pmp_glob)) + tuple(glob.iglob(dev_glob))
-            for atapath in atapaths:
-                match = expmatcher.match(atapath)
-                if match is None:
-                    continue
+            for ataglob in [pmp_glob, dev_glob]:
+                testdata_log.debug("sysfs glob: %s", ataglob)
+                for atapath in glob.glob(ataglob):
+                    testdata_log.debug("sysfs glob match: %s",
+                                       atapath[len(fsroot):])
+                    match = expmatcher.match(atapath)
+                    if match is None:
+                        continue
 
-                # so at this point it's devW.X.Y or devW.Z as such:
-                # dev_set_name(dev, "dev%d.%d", ap->print_id,ata_dev->devno);
-                # dev_set_name(dev, "dev%d.%d.0", ap->print_id, link->pmp);
-                # we care about print_id and pmp for matching and the ATA
-                # channel if applicable. We already checked print_id above.
-                if match.group(3) is None:
-                    channel = int(match.group(1))
-                    if (self.edd.channel == 255 and channel == 0) or \
-                            (self.edd.channel == channel):
-                        self.edd.sysfslink = link
-                        return path[len(fsroot):].split('/')[-1]
-                else:
-                    pmp = int(match.group(1))
-                    if self.edd.ata_pmp == pmp:
-                        self.edd.sysfslink = link
-                        return path[len(fsroot):].split('/')[-1]
+                    # so at this point it's devW.X.Y or devW.Z as such:
+                    # dev_set_name(dev, "dev%d.%d",
+                    # ap->print_id,ata_dev->devno); dev_set_name(dev,
+                    # "dev%d.%d.0", ap->print_id, link->pmp); we care about
+                    # print_id and pmp for matching and the ATA channel if
+                    # applicable. We already checked print_id above.
+                    if match.group(3) is None:
+                        channel = int(match.group(1))
+                        if (self.edd.channel == 255 and channel == 0) or \
+                                (self.edd.channel == channel):
+                            self.edd.sysfslink = link
+                            return path[len(fsroot):].split('/')[-1]
+                    else:
+                        pmp = int(match.group(1))
+                        if self.edd.ata_pmp == pmp:
+                            self.edd.sysfslink = link
+                            return path[len(fsroot):].split('/')[-1]
         return None
 
     def devname_from_scsi_pci_dev(self):
@@ -423,7 +433,10 @@ class EddMatcher(object):
             }
         path = tmpl0 % args
         pattern = tmpl1 % args
+        testdata_log.debug("sysfs glob: %s", pattern[len(fsroot):])
         matching_paths = glob.glob(pattern)
+        for mp in matching_paths:
+            testdata_log.debug("sysfs glob match: %s", mp[len(fsroot):])
         if os.path.isdir(path):
             block_entries = os.listdir(path)
             if len(block_entries) == 1:
@@ -456,7 +469,11 @@ class EddMatcher(object):
             'pci_dev' : self.edd.pci_dev
             }
         pattern = "%(fsroot)s/sys/devices/pci0000:00/0000:%(pci_dev)s/virtio*"
-        matching_paths = glob.glob(pattern % args)
+        matching_paths = tuple(glob.glob(pattern % args))
+        testdata_log.debug("sysfs glob: %s",
+                           (pattern % args)[len(fsroot):])
+        for mp in matching_paths:
+            testdata_log.debug("sysfs glob match: %s", mp[len(fsroot):])
 
         if len(matching_paths) == 1 and os.path.exists(matching_paths[0]):
             # Normal VirtIO devices just have the block link right there...
@@ -491,6 +508,13 @@ class EddMatcher(object):
             name = self.devname_from_ata_pci_dev()
         elif self.edd.type == "SCSI":
             name = self.devname_from_scsi_pci_dev()
+        if self.edd.sysfslink:
+            path = "/".join([fsroot, "sys/block", self.edd.sysfslink,
+                             "device"])
+            link = os.readlink(path)
+            testdata_log.debug("sysfs link: \"%s\" -> \"%s\"",
+                               path[len(fsroot):], link)
+
         return name
 
     def match_via_mbrsigs(self, mbr_dict):
@@ -508,7 +532,9 @@ def collect_edd_data():
     edd_data_dict = {}
     exp = re.compile(r'.*/int13_dev(\d+)$')
     globstr = os.path.join(fsroot, "sys/firmware/edd/int13_dev*")
+    testdata_log.debug("sysfs glob: %s", globstr[len(fsroot):])
     for path in glob.glob(globstr):
+        testdata_log.debug("sysfs glob match: %s", path[len(fsroot):])
         match = exp.match(path)
         biosdev = int("0x%s" % (match.group(1),), base=16)
         log.debug("edd: found device 0x%x at %s", biosdev, path[len(fsroot):])
@@ -530,9 +556,14 @@ def collect_mbrs(devices):
             fd = util.eintr_retry_call(os.open, path, os.O_RDONLY)
             # The signature is the unsigned integer at byte 440:
             os.lseek(fd, 440, 0)
-            mbrsig = struct.unpack('I', util.eintr_retry_call(os.read, fd, 4))
+            data = util.eintr_retry_call(os.read, fd, 4)
+            mbrsig = struct.unpack('I', data)
+            sdata = struct.unpack("BBBB", data)
+            sdata = "".join(["%02x" % (x,) for x in sdata])
             util.eintr_ignore(os.close, fd)
+            testdata_log.debug("device %s data[440:443] = %s", path, sdata)
         except OSError as e:
+            testdata_log.debug("device %s data[440:443] raised %s", path, e)
             log.error("edd: could not read mbrsig from disk %s: %s",
                       dev.name, str(e))
             continue

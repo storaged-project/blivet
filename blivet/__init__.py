@@ -59,6 +59,7 @@ from .flags import flags
 import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
+testdata_log = logging.getLogger("testdata")
 
 # Tell the warnings module not to ignore DeprecationWarning, which it does by
 # default since python-2.7.

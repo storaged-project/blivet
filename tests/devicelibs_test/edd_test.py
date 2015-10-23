@@ -40,17 +40,26 @@ class EddTestCase(unittest.TestCase):
     def setUp(self):
         super(EddTestCase, self).setUp()
         if 'WORKSPACE' in os.environ.keys():
-            ws = os.path.join(os.environ['WORKSPACE'], "blivet-edd.log")
+            ws = os.environ['WORKSPACE']
         else:
-            ws = "/tmp/blivet-edd.log"
-        self.handler = logging.FileHandler(ws)
-        self.handler.setLevel(logging.DEBUG)
+            ws = "/tmp"
+        self.log_handler = logging.FileHandler("%s/%s" % (ws, "blivet-edd.log"))
+        self.log_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
-        self.handler.setFormatter(formatter)
-        edd.log.addHandler(self.handler)
+        self.log_handler.setFormatter(formatter)
+        edd.log.addHandler(self.log_handler)
+
+        self.td_log_handler = logging.FileHandler("%s/%s" %
+                                        (ws, "blivet-edd-testdata.log"))
+        self.td_log_handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        self.td_log_handler.setFormatter(formatter)
+        edd.testdata_log.addHandler(self.td_log_handler)
 
         self._edd_logger = edd.log
         self._edd_logger_level = edd.log.level
+        self._edd_testdata_logger = edd.testdata_log
+        self._edd_testdata_logger_level = edd.testdata_log.level
         edd.log.setLevel(logging.DEBUG)
         newlog = mock.MagicMock(name='log')
         newlog.debug = mock.Mock(name='debug',
@@ -66,7 +75,8 @@ class EddTestCase(unittest.TestCase):
     def tearDown(self):
         edd.log = self._edd_logger
         edd.log.setLevel(self._edd_logger_level)
-        edd.log.removeHandler(self.handler)
+        edd.log.removeHandler(self.log_handler)
+        edd.testdata_log.removeHandler(self.td_log_handler)
         super(EddTestCase, self).tearDown()
 
     def checkLogs(self, debugs=None, infos=None, warnings=None, errors=None):
@@ -103,6 +113,8 @@ class EddTestCase(unittest.TestCase):
     def test_collect_edd_data_sata_usb(self):
         # test with sata sda, usb sdb
         self._set_fs_root(edd, "sata_usb")
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
         fakeedd = {
             0x80: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
                            sectors=312581808, host_bus="PCI", type="SATA",
@@ -133,6 +145,8 @@ class EddTestCase(unittest.TestCase):
     def test_get_edd_dict_sata_usb(self):
         # test with sata sda, usb sdb
         self._set_fs_root(edd, "sata_usb")
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
         devices=(FakeDevice("sda"),
                  FakeDevice("sdb"),
                  )

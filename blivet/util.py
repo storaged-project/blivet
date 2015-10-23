@@ -26,6 +26,7 @@ import six
 import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
+testdata_log = logging.getLogger("testdata")
 
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
@@ -211,7 +212,12 @@ def get_sysfs_attr(path, attr):
         log.warning("%s is not a valid attribute", attr)
         return None
 
-    return open(attribute, "r").read().strip()
+    f = open(attribute, "r")
+    data = f.read()
+    f.close()
+    sdata = "".join(["%02x" % (ord(x),) for x in data])
+    testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
+    return data.strip()
 
 def get_sysfs_path_by_name(dev_node, class_name="block"):
     """ Return sysfs path for a given device.
@@ -510,17 +516,25 @@ def compare(first, second):
 ##
 ## Convenience functions for examples and tests
 ##
-def set_up_logging(log_file='/tmp/blivet.log'):
+def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
     """ Configure the blivet logger to write out a log file.
 
         :keyword str log_file: path to the log file (default: /tmp/blivet.log)
     """
+
     log.setLevel(logging.DEBUG)
     program_log.setLevel(logging.DEBUG)
-    handler = logging.FileHandler(log_file)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
-    handler.setFormatter(formatter)
+
+    def make_handler(path, prefix, level):
+        log_file = "%s/%s.log" % (path, log)
+        log_file = os.path.realpath(log_file)
+        handler = logging.FileHandler(log_file)
+        handler.setLevel(level)
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        handler.setFormatter(formatter)
+        return handler
+
+    handler = make_handler(log_dir, log_prefix, logging.DEBUG)
     log.addHandler(handler)
     program_log.addHandler(handler)
 
@@ -529,6 +543,11 @@ def set_up_logging(log_file='/tmp/blivet.log'):
     warning_log.addHandler(handler)
 
     log.info("sys.argv = %s", sys.argv)
+
+    prefix = "%s-testdata" % (log_prefix,)
+    handler = make_handler(log_dir, prefix, logging.DEBUG)
+    testdata_log.setLevel(logging.DEBUG)
+    testdata_log.addHandler(handler)
 
 def create_sparse_tempfile(name, size):
     """ Create a temporary sparse file.
