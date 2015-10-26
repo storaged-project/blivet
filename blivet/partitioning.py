@@ -1584,7 +1584,7 @@ class SameSizeSet(object):
 
             self.devices.append(partition)
 
-        self.size = int(size / len(devices))
+        self.size = size / len(devices)
         self.grow = grow
         self.max_size = max_size
 
