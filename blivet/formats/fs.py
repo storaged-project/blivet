@@ -77,9 +77,9 @@ class FS(DeviceFormat):
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
-    # This number is more guess then precise number because this
+    # This number is more guess than precise number because this
     # value is already unpredictable and can change in the future...
-    _MetadataSizeFactor = 1.0
+    _metadata_size_factor = 1.0
 
     def __init__(self, **kwargs):
         """
@@ -180,13 +180,63 @@ class FS(DeviceFormat):
     def free_space_estimate(cls, device_size):
         """ Get estimated free space when format will be done on device
             with size ``device_size``.
-            This is more guess then precise number.
+
+            .. note::
+
+                This is more guess than precise number. To get precise
+                space taken the FS must provide this number to us.
 
             :param device_size: original device size
-            :type device_size: ``Size`` object
+            :type device_size: :class:`~.size.Size` object
             :return: estimated free size after format
+            :rtype: :class:`~.size.Size`
         """
-        return device_size * cls._MetadataSizeFactor
+        return device_size * cls._metadata_size_factor
+
+    @classmethod
+    def get_required_size(cls, free_space):
+        """ Get device size we need to get a ``free_space`` on the device.
+            This calculation will add metadata to usable device on the FS.
+
+            .. note::
+
+                This is more guess than precise number. To get precise
+                space taken the FS must provide this number to us.
+
+            :param free_space: how much usable size we want on newly created device
+            :type free_space: :class:`~.size.Size` object
+            :return: estimated size of the device which will have given amount of
+                ``free_space``
+            :rtype: :class:`~.size.Size`
+        """
+        # to get usable size without metadata we will use
+        # usable_size = device_size * _metadata_size_factor
+        # we can change this to get device size with required usable_size
+        # device_size = usable_size / _metadata_size_factor
+        return Size(Decimal(free_space) / Decimal(cls._metadata_size_factor))
+
+    @classmethod
+    def biggest_overhead_FS(cls, fs_list=None):
+        """ Get format class from list of format classes with largest space taken
+            by metadata.
+
+            :param fs_list: list of input filesystems
+            :type fs_list: list of classes with parent :class:`~.FS`
+            :return: FS which takes most space by metadata
+        """
+        if fs_list is None:
+            from . import device_formats
+            fs_list = []
+            for fs_class in device_formats.values():
+                if issubclass(fs_class, cls):
+                    fs_list.append(fs_class)
+        elif not fs_list:
+            raise ValueError("Empty list is not allowed here!")
+        # all items in the list must be subclass of FS class
+        elif not all(issubclass(fs_class, cls) for fs_class in fs_list):
+            raise ValueError("Only filesystem classes may be provided!")
+
+        return min(fs_list, key=lambda x: x._metadata_size_factor)
 
     def labeling(self):
         """Returns True if this filesystem uses labels, otherwise False.
@@ -750,6 +800,7 @@ class FS(DeviceFormat):
             :raises: FSError
 
         .. note::
+
             When mounted multiple times the unmount method needs to be called with
             a specific mountpoint to unmount, otherwise it will try to unmount the most
             recent one listed by the system.
@@ -828,7 +879,7 @@ class Ext2FS(FS):
     _size_info_class = fssize.Ext2FSSize
     _writelabel_class = fswritelabel.Ext2FSWriteLabel
     parted_system = fileSystemType["ext2"]
-    _MetadataSizeFactor = 0.93  # ext2 metadata may take 7% of space
+    _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
 
 register_device_format(Ext2FS)
 
@@ -846,7 +897,7 @@ class Ext3FS(Ext2FS):
     # with regard to this maximum filesystem size, but if they're doing such
     # things they should know the implications of their chosen block size.
     _max_size = Size("16 TiB")
-    _MetadataSizeFactor = 0.90  # ext3 metadata may take 10% of space
+    _metadata_size_factor = 0.90  # ext3 metadata may take 10% of space
 
 register_device_format(Ext3FS)
 
@@ -859,7 +910,7 @@ class Ext4FS(Ext3FS):
     _mkfs_class = fsmkfs.Ext4FSMkfs
     parted_system = fileSystemType["ext4"]
     _max_size = Size("1 EiB")
-    _MetadataSizeFactor = 0.85  # ext4 metadata may take 15% of space
+    _metadata_size_factor = 0.85  # ext4 metadata may take 15% of space
 
 register_device_format(Ext4FS)
 
@@ -879,7 +930,7 @@ class FATFS(FS):
     _mount_class = fsmount.FATFSMount
     _readlabel_class = fsreadlabel.DosFSReadLabel
     _writelabel_class = fswritelabel.DosFSWriteLabel
-    _MetadataSizeFactor = 0.99  # fat metadata may take 1% of space
+    _metadata_size_factor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
 
@@ -912,7 +963,7 @@ class BTRFS(FS):
     _min_size = Size("256 MiB")
     _max_size = Size("16 EiB")
     _mkfs_class = fsmkfs.BTRFSMkfs
-    _MetadataSizeFactor = 0.80  # btrfs metadata may take 20% of space
+    _metadata_size_factor = 0.80  # btrfs metadata may take 20% of space
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["btrfs"]
@@ -978,7 +1029,7 @@ class JFS(FS):
     _mkfs_class = fsmkfs.JFSMkfs
     _size_info_class = fssize.JFSSize
     _writelabel_class = fswritelabel.JFSWriteLabel
-    _MetadataSizeFactor = 0.99  # jfs metadata may take 1% of space
+    _metadata_size_factor = 0.99  # jfs metadata may take 1% of space
     parted_system = fileSystemType["jfs"]
 
     @property
@@ -1005,7 +1056,7 @@ class ReiserFS(FS):
     _mkfs_class = fsmkfs.ReiserFSMkfs
     _size_info_class = fssize.ReiserFSSize
     _writelabel_class = fswritelabel.ReiserFSWriteLabel
-    _MetadataSizeFactor = 0.98  # reiserfs metadata may take 2% of space
+    _metadata_size_factor = 0.98  # reiserfs metadata may take 2% of space
     parted_system = fileSystemType["reiserfs"]
 
     @property
@@ -1033,7 +1084,7 @@ class XFS(FS):
     _size_info_class = fssize.XFSSize
     _sync_class = fssync.XFSSync
     _writelabel_class = fswritelabel.XFSWriteLabel
-    _MetadataSizeFactor = 0.97  # xfs metadata may take 3% of space
+    _metadata_size_factor = 0.97  # xfs metadata may take 3% of space
     parted_system = fileSystemType["xfs"]
 
 
