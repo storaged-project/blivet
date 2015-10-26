@@ -667,13 +667,6 @@ def open(*args, **kwargs):  # pylint: disable=redefined-builtin
     """Open a file, and retry on EINTR."""
     return eintr_retry_call(_open, *args, **kwargs)
 
-#
-# Deprecation decorator.
-#
-_DEPRECATION_MESSAGE = "will be removed in a future version."
-def _default_deprecation_msg(func):
-    return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
-
 def indent(text, spaces=4):
     """ Indent text by a specified number of spaces.
 
@@ -693,27 +686,28 @@ def indent(text, spaces=4):
 
     return "\n".join(indented)
 
-_SPHINX_DEPRECATE = """.. deprecated:: %(version)s
-    %(message)s
-"""
-def _add_deprecation_doc_text(func, version=None, message=None):
-    """ Add sphinx 'deprecated' markup to a function's docstring.
+def _add_extra_doc_text(func, field=None, desc=None, field_unique=False):
+    """ Add extra doc text to a function's docstring.
 
         :param :class:`function` func: the function
-        :param str version: version in which the deprecation is effective
-        :param str message: message suggesting a preferred alternative
+        :param str field: (sphinx) field to add to the doc text
+        :param str desc: description to add in the given :param:`field`
+        :param bool field_unique: whether the given :param:`field` should only
+                                  appear in the doc text once (a new one won't
+                                  be added if there already is an existing one)
 
         If your doctext is indented with something other than spaces the added
         doctext's indentation will probably not match. That'd be your fault.
     """
+
     base_text = func.__doc__
     if base_text is None:
         base_text = " " # They contain leading and trailing spaces. *shrug*
     else:
         base_text = base_text[:-1] # Trim the trailing space.
 
-    if ".. deprecated::" in base_text:
-        # Don't add multiple deprecation directives.
+    if field_unique and field in base_text:
+        # Don't add multiple fields
         return
 
     # Figure out the number of spaces to indent docstring text. We are looking
@@ -740,9 +734,25 @@ def _add_deprecation_doc_text(func, version=None, message=None):
         # Make sure there's a newline after the last text.
         text = "\n"
 
-    message = message or ""
-    text += _SPHINX_DEPRECATE % {"version": version, "message": message}
+    desc = desc or ""
+    text += field + " " + desc
     func.__doc__ = base_text + "\n" + indent(text, indent_spaces)
+
+#
+# Deprecation decorator.
+#
+_DEPRECATION_MESSAGE = "will be removed in a future version."
+def _default_deprecation_msg(func):
+    return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
+
+_SPHINX_DEPRECATE = ".. deprecated::"
+_DEPRECATION_INFO = """%(version)s
+    %(message)s
+"""
+
+def _add_deprecation_doc_text(func, version=None, message=None):
+    desc = _DEPRECATION_INFO % {"version": version, "message": message}
+    _add_extra_doc_text(func, _SPHINX_DEPRECATE, desc, field_unique=True)
 
 def deprecated(version, message):
     """ Decorator to deprecate a function or method via warning and docstring.
