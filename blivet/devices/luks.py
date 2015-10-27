@@ -28,7 +28,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .dm import DMCryptDevice
 
+
 class LUKSDevice(DMCryptDevice):
+
     """ A mapped LUKS device. """
     _type = "luks/dm-crypt"
     _packages = ["cryptsetup"]

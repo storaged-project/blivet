@@ -39,6 +39,7 @@ log = logging.getLogger("blivet")
 
 
 class DiskLabel(DeviceFormat):
+
     """ Disklabel """
     _type = "disklabel"
     _name = N_("partition table")
@@ -198,7 +199,7 @@ class DiskLabel(DeviceFormat):
         """ The disklabel type (eg: 'gpt', 'msdos') """
         try:
             lt = self.parted_disk.type
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info()
             lt = self._label_type
         return lt
@@ -221,7 +222,7 @@ class DiskLabel(DeviceFormat):
         if not size:
             try:
                 size = Size(self.parted_device.getLength(unit="B"))
-            except Exception: # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 log_exception_info()
                 size = Size(0)
 
@@ -312,7 +313,7 @@ class DiskLabel(DeviceFormat):
     def extended_partition(self):
         try:
             extended = self.parted_disk.getExtendedPartition()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info()
             extended = None
         return extended
@@ -321,7 +322,7 @@ class DiskLabel(DeviceFormat):
     def logical_partitions(self):
         try:
             logicals = self.parted_disk.getLogicalPartitions()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info()
             logicals = []
         return logicals
@@ -330,7 +331,7 @@ class DiskLabel(DeviceFormat):
     def primary_partitions(self):
         try:
             primaries = self.parted_disk.getPrimaryPartitions()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info()
             primaries = []
         return primaries
@@ -339,7 +340,7 @@ class DiskLabel(DeviceFormat):
     def first_partition(self):
         try:
             part = self.parted_disk.getFirstPartition()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info()
             part = None
         return part

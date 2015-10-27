@@ -19,13 +19,15 @@ from blivet.size import Size
 
 from blivet.tasks import availability
 
+
 class DeviceDependenciesTestCase(unittest.TestCase):
+
     """Test external device dependencies. """
 
     def test_dependencies(self):
         dev1 = DiskDevice("name", fmt=get_format("mdmember"))
         dev2 = DiskDevice("other", fmt=get_format("mdmember"))
-        dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1,dev2])
+        dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1, dev2])
         luks = LUKSDevice("luks", parents=[dev])
 
         # a parent's dependencies are a subset of its child's.
@@ -35,7 +37,9 @@ class DeviceDependenciesTestCase(unittest.TestCase):
         # make sure that there's at least something in these dependencies
         self.assertGreater(len(luks.external_dependencies), 0)
 
+
 class MockingDeviceDependenciesTestCase(unittest.TestCase):
+
     """Test availability of external device dependencies. """
 
     def setUp(self):
@@ -82,7 +86,7 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         availability.BLOCKDEV_DM_PLUGIN._method = self.dm_method
 
         availability.CACHE_AVAILABILITY = False
-        availability.BLOCKDEV_MDRAID_PLUGIN.available # pylint: disable=pointless-statement
-        availability.BLOCKDEV_DM_PLUGIN.available # pylint: disable=pointless-statement
+        availability.BLOCKDEV_MDRAID_PLUGIN.available  # pylint: disable=pointless-statement
+        availability.BLOCKDEV_DM_PLUGIN.available  # pylint: disable=pointless-statement
 
         availability.CACHE_AVAILABILITY = self.cache_availability

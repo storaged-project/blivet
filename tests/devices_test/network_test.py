@@ -7,10 +7,13 @@ from blivet.devices import StorageDevice
 
 from blivet.formats import get_format
 
+
 class FakeNetDev(StorageDevice, NetworkStorageDevice):
     _type = "fakenetdev"
 
+
 class NetDevMountOptionTestCase(unittest.TestCase):
+
     def test_net_dev_setting(self):
         """ Verify netdev mount option setting after format assignment. """
         netdev = FakeNetDev("net1")

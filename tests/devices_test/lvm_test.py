@@ -24,8 +24,10 @@ DEVICE_CLASSES = [
    StorageDevice
 ]
 
+
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class LVMDeviceTest(unittest.TestCase):
+
     def test_lvmsnap_shot_device_init(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))

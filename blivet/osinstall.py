@@ -48,6 +48,7 @@ from .i18n import _
 import logging
 log = logging.getLogger("blivet")
 
+
 def release_from_redhat_release(fn):
     """
     Attempt to identify the installation of a Linux distribution via
@@ -78,6 +79,7 @@ def release_from_redhat_release(fn):
         rel_ver = version.split()[0]
 
     return (rel_name, rel_ver)
+
 
 def release_from_os_release(fn):
     """
@@ -112,6 +114,7 @@ def release_from_os_release(fn):
 
     return (rel_name, rel_ver)
 
+
 def get_release_string():
     """
     Attempt to identify the installation of a Linux distribution by checking
@@ -140,6 +143,7 @@ def get_release_string():
 
     return (rel_arch, rel_name, rel_ver)
 
+
 def parse_fstab(devicetree, chroot=None):
     """ parse /etc/fstab and return a tuple of a mount dict and swap list """
     if not chroot or not os.path.isdir(chroot):
@@ -157,7 +161,7 @@ def parse_fstab(devicetree, chroot=None):
     try:
         blkid_tab.parse()
         log.debug("blkid.tab devs: %s", list(blkid_tab.devices.keys()))
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         log_exception_info(log.info, "error parsing blkid.tab")
         blkid_tab = None
 
@@ -165,7 +169,7 @@ def parse_fstab(devicetree, chroot=None):
     try:
         crypt_tab.parse(chroot=chroot)
         log.debug("crypttab maps: %s", list(crypt_tab.mappings.keys()))
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         log_exception_info(log.info, "error parsing crypttab")
         crypt_tab = None
 
@@ -197,6 +201,7 @@ def parse_fstab(devicetree, chroot=None):
 
     return (mounts, swaps)
 
+
 def find_existing_installations(devicetree, teardown_all=True):
     """Find existing GNU/Linux installations on devices from the devicetree.
     :param devicetree: devicetree to find existing installations in
@@ -210,13 +215,14 @@ def find_existing_installations(devicetree, teardown_all=True):
     try:
         roots = _find_existing_installations(devicetree)
         return roots
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         log_exception_info(log.info, "failure detecting existing installations")
     finally:
         if teardown_all:
             devicetree.teardown_all()
 
     return []
+
 
 def _find_existing_installations(devicetree):
     if not os.path.exists(get_target_physical_root()):
@@ -230,14 +236,14 @@ def _find_existing_installations(devicetree):
 
         try:
             device.setup()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.warning, "setup of %s failed", [device.name])
             continue
 
         options = device.format.options + ",ro"
         try:
             device.format.mount(options=options, mountpoint=get_sysroot())
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.warning, "mount of %s as %s failed", [device.name, device.format.type])
             util.umount(mountpoint=get_sysroot())
             continue
@@ -272,8 +278,11 @@ def _find_existing_installations(devicetree):
 
     return roots
 
+
 class FSSet(object):
+
     """ A class to represent a set of filesystems. """
+
     def __init__(self, devicetree):
         self.devicetree = devicetree
         self.crypt_tab = None
@@ -492,7 +501,7 @@ class FSSet(object):
         try:
             blkid_tab.parse()
             log.debug("blkid.tab devs: %s", list(blkid_tab.devices.keys()))
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.info, "error parsing blkid.tab")
             blkid_tab = None
 
@@ -500,7 +509,7 @@ class FSSet(object):
         try:
             crypt_tab.parse(chroot=chroot)
             log.debug("crypttab maps: %s", list(crypt_tab.mappings.keys()))
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.info, "error parsing crypttab")
             crypt_tab = None
 
@@ -617,7 +626,7 @@ class FSSet(object):
 
             try:
                 device.setup()
-            except Exception as e: # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 log_exception_info(fmt_str="unable to set up device %s", fmt_args=[device])
                 if error_handler.cb(e) == ERROR_RAISE:
                     raise
@@ -630,7 +639,7 @@ class FSSet(object):
             try:
                 device.format.setup(options=options,
                                     chroot=root_path)
-            except Exception as e: # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 log_exception_info(log.error, "error mounting %s on %s", [device.path, device.format.mountpoint])
                 if error_handler.cb(e) == ERROR_RAISE:
                     raise
@@ -681,7 +690,7 @@ class FSSet(object):
     def mk_dev_root(self):
         root = self.root_device
         dev = "%s/%s" % (get_sysroot(), root.path)
-        if not os.path.exists("%s/dev/root" %(get_sysroot(),)) and os.path.exists(dev):
+        if not os.path.exists("%s/dev/root" % (get_sysroot(),)) and os.path.exists(dev):
             rdev = os.stat(dev).st_rdev
             util.eintr_retry_call(os.mknod, "%s/dev/root" % (get_sysroot(),), stat.S_IFBLK | 0o600, rdev)
 
@@ -784,7 +793,7 @@ class FSSet(object):
 
         return conf
 
-    def fstab (self):
+    def fstab(self):
         fmt_str = "%-23s %-23s %-7s %-15s %d %d\n"
         fstab = """
 #
@@ -897,8 +906,11 @@ class FSSet(object):
 
         self._fstab_swaps = set(devices)
 
+
 class Root(object):
+
     """ A Root represents an existing OS installation. """
+
     def __init__(self, mounts=None, swaps=None, name=None):
         """
             :keyword mounts: mountpoint dict
@@ -931,7 +943,9 @@ class Root(object):
 
 
 class BlkidTab(object):
+
     """ Dictionary-like interface to blkid.tab with device path keys """
+
     def __init__(self, chroot=""):
         self.chroot = chroot
         self.devices = {}
@@ -959,7 +973,7 @@ class BlkidTab(object):
                     except ValueError:
                         continue
 
-                    self.devices[device][key] = value[1:-1] # strip off quotes
+                    self.devices[device][key] = value[1:-1]  # strip off quotes
 
     def __getitem__(self, key):
         return self.devices[key]
@@ -969,7 +983,9 @@ class BlkidTab(object):
 
 
 class CryptTab(object):
+
     """ Dictionary-like interface to crypttab entries with map name keys """
+
     def __init__(self, devicetree, blkid_tab=None, chroot=""):
         self.devicetree = devicetree
         self.blkid_tab = blkid_tab
@@ -988,7 +1004,7 @@ class CryptTab(object):
                 try:
                     self.blkid_tab = BlkidTab(chroot=chroot)
                     self.blkid_tab.parse()
-                except Exception: # pylint: disable=broad-except
+                except Exception:  # pylint: disable=broad-except
                     log_exception_info(fmt_str="failed to parse blkid.tab")
                     self.blkid_tab = None
 
@@ -1049,6 +1065,7 @@ class CryptTab(object):
     def get(self, key, default=None):
         return self.mappings.get(key, default)
 
+
 def get_containing_device(path, devicetree):
     """ Return the device that a path resides on. """
     if not os.path.exists(path):
@@ -1063,7 +1080,7 @@ def get_containing_device(path, devicetree):
 
     try:
         device_name = os.path.basename(os.readlink(link))
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         log_exception_info(fmt_str="failed to find device name for path %s", fmt_args=[path])
         return None
 
@@ -1072,6 +1089,7 @@ def get_containing_device(path, devicetree):
         device_name = blockdev.dm.name_from_node(device_name)
 
     return devicetree.get_device_by_name(device_name)
+
 
 def turn_on_filesystems(storage, mount_only=False, callbacks=None):
     """
@@ -1107,6 +1125,7 @@ def turn_on_filesystems(storage, mount_only=False, callbacks=None):
     if not mount_only:
         write_escrow_packets(storage)
 
+
 def write_escrow_packets(storage):
     escrow_devices = [d for d in storage.devices if d.format.type == 'luks' and
                      d.format.escrow_cert]
@@ -1133,6 +1152,7 @@ def write_escrow_packets(storage):
         log.error("failed to store encryption key: %s", e)
 
     log.debug("escrow: write_escrow_packets done")
+
 
 def storage_initialize(storage, ksdata, protected):
     """ Perform installer-specific storage initialization. """
@@ -1170,9 +1190,10 @@ def storage_initialize(storage, ksdata, protected):
     # kickstart uses all the disks
     if flags.automated_install:
         if not ksdata.ignoredisk.onlyuse:
-            ksdata.ignoredisk.onlyuse = [d.name for d in storage.disks \
+            ksdata.ignoredisk.onlyuse = [d.name for d in storage.disks
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
             log.debug("onlyuse is now: %s", ",".join(ksdata.ignoredisk.onlyuse))
+
 
 def mount_existing_system(fsset, root_device, read_only=None):
     """ Mount filesystems specified in root_device's /etc/fstab file. """

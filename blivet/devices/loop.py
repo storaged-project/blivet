@@ -35,7 +35,9 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 class LoopDevice(StorageDevice):
+
     """ A loop device. """
     _type = "loop"
     _external_dependencies = [availability.BLOCKDEV_LOOP_PLUGIN]

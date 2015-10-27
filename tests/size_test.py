@@ -28,7 +28,7 @@ import locale
 import os
 import unittest
 
-from six.moves import cPickle # pylint: disable=import-error
+from six.moves import cPickle  # pylint: disable=import-error
 
 from decimal import Decimal
 
@@ -37,6 +37,7 @@ from blivet.errors import SizePlacesError
 from blivet import size
 from blivet.size import Size, _EMPTY_PREFIX, _BINARY_PREFIXES, _DECIMAL_PREFIXES
 from blivet.size import B, KiB, MiB, GiB, TiB
+
 
 class SizeTestCase(unittest.TestCase):
 
@@ -118,7 +119,7 @@ class SizeTestCase(unittest.TestCase):
 
         # a fractional quantity is shown if the value deviates
         # from the whole number of units by more than 1%
-        s = Size(16384 - (1024/100 + 1))
+        s = Size(16384 - (1024 / 100 + 1))
         self.assertEqual(s.human_readable(max_places=2), "15.99 KiB")
 
         # if max_places is set to None, all digits are displayed
@@ -130,13 +131,13 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(s.human_readable(max_places=None), "64.0009765625 KiB")
 
         # test a very large quantity with no associated abbreviation or prefix
-        s = Size(1024**9)
+        s = Size(1024 ** 9)
         self.assertEqual(s.human_readable(max_places=2), "1024 YiB")
-        s = Size(1024**9 - 1)
+        s = Size(1024 ** 9 - 1)
         self.assertEqual(s.human_readable(max_places=2), "1024 YiB")
-        s = Size(1024**9 + 1)
+        s = Size(1024 ** 9 + 1)
         self.assertEqual(s.human_readable(max_places=2, strip=False), "1024.00 YiB")
-        s = Size(1024**10)
+        s = Size(1024 ** 10)
         self.assertEqual(s.human_readable(max_places=2), "1048576 YiB")
 
     def test_human_readable_fractional_quantities(self):
@@ -152,15 +153,14 @@ class SizeTestCase(unittest.TestCase):
         self.assertEqual(s.human_readable(max_places=None), "63.9990234375 KiB")
 
         # deviation is less than 1/2 of 1% of 1024
-        s = Size(16384 - (1024/100//2))
+        s = Size(16384 - (1024 / 100 // 2))
         self.assertEqual(s.human_readable(max_places=2), "16 KiB")
         # deviation is greater than 1/2 of 1% of 1024
-        s = Size(16384 - ((1024/100//2) + 1))
+        s = Size(16384 - ((1024 / 100 // 2) + 1))
         self.assertEqual(s.human_readable(max_places=2), "15.99 KiB")
 
         s = Size(0x10000000000000)
         self.assertEqual(s.human_readable(max_places=2), "4 PiB")
-
 
     def test_min_value(self):
         s = Size("9 MiB")
@@ -196,8 +196,8 @@ class SizeTestCase(unittest.TestCase):
 
     def test_partial_bytes(self):
         self.assertEqual(Size("1024.6"), Size(1024))
-        self.assertEqual(Size("%s KiB" % (1/1025.0,)), Size(0))
-        self.assertEqual(Size("%s KiB" % (1/1023.0,)), Size(1))
+        self.assertEqual(Size("%s KiB" % (1 / 1025.0,)), Size(0))
+        self.assertEqual(Size("%s KiB" % (1 / 1023.0,)), Size(1))
 
     def test_no_units_in_string(self):
         self.assertEqual(Size("1024"), Size("1 KiB"))
@@ -264,6 +264,7 @@ class SizeTestCase(unittest.TestCase):
         s = Size("10 MiB")
         self.assertEqual(s, cPickle.loads(cPickle.dumps(s)))
 
+
 class TranslationTestCase(unittest.TestCase):
 
     def __init__(self, methodName='run_test'):
@@ -285,7 +286,7 @@ class TranslationTestCase(unittest.TestCase):
 
     def test_make_spec(self):
         """ Tests for _make_specs(). """
-        for lang in  self.TEST_LANGS:
+        for lang in self.TEST_LANGS:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
@@ -307,7 +308,7 @@ class TranslationTestCase(unittest.TestCase):
 
     def test_parse_spec(self):
         """ Tests for parse_spec(). """
-        for lang in  self.TEST_LANGS:
+        for lang in self.TEST_LANGS:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
@@ -337,7 +338,7 @@ class TranslationTestCase(unittest.TestCase):
 
     def test_translated(self):
         s = Size("56.19 MiB")
-        for lang in  self.TEST_LANGS:
+        for lang in self.TEST_LANGS:
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
 
@@ -423,6 +424,7 @@ class TranslationTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             s.round_to_nearest(Size("-1 B"))
 
+
 class UtilityMethodsTestCase(unittest.TestCase):
 
     def test_lower_ascii(self):
@@ -434,27 +436,26 @@ class UtilityMethodsTestCase(unittest.TestCase):
         s = Size("2GiB")
 
         # Make sure arithmatic operations with Size always result in the expected type
-        self.assertIsInstance(s+s, Size)
-        self.assertIsInstance(s-s, Size)
-        self.assertIsInstance(s*s, Size)
-        self.assertIsInstance(s/s, Size)
-        self.assertIsInstance(s**Size(2), Decimal)
+        self.assertIsInstance(s + s, Size)
+        self.assertIsInstance(s - s, Size)
+        self.assertIsInstance(s * s, Size)
+        self.assertIsInstance(s / s, Size)
+        self.assertIsInstance(s ** Size(2), Decimal)
         self.assertIsInstance(s % Size(7), Size)
 
-
         # Make sure operations with non-Size on the right result in the expected type
-        self.assertIsInstance(s+2, Size)
-        self.assertIsInstance(s-2, Size)
-        self.assertIsInstance(s*2, Size)
-        self.assertIsInstance(s/2, Size)
-        self.assertIsInstance(s//2, Size)
-        self.assertIsInstance(s**2, Decimal)
+        self.assertIsInstance(s + 2, Size)
+        self.assertIsInstance(s - 2, Size)
+        self.assertIsInstance(s * 2, Size)
+        self.assertIsInstance(s / 2, Size)
+        self.assertIsInstance(s // 2, Size)
+        self.assertIsInstance(s ** 2, Decimal)
         self.assertIsInstance(s % 127, Size)
 
         # Make sure operations with non-Size on the left result in the expected type
-        self.assertIsInstance(2+s, Size)
-        self.assertIsInstance(2-s, Decimal)
-        self.assertIsInstance(2*s, Size)
-        self.assertIsInstance(2/s, Decimal)
-        self.assertIsInstance(2**Size(2), Decimal)
+        self.assertIsInstance(2 + s, Size)
+        self.assertIsInstance(2 - s, Decimal)
+        self.assertIsInstance(2 * s, Size)
+        self.assertIsInstance(2 / s, Decimal)
+        self.assertIsInstance(2 ** Size(2), Decimal)
         self.assertIsInstance(1024 % Size(127), Decimal)

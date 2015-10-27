@@ -39,7 +39,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .lib import LINUX_SECTOR_SIZE
 
+
 class DMDevice(StorageDevice):
+
     """ A device-mapper device """
     _type = "dm"
     _dev_dir = "/dev/mapper"
@@ -113,7 +115,7 @@ class DMDevice(StorageDevice):
             else:
                 raise
 
-    #def get_target_type(self):
+    # def get_target_type(self):
     #    return dm.get_dm_target(name=self.name)
 
     def get_dm_node(self):
@@ -223,6 +225,7 @@ class DMLinearDevice(DMDevice):
 
 
 class DMCryptDevice(DMDevice):
+
     """ A dm-crypt device """
     _type = "dm-crypt"
     _encrypted = True

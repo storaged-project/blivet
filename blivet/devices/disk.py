@@ -34,7 +34,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
 from ..tasks import availability
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 from ..fcoe import fcoe
 
@@ -46,7 +46,9 @@ from .container import ContainerDevice
 from .network import NetworkStorageDevice
 from .dm import DMDevice
 
+
 class DiskDevice(StorageDevice):
+
     """ A local/generic disk.
 
         This is not the only kind of device that is treated as a disk. More
@@ -121,7 +123,9 @@ class DiskDevice(StorageDevice):
 
         StorageDevice._pre_destroy(self)
 
+
 class DiskFile(DiskDevice):
+
     """ This is a file that we will pretend is a disk.
 
         This is intended only for testing purposes. The benefit of this class
@@ -169,7 +173,9 @@ class DiskFile(DiskDevice):
 
         return size
 
+
 class DMRaidArrayDevice(DMDevice, ContainerDevice):
+
     """ A dmraid (device-mapper RAID) device """
     _type = "dm-raid array"
     _packages = ["dmraid"]
@@ -199,7 +205,6 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         super(DMRaidArrayDevice, self).__init__(name, fmt=fmt, size=size,
                                                 parents=parents, exists=True,
                                                 sysfs_path=sysfs_path)
-
 
     @property
     def devices(self):
@@ -251,7 +256,9 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     def dracut_setup_args(self):
         return set(["rd.dm.uuid=%s" % self.name])
 
+
 class MultipathDevice(DMDevice):
+
     """ A multipath device """
     _type = "dm-multipath"
     _packages = ["device-mapper-multipath"]
@@ -285,10 +292,10 @@ class MultipathDevice(DMDevice):
 
         self.identity = serial
         self.config = {
-            'wwid' : self.identity,
-            'mode' : '0600',
-            'uid' : '0',
-            'gid' : '0',
+            'wwid': self.identity,
+            'mode': '0600',
+            'uid': '0',
+            'gid': '0',
         }
 
     @property
@@ -342,9 +349,8 @@ class MultipathDevice(DMDevice):
         udev.settle()
 
 
-
-
 class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
+
     """ An iSCSI disk. """
     _type = "iscsi"
     _packages = ["iscsi-initiator-utils", "dracut-network"]
@@ -412,7 +418,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         if ":" in address:
             address = "[%s]" % address
 
-        netroot="netroot=iscsi:"
+        netroot = "netroot=iscsi:"
         auth = self.node.get_auth()
         if auth:
             netroot += "%s:%s" % (auth.username, auth.password)
@@ -432,7 +438,9 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
 
         return set([netroot, initiator])
 
+
 class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
+
     """ An FCoE disk. """
     _type = "fcoe"
     _packages = ["fcoe-utils", "dracut-network"]
@@ -480,6 +488,7 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
 
 
 class ZFCPDiskDevice(DiskDevice):
+
     """ A mainframe ZFCP disk. """
     _type = "zfcp"
 
@@ -522,7 +531,9 @@ class ZFCPDiskDevice(DiskDevice):
     def dracut_setup_args(self):
         return set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
 
+
 class DASDDevice(DiskDevice):
+
     """ A mainframe DASD. """
     _type = "dasd"
 

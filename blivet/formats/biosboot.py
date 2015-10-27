@@ -27,7 +27,9 @@ from .. import platform
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
+
 class BIOSBoot(DeviceFormat):
+
     """ BIOS boot partition for GPT disklabels. """
     _type = "biosboot"
     _name = N_("BIOS Boot")
@@ -57,7 +59,7 @@ class BIOSBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return super(BIOSBoot,self).supported and isinstance(platform.platform, platform.X86)
+        return super(BIOSBoot, self).supported and isinstance(platform.platform, platform.X86)
 
 register_device_format(BIOSBoot)
 

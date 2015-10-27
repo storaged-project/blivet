@@ -10,6 +10,7 @@ from blivet.errors import FSError, FSResizeError
 from blivet.size import Size, ROUND_DOWN
 from blivet.formats import fs
 
+
 def can_resize(an_fs):
     """ Returns True if this filesystem has all necessary resizing tools
         available.
@@ -18,6 +19,7 @@ def can_resize(an_fs):
     """
     resize_tasks = (an_fs._resize, an_fs._sizeinfo, an_fs._minsize)
     return not any(t.availability_errors for t in resize_tasks)
+
 
 @add_metaclass(abc.ABCMeta)
 class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):

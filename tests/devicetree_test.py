@@ -21,7 +21,9 @@ from blivet.formats import get_format
             - raid thin pool
 """
 
+
 class DeviceTreeTestCase(unittest.TestCase):
+
     def test_resolve_device(self):
         dt = DeviceTree()
 
@@ -53,6 +55,7 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt.resolve_device(dev3.name), dev3)
 
+
 def recursive_getattr(x, attr, default=None):
     """ Resolve a possibly-dot-containing attribute name. """
     val = x
@@ -64,7 +67,9 @@ def recursive_getattr(x, attr, default=None):
 
     return val
 
+
 class BlivetResetTestCase(ImageBackedTestCase):
+
     """ A class to test the results of Blivet.reset (and DeviceTree.populate).
 
         Create a device stack on disk images, catalog a set of attributes of
@@ -86,7 +91,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
                             if d.disks and
                                set(d.disks).issubset(set(self.blivet.disks))):
             attr_dict = {}
-            device._parted_device = None # force update from disk for size, &c
+            device._parted_device = None  # force update from disk for size, &c
             for attr in self._validate_attrs:
                 attr_dict[attr] = recursive_getattr(device, attr)
 
@@ -120,7 +125,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
         return False
 
     def find_device(self, attr_dict):
-        devices = self.blivet.devices #+ self.blivet.devicetree._hidden
+        devices = self.blivet.devices  # + self.blivet.devicetree._hidden
         device = None
         for check in devices:
             match = all(attr_dict[attr] == recursive_getattr(check, attr)
@@ -159,8 +164,11 @@ class BlivetResetTestCase(ImageBackedTestCase):
                         msg=("attribute mismatch for %s: %s (%s/%s)"
                              % (device_id, attr, expected, actual)))
 
+
 class LVMTestCase(BlivetResetTestCase):
+
     """ Test that the devicetree can populate with the product of autopart. """
+
     def _set_up_storage(self):
         # This isn't exactly autopart, but it should be plenty close to it.
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
@@ -171,7 +179,9 @@ class LVMTestCase(BlivetResetTestCase):
                                   None,
                                   disks=self.blivet.disks[:])
 
+
 class LVMSnapShotTestCase(BlivetResetTestCase):
+
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("1 GiB"),
@@ -181,7 +191,7 @@ class LVMSnapShotTestCase(BlivetResetTestCase):
                                   container_size=devicefactory.SIZE_POLICY_MAX)
 
     def setUp(self):
-        super(BlivetResetTestCase, self).setUp() # pylint: disable=bad-super-call
+        super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
         root = self.blivet.lvs[0]
         snap = LVMSnapShotDevice("rootsnap1", parents=[root.vg], origin=root,
                                  size=Size("768MiB"))
@@ -193,6 +203,7 @@ class LVMSnapShotTestCase(BlivetResetTestCase):
 
 
 class LVMThinpTestCase(BlivetResetTestCase):
+
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("500 MiB"),
@@ -203,7 +214,9 @@ class LVMThinpTestCase(BlivetResetTestCase):
                                   label="ROOT",
                                   disks=self.blivet.disks[:])
 
+
 class LVMThinSnapShotTestCase(LVMThinpTestCase):
+
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
                                   Size("1 GiB"),
@@ -211,7 +224,7 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
                                   disks=self.blivet.disks[:])
 
     def setUp(self):
-        super(BlivetResetTestCase, self).setUp() # pylint: disable=bad-super-call
+        super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
 
         root = self.blivet.thinlvs[0]
         snap = LVMThinSnapShotDevice("rootsnap1", parents=[root.pool],
@@ -222,7 +235,9 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
         self.device_attr_dicts = []
         self.collect_expected_data()
 
+
 class LVMRaidTestCase(BlivetResetTestCase):
+
     def _set_up_storage(self):
         # This isn't exactly autopart, but it should be plenty close to it.
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
@@ -231,7 +246,7 @@ class LVMRaidTestCase(BlivetResetTestCase):
                           container_size=devicefactory.SIZE_POLICY_MAX)
 
     def setUp(self):
-        super(BlivetResetTestCase, self).setUp() # pylint: disable=bad-super-call
+        super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
         vg_name = self.blivet.vgs[0].name
         util.run_program(["lvcreate", "-n", "raid", "--type", "raid1",
                           "-L", "100%", vg_name])
@@ -241,6 +256,7 @@ class LVMRaidTestCase(BlivetResetTestCase):
 
 @unittest.skip("temporarily disabled due to mdadm issues")
 class MDRaid0TestCase(BlivetResetTestCase):
+
     """ Verify correct detection of MD RAID0 arrays. """
     level = "raid0"
     _validate_attrs = BlivetResetTestCase._validate_attrs + ["level", "spares"]
@@ -250,7 +266,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
         disk_count = level.min_members
         self.disks = dict()
         for i in range(disk_count):
-            name = "disk%d" % (i+1)
+            name = "disk%d" % (i + 1)
             size = Size("2 GiB")
             self.disks[name] = size
 
@@ -300,9 +316,11 @@ class MDRaid0TestCase(BlivetResetTestCase):
                                            label="vdefault",
                                            name="default")
 
+
 @unittest.skip("temporarily disabled due to mdadm issues")
 class LVMOnMDTestCase(BlivetResetTestCase):
     # This also tests raid1 with the default metadata version.
+
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("200 MiB"),

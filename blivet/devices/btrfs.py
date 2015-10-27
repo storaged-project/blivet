@@ -50,7 +50,9 @@ from ..tasks import availability
 
 from contextlib import contextmanager
 
+
 class BTRFSDevice(StorageDevice):
+
     """ Base class for BTRFS volume and sub-volume devices. """
     _type = "btrfs"
     _packages = ["btrfs-progs"]
@@ -153,6 +155,7 @@ class BTRFSDevice(StorageDevice):
     def is_name_valid(cls, name):
         # Override StorageDevice.is_name_valid to allow pretty much anything
         return not('\x00' in name)
+
 
 class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     _type = "btrfs volume"
@@ -462,7 +465,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
         data.preexist = self.exists
 
+
 class BTRFSSubVolumeDevice(BTRFSDevice):
+
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
     _format_immutable = True
@@ -581,7 +586,9 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         if label:
             data.devices = ["LABEL=%s" % label]
 
+
 class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
+
     """ A btrfs snapshot pseudo-device.
 
         BTRFS snapshots are a specialized type of subvolume that contains a

@@ -11,8 +11,10 @@ DEVICE_CLASSES = [
     blivet.devices.PartitionDevice
 ]
 
+
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class ClearPartTestCase(unittest.TestCase):
+
     def setUp(self):
         flags.testing = True
 

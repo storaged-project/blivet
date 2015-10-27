@@ -30,7 +30,9 @@ import os
 import logging
 log = logging.getLogger("blivet")
 
+
 class PPCPRePBoot(DeviceFormat):
+
     """ Generic device format. """
     _type = "prepboot"
     _name = N_("PPC PReP Boot")

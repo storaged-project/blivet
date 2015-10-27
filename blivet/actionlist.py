@@ -33,7 +33,9 @@ from . import tsort
 import logging
 log = logging.getLogger("blivet")
 
+
 class ActionList(object):
+
     def __init__(self):
         self._actions = []
         self._completed_actions = []

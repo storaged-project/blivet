@@ -43,6 +43,8 @@ log = logging.getLogger("blivet")
 
 
 device_formats = {}
+
+
 def register_device_format(fmt_class):
     if not issubclass(fmt_class, DeviceFormat):
         raise ValueError("arg1 must be a subclass of DeviceFormat")
@@ -52,6 +54,8 @@ def register_device_format(fmt_class):
                                                          fmt_class._type)
 
 default_fstypes = ("ext4", "ext3", "ext2")
+
+
 def get_default_filesystem_type():
     for fstype in default_fstypes:
         try:
@@ -63,6 +67,7 @@ def get_default_filesystem_type():
             return fstype
 
     raise DeviceFormatError("None of %s is supported by your kernel" % ",".join(default_fstypes))
+
 
 def get_format(fmt_type, *args, **kwargs):
     """ Return an instance of the appropriate DeviceFormat class.
@@ -95,6 +100,7 @@ def get_format(fmt_type, *args, **kwargs):
        fmt_type, fmt.__class__.__name__, fmt.id)
     return fmt
 
+
 def collect_device_format_classes():
     """ Pick up all device format classes from this directory.
 
@@ -110,11 +116,12 @@ def collect_device_format_classes():
         (mod_name, ext) = os.path.splitext(module_file)
         if ext == ".py" and mod_name != myfile_name and not mod_name.startswith("."):
             try:
-                globals()[mod_name] = importlib.import_module("."+mod_name, package=__package__)
+                globals()[mod_name] = importlib.import_module("." + mod_name, package=__package__)
             except ImportError:
                 log.error("import of device format module '%s' failed", mod_name)
                 from traceback import format_exc
                 log.debug("%s", format_exc())
+
 
 def get_device_format_class(fmt_type):
     """ Return an appropriate format class.
@@ -141,7 +148,9 @@ def get_device_format_class(fmt_type):
 
     return fmt
 
+
 class DeviceFormat(ObjectID):
+
     """ Generic device format.
 
         This represents the absence of recognized formatting. That could mean a
@@ -294,7 +303,7 @@ class DeviceFormat(ObjectID):
 
     options = property(
        lambda s: s._get_options(),
-       lambda s,v: s._set_options(v),
+       lambda s, v: s._set_options(v),
        doc="fstab entry option string"
     )
 
@@ -306,7 +315,7 @@ class DeviceFormat(ObjectID):
 
     create_options = property(
         lambda s: s._get_create_options(),
-        lambda s,v: s._set_create_options(v),
+        lambda s, v: s._set_create_options(v),
         doc="options to be used when running mkfs"
     )
 
@@ -332,7 +341,7 @@ class DeviceFormat(ObjectID):
         return self._device
 
     device = property(lambda f: f._get_device(),
-                      lambda f,d: f._set_device(d),
+                      lambda f, d: f._set_device(d),
                       doc="Full path the device this format occupies")
 
     @property

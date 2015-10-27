@@ -7,10 +7,12 @@ from blivet import util
 from blivet.size import Size
 from blivet.flags import flags
 
+
 @unittest.skip("disabled until it can be converted to run in a vm")
 @unittest.skipUnless(os.environ.get("JENKINS_HOME"), "jenkins only test")
 @unittest.skipUnless(os.geteuid() == 0, "requires root access")
 class ImageBackedTestCase(unittest.TestCase):
+
     """ A class to encapsulate testing of blivet using block devices.
 
         The basic idea is you create some scratch block devices and then run
@@ -29,8 +31,8 @@ class ImageBackedTestCase(unittest.TestCase):
     initialize_disks = True
     """ Whether or not to create a disklabel on the disks. """
 
-    disks = { "disk1": Size("2 GiB"),
-              "disk2": Size("2 GiB") }
+    disks = {"disk1": Size("2 GiB"),
+              "disk2": Size("2 GiB")}
     """ The names and sizes of the disk images to create/use. """
 
     def set_up_disks(self):

@@ -23,9 +23,10 @@ import os
 from .. import errors
 from .. import udev
 from ..size import Size
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 LINUX_SECTOR_SIZE = Size(512)
+
 
 def get_device_majors():
     majors = {}
@@ -40,6 +41,7 @@ def get_device_majors():
             continue
     return majors
 device_majors = get_device_majors()
+
 
 def device_path_to_name(device_path):
     """ Return a name based on the given path to a device node.
@@ -68,6 +70,7 @@ def device_path_to_name(device_path):
 
     return name
 
+
 def device_name_to_disk_by_path(device_name=None):
     """ Return a /dev/disk/by-path/ symlink path for the given device name.
 
@@ -89,7 +92,9 @@ def device_name_to_disk_by_path(device_name=None):
         return ret
     raise errors.DeviceNotFoundError(device_name)
 
+
 class ParentList(object):
+
     """ A list with auditing and side-effects for additions and removals.
 
         The class provides an ordered list with guaranteed unique members and
@@ -108,6 +113,7 @@ class ParentList(object):
             x in ml
             x = ml[i]   # not ml[i] = x
     """
+
     def __init__(self, items=None, appendfunc=None, removefunc=None):
         """
             :keyword items: initial contents

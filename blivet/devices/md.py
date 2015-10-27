@@ -36,7 +36,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
 from ..tasks import availability
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
@@ -45,7 +45,9 @@ from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
 
+
 class MDRaidArrayDevice(ContainerDevice, RaidDevice):
+
     """ An mdraid (Linux RAID) device. """
     _type = "mdarray"
     _packages = ["mdadm"]
@@ -199,7 +201,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             If the array has no redundancy, a bitmap is just pointless.
         """
         try:
-            return self.level.has_redundancy() and self.size >= Size(1000) and  self.format.type != "swap"
+            return self.level.has_redundancy() and self.size >= Size(1000) and self.format.type != "swap"
         except errors.RaidError:
             # If has_redundancy() raises an exception then this device has
             # a level for which the redundancy question is meaningless. In
@@ -553,7 +555,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         if self.format.type == "ext2":
             recommended_stride = self.level.get_recommended_stride(self.member_devices)
             if recommended_stride:
-                format_args = ['-R', 'stride=%d' % recommended_stride ]
+                format_args = ['-R', 'stride=%d' % recommended_stride]
         return format_args
 
     @property
@@ -581,6 +583,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         data.members = ["raid.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         data.device = self.name
+
 
 class MDContainerDevice(MDRaidArrayDevice):
 
@@ -635,6 +638,7 @@ class MDContainerDevice(MDRaidArrayDevice):
     @property
     def partitionable(self):
         return False
+
 
 class MDBiosRaidArrayDevice(MDRaidArrayDevice):
 

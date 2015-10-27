@@ -38,10 +38,11 @@ except ImportError:
     has_libiscsi = False
 
 # Note that stage2 copies all files under /sbin to /usr/sbin
-ISCSID=""
-INITIATOR_FILE="/etc/iscsi/initiatorname.iscsi"
+ISCSID = ""
+INITIATOR_FILE = "/etc/iscsi/initiatorname.iscsi"
 
-ISCSI_MODULES=['cxgb3i', 'bnx2i', 'be2iscsi']
+ISCSI_MODULES = ['cxgb3i', 'bnx2i', 'be2iscsi']
+
 
 def has_iscsi():
     global ISCSID
@@ -116,10 +117,12 @@ def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
 
             con_write.send((True, nodes))
 
-        except Exception as ex: # pylint: disable=broad-except
+        except Exception as ex:  # pylint: disable=broad-except
             con_write.send((False, ex))
 
+
 class iscsi(object):
+
     """ iSCSI utility class.
 
         This class will automatically discover and login to iBFT (or
@@ -149,7 +152,7 @@ class iscsi(object):
                 initiatorname = libiscsi.get_firmware_initiator_name()
                 self._initiator = initiatorname
                 self.initiator_set = True
-            except Exception: # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 log_exception_info(fmt_str="failed to get initiator name from iscsi firmware")
 
     # So that users can write iscsi() to get the singleton instance
@@ -204,14 +207,13 @@ class iscsi(object):
                     return True
         return False
 
-
     def _start_ibft(self):
         if not flags.ibft:
             return
 
         try:
             found_nodes = libiscsi.discover_firmware()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.info, "iscsi: No IBFT info found.")
             # an exception here means there is no ibft firmware, just return
             return
@@ -239,10 +241,10 @@ class iscsi(object):
     def create_interfaces(self, ifaces):
         for iface in ifaces:
             iscsi_iface_name = "iface%d" % len(self.ifaces)
-            #iscsiadm -m iface -I iface0 --op=new
+            # iscsiadm -m iface -I iface0 --op=new
             util.run_program(["iscsiadm", "-m", "iface",
                               "-I", iscsi_iface_name, "--op=new"])
-            #iscsiadm -m iface -I iface0 --op=update -n iface.net_ifacename -v eth0
+            # iscsiadm -m iface -I iface0 --op=update -n iface.net_ifacename -v eth0
             util.run_program(["iscsiadm", "-m", "iface",
                               "-I", iscsi_iface_name, "--op=update",
                               "-n", "iface.net_ifacename", "-v", iface])
@@ -254,7 +256,7 @@ class iscsi(object):
         if not self.ifaces:
             return None
         for iscsi_iface_name in self.ifaces:
-            #iscsiadm -m iface -I iface0 --op=delete
+            # iscsiadm -m iface -I iface0 --op=delete
             util.run_program(["iscsiadm", "-m", "iface",
                               "-I", iscsi_iface_name, "--op=delete"])
         self.ifaces = {}
@@ -282,8 +284,8 @@ class iscsi(object):
         util.eintr_ignore(os.close, fd)
         self.initiator_set = True
 
-        for fulldir in (os.path.join("/var/lib/iscsi", d) for d in \
-           ['ifaces','isns','nodes','send_targets','slp','static']):
+        for fulldir in (os.path.join("/var/lib/iscsi", d) for d in
+           ['ifaces', 'isns', 'nodes', 'send_targets', 'slp', 'static']):
             if not os.path.isdir(fulldir):
                 os.makedirs(fulldir, 0o755)
 
@@ -390,7 +392,7 @@ class iscsi(object):
         """
         Raises IOError.
         """
-        rc = False # assume failure
+        rc = False  # assume failure
         msg = ""
 
         try:
@@ -473,7 +475,7 @@ class iscsi(object):
 
             (rc, _msg) = self.log_into_node(node, user, pw, user_in, pw_in)
             if rc:
-                logged_in = logged_in +1
+                logged_in = logged_in + 1
 
         if found == 0:
             raise IOError(_("No new iSCSI nodes discovered"))

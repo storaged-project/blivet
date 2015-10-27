@@ -40,6 +40,7 @@ log = logging.getLogger("blivet")
 
 
 class LVMPhysicalVolume(DeviceFormat):
+
     """ An LVM physical volume. """
     _type = "lvmpv"
     _name = N_("physical volume (LVM)")

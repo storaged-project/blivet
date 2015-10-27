@@ -32,8 +32,10 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 @add_metaclass(abc.ABCMeta)
 class ContainerDevice(StorageDevice):
+
     """ A device that aggregates a set of member devices.
 
         The only interfaces provided by this class are for addition and removal

@@ -28,7 +28,9 @@ from .devicelibs import btrfs
 import logging
 log = logging.getLogger("blivet")
 
+
 class _MountinfoCache(object):
+
     """ Cache for info from /proc/self/mountinfo. Looks up the root of the
         mount within the filesystem using a pair of mountpoint, mount
         source as keys.
@@ -80,7 +82,9 @@ class _MountinfoCache(object):
         devspec = resolve_devspec(devspec, sysname=True)
         return self._cache.get((devspec, mountpoint))
 
+
 class MountsCache(object):
+
     """ Cache object for system mountpoints; checks /proc/mounts and
         /proc/self/mountinfo for up-to-date information.
     """

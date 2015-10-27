@@ -28,6 +28,7 @@ log = logging.getLogger("blivet")
 
 _fcoe_module_loaded = False
 
+
 def has_fcoe():
     global _fcoe_module_loaded
     if not _fcoe_module_loaded:
@@ -39,7 +40,9 @@ def has_fcoe():
 
     return os.access("/sys/module/fcoe", os.X_OK)
 
+
 class fcoe(object):
+
     """ FCoE utility class.
 
         This class will automatically discover and connect to EDD configured
@@ -126,7 +129,7 @@ class fcoe(object):
                 # certain network configrations require the VLAN layer module:
                 util.run_program(["modprobe", "8021q"])
                 rc, out = util.run_program_and_capture_output(["fipvlan", '-c', '-s', '-f',
-                                                   "-fcoe",  nic], stderr_to_stdout=True)
+                                                   "-fcoe", nic], stderr_to_stdout=True)
             else:
                 f = open("/sys/module/libfcoe/parameters/create", "w")
                 f.write(nic)

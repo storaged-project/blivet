@@ -50,7 +50,9 @@ DEFAULT_PART_SIZE = Size("500MiB")
 # in case the default partition size doesn't fit
 FALLBACK_DEFAULT_PART_SIZE = Size("256MiB")
 
+
 class PartitionDevice(StorageDevice):
+
     """ A disk partition.
 
         On types and flags...
@@ -343,7 +345,7 @@ class PartitionDevice(StorageDevice):
         self.update_name()
 
     parted_partition = property(lambda d: d._get_parted_partition(),
-                               lambda d,p: d._set_parted_partition(p))
+                               lambda d, p: d._set_parted_partition(p))
 
     def pre_commit_fixup(self):
         """ Re-get self.parted_partition from the original disklabel. """
@@ -377,7 +379,7 @@ class PartitionDevice(StorageDevice):
         self.req_base_weight = weight
 
     weight = property(lambda d: d._get_weight(),
-                      lambda d,w: d._set_weight(w))
+                      lambda d, w: d._set_weight(w))
 
     def _set_name(self, value):
         self._name = value  # actual name setting is done by parted
@@ -628,7 +630,7 @@ class PartitionDevice(StorageDevice):
         # and align the end sector
         if new_geometry.length < current_geom.length:
             align = self.disk.format.end_alignment.alignUp
-            align_geom = current_geom # we can align up into the old geometry
+            align_geom = current_geom  # we can align up into the old geometry
         else:
             align = self.disk.format.end_alignment.alignDown
             align_geom = new_geometry
@@ -762,7 +764,7 @@ class PartitionDevice(StorageDevice):
         if disk:
             self.parents.append(disk)
 
-    disk = property(lambda p: p._get_disk(), lambda p,d: p._set_disk(d))
+    disk = property(lambda p: p._get_disk(), lambda p, d: p._set_disk(d))
 
     @property
     def _unaligned_max_part_size(self):
@@ -816,7 +818,7 @@ class PartitionDevice(StorageDevice):
         if self.is_extended:
             logicals = self.disk.format.logical_partitions
             if logicals:
-                end_free = Size((self.parted_partition.geometry.end - logicals[-1].geometry.end) * \
+                end_free = Size((self.parted_partition.geometry.end - logicals[-1].geometry.end) *
                                 self.disk.format.sector_size)
                 min_size = self.align_target_size(self.current_size - end_free)
             else:
@@ -880,7 +882,7 @@ class PartitionDevice(StorageDevice):
             if self.req_grow:
                 data.max_size_mb = self.req_max_size.convert_to(MiB)
 
-            ##data.disk = self.disk.name                      # by-id
+            # data.disk = self.disk.name                      # by-id
             if self.req_disks and len(self.req_disks) == 1:
                 data.disk = self.disk.name
             data.prim_only = self.req_primary

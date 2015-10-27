@@ -6,7 +6,9 @@ from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import StorageDevice
 
+
 class DeviceNameTestCase(unittest.TestCase):
+
     """Test device name validation"""
 
     def test_storage_device(self):

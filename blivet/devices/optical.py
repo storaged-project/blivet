@@ -30,7 +30,9 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 class OpticalDevice(StorageDevice):
+
     """ An optical drive, eg: cdrom, dvd+r, &c.
 
         XXX Is this useful?
@@ -72,7 +74,7 @@ class OpticalDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        #try to umount and close device before ejecting
+        # try to umount and close device before ejecting
         self.teardown()
 
         try:

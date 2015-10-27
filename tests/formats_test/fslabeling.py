@@ -6,13 +6,14 @@ from tests import loopbackedtestcase
 from blivet.errors import FSError, FSReadLabelError
 from blivet.size import Size
 
+
 @add_metaclass(abc.ABCMeta)
 class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
+
     """Tests various aspects of labeling a filesystem where there
        is no easy way to read the filesystem's label once it has been
        set and where the filesystem can not be relabeled.
     """
-
 
     _fs_class = abc.abstractproperty(
        doc="The class of the filesystem being tested on.")
@@ -67,7 +68,9 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class(device=self.loop_devices[0], label="")
         self.assertIsNone(an_fs.create())
 
+
 class LabelingWithRelabeling(LabelingAsRoot):
+
     """Tests labeling where it is possible to relabel.
     """
 
@@ -103,7 +106,9 @@ class LabelingWithRelabeling(LabelingAsRoot):
         with self.assertRaisesRegex(FSError, "bad label format"):
             an_fs.write_label()
 
+
 class CompleteLabelingAsRoot(LabelingAsRoot):
+
     """Tests where it is possible to read the label and to relabel
        an existing filesystem.
     """

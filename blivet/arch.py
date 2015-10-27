@@ -43,6 +43,7 @@ log = logging.getLogger("blivet")
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
 
+
 def get_ppc_machine():
     """
     :return: The PPC machine type, or None if not PPC.
@@ -54,26 +55,26 @@ def get_ppc_machine():
 
     # ppc machine hash
     # Note: This is a substring match!
-    ppc_type = { 'Mac'      : 'PMac',
-                'Book'     : 'PMac',
-                'CHRP'     : 'pSeries',
-                'CHRP IBM' : 'pSeries', # @TODO the CHRP entry above should match this
-                'Pegasos'  : 'Pegasos',
-                'Efika'    : 'Efika',
-                'iSeries'  : 'iSeries',
-                'pSeries'  : 'pSeries',
-                'PReP'     : 'PReP',
-                'Amiga'    : 'APUS',
-                'Gemini'   : 'Gemini',
-                'Shiner'   : 'ANS',
-                'BRIQ'     : 'BRIQ',
-                'Teron'    : 'Teron',
-                'AmigaOne' : 'Teron',
-                'Maple'    : 'pSeries',
-                'Cell'     : 'pSeries',
-                'Momentum' : 'pSeries',
-                'PS3'      : 'PS3',
-                'PowerNV'  : 'pSeries'
+    ppc_type = {'Mac': 'PMac',
+                'Book': 'PMac',
+                'CHRP': 'pSeries',
+                'CHRP IBM': 'pSeries',  # @TODO the CHRP entry above should match this
+                'Pegasos': 'Pegasos',
+                'Efika': 'Efika',
+                'iSeries': 'iSeries',
+                'pSeries': 'pSeries',
+                'PReP': 'PReP',
+                'Amiga': 'APUS',
+                'Gemini': 'Gemini',
+                'Shiner': 'ANS',
+                'BRIQ': 'BRIQ',
+                'Teron': 'Teron',
+                'AmigaOne': 'Teron',
+                'Maple': 'pSeries',
+                'Cell': 'pSeries',
+                'Momentum': 'pSeries',
+                'PS3': 'PS3',
+                'PowerNV': 'pSeries'
                 }
     machine = None
     platform = None
@@ -97,6 +98,7 @@ def get_ppc_machine():
 
     return None
 
+
 def get_ppc_mac_id():
     """
     :return: The powermac machine type, or None if not PPC or a powermac.
@@ -116,6 +118,7 @@ def get_ppc_mac_id():
 
     log.warning("No Power Mac machine id")
     return None
+
 
 def get_ppc_mac_gen():
     """
@@ -150,6 +153,7 @@ def get_ppc_mac_gen():
     log.warning("Unknown Power Mac generation: %s", gen)
     return None
 
+
 def get_ppc_mac_book():
     """
     :return: True if the hardware is an i_book or PowerBook, False otherwise.
@@ -169,6 +173,7 @@ def get_ppc_mac_book():
 
     return False
 
+
 def is_aarch64():
     """
     :return: True if the hardware supports Aarch64, False otherwise.
@@ -176,6 +181,7 @@ def is_aarch64():
 
     """
     return os.uname()[4] == 'aarch64'
+
 
 def get_arm_machine():
     """
@@ -189,13 +195,14 @@ def get_arm_machine():
     if flags.arm_platform:
         return flags.arm_platform
 
-    arm_machine = os.uname()[2].rpartition('.' )[2]
+    arm_machine = os.uname()[2].rpartition('.')[2]
 
     if arm_machine.startswith('arm'):
         # @TBD - Huh? Don't you want the arm machine name here?
         return None
     else:
         return arm_machine
+
 
 def is_cell():
     """
@@ -212,6 +219,7 @@ def is_cell():
                 return True
 
     return False
+
 
 def is_mactel():
     """
@@ -231,6 +239,7 @@ def is_mactel():
             mactel = False
     return mactel
 
+
 def is_efi():
     """
     :return: True if the hardware supports EFI, False otherwise.
@@ -244,6 +253,7 @@ def is_efi():
         return False
 
 # Architecture checking functions
+
 
 def is_x86(bits=None):
     """:return: True if the hardware supports X86, False otherwise.
@@ -275,6 +285,7 @@ def is_x86(bits=None):
 
     return False
 
+
 def is_ppc(bits=None):
     """
     :return: True if the hardware supports PPC, False otherwise.
@@ -297,6 +308,7 @@ def is_ppc(bits=None):
 
     return False
 
+
 def is_s390():
     """
     :return: True if the hardware supports PPC, False otherwise.
@@ -304,6 +316,7 @@ def is_s390():
 
     """
     return os.uname()[4].startswith('s390')
+
 
 def is_ia64():
     """
@@ -313,6 +326,7 @@ def is_ia64():
     """
     return os.uname()[4] == 'ia64'
 
+
 def is_alpha():
     """
     :return: True if the hardware supports Alpha, False otherwise.
@@ -321,6 +335,7 @@ def is_alpha():
     """
     return os.uname()[4].startswith('alpha')
 
+
 def is_arm():
     """
     :return: True if the hardware supports ARM, False otherwise.
@@ -328,6 +343,7 @@ def is_arm():
 
     """
     return os.uname()[4].startswith('arm')
+
 
 def get_arch():
     """
@@ -353,6 +369,7 @@ def get_arch():
     else:
         return os.uname()[4]
 
+
 def num_bits():
     """ Return an integer representing the length
         of the "word" used by the current architecture
@@ -371,6 +388,6 @@ def num_bits():
         # number to an integer
         (nbits, _rest) = nbits.split("bit", 1)
         return int(nbits)
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         log_exception_info(log.error, "architecture word size detection failed")
         return None

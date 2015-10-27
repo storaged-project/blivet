@@ -47,7 +47,9 @@ log = logging.getLogger("blivet")
 
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
+
 class DeviceTree(object):
+
     """ A quasi-tree that represents the devices in the system.
 
         The tree contains a list of :class:`~.devices.StorageDevice` instances,
@@ -156,7 +158,7 @@ class DeviceTree(object):
     def pv_info(self):
         if self._pvs_cache is None:
             pvs = blockdev.lvm.pvs()
-            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs) # pylint: disable=attribute-defined-outside-init
+            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
 
         return self._pvs_cache
 
@@ -164,14 +166,14 @@ class DeviceTree(object):
     def lv_info(self):
         if self._lvs_cache is None:
             lvs = blockdev.lvm.lvs()
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs) # pylint: disable=attribute-defined-outside-init
+            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
 
         return self._lvs_cache
 
     def drop_lvm_cache(self):
         """ Drop cached lvm information. """
-        self._pvs_cache = None # pylint: disable=attribute-defined-outside-init
-        self._lvs_cache = None # pylint: disable=attribute-defined-outside-init
+        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
 
     def _add_device(self, newdev, new=True):
         """ Add a device to the tree.
@@ -744,8 +746,8 @@ class DeviceTree(object):
         result = None
         if name:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if d.name == name or \
-               (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--","-"))),
+            result = next((d for d in devices if d.name == name or
+               (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
                None)
         log_method_return(self, result)
         return result
@@ -770,8 +772,8 @@ class DeviceTree(object):
             # The usual order of the devices list is one where leaves are at
             # the end. So that the search can prefer leaves to interior nodes
             # the list that is searched is the reverse of the devices list.
-            result = next((d for d in reversed(list(devices)) if d.path == path or \
-               (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--","-"))),
+            result = next((d for d in reversed(list(devices)) if d.path == path or
+               (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
                None)
 
         log_method_return(self, result)
@@ -1089,12 +1091,13 @@ class DeviceTree(object):
 
     def __str__(self):
         done = []
+
         def show_subtree(root, depth):
             abbreviate_subtree = root in done
             s = "%s%s\n" % ("  " * depth, root)
             done.append(root)
             if abbreviate_subtree:
-                s += "%s...\n" % ("  " * (depth+1),)
+                s += "%s...\n" % ("  " * (depth + 1),)
             else:
                 for child in self.get_children(root):
                     s += show_subtree(child, depth + 1)

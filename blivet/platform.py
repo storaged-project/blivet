@@ -31,7 +31,9 @@ from .partspec import PartSpec
 from .size import Size
 from .i18n import _, N_
 
+
 class Platform(object):
+
     """Platform
 
        A class containing platform-specific information and methods for use
@@ -148,7 +150,7 @@ class Platform(object):
         return label_type
 
     @property
-    def packages (self):
+    def packages(self):
         _packages = self._packages
         if flags.boot_cmdline.get('fips', None) == '1':
             _packages.append('dracut-fips')
@@ -187,6 +189,7 @@ class Platform(object):
            selection fails."""
         return self._boot_stage1_missing_error
 
+
 class X86(Platform):
     _boot_stage1_device_types = ["disk"]
     _boot_mbr_description = N_("Master Boot Record")
@@ -218,6 +221,7 @@ class X86(Platform):
             return 5000
         else:
             return 0
+
 
 class EFI(Platform):
 
@@ -253,6 +257,7 @@ class EFI(Platform):
         else:
             return 0
 
+
 class MacEFI(EFI):
     _boot_stage1_format_types = ["macefi"]
     _boot_efi_description = N_("Apple EFI Boot Partition")
@@ -266,8 +271,10 @@ class MacEFI(EFI):
                             grow=True, weight=self.weight(mountpoint="/boot/efi")))
         return ret
 
+
 class Aarch64EFI(EFI):
     _non_linux_format_types = ["vfat", "ntfs"]
+
 
 class PPC(Platform):
     _ppc_machine = arch.get_ppc_machine()
@@ -276,6 +283,7 @@ class PPC(Platform):
     @property
     def ppc_machine(self):
         return self._ppc_machine
+
 
 class IPSeriesPPC(PPC):
     _boot_stage1_format_types = ["prepboot"]
@@ -302,6 +310,7 @@ class IPSeriesPPC(PPC):
         else:
             return 0
 
+
 class NewWorldPPC(PPC):
     _boot_stage1_format_types = ["appleboot"]
     _boot_apple_description = N_("Apple Bootstrap Partition")
@@ -327,8 +336,10 @@ class NewWorldPPC(PPC):
         else:
             return 0
 
+
 class PS3(PPC):
     pass
+
 
 class S390(Platform):
     _packages = ["s390utils"]
@@ -359,6 +370,7 @@ class S390(Platform):
 
         return super(S390, self).required_disklabel_type(device_type)
 
+
 class ARM(Platform):
     _arm_machine = None
     _boot_stage1_device_types = ["disk"]
@@ -384,6 +396,7 @@ class ARM(Platform):
             return -100
         else:
             return Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
+
 
 class omapARM(ARM):
     _boot_stage1_format_types = ["vfat"]
@@ -420,6 +433,7 @@ class omapARM(ARM):
             return -100
         else:
             return Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
+
 
 def get_platform():
     """Check the architecture of the system and return an instance of a

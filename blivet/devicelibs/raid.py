@@ -28,16 +28,19 @@ from six import add_metaclass
 from ..errors import RaidError
 from ..size import Size
 
-def div_up(a,b):
+
+def div_up(a, b):
     """Rounds up integer division.  For example, div_up(3, 2) is 2.
 
        :param int a: the dividend
        :param int b: the divisor
     """
-    return (a + (b - 1))//b
+    return (a + (b - 1)) // b
+
 
 @add_metaclass(abc.ABCMeta)
 class RAIDLevel(object):
+
     """An abstract class which is the parent of all classes which represent
        a RAID level.
 
@@ -47,8 +50,8 @@ class RAIDLevel(object):
 
     name = abc.abstractproperty(doc="The canonical name for this level")
     names = abc.abstractproperty(doc="List of recognized names for this level.")
-    min_members = abc.abstractproperty(doc=
-       "The minimum number of members required to make a fully functioning array.")
+    min_members = abc.abstractproperty(doc="The minimum number of members required to make a fully functioning array.")
+
     @abc.abstractmethod
     def has_redundancy(self):
         """ Whether this RAID level incorporates inherent redundancy.
@@ -61,8 +64,7 @@ class RAIDLevel(object):
         """
         raise NotImplementedError()
 
-    is_uniform = abc.abstractproperty(doc=
-       "Whether data is uniformly distributed across all devices.")
+    is_uniform = abc.abstractproperty(doc="Whether data is uniformly distributed across all devices.")
 
     def __str__(self):
         return self.name
@@ -102,7 +104,6 @@ class RAIDn(RAIDLevel):
         singleton object of the class.
     """
 
-
     # ABSTRACT PROPERTIES
     level = abc.abstractproperty(doc="A code representing the level")
     nick = abc.abstractproperty(doc="A nickname for this level")
@@ -110,16 +111,16 @@ class RAIDn(RAIDLevel):
     # PROPERTIES
     is_uniform = property(lambda s: True)
 
-    number = property(lambda s : int(s.level),
+    number = property(lambda s: int(s.level),
        doc="A numeric code for this level")
 
-    name = property(lambda s : "raid" + s.level,
+    name = property(lambda s: "raid" + s.level,
        doc="The canonical name for this level")
 
-    alt_synth_names = property(lambda s : ["RAID" + s.level, s.level, s.number],
+    alt_synth_names = property(lambda s: ["RAID" + s.level, s.level, s.number],
        doc="names that can be synthesized from level but are not name")
 
-    names = property(lambda s :
+    names = property(lambda s:
        [n for n in [s.name] + [s.nick] + s.alt_synth_names if n is not None],
        doc="all valid names for this level")
 
@@ -311,8 +312,8 @@ class RAIDn(RAIDLevel):
         return size_per_member * num_members
 
 
-
 class RAIDLevels(object):
+
     """A class which keeps track of registered RAID levels. This class
        may be extended, overriding the is_raid method to include any
        additional properties that a client of this package may require
@@ -393,6 +394,7 @@ class RAIDLevels(object):
 
 ALL_LEVELS = RAIDLevels()
 
+
 class RAID0(RAIDn):
 
     level = property(lambda s: "0")
@@ -423,6 +425,7 @@ class RAID0(RAIDn):
 RAID0 = RAID0()
 ALL_LEVELS.add_raid_level(RAID0)
 
+
 class RAID1(RAIDn):
     level = property(lambda s: "1")
     min_members = property(lambda s: 2)
@@ -451,6 +454,7 @@ class RAID1(RAIDn):
 
 RAID1 = RAID1()
 ALL_LEVELS.add_raid_level(RAID1)
+
 
 class RAID4(RAIDn):
     level = property(lambda s: "4")
@@ -481,6 +485,7 @@ class RAID4(RAIDn):
 RAID4 = RAID4()
 ALL_LEVELS.add_raid_level(RAID4)
 
+
 class RAID5(RAIDn):
     level = property(lambda s: "5")
     min_members = property(lambda s: 3)
@@ -509,6 +514,7 @@ class RAID5(RAIDn):
 
 RAID5 = RAID5()
 ALL_LEVELS.add_raid_level(RAID5)
+
 
 class RAID6(RAIDn):
     level = property(lambda s: "6")
@@ -539,6 +545,7 @@ class RAID6(RAIDn):
 RAID6 = RAID6()
 ALL_LEVELS.add_raid_level(RAID6)
 
+
 class RAID10(RAIDn):
     level = property(lambda s: "10")
     min_members = property(lambda s: 4)
@@ -568,6 +575,7 @@ class RAID10(RAIDn):
 RAID10 = RAID10()
 ALL_LEVELS.add_raid_level(RAID10)
 
+
 class Container(RAIDLevel):
     name = "container"
     names = [name]
@@ -580,12 +588,15 @@ class Container(RAIDLevel):
     def get_max_spares(self, member_count):
         # pylint: disable=unused-argument
         raise RaidError("get_max_spares is not defined for level container")
+
     def get_space(self, size, num_members, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
         return size
+
     def get_recommended_stride(self, member_count):
         # pylint: disable=unused-argument
         raise RaidError("get_recommended_stride is not defined for level container")
+
     def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
         return sum(member_sizes, Size(0))
@@ -593,7 +604,9 @@ class Container(RAIDLevel):
 Container = Container()
 ALL_LEVELS.add_raid_level(Container)
 
+
 class ErsatzRAID(RAIDLevel):
+
     """ A superclass for a raid level which is not really a raid level at
         all, just a bunch of block devices of possibly differing sizes
         thrown together. This concept has different names depending on where
@@ -632,7 +645,9 @@ class ErsatzRAID(RAIDLevel):
         superblock_size = superblock_size_func(total_space)
         return total_space - len(member_sizes) * superblock_size
 
+
 class Linear(ErsatzRAID):
+
     """ subclass with canonical lvm name """
     name = 'linear'
     names = [name]
@@ -640,7 +655,9 @@ class Linear(ErsatzRAID):
 Linear = Linear()
 ALL_LEVELS.add_raid_level(Linear)
 
+
 class Single(ErsatzRAID):
+
     """ subclass with canonical btrfs name. """
     name = 'single'
     names = [name]
@@ -648,7 +665,9 @@ class Single(ErsatzRAID):
 Single = Single()
 ALL_LEVELS.add_raid_level(Single)
 
+
 class Dup(RAIDLevel):
+
     """ A RAID level which expresses one way btrfs metadata may be distributed.
 
         For this RAID level, duplication occurs within a single block device.
@@ -663,6 +682,7 @@ class Dup(RAIDLevel):
 
 Dup = Dup()
 ALL_LEVELS.add_raid_level(Dup)
+
 
 def get_raid_level(descriptor):
     """ Convenience function to return a RAID level for the descriptor.

@@ -30,7 +30,9 @@ from . import availability
 from . import fstask
 from . import task
 
+
 class FSMount(task.BasicApplication, fstask.FSTask):
+
     """An abstract class that represents filesystem mounting actions. """
     description = "mount a filesystem"
 
@@ -122,8 +124,10 @@ class FSMount(task.BasicApplication, fstask.FSTask):
         if rc:
             raise FSError("mount failed: %s" % rc)
 
+
 class AppleBootstrapFSMount(FSMount):
     fstype = "hfs"
+
 
 class BindFSMount(FSMount):
 
@@ -138,20 +142,26 @@ class BindFSMount(FSMount):
     def _modify_options(self, options):
         return ",".join(["bind", options])
 
+
 class DevPtsFSMount(FSMount):
     options = ["gid=5", "mode=620"]
+
 
 class FATFSMount(FSMount):
     options = ["umask=0077", "shortname=winnt"]
 
+
 class EFIFSMount(FATFSMount):
     fstype = "vfat"
+
 
 class HFSPlusMount(FSMount):
     fstype = "hfsplus"
 
+
 class Iso9660FSMount(FSMount):
     options = ["ro"]
+
 
 class NoDevFSMount(FSMount):
 
@@ -159,13 +169,16 @@ class NoDevFSMount(FSMount):
     def mount_type(self):
         return self.fs.device
 
+
 class NFSMount(FSMount):
 
     def _availability_errors(self):
         return ["nfs filesystem can't be mounted"]
 
+
 class NTFSMount(FSMount):
     options = ["default", "ro"]
+
 
 class SELinuxFSMount(NoDevFSMount):
 
@@ -175,6 +188,7 @@ class SELinuxFSMount(NoDevFSMount):
         if not flags.selinux:
             errors.append("selinux not enabled")
         return errors
+
 
 class TmpFSMount(NoDevFSMount):
 

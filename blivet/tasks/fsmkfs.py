@@ -31,13 +31,16 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSMkfsTask(fstask.FSTask):
 
     can_label = abc.abstractproperty(doc="whether this task labels")
 
+
 @add_metaclass(abc.ABCMeta)
 class FSMkfs(task.BasicApplication, FSMkfsTask):
+
     """An abstract class that represents filesystem creation actions. """
     description = "mkfs"
 
@@ -125,6 +128,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
         if ret:
             raise FSError("format failed: %s" % ret)
 
+
 class BTRFSMkfs(FSMkfs):
     ext = availability.MKFS_BTRFS_APP
     label_option = None
@@ -132,6 +136,7 @@ class BTRFSMkfs(FSMkfs):
     @property
     def args(self):
         return []
+
 
 class Ext2FSMkfs(FSMkfs):
     ext = availability.MKE2FS_APP
@@ -143,11 +148,14 @@ class Ext2FSMkfs(FSMkfs):
     def args(self):
         return self._opts + (["-T", self.fs.fsprofile] if self.fs.fsprofile else [])
 
+
 class Ext3FSMkfs(Ext2FSMkfs):
     _opts = ["-t", "ext3"]
 
+
 class Ext4FSMkfs(Ext3FSMkfs):
     _opts = ["-t", "ext4"]
+
 
 class FATFSMkfs(FSMkfs):
     ext = availability.MKDOSFS_APP
@@ -157,6 +165,7 @@ class FATFSMkfs(FSMkfs):
     def args(self):
         return []
 
+
 class GFS2Mkfs(FSMkfs):
     ext = availability.MKFS_GFS2_APP
     label_option = None
@@ -164,6 +173,7 @@ class GFS2Mkfs(FSMkfs):
     @property
     def args(self):
         return ["-j", "1", "-p", "lock_nolock", "-O"]
+
 
 class HFSMkfs(FSMkfs):
     ext = availability.HFORMAT_APP
@@ -173,6 +183,7 @@ class HFSMkfs(FSMkfs):
     def args(self):
         return []
 
+
 class HFSPlusMkfs(FSMkfs):
     ext = availability.MKFS_HFSPLUS_APP
     label_option = "-v"
@@ -180,6 +191,7 @@ class HFSPlusMkfs(FSMkfs):
     @property
     def args(self):
         return []
+
 
 class JFSMkfs(FSMkfs):
     ext = availability.MKFS_JFS_APP
@@ -189,6 +201,7 @@ class JFSMkfs(FSMkfs):
     def args(self):
         return ["-q"]
 
+
 class NTFSMkfs(FSMkfs):
     ext = availability.MKNTFS_APP
     label_option = "-L"
@@ -196,6 +209,7 @@ class NTFSMkfs(FSMkfs):
     @property
     def args(self):
         return []
+
 
 class ReiserFSMkfs(FSMkfs):
     ext = availability.MKREISERFS_APP
@@ -205,6 +219,7 @@ class ReiserFSMkfs(FSMkfs):
     def args(self):
         return ["-f", "-f"]
 
+
 class XFSMkfs(FSMkfs):
     ext = availability.MKFS_XFS_APP
     label_option = "-L"
@@ -212,6 +227,7 @@ class XFSMkfs(FSMkfs):
     @property
     def args(self):
         return ["-f"]
+
 
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
 

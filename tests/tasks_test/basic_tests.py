@@ -3,6 +3,7 @@ import unittest
 import blivet.tasks.task as task
 import blivet.tasks.availability as availability
 
+
 class BasicUnavailableApplication(task.BasicApplication):
     ext = availability.unavailable_resource("unavailable")
     description = "unavailable application"
@@ -10,12 +11,14 @@ class BasicUnavailableApplication(task.BasicApplication):
     def do_task(self):
         pass
 
+
 class BasicAvailableApplication(task.BasicApplication):
     ext = availability.available_resource("available")
     description = "available application"
 
     def do_task(self):
         pass
+
 
 class ResourceTestCase(unittest.TestCase):
 
@@ -27,6 +30,7 @@ class ResourceTestCase(unittest.TestCase):
         available_resource = availability.available_resource("available")
         self.assertEqual(available_resource.availability_errors, [])
         self.assertTrue(available_resource.available)
+
 
 class TasksTestCase(unittest.TestCase):
 

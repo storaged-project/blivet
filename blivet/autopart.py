@@ -40,6 +40,7 @@ log = logging.getLogger("anaconda")
 # maximum ratio of swap size to disk size (10 %)
 MAX_SWAP_DISK_RATIO = Decimal('0.1')
 
+
 def swap_suggestion(quiet=False, hibernation=False, disk_space=None):
     """
     Suggest the size of the swap partition that will be created.
@@ -91,7 +92,7 @@ def swap_suggestion(quiet=False, hibernation=False, disk_space=None):
         if swap > max_swap:
             log.info("Suggested swap size (%(swap)s) exceeds %(percent)d %% of "
                      "disk space, using %(percent)d %% of disk space (%(size)s) "
-                     "instead.", {"percent": MAX_SWAP_DISK_RATIO*100,
+                     "instead.", {"percent": MAX_SWAP_DISK_RATIO * 100,
                                   "swap": swap,
                                   "size": max_swap})
             swap = max_swap
@@ -100,6 +101,7 @@ def swap_suggestion(quiet=False, hibernation=False, disk_space=None):
         log.info("Swap attempt of %s", swap)
 
     return swap
+
 
 def _get_candidate_disks(storage):
     """ Return a list of disks to be used for autopart/reqpart.
@@ -132,6 +134,7 @@ def _get_candidate_disks(storage):
             part = part.nextPartition()
 
     return disks
+
 
 def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
     """ Schedule creation of a lvm/btrfs member partitions for autopart.
@@ -178,6 +181,7 @@ def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
         devs.append(part)
 
     return devs
+
 
 def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, requests=None):
     """ Schedule creation of autopart/reqpart partitions.
@@ -321,6 +325,7 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
 
     return implicit_devices
 
+
 def _schedule_volumes(storage, devs):
     """ Schedule creation of autopart lvm/btrfs volumes.
 
@@ -422,6 +427,7 @@ def _schedule_volumes(storage, devs):
         # schedule the device for creation
         storage.create_device(dev)
 
+
 def do_reqpart(storage, requests):
     """Perform automatic partitioning of just required platform-specific
        partitions.  This is incompatible with do_autopart.
@@ -442,6 +448,7 @@ def do_reqpart(storage, requests):
                                       "automatic partitioning"))
 
     _schedule_partitions(storage, disks, [], requests=requests)
+
 
 def do_autopart(storage, data, min_luks_entropy=0):
     """ Perform automatic partitioning.

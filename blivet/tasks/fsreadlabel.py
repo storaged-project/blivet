@@ -31,8 +31,10 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSReadLabel(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents reading a filesystem's label. """
     description = "read filesystem label"
 
@@ -85,6 +87,7 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
 
         return label if label == "" else self._extract_label(label)
 
+
 class DosFSReadLabel(FSReadLabel):
     ext = availability.DOSFSLABEL_APP
     label_regex = r'(?P<label>.*)'
@@ -92,6 +95,7 @@ class DosFSReadLabel(FSReadLabel):
     @property
     def args(self):
         return [self.fs.device]
+
 
 class Ext2FSReadLabel(FSReadLabel):
     ext = availability.E2LABEL_APP
@@ -101,6 +105,7 @@ class Ext2FSReadLabel(FSReadLabel):
     def args(self):
         return [self.fs.device]
 
+
 class NTFSReadLabel(FSReadLabel):
     ext = availability.NTFSLABEL_APP
     label_regex = r'(?P<label>.*)'
@@ -109,6 +114,7 @@ class NTFSReadLabel(FSReadLabel):
     def args(self):
         return [self.fs.device]
 
+
 class XFSReadLabel(FSReadLabel):
     ext = availability.XFSADMIN_APP
     label_regex = r'label = "(?P<label>.*)"'
@@ -116,6 +122,7 @@ class XFSReadLabel(FSReadLabel):
     @property
     def args(self):
         return ["-l", self.fs.device]
+
 
 class UnimplementedFSReadLabel(fstask.UnimplementedFSTask):
     pass

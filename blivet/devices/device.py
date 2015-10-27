@@ -30,7 +30,9 @@ log = logging.getLogger("blivet")
 
 from .lib import ParentList
 
+
 class Device(util.ObjectID):
+
     """ A generic device.
 
         Device instances know which devices they depend upon (parents
@@ -160,7 +162,7 @@ class Device(util.ObjectID):
 
     @property
     def dict(self):
-        d =  {"type": self.type, "name": self.name,
+        d = {"type": self.type, "name": self.name,
               "parents": [p.name for p in self.parents]}
         return d
 
@@ -289,7 +291,7 @@ class Device(util.ObjectID):
         return packages
 
     @classmethod
-    def is_name_valid(cls, name): # pylint: disable=unused-argument
+    def is_name_valid(cls, name):  # pylint: disable=unused-argument
         """Is the device name valid for the device type?"""
 
         # By default anything goes

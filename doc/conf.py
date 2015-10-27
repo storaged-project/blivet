@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -299,6 +300,8 @@ intersphinx_mapping = {'https://docs.python.org/2': None}
 # NOTE: this can be removed whenever we move to sphinx-1.3, at which point we'll
 #       be able to use autodoc_mock_imports (value is a list of modules to be
 #       mocked).
+
+
 class Mock(object):
 
     __all__ = []

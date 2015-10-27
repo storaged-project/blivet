@@ -2,12 +2,13 @@ import unittest
 
 import blivet.devicelibs.mdraid as mdraid
 
+
 class MDRaidTestCase(unittest.TestCase):
 
     def test_mdraid(self):
 
         ##
-        ## level lookup
+        # level lookup
         ##
         self.assertEqual(mdraid.RAID_levels.raid_level("stripe").name, "raid0")
         self.assertEqual(mdraid.RAID_levels.raid_level("mirror").name, "raid1")

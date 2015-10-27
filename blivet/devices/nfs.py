@@ -27,7 +27,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .network import NetworkStorageDevice
 
+
 class NFSDevice(StorageDevice, NetworkStorageDevice):
+
     """ An NFS device """
     _type = "nfs"
     _packages = ["dracut-network"]

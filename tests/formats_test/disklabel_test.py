@@ -12,7 +12,9 @@ else:
 
 patch = mock.patch
 
+
 class DiskLabelTestCase(unittest.TestCase):
+
     @patch("blivet.formats.disklabel.DiskLabel.fresh_parted_disk", None)
     def test_get_alignment(self):
         dl = blivet.formats.disklabel.DiskLabel()
@@ -25,7 +27,7 @@ class DiskLabelTestCase(unittest.TestCase):
         dl._parted_disk.partitionAlignment = disklabel_alignment
 
         # 1 MiB grain size
-        minimal_alignment = parted.Alignment(grainSize = 2048, offset=0)
+        minimal_alignment = parted.Alignment(grainSize=2048, offset=0)
         dl._parted_device.minimumAlignment = minimal_alignment
 
         # 4 MiB grain size

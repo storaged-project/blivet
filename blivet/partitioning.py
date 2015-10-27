@@ -41,6 +41,7 @@ from .util import stringize, unicodeize, compare
 import logging
 log = logging.getLogger("blivet")
 
+
 def partition_compare(part1, part2):
     """ More specifically defined partitions come first.
 
@@ -114,6 +115,7 @@ def partition_compare(part1, part2):
 
 _partition_compare_key = functools.cmp_to_key(partition_compare)
 
+
 def get_next_partition_type(disk, no_primary=None):
     """ Return the type of partition to create next on a disk.
 
@@ -167,6 +169,7 @@ def get_next_partition_type(disk, no_primary=None):
         part_type = parted.PARTITION_LOGICAL
 
     return part_type
+
 
 def get_best_free_space_region(disk, part_type, req_size, start=None,
                            boot=None, best_free=None, grow=None,
@@ -285,6 +288,7 @@ def get_best_free_space_region(disk, part_type, req_size, start=None,
 
     return best_free
 
+
 def sectors_to_size(sectors, sector_size):
     """ Convert length in sectors to size.
 
@@ -297,6 +301,7 @@ def sectors_to_size(sectors, sector_size):
     """
     return Size(sectors * sector_size)
 
+
 def size_to_sectors(size, sector_size):
     """ Convert size to length in sectors.
 
@@ -308,6 +313,7 @@ def size_to_sectors(size, sector_size):
         :rtype: int
     """
     return int(size // sector_size)
+
 
 def remove_new_partitions(disks, remove, all_partitions):
     """ Remove newly added partitions from disks.
@@ -348,6 +354,7 @@ def remove_new_partitions(disks, remove, all_partitions):
             extended not in (p.parted_partition for p in all_partitions)):
             log.debug("removing empty extended partition from %s", disk.name)
             disk.format.parted_disk.removePartition(extended)
+
 
 def add_partition(disklabel, free, part_type, size, start=None, end=None):
     """ Add a new partition to a disk.
@@ -439,6 +446,7 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
                                       constraint=constraint)
     return partition
 
+
 def get_free_regions(disks, align=False):
     """ Return a list of free regions on the specified disks.
 
@@ -466,6 +474,7 @@ def get_free_regions(disks, align=False):
                 free.append(f)
 
     return free
+
 
 def update_extended_partitions(storage, disks):
     """ Reconcile extended partition changes with the DeviceTree.
@@ -520,6 +529,7 @@ def update_extended_partitions(storage, disks):
         # just add the device for now -- we'll handle actions at the last
         # moment to simplify things
         storage.devicetree._add_device(device)
+
 
 def do_partitioning(storage):
     """ Allocate and grow partitions.
@@ -608,11 +618,13 @@ def do_partitioning(storage):
                                         % {"format": part.format.name, "min_size": part.format.min_size,
                                             "max_size": part.format.max_size})
 
+
 def align_size_for_disklabel(size, disklabel):
     # Align the base size to the disk's grain size.
     grain_size = Size(disklabel.alignment.grainSize)
     grains, rem = divmod(size, grain_size)
     return (grains * grain_size) + (grain_size if rem else Size(0))
+
 
 def allocate_partitions(storage, disks, partitions, freespace):
     """ Allocate partitions based on requested features.
@@ -763,7 +775,7 @@ def allocate_partitions(storage, disks, partitions, freespace):
 
             if best and free != best:
                 update = True
-                allocated = new_partitions[:new_partitions.index(_part)+1]
+                allocated = new_partitions[:new_partitions.index(_part) + 1]
                 if any([p.req_grow for p in allocated]):
                     log.debug("evaluating growth potential for new layout")
                     new_growth = 0
@@ -827,7 +839,7 @@ def allocate_partitions(storage, disks, partitions, freespace):
                                                temp_parts, freespace)
 
                         # grow all growable requests
-                        disk_growth = 0 # in sectors
+                        disk_growth = 0  # in sectors
                         disk_sector_size = Size(disklabels[disk_path].sector_size)
                         for chunk in chunks:
                             chunk.grow_requests()
@@ -943,11 +955,13 @@ def allocate_partitions(storage, disks, partitions, freespace):
 
 
 class Request(object):
+
     """ A partition request.
 
         Request instances are used for calculating how much to grow
         partitions.
     """
+
     def __init__(self, device):
         """
             :param device: the device being requested
@@ -990,6 +1004,7 @@ class Request(object):
 
 
 class PartitionRequest(Request):
+
     def __init__(self, partition):
         """
             :param partition: the partition being requested
@@ -1014,6 +1029,7 @@ class PartitionRequest(Request):
 
 
 class LVRequest(Request):
+
     def __init__(self, lv):
         """
             :param lv: the logical volume being requested
@@ -1046,8 +1062,11 @@ class LVRequest(Request):
 
         return reserve
 
+
 class Chunk(object):
+
     """ A free region from which devices will be allocated """
+
     def __init__(self, length, requests=None):
         """
             :param length: the length of the chunk (units vary with subclass)
@@ -1217,7 +1236,7 @@ class Chunk(object):
         # chunk's requests since we want the base to be the same for
         # all requests in any given growth iteration
         new_base = self.base
-        last_pool = 0 # used to track changes to the pool across iterations
+        last_pool = 0  # used to track changes to the pool across iterations
         while not self.done and self.pool and last_pool != self.pool:
             last_pool = self.pool    # to keep from getting stuck
             self.base = new_base
@@ -1235,7 +1254,7 @@ class Chunk(object):
                     # based on the relative _base_ sizes of the remaining
                     # growable requests.
                     share = Decimal(p.base) / Decimal(self.base)
-                    growth = int(share * last_pool) # truncate, don't round
+                    growth = int(share * last_pool)  # truncate, don't round
 
                 p.growth += growth
                 self.pool -= growth
@@ -1278,7 +1297,9 @@ class Chunk(object):
 
 
 class DiskChunk(Chunk):
+
     """ A free region on disk from which partitions will be allocated """
+
     def __init__(self, geometry, requests=None):
         """
             :param geometry: the free region this chunk represents
@@ -1406,7 +1427,9 @@ class DiskChunk(Chunk):
 
 
 class VGChunk(Chunk):
+
     """ A free region in an LVM VG from which LVs will be allocated """
+
     def __init__(self, vg, requests=None):
         """
             :param vg: the volume group whose free space this chunk represents
@@ -1443,7 +1466,9 @@ class VGChunk(Chunk):
 
 
 class ThinPoolChunk(VGChunk):
+
     """ A free region in an LVM thin pool from which LVs will be allocated """
+
     def __init__(self, pool, requests=None):
         """
             :param pool: the thin pool whose free space this chunk represents
@@ -1454,7 +1479,8 @@ class ThinPoolChunk(VGChunk):
         self.vg = pool.vg   # only used for align, &c
         self.path = pool.path
         usable_extents = (pool.size / pool.vg.pe_size)
-        super(VGChunk, self).__init__(usable_extents, requests=requests) # pylint: disable=bad-super-call
+        super(VGChunk, self).__init__(usable_extents, requests=requests)  # pylint: disable=bad-super-call
+
 
 def get_disk_chunks(disk, partitions, free):
     """ Return a list of Chunk instances representing a disk.
@@ -1519,12 +1545,15 @@ def get_disk_chunks(disk, partitions, free):
 
     return chunks
 
+
 class TotalSizeSet(object):
+
     """ Set of device requests with a target combined size.
 
         This will be handled by growing the requests until the desired combined
         size has been achieved.
     """
+
     def __init__(self, devices, size):
         """
             :param devices: the set of devices
@@ -1562,8 +1591,11 @@ class TotalSizeSet(object):
                     amount, self.allocated, self.size, self.needed)
         self.allocated -= amount
 
+
 class SameSizeSet(object):
+
     """ Set of device requests with a common target size. """
+
     def __init__(self, devices, size, grow=False, max_size=None):
         """
             :param devices: the set of devices
@@ -1589,6 +1621,7 @@ class SameSizeSet(object):
         self.max_size = max_size
 
         self.requests = []
+
 
 def manage_size_sets(size_sets, chunks):
     growth_by_request = {}
@@ -1672,6 +1705,7 @@ def manage_size_sets(size_sets, chunks):
         for chunk in chunks:
             if reclaimed[chunk] and not chunk.done:
                 chunk.grow_requests()
+
 
 def grow_partitions(disks, partitions, free, size_sets=None):
     """ Grow all growable partition requests.
@@ -1891,6 +1925,7 @@ def lv_compare(lv1, lv2):
 
 _lv_compare_key = functools.cmp_to_key(lv_compare)
 
+
 def _apply_chunk_growth(chunk):
     """ grow the lvs by the amounts the VGChunk calculated """
     for req in chunk.requests:
@@ -1907,6 +1942,7 @@ def _apply_chunk_growth(chunk):
         # pesize-1. As a result, you can't just add the growth to the
         # initial size.
         req.device.size = size
+
 
 def grow_lvm(storage):
     """ Grow LVs according to the sizes of the PVs.

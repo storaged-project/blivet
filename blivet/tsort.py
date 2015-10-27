@@ -20,8 +20,10 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+
 class CyclicGraphError(Exception):
     pass
+
 
 def tsort(graph):
     order = []  # sorted list of items
@@ -54,8 +56,8 @@ def tsort(graph):
     if len(graph['items']) != len(visited):
         raise CyclicGraphError("graph contains cycles")
 
-
     return order
+
 
 def create_graph(items, edges):
     """ Create a graph based on a list of items and a list of edges.
@@ -88,6 +90,7 @@ def create_graph(items, edges):
         graph['incoming'][child] += 1
 
     return graph
+
 
 def main():
     items = [5, 2, 3, 4, 1]

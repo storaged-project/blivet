@@ -31,8 +31,10 @@ DEVICE_CLASSES = [
    LVMLogicalVolumeDevice
 ]
 
+
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
+
     """ DeviceActionTestSuite """
 
     def setUp(self):
@@ -300,7 +302,6 @@ class DeviceActionTestCase(StorageTestCase):
         destroy_sdc1_format = ActionDestroyFormat(sdc1)
         with self.assertRaises(blivet.errors.DeviceTreeError):
             self.storage.devicetree.register_action(destroy_sdc1_format)
-
 
         destroy_sdc1 = ActionDestroyDevice(sdc1)
         with self.assertRaises(blivet.errors.DeviceTreeError):
@@ -993,7 +994,6 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(lv_root.format.type, None)
         action.cancel()
         self.assertEqual(lv_root.format, original_format)
-
 
         sdc = self.storage.devicetree.get_device_by_name("sdc")
         sdc.format = None

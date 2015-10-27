@@ -31,15 +31,19 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSResizeTask(fstask.FSTask):
+
     """ The abstract properties that any resize task must have. """
 
     unit = abc.abstractproperty(doc="Resize unit.")
     size_fmt = abc.abstractproperty(doc="Size format string.")
 
+
 @add_metaclass(abc.ABCMeta)
 class FSResize(task.BasicApplication, FSResizeTask):
+
     """ An abstract class for resizing a filesystem. """
 
     description = "resize filesystem"
@@ -76,6 +80,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
         if ret:
             raise FSError("resize failed: %s" % ret)
 
+
 class Ext2FSResize(FSResize):
     ext = availability.RESIZE2FS_APP
     unit = MiB
@@ -93,6 +98,7 @@ class Ext2FSResize(FSResize):
     def args(self):
         return ["-p", self.fs.device, self.size_spec()]
 
+
 class NTFSResize(FSResize):
     ext = availability.NTFSRESIZE_APP
     unit = B
@@ -104,10 +110,11 @@ class NTFSResize(FSResize):
     @property
     def args(self):
         return [
-           "-ff", # need at least two 'f's to fully suppress interaction
+           "-ff",  # need at least two 'f's to fully suppress interaction
            "-s", self.size_spec(),
            self.fs.device
         ]
+
 
 class TmpFSResize(FSResize):
 
@@ -126,6 +133,7 @@ class TmpFSResize(FSResize):
         opts = self.fs.mountopts or ",".join(self.fs._mount.options)
         options = ("remount", opts, self.size_spec())
         return ['-o', ",".join(options), self.fs._type, self.fs.system_mountpoint]
+
 
 class UnimplementedFSResize(task.UnimplementedTask, FSResizeTask):
 

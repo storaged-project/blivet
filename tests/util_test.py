@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from blivet import util
 
+
 class MiscTest(unittest.TestCase):
 
     # Disable this warning, which will only be triggered on python3.  For

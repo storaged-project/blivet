@@ -31,7 +31,9 @@ log = logging.getLogger("blivet")
 MD_SUPERBLOCK_SIZE = Size("2 MiB")
 MD_CHUNK_SIZE = Size("512 KiB")
 
+
 class MDRaidLevels(raid.RAIDLevels):
+
     @classmethod
     def is_raid_level(cls, level):
         return super(MDRaidLevels, cls).is_raid_level(level) and \

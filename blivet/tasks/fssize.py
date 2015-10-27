@@ -35,8 +35,10 @@ from . import task
 _tags = ("count", "size")
 _Tags = namedtuple("_Tags", _tags)
 
+
 @add_metaclass(abc.ABCMeta)
 class FSSize(fstask.FSTask):
+
     """ An abstract class that represents size information extraction. """
     description = "current filesystem size"
 
@@ -100,20 +102,26 @@ class FSSize(fstask.FSTask):
 
         return values["count"] * Size(values["size"])
 
+
 class Ext2FSSize(FSSize):
     tags = _Tags(size="Block size:", count="Block count:")
+
 
 class JFSSize(FSSize):
     tags = _Tags(size="Physical block size:", count="Aggregate size:")
 
+
 class NTFSSize(FSSize):
     tags = _Tags(size="Cluster Size:", count="Volume Size in Clusters:")
+
 
 class ReiserFSSize(FSSize):
     tags = _Tags(size="Blocksize:", count="Count of blocks on the device:")
 
+
 class XFSSize(FSSize):
     tags = _Tags(size="blocksize =", count="dblocks =")
+
 
 class TmpFSSize(task.BasicApplication, fstask.FSTask):
     description = "current filesystem size"

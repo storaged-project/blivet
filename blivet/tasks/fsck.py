@@ -32,8 +32,10 @@ from . import task
 
 _UNKNOWN_RC_MSG = "Unknown return code: %d"
 
+
 @add_metaclass(abc.ABCMeta)
 class FSCK(task.BasicApplication, fstask.FSTask):
+
     """An abstract class that represents actions associated with
        checking consistency of a filesystem.
     """
@@ -118,6 +120,7 @@ class Ext2FSCK(FSCK):
         msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
         return "\n".join(msgs) or None
 
+
 class HFSPlusFSCK(FSCK):
     _fsck_errors = {3: "Quick check found a dirty filesystem; no repairs done.",
                    4: "Root filesystem was dirty. System should be rebooted.",
@@ -134,12 +137,14 @@ class HFSPlusFSCK(FSCK):
         except KeyError:
             return _UNKNOWN_RC_MSG % rc
 
+
 class NTFSFSCK(FSCK):
     ext = availability.NTFSRESIZE_APP
     options = ["-c"]
 
     def _error_message(self, rc):
         return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
+
 
 class UnimplementedFSCK(fstask.UnimplementedFSTask):
     pass

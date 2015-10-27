@@ -2,6 +2,7 @@ import unittest
 
 import blivet
 
+
 class DeviceFormatTestCase(unittest.TestCase):
 
     def test_formats(self):
@@ -49,6 +50,7 @@ class DeviceFormatTestCase(unittest.TestCase):
                     an_fs.device = host_path
                 with self.assertRaises(ValueError):
                     an_fs.device = garbage
+
 
 class DeviceValueTestCase(unittest.TestCase):
 

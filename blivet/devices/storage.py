@@ -31,7 +31,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import get_format, DeviceFormat
 from ..size import Size
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
@@ -40,7 +40,9 @@ from .device import Device
 from .network import NetworkStorageDevice
 from .lib import LINUX_SECTOR_SIZE
 
+
 class StorageDevice(Device):
+
     """ A generic storage device.
 
         A fully qualified path to the device node can be obtained via the
@@ -252,7 +254,7 @@ class StorageDevice(Device):
 
     @property
     def dict(self):
-        d =  super(StorageDevice, self).dict
+        d = super(StorageDevice, self).dict
         d.update({"uuid": self.uuid, "size": self.size,
                   "format": self.format.dict, "removable": self.removable,
                   "major": self.major, "minor": self.minor,
@@ -609,7 +611,7 @@ class StorageDevice(Device):
         self._current_size = Size(0)
         new_size = self.current_size
         self._size = new_size
-        self._target_size = new_size # bypass setter checks
+        self._target_size = new_size  # bypass setter checks
         log.debug("updated %s size to %s (%s)", self.name, self.size, new_size)
 
     @property
@@ -738,7 +740,7 @@ class StorageDevice(Device):
         return self._format
 
     format = property(lambda d: d._get_format(),
-                      lambda d,f: d._set_format(f),
+                      lambda d, f: d._set_format(f),
                       doc="The device's formatting.")
 
     def pre_commit_fixup(self):

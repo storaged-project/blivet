@@ -30,8 +30,10 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSInfo(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents an information gathering app. """
 
     description = "filesystem info"
@@ -70,25 +72,31 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
             raise FSError(error_msg)
         return out
 
+
 class Ext2FSInfo(FSInfo):
     ext = availability.DUMPE2FS_APP
     options = ["-h"]
+
 
 class JFSInfo(FSInfo):
     ext = availability.JFSTUNE_APP
     options = ["-l"]
 
+
 class NTFSInfo(FSInfo):
     ext = availability.NTFSINFO_APP
     options = ["-m"]
+
 
 class ReiserFSInfo(FSInfo):
     ext = availability.DEBUGREISERFS_APP
     options = []
 
+
 class XFSInfo(FSInfo):
     ext = availability.XFSDB_APP
     options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize"]
+
 
 class UnimplementedFSInfo(fstask.UnimplementedFSTask):
     pass

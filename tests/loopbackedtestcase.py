@@ -5,6 +5,7 @@ import tempfile
 
 from blivet.size import Size
 
+
 def make_store(file_name, num_blocks=102400, block_size=1024):
     """ Set up the backing store for a loop device.
 
@@ -23,6 +24,7 @@ def make_store(file_name, num_blocks=102400, block_size=1024):
     if rc:
         raise OSError("dd failed creating the file %s" % file_name)
 
+
 def make_loop_dev(device_name, file_name):
     """ Set up a loop device with a backing store.
 
@@ -40,6 +42,7 @@ def make_loop_dev(device_name, file_name):
     if rc:
         raise OSError("losetup failed setting up the loop device %s" % device_name)
 
+
 def remove_loop_dev(device_name):
     proc = subprocess.Popen(["losetup", "-d", device_name],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -50,6 +53,7 @@ def remove_loop_dev(device_name):
             break
     if rc:
         raise OSError("losetup failed removing the loop device %s" % device_name)
+
 
 def get_free_loop_dev():
     """ Get the name of the free loop device that losetup reports.
@@ -76,6 +80,7 @@ def get_free_loop_dev():
         raise OSError("losetup failed to find a free device")
 
     return out.decode("utf-8")
+
 
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class LoopBackedTestCase(unittest.TestCase):

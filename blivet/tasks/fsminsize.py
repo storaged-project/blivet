@@ -31,8 +31,10 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSMinSize(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents min size information extraction. """
 
     description = "minimum filesystem size"
@@ -69,6 +71,7 @@ class FSMinSize(task.BasicApplication, fstask.FSTask):
             :raises FSError: if filesystem can not be obtained
         """
         raise NotImplementedError()
+
 
 class Ext2FSMinSize(FSMinSize):
 
@@ -134,6 +137,7 @@ class Ext2FSMinSize(FSMinSize):
 
         return block_size * num_blocks
 
+
 class NTFSMinSize(FSMinSize):
 
     ext = availability.NTFSRESIZE_APP
@@ -159,7 +163,6 @@ class NTFSMinSize(FSMinSize):
 
         return min_size
 
-
     def do_task(self):
         error_msgs = self.availability_errors
         if error_msgs:
@@ -170,6 +173,7 @@ class NTFSMinSize(FSMinSize):
         if min_size is None:
             raise FSError("Unable to discover minimum size of filesystem on %s" % self.fs.device)
         return min_size
+
 
 class UnimplementedFSMinSize(fstask.UnimplementedFSTask):
     pass

@@ -32,7 +32,9 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 class FileDevice(StorageDevice):
+
     """ A file on a filesystem.
 
         This exists because of swap files.
@@ -104,7 +106,7 @@ class FileDevice(StorageDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        fd = util.eintr_retry_call(os.open, self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+        fd = util.eintr_retry_call(os.open, self.path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
         # all this fuss is so we write the zeros 1MiB at a time
         zero = "\0"
         block_size = 1024 ** 2
@@ -131,16 +133,21 @@ class FileDevice(StorageDevice):
         # Override StorageDevice.is_name_valid to allow /
         return not('\x00' in name or name == '.' or name == '..')
 
+
 class SparseFileDevice(FileDevice):
+
     """A sparse file on a filesystem.
     This exists for sparse disk images."""
     _type = "sparse file"
+
     def _create(self):
         """Create a sparse file."""
         log_method_call(self, self.name, status=self.status)
         util.create_sparse_file(self.path, self.size)
 
+
 class DirectoryDevice(FileDevice):
+
     """ A directory on a filesystem.
 
         This exists because of bind mounts.

@@ -12,6 +12,7 @@ from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import sparsetmpfile
 
+
 class PartitionDeviceTestCase(unittest.TestCase):
 
     def test_target_size(self):
@@ -113,7 +114,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             device.format._resizable = True
 
             ##
-            ## min_size
+            # min_size
             ##
 
             # The end sector based only on format min size should be unaligned.
@@ -133,7 +134,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
                 True)
 
             ##
-            ## max_size
+            # max_size
             ##
 
             # Add a partition starting three sectors past an aligned sector and
@@ -193,6 +194,6 @@ class PartitionDeviceTestCase(unittest.TestCase):
             logical_device.parted_partition = logical
 
             # logical partition present --> min size should be based on its end sector
-            end_free = (extended_end - logical_end)*sector_size
+            end_free = (extended_end - logical_end) * sector_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))

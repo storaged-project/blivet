@@ -30,8 +30,10 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSSync(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents syncing a filesystem. """
 
     description = "filesystem syncing"
@@ -40,7 +42,9 @@ class FSSync(task.BasicApplication, fstask.FSTask):
     def do_task(self):
         raise NotImplementedError()
 
+
 class XFSSync(FSSync):
+
     """ Sync application for XFS. """
 
     ext = availability.XFSFREEZE_APP
@@ -72,6 +76,7 @@ class XFSSync(FSSync):
 
         if error_msg:
             raise FSError(error_msg)
+
 
 class UnimplementedFSSync(fstask.UnimplementedFSTask):
     pass

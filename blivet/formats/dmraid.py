@@ -31,6 +31,7 @@ log = logging.getLogger("blivet")
 
 
 class DMRaidMember(DeviceFormat):
+
     """ A dmraid member disk. """
     _type = "dmraidmember"
     _name = N_("dm-raid member device")
@@ -80,7 +81,7 @@ class DMRaidMember(DeviceFormat):
         self._raidmem = raidmem
 
     raidmem = property(lambda d: d._get_raidmem(),
-                       lambda d,r: d._set_raidmem(r))
+                       lambda d, r: d._set_raidmem(r))
 
     def create(self, **kwargs):
         log_method_call(self, device=self.device,

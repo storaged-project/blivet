@@ -38,6 +38,7 @@ _CallbacksRegister = namedtuple("_CallbacksRegister",
                                  "wait_for_entropy",
                                  "report_progress"])
 
+
 def create_new_callbacks_register(create_format_pre=None,
                                   create_format_post=None,
                                   resize_format_pre=None,

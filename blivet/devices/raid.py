@@ -28,8 +28,10 @@ from ..i18n import _, P_
 
 from .storage import StorageDevice
 
+
 @add_metaclass(abc.ABCMeta)
 class RaidDevice(StorageDevice):
+
     """ Metaclass for devices that support RAID in some form. """
     members = abc.abstractproperty(lambda s: [],
                                    doc="A list of the member device instances")
@@ -49,14 +51,14 @@ class RaidDevice(StorageDevice):
             number of parents. The number is positive for added parents,
             negative for removed parents.
         """
-        num_members = len(self.members) + parent_diff # pylint: disable=no-member
+        num_members = len(self.members) + parent_diff  # pylint: disable=no-member
         if not self.exists and num_members < level.min_members:
             message = P_(
                "RAID level %(raid_level)s requires that device have at least %(min_members)d member.",
                "RAID level %(raid_level)s requires that device have at least %(min_members)d members.",
                level.min_members
             )
-            return message % {"raid_level": level, "min_members" : level.min_members}
+            return message % {"raid_level": level, "min_members": level.min_members}
         return None
 
     def _get_level(self, value, levels):
@@ -75,7 +77,7 @@ class RaidDevice(StorageDevice):
         except errors.RaidError:
             message = _("RAID level %(raid_level)s is an invalid value. Must be one of (%(levels)s).")
             choices = ", ".join([str(l) for l in levels])
-            raise ValueError(message % {"raid_level": value, "levels" : choices})
+            raise ValueError(message % {"raid_level": value, "levels": choices})
 
         error_msg = self._validate_raid_level(level)
         if error_msg:

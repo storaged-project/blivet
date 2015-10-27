@@ -36,6 +36,7 @@ log = logging.getLogger("blivet")
 
 
 class SwapSpace(DeviceFormat):
+
     """ Swap space """
     _type = "swap"
     _name = None
@@ -47,7 +48,7 @@ class SwapSpace(DeviceFormat):
     _linux_native = True                # for clearpart
     _plugin = availability.BLOCKDEV_SWAP_PLUGIN
 
-    #see rhbz#744129 for details
+    # see rhbz#744129 for details
     _max_size = Size("128 GiB")
 
     def __init__(self, **kwargs):
@@ -106,7 +107,7 @@ class SwapSpace(DeviceFormat):
         """Returns True since no known restrictions on the label."""
         return True
 
-    label = property(lambda s: s._get_label(), lambda s,l: s._set_label(l),
+    label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
        doc="the label for this swap space")
 
     def _set_priority(self, priority):

@@ -60,6 +60,7 @@ from .i18n import _
 import logging
 log = logging.getLogger("blivet")
 
+
 def empty_device(device, devicetree):
     empty = True
     if device.partitioned:
@@ -70,8 +71,11 @@ def empty_device(device, devicetree):
 
     return empty
 
+
 class StorageDiscoveryConfig(object):
+
     """ Class to encapsulate various detection/initialization parameters. """
+
     def __init__(self):
         # storage configuration variables
         self.ignore_disk_interactive = False
@@ -103,8 +107,11 @@ class StorageDiscoveryConfig(object):
         self.initialize_disks = ksdata.clearpart.init_all
         self.zero_mbr = ksdata.zerombr.zerombr
 
+
 class Blivet(object):
+
     """ Top-level class for managing storage configuration. """
+
     def __init__(self, ksdata=None):
         """
             :keyword ksdata: kickstart data store
@@ -235,7 +242,7 @@ class Blivet(object):
 
         try:
             self.devicetree.teardown_all()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.error, "failure tearing down device tree")
 
     def reset(self, cleanup_only=False):
@@ -806,7 +813,6 @@ class Blivet(object):
                 kwargs["weight"] = _platform.weight(mountpoint=mountpoint,
                                                         fstype=fmt.type)
 
-
         return PartitionDevice(name, *args, **kwargs)
 
     def new_mdarray(self, *args, **kwargs):
@@ -934,7 +940,7 @@ class Blivet(object):
             full_name = "%s-%s" % (safe_vg_name, name)
             safe_name = self.safe_device_name(full_name)
             if safe_name != full_name:
-                new_name = safe_name[len(safe_vg_name)+1:]
+                new_name = safe_name[len(safe_vg_name) + 1:]
                 log.warning("using '%s' instead of specified name '%s'",
                                 new_name, name)
                 name = new_name
@@ -1291,6 +1297,7 @@ class Blivet(object):
         template = self.safe_device_name(prefix + body)
         names = self.names
         name = template
+
         def full_name(name, parent):
             full = ""
             if parent:
@@ -1511,7 +1518,7 @@ class Blivet(object):
             log.debug("invalid default fstype: %r", fmt)
             raise ValueError("new value %s is not valid as a default fs type" % fmt)
 
-        self._default_fstype = newtype # pylint: disable=attribute-defined-outside-init
+        self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init
 
     def set_default_boot_fstype(self, newtype):
         """ Set the default /boot fstype for this instance.
@@ -1535,7 +1542,7 @@ class Blivet(object):
         log.debug("trying to set new default fstype to '%s'", newtype)
         # This will raise ValueError if it isn't valid
         self._check_valid_fstype(newtype)
-        self._default_fstype = newtype # pylint: disable=attribute-defined-outside-init
+        self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init
 
     @property
     def mountpoints(self):
@@ -1658,7 +1665,7 @@ class Blivet(object):
         log_method_call(self, device_type, size, **kwargs)
 
         # we can't do anything with existing devices
-        #if device and device.exists:
+        # if device and device.exists:
         #    log.info("factoryDevice refusing to change device %s", device)
         #    return
 
@@ -1677,7 +1684,7 @@ class Blivet(object):
         if not factory.disks:
             raise StorageError("no disks specified for new device")
 
-        self.size_sets = [] # clear this since there are no growable reqs now
+        self.size_sets = []  # clear this since there are no growable reqs now
         factory.configure()
         return factory.device
 

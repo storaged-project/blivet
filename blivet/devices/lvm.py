@@ -56,6 +56,7 @@ from .cache import Cache, CacheStats, CacheRequest
 
 _INTERNAL_LV_CLASSES = []
 
+
 def get_internal_lv_class(lv_attr):
     if lv_attr[0] == "C":
         # cache pools and internal data LV of cache pools need a more complicated check
@@ -70,7 +71,9 @@ def get_internal_lv_class(lv_attr):
 
     return None
 
+
 class LVMVolumeGroupDevice(ContainerDevice):
+
     """ An LVM Volume Group """
     _type = "lvmvg"
     _packages = ["lvm2"]
@@ -179,7 +182,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def map_name(self):
         """ This device's device-mapper map name """
         # Thank you lvm for this lovely hack.
-        return self.name.replace("-","--")
+        return self.name.replace("-", "--")
 
     @property
     def path(self):
@@ -490,7 +493,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return True
 
+
 class LVMLogicalVolumeDevice(DMDevice):
+
     """ An LVM Logical Volume """
     _type = "lvmlv"
     _resizable = True
@@ -617,7 +622,7 @@ class LVMLogicalVolumeDevice(DMDevice):
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
                "copies": self.copies, "type": self.seg_type,
-               "vgspace": self.vg_space_used })
+               "vgspace": self.vg_space_used})
         return s
 
     @property
@@ -689,7 +694,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def map_name(self):
         """ This device's device-mapper map name """
         # Thank you lvm for this lovely hack.
-        return "%s-%s" % (self.vg.map_name, self._name.replace("-","--"))
+        return "%s-%s" % (self.vg.map_name, self._name.replace("-", "--"))
 
     @property
     def path(self):
@@ -739,7 +744,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             # have to do it ourselves.
             # The timeout value of 30 seconds was suggested by prajnoha. He
             # noted that udev uses the same value, for whatever that's worth.
-            timeout = 30 # seconds
+            timeout = 30  # seconds
             start = time.time()
             while time.time() - start < timeout:
                 if self.status:
@@ -829,7 +834,7 @@ class LVMLogicalVolumeDevice(DMDevice):
             # of the fast PVs may be required for allocation of the LV (it may
             # span over the slow PVs and parts of fast PVs)
             blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
-                                                mode, 0, slow_pvs+fast_pvs, fast_pvs)
+                                                mode, 0, slow_pvs + fast_pvs, fast_pvs)
 
     def _pre_destroy(self):
         StorageDevice._pre_destroy(self)
@@ -989,6 +994,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
 @add_metaclass(abc.ABCMeta)
 class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
+
     """Abstract base class for internal LVs
 
     A common class for all classes representing internal Logical Volumes like
@@ -1109,7 +1115,7 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
                "copies": self.copies, "type": self.seg_type,
-               "vgspace": self.vg_space_used })
+               "vgspace": self.vg_space_used})
         return s
 
     # generally changes should be done on the parent LV (exceptions should
@@ -1159,7 +1165,9 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
         # internal LVs are not directly accessible
         return False
 
+
 class LVMDataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+
     """Internal data LV (used by thin/cache pools)"""
 
     attr_letters = ["T", "C"]
@@ -1167,7 +1175,9 @@ class LVMDataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     takes_extra_space = False
 _INTERNAL_LV_CLASSES.append(LVMDataLogicalVolumeDevice)
 
+
 class LVMMetadataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+
     """Internal metadata LV (used by thin/cache pools, RAIDs, etc.)"""
 
     # thin pool metadata LVs can be resized directly
@@ -1200,7 +1210,9 @@ class LVMMetadataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
 
 _INTERNAL_LV_CLASSES.append(LVMMetadataLogicalVolumeDevice)
 
+
 class LVMLogLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+
     """Internal log LV (used by mirrored LVs)"""
 
     attr_letters = ["l", "L"]
@@ -1208,7 +1220,9 @@ class LVMLogLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     takes_extra_space = True
 _INTERNAL_LV_CLASSES.append(LVMLogLogicalVolumeDevice)
 
+
 class LVMImageLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+
     """Internal image LV (used by mirror/RAID LVs)"""
 
     attr_letters = ["i"]
@@ -1217,7 +1231,9 @@ class LVMImageLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     takes_extra_space = False
 _INTERNAL_LV_CLASSES.append(LVMImageLogicalVolumeDevice)
 
+
 class LVMOriginLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+
     """Internal origin LV (e.g. the raw/uncached part of a cached LV)"""
 
     attr_letters = ["o"]
@@ -1225,7 +1241,9 @@ class LVMOriginLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     takes_extra_space = False
 _INTERNAL_LV_CLASSES.append(LVMOriginLogicalVolumeDevice)
 
+
 class LVMCachePoolLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
+
     """Internal cache pool logical volume"""
 
     attr_letters = ["C"]
@@ -1233,8 +1251,10 @@ class LVMCachePoolLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     takes_extra_space = True
 _INTERNAL_LV_CLASSES.append(LVMCachePoolLogicalVolumeDevice)
 
+
 @add_metaclass(abc.ABCMeta)
 class LVMSnapShotBase(object):
+
     """ Abstract base class for lvm snapshots
 
         This class is intended to be used with multiple inheritance in addition
@@ -1305,7 +1325,7 @@ class LVMSnapShotBase(object):
         if hasattr(fmt, "mountpoint"):
             fmt.mountpoint = ""
             fmt._chrooted_mountpoint = None
-            fmt.device = self.path # pylint: disable=no-member
+            fmt.device = self.path  # pylint: disable=no-member
 
         super(LVMSnapShotBase, self)._set_format(fmt)
 
@@ -1313,10 +1333,10 @@ class LVMSnapShotBase(object):
         # If a snapshot exists it can have a format that is distinct from its
         # origin's. If it does not exist its format must be a copy of its
         # origin's.
-        if self.exists: # pylint: disable=no-member
+        if self.exists:  # pylint: disable=no-member
             super(LVMSnapShotBase, self)._set_format(fmt)
         else:
-            log.info("copying %s origin's format", self.name) # pylint: disable=no-member
+            log.info("copying %s origin's format", self.name)  # pylint: disable=no-member
             self._update_format_from_origin()
 
     @abc.abstractmethod
@@ -1326,7 +1346,7 @@ class LVMSnapShotBase(object):
 
     def merge(self):
         """ Merge the snapshot back into its origin volume. """
-        log_method_call(self, self.name, status=self.status) # pylint: disable=no-member
+        log_method_call(self, self.name, status=self.status)  # pylint: disable=no-member
         self.vg.setup()    # pylint: disable=no-member
         try:
             self.origin.teardown()
@@ -1336,15 +1356,16 @@ class LVMSnapShotBase(object):
             pass
 
         try:
-            self.teardown() # pylint: disable=no-member
+            self.teardown()  # pylint: disable=no-member
         except errors.FSError:
             pass
 
         udev.settle()
-        blockdev.lvm.lvsnapshotmerge(self.vg.name, self.lvname) # pylint: disable=no-member
+        blockdev.lvm.lvsnapshotmerge(self.vg.name, self.lvname)  # pylint: disable=no-member
 
 
 class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
+
     """ An LVM snapshot """
     _type = "lvmsnapshot"
     _format_immutable = True
@@ -1434,7 +1455,9 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
 
         return size
 
+
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
+
     """ An LVM Thin Pool """
     _type = "lvmthinpool"
     _resizable = False
@@ -1565,7 +1588,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         if self.profile:
             data.profile = self.profile.name
 
+
 class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
+
     """ An LVM Thin Logical Volume """
     _type = "lvmthinlv"
     _container_class = LVMThinPoolDevice
@@ -1606,7 +1631,7 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         # skip LVMLogicalVolumeDevice's _pre_create() method as it checks for a
         # free space in a VG which doesn't make sense for a ThinLV and causes a
         # bug by limitting the ThinLV's size to VG free space which is nonsense
-        super(LVMLogicalVolumeDevice, self)._pre_create() # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeDevice, self)._pre_create()  # pylint: disable=bad-super-call
 
     def _create(self):
         """ Create the device. """
@@ -1635,7 +1660,9 @@ class LVMThinLogicalVolumeDevice(LVMLogicalVolumeDevice):
         data.thin_volume = True
         data.pool_name = self.pool.lvname
 
+
 class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
+
     """ An LVM Thin Snapshot """
     _type = "lvmthinsnapshot"
     _resizable = False
@@ -1670,7 +1697,7 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
 
         LVMSnapShotBase.__init__(self, origin=origin, exists=exists)
         LVMThinLogicalVolumeDevice.__init__(self, name, parents=parents,
-                                            sysfs_path=sysfs_path,fmt=fmt,
+                                            sysfs_path=sysfs_path, fmt=fmt,
                                             seg_type=seg_type,
                                             uuid=uuid, size=size, exists=exists)
 
@@ -1706,7 +1733,9 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
         return ((self.origin == dep and not self.exists) or
                 super(LVMThinSnapShotDevice, self).depends_on(dep))
 
+
 class LVMCache(Cache):
+
     """Class providing the cache-related functionality of a cached LV"""
 
     def __init__(self, cached_lv, size=None, md_size=None, exists=False, fast_pvs=None, mode=None):
@@ -1809,7 +1838,9 @@ class LVMCache(Cache):
         blockdev.lvm.cache_detach(vg_name, self._cached_lv.lvname, False)
         return ret
 
+
 class LVMCacheStats(CacheStats):
+
     def __init__(self, stats_data):
         """
         :param stats_data: cache stats data
@@ -1877,8 +1908,11 @@ class LVMCacheStats(CacheStats):
     def write_misses(self):
         return self._write_misses
 
+
 class LVMCacheRequest(CacheRequest):
+
     """Class representing the LVM cache creation request"""
+
     def __init__(self, size, fast_pvs, mode=None):
         """
         :param size: requested size of the cache

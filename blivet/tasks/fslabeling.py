@@ -23,8 +23,10 @@ import abc
 
 from six import add_metaclass
 
+
 @add_metaclass(abc.ABCMeta)
 class FSLabeling(object):
+
     """An abstract class that represents filesystem labeling actions.
     """
 
@@ -41,6 +43,7 @@ class FSLabeling(object):
         """
         raise NotImplementedError
 
+
 class Ext2FSLabeling(FSLabeling):
 
     default_label = ""
@@ -48,6 +51,7 @@ class Ext2FSLabeling(FSLabeling):
     @classmethod
     def label_format_ok(cls, label):
         return len(label) < 17
+
 
 class FATFSLabeling(FSLabeling):
 
@@ -57,6 +61,7 @@ class FATFSLabeling(FSLabeling):
     def label_format_ok(cls, label):
         return len(label) < 12
 
+
 class JFSLabeling(FSLabeling):
 
     default_label = ""
@@ -64,6 +69,7 @@ class JFSLabeling(FSLabeling):
     @classmethod
     def label_format_ok(cls, label):
         return len(label) < 17
+
 
 class ReiserFSLabeling(FSLabeling):
 
@@ -73,6 +79,7 @@ class ReiserFSLabeling(FSLabeling):
     def label_format_ok(cls, label):
         return len(label) < 17
 
+
 class XFSLabeling(FSLabeling):
 
     default_label = ""
@@ -80,6 +87,7 @@ class XFSLabeling(FSLabeling):
     @classmethod
     def label_format_ok(cls, label):
         return ' ' not in label and len(label) < 13
+
 
 class HFSLabeling(FSLabeling):
 
@@ -89,6 +97,7 @@ class HFSLabeling(FSLabeling):
     def label_format_ok(cls, label):
         return ':' not in label and len(label) < 28 and len(label) > 0
 
+
 class HFSPlusLabeling(FSLabeling):
 
     default_label = "Untitled"
@@ -96,6 +105,7 @@ class HFSPlusLabeling(FSLabeling):
     @classmethod
     def label_format_ok(cls, label):
         return ':' not in label and 0 < len(label) < 129
+
 
 class NTFSLabeling(FSLabeling):
 

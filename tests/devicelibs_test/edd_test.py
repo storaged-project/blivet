@@ -7,14 +7,18 @@ import copy
 
 from blivet.devicelibs import edd
 
+
 class FakeDevice(object):
+
     def __init__(self, name):
         self.name = name
 
+
 class FakeEddEntry(edd.EddEntry):
+
     def __init__(self, sysfspath, **kw):
         edd.EddEntry.__init__(self, sysfspath)
-        for (name,value) in kw.items():
+        for (name, value) in kw.items():
             self.__dict__[name] = value
 
     @property
@@ -32,6 +36,7 @@ class FakeEddEntry(edd.EddEntry):
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
+
 
 class EddTestCase(unittest.TestCase):
     _edd_logger = None
@@ -147,7 +152,7 @@ class EddTestCase(unittest.TestCase):
         self._set_fs_root(edd, "sata_usb")
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
+        devices = (FakeDevice("sda"),
                  FakeDevice("sdb"),
                  )
         fakeedd = {
@@ -156,7 +161,7 @@ class EddTestCase(unittest.TestCase):
                            pci_dev="00:1f.2", channel=255, ata_device=1,
                            interface="SATA    \tdevice: 1",
                            sysfspath="/sys/firmware/edd/int13_dev80",
-                           sysfslink="../devices/pci0000:00/0000:00:1f.2/ata2"\
+                           sysfslink="../devices/pci0000:00/0000:00:1f.2/ata2"
                                      "/host1/target1:0:0/1:0:0:0/block/sda"),
             0x81: FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
                            sectors=31293440, host_bus="PCI", type="USB",
@@ -181,7 +186,7 @@ class EddTestCase(unittest.TestCase):
             ]
         infos = [
             ("edd: MBR signature on %s is zero. new disk image?", "sda"),
-            ("edd: collected mbr signatures: %s",{'sdb': '0x96a20d28'}),
+            ("edd: collected mbr signatures: %s", {'sdb': '0x96a20d28'}),
             ("edd: matched 0x%x to %s using PCI dev", 0x80, "sda"),
             ("edd: matched 0x%x to %s using MBR sig", 0x81, "sdb"),
             ]

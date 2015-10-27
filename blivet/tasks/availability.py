@@ -38,7 +38,9 @@ log = logging.getLogger("blivet")
 
 CACHE_AVAILABILITY = True
 
+
 class ExternalResource(object):
+
     """ An external resource. """
 
     def __init__(self, method, name):
@@ -75,8 +77,10 @@ class ExternalResource(object):
         """
         return self.availability_errors == []
 
+
 @add_metaclass(abc.ABCMeta)
 class Method(object):
+
     """ Method for determining if external resource is available."""
 
     @abc.abstractmethod
@@ -91,7 +95,9 @@ class Method(object):
         """
         raise NotImplementedError()
 
+
 class Path(Method):
+
     """ Methods for when application is found in  PATH. """
 
     def availability_errors(self, resource):
@@ -110,6 +116,7 @@ class Path(Method):
 
 Path = Path()
 
+
 class PackageInfo(object):
 
     def __init__(self, package_name, required_version=None):
@@ -125,7 +132,9 @@ class PackageInfo(object):
     def __str__(self):
         return "%s-%s" % (self.package_name, self.required_version)
 
+
 class PackageMethod(Method):
+
     """ Methods for checking the package version of the external resource. """
 
     def __init__(self, package=None):
@@ -180,7 +189,9 @@ class PackageMethod(Method):
 
         return self._availability_errors[:]
 
+
 class BlockDevMethod(Method):
+
     """ Methods for when application is actually a libblockdev plugin. """
 
     def availability_errors(self, resource):
@@ -199,7 +210,9 @@ class BlockDevMethod(Method):
 
 BlockDevMethod = BlockDevMethod()
 
+
 class UnavailableMethod(Method):
+
     """ Method that indicates a resource is unavailable. """
 
     def availability_errors(self, resource):
@@ -207,7 +220,9 @@ class UnavailableMethod(Method):
 
 UnavailableMethod = UnavailableMethod()
 
+
 class AvailableMethod(Method):
+
     """ Method that indicates a resource is available. """
 
     def availability_errors(self, resource):
@@ -215,12 +230,14 @@ class AvailableMethod(Method):
 
 AvailableMethod = AvailableMethod()
 
+
 def application(name):
     """ Construct an external resource that is an application.
 
         This application will be available if its name can be found in $PATH.
     """
     return ExternalResource(Path, name)
+
 
 def application_by_package(name, package_method):
     """ Construct an external resource that is an application.
@@ -232,13 +249,16 @@ def application_by_package(name, package_method):
     """
     return ExternalResource(package_method, name)
 
+
 def blockdev_plugin(name):
     """ Construct an external resource that is a libblockdev plugin. """
     return ExternalResource(BlockDevMethod, name)
 
+
 def unavailable_resource(name):
     """ Construct an external resource that is always unavailable. """
     return ExternalResource(UnavailableMethod, name)
+
 
 def available_resource(name):
     """ Construct an external resource that is always available. """

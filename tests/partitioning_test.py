@@ -36,7 +36,9 @@ disklabel_types = {'dos': (4, True, 11),
                    'gpt': (128, False, 0),
                    'mac': (62, False, 0)}
 
+
 class PartitioningTestCase(unittest.TestCase):
+
     def get_disk(self, disk_type, primary_count=0,
                 has_extended=False, logical_count=0):
         """ Return a mock representing a parted.Disk. """
@@ -56,7 +58,7 @@ class PartitioningTestCase(unittest.TestCase):
 
         # logical partitions
         disk.getMaxLogicalPartitions = Mock(return_value=max_logicals)
-        disk.getLogicalPartitions = Mock(return_value=[0]*logical_count)
+        disk.getLogicalPartitions = Mock(return_value=[0] * logical_count)
 
         return disk
 
@@ -172,14 +174,14 @@ class PartitioningTestCase(unittest.TestCase):
             #
             opt_str = 'parted.Device.optimumAlignment'
             min_str = 'parted.Device.minimumAlignment'
-            opt_al = parted.Alignment(offset=0, grainSize=8192) # 4 MiB
-            min_al = parted.Alignment(offset=0, grainSize=2048) # 1 MiB
+            opt_al = parted.Alignment(offset=0, grainSize=8192)  # 4 MiB
+            min_al = parted.Alignment(offset=0, grainSize=2048)  # 1 MiB
             with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
                 optimal_end = disk.format.get_end_alignment(alignment=optimal)
                 minimal_end = disk.format.get_end_alignment(alignment=minimal)
 
                 sector_size = Size(disk.format.sector_size)
-                length = 4096 # 2 MiB
+                length = 4096  # 2 MiB
                 size = Size(sector_size * length)
                 part = add_partition(disk.format, free, parted.PARTITION_NORMAL,
                                     size)
@@ -220,7 +222,7 @@ class PartitioningTestCase(unittest.TestCase):
                 part = add_partition(disk.format, free, parted.PARTITION_LOGICAL,
                                     Size("10 MiB"))
 
-            ## add an extended partition to the disk
+            # add an extended partition to the disk
             placeholder = add_partition(disk.format, free,
                                        parted.PARTITION_NORMAL, Size("10 MiB"))
             all_free = disk.format.parted_disk.getFreeSpaceRegions()
@@ -251,7 +253,6 @@ class PartitioningTestCase(unittest.TestCase):
                 part = add_partition(disk.format, all_free[1],
                                     parted.PARTITION_NORMAL,
                                     Size("10 MiB"), all_free[1].start)
-
 
     def test_chunk(self):
         dev1 = Mock()
@@ -640,6 +641,7 @@ class PartitioningTestCase(unittest.TestCase):
         free = get_free_regions([disk], align=True)
         self.assertEqual(free[0].length, 2048)
         self.assertEqual(free[1].length, 2048)
+
 
 class ExtendedPartitionTestCase(ImageBackedTestCase):
 

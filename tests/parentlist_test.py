@@ -3,7 +3,9 @@ import unittest
 from blivet.devices import ParentList
 from blivet.devices import Device
 
+
 class ParentListTestCase(unittest.TestCase):
+
     def test_parent_list(self):
         items = list(range(5))
         length = len(items)

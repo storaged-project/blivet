@@ -54,6 +54,7 @@ DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
 
+
 def is_supported_device_type(device_type):
     """ Return True if blivet supports this device type.
 
@@ -77,6 +78,7 @@ def is_supported_device_type(device_type):
 
     return not any(c.unavailable_type_dependencies() for c in devices)
 
+
 def get_supported_raid_levels(device_type):
     """ Return the supported raid levels for this device type.
 
@@ -98,6 +100,7 @@ def get_supported_raid_levels(device_type):
         return set(pkg.raid_levels)
     else:
         return set()
+
 
 def get_device_type(device):
     # the only time we should ever get a thin pool here is when we're removing
@@ -121,7 +124,6 @@ def get_device_type(device):
     return device_type
 
 
-
 def get_device_factory(blivet, device_type, size, **kwargs):
     """ Return a suitable DeviceFactory instance for device_type. """
     disks = kwargs.pop("disks", [])
@@ -140,6 +142,7 @@ def get_device_factory(blivet, device_type, size, **kwargs):
 
 
 class DeviceFactory(object):
+
     """ Class for creation of devices based on a top-down specification
 
         DeviceFactory instances can be combined/stacked to create more complex
@@ -379,6 +382,7 @@ class DeviceFactory(object):
     #
     # methods related to device size and disk space requirements
     #
+
     def _get_free_disk_space(self):
         free_info = self.storage.get_free_space(disks=self.disks)
         return sum(d[0] for d in free_info.values())
@@ -529,7 +533,6 @@ class DeviceFactory(object):
         """ Set this factory's container device. """
         self.container = self.get_container(device=self.raw_device,
                                             name=self.container_name)
-
 
     def _create_container(self):
         """ Create the container device required by this factory device. """
@@ -793,7 +796,7 @@ class DeviceFactory(object):
         log.debug("child factory class: %s", self.child_factory_class)
         log.debug("child factory args: %s", args)
         log.debug("child factory kwargs: %s", kwargs)
-        factory = self.child_factory_class(*args, **kwargs) # pylint: disable=not-callable
+        factory = self.child_factory_class(*args, **kwargs)  # pylint: disable=not-callable
         self.child_factory = factory
         factory.parent_factory = self
 
@@ -885,11 +888,14 @@ class DeviceFactory(object):
         self.storage.devicetree.names = self.__names
         self.storage.roots = self.__roots
 
+
 class PartitionFactory(DeviceFactory):
+
     """ Factory class for creating a partition. """
     #
     # methods related to device size and disk space requirements
     #
+
     def _get_base_size(self):
         if self.device:
             min_format_size = self.device.format.min_size
@@ -959,8 +965,11 @@ class PartitionFactory(DeviceFactory):
             log.error("failed to allocate partitions: %s", e)
             raise
 
+
 class PartitionSetFactory(PartitionFactory):
+
     """ Factory for creating a set of related partitions. """
+
     def __init__(self, storage, size, disks, fstype=None, encrypted=False,
                  devices=None):
         """ Create a new DeviceFactory instance.
@@ -1023,7 +1032,7 @@ class PartitionSetFactory(PartitionFactory):
         log.debug("members: %s", [d.name for d in members])
 
         ##
-        ## Determine the target disk set.
+        # Determine the target disk set.
         ##
         # XXX how can we detect/handle failure to use one or more of the disks?
         if self.parent_factory.device:
@@ -1047,7 +1056,7 @@ class PartitionSetFactory(PartitionFactory):
         log.debug("remove_disks: %s", [d.name for d in remove_disks])
 
         ##
-        ## Make a list of members we'll later remove from dropped disks.
+        # Make a list of members we'll later remove from dropped disks.
         ##
         removed = []
         for member in members[:]:
@@ -1056,7 +1065,7 @@ class PartitionSetFactory(PartitionFactory):
                 members.remove(member)
 
         ##
-        ## Handle toggling of member encryption.
+        # Handle toggling of member encryption.
         ##
         for member in members[:]:
             member_encrypted = isinstance(member, LUKSDevice)
@@ -1086,7 +1095,7 @@ class PartitionSetFactory(PartitionFactory):
                 continue
 
         ##
-        ## Prepare previously allocated member partitions for reallocation.
+        # Prepare previously allocated member partitions for reallocation.
         ##
         base_size = self._get_base_size()
         for member in members[:]:
@@ -1098,7 +1107,7 @@ class PartitionSetFactory(PartitionFactory):
             member.req_grow = True
 
         ##
-        ## Define members on added disks.
+        # Define members on added disks.
         ##
         new_members = []
         for disk in add_disks:
@@ -1128,7 +1137,7 @@ class PartitionSetFactory(PartitionFactory):
                 container.parents.append(member)
 
         ##
-        ## Remove members from dropped disks.
+        # Remove members from dropped disks.
         ##
         # Do this last to prevent tripping raid level constraints on the number
         # of members.
@@ -1143,12 +1152,12 @@ class PartitionSetFactory(PartitionFactory):
             self.storage.destroy_device(member)
 
         ##
-        ## Determine target container size.
+        # Determine target container size.
         ##
         total_space = self.parent_factory._get_total_space()
 
         ##
-        ## Set up SizeSet to manage growth of member partitions.
+        # Set up SizeSet to manage growth of member partitions.
         ##
         log.debug("adding a %s with size %s",
                   self.parent_factory.size_set_class.__name__, total_space)
@@ -1159,11 +1168,13 @@ class PartitionSetFactory(PartitionFactory):
             member.req_max_size = size_set.size
 
         ##
-        ## Allocate the member partitions.
+        # Allocate the member partitions.
         ##
         self._post_create()
 
+
 class LVMFactory(DeviceFactory):
+
     """ Factory for creating LVM logical volumes with partition PVs. """
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "lvmpv"
@@ -1325,7 +1336,7 @@ class LVMFactory(DeviceFactory):
                 return
 
             # strip off the vg name before setting
-            safe_new_name = safe_new_name[len(self.container.name)+1:]
+            safe_new_name = safe_new_name[len(self.container.name) + 1:]
             log.debug("renaming device '%s' to '%s'",
                         self.device.name, safe_new_name)
             self.device.name = safe_new_name
@@ -1355,7 +1366,9 @@ class LVMFactory(DeviceFactory):
 
         super(LVMFactory, self)._configure()
 
+
 class LVMThinPFactory(LVMFactory):
+
     """ Factory for creating LVM using thin provisioning.
 
         This class will be very similar to LVMFactory except that there are two
@@ -1396,6 +1409,7 @@ class LVMThinPFactory(LVMFactory):
             - the pool will need to be adjusted on device removal, which means
               pool management must not be hidden in device management routines
     """
+
     def __init__(self, *args, **kwargs):
         # pool name is for identification -- not renaming
         self.pool_name = kwargs.pop("pool_name", None)
@@ -1515,9 +1529,9 @@ class LVMThinPFactory(LVMFactory):
 
         log.debug("requested size is %s", self.size)
         size = self.size    # projected size for the pool (not padded)
-        free = Size(0)# total space within the vg that is available to us
+        free = Size(0)  # total space within the vg that is available to us
         if self.pool:
-            free += self.pool.free_space # pools are always auto-sized
+            free += self.pool.free_space  # pools are always auto-sized
             # pool lv sizes go toward projected pool size and vg free space
             size += self.pool.used_space
             free += self.pool.used_space
@@ -1540,7 +1554,7 @@ class LVMThinPFactory(LVMFactory):
         log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
         if free < (size + pad):
             pad = Size(blockdev.lvm.get_thpool_padding(free, self._pesize, included=True))
-            free = self.container.align(free - pad) # round down
+            free = self.container.align(free - pad)  # round down
             log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s", size, free, self.container.name)
             size = free
@@ -1603,7 +1617,9 @@ class LVMThinPFactory(LVMFactory):
         kwargs["thin_volume"] = True
         return super(LVMThinPFactory, self)._get_new_device(*args, **kwargs)
 
+
 class MDFactory(DeviceFactory):
+
     """ Factory for creating MD RAID devices. """
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "mdmember"
@@ -1646,7 +1662,9 @@ class MDFactory(DeviceFactory):
     def _create_container(self, *args, **kwargs):
         pass
 
+
 class BTRFSFactory(DeviceFactory):
+
     """ BTRFS subvolume """
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "btrfs"

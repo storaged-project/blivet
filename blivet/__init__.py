@@ -23,11 +23,11 @@
 __version__ = '1.16'
 
 ##
-## Default stub values for installer-specific stuff that gets set up in
-## enable_installer_mode.  These constants are only for use inside this file.
-## For use in other blivet files, they must either be passed to the function
-## in question or care must be taken so they are imported only after
-## enable_installer_mode is called.
+# Default stub values for installer-specific stuff that gets set up in
+# enable_installer_mode.  These constants are only for use inside this file.
+# For use in other blivet files, they must either be passed to the function
+# in question or care must be taken so they are imported only after
+# enable_installer_mode is called.
 ##
 iutil = None
 ROOT_PATH = '/'
@@ -36,7 +36,9 @@ _sysroot = ROOT_PATH
 short_product_name = 'blivet'
 ERROR_RAISE = 0
 
+
 class ErrorHandler(object):
+
     def cb(self, exn):
         # pylint: disable=unused-argument
         return ERROR_RAISE
@@ -46,7 +48,7 @@ error_handler = ErrorHandler()
 get_bootloader = lambda: None
 
 ##
-## end installer stubs
+# end installer stubs
 ##
 
 import sys
@@ -91,9 +93,10 @@ except GLib.GError as err:
 else:
     avail_plugs = set(avail_plugs)
 
-missing_plugs =  _REQUESTED_PLUGIN_NAMES - avail_plugs
+missing_plugs = _REQUESTED_PLUGIN_NAMES - avail_plugs
 for p in missing_plugs:
     log.info("Failed to load plugin %s", p)
+
 
 def enable_installer_mode():
     """ Configure the module for use by anaconda (OS installer). """
@@ -106,25 +109,26 @@ def enable_installer_mode():
     global error_handler
     global ERROR_RAISE
 
-    from pyanaconda import iutil # pylint: disable=redefined-outer-name
-    from pyanaconda.constants import shortProductName as short_product_name # pylint: disable=redefined-outer-name
-    from pyanaconda.bootloader import get_bootloader # pylint: disable=redefined-outer-name
-    from pyanaconda.errors import errorHandler as error_handler # pylint: disable=redefined-outer-name
-    from pyanaconda.errors import ERROR_RAISE # pylint: disable=redefined-outer-name
+    from pyanaconda import iutil  # pylint: disable=redefined-outer-name
+    from pyanaconda.constants import shortProductName as short_product_name  # pylint: disable=redefined-outer-name
+    from pyanaconda.bootloader import get_bootloader  # pylint: disable=redefined-outer-name
+    from pyanaconda.errors import errorHandler as error_handler  # pylint: disable=redefined-outer-name
+    from pyanaconda.errors import ERROR_RAISE  # pylint: disable=redefined-outer-name
 
     if hasattr(iutil, 'getTargetPhysicalRoot'):
         # For anaconda versions > 21.43
-        _storage_root = iutil.getTargetPhysicalRoot() # pylint: disable=no-name-in-module
+        _storage_root = iutil.getTargetPhysicalRoot()  # pylint: disable=no-name-in-module
         _sysroot = iutil.getSysroot()
     else:
         # For prior anaconda versions
-        from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name,no-name-in-module
+        from pyanaconda.constants import ROOT_PATH  # pylint: disable=redefined-outer-name,no-name-in-module
         _storage_root = _sysroot = ROOT_PATH
 
     from pyanaconda.anaconda_log import program_log_lock
     util.program_log_lock = program_log_lock
 
     flags.installer_mode = True
+
 
 def get_sysroot():
     """Returns the path to the target OS installation.
@@ -134,6 +138,7 @@ def get_sysroot():
     """
     return _sysroot
 
+
 def get_target_physical_root():
     """Returns the path to the "physical" storage root.
 
@@ -142,6 +147,7 @@ def get_target_physical_root():
     example by all OSTree-based installations.
     """
     return _storage_root
+
 
 def set_sysroot(storage_root, sysroot=None):
     """Change the OS root path.
@@ -154,7 +160,9 @@ def set_sysroot(storage_root, sysroot=None):
     if sysroot is not None:
         _sysroot = sysroot
 
+
 class _LazyImportObject(object):
+
     """
     A simple class that uses sys.modules and importlib to implement a
     lazy-imported object. Once it is called (or instantiated) or an attribute of
@@ -176,19 +184,19 @@ class _LazyImportObject(object):
         self._real_mod = real_mod
 
     def __call__(self, *args, **kwargs):
-        mod = importlib.import_module(__package__+"."+self._real_mod)
+        mod = importlib.import_module(__package__ + "." + self._real_mod)
         val = getattr(mod, self._name)
         sys.modules["%s.%s" % (__package__, self._name)] = val
         return val(*args, **kwargs)
 
     def __getattr__(self, attr):
-        mod = importlib.import_module(__package__+"."+self._real_mod)
+        mod = importlib.import_module(__package__ + "." + self._real_mod)
         val = getattr(mod, self._name)
         sys.modules["%s.%s" % (__package__, self._name)] = val
         return getattr(val, attr)
 
     def __dir__(self):
-        mod = importlib.import_module(__package__+"."+self._real_mod)
+        mod = importlib.import_module(__package__ + "." + self._real_mod)
         val = getattr(mod, self._name)
         sys.modules["%s.%s" % (__package__, self._name)] = val
         return dir(val)

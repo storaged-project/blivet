@@ -27,8 +27,10 @@ cached devices (like bcache, LVM cache and whatever appears in the future).
 from six import add_metaclass
 import abc
 
+
 @add_metaclass(abc.ABCMeta)
 class Cache(object):
+
     """Abstract base class for cache objects providing the cache-related
     functionality on cached devices. Instances of this class are not expected to
     be devices (both in what they represent as well as not instances of the
@@ -84,6 +86,7 @@ class Cache(object):
 
 @add_metaclass(abc.ABCMeta)
 class CacheStats(object):
+
     """Abstract base class for common statistics of caches (cached
     devices). Inheriting classes are expected to add (cache-)type-specific
     attributes on top of the common set.
@@ -115,8 +118,10 @@ class CacheStats(object):
         """number of misses"""
         pass
 
+
 @add_metaclass(abc.ABCMeta)
 class CacheRequest(object):
+
     """Abstract base class for cache requests specifying cache parameters for a
     cached device
 

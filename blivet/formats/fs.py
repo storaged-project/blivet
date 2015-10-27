@@ -57,7 +57,9 @@ from .fslib import kernel_filesystems, update_kernel_filesystems
 import logging
 log = logging.getLogger("blivet")
 
+
 class FS(DeviceFormat):
+
     """ Filesystem base class. """
     _type = "Abstract Filesystem Class"  # fs type name
     _name = None
@@ -120,7 +122,7 @@ class FS(DeviceFormat):
         self._minsize = self._minsize_class(self)
         self._size_info = self._size_info_class(self)
 
-        self._current_info = None # info obtained by _info task
+        self._current_info = None  # info obtained by _info task
 
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
@@ -211,7 +213,7 @@ class FS(DeviceFormat):
         """
         return label is None or (self._labelfs is not None and self._labelfs.label_format_ok(label))
 
-    label = property(lambda s: s._get_label(), lambda s,l: s._set_label(l),
+    label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
        doc="this filesystem's label")
 
     def _set_target_size(self, newsize):
@@ -541,7 +543,7 @@ class FS(DeviceFormat):
         try:
             rc = self.mount(mountpoint=mountpoint)
             ret = not rc
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.info, "test mount failed")
 
         if ret:
@@ -802,7 +804,9 @@ class FS(DeviceFormat):
         data.mkfsopts = self.create_options or ""
         data.fsprofile = self.fsprofile or ""
 
+
 class Ext2FS(FS):
+
     """ ext2 filesystem. """
     _type = "ext2"
     _modules = ["ext2"]
@@ -824,12 +828,13 @@ class Ext2FS(FS):
     _size_info_class = fssize.Ext2FSSize
     _writelabel_class = fswritelabel.Ext2FSWriteLabel
     parted_system = fileSystemType["ext2"]
-    _MetadataSizeFactor = 0.93 # ext2 metadata may take 7% of space
+    _MetadataSizeFactor = 0.93  # ext2 metadata may take 7% of space
 
 register_device_format(Ext2FS)
 
 
 class Ext3FS(Ext2FS):
+
     """ ext3 filesystem. """
     _type = "ext3"
     _modules = ["ext3"]
@@ -841,24 +846,26 @@ class Ext3FS(Ext2FS):
     # with regard to this maximum filesystem size, but if they're doing such
     # things they should know the implications of their chosen block size.
     _max_size = Size("16 TiB")
-    _MetadataSizeFactor = 0.90 # ext3 metadata may take 10% of space
+    _MetadataSizeFactor = 0.90  # ext3 metadata may take 10% of space
 
 register_device_format(Ext3FS)
 
 
 class Ext4FS(Ext3FS):
+
     """ ext4 filesystem. """
     _type = "ext4"
     _modules = ["ext4"]
     _mkfs_class = fsmkfs.Ext4FSMkfs
     parted_system = fileSystemType["ext4"]
     _max_size = Size("1 EiB")
-    _MetadataSizeFactor = 0.85 # ext4 metadata may take 15% of space
+    _MetadataSizeFactor = 0.85  # ext4 metadata may take 15% of space
 
 register_device_format(Ext4FS)
 
 
 class FATFS(FS):
+
     """ FAT filesystem. """
     _type = "vfat"
     _modules = ["vfat"]
@@ -866,13 +873,13 @@ class FATFS(FS):
     _supported = True
     _formattable = True
     _max_size = Size("1 TiB")
-    _packages = [ "dosfstools" ]
+    _packages = ["dosfstools"]
     _fsck_class = fsck.DosFSCK
     _mkfs_class = fsmkfs.FATFSMkfs
     _mount_class = fsmount.FATFSMount
     _readlabel_class = fsreadlabel.DosFSReadLabel
     _writelabel_class = fswritelabel.DosFSWriteLabel
-    _MetadataSizeFactor = 0.99 # fat metadata may take 1% of space
+    _MetadataSizeFactor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
 
@@ -894,6 +901,7 @@ register_device_format(EFIFS)
 
 
 class BTRFS(FS):
+
     """ btrfs filesystem """
     _type = "btrfs"
     _modules = ["btrfs"]
@@ -904,7 +912,7 @@ class BTRFS(FS):
     _min_size = Size("256 MiB")
     _max_size = Size("16 EiB")
     _mkfs_class = fsmkfs.BTRFSMkfs
-    _MetadataSizeFactor = 0.80 # btrfs metadata may take 20% of space
+    _MetadataSizeFactor = 0.80  # btrfs metadata may take 20% of space
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["btrfs"]
@@ -933,6 +941,7 @@ register_device_format(BTRFS)
 
 
 class GFS2(FS):
+
     """ gfs2 filesystem. """
     _type = "gfs2"
     _modules = ["dlm", "gfs2"]
@@ -955,6 +964,7 @@ register_device_format(GFS2)
 
 
 class JFS(FS):
+
     """ JFS filesystem """
     _type = "jfs"
     _modules = ["jfs"]
@@ -968,7 +978,7 @@ class JFS(FS):
     _mkfs_class = fsmkfs.JFSMkfs
     _size_info_class = fssize.JFSSize
     _writelabel_class = fswritelabel.JFSWriteLabel
-    _MetadataSizeFactor = 0.99 # jfs metadata may take 1% of space
+    _MetadataSizeFactor = 0.99  # jfs metadata may take 1% of space
     parted_system = fileSystemType["jfs"]
 
     @property
@@ -980,6 +990,7 @@ register_device_format(JFS)
 
 
 class ReiserFS(FS):
+
     """ reiserfs filesystem """
     _type = "reiserfs"
     _labelfs = fslabeling.ReiserFSLabeling()
@@ -994,7 +1005,7 @@ class ReiserFS(FS):
     _mkfs_class = fsmkfs.ReiserFSMkfs
     _size_info_class = fssize.ReiserFSSize
     _writelabel_class = fswritelabel.ReiserFSWriteLabel
-    _MetadataSizeFactor = 0.98 # reiserfs metadata may take 2% of space
+    _MetadataSizeFactor = 0.98  # reiserfs metadata may take 2% of space
     parted_system = fileSystemType["reiserfs"]
 
     @property
@@ -1006,6 +1017,7 @@ register_device_format(ReiserFS)
 
 
 class XFS(FS):
+
     """ XFS filesystem """
     _type = "xfs"
     _modules = ["xfs"]
@@ -1021,11 +1033,12 @@ class XFS(FS):
     _size_info_class = fssize.XFSSize
     _sync_class = fssync.XFSSync
     _writelabel_class = fswritelabel.XFSWriteLabel
-    _MetadataSizeFactor = 0.97 # xfs metadata may take 3% of space
+    _MetadataSizeFactor = 0.97  # xfs metadata may take 3% of space
     parted_system = fileSystemType["xfs"]
 
 
 register_device_format(XFS)
+
 
 class HFS(FS):
     _type = "hfs"
@@ -1091,6 +1104,7 @@ register_device_format(MacEFIFS)
 
 
 class NTFS(FS):
+
     """ ntfs filesystem. """
     _type = "ntfs"
     _labelfs = fslabeling.NTFSLabeling()
@@ -1114,6 +1128,7 @@ register_device_format(NTFS)
 
 # if this isn't going to be mountable it might as well not be here
 class NFS(FS):
+
     """ NFS filesystem. """
     _type = "nfs"
     _modules = ["nfs"]
@@ -1128,6 +1143,7 @@ register_device_format(NFS)
 
 
 class NFSv4(NFS):
+
     """ NFSv4 filesystem. """
     _type = "nfs4"
     _modules = ["nfs4"]
@@ -1136,6 +1152,7 @@ register_device_format(NFSv4)
 
 
 class Iso9660FS(FS):
+
     """ ISO9660 filesystem. """
     _type = "iso9660"
     _supported = True
@@ -1145,6 +1162,7 @@ register_device_format(Iso9660FS)
 
 
 class NoDevFS(FS):
+
     """ nodev filesystem base class """
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
@@ -1169,6 +1187,7 @@ register_device_format(NoDevFS)
 
 
 class DevPtsFS(NoDevFS):
+
     """ devpts filesystem. """
     _type = "devpts"
     _mount_class = fsmount.DevPtsFSMount
@@ -1273,7 +1292,7 @@ class TmpFS(NoDevFS):
             # self.system_mountpoint is set to the full changeroot path once
             # mounted so even with changeroot, statvfs should still work fine.
             st = util.eintr_retry_call(os.statvfs, self.system_mountpoint)
-            free_space = Size(st.f_bavail*st.f_frsize)
+            free_space = Size(st.f_bavail * st.f_frsize)
         else:
             # Free might be called even if the tmpfs mount has not been
             # mounted yet, in this case just return the size set for the mount.

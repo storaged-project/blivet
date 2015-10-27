@@ -59,6 +59,7 @@ from .size import Size
 import logging
 log = logging.getLogger("blivet")
 
+
 def parted_exn_handler(exn_type, exn_options, exn_msg):
     """ Answer any of parted's yes/no questions in the affirmative.
 
@@ -71,7 +72,9 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
         ret = parted.EXCEPTION_RESOLVE_YES
     return ret
 
+
 class Populator(object):
+
     def __init__(self, devicetree=None, conf=None, passphrase=None,
                  luks_dict=None, iscsi=None, dasd=None):
         """
@@ -409,7 +412,7 @@ class Populator(object):
 
         if disk is None:
             disk_name = os.path.basename(os.path.dirname(sysfs_path))
-            disk_name = disk_name.replace('!','/')
+            disk_name = disk_name.replace('!', '/')
             if disk_name.startswith("md"):
                 disk_name = blockdev.md.name_from_node(disk_name)
 
@@ -485,7 +488,7 @@ class Populator(object):
         vendor = util.get_sysfs_attr(sysfs_path, "device/vendor")
         model = util.get_sysfs_attr(sysfs_path, "device/model")
 
-        kwargs = { "serial": serial, "vendor": vendor, "model": model, "bus": bus }
+        kwargs = {"serial": serial, "vendor": vendor, "model": model, "bus": bus}
         if udev.device_is_iscsi(info) and not self._cleanup:
             disk_type = iScsiDiskDevice
             initiator = udev.device_get_iscsi_initiator(info)
@@ -510,7 +513,7 @@ class Populator(object):
                 kwargs["fw_name"] = name
         elif udev.device_is_fcoe(info):
             disk_type = FcoeDiskDevice
-            kwargs["nic"]        = udev.device_get_fcoe_nic(info)
+            kwargs["nic"] = udev.device_get_fcoe_nic(info)
             kwargs["identifier"] = udev.device_get_fcoe_identifier(info)
             log.info("%s is an fcoe disk", name)
         elif udev.device_get_md_container(info):
@@ -535,10 +538,10 @@ class Populator(object):
                     return
 
             kwargs["parents"] = [container]
-            kwargs["level"]  = udev.device_get_md_level(info)
+            kwargs["level"] = udev.device_get_md_level(info)
             kwargs["member_devices"] = udev.device_get_md_devices(info)
             kwargs["uuid"] = udev.device_get_md_uuid(info)
-            kwargs["exists"]  = True
+            kwargs["exists"] = True
             del kwargs["model"]
             del kwargs["serial"]
             del kwargs["vendor"]
@@ -781,7 +784,7 @@ class Populator(object):
 
         try:
             device.setup()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.warning, "setup of %s failed, aborting disklabel handler", [device.name])
             return
 
@@ -997,7 +1000,7 @@ class Populator(object):
             lv_dev = self.get_device_by_uuid(lv_uuid)
             if lv_dev is None:
                 lv_device = lv_class(lv_name, parents=lv_parents,
-                                     uuid=lv_uuid, size=lv_size,seg_type=lv_type,
+                                     uuid=lv_uuid, size=lv_size, seg_type=lv_type,
                                      exists=True, **lv_kwargs)
                 self.devicetree._add_device(lv_device)
                 if flags.installer_mode:
@@ -1276,7 +1279,7 @@ class Populator(object):
                 # device has the attribute to hold it.  But ATM we
                 # are not really using it. Commenting this out until
                 # we really need it.
-                #device.format.raidmem = block.getMemFromRaidSet(dm_array,
+                # device.format.raidmem = block.getMemFromRaidSet(dm_array,
                 #        major=major, minor=minor, uuid=uuid, name=name)
 
     def handle_btrfs_format(self, info, device):

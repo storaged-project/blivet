@@ -23,8 +23,10 @@ import abc
 
 from six import add_metaclass
 
+
 @add_metaclass(abc.ABCMeta)
 class Task(object):
+
     """ An abstract class that represents some task. """
 
     # Whether or not the functionality is implemented in the task class.
@@ -59,7 +61,9 @@ class Task(object):
         """ Do the task for this class. """
         raise NotImplementedError()
 
+
 class UnimplementedTask(Task):
+
     """ A null Task, which returns a negative or empty for all properties."""
 
     description = "an unimplemented task"
@@ -77,8 +81,10 @@ class UnimplementedTask(Task):
     def do_task(self, *args, **kwargs):
         raise NotImplementedError()
 
+
 @add_metaclass(abc.ABCMeta)
 class BasicApplication(Task):
+
     """ A task representing an application. """
 
     ext = abc.abstractproperty(doc="The object representing the external resource.")

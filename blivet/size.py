@@ -72,9 +72,10 @@ _BINARY_PREFIXES = [KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB]
 _EMPTY_PREFIX = B
 
 if six.PY2:
-    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)  # pylint: disable=no-member
 else:
-    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)  # pylint: disable=no-member
+
 
 def _lower_ascii(s):
     """Convert a string to lowercase using only ASCII character definitions.
@@ -90,7 +91,8 @@ def _lower_ascii(s):
     # out we expect this function to always return string even if given bytes.
     if not six.PY2 and isinstance(s, bytes):
         s = s.decode(sys.getdefaultencoding())
-    return s.translate(_ASCIIlower_table) # pylint: disable=no-member
+    return s.translate(_ASCIIlower_table)  # pylint: disable=no-member
+
 
 def _make_spec(prefix, suffix, xlate, lowercase=True):
     """ Synthesizes a whole word from prefix and suffix.
@@ -110,6 +112,7 @@ def _make_spec(prefix, suffix, xlate, lowercase=True):
         word = prefix + suffix
         return _lower_ascii(word) if lowercase else word
 
+
 def unit_str(unit, xlate=False):
     """ Return a string representation of unit.
 
@@ -119,6 +122,7 @@ def unit_str(unit, xlate=False):
         :returns: string representation of unit
     """
     return _make_spec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+
 
 def parse_units(spec, xlate):
     """ Parse a unit specification and return corresponding factor.
@@ -155,6 +159,7 @@ def parse_units(spec, xlate):
         return matches[0]
 
     return None
+
 
 def parse_spec(spec):
     """ Parse string representation of size.
@@ -241,7 +246,9 @@ def parse_spec(spec):
 
     raise ValueError("invalid size specification", spec)
 
+
 class Size(Decimal):
+
     """ Common class to represent storage device and filesystem sizes.
         Can handle parsing strings such as 45MB or 6.7GB to initialize
         itself, or can be initialized with a numerical size in bytes.

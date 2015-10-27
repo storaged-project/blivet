@@ -6,6 +6,7 @@ import traceback
 log = logging.getLogger("blivet")
 log.addHandler(logging.NullHandler())
 
+
 def function_name_and_depth():
     IGNORED_FUNCS = ["function_name_and_depth",
                      "log_method_call",
@@ -18,6 +19,7 @@ def function_name_and_depth():
             return (methodname, len(stack) - i)
 
     return ("unknown function?", 0)
+
 
 def log_method_call(d, *args, **kwargs):
     classname = d.__class__.__name__
@@ -38,6 +40,7 @@ def log_method_call(d, *args, **kwargs):
 
     log.debug(fmt, *fmt_args)
 
+
 def log_method_return(d, retval):
     classname = d.__class__.__name__
     (methodname, depth) = function_name_and_depth()
@@ -45,6 +48,7 @@ def log_method_return(d, retval):
     fmt = "%s%s.%s returned %s"
     fmt_args = (spaces, classname, methodname, retval)
     log.debug(fmt, *fmt_args)
+
 
 def log_exception_info(log_func=log.debug, fmt_str=None, fmt_args=None, ignored=True):
     """Log detailed exception information.

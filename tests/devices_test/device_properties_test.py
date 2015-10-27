@@ -36,6 +36,7 @@ BTRFS_MIN_MEMBER_SIZE = get_format("btrfs").min_size
 
 # pylint: disable=unnecessary-lambda
 
+
 def xform(func):
     """ Simple wrapper function that transforms a function that takes
         a precalculated value and a message to a function that takes
@@ -50,36 +51,38 @@ def xform(func):
     """
     return lambda d, a: func(getattr(d, a), a)
 
+
 class DeviceStateTestCase(unittest.TestCase):
+
     """A class which implements a simple method of checking the state
        of a device object.
     """
 
     def __init__(self, methodName='run_test'):
         self._state_functions = {
-           "current_size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "direct" : xform(self.assertTrue),
-           "exists" : xform(self.assertFalse),
-           "format" : xform(self.assertIsNotNone),
-           "format_args" : xform(lambda x, m: self.assertEqual(x, [], m)),
-           "is_disk" : xform(self.assertFalse),
-           "isleaf" : xform(self.assertTrue),
-           "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "max_size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "media_present" : xform(self.assertTrue),
-           "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+           "current_size": xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "direct": xform(self.assertTrue),
+           "exists": xform(self.assertFalse),
+           "format": xform(self.assertIsNotNone),
+           "format_args": xform(lambda x, m: self.assertEqual(x, [], m)),
+           "is_disk": xform(self.assertFalse),
+           "isleaf": xform(self.assertTrue),
+           "major": xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "max_size": xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "media_present": xform(self.assertTrue),
+           "minor": xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "parents": xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                                     self.assertIsInstance(x, ParentList, m)),
-           "partitionable" : xform(self.assertFalse),
-           "path" : xform(lambda x, m: self.assertRegex(x, "^/dev", m)),
-           "raw_device" : xform(self.assertIsNotNone),
-           "resizable" : xform(self.assertFalse),
-           "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "status" : xform(self.assertFalse),
-           "sysfs_path" : xform(lambda x, m: self.assertEqual(x, "", m)),
-           "target_size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "type" : xform(lambda x, m: self.assertEqual(x, "mdarray", m)),
-           "uuid" : xform(self.assertIsNone)
+           "partitionable": xform(self.assertFalse),
+           "path": xform(lambda x, m: self.assertRegex(x, "^/dev", m)),
+           "raw_device": xform(self.assertIsNotNone),
+           "resizable": xform(self.assertFalse),
+           "size": xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "status": xform(self.assertFalse),
+           "sysfs_path": xform(lambda x, m: self.assertEqual(x, "", m)),
+           "target_size": xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "type": xform(lambda x, m: self.assertEqual(x, "mdarray", m)),
+           "uuid": xform(self.assertIsNone)
         }
         super(DeviceStateTestCase, self).__init__(methodName=methodName)
 
@@ -95,7 +98,7 @@ class DeviceStateTestCase(unittest.TestCase):
            If the value is None, then the test starts the debugger instead.
         """
         self.longMessage = True
-        for k,v in self._state_functions.items():
+        for k, v in self._state_functions.items():
             if k in kwargs:
                 test_func = kwargs[k]
                 if test_func is None:
@@ -107,7 +110,9 @@ class DeviceStateTestCase(unittest.TestCase):
             else:
                 v(device, k)
 
+
 class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
+
     """Note that these tests postdate the code that they test.
        Therefore, they capture the behavior of the code as it is now,
        not necessarily its intended or correct behavior. See the initial
@@ -117,17 +122,17 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
     def __init__(self, methodName='run_test'):
         super(MDRaidArrayDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {
-           "create_bitmap" : xform(lambda d, a: self.assertFalse),
-           "description" : xform(self.assertIsNotNone),
-           "format_class" : xform(self.assertIsNotNone),
-           "level" : xform(self.assertIsNone),
-           "mdadm_format_uuid" : xform(self.assertIsNone),
-           "member_devices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "members" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
+           "create_bitmap": xform(lambda d, a: self.assertFalse),
+           "description": xform(self.assertIsNotNone),
+           "format_class": xform(self.assertIsNotNone),
+           "level": xform(self.assertIsNone),
+           "mdadm_format_uuid": xform(self.assertIsNone),
+           "member_devices": xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "members": xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                                     self.assertIsInstance(x, list, m)),
-           "metadata_version" : xform(lambda x, m: self.assertEqual(x, "default", m)),
-           "spares" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "total_devices" : xform(lambda x, m: self.assertEqual(x, 0, m))
+           "metadata_version": xform(lambda x, m: self.assertEqual(x, "default", m)),
+           "spares": xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "total_devices": xform(lambda x, m: self.assertEqual(x, 0, m))
         }
         self._state_functions.update(state_functions)
 
@@ -186,7 +191,6 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.dev7 = MDRaidArrayDevice("dev7", level="raid10", parents=parents)
 
         self.dev8 = MDRaidArrayDevice("dev8", level=1, exists=True)
-
 
         parents_1 = [
            DiskDevice("name1", fmt=get_format("mdmember")),
@@ -353,7 +357,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         """
 
         ##
-        ## level tests
+        # level tests
         ##
         self.state_check(self.dev1,
            level=xform(lambda x, m: self.assertEqual(x.name, "container", m)),
@@ -393,16 +397,15 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
 
         ##
-        ## existing device tests
+        # existing device tests
         ##
         self.state_check(self.dev8,
            exists=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
            metadata_version=xform(self.assertIsNone))
 
-
         ##
-        ## mdbiosraidarray tests
+        # mdbiosraidarray tests
         ##
         self.state_check(self.dev9,
            create_bitmap=xform(self.assertFalse),
@@ -415,10 +418,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            partitionable=xform(self.assertTrue),
            total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
-           type = xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
+           type=xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
         ##
-        ## mdcontainer tests
+        # mdcontainer tests
         ##
         dev9_container = self.dev9.parents[0]
         self.state_check(dev9_container,
@@ -435,10 +438,10 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            partitionable=xform(self.assertFalse),
            total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
-           type = xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
+           type=xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
 
         ##
-        ## size tests
+        # size tests
         ##
         self.state_check(self.dev10,
            create_bitmap=xform(self.assertFalse),
@@ -557,13 +560,15 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def test_mdraid_array_device_methods(self):
         """Test for method calls on initialized MDRaidDevices."""
-        with self.assertRaisesRegex(DeviceError, "invalid" ):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             self.dev7.level = "junk"
 
-        with self.assertRaisesRegex(DeviceError, "invalid" ):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             self.dev7.level = None
 
+
 class BTRFSDeviceTestCase(DeviceStateTestCase):
+
     """Note that these tests postdate the code that they test.
        Therefore, they capture the behavior of the code as it is now,
        not necessarily its intended or correct behavior. See the initial
@@ -573,12 +578,12 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
     def __init__(self, methodName='run_test'):
         super(BTRFSDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {
-           "data_level" : lambda d, a: self.assertFalse(hasattr(d,a)),
-           "fstab_spec" : xform(self.assertIsNotNone),
-           "media_present" : xform(self.assertTrue),
-           "metadata_level" : lambda d, a: self.assertFalse(hasattr(d, a)),
-           "type" : xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
-           "vol_id" : xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
+           "data_level": lambda d, a: self.assertFalse(hasattr(d, a)),
+           "fstab_spec": xform(self.assertIsNotNone),
+           "media_present": xform(self.assertTrue),
+           "metadata_level": lambda d, a: self.assertFalse(hasattr(d, a)),
+           "type": xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
+           "vol_id": xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
         self._state_functions.update(state_functions)
 
     def setUp(self):
@@ -667,11 +672,11 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         """Test for method calls on initialized BTRFS Devices."""
         # volumes do not have ancestor volumes
         with self.assertRaises(AttributeError):
-            self.dev1.volume # pylint: disable=no-member,pointless-statement
+            self.dev1.volume  # pylint: disable=no-member,pointless-statement
 
         # subvolumes do not have default subvolumes
         with self.assertRaises(AttributeError):
-            self.dev2.default_sub_volume # pylint: disable=no-member,pointless-statement
+            self.dev2.default_sub_volume  # pylint: disable=no-member,pointless-statement
 
         self.assertIsNotNone(self.dev2.volume)
 
@@ -728,7 +733,9 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         self.assertEqual(snap.depends_on(vol), True)
         self.assertEqual(vol.depends_on(snap), False)
 
+
 class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
+
     def __init__(self, methodName="run_test"):
         super(LVMLogicalVolumeDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {

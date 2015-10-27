@@ -21,7 +21,9 @@
 
 from .util import stringize, unicodeize
 
+
 class PartSpec(object):
+
     def __init__(self, mountpoint=None, fstype=None, size=None, max_size=None,
                  grow=False, btr=False, lv=False, thin=False, weight=0,
                  required_space=0, encrypted=False):

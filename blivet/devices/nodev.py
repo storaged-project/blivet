@@ -27,7 +27,9 @@ log = logging.getLogger("blivet")
 from ..size import Size
 from .storage import StorageDevice
 
+
 class NoDevice(StorageDevice):
+
     """ A nodev device for nodev filesystems like tmpfs. """
     _type = "nodev"
 
@@ -73,7 +75,9 @@ class NoDevice(StorageDevice):
     def update_size(self):
         pass
 
+
 class TmpFSDevice(NoDevice):
+
     """ A nodev device for a tmpfs filesystem. """
     _type = "tmpfs"
     _format_immutable = True

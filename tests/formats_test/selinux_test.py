@@ -8,8 +8,10 @@ from tests import loopbackedtestcase
 import blivet.formats.fs as fs
 from blivet.size import Size
 
+
 @unittest.skipUnless(selinux.is_selinux_enabled() == 1, "SELinux is disabled")
 class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
+
     """Testing SELinux contexts.
     """
 

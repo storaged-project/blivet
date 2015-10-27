@@ -37,6 +37,7 @@ log = logging.getLogger("blivet")
 
 
 class MDRaidMember(DeviceFormat):
+
     """ An mdraid member disk. """
     _type = "mdmember"
     _name = N_("software RAID")

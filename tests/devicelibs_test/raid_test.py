@@ -4,6 +4,7 @@ import blivet.devicelibs.raid as raid
 import blivet.errors as errors
 from blivet.size import Size
 
+
 class RaidTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class RaidTestCase(unittest.TestCase):
             raid.ErsatzRAID()
 
         ##
-        ## get_min_members
+        # get_min_members
         ##
         # pass
         self.assertEqual(raid.RAID0.min_members, 2)
@@ -28,7 +29,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.Linear.min_members, 1)
 
         ##
-        ## get_max_spares
+        # get_max_spares
         ##
         # pass
         self.assertEqual(raid.RAID0.get_max_spares(5), 0)
@@ -40,7 +41,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.Single.get_max_spares(5), 4)
 
         ##
-        ## raid_level
+        # raid_level
         ##
         # pass
         self.assertIs(self.levels.raid_level(10), raid.RAID10)
@@ -57,7 +58,7 @@ class RaidTestCase(unittest.TestCase):
             self.levels.raid_level(None)
 
         ##
-        ## get_max_spares
+        # get_max_spares
         ##
         self.assertEqual(raid.RAID0.get_max_spares(1000), 0)
         self.assertEqual(raid.RAID1.get_max_spares(2), 0)
@@ -66,16 +67,16 @@ class RaidTestCase(unittest.TestCase):
             raid.RAID0.get_max_spares(0)
 
         ##
-        ## get_base_member_size
+        # get_base_member_size
         ##
-        self.assertEqual(raid.RAID0.get_base_member_size(4,2), 2)
-        self.assertEqual(raid.RAID1.get_base_member_size(4,2), 4)
-        self.assertEqual(raid.RAID4.get_base_member_size(4,4), 2)
-        self.assertEqual(raid.RAID5.get_base_member_size(4,4), 2)
-        self.assertEqual(raid.RAID6.get_base_member_size(4,4), 2)
-        self.assertEqual(raid.RAID10.get_base_member_size(4,4), 2)
-        self.assertEqual(raid.RAID10.get_base_member_size(4,5), 2)
-        self.assertEqual(raid.RAID10.get_base_member_size(5,5), 3)
+        self.assertEqual(raid.RAID0.get_base_member_size(4, 2), 2)
+        self.assertEqual(raid.RAID1.get_base_member_size(4, 2), 4)
+        self.assertEqual(raid.RAID4.get_base_member_size(4, 4), 2)
+        self.assertEqual(raid.RAID5.get_base_member_size(4, 4), 2)
+        self.assertEqual(raid.RAID6.get_base_member_size(4, 4), 2)
+        self.assertEqual(raid.RAID10.get_base_member_size(4, 4), 2)
+        self.assertEqual(raid.RAID10.get_base_member_size(4, 5), 2)
+        self.assertEqual(raid.RAID10.get_base_member_size(5, 5), 3)
 
         with self.assertRaises(errors.RaidError):
             raid.RAID10.get_base_member_size(4, 3)
@@ -83,7 +84,7 @@ class RaidTestCase(unittest.TestCase):
             raid.RAID10.get_base_member_size(-4, 4)
 
         ##
-        ## get_net_array_size
+        # get_net_array_size
         ##
         self.assertEqual(raid.RAID0.get_net_array_size(4, Size(2)), Size(8))
         self.assertEqual(raid.RAID1.get_net_array_size(4, Size(2)), Size(2))
@@ -94,7 +95,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID10.get_net_array_size(5, Size(2)), Size(4))
 
         ##
-        ## get_recommended_stride
+        # get_recommended_stride
         ##
         self.assertIsNone(raid.RAID1.get_recommended_stride(32))
         self.assertIsNone(raid.RAID6.get_recommended_stride(32))
@@ -109,7 +110,7 @@ class RaidTestCase(unittest.TestCase):
             raid.RAID10.get_recommended_stride(1)
 
         ##
-        ## size
+        # size
         ##
         sizes = [Size("32MiB"), Size("128MiB"), Size("128MiB"), Size("64MiB")]
         for r in (l for l in raid.ALL_LEVELS if l not in (raid.Container, raid.Dup)):
@@ -134,16 +135,15 @@ class RaidTestCase(unittest.TestCase):
                 self.assertEqual(r.get_size(sizes, 4, Size("2MiB"), lambda x: Size("31MiB")), sum(sizes, Size(0)) - 4 * Size("31MiB"))
 
         ##
-        ## names
+        # names
         ##
         self.assertListEqual(raid.RAID0.names,
            ["raid0", "stripe", "RAID0", "0", 0])
         self.assertListEqual(raid.RAID10.names,
            ["raid10", "RAID10", "10", 10])
 
-
         ##
-        ## __init__
+        # __init__
         ##
         with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
             self.levels_none.raid_level(10)

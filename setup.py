@@ -11,7 +11,9 @@ import re
 
 # this is copied straight from distutils.filelist.findall , but with os.stat()
 # replaced with os.lstat(), so S_ISLNK() can actually tell us something.
-def findall(dirname = os.curdir):
+
+
+def findall(dirname=os.curdir):
     from stat import ST_MODE, S_ISREG, S_ISDIR, S_ISLNK
 
     file_list = []
@@ -43,9 +45,11 @@ filelist.findall = findall
 
 AM_RE = r'(^.. automodule::.+?(?P<mo>^\s+?:member-order:.+?\n)?.+?:\n)\n(?(mo)NEVER)'
 
+
 def generate_api_docs():
     if subprocess.call(["sphinx-apidoc", "-o", "doc", "blivet"]):
         sys.stderr.write("failed to generate API docs")
+
 
 def add_member_order_option(files):
     """ Add an automodule option to preserve source code member order. """
@@ -54,7 +58,7 @@ def add_member_order_option(files):
         amended = re.sub(AM_RE,
                          r'\1    :member-order: bysource\n\n',
                          buf,
-                         flags=re.DOTALL|re.MULTILINE)
+                         flags=re.DOTALL | re.MULTILINE)
         open(fn, "w").write(amended)
 
 data_files = []

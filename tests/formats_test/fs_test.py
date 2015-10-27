@@ -9,87 +9,114 @@ from tests import loopbackedtestcase
 
 from . import fstesting
 
+
 class Ext2FSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.Ext2FS
+
 
 class Ext3FSTestCase(Ext2FSTestCase):
     _fs_class = fs.Ext3FS
 
+
 class Ext4FSTestCase(Ext3FSTestCase):
     _fs_class = fs.Ext4FS
+
 
 class FATFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.FATFS
 
+
 class EFIFSTestCase(FATFSTestCase):
     _fs_class = fs.EFIFS
 
+
 class BTRFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BTRFS
+
 
 @unittest.skip("Unable to create GFS2 filesystem.")
 class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
 
+
 class JFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.JFS
+
 
 class ReiserFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.ReiserFS
 
+
 class XFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.XFS
+
 
 class HFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.HFS
 
+
 class AppleBootstrapFSTestCase(HFSTestCase):
     _fs_class = fs.AppleBootstrapFS
+
 
 class HFSPlusTestCase(fstesting.FSAsRoot):
     _fs_class = fs.HFSPlus
 
+
 class MacEFIFSTestCase(HFSPlusTestCase):
     _fs_class = fs.MacEFIFS
+
 
 @unittest.skip("Unable to create because NTFS._formattable is False.")
 class NTFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NTFS
 
+
 @unittest.skip("Unable to create because device fails device_check().")
 class NFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NFS
 
+
 class NFSv4TestCase(NFSTestCase):
     _fs_class = fs.NFSv4
 
+
 class Iso9660FS(fstesting.FSAsRoot):
     _fs_class = fs.Iso9660FS
+
 
 @unittest.skip("Too strange to test using this framework.")
 class NoDevFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NoDevFS
 
+
 class DevPtsFSTestCase(NoDevFSTestCase):
     _fs_class = fs.DevPtsFS
+
 
 class ProcFSTestCase(NoDevFSTestCase):
     _fs_class = fs.ProcFS
 
+
 class SysFSTestCase(NoDevFSTestCase):
     _fs_class = fs.SysFS
+
 
 class TmpFSTestCase(NoDevFSTestCase):
     _fs_class = fs.TmpFS
 
+
 class SELinuxFSTestCase(NoDevFSTestCase):
     _fs_class = fs.SELinuxFS
+
 
 class USBFSTestCase(NoDevFSTestCase):
     _fs_class = fs.USBFS
 
+
 class BindFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BindFS
+
 
 class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
@@ -103,6 +130,7 @@ class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertTrue(an_fs.exists)
         self.assertEqual(an_fs.device, "tmpfs")
         self.assertTrue(an_fs.test_mount())
+
 
 class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
@@ -135,6 +163,6 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
     def tearDown(self):
         try:
             self.an_fs.unmount()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             pass
         os.rmdir(self.mountpoint)

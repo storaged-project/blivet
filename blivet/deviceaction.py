@@ -70,33 +70,38 @@ RESIZE_GROW = 89
 resize_strings = {RESIZE_SHRINK: "Shrink",
                   RESIZE_GROW: "Grow"}
 
+
 def action_type_from_string(type_string):
     if type_string is None:
         return None
 
-    for (k,v) in action_strings.items():
+    for (k, v) in action_strings.items():
         if v.lower() == type_string.lower():
             return k
 
     return resize_type_from_string(type_string)
 
+
 def action_object_from_string(type_string):
     if type_string is None:
         return None
 
-    for (k,v) in object_strings.items():
+    for (k, v) in object_strings.items():
         if v.lower() == type_string.lower():
             return k
+
 
 def resize_type_from_string(type_string):
     if type_string is None:
         return None
 
-    for (k,v) in resize_strings.items():
+    for (k, v) in resize_strings.items():
         if v.lower() == type_string.lower():
             return k
 
+
 class DeviceAction(util.ObjectID):
+
     """ An action that will be carried out in the future on a Device.
 
         These classes represent actions to be performed on devices or
@@ -196,11 +201,11 @@ class DeviceAction(util.ObjectID):
 
     @property
     def is_shrink(self):
-        return (self.is_resize and self.dir == RESIZE_SHRINK) # pylint: disable=no-member
+        return (self.is_resize and self.dir == RESIZE_SHRINK)  # pylint: disable=no-member
 
     @property
     def is_grow(self):
-        return (self.is_resize and self.dir == RESIZE_GROW) # pylint: disable=no-member
+        return (self.is_resize and self.dir == RESIZE_GROW)  # pylint: disable=no-member
 
     @property
     def is_add(self):
@@ -241,7 +246,7 @@ class DeviceAction(util.ObjectID):
         """ String representing the direction of a resize action. """
         s = ""
         if self.is_resize:
-            s = resize_strings[self.dir] # pylint: disable=no-member
+            s = resize_strings[self.dir]  # pylint: disable=no-member
 
         return s
 
@@ -295,6 +300,7 @@ class DeviceAction(util.ObjectID):
 
 
 class ActionCreateDevice(DeviceAction):
+
     """ Action representing the creation of a new device. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_DEVICE
@@ -349,6 +355,7 @@ class ActionCreateDevice(DeviceAction):
 
 
 class ActionDestroyDevice(DeviceAction):
+
     """ An action representing the deletion of an existing device. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
@@ -423,6 +430,7 @@ class ActionDestroyDevice(DeviceAction):
 
 
 class ActionResizeDevice(DeviceAction):
+
     """ An action representing the resizing of an existing device. """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_DEVICE
@@ -505,6 +513,7 @@ class ActionResizeDevice(DeviceAction):
 
 
 class ActionCreateFormat(DeviceAction):
+
     """ An action representing creation of a new filesystem. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_FORMAT
@@ -554,7 +563,7 @@ class ActionCreateFormat(DeviceAction):
         if isinstance(self.device, PartitionDevice):
             for flag in partitionFlag.keys():
                 # Keep the LBA flag on pre-existing partitions
-                if flag in [ PARTITION_LBA, self.format.parted_flag ]:
+                if flag in [PARTITION_LBA, self.format.parted_flag]:
                     continue
                 self.device.unset_flag(flag)
 
@@ -647,6 +656,7 @@ class ActionCreateFormat(DeviceAction):
 
 
 class ActionDestroyFormat(DeviceAction):
+
     """ An action representing the removal of an existing filesystem. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_FORMAT
@@ -738,7 +748,9 @@ class ActionDestroyFormat(DeviceAction):
 
         return retval
 
+
 class ActionResizeFormat(DeviceAction):
+
     """ An action representing the resizing of an existing filesystem.
 
         XXX Do we even want to support resizing of a filesystem without
@@ -829,6 +841,7 @@ class ActionResizeFormat(DeviceAction):
 
 
 class ActionAddMember(DeviceAction):
+
     """ An action representing addition of a member device to a container. """
     type = ACTION_TYPE_ADD
     obj = ACTION_OBJECT_CONTAINER
@@ -893,6 +906,7 @@ class ActionAddMember(DeviceAction):
 
 
 class ActionRemoveMember(DeviceAction):
+
     """ An action representing removal of a member device from a container. """
     type = ACTION_TYPE_REMOVE
     obj = ACTION_OBJECT_CONTAINER

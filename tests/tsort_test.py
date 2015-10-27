@@ -2,7 +2,9 @@
 import unittest
 import blivet.tsort
 
+
 class TopologicalSortTestCase(unittest.TestCase):
+
     def run_test(self):
         items = [1, 2, 3, 4, 5]
         edges = [(5, 4), (4, 3), (3, 2), (2, 1)]
@@ -39,7 +41,7 @@ class TopologicalSortTestCase(unittest.TestCase):
 
         try:
             order = blivet.tsort.tsort(graph)
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             self.fail(e)
 
         # verify output list is of the correct length

@@ -40,6 +40,7 @@ log = logging.getLogger("blivet")
 
 
 class LUKS(DeviceFormat):
+
     """ LUKS """
     _type = "luks"
     _name = N_("LUKS")
@@ -209,7 +210,7 @@ class LUKS(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        super(LUKS, self)._create(**kwargs) # set up the event sync
+        super(LUKS, self)._create(**kwargs)  # set up the event sync
         blockdev.crypto.luks_format(self.device,
                                     passphrase=self.__passphrase,
                                     key_file=self._key_file,

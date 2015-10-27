@@ -11,7 +11,9 @@ from blivet.formats import get_format
 from blivet.devices import StorageDevice
 from blivet.devices import PartitionDevice
 
+
 class StorageTestCase(unittest.TestCase):
+
     """ StorageTestCase
 
         This is a base class for storage test cases. It sets up imports of
@@ -21,6 +23,7 @@ class StorageTestCase(unittest.TestCase):
         system, along with a couple of convenience methods.
 
     """
+
     def setUp(self):
         self.storage = blivet.Blivet()
 
@@ -99,7 +102,7 @@ class StorageTestCase(unittest.TestCase):
             device._current_size = kwargs.get("size")
 
         if isinstance(device, blivet.devices.PartitionDevice):
-            #if exists:
+            # if exists:
             #    device.parents = device.req_disks
             device.parents = device.req_disks
 

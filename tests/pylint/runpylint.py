@@ -4,11 +4,13 @@ import sys
 
 from pocketlint import FalsePositive, PocketLintConfig, PocketLinter
 
+
 class BlivetLintConfig(PocketLintConfig):
+
     def __init__(self):
         PocketLintConfig.__init__(self)
 
-        self.falsePositives = [ FalsePositive(r"BTRFSVolumeDevice._create: Instance of 'DeviceFormat' has no 'label' member"),
+        self.falsePositives = [FalsePositive(r"BTRFSVolumeDevice._create: Instance of 'DeviceFormat' has no 'label' member"),
                                 FalsePositive(r"Catching an exception which doesn't inherit from BaseException: (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|G)Error$"),
                                 FalsePositive(r"Function 'run_program' has no 'called' member"),
                                 FalsePositive(r"(PartitioningTestCase|PartitionDeviceTestCase).*: Instance of 'DeviceFormat' has no .* member"),
@@ -22,7 +24,7 @@ class BlivetLintConfig(PocketLintConfig):
 
     @property
     def disabledOptions(self):
-        return [ "W0105",           # String statement has no effect
+        return ["W0105",           # String statement has no effect
                  "W0110",           # map/filter on lambda could be replaced by comprehension
                  "W0141",           # Used builtin function %r
                  "W0142",           # Used * or ** magic
