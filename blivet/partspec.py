@@ -22,9 +22,9 @@
 from .util import stringize, unicodeize
 
 class PartSpec(object):
-    def __init__(self, mountpoint=None, fstype=None, size=None, maxSize=None,
+    def __init__(self, mountpoint=None, fstype=None, size=None, max_size=None,
                  grow=False, btr=False, lv=False, thin=False, weight=0,
-                 requiredSpace=0, encrypted=False):
+                 required_space=0, encrypted=False):
         """ Create a new storage specification.  These are used to specify
             the default partitioning layout as an object before we have the
             storage system up and running.  The attributes are obvious
@@ -42,7 +42,7 @@ class PartSpec(object):
                       make sure /boot ends up in front, and any special (PReP,
                       appleboot, etc.) partitions end up in front of /boot.
                       This value means nothing unless lv and btr are both False.
-            requiredSpace -- This value is only taken into account if
+            required_space -- This value is only taken into account if
                              lv=True, and specifies the size in MiB that the
                              containing VG must be for this PartSpec to even
                              get used.  The VG's size is calculated before any
@@ -57,32 +57,32 @@ class PartSpec(object):
         self.mountpoint = mountpoint
         self.fstype = fstype
         self.size = size
-        self.maxSize = maxSize
+        self.max_size = max_size
         self.grow = grow
         self.lv = lv
         self.btr = btr
         self.thin = thin
         self.weight = weight
-        self.requiredSpace = requiredSpace
+        self.required_space = required_space
         self.encrypted = encrypted
 
     # Force str and unicode types in case any of the properties are unicode
-    def _toString(self):
+    def _to_string(self):
         s = ("%(type)s instance (%(id)s) -- \n"
              "  mountpoint = %(mountpoint)s  lv = %(lv)s"
              "  thin = %(thin)s  btrfs = %(btrfs)s\n"
              "  weight = %(weight)s  fstype = %(fstype)s  encrypted = %(enc)s\n"
-             "  size = %(size)s  maxSize = %(maxSize)s  grow = %(grow)s\n" %
+             "  size = %(size)s  max_size = %(max_size)s  grow = %(grow)s\n" %
              {"type": self.__class__.__name__, "id": "%#x" % id(self),
               "mountpoint": self.mountpoint, "lv": self.lv, "btrfs": self.btr,
               "weight": self.weight, "fstype": self.fstype, "size": self.size,
-              "enc": self.encrypted, "maxSize": self.maxSize, "grow": self.grow,
+              "enc": self.encrypted, "max_size": self.max_size, "grow": self.grow,
               "thin": self.thin})
 
         return s
 
     def __str__(self):
-        return stringize(self._toString())
+        return stringize(self._to_string())
 
     def __unicode__(self):
-        return unicodeize(self._toString())
+        return unicodeize(self._to_string())

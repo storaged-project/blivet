@@ -314,7 +314,7 @@ class RAIDn(RAIDLevel):
 
 class RAIDLevels(object):
     """A class which keeps track of registered RAID levels. This class
-       may be extended, overriding the isRaid method to include any
+       may be extended, overriding the is_raid method to include any
        additional properties that a client of this package may require
        for its RAID levels.
     """
@@ -336,10 +336,10 @@ class RAIDLevels(object):
             if len(matches) != 1:
                 raise RaidError("invalid standard RAID level descriptor %s" % level)
             else:
-                self.addRaidLevel(matches[0])
+                self.add_raid_level(matches[0])
 
     @classmethod
-    def isRaidLevel(cls, level):
+    def is_raid_level(cls, level):
         """Return False if level does not satisfy minimum requirements for
            a RAID level, otherwise return True.
 
@@ -359,7 +359,7 @@ class RAIDLevels(object):
         """
         return len(level.names) > 0 and level.name in level.names
 
-    def raidLevel(self, descriptor):
+    def raid_level(self, descriptor):
         """Return RAID object corresponding to descriptor.
 
            :param object descriptor: a RAID level descriptor
@@ -375,7 +375,7 @@ class RAIDLevels(object):
                 return level
         raise RaidError("invalid RAID level descriptor %s" % descriptor)
 
-    def addRaidLevel(self, level):
+    def add_raid_level(self, level):
         """Adds level to levels if it is not already there.
 
            :param object level: an object representing a RAID level
@@ -384,7 +384,7 @@ class RAIDLevels(object):
 
            Does not allow duplicate level objects.
         """
-        if not self.isRaidLevel(level):
+        if not self.is_raid_level(level):
             raise RaidError("level is not a valid RAID level")
         self._raid_levels.add(level)
 
@@ -421,7 +421,7 @@ class RAID0(RAIDn):
         return member_count * 16
 
 RAID0 = RAID0()
-ALL_LEVELS.addRaidLevel(RAID0)
+ALL_LEVELS.add_raid_level(RAID0)
 
 class RAID1(RAIDn):
     level = property(lambda s: "1")
@@ -450,7 +450,7 @@ class RAID1(RAIDn):
         return None
 
 RAID1 = RAID1()
-ALL_LEVELS.addRaidLevel(RAID1)
+ALL_LEVELS.add_raid_level(RAID1)
 
 class RAID4(RAIDn):
     level = property(lambda s: "4")
@@ -479,7 +479,7 @@ class RAID4(RAIDn):
         return (member_count - 1) * 16
 
 RAID4 = RAID4()
-ALL_LEVELS.addRaidLevel(RAID4)
+ALL_LEVELS.add_raid_level(RAID4)
 
 class RAID5(RAIDn):
     level = property(lambda s: "5")
@@ -508,7 +508,7 @@ class RAID5(RAIDn):
         return (member_count - 1) * 16
 
 RAID5 = RAID5()
-ALL_LEVELS.addRaidLevel(RAID5)
+ALL_LEVELS.add_raid_level(RAID5)
 
 class RAID6(RAIDn):
     level = property(lambda s: "6")
@@ -537,7 +537,7 @@ class RAID6(RAIDn):
         return None
 
 RAID6 = RAID6()
-ALL_LEVELS.addRaidLevel(RAID6)
+ALL_LEVELS.add_raid_level(RAID6)
 
 class RAID10(RAIDn):
     level = property(lambda s: "10")
@@ -566,7 +566,7 @@ class RAID10(RAIDn):
         return None
 
 RAID10 = RAID10()
-ALL_LEVELS.addRaidLevel(RAID10)
+ALL_LEVELS.add_raid_level(RAID10)
 
 class Container(RAIDLevel):
     name = "container"
@@ -591,7 +591,7 @@ class Container(RAIDLevel):
         return sum(member_sizes, Size(0))
 
 Container = Container()
-ALL_LEVELS.addRaidLevel(Container)
+ALL_LEVELS.add_raid_level(Container)
 
 class ErsatzRAID(RAIDLevel):
     """ A superclass for a raid level which is not really a raid level at
@@ -638,7 +638,7 @@ class Linear(ErsatzRAID):
     names = [name]
 
 Linear = Linear()
-ALL_LEVELS.addRaidLevel(Linear)
+ALL_LEVELS.add_raid_level(Linear)
 
 class Single(ErsatzRAID):
     """ subclass with canonical btrfs name. """
@@ -646,7 +646,7 @@ class Single(ErsatzRAID):
     names = [name]
 
 Single = Single()
-ALL_LEVELS.addRaidLevel(Single)
+ALL_LEVELS.add_raid_level(Single)
 
 class Dup(RAIDLevel):
     """ A RAID level which expresses one way btrfs metadata may be distributed.
@@ -662,9 +662,9 @@ class Dup(RAIDLevel):
         return True
 
 Dup = Dup()
-ALL_LEVELS.addRaidLevel(Dup)
+ALL_LEVELS.add_raid_level(Dup)
 
-def getRaidLevel(descriptor):
+def get_raid_level(descriptor):
     """ Convenience function to return a RAID level for the descriptor.
 
         :param object descriptor: a RAID level descriptor
@@ -676,4 +676,4 @@ def getRaidLevel(descriptor):
 
         Raises a RaidError is there is no RAID object for the descriptor.
     """
-    return ALL_LEVELS.raidLevel(descriptor)
+    return ALL_LEVELS.raid_level(descriptor)

@@ -77,9 +77,9 @@ class Device(util.ObjectID):
         util.ObjectID.__init__(self)
         self.kids = 0
 
-        # Copy only the validity check from _setName so we don't try to check a
+        # Copy only the validity check from _set_name so we don't try to check a
         # bunch of inappropriate state properties during __init__ in subclasses
-        if not self.isNameValid(name):
+        if not self.is_name_valid(name):
             raise ValueError("%s is not a valid name for this device" % name)
         self._name = name
 
@@ -96,7 +96,7 @@ class Device(util.ObjectID):
         """
         return util.variable_copy(self, memo,
            omit=('node',),
-           shallow=('_partedPartition',))
+           shallow=('_parted_partition',))
 
     def __repr__(self):
         s = ("%(type)s instance (%(id)s) --\n"
@@ -110,52 +110,52 @@ class Device(util.ObjectID):
         return s
 
     # Force str and unicode types in case type or name is unicode
-    def _toString(self):
+    def _to_string(self):
         s = "%s %s (%d)" % (self.type, self.name, self.id)
         return s
 
     def __str__(self):
-        return util.stringize(self._toString())
+        return util.stringize(self._to_string())
 
     def __unicode__(self):
-        return util.unicodeize(self._toString())
+        return util.unicodeize(self._to_string())
 
-    def _addParent(self, parent):
+    def _add_parent(self, parent):
         """ Called before adding a parent to this device.
 
             See :attr:`~.ParentList.appendfunc`.
         """
-        parent.addChild()
+        parent.add_child()
 
-    def _removeParent(self, parent):
+    def _remove_parent(self, parent):
         """ Called before removing a parent from this device.
 
             See :attr:`~.ParentList.removefunc`.
         """
-        parent.removeChild()
+        parent.remove_child()
 
-    def _initParentList(self):
+    def _init_parent_list(self):
         """ Initialize this instance's parent list. """
         if not hasattr(self, "_parents"):
             # pylint: disable=attribute-defined-outside-init
-            self._parents = ParentList(appendfunc=self._addParent,
-                                       removefunc=self._removeParent)
+            self._parents = ParentList(appendfunc=self._add_parent,
+                                       removefunc=self._remove_parent)
 
         # iterate over a copy of the parent list because we are altering it in
         # the for-cycle
         for parent in list(self._parents):
             self._parents.remove(parent)
 
-    def _setParentList(self, parents):
+    def _set_parent_list(self, parents):
         """ Set this instance's parent list. """
-        self._initParentList()
+        self._init_parent_list()
         for parent in parents:
             self._parents.append(parent)
 
-    def _getParentList(self):
+    def _get_parent_list(self):
         return self._parents
 
-    parents = property(_getParentList, _setParentList,
+    parents = property(_get_parent_list, _set_parent_list,
                        doc="devices upon which this device is built")
 
     @property
@@ -164,12 +164,12 @@ class Device(util.ObjectID):
               "parents": [p.name for p in self.parents]}
         return d
 
-    def removeChild(self):
+    def remove_child(self):
         """ Decrement the child counter for this device. """
         log_method_call(self, name=self.name, kids=self.kids)
         self.kids -= 1
 
-    def addChild(self):
+    def add_child(self):
         """ Increment the child counter for this device. """
         log_method_call(self, name=self.name, kids=self.kids)
         self.kids += 1
@@ -190,7 +190,7 @@ class Device(util.ObjectID):
         """ Destroy the device. """
         raise NotImplementedError("destroy method not defined for Device")
 
-    def setupParents(self, orig=False):
+    def setup_parents(self, orig=False):
         """ Run setup method of all parent devices.
 
             :keyword orig: set up original format instead of current format
@@ -200,7 +200,7 @@ class Device(util.ObjectID):
         for parent in self.parents:
             parent.setup(orig=orig)
 
-    def teardownParents(self, recursive=None):
+    def teardown_parents(self, recursive=None):
         """ Run teardown method of all parent devices.
 
             :keyword recursive: tear down all ancestor devices recursively
@@ -209,7 +209,7 @@ class Device(util.ObjectID):
         for parent in self.parents:
             parent.teardown(recursive=recursive)
 
-    def dependsOn(self, dep):
+    def depends_on(self, dep):
         """ Return True if this device depends on dep.
 
             This device depends on another device if the other device is an
@@ -226,12 +226,12 @@ class Device(util.ObjectID):
             return True
 
         for parent in self.parents:
-            if parent.dependsOn(dep):
+            if parent.depends_on(dep):
                 return True
 
         return False
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         return set()
 
     @property
@@ -239,16 +239,16 @@ class Device(util.ObjectID):
         """ Is this device currently active and ready for use? """
         return False
 
-    def _getName(self):
+    def _get_name(self):
         return self._name
 
-    def _setName(self, value):
-        if not self.isNameValid(value):
+    def _set_name(self, value):
+        if not self.is_name_valid(value):
             raise ValueError("%s is not a valid name for this device" % value)
         self._name = value
 
-    name = property(lambda s: s._getName(),
-                    lambda s, v: s._setName(v),
+    name = property(lambda s: s._get_name(),
+                    lambda s, v: s._set_name(v),
                     doc="This device's name")
 
     @property
@@ -257,7 +257,7 @@ class Device(util.ObjectID):
         return self.kids == 0
 
     @property
-    def typeDescription(self):
+    def type_description(self):
         """ String describing the device type. """
         return self._type
 
@@ -289,7 +289,7 @@ class Device(util.ObjectID):
         return packages
 
     @classmethod
-    def isNameValid(cls, name): # pylint: disable=unused-argument
+    def is_name_valid(cls, name): # pylint: disable=unused-argument
         """Is the device name valid for the device type?"""
 
         # By default anything goes

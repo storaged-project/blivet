@@ -30,9 +30,9 @@ from blivet.devicelibs import btrfs
 from blivet.devicelibs import mdraid
 from blivet.size import Size
 
-from blivet.formats import getFormat
+from blivet.formats import get_format
 
-BTRFS_MIN_MEMBER_SIZE = getFormat("btrfs").minSize
+BTRFS_MIN_MEMBER_SIZE = get_format("btrfs").min_size
 
 # pylint: disable=unnecessary-lambda
 
@@ -55,18 +55,18 @@ class DeviceStateTestCase(unittest.TestCase):
        of a device object.
     """
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='run_test'):
         self._state_functions = {
-           "currentSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "current_size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "direct" : xform(self.assertTrue),
            "exists" : xform(self.assertFalse),
            "format" : xform(self.assertIsNotNone),
-           "formatArgs" : xform(lambda x, m: self.assertEqual(x, [], m)),
-           "isDisk" : xform(self.assertFalse),
+           "format_args" : xform(lambda x, m: self.assertEqual(x, [], m)),
+           "is_disk" : xform(self.assertFalse),
            "isleaf" : xform(self.assertTrue),
            "major" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "maxSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
-           "mediaPresent" : xform(self.assertTrue),
+           "max_size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "media_present" : xform(self.assertTrue),
            "minor" : xform(lambda x, m: self.assertEqual(x, 0, m)),
            "parents" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                                     self.assertIsInstance(x, ParentList, m)),
@@ -76,14 +76,14 @@ class DeviceStateTestCase(unittest.TestCase):
            "resizable" : xform(self.assertFalse),
            "size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "status" : xform(self.assertFalse),
-           "sysfsPath" : xform(lambda x, m: self.assertEqual(x, "", m)),
-           "targetSize" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
+           "sysfs_path" : xform(lambda x, m: self.assertEqual(x, "", m)),
+           "target_size" : xform(lambda x, m: self.assertEqual(x, Size(0), m)),
            "type" : xform(lambda x, m: self.assertEqual(x, "mdarray", m)),
            "uuid" : xform(self.assertIsNone)
         }
         super(DeviceStateTestCase, self).__init__(methodName=methodName)
 
-    def stateCheck(self, device, **kwargs):
+    def state_check(self, device, **kwargs):
         """Checks the current state of a device by means of its
            fields or properties.
 
@@ -114,74 +114,74 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
        commit message for this file for further details.
     """
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='run_test'):
         super(MDRaidArrayDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {
-           "createBitmap" : xform(lambda d, a: self.assertFalse),
+           "create_bitmap" : xform(lambda d, a: self.assertFalse),
            "description" : xform(self.assertIsNotNone),
-           "formatClass" : xform(self.assertIsNotNone),
+           "format_class" : xform(self.assertIsNotNone),
            "level" : xform(self.assertIsNone),
-           "mdadmFormatUUID" : xform(self.assertIsNone),
-           "memberDevices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
+           "mdadm_format_uuid" : xform(self.assertIsNone),
+           "member_devices" : xform(lambda x, m: self.assertEqual(x, 0, m)),
            "members" : xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                                     self.assertIsInstance(x, list, m)),
-           "metadataVersion" : xform(lambda x, m: self.assertEqual(x, "default", m)),
+           "metadata_version" : xform(lambda x, m: self.assertEqual(x, "default", m)),
            "spares" : xform(lambda x, m: self.assertEqual(x, 0, m)),
-           "totalDevices" : xform(lambda x, m: self.assertEqual(x, 0, m))
+           "total_devices" : xform(lambda x, m: self.assertEqual(x, 0, m))
         }
         self._state_functions.update(state_functions)
 
     def setUp(self):
         self.md_chunk_size = mdraid.MD_CHUNK_SIZE
         mdraid.MD_CHUNK_SIZE = Size("1 MiB")
-        self.get_super_block_size = MDRaidArrayDevice.getSuperBlockSize
-        MDRaidArrayDevice.getSuperBlockSize = lambda a, s: Size(0)
+        self.get_superblock_size = MDRaidArrayDevice.get_superblock_size
+        MDRaidArrayDevice.get_superblock_size = lambda a, s: Size(0)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember"))
         ]
-        self.dev1 = MDContainerDevice("dev1", level="container", parents=parents, totalDevices=1, memberDevices=1)
+        self.dev1 = MDContainerDevice("dev1", level="container", parents=parents, total_devices=1, member_devices=1)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember"), size=Size("1 GiB")),
-           DiskDevice("name2", fmt=getFormat("mdmember"), size=Size("1 GiB"))
+           DiskDevice("name1", fmt=get_format("mdmember"), size=Size("1 GiB")),
+           DiskDevice("name2", fmt=get_format("mdmember"), size=Size("1 GiB"))
         ]
         self.dev2 = MDRaidArrayDevice("dev2", level="raid0", parents=parents,
-                                      totalDevices=2, memberDevices=2)
+                                      total_devices=2, member_devices=2)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         self.dev3 = MDRaidArrayDevice("dev3", level="raid1", parents=parents)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember")),
-           DiskDevice("name3", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember")),
+           DiskDevice("name3", fmt=get_format("mdmember"))
         ]
         self.dev4 = MDRaidArrayDevice("dev4", level="raid4", parents=parents)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember")),
-           DiskDevice("name3", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember")),
+           DiskDevice("name3", fmt=get_format("mdmember"))
         ]
         self.dev5 = MDRaidArrayDevice("dev5", level="raid5", parents=parents)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember")),
-           DiskDevice("name3", fmt=getFormat("mdmember")),
-           DiskDevice("name4", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember")),
+           DiskDevice("name3", fmt=get_format("mdmember")),
+           DiskDevice("name4", fmt=get_format("mdmember"))
         ]
         self.dev6 = MDRaidArrayDevice("dev6", level="raid6", parents=parents)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember")),
-           DiskDevice("name3", fmt=getFormat("mdmember")),
-           DiskDevice("name4", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember")),
+           DiskDevice("name3", fmt=get_format("mdmember")),
+           DiskDevice("name4", fmt=get_format("mdmember"))
         ]
         self.dev7 = MDRaidArrayDevice("dev7", level="raid10", parents=parents)
 
@@ -189,29 +189,29 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
 
         parents_1 = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         dev_1 = MDContainerDevice(
            "parent",
            level="container",
            parents=parents_1,
-           totalDevices=2,
-           memberDevices=2,
+           total_devices=2,
+           member_devices=2,
            exists=True
         )
         self.dev9 = MDBiosRaidArrayDevice(
            "dev9",
            level="raid0",
-           memberDevices=1,
+           member_devices=1,
            parents=[dev_1],
-           totalDevices=1,
+           total_devices=1,
            exists=True
         )
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         self.dev10 = MDRaidArrayDevice(
            "dev10",
@@ -220,15 +220,15 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            size=Size("32 MiB"))
 
         parents_1 = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         dev_1 = MDContainerDevice(
            "parent",
            level="container",
            parents=parents,
-           totalDevices=2,
-           memberDevices=2
+           total_devices=2,
+           member_devices=2
         )
         self.dev11 = MDBiosRaidArrayDevice(
            "dev11",
@@ -240,89 +240,89 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.dev13 = MDRaidArrayDevice(
            "dev13",
            level=0,
-           memberDevices=2,
+           member_devices=2,
            parents=[
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
+                      "format": get_format("mdmember")})],
            size=Size("32 MiB"),
-           totalDevices=2)
+           total_devices=2)
 
         self.dev14 = MDRaidArrayDevice(
            "dev14",
            level=4,
-           memberDevices=3,
+           member_devices=3,
            parents=[
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=3)
+                      "format": get_format("mdmember")})],
+           total_devices=3)
 
         self.dev15 = MDRaidArrayDevice(
            "dev15",
            level=5,
-           memberDevices=3,
+           member_devices=3,
            parents=[
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=3)
+                      "format": get_format("mdmember")})],
+           total_devices=3)
 
         self.dev16 = MDRaidArrayDevice(
            "dev16",
            level=6,
-           memberDevices=4,
+           member_devices=4,
            parents=[
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=4)
+                      "format": get_format("mdmember")})],
+           total_devices=4)
 
         self.dev17 = MDRaidArrayDevice(
            "dev17",
            level=10,
-           memberDevices=4,
+           member_devices=4,
            parents=[
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=4)
+                      "format": get_format("mdmember")})],
+           total_devices=4)
 
         self.dev18 = MDRaidArrayDevice(
            "dev18",
            level=10,
-           memberDevices=4,
+           member_devices=4,
            parents=[
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
+                      "format": get_format("mdmember")}),
               Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=5)
+                      "format": get_format("mdmember")})],
+           total_devices=5)
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         self.dev19 = MDRaidArrayDevice(
            "dev19",
@@ -332,8 +332,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         )
 
         parents = [
-           DiskDevice("name1", fmt=getFormat("mdmember")),
-           DiskDevice("name2", fmt=getFormat("mdmember"))
+           DiskDevice("name1", fmt=get_format("mdmember")),
+           DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         self.dev20 = MDRaidArrayDevice(
            "dev20",
@@ -344,9 +344,9 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
     def tearDown(self):
         mdraid.MD_CHUNK_SIZE = self.md_chunk_size
-        MDRaidArrayDevice.getSuperBlockSize = self.get_super_block_size
+        MDRaidArrayDevice.get_superblock_size = self.get_superblock_size
 
-    def testMDRaidArrayDeviceInit(self):
+    def test_mdraid_array_device_init(self):
         """Tests the state of a MDRaidArrayDevice after initialization.
            For some combinations of arguments the initializer will throw
            an exception.
@@ -355,39 +355,39 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         ## level tests
         ##
-        self.stateCheck(self.dev1,
+        self.state_check(self.dev1,
            level=xform(lambda x, m: self.assertEqual(x.name, "container", m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 1, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 1, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
-           mediaPresent=xform(self.assertFalse),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 1, m)),
+           media_present=xform(self.assertFalse),
+           total_devices=xform(lambda x, m: self.assertEqual(x, 1, m)),
            type=xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
-        self.stateCheck(self.dev2,
-           createBitmap=xform(self.assertFalse),
+        self.state_check(self.dev2,
+           create_bitmap=xform(self.assertFalse),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("2 GiB"), m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)))
-        self.stateCheck(self.dev3,
+           total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)))
+        self.state_check(self.dev3,
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)))
-        self.stateCheck(self.dev4,
+        self.state_check(self.dev4,
            level=xform(lambda x, m: self.assertEqual(x.number, 4, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 3, m)))
-        self.stateCheck(self.dev5,
+        self.state_check(self.dev5,
            level=xform(lambda x, m: self.assertEqual(x.number, 5, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 3, m)))
-        self.stateCheck(self.dev6,
+        self.state_check(self.dev6,
            level=xform(lambda x, m: self.assertEqual(x.number, 6, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
-        self.stateCheck(self.dev7,
+        self.state_check(self.dev7,
            level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 4, m)))
@@ -395,138 +395,138 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         ##
         ## existing device tests
         ##
-        self.stateCheck(self.dev8,
+        self.state_check(self.dev8,
            exists=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
-           metadataVersion=xform(self.assertIsNone))
+           metadata_version=xform(self.assertIsNone))
 
 
         ##
         ## mdbiosraidarray tests
         ##
-        self.stateCheck(self.dev9,
-           createBitmap=xform(self.assertFalse),
-           isDisk=xform(self.assertTrue),
+        self.state_check(self.dev9,
+           create_bitmap=xform(self.assertFalse),
+           is_disk=xform(self.assertTrue),
            exists=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
-           metadataVersion=xform(lambda x, m: self.assertEqual(x, None, m)),
+           metadata_version=xform(lambda x, m: self.assertEqual(x, None, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            partitionable=xform(self.assertTrue),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            type = xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
         ##
         ## mdcontainer tests
         ##
         dev9_container = self.dev9.parents[0]
-        self.stateCheck(dev9_container,
-           createBitmap=xform(self.assertFalse),
+        self.state_check(dev9_container,
+           create_bitmap=xform(self.assertFalse),
            direct=xform(self.assertFalse),
-           isDisk=xform(self.assertFalse),
+           is_disk=xform(self.assertFalse),
            isleaf=xform(self.assertFalse),
            exists=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.name, "container", m)),
-           mediaPresent=xform(self.assertFalse),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           media_present=xform(self.assertFalse),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
-           metadataVersion=xform(lambda x, m: self.assertEqual(x, None, m)),
+           metadata_version=xform(lambda x, m: self.assertEqual(x, None, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            partitionable=xform(self.assertFalse),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            type = xform(lambda x, m: self.assertEqual(x, "mdcontainer", m)))
 
         ##
         ## size tests
         ##
-        self.stateCheck(self.dev10,
-           createBitmap=xform(self.assertFalse),
+        self.state_check(self.dev10,
+           create_bitmap=xform(self.assertFalse),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
-           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)))
+           target_size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)))
 
-        self.stateCheck(self.dev11,
-           isDisk=xform(self.assertTrue),
+        self.state_check(self.dev11,
+           is_disk=xform(self.assertTrue),
            exists=xform(lambda x, m: self.assertEqual(x, True, m)),
            level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
-           currentSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
-           maxSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           current_size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           max_size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
-           metadataVersion=xform(lambda x, m: self.assertEqual(x, None, m)),
+           metadata_version=xform(lambda x, m: self.assertEqual(x, None, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            partitionable=xform(self.assertTrue),
            size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
-           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           target_size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            type=xform(lambda x, m: self.assertEqual(x, "mdbiosraidarray", m)))
 
-        self.stateCheck(self.dev13,
-           createBitmap=xform(self.assertFalse),
+        self.state_check(self.dev13,
+           create_bitmap=xform(self.assertFalse),
            level=xform(lambda x, m: self.assertEqual(x.number, 0, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 2, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 2, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("4 MiB"), m)),
-           targetSize=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 2, m)))
+           target_size=xform(lambda x, m: self.assertEqual(x, Size("32 MiB"), m)),
+           total_devices=xform(lambda x, m: self.assertEqual(x, 2, m)))
 
-        self.stateCheck(self.dev14,
-           createBitmap=xform(self.assertTrue),
+        self.state_check(self.dev14,
+           create_bitmap=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 4, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 3, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("4 MiB"), m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
+           total_devices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
-        self.stateCheck(self.dev15,
-           createBitmap=xform(self.assertTrue),
+        self.state_check(self.dev15,
+           create_bitmap=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 5, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 3, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 3, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 3, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("4 MiB"), m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 3, m)))
+           total_devices=xform(lambda x, m: self.assertEqual(x, 3, m)))
 
-        self.stateCheck(self.dev16,
-           createBitmap=xform(self.assertTrue),
+        self.state_check(self.dev16,
+           create_bitmap=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 6, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 4, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("4 MiB"), m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 4, m)))
+           total_devices=xform(lambda x, m: self.assertEqual(x, 4, m)))
 
-        self.stateCheck(self.dev17,
-           createBitmap=xform(self.assertTrue),
+        self.state_check(self.dev17,
+           create_bitmap=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 4, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("4 MiB"), m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 4, m)))
+           total_devices=xform(lambda x, m: self.assertEqual(x, 4, m)))
 
-        self.stateCheck(self.dev18,
-           createBitmap=xform(self.assertTrue),
+        self.state_check(self.dev18,
+           create_bitmap=xform(self.assertTrue),
            level=xform(lambda x, m: self.assertEqual(x.number, 10, m)),
-           memberDevices=xform(lambda x, m: self.assertEqual(x, 4, m)),
+           member_devices=xform(lambda x, m: self.assertEqual(x, 4, m)),
            members=xform(lambda x, m: self.assertEqual(len(x), 4, m)),
            parents=xform(lambda x, m: self.assertNotEqual(x, [], m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("4 MiB"), m)),
            spares=xform(lambda x, m: self.assertEqual(x, 1, m)),
-           totalDevices=xform(lambda x, m: self.assertEqual(x, 5, m)))
+           total_devices=xform(lambda x, m: self.assertEqual(x, 5, m)))
 
-        self.stateCheck(self.dev19,
+        self.state_check(self.dev19,
                         level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
-                        mdadmFormatUUID=xform(lambda x, m: self.assertEqual(x, blockdev.md.get_md_uuid(self.dev19.uuid), m)),
+                        mdadm_format_uuid=xform(lambda x, m: self.assertEqual(x, blockdev.md.get_md_uuid(self.dev19.uuid), m)),
                         members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         uuid=xform(lambda x, m: self.assertEqual(x, self.dev19.uuid, m)))
 
-        self.stateCheck(self.dev20,
+        self.state_check(self.dev20,
                         level=xform(lambda x, m: self.assertEqual(x.number, 1, m)),
                         members=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                         parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
@@ -541,21 +541,21 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegex(DeviceError, "invalid"):
             MDRaidArrayDevice(
                "dev",
-               parents=[StorageDevice("parent", fmt=getFormat("mdmember"))])
+               parents=[StorageDevice("parent", fmt=get_format("mdmember"))])
 
         with self.assertRaisesRegex(DeviceError, "at least 2 members"):
             MDRaidArrayDevice(
                "dev",
                level="raid0",
-               parents=[StorageDevice("parent", fmt=getFormat("mdmember"))])
+               parents=[StorageDevice("parent", fmt=get_format("mdmember"))])
 
         with self.assertRaisesRegex(DeviceError, "invalid"):
             MDRaidArrayDevice("dev", level="junk")
 
         with self.assertRaisesRegex(DeviceError, "at least 2 members"):
-            MDRaidArrayDevice("dev", level=0, memberDevices=2)
+            MDRaidArrayDevice("dev", level=0, member_devices=2)
 
-    def testMDRaidArrayDeviceMethods(self):
+    def test_mdraid_array_device_methods(self):
         """Test for method calls on initialized MDRaidDevices."""
         with self.assertRaisesRegex(DeviceError, "invalid" ):
             self.dev7.level = "junk"
@@ -570,13 +570,13 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
        commit message for this file for further details.
     """
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='run_test'):
         super(BTRFSDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {
-           "dataLevel" : lambda d, a: self.assertFalse(hasattr(d,a)),
-           "fstabSpec" : xform(self.assertIsNotNone),
-           "mediaPresent" : xform(self.assertTrue),
-           "metaDataLevel" : lambda d, a: self.assertFalse(hasattr(d, a)),
+           "data_level" : lambda d, a: self.assertFalse(hasattr(d,a)),
+           "fstab_spec" : xform(self.assertIsNotNone),
+           "media_present" : xform(self.assertTrue),
+           "metadata_level" : lambda d, a: self.assertFalse(hasattr(d, a)),
            "type" : xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
            "vol_id" : xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
         self._state_functions.update(state_functions)
@@ -584,49 +584,49 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
     def setUp(self):
         self.dev1 = BTRFSVolumeDevice("dev1",
            parents=[StorageDevice("deva",
-              fmt=blivet.formats.getFormat("btrfs"),
+              fmt=blivet.formats.get_format("btrfs"),
               size=BTRFS_MIN_MEMBER_SIZE)])
 
         self.dev2 = BTRFSSubVolumeDevice("dev2",
            parents=[self.dev1],
-           fmt=blivet.formats.getFormat("btrfs"))
+           fmt=blivet.formats.get_format("btrfs"))
 
         dev = StorageDevice("deva",
-           fmt=blivet.formats.getFormat("btrfs"),
+           fmt=blivet.formats.get_format("btrfs"),
            size=Size("500 MiB"))
         self.dev3 = BTRFSVolumeDevice("dev3",
            parents=[dev])
 
-    def testBTRFSDeviceInit(self):
+    def test_btrfsdevice_init(self):
         """Tests the state of a BTRFSDevice after initialization.
            For some combinations of arguments the initializer will throw
            an exception.
         """
 
-        self.stateCheck(self.dev1,
-           currentSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           dataLevel=xform(self.assertIsNone),
+        self.state_check(self.dev1,
+           current_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           data_level=xform(self.assertIsNone),
            isleaf=xform(self.assertFalse),
-           maxSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           metaDataLevel=xform(self.assertIsNone),
+           max_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           metadata_level=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
-        self.stateCheck(self.dev2,
-           targetSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           currentSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           maxSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+        self.state_check(self.dev2,
+           target_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           current_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           max_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs subvolume", m)),
            vol_id=xform(self.assertIsNone))
 
-        self.stateCheck(self.dev3,
-           currentSize=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
-           dataLevel=xform(self.assertIsNone),
-           maxSize=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
-           metaDataLevel=xform(self.assertIsNone),
+        self.state_check(self.dev3,
+           current_size=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
+           data_level=xform(self.assertIsNone),
+           max_size=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
+           metadata_level=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            size=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
@@ -638,21 +638,21 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
             BTRFSVolumeDevice("dev", parents=[StorageDevice("deva", size=BTRFS_MIN_MEMBER_SIZE)])
 
         with self.assertRaisesRegex(DeviceError, "btrfs subvolume.*must be a btrfs volume"):
-            fmt = blivet.formats.getFormat("btrfs")
+            fmt = blivet.formats.get_format("btrfs")
             device = StorageDevice("deva", fmt=fmt, size=BTRFS_MIN_MEMBER_SIZE)
             BTRFSSubVolumeDevice("dev1", parents=[device])
 
-        deva = OpticalDevice("deva", fmt=blivet.formats.getFormat("btrfs", exists=True),
+        deva = OpticalDevice("deva", fmt=blivet.formats.get_format("btrfs", exists=True),
                              exists=True)
         with self.assertRaisesRegex(BTRFSValueError, "at least"):
-            BTRFSVolumeDevice("dev1", dataLevel="raid1", parents=[deva])
+            BTRFSVolumeDevice("dev1", data_level="raid1", parents=[deva])
 
-        deva = StorageDevice("deva", fmt=blivet.formats.getFormat("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
-        self.assertIsNotNone(BTRFSVolumeDevice("dev1", metaDataLevel="dup", parents=[deva]))
+        deva = StorageDevice("deva", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
+        self.assertIsNotNone(BTRFSVolumeDevice("dev1", metadata_level="dup", parents=[deva]))
 
-        deva = StorageDevice("deva", fmt=blivet.formats.getFormat("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
+        deva = StorageDevice("deva", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
         with self.assertRaisesRegex(BTRFSValueError, "invalid"):
-            BTRFSVolumeDevice("dev1", dataLevel="dup", parents=[deva])
+            BTRFSVolumeDevice("dev1", data_level="dup", parents=[deva])
 
         self.assertEqual(self.dev1.isleaf, False)
         self.assertEqual(self.dev1.direct, True)
@@ -663,7 +663,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         self.assertEqual(member.isleaf, False)
         self.assertEqual(member.direct, False)
 
-    def testBTRFSDeviceMethods(self):
+    def test_btrfsdevice_methods(self):
         """Test for method calls on initialized BTRFS Devices."""
         # volumes do not have ancestor volumes
         with self.assertRaises(AttributeError):
@@ -671,7 +671,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 
         # subvolumes do not have default subvolumes
         with self.assertRaises(AttributeError):
-            self.dev2.defaultSubVolume # pylint: disable=no-member,pointless-statement
+            self.dev2.default_sub_volume # pylint: disable=no-member,pointless-statement
 
         self.assertIsNotNone(self.dev2.volume)
 
@@ -679,8 +679,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegex(RuntimeError, "cannot directly set size of btrfs volume"):
             self.dev1.size = Size("500 MiB")
 
-    def testBTRFSSnapShotDeviceInit(self):
-        parents = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
+    def test_btrfssnap_shot_device_init(self):
+        parents = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
         vol = BTRFSVolumeDevice("test", parents=parents)
         with self.assertRaisesRegex(ValueError, "non-existent btrfs snapshots must have a source"):
             BTRFSSnapShotDevice("snap1", parents=[vol])
@@ -691,31 +691,31 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegex(ValueError, "btrfs snapshot source must be a btrfs subvolume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=parents[0])
 
-        parents2 = [StorageDevice("p1", fmt=blivet.formats.getFormat("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
+        parents2 = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
         vol2 = BTRFSVolumeDevice("test2", parents=parents2, exists=True)
         with self.assertRaisesRegex(ValueError, ".*snapshot and source must be in the same volume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol2)
 
         vol.exists = True
         snap = BTRFSSnapShotDevice("snap1",
-           fmt=blivet.formats.getFormat("btrfs"),
+           fmt=blivet.formats.get_format("btrfs"),
            parents=[vol],
            source=vol)
-        self.stateCheck(snap,
-           currentSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           targetSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           maxSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+        self.state_check(snap,
+           current_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           target_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           max_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs snapshot", m)),
            vol_id=xform(self.assertIsNone))
-        self.stateCheck(vol,
-           currentSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           dataLevel=xform(self.assertIsNone),
+        self.state_check(vol,
+           current_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           data_level=xform(self.assertIsNone),
            exists=xform(self.assertTrue),
            isleaf=xform(self.assertFalse),
-           maxSize=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-           metaDataLevel=xform(self.assertIsNone),
+           max_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
+           metadata_level=xform(self.assertIsNone),
            parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
            size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
            type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
@@ -725,11 +725,11 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         self.assertEqual(vol.isleaf, False)
         self.assertEqual(vol.direct, True)
 
-        self.assertEqual(snap.dependsOn(vol), True)
-        self.assertEqual(vol.dependsOn(snap), False)
+        self.assertEqual(snap.depends_on(vol), True)
+        self.assertEqual(vol.depends_on(snap), False)
 
 class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
-    def __init__(self, methodName="runTest"):
+    def __init__(self, methodName="run_test"):
         super(LVMLogicalVolumeDeviceTestCase, self).__init__(methodName=methodName)
         state_functions = {
             "type": xform(lambda x, m: self.assertEqual(x, "lvmlv", m)),
@@ -741,29 +741,29 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
         self._state_functions.update(state_functions)
 
     def setUp(self):
-        pv = StorageDevice("pv1", fmt=blivet.formats.getFormat("lvmpv"),
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
         self.lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
-                                         fmt=blivet.formats.getFormat("xfs"))
+                                         fmt=blivet.formats.get_format("xfs"))
 
-        pv2 = StorageDevice("pv2", fmt=blivet.formats.getFormat("lvmpv"),
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
                             size=Size("1 GiB"))
-        pv3 = StorageDevice("pv3", fmt=blivet.formats.getFormat("lvmpv"),
+        pv3 = StorageDevice("pv3", fmt=blivet.formats.get_format("lvmpv"),
                             size=Size("1 GiB"))
         vg2 = LVMVolumeGroupDevice("testvg2", parents=[pv2, pv3])
         cache_req = LVMCacheRequest(Size("512 MiB"), [pv3], "writethrough")
         self.cached_lv = LVMLogicalVolumeDevice("testcachedlv", parents=[vg2],
-                                    fmt=blivet.formats.getFormat("xfs"),
-                                    exists=False, cacheRequest=cache_req)
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, cache_request=cache_req)
 
-    def testLVMLogicalVolumeDeviceInit(self):
-        self.stateCheck(self.lv,
+    def test_lvmlogical_volume_device_init(self):
+        self.state_check(self.lv,
             # 1 GiB - one extent
-            maxSize=xform(lambda x, m: self.assertEqual(x, Size("1020 MiB"), m) and
+            max_size=xform(lambda x, m: self.assertEqual(x, Size("1020 MiB"), m) and
                           self.assertIsInstance(x, Size, m)),
             snapshots=xform(lambda x, m: self.assertEqual(x, [], m)),
-            segType=xform(lambda x, m: self.assertEqual(x, "linear", m)),
+            seg_type=xform(lambda x, m: self.assertEqual(x, "linear", m)),
             req_grow=xform(lambda x, m: self.assertEqual(x, None, m)),
             req_max_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                                self.assertIsInstance(x, Size, m)),
@@ -771,16 +771,16 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
                            self.assertIsInstance(x, Size, m)),
             req_percent=xform(lambda x, m: self.assertEqual(x, Size(0), m)),
             copies=xform(lambda x, m: self.assertEqual(x, 1, m)),
-            logSize=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+            log_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                           self.assertIsInstance(x, Size, m)),
-            metaDataSize=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+            metadata_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                                self.assertIsInstance(x, Size, m)),
             mirrored=xform(lambda x, m: self.assertFalse(x, m)),
-            vgSpaceUsed=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+            vg_space_used=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                               self.assertIsInstance(x, Size, m)),
             vg=xform(lambda x, m: self.assertIsInstance(x, LVMVolumeGroupDevice)),
             container=xform(lambda x, m: self.assertIsInstance(x, LVMVolumeGroupDevice)),
-            mapName=xform(lambda x, m: self.assertEqual(x, "testvg-testlv", m)),
+            map_name=xform(lambda x, m: self.assertEqual(x, "testvg-testlv", m)),
             path=xform(lambda x, m: self.assertEqual(x, "/dev/mapper/testvg-testlv", m)),
             lvname=xform(lambda x, m: self.assertEqual(x, "testlv", m)),
             complete=xform(lambda x, m: self.assertTrue(x, m)),
@@ -789,14 +789,14 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
             cached=xform(lambda x, m: self.assertFalse(x, m)),
         )
 
-    def testLVMLogicalVolumeDeviceInitCached(self):
-        self.stateCheck(self.cached_lv,
+    def test_lvmlogical_volume_device_init_cached(self):
+        self.state_check(self.cached_lv,
             # 2 * (1 GiB - one extent) - 512 MiB - 8 MiB
             #       PVfree               cache     pmspare
-            maxSize=xform(lambda x, m: self.assertEqual(x, Size("1520 MiB"), m) and
+            max_size=xform(lambda x, m: self.assertEqual(x, Size("1520 MiB"), m) and
                           self.assertIsInstance(x, Size, m)),
             snapshots=xform(lambda x, m: self.assertEqual(x, [], m)),
-            segType=xform(lambda x, m: self.assertEqual(x, "linear", m)),
+            seg_type=xform(lambda x, m: self.assertEqual(x, "linear", m)),
             req_grow=xform(lambda x, m: self.assertEqual(x, None, m)),
             req_max_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                                self.assertIsInstance(x, Size, m)),
@@ -804,16 +804,16 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
                            self.assertIsInstance(x, Size, m)),
             req_percent=xform(lambda x, m: self.assertEqual(x, Size(0), m)),
             copies=xform(lambda x, m: self.assertEqual(x, 1, m)),
-            logSize=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+            log_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                           self.assertIsInstance(x, Size, m)),
-            metaDataSize=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
+            metadata_size=xform(lambda x, m: self.assertEqual(x, Size(0), m) and
                                self.assertIsInstance(x, Size, m)),
             mirrored=xform(lambda x, m: self.assertFalse(x, m)),
-            vgSpaceUsed=xform(lambda x, m: self.assertEqual(x, Size("512 MiB"), m) and
+            vg_space_used=xform(lambda x, m: self.assertEqual(x, Size("512 MiB"), m) and
                               self.assertIsInstance(x, Size, m)),
             vg=xform(lambda x, m: self.assertIsInstance(x, LVMVolumeGroupDevice)),
             container=xform(lambda x, m: self.assertIsInstance(x, LVMVolumeGroupDevice)),
-            mapName=xform(lambda x, m: self.assertEqual(x, "testvg2-testcachedlv", m)),
+            map_name=xform(lambda x, m: self.assertEqual(x, "testvg2-testcachedlv", m)),
             path=xform(lambda x, m: self.assertEqual(x, "/dev/mapper/testvg2-testcachedlv", m)),
             lvname=xform(lambda x, m: self.assertEqual(x, "testcachedlv", m)),
             complete=xform(lambda x, m: self.assertTrue(x, m)),

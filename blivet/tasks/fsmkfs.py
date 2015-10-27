@@ -34,7 +34,7 @@ from . import task
 @add_metaclass(abc.ABCMeta)
 class FSMkfsTask(fstask.FSTask):
 
-    canLabel = abc.abstractproperty(doc="whether this task labels")
+    can_label = abc.abstractproperty(doc="whether this task labels")
 
 @add_metaclass(abc.ABCMeta)
 class FSMkfs(task.BasicApplication, FSMkfsTask):
@@ -49,7 +49,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
     # IMPLEMENTATION methods
 
     @property
-    def canLabel(self):
+    def can_label(self):
         """ Whether this task can label the filesystem.
 
             :returns: True if this task can label the filesystem
@@ -58,7 +58,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
         return self.label_option is not None
 
     @property
-    def _labelOptions(self):
+    def _label_options(self):
         """ Any labeling options that a particular filesystem may use.
 
             :returns: labeling options
@@ -72,12 +72,12 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
         if self.fs.label is None:
             return []
 
-        if self.fs.labelFormatOK(self.fs.label):
+        if self.fs.label_format_ok(self.fs.label):
             return [self.label_option, self.fs.label]
         else:
             raise FSWriteLabelError("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem." % (self.fs.label, self.fs.type))
 
-    def _formatOptions(self, options=None, label=False):
+    def _format_options(self, options=None, label=False):
         """Get a list of format options to be used when creating the
            filesystem.
 
@@ -90,11 +90,11 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
         if not isinstance(options, list):
             raise FSError("options parameter must be a list.")
 
-        label_options = self._labelOptions if label else []
-        create_options = shlex.split(self.fs.createOptions or "")
+        label_options = self._label_options if label else []
+        create_options = shlex.split(self.fs.create_options or "")
         return options + self.args + label_options + create_options + [self.fs.device]
 
-    def _mkfsCommand(self, options, label):
+    def _mkfs_command(self, options, label):
         """Return the command to make the filesystem.
 
            :param options: any special options
@@ -102,9 +102,9 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
            :returns: the mkfs command
            :rtype: list of str
         """
-        return [str(self.ext)] + self._formatOptions(options, label)
+        return [str(self.ext)] + self._format_options(options, label)
 
-    def doTask(self, options=None, label=False):
+    def do_task(self, options=None, label=False):
         """Create the format on the device and label if possible and desired.
 
            :param options: any special options, may be None
@@ -112,13 +112,13 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
            :param bool label: whether to label while creating, default is False
         """
         # pylint: disable=arguments-differ
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         options = options or []
         try:
-            ret = util.run_program(self._mkfsCommand(options, label))
+            ret = util.run_program(self._mkfs_command(options, label))
         except OSError as e:
             raise FSError(e)
 
@@ -216,5 +216,5 @@ class XFSMkfs(FSMkfs):
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
 
     @property
-    def canLabel(self):
+    def can_label(self):
         return False

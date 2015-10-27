@@ -6,15 +6,15 @@ from blivet.devices import DiskDevice
 from blivet.devices import LUKSDevice
 from blivet.devices import MDRaidArrayDevice
 
-from blivet.formats import getFormat
+from blivet.formats import get_format
 
 class DevicePackagesTestCase(unittest.TestCase):
     """Test device name validation"""
 
-    def testPackages(self):
-        dev1 = DiskDevice("name", fmt=getFormat("mdmember"))
+    def test_packages(self):
+        dev1 = DiskDevice("name", fmt=get_format("mdmember"))
 
-        dev2 = DiskDevice("other", fmt=getFormat("mdmember"))
+        dev2 = DiskDevice("other", fmt=get_format("mdmember"))
         dev = MDRaidArrayDevice("dev", level="raid1", parents=[dev1,dev2])
         luks = LUKSDevice("luks", parents=[dev])
         packages = luks.packages

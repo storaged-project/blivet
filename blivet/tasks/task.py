@@ -35,10 +35,10 @@ class Task(object):
     description = abc.abstractproperty(doc="Brief description for this task.")
 
     @property
-    def availabilityErrors(self):
+    def availability_errors(self):
         """ Reasons if this task or the tasks it depends on are unavailable. """
-        return self._availabilityErrors + \
-           [e for t in self.dependsOn for e in t.availabilityErrors]
+        return self._availability_errors + \
+           [e for t in self.depends_on for e in t.availability_errors]
 
     @property
     def available(self):
@@ -47,15 +47,15 @@ class Task(object):
             :returns: True if the task is available
             :rtype: bool
         """
-        return self.availabilityErrors == []
+        return self.availability_errors == []
 
-    _availabilityErrors = abc.abstractproperty(
+    _availability_errors = abc.abstractproperty(
        doc="Reasons if the necessary external tools are unavailable.")
 
-    dependsOn = abc.abstractproperty(doc="tasks that this task depends on")
+    depends_on = abc.abstractproperty(doc="tasks that this task depends on")
 
     @abc.abstractmethod
-    def doTask(self, *args, **kwargs):
+    def do_task(self, *args, **kwargs):
         """ Do the task for this class. """
         raise NotImplementedError()
 
@@ -66,15 +66,15 @@ class UnimplementedTask(Task):
     implemented = False
 
     @property
-    def _availabilityErrors(self):
+    def _availability_errors(self):
         return ["Not implemented task can not succeed."]
 
-    dependsOn = []
+    depends_on = []
 
     def __str__(self):
         return "unimplemented task"
 
-    def doTask(self, *args, **kwargs):
+    def do_task(self, *args, **kwargs):
         raise NotImplementedError()
 
 @add_metaclass(abc.ABCMeta)
@@ -89,13 +89,13 @@ class BasicApplication(Task):
         return str(self.ext)
 
     @property
-    def _availabilityErrors(self):
-        errors = self.ext.availabilityErrors
+    def _availability_errors(self):
+        errors = self.ext.availability_errors
         if errors:
             return ["application %s is not available: %s" % (self.ext, " and ".join(errors))]
         else:
             return []
 
     @property
-    def dependsOn(self):
+    def depends_on(self):
         return []

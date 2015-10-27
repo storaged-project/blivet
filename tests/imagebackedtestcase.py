@@ -37,17 +37,17 @@ class ImageBackedTestCase(unittest.TestCase):
         """ Create disk image files to build the test's storage on.
 
             If you are actually creating the disk image files here don't forget
-            to set the initializeDisks flag so they get a fresh disklabel when
-            clearPartitions gets called from create_storage later.
+            to set the initialize_disks flag so they get a fresh disklabel when
+            clear_partitions gets called from create_storage later.
         """
         for (name, size) in iter(self.disks.items()):
             path = util.create_sparse_tempfile(name, size)
-            self.blivet.config.diskImages[name] = path
+            self.blivet.config.disk_images[name] = path
 
         #
         # set up the disk images with a disklabel
         #
-        self.blivet.config.initializeDisks = self.initialize_disks
+        self.blivet.config.initialize_disks = self.initialize_disks
 
     def _set_up_storage(self):
         """ Schedule creation of storage devices on the disk images.
@@ -78,7 +78,7 @@ class ImageBackedTestCase(unittest.TestCase):
         #
         # clear and/or initialize disks as specified in set_up_disks
         #
-        self.blivet.clearPartitions()
+        self.blivet.clear_partitions()
 
         #
         # create the rest of the stack
@@ -88,21 +88,21 @@ class ImageBackedTestCase(unittest.TestCase):
         #
         # write configuration to disk images
         #
-        self.blivet.doIt()
+        self.blivet.do_it()
 
     def setUp(self):
         """ Do any setup required prior to running a test. """
         flags.image_install = True
         self.blivet = Blivet()
 
-        self.addCleanup(self._cleanUp)
+        self.addCleanup(self._clean_up)
         self.set_up_storage()
 
-    def _cleanUp(self):
+    def _clean_up(self):
         """ Clean up any resources that may have been set up for a test. """
         self.blivet.reset()
-        self.blivet.devicetree.teardownDiskImages()
-        for fn in self.blivet.config.diskImages.values():
+        self.blivet.devicetree.teardown_disk_images()
+        for fn in self.blivet.config.disk_images.values():
             if os.path.exists(fn):
                 os.unlink(fn)
 

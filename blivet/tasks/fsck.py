@@ -45,7 +45,7 @@ class FSCK(task.BasicApplication, fstask.FSTask):
     # IMPLEMENTATION methods
 
     @abc.abstractmethod
-    def _errorMessage(self, rc):
+    def _error_message(self, rc):
         """ Error message corresponding to rc.
 
             :param int rc: the fsck program return code
@@ -57,7 +57,7 @@ class FSCK(task.BasicApplication, fstask.FSTask):
         raise NotImplementedError()
 
     @property
-    def _fsckCommand(self):
+    def _fsck_command(self):
         """The command to check the filesystem.
 
            :return: the command
@@ -65,21 +65,21 @@ class FSCK(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.options + [self.fs.device]
 
-    def doTask(self):
+    def do_task(self):
         """ Check the filesystem.
 
            :raises FSError: on failure
         """
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         try:
-            rc = util.run_program(self._fsckCommand)
+            rc = util.run_program(self._fsck_command)
         except OSError as e:
             raise FSError("filesystem check failed: %s" % e)
 
-        error_msg = self._errorMessage(rc)
+        error_msg = self._error_message(rc)
         if error_msg is not None:
             hdr = "%(type)s filesystem check failure on %(device)s: " % \
                     {"type": self.fs.type, "device": self.fs.device}
@@ -88,24 +88,24 @@ class FSCK(task.BasicApplication, fstask.FSTask):
 
 
 class DosFSCK(FSCK):
-    _fsckErrors = {1: "Recoverable errors have been detected or dosfsck has "
+    _fsck_errors = {1: "Recoverable errors have been detected or dosfsck has "
                       "discovered an internal inconsistency.",
                    2: "Usage error."}
 
     ext = availability.DOSFSCK_APP
     options = ["-n"]
 
-    def _errorMessage(self, rc):
+    def _error_message(self, rc):
         if rc < 1:
             return None
         try:
-            return self._fsckErrors[rc]
+            return self._fsck_errors[rc]
         except KeyError:
             return _UNKNOWN_RC_MSG % rc
 
 
 class Ext2FSCK(FSCK):
-    _fsckErrors = {4: "File system errors left uncorrected.",
+    _fsck_errors = {4: "File system errors left uncorrected.",
                    8: "Operational error.",
                    16: "Usage or syntax error.",
                    32: "e2fsck cancelled by user request.",
@@ -114,23 +114,23 @@ class Ext2FSCK(FSCK):
     ext = availability.E2FSCK_APP
     options = ["-f", "-p", "-C", "0"]
 
-    def _errorMessage(self, rc):
-        msgs = (self._fsckErrors[c] for c in self._fsckErrors.keys() if rc & c)
+    def _error_message(self, rc):
+        msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
         return "\n".join(msgs) or None
 
 class HFSPlusFSCK(FSCK):
-    _fsckErrors = {3: "Quick check found a dirty filesystem; no repairs done.",
+    _fsck_errors = {3: "Quick check found a dirty filesystem; no repairs done.",
                    4: "Root filesystem was dirty. System should be rebooted.",
                    8: "Corrupt filesystem, repairs did not succeed.",
                    47: "Major error found; no repairs attempted."}
     ext = availability.FSCK_HFSPLUS_APP
     options = []
 
-    def _errorMessage(self, rc):
+    def _error_message(self, rc):
         if rc < 1:
             return None
         try:
-            return self._fsckErrors[rc]
+            return self._fsck_errors[rc]
         except KeyError:
             return _UNKNOWN_RC_MSG % rc
 
@@ -138,7 +138,7 @@ class NTFSFSCK(FSCK):
     ext = availability.NTFSRESIZE_APP
     options = ["-c"]
 
-    def _errorMessage(self, rc):
+    def _error_message(self, rc):
         return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
 
 class UnimplementedFSCK(fstask.UnimplementedFSTask):

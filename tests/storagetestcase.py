@@ -5,7 +5,7 @@ from mock import Mock
 import parted
 
 import blivet as blivet
-from blivet.formats import getFormat
+from blivet.formats import get_format
 
 # device classes for brevity's sake -- later on, that is
 from blivet.devices import StorageDevice
@@ -40,19 +40,19 @@ class StorageTestCase(unittest.TestCase):
 
         # prevent PartitionDevice from trying to dig around in the partition's
         # geometry
-        self.partition_set_target = PartitionDevice._setTargetSize
-        self.partition_align_target = PartitionDevice.alignTargetSize
-        self.partition_max = PartitionDevice.maxSize
-        self.partition_min = PartitionDevice.minSize
-        blivet.devices.PartitionDevice._setTargetSize = StorageDevice._setTargetSize
-        blivet.devices.PartitionDevice.alignTargetSize = StorageDevice.alignTargetSize
-        blivet.devices.PartitionDevice.maxSize = StorageDevice.maxSize
-        blivet.devices.PartitionDevice.minSize = StorageDevice.minSize
+        self.partition_set_target = PartitionDevice._set_target_size
+        self.partition_align_target = PartitionDevice.align_target_size
+        self.partition_max = PartitionDevice.max_size
+        self.partition_min = PartitionDevice.min_size
+        blivet.devices.PartitionDevice._set_target_size = StorageDevice._set_target_size
+        blivet.devices.PartitionDevice.align_target_size = StorageDevice.align_target_size
+        blivet.devices.PartitionDevice.max_size = StorageDevice.max_size
+        blivet.devices.PartitionDevice.min_size = StorageDevice.min_size
 
         def partition_probe(device):
-            if isinstance(device._partedPartition, Mock):
+            if isinstance(device._parted_partition, Mock):
                 # don't clobber a Mock we already set up here
-                part_mock = device._partedPartition
+                part_mock = device._parted_partition
             else:
                 part_mock = Mock()
 
@@ -60,16 +60,16 @@ class StorageTestCase(unittest.TestCase):
                      "getDeviceNodeName.return_value": device.name,
                      "type": parted.PARTITION_NORMAL}
             part_mock.configure_mock(**attrs)
-            device._partedPartition = part_mock
-            device._currentSize = device._size
-            device._partType = parted.PARTITION_NORMAL
+            device._parted_partition = part_mock
+            device._current_size = device._size
+            device._part_type = parted.PARTITION_NORMAL
             device._bootable = False
 
         self.partition_probe = PartitionDevice.probe
         PartitionDevice.probe = partition_probe
 
-        self.get_active_mounts = blivet.formats.fs.mountsCache._getActiveMounts
-        blivet.formats.fs.mountsCache._getActiveMounts = Mock()
+        self.get_active_mounts = blivet.formats.fs.mounts_cache._get_active_mounts
+        blivet.formats.fs.mounts_cache._get_active_mounts = Mock()
 
     def tearDown(self):
         blivet.devices.StorageDevice.status = self.storage_status
@@ -79,16 +79,16 @@ class StorageTestCase(unittest.TestCase):
         blivet.devices.MDRaidArrayDevice.status = self.md_status
         blivet.devices.FileDevice.status = self.file_status
 
-        blivet.devices.PartitionDevice._setTargetSize = self.partition_set_target
-        blivet.devices.PartitionDevice.alignTargetSize = self.partition_align_target
-        blivet.devices.PartitionDevice.maxSize = self.partition_max
-        blivet.devices.PartitionDevice.minSize = self.partition_min
+        blivet.devices.PartitionDevice._set_target_size = self.partition_set_target
+        blivet.devices.PartitionDevice.align_target_size = self.partition_align_target
+        blivet.devices.PartitionDevice.max_size = self.partition_max
+        blivet.devices.PartitionDevice.min_size = self.partition_min
 
         blivet.devices.PartitionDevice.probe = self.partition_probe
 
-        blivet.formats.fs.mountsCache._getActiveMounts = self.get_active_mounts
+        blivet.formats.fs.mounts_cache._get_active_mounts = self.get_active_mounts
 
-    def newDevice(self, *args, **kwargs):
+    def new_device(self, *args, **kwargs):
         """ Return a new Device instance suitable for testing. """
         device_class = kwargs.pop("device_class")
         exists = kwargs.pop("exists", False)
@@ -96,31 +96,31 @@ class StorageTestCase(unittest.TestCase):
         device = device_class(*args, **kwargs)
 
         if exists:
-            device._currentSize = kwargs.get("size")
+            device._current_size = kwargs.get("size")
 
         if isinstance(device, blivet.devices.PartitionDevice):
             #if exists:
             #    device.parents = device.req_disks
             device.parents = device.req_disks
 
-            partedPartition = Mock()
+            parted_partition = Mock()
 
             if device.disk:
                 part_num = device.name[len(device.disk.name):].split("p")[-1]
-                partedPartition.number = int(part_num)
+                parted_partition.number = int(part_num)
 
-            partedPartition.type = part_type
-            partedPartition.path = device.path
-            partedPartition.getDeviceNodeName = Mock(return_value=device.name)
+            parted_partition.type = part_type
+            parted_partition.path = device.path
+            parted_partition.get_device_node_name = Mock(return_value=device.name)
             if len(device.parents) == 1:
                 disk_name = device.parents[0].name
                 number = device.name.replace(disk_name, "")
                 try:
-                    partedPartition.number = int(number)
+                    parted_partition.number = int(number)
                 except ValueError:
                     pass
 
-            device._partedPartition = partedPartition
+            device._parted_partition = parted_partition
         elif isinstance(device, blivet.devices.LVMVolumeGroupDevice) and exists:
             device._complete = True
 
@@ -133,7 +133,7 @@ class StorageTestCase(unittest.TestCase):
 
         return device
 
-    def newFormat(self, *args, **kwargs):
+    def new_format(self, *args, **kwargs):
         """ Return a new DeviceFormat instance suitable for testing.
 
             Keyword Arguments:
@@ -143,34 +143,34 @@ class StorageTestCase(unittest.TestCase):
                                   resizable formats.
 
             All other arguments are passed directly to
-            blivet.formats.getFormat.
+            blivet.formats.get_format.
         """
         exists = kwargs.pop("exists", False)
         device_instance = kwargs.pop("device_instance", None)
-        fmt = getFormat(*args, **kwargs)
+        fmt = get_format(*args, **kwargs)
         if isinstance(fmt, blivet.formats.disklabel.DiskLabel):
-            fmt._partedDevice = Mock()
-            fmt._partedDisk = Mock()
+            fmt._parted_device = Mock()
+            fmt._parted_disk = Mock()
             attrs = {"partitions": []}
-            fmt._partedDisk.configure_mock(**attrs)
+            fmt._parted_disk.configure_mock(**attrs)
 
         fmt.exists = exists
         if exists:
             fmt._resizable = fmt.__class__._resizable
 
         if fmt.resizable and device_instance:
-            fmt._size = device_instance.currentSize
+            fmt._size = device_instance.current_size
 
         return fmt
 
-    def destroyAllDevices(self, disks=None):
+    def destroy_all_devices(self, disks=None):
         """ Remove all devices from the devicetree.
 
             Keyword Arguments:
 
                 disks - a list of names of disks to remove partitions from
 
-            Note: this is largely ripped off from partitioning.clearPartitions.
+            Note: this is largely ripped off from partitioning.clear_partitions.
 
         """
         partitions = self.storage.partitions
@@ -179,21 +179,21 @@ class StorageTestCase(unittest.TestCase):
         # things like multiple "destroy sda5" actions due to parted renumbering
         # partitions. This can still happen through the UI but it makes sense to
         # avoid it where possible.
-        partitions.sort(key=lambda p: p.partedPartition.number, reverse=True)
+        partitions.sort(key=lambda p: p.parted_partition.number, reverse=True)
         for part in partitions:
             if disks and part.disk.name not in disks:
                 continue
 
-            devices = self.storage.deviceDeps(part)
+            devices = self.storage.device_deps(part)
             while devices:
                 leaves = [d for d in devices if d.isleaf]
                 for leaf in leaves:
-                    self.storage.destroyDevice(leaf)
+                    self.storage.destroy_device(leaf)
                     devices.remove(leaf)
 
-            self.storage.destroyDevice(part)
+            self.storage.destroy_device(part)
 
-    def scheduleCreateDevice(self, device):
+    def schedule_create_device(self, device):
         """ Schedule an action to create the specified device.
 
             Verify that the device is not already in the tree and that the
@@ -209,13 +209,13 @@ class StorageTestCase(unittest.TestCase):
 
         devicetree = self.storage.devicetree
 
-        self.assertEqual(devicetree.getDeviceByName(device.name), None)
+        self.assertEqual(devicetree.get_device_by_name(device.name), None)
         action = blivet.deviceaction.ActionCreateDevice(device)
-        devicetree.registerAction(action)
-        self.assertEqual(devicetree.getDeviceByName(device.name), device)
+        devicetree.register_action(action)
+        self.assertEqual(devicetree.get_device_by_name(device.name), device)
         return action
 
-    def scheduleDestroyDevice(self, device):
+    def schedule_destroy_device(self, device):
         """ Schedule an action to destroy the specified device.
 
             Verify that the device exists initially and that the act of
@@ -226,13 +226,13 @@ class StorageTestCase(unittest.TestCase):
         """
         devicetree = self.storage.devicetree
 
-        self.assertEqual(devicetree.getDeviceByName(device.name), device)
+        self.assertEqual(devicetree.get_device_by_name(device.name), device)
         action = blivet.deviceaction.ActionDestroyDevice(device)
-        devicetree.registerAction(action)
-        self.assertEqual(devicetree.getDeviceByName(device.name), None)
+        devicetree.register_action(action)
+        self.assertEqual(devicetree.get_device_by_name(device.name), None)
         return action
 
-    def scheduleCreateFormat(self, device, fmt):
+    def schedule_create_format(self, device, fmt):
         """ Schedule an action to write a new format to a device.
 
             Verify that the device is already in the tree, that it is not
@@ -245,14 +245,14 @@ class StorageTestCase(unittest.TestCase):
         devicetree = self.storage.devicetree
 
         self.assertNotEqual(device.format, fmt)
-        self.assertEqual(devicetree.getDeviceByName(device.name), device)
+        self.assertEqual(devicetree.get_device_by_name(device.name), device)
         action = blivet.deviceaction.ActionCreateFormat(device, fmt)
-        devicetree.registerAction(action)
-        _device = devicetree.getDeviceByName(device.name)
+        devicetree.register_action(action)
+        _device = devicetree.get_device_by_name(device.name)
         self.assertEqual(_device.format, fmt)
         return action
 
-    def scheduleDestroyFormat(self, device):
+    def schedule_destroy_format(self, device):
         """ Schedule an action to remove a format from a device.
 
             Verify that the device is already in the tree and that the act
@@ -263,9 +263,9 @@ class StorageTestCase(unittest.TestCase):
         """
         devicetree = self.storage.devicetree
 
-        self.assertEqual(devicetree.getDeviceByName(device.name), device)
+        self.assertEqual(devicetree.get_device_by_name(device.name), device)
         action = blivet.deviceaction.ActionDestroyFormat(device)
-        devicetree.registerAction(action)
-        _device = devicetree.getDeviceByName(device.name)
+        devicetree.register_action(action)
+        _device = devicetree.get_device_by_name(device.name)
         self.assertEqual(_device.format.type, None)
         return action

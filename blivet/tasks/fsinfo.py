@@ -40,7 +40,7 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
        doc="Options for invoking the application.")
 
     @property
-    def _infoCommand(self):
+    def _info_command(self):
         """ Returns the command for reading filesystem information.
 
             :returns: a list of appropriate options
@@ -48,20 +48,20 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.options + [self.fs.device]
 
-    def doTask(self):
+    def do_task(self):
         """ Returns information from the command.
 
             :returns: a string representing the output of the command
             :rtype: str
             :raises FSError: if info cannot be obtained
         """
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         error_msg = None
         try:
-            (rc, out) = util.run_program_and_capture_output(self._infoCommand)
+            (rc, out) = util.run_program_and_capture_output(self._info_command)
             if rc:
                 error_msg = "failed to gather fs info: %s" % rc
         except OSError as e:

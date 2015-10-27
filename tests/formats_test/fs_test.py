@@ -56,7 +56,7 @@ class MacEFIFSTestCase(HFSPlusTestCase):
 class NTFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NTFS
 
-@unittest.skip("Unable to create because device fails deviceCheck().")
+@unittest.skip("Unable to create because device fails device_check().")
 class NFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NFS
 
@@ -93,20 +93,20 @@ class BindFSTestCase(fstesting.FSAsRoot):
 
 class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='run_test'):
         super(SimpleTmpFSTestCase, self).__init__(methodName=methodName)
 
-    def testSimple(self):
+    def test_simple(self):
         an_fs = fs.TmpFS()
 
         # a nodev fs need not have been created to exist
         self.assertTrue(an_fs.exists)
         self.assertEqual(an_fs.device, "tmpfs")
-        self.assertTrue(an_fs.testMount())
+        self.assertTrue(an_fs.test_mount())
 
 class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName='run_test'):
         super(ResizeTmpFSTestCase, self).__init__(methodName=methodName)
         self.an_fs = fs.TmpFS()
         self.an_fs.__class__._resizable = True
@@ -117,20 +117,20 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.an_fs.mountpoint = self.mountpoint
         self.an_fs.mount()
 
-    def testResize(self):
-        self.an_fs.updateSizeInfo()
-        newsize = self.an_fs.currentSize * 2
-        self.an_fs.targetSize = newsize
-        self.assertIsNone(self.an_fs.doResize())
-        self.assertEqual(self.an_fs.size, newsize.roundToNearest(self.an_fs._resize.unit, rounding=ROUND_DOWN))
+    def test_resize(self):
+        self.an_fs.update_size_info()
+        newsize = self.an_fs.current_size * 2
+        self.an_fs.target_size = newsize
+        self.assertIsNone(self.an_fs.do_resize())
+        self.assertEqual(self.an_fs.size, newsize.round_to_nearest(self.an_fs._resize.unit, rounding=ROUND_DOWN))
 
-    def testShrink(self):
+    def test_shrink(self):
         # Can not shrink tmpfs, because its minimum size is its current size
-        self.an_fs.updateSizeInfo()
+        self.an_fs.update_size_info()
         newsize = Size("2 MiB")
-        self.assertTrue(newsize < self.an_fs.currentSize)
+        self.assertTrue(newsize < self.an_fs.current_size)
         with self.assertRaises(ValueError):
-            self.an_fs.targetSize = newsize
+            self.an_fs.target_size = newsize
 
     def tearDown(self):
         try:

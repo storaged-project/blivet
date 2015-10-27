@@ -7,39 +7,39 @@ class BasicUnavailableApplication(task.BasicApplication):
     ext = availability.unavailable_resource("unavailable")
     description = "unavailable application"
 
-    def doTask(self):
+    def do_task(self):
         pass
 
 class BasicAvailableApplication(task.BasicApplication):
     ext = availability.available_resource("available")
     description = "available application"
 
-    def doTask(self):
+    def do_task(self):
         pass
 
 class ResourceTestCase(unittest.TestCase):
 
-    def testAvailabililty(self):
+    def test_availabililty(self):
         unavailable_resource = availability.unavailable_resource("unavailable")
-        self.assertNotEqual(unavailable_resource.availabilityErrors, [])
+        self.assertNotEqual(unavailable_resource.availability_errors, [])
         self.assertFalse(unavailable_resource.available)
 
         available_resource = availability.available_resource("available")
-        self.assertEqual(available_resource.availabilityErrors, [])
+        self.assertEqual(available_resource.availability_errors, [])
         self.assertTrue(available_resource.available)
 
 class TasksTestCase(unittest.TestCase):
 
-    def testAvailability(self):
+    def test_availability(self):
         unavailable_app = BasicUnavailableApplication()
         self.assertFalse(unavailable_app.available)
-        self.assertNotEqual(unavailable_app.availabilityErrors, [])
+        self.assertNotEqual(unavailable_app.availability_errors, [])
 
         available_app = BasicAvailableApplication()
         self.assertTrue(available_app.available)
-        self.assertEqual(available_app.availabilityErrors, [])
+        self.assertEqual(available_app.availability_errors, [])
 
-    def testNames(self):
+    def test_names(self):
         # Every basic application takes its string representation from
         # the external resource.
         unavailable_app = BasicUnavailableApplication()

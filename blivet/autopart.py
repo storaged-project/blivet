@@ -18,7 +18,7 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-"""This module provides functions related to autopartitioning."""
+"""This module provides functions related to automatic partitioning."""
 
 import parted
 from decimal import Decimal
@@ -28,8 +28,8 @@ from .size import Size
 from .devices.partition import PartitionDevice, FALLBACK_DEFAULT_PART_SIZE
 from .devices.luks import LUKSDevice
 from .errors import NoDisksError, NotEnoughFreeSpaceError
-from .formats import getFormat
-from .partitioning import doPartitioning, getFreeRegions, growLVM
+from .formats import get_format
+from .partitioning import do_partitioning, get_free_regions, grow_lvm
 from .i18n import _
 
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
@@ -40,7 +40,7 @@ log = logging.getLogger("anaconda")
 # maximum ratio of swap size to disk size (10 %)
 MAX_SWAP_DISK_RATIO = Decimal('0.1')
 
-def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
+def swap_suggestion(quiet=False, hibernation=False, disk_space=None):
     """
     Suggest the size of the swap partition that will be created.
 
@@ -101,12 +101,12 @@ def swapSuggestion(quiet=False, hibernation=False, disk_space=None):
 
     return swap
 
-def _getCandidateDisks(storage):
+def _get_candidate_disks(storage):
     """ Return a list of disks to be used for autopart/reqpart.
 
         Disks must be partitioned and have a single free region large enough
         for a default-sized (500MiB) partition. They must also be in
-        :attr:`StorageDiscoveryConfig.clearPartDisks` if it is non-empty.
+        :attr:`StorageDiscoveryConfig.clear_part_disks` if it is non-empty.
 
         :param storage: a Blivet instance
         :type storage: :class:`~.Blivet`
@@ -115,17 +115,17 @@ def _getCandidateDisks(storage):
     """
     disks = []
     for disk in storage.partitioned:
-        if storage.config.clearPartDisks and \
-           (disk.name not in storage.config.clearPartDisks):
+        if storage.config.clear_part_disks and \
+           (disk.name not in storage.config.clear_part_disks):
             continue
 
-        part = disk.format.firstPartition
+        part = disk.format.first_partition
         while part:
             if not part.type & parted.PARTITION_FREESPACE:
                 part = part.nextPartition()
                 continue
 
-            if Size(part.getLength(unit="B")) > PartitionDevice.defaultSize:
+            if Size(part.getLength(unit="B")) > PartitionDevice.default_size:
                 disks.append(disk)
                 break
 
@@ -133,7 +133,7 @@ def _getCandidateDisks(storage):
 
     return disks
 
-def _scheduleImplicitPartitions(storage, disks, min_luks_entropy=0):
+def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
     """ Schedule creation of a lvm/btrfs member partitions for autopart.
 
         We create one such partition on each disk. They are not allocated until
@@ -153,33 +153,33 @@ def _scheduleImplicitPartitions(storage, disks, min_luks_entropy=0):
     devs = []
 
     # only schedule the partitions if either lvm or btrfs autopart was chosen
-    if storage.autoPartType == AUTOPART_TYPE_PLAIN:
+    if storage.autopart_type == AUTOPART_TYPE_PLAIN:
         return devs
 
     for disk in disks:
-        if storage.encryptedAutoPart:
+        if storage.encrypted_autopart:
             fmt_type = "luks"
-            fmt_args = {"passphrase": storage.encryptionPassphrase,
-                        "cipher": storage.encryptionCipher,
-                        "escrow_cert": storage.autoPartEscrowCert,
-                        "add_backup_passphrase": storage.autoPartAddBackupPassphrase,
+            fmt_args = {"passphrase": storage.encryption_passphrase,
+                        "cipher": storage.encryption_cipher,
+                        "escrow_cert": storage.autopart_escrow_cert,
+                        "add_backup_passphrase": storage.autopart_add_backup_passphrase,
                         "min_luks_entropy": min_luks_entropy}
         else:
-            if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
+            if storage.autopart_type in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
                 fmt_type = "lvmpv"
             else:
                 fmt_type = "btrfs"
             fmt_args = {}
-        part = storage.newPartition(fmt_type=fmt_type,
+        part = storage.new_partition(fmt_type=fmt_type,
                                                 fmt_args=fmt_args,
                                                 grow=True,
                                                 parents=[disk])
-        storage.createDevice(part)
+        storage.create_device(part)
         devs.append(part)
 
     return devs
 
-def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, requests=None):
+def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, requests=None):
     """ Schedule creation of autopart/reqpart partitions.
 
         This only schedules the requests for actual partitions.
@@ -192,17 +192,17 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
                                  luks format creation
         :type min_luks_entropy: int
         :param requests: list of partitioning requests to operate on,
-                         or `~.storage.autoPartitionRequests` by default
+                         or `~.storage.autopart_requests` by default
         :type requests: list of :class:`~.partspec.PartSpec` instances
         :returns: None
         :rtype: None
     """
     if not requests:
-        requests = storage.autoPartitionRequests
+        requests = storage.autopart_requests
 
-    # basis for requests with requiredSpace is the sum of the sizes of the
+    # basis for requests with required_space is the sum of the sizes of the
     # two largest free regions
-    all_free = (Size(reg.getLength(unit="B")) for reg in getFreeRegions(disks))
+    all_free = (Size(reg.get_length(unit="B")) for reg in get_free_regions(disks))
     all_free = sorted(all_free, reverse=True)
     if not all_free:
         # this should never happen since we've already filtered the disks
@@ -229,13 +229,13 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
     # First pass is for partitions only. We'll do LVs later.
     #
     for request in requests:
-        if ((request.lv and storage.doAutoPart and
-             storage.autoPartType in (AUTOPART_TYPE_LVM,
+        if ((request.lv and storage.do_autopart and
+             storage.autopart_type in (AUTOPART_TYPE_LVM,
                                       AUTOPART_TYPE_LVM_THINP)) or
-            (request.btr and storage.autoPartType == AUTOPART_TYPE_BTRFS)):
+            (request.btr and storage.autopart_type == AUTOPART_TYPE_BTRFS)):
             continue
 
-        if request.requiredSpace and request.requiredSpace > free:
+        if request.required_space and request.required_space > free:
             continue
 
         elif request.fstype in ("prepboot", "efi", "macefi", "hfs+") and \
@@ -259,7 +259,7 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
                                     for p in storage.partitions
                                         if p.disk == stage1_device]))
             if (storage.bootloader.skip_bootloader or
-                not (stage1_device and stage1_device.isDisk and
+                not (stage1_device and stage1_device.is_disk and
                     is_gpt and not has_bios_boot)):
                 # there should never be a need for more than one of these
                 # partitions, so skip them.
@@ -273,41 +273,41 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
             raise NotEnoughFreeSpaceError(_("No big enough free space on disks for "
                                             "automatic partitioning"))
 
-        if request.encrypted and storage.encryptedAutoPart:
+        if request.encrypted and storage.encrypted_autopart:
             fmt_type = "luks"
-            fmt_args = {"passphrase": storage.encryptionPassphrase,
-                        "cipher": storage.encryptionCipher,
-                        "escrow_cert": storage.autoPartEscrowCert,
-                        "add_backup_passphrase": storage.autoPartAddBackupPassphrase,
+            fmt_args = {"passphrase": storage.encryption_passphrase,
+                        "cipher": storage.encryption_cipher,
+                        "escrow_cert": storage.autopart_escrow_cert,
+                        "add_backup_passphrase": storage.autopart_add_backup_passphrase,
                         "min_luks_entropy": min_luks_entropy}
         else:
             fmt_type = request.fstype
             fmt_args = {}
 
-        dev = storage.newPartition(fmt_type=fmt_type,
+        dev = storage.new_partition(fmt_type=fmt_type,
                                             fmt_args=fmt_args,
                                             size=request.size,
                                             grow=request.grow,
-                                            maxsize=request.maxSize,
+                                            maxsize=request.max_size,
                                             mountpoint=request.mountpoint,
                                             parents=disks,
                                             weight=request.weight)
 
         # schedule the device for creation
-        storage.createDevice(dev)
+        storage.create_device(dev)
 
-        if request.encrypted and storage.encryptedAutoPart:
-            luks_fmt = getFormat(request.fstype,
+        if request.encrypted and storage.encrypted_autopart:
+            luks_fmt = get_format(request.fstype,
                                  device=dev.path,
                                  mountpoint=request.mountpoint)
             luks_dev = LUKSDevice("luks-%s" % dev.name,
                                   fmt=luks_fmt,
                                   size=dev.size,
                                   parents=dev)
-            storage.createDevice(luks_dev)
+            storage.create_device(luks_dev)
 
-        if storage.doAutoPart and \
-           storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
+        if storage.do_autopart and \
+           storage.autopart_type in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
                                     AUTOPART_TYPE_BTRFS):
             # doing LVM/BTRFS -- make sure the newly created partition fits in some
             # free space together with one of the implicitly requested partitions
@@ -321,7 +321,7 @@ def _schedulePartitions(storage, disks, implicit_devices, min_luks_entropy=0, re
 
     return implicit_devices
 
-def _scheduleVolumes(storage, devs):
+def _schedule_volumes(storage, devs):
     """ Schedule creation of autopart lvm/btrfs volumes.
 
         Schedules encryption of member devices if requested, schedules creation
@@ -342,54 +342,54 @@ def _scheduleVolumes(storage, devs):
     if not devs:
         return
 
-    if storage.autoPartType in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
-        new_container = storage.newVG
-        new_volume = storage.newLV
+    if storage.autopart_type in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
+        new_container = storage.new_vg
+        new_volume = storage.new_lv
         format_name = "lvmpv"
     else:
-        new_container = storage.newBTRFS
-        new_volume = storage.newBTRFS
+        new_container = storage.new_btrfs
+        new_volume = storage.new_btrfs
         format_name = "btrfs"
 
-    if storage.encryptedAutoPart:
+    if storage.encrypted_autopart:
         pvs = []
         for dev in devs:
             pv = LUKSDevice("luks-%s" % dev.name,
-                            fmt=getFormat(format_name, device=dev.path),
+                            fmt=get_format(format_name, device=dev.path),
                             size=dev.size,
                             parents=dev)
             pvs.append(pv)
-            storage.createDevice(pv)
+            storage.create_device(pv)
     else:
         pvs = devs
 
     # create a vg containing all of the autopart pvs
     container = new_container(parents=pvs)
-    storage.createDevice(container)
+    storage.create_device(container)
 
     #
-    # Convert storage.autoPartitionRequests into Device instances and
+    # Convert storage.autopart_requests into Device instances and
     # schedule them for creation.
     #
     # Second pass, for LVs only.
     pool = None
-    for request in storage.autoPartitionRequests:
-        btr = storage.autoPartType == AUTOPART_TYPE_BTRFS and request.btr
-        lv = (storage.autoPartType in (AUTOPART_TYPE_LVM,
+    for request in storage.autopart_requests:
+        btr = storage.autopart_type == AUTOPART_TYPE_BTRFS and request.btr
+        lv = (storage.autopart_type in (AUTOPART_TYPE_LVM,
                                        AUTOPART_TYPE_LVM_THINP) and request.lv)
-        thinlv = (storage.autoPartType == AUTOPART_TYPE_LVM_THINP and
+        thinlv = (storage.autopart_type == AUTOPART_TYPE_LVM_THINP and
                   request.lv and request.thin)
         if thinlv and pool is None:
             # create a single thin pool in the vg
-            pool = storage.newLV(parents=[container], thin_pool=True, grow=True)
-            storage.createDevice(pool)
+            pool = storage.new_lv(parents=[container], thin_pool=True, grow=True)
+            storage.create_device(pool)
 
         if not btr and not lv and not thinlv:
             continue
 
         # required space isn't relevant on btrfs
         if (lv or thinlv) and \
-           request.requiredSpace and request.requiredSpace > container.size:
+           request.required_space and request.required_space > container.size:
             continue
 
         if request.fstype is None:
@@ -397,7 +397,7 @@ def _scheduleVolumes(storage, devs):
                 # btrfs volumes can only contain btrfs filesystems
                 request.fstype = "btrfs"
             else:
-                request.fstype = storage.defaultFSType
+                request.fstype = storage.default_fstype
 
         kwargs = {"mountpoint": request.mountpoint,
                   "fmt_type": request.fstype}
@@ -409,7 +409,7 @@ def _scheduleVolumes(storage, devs):
 
             kwargs.update({"parents": parents,
                            "grow": request.grow,
-                           "maxsize": request.maxSize,
+                           "maxsize": request.max_size,
                            "size": request.size,
                            "thin_volume": thinlv})
         else:
@@ -420,30 +420,30 @@ def _scheduleVolumes(storage, devs):
         dev = new_volume(**kwargs)
 
         # schedule the device for creation
-        storage.createDevice(dev)
+        storage.create_device(dev)
 
-def doReqPartition(storage, requests):
+def do_reqpart(storage, requests):
     """Perform automatic partitioning of just required platform-specific
-       partitions.  This is incompatible with doAutoPartition.
+       partitions.  This is incompatible with do_autopart.
 
        :param storage: a :class:`~.Blivet` instance
        :type storage: :class:`~.Blivet`
        :param requests: list of partitioning requests to operate on,
-                        or `~.storage.autoPartitionRequests` by default
+                        or `~.storage.autopart_requests` by default
        :type requests: list of :class:`~.partspec.PartSpec` instances
     """
     if not storage.partitioned:
         raise NoDisksError(_("No usable disks selected"))
 
-    disks = _getCandidateDisks(storage)
+    disks = _get_candidate_disks(storage)
 
     if disks == []:
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                       "automatic partitioning"))
 
-    _schedulePartitions(storage, disks, [], requests=requests)
+    _schedule_partitions(storage, disks, [], requests=requests)
 
-def doAutoPartition(storage, data, min_luks_entropy=0):
+def do_autopart(storage, data, min_luks_entropy=0):
     """ Perform automatic partitioning.
 
         :param storage: a :class:`~.Blivet` instance
@@ -454,40 +454,40 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
                                  luks format creation
         :type min_luks_entropy: int
 
-        :attr:`Blivet.doAutoPart` controls whether this method creates the
-        automatic partitioning layout. :attr:`Blivet.autoPartType` controls
+        :attr:`Blivet.do_autopart` controls whether this method creates the
+        automatic partitioning layout. :attr:`Blivet.autopart_type` controls
         which variant of autopart used. It uses one of the pykickstart
         AUTOPART_TYPE_* constants. The set of eligible disks is defined in
-        :attr:`StorageDiscoveryConfig.clearPartDisks`.
+        :attr:`StorageDiscoveryConfig.clear_part_disks`.
 
         .. note::
 
             Clearing of partitions is handled separately, in
-            :meth:`~.Blivet.clearPartitions`.
+            :meth:`~.Blivet.clear_partitions`.
     """
     # pylint: disable=unused-argument
-    log.debug("doAutoPart: %s", storage.doAutoPart)
-    log.debug("encryptedAutoPart: %s", storage.encryptedAutoPart)
-    log.debug("autoPartType: %s", storage.autoPartType)
-    log.debug("clearPartType: %s", storage.config.clearPartType)
-    log.debug("clearPartDisks: %s", storage.config.clearPartDisks)
-    log.debug("autoPartitionRequests:\n%s", "".join([str(p) for p in storage.autoPartitionRequests]))
+    log.debug("do_autopart: %s", storage.do_autopart)
+    log.debug("encrypted_autopart: %s", storage.encrypted_autopart)
+    log.debug("autopart_type: %s", storage.autopart_type)
+    log.debug("clear_part_type: %s", storage.config.clear_part_type)
+    log.debug("clear_part_disks: %s", storage.config.clear_part_disks)
+    log.debug("autopart_requests:\n%s", "".join([str(p) for p in storage.autopart_requests]))
     log.debug("storage.disks: %s", [d.name for d in storage.disks])
     log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned])
     log.debug("all names: %s", [d.name for d in storage.devices])
-    log.debug("boot disk: %s", getattr(storage.bootDisk, "name", None))
+    log.debug("boot disk: %s", getattr(storage.boot_disk, "name", None))
 
     disks = []
     devs = []
 
-    if not storage.doAutoPart:
+    if not storage.do_autopart:
         return
 
     if not storage.partitioned:
         raise NoDisksError(_("No usable disks selected"))
 
-    disks = _getCandidateDisks(storage)
-    devs = _scheduleImplicitPartitions(storage, disks, min_luks_entropy)
+    disks = _get_candidate_disks(storage)
+    devs = _schedule_implicit_partitions(storage, disks, min_luks_entropy)
     log.debug("candidate disks: %s", disks)
     log.debug("devs: %s", devs)
 
@@ -495,17 +495,17 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                       "automatic partitioning"))
 
-    devs = _schedulePartitions(storage, disks, devs, min_luks_entropy=min_luks_entropy)
+    devs = _schedule_partitions(storage, disks, devs, min_luks_entropy=min_luks_entropy)
 
     # run the autopart function to allocate and grow partitions
-    doPartitioning(storage)
-    _scheduleVolumes(storage, devs)
+    do_partitioning(storage)
+    _schedule_volumes(storage, devs)
 
     # grow LVs
-    growLVM(storage)
+    grow_lvm(storage)
 
-    storage.setUpBootLoader()
+    storage.set_up_boot_loader()
 
     # only newly added swaps should appear in the fstab
     new_swaps = (dev for dev in storage.swaps if not dev.format.exists)
-    storage.setFstabSwaps(new_swaps)
+    storage.set_fstab_swaps(new_swaps)

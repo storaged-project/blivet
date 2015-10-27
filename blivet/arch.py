@@ -43,18 +43,18 @@ log = logging.getLogger("blivet")
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
 
-def getPPCMachine():
+def get_ppc_machine():
     """
     :return: The PPC machine type, or None if not PPC.
     :rtype: string
 
     """
-    if not isPPC():
+    if not is_ppc():
         return None
 
     # ppc machine hash
     # Note: This is a substring match!
-    ppcType = { 'Mac'      : 'PMac',
+    ppc_type = { 'Mac'      : 'PMac',
                 'Book'     : 'PMac',
                 'CHRP'     : 'pSeries',
                 'CHRP IBM' : 'pSeries', # @TODO the CHRP entry above should match this
@@ -89,7 +89,7 @@ def getPPCMachine():
         if part is None:
             continue
 
-        for _type in ppcType.items():
+        for _type in ppc_type.items():
             if _type[0] in part:
                 return _type[1]
 
@@ -97,15 +97,15 @@ def getPPCMachine():
 
     return None
 
-def getPPCMacID():
+def get_ppc_mac_id():
     """
     :return: The powermac machine type, or None if not PPC or a powermac.
     :rtype: string
 
     """
-    if not isPPC():
+    if not is_ppc():
         return None
-    if getPPCMachine() != "PMac":
+    if get_ppc_machine() != "PMac":
         return None
 
     with open('/proc/cpuinfo', 'r') as f:
@@ -117,7 +117,7 @@ def getPPCMacID():
     log.warning("No Power Mac machine id")
     return None
 
-def getPPCMacGen():
+def get_ppc_mac_gen():
     """
     :return: The PPC generation, or None if not PPC or a powermac.
     :rtype: string
@@ -125,11 +125,11 @@ def getPPCMacGen():
     """
     # XXX: should NuBus be here?
     # Note: This is a substring match!
-    pmacGen = ['OldWorld', 'NewWorld', 'NuBus']
+    pmac_gen = ['OldWorld', 'NewWorld', 'NuBus']
 
-    if not isPPC():
+    if not is_ppc():
         return None
-    if getPPCMachine() != "PMac":
+    if get_ppc_machine() != "PMac":
         return None
 
     gen = None
@@ -143,22 +143,22 @@ def getPPCMacGen():
         log.warning("Unable to find pmac-generation")
         return None
 
-    for _type in pmacGen:
+    for _type in pmac_gen:
         if _type in gen:
             return _type
 
     log.warning("Unknown Power Mac generation: %s", gen)
     return None
 
-def getPPCMacBook():
+def get_ppc_mac_book():
     """
-    :return: True if the hardware is an iBook or PowerBook, False otherwise.
+    :return: True if the hardware is an i_book or PowerBook, False otherwise.
     :rtype: string
 
     """
-    if not isPPC():
+    if not is_ppc():
         return False
-    if getPPCMachine() != "PMac":
+    if get_ppc_machine() != "PMac":
         return False
 
     #@TBD - Search for 'book' anywhere in cpuinfo? Shouldn't this be more restrictive?
@@ -169,7 +169,7 @@ def getPPCMacBook():
 
     return False
 
-def isAARCH64():
+def is_aarch64():
     """
     :return: True if the hardware supports Aarch64, False otherwise.
     :rtype: boolean
@@ -177,33 +177,33 @@ def isAARCH64():
     """
     return os.uname()[4] == 'aarch64'
 
-def getARMMachine():
+def get_arm_machine():
     """
     :return: The ARM processor variety type, or None if not ARM.
     :rtype: string
 
     """
-    if not isARM():
+    if not is_arm():
         return None
 
     if flags.arm_platform:
         return flags.arm_platform
 
-    armMachine = os.uname()[2].rpartition('.' )[2]
+    arm_machine = os.uname()[2].rpartition('.' )[2]
 
-    if armMachine.startswith('arm'):
+    if arm_machine.startswith('arm'):
         # @TBD - Huh? Don't you want the arm machine name here?
         return None
     else:
-        return armMachine
+        return arm_machine
 
-def isCell():
+def is_cell():
     """
     :return: True if the hardware is the Cell platform, False otherwise.
     :rtype: boolean
 
     """
-    if not isPPC():
+    if not is_ppc():
         return False
 
     with open('/proc/cpuinfo', 'r') as f:
@@ -213,13 +213,13 @@ def isCell():
 
     return False
 
-def isMactel():
+def is_mactel():
     """
     :return: True if the hardware is an Intel-based Apple Mac, False otherwise.
     :rtype: boolean
 
     """
-    if not isX86():
+    if not is_x86():
         mactel = False
     elif not os.path.isfile(DMI_CHASSIS_VENDOR):
         mactel = False
@@ -231,7 +231,7 @@ def isMactel():
             mactel = False
     return mactel
 
-def isEfi():
+def is_efi():
     """
     :return: True if the hardware supports EFI, False otherwise.
     :rtype: boolean
@@ -245,7 +245,7 @@ def isEfi():
 
 # Architecture checking functions
 
-def isX86(bits=None):
+def is_x86(bits=None):
     """:return: True if the hardware supports X86, False otherwise.
     :rtype: boolean
     :param bits: The number of bits used to define a memory address.
@@ -275,7 +275,7 @@ def isX86(bits=None):
 
     return False
 
-def isPPC(bits=None):
+def is_ppc(bits=None):
     """
     :return: True if the hardware supports PPC, False otherwise.
     :rtype: boolean
@@ -297,7 +297,7 @@ def isPPC(bits=None):
 
     return False
 
-def isS390():
+def is_s390():
     """
     :return: True if the hardware supports PPC, False otherwise.
     :rtype: boolean
@@ -305,7 +305,7 @@ def isS390():
     """
     return os.uname()[4].startswith('s390')
 
-def isIA64():
+def is_ia64():
     """
     :return: True if the hardware supports IA64, False otherwise.
     :rtype: boolean
@@ -313,7 +313,7 @@ def isIA64():
     """
     return os.uname()[4] == 'ia64'
 
-def isAlpha():
+def is_alpha():
     """
     :return: True if the hardware supports Alpha, False otherwise.
     :rtype: boolean
@@ -321,7 +321,7 @@ def isAlpha():
     """
     return os.uname()[4].startswith('alpha')
 
-def isARM():
+def is_arm():
     """
     :return: True if the hardware supports ARM, False otherwise.
     :rtype: boolean
@@ -329,31 +329,31 @@ def isARM():
     """
     return os.uname()[4].startswith('arm')
 
-def getArch():
+def get_arch():
     """
     :return: The hardware architecture
     :rtype: string
 
     """
-    if isX86(bits=32):
+    if is_x86(bits=32):
         return 'i386'
-    elif isX86(bits=64):
+    elif is_x86(bits=64):
         return 'x86_64'
-    elif isPPC(bits=32):
+    elif is_ppc(bits=32):
         return 'ppc'
-    elif isPPC(bits=64):
+    elif is_ppc(bits=64):
         # ppc64 and ppc64le are distinct architectures
         return os.uname()[4]
-    elif isAARCH64():
+    elif is_aarch64():
         return 'aarch64'
-    elif isAlpha():
+    elif is_alpha():
         return 'alpha'
-    elif isARM():
+    elif is_arm():
         return 'arm'
     else:
         return os.uname()[4]
 
-def numBits():
+def num_bits():
     """ Return an integer representing the length
         of the "word" used by the current architecture
         -> it is usually either 32 or 64

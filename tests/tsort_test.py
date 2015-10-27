@@ -3,15 +3,15 @@ import unittest
 import blivet.tsort
 
 class TopologicalSortTestCase(unittest.TestCase):
-    def runTest(self):
+    def run_test(self):
         items = [1, 2, 3, 4, 5]
         edges = [(5, 4), (4, 3), (3, 2), (2, 1)]
         graph = blivet.tsort.create_graph(items, edges)
-        self._tsortTest(graph)
+        self._tsort_test(graph)
 
         edges = [(5, 4), (2, 3), (1, 5)]
         graph = blivet.tsort.create_graph(items, edges)
-        self._tsortTest(graph)
+        self._tsort_test(graph)
 
         edges = [(5, 4), (4, 3), (3, 2), (2, 1), (3, 5)]
         graph = blivet.tsort.create_graph(items, edges)
@@ -26,9 +26,9 @@ class TopologicalSortTestCase(unittest.TestCase):
         items = ['a', 'b', 'c', 'd']
         edges = [('a', 'c'), ('c', 'b')]
         graph = blivet.tsort.create_graph(items, edges)
-        self._tsortTest(graph)
+        self._tsort_test(graph)
 
-    def _tsortTest(self, graph):
+    def _tsort_test(self, graph):
         def check_order(order, graph):
             # since multiple solutions can potentially exist, just verify
             # that the ordering constraints are satisfied

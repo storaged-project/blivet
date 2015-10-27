@@ -10,7 +10,7 @@ from blivet.udev import trigger
 from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
 from blivet.devices import StorageDevice
 from blivet.devicetree import DeviceTree
-from blivet.formats import getFormat
+from blivet.formats import get_format
 
 """
     TODO:
@@ -22,36 +22,36 @@ from blivet.formats import getFormat
 """
 
 class DeviceTreeTestCase(unittest.TestCase):
-    def testResolveDevice(self):
+    def test_resolve_device(self):
         dt = DeviceTree()
 
         dev1_label = "dev1_label"
         dev1_uuid = "1234-56-7890"
-        fmt1 = getFormat("ext4", label=dev1_label, uuid=dev1_uuid)
+        fmt1 = get_format("ext4", label=dev1_label, uuid=dev1_uuid)
         dev1 = StorageDevice("dev1", exists=True, fmt=fmt1)
-        dt._addDevice(dev1)
+        dt._add_device(dev1)
 
         dev2_label = "dev2_label"
-        fmt2 = getFormat("swap", label=dev2_label)
+        fmt2 = get_format("swap", label=dev2_label)
         dev2 = StorageDevice("dev2", exists=True, fmt=fmt2)
-        dt._addDevice(dev2)
+        dt._add_device(dev2)
 
         dev3 = StorageDevice("sdp2", exists=True)
-        dt._addDevice(dev3)
+        dt._add_device(dev3)
 
-        dt.eddDict.update({"dev1": 0x81,
+        dt.edd_dict.update({"dev1": 0x81,
                            "dev2": 0x82})
 
-        self.assertEqual(dt.resolveDevice(dev1.name), dev1)
-        self.assertEqual(dt.resolveDevice("LABEL=%s" % dev1_label), dev1)
-        self.assertEqual(dt.resolveDevice("UUID=%s" % dev1_label), None)
-        self.assertEqual(dt.resolveDevice("UUID=%s" % dev1_uuid), dev1)
-        self.assertEqual(dt.resolveDevice("/dev/dev1"), dev1)
+        self.assertEqual(dt.resolve_device(dev1.name), dev1)
+        self.assertEqual(dt.resolve_device("LABEL=%s" % dev1_label), dev1)
+        self.assertEqual(dt.resolve_device("UUID=%s" % dev1_label), None)
+        self.assertEqual(dt.resolve_device("UUID=%s" % dev1_uuid), dev1)
+        self.assertEqual(dt.resolve_device("/dev/dev1"), dev1)
 
-        self.assertEqual(dt.resolveDevice("dev2"), dev2)
-        self.assertEqual(dt.resolveDevice("0x82"), dev2)
+        self.assertEqual(dt.resolve_device("dev2"), dev2)
+        self.assertEqual(dt.resolve_device("0x82"), dev2)
 
-        self.assertEqual(dt.resolveDevice(dev3.name), dev3)
+        self.assertEqual(dt.resolve_device(dev3.name), dev3)
 
 def recursive_getattr(x, attr, default=None):
     """ Resolve a possibly-dot-containing attribute name. """
@@ -86,7 +86,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
                             if d.disks and
                                set(d.disks).issubset(set(self.blivet.disks))):
             attr_dict = {}
-            device._partedDevice = None # force update from disk for size, &c
+            device._parted_device = None # force update from disk for size, &c
             for attr in self._validate_attrs:
                 attr_dict[attr] = recursive_getattr(device, attr)
 
@@ -106,10 +106,10 @@ class BlivetResetTestCase(ImageBackedTestCase):
 
         # XXX The only reason for this may be lvmetad
         for disk in self.blivet.disks:
-            self.blivet.recursiveRemove(disk)
+            self.blivet.recursive_remove(disk)
 
         try:
-            self.blivet.doIt()
+            self.blivet.do_it()
         except Exception:
             self.blivet.reset()
             raise
@@ -131,7 +131,7 @@ class BlivetResetTestCase(ImageBackedTestCase):
 
         return device
 
-    def runTest(self):
+    def run_test(self):
         """ Verify that the devices and their attributes match across reset. """
         #
         # populate the devicetree
@@ -163,17 +163,17 @@ class LVMTestCase(BlivetResetTestCase):
     """ Test that the devicetree can populate with the product of autopart. """
     def _set_up_storage(self):
         # This isn't exactly autopart, but it should be plenty close to it.
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("500 MiB"),
                                   disks=self.blivet.disks[:],
                                   fstype="swap")
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   None,
                                   disks=self.blivet.disks[:])
 
 class LVMSnapShotTestCase(BlivetResetTestCase):
     def _set_up_storage(self):
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("1 GiB"),
                                   label="ROOT",
                                   disks=self.blivet.disks[:],
@@ -185,8 +185,8 @@ class LVMSnapShotTestCase(BlivetResetTestCase):
         root = self.blivet.lvs[0]
         snap = LVMSnapShotDevice("rootsnap1", parents=[root.vg], origin=root,
                                  size=Size("768MiB"))
-        self.blivet.createDevice(snap)
-        self.blivet.doIt()
+        self.blivet.create_device(snap)
+        self.blivet.do_it()
 
         self.device_attr_dicts = []
         self.collect_expected_data()
@@ -194,18 +194,18 @@ class LVMSnapShotTestCase(BlivetResetTestCase):
 
 class LVMThinpTestCase(BlivetResetTestCase):
     def _set_up_storage(self):
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("500 MiB"),
                                   fstype="swap",
                                   disks=self.blivet.disks[:])
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM_THINP,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
                                   None,
                                   label="ROOT",
                                   disks=self.blivet.disks[:])
 
 class LVMThinSnapShotTestCase(LVMThinpTestCase):
     def _set_up_storage(self):
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM_THINP,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
                                   Size("1 GiB"),
                                   label="ROOT",
                                   disks=self.blivet.disks[:])
@@ -216,8 +216,8 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
         root = self.blivet.thinlvs[0]
         snap = LVMThinSnapShotDevice("rootsnap1", parents=[root.pool],
                                      origin=root)
-        self.blivet.createDevice(snap)
-        self.blivet.doIt()
+        self.blivet.create_device(snap)
+        self.blivet.do_it()
 
         self.device_attr_dicts = []
         self.collect_expected_data()
@@ -225,7 +225,7 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
 class LVMRaidTestCase(BlivetResetTestCase):
     def _set_up_storage(self):
         # This isn't exactly autopart, but it should be plenty close to it.
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                           Size("500 MiB"),
                           disks=self.blivet.disks[:],
                           container_size=devicefactory.SIZE_POLICY_MAX)
@@ -246,7 +246,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
     _validate_attrs = BlivetResetTestCase._validate_attrs + ["level", "spares"]
 
     def set_up_disks(self):
-        level = devicelibs.mdraid.RAID_levels.raidLevel(self.level)
+        level = devicelibs.mdraid.RAID_levels.raid_level(self.level)
         disk_count = level.min_members
         self.disks = dict()
         for i in range(disk_count):
@@ -258,42 +258,42 @@ class MDRaid0TestCase(BlivetResetTestCase):
 
     def skip_attr(self, device, attr):
         return (attr in ["name", "path"] and
-                getattr(device, "metadataVersion", "").startswith("0.9"))
+                getattr(device, "metadata_version", "").startswith("0.9"))
 
     def _set_up_storage(self):
-        device = self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_MD,
+        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
                                            Size("200 MiB"),
                                            disks=self.blivet.disks[:],
                                            raid_level=self.level,
                                            label="v090",
                                            name="2")
-        device.metadataVersion = "0.90"
+        device.metadata_version = "0.90"
 
-        device = self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_MD,
+        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
                                            Size("200 MiB"),
                                            disks=self.blivet.disks[:],
                                            raid_level=self.level,
                                            label="v1",
                                            name="one")
-        device.metadataVersion = "1.0"
+        device.metadata_version = "1.0"
 
-        device = self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_MD,
+        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
                                            Size("200 MiB"),
                                            disks=self.blivet.disks[:],
                                            raid_level=self.level,
                                            label="v11",
                                            name="oneone")
-        device.metadataVersion = "1.1"
+        device.metadata_version = "1.1"
 
-        device = self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_MD,
+        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
                                            Size("200 MiB"),
                                            disks=self.blivet.disks[:],
                                            raid_level=self.level,
                                            label="v12",
                                            name="onetwo")
-        device.metadataVersion = "1.2"
+        device.metadata_version = "1.2"
 
-        device = self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_MD,
+        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
                                            Size("200 MiB"),
                                            disks=self.blivet.disks[:],
                                            raid_level=self.level,
@@ -304,12 +304,12 @@ class MDRaid0TestCase(BlivetResetTestCase):
 class LVMOnMDTestCase(BlivetResetTestCase):
     # This also tests raid1 with the default metadata version.
     def _set_up_storage(self):
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   Size("200 MiB"),
                                   disks=self.blivet.disks[:],
                                   container_raid_level="raid1",
                                   fstype="swap")
-        self.blivet.factoryDevice(devicefactory.DEVICE_TYPE_LVM,
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
                                   None,
                                   disks=self.blivet.disks[:],
                                   container_raid_level="raid1")

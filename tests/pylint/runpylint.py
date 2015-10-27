@@ -14,8 +14,8 @@ class BlivetLintConfig(PocketLintConfig):
                                 FalsePositive(r"(PartitioningTestCase|PartitionDeviceTestCase).*: Instance of 'DeviceFormat' has no .* member"),
                                 FalsePositive(r"Instance of 'int' has no .* member"),
                                 FalsePositive(r"Instance of 'LUKSDevice' has no .* member"),
-                                FalsePositive(r"Method 'doTask' is abstract in class 'Task' but is not overridden"),
-                                FalsePositive(r"Method 'doTask' is abstract in class 'UnimplementedTask' but is not overridden"),
+                                FalsePositive(r"Method 'do_task' is abstract in class 'Task' but is not overridden"),
+                                FalsePositive(r"Method 'do_task' is abstract in class 'UnimplementedTask' but is not overridden"),
                                 FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
                                 FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$")
                               ]

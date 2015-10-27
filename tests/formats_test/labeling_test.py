@@ -10,45 +10,45 @@ from . import fslabeling
 class InitializationTestCase(unittest.TestCase):
     """Test FS object initialization."""
 
-    def testLabels(self):
+    def test_labels(self):
         """Initialize some filesystems with valid and invalid labels."""
 
         # Ext2FS has a maximum length of 16
-        self.assertFalse(fs.Ext2FS().labelFormatOK("root___filesystem"))
-        self.assertTrue(fs.Ext2FS().labelFormatOK("root__filesystem"))
+        self.assertFalse(fs.Ext2FS().label_format_ok("root___filesystem"))
+        self.assertTrue(fs.Ext2FS().label_format_ok("root__filesystem"))
 
         # FATFS has a maximum length of 11
-        self.assertFalse(fs.FATFS().labelFormatOK("rtfilesystem"))
-        self.assertTrue(fs.FATFS().labelFormatOK("rfilesystem"))
+        self.assertFalse(fs.FATFS().label_format_ok("rtfilesystem"))
+        self.assertTrue(fs.FATFS().label_format_ok("rfilesystem"))
 
         # JFS has a maximum length of 16
-        self.assertFalse(fs.JFS().labelFormatOK("root___filesystem"))
-        self.assertTrue(fs.JFS().labelFormatOK("root__filesystem"))
+        self.assertFalse(fs.JFS().label_format_ok("root___filesystem"))
+        self.assertTrue(fs.JFS().label_format_ok("root__filesystem"))
 
         # ReiserFS has a maximum length of 16
-        self.assertFalse(fs.ReiserFS().labelFormatOK("root___filesystem"))
-        self.assertTrue(fs.ReiserFS().labelFormatOK("root__filesystem"))
+        self.assertFalse(fs.ReiserFS().label_format_ok("root___filesystem"))
+        self.assertTrue(fs.ReiserFS().label_format_ok("root__filesystem"))
 
         #XFS has a maximum length 12 and does not allow spaces
-        self.assertFalse(fs.XFS().labelFormatOK("root_filesyst"))
-        self.assertFalse(fs.XFS().labelFormatOK("root file"))
-        self.assertTrue(fs.XFS().labelFormatOK("root_filesys"))
+        self.assertFalse(fs.XFS().label_format_ok("root_filesyst"))
+        self.assertFalse(fs.XFS().label_format_ok("root file"))
+        self.assertTrue(fs.XFS().label_format_ok("root_filesys"))
 
         #HFS has a maximum length of 27, minimum length of 1, and does not allow colons
-        self.assertFalse(fs.HFS().labelFormatOK("n" * 28))
-        self.assertFalse(fs.HFS().labelFormatOK("root:file"))
-        self.assertFalse(fs.HFS().labelFormatOK(""))
-        self.assertTrue(fs.HFS().labelFormatOK("n" * 27))
+        self.assertFalse(fs.HFS().label_format_ok("n" * 28))
+        self.assertFalse(fs.HFS().label_format_ok("root:file"))
+        self.assertFalse(fs.HFS().label_format_ok(""))
+        self.assertTrue(fs.HFS().label_format_ok("n" * 27))
 
         #HFSPlus has a maximum length of 128, minimum length of 1, and does not allow colons
-        self.assertFalse(fs.HFSPlus().labelFormatOK("n" * 129))
-        self.assertFalse(fs.HFSPlus().labelFormatOK("root:file"))
-        self.assertFalse(fs.HFSPlus().labelFormatOK(""))
-        self.assertTrue(fs.HFSPlus().labelFormatOK("n" * 128))
+        self.assertFalse(fs.HFSPlus().label_format_ok("n" * 129))
+        self.assertFalse(fs.HFSPlus().label_format_ok("root:file"))
+        self.assertFalse(fs.HFSPlus().label_format_ok(""))
+        self.assertTrue(fs.HFSPlus().label_format_ok("n" * 128))
 
         # NTFS has a maximum length of 128
-        self.assertFalse(fs.NTFS().labelFormatOK("n" * 129))
-        self.assertTrue(fs.NTFS().labelFormatOK("n" * 128))
+        self.assertFalse(fs.NTFS().label_format_ok("n" * 129))
+        self.assertTrue(fs.NTFS().label_format_ok("n" * 128))
 
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
@@ -90,15 +90,15 @@ class NTFSTestCase(fslabeling.CompleteLabelingAsRoot):
 
 class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
 
-    def testLabeling(self):
-        swp = swap.SwapSpace(device=self.loopDevices[0])
+    def test_labeling(self):
+        swp = swap.SwapSpace(device=self.loop_devices[0])
         swp.label = "mkswap is really pretty permissive about labels"
         self.assertIsNone(swp.create())
 
-    def testCreatingSwapSpaceNone(self):
-        swp = swap.SwapSpace(device=self.loopDevices[0], label=None)
+    def test_creating_swap_space_none(self):
+        swp = swap.SwapSpace(device=self.loop_devices[0], label=None)
         self.assertIsNone(swp.create())
 
-    def testCreatingSwapSpaceEmpty(self):
-        swp = swap.SwapSpace(device=self.loopDevices[0], label="")
+    def test_creating_swap_space_empty(self):
+        swp = swap.SwapSpace(device=self.loop_devices[0], label="")
         self.assertIsNone(swp.create())

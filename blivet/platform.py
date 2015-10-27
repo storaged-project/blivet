@@ -60,31 +60,31 @@ class Platform(object):
     def __init__(self):
         """Creates a new Platform object.  This is basically an abstract class.
            You should instead use one of the platform-specific classes as
-           returned by getPlatform below.  Not all subclasses need to provide
+           returned by get_platform below.  Not all subclasses need to provide
            all the methods in this class."""
 
         self.update_from_flags()
 
     def update_from_flags(self):
         if flags.gpt:
-            if not self.setDefaultDiskLabelType("gpt"):
+            if not self.set_default_disklabel_type("gpt"):
                 log.warn("GPT is not a supported disklabel on this platform. Using default "
-                         "disklabel %s instead.", self.defaultDiskLabelType)
+                         "disklabel %s instead.", self.default_disklabel_type)
 
     def __call__(self):
         return self
 
     @property
-    def diskLabelTypes(self):
+    def disklabel_types(self):
         """A list of valid disklabel types for this architecture."""
         return self._disklabel_types
 
     @property
-    def defaultDiskLabelType(self):
+    def default_disklabel_type(self):
         """The default disklabel type for this architecture."""
-        return self.diskLabelTypes[0]
+        return self.disklabel_types[0]
 
-    def setDefaultDiskLabelType(self, disklabel):
+    def set_default_disklabel_type(self, disklabel):
         """Make the disklabel the default
 
            :param str disklabel: The disklabel type to set as default
@@ -105,7 +105,7 @@ class Platform(object):
         return True
 
     @property
-    def bootStage1ConstraintDict(self):
+    def boot_stage1_constraint_dict(self):
         d = {"device_types": self._boot_stage1_device_types,
              "format_types": self._boot_stage1_format_types,
              "mountpoints": self._boot_stage1_mountpoints,
@@ -116,36 +116,36 @@ class Platform(object):
              "descriptions": dict((k, _(v)) for k, v in self._boot_descriptions.items())}
         return d
 
-    def requiredDiskLabelType(self, device_type):
+    def required_disklabel_type(self, device_type):
         # pylint: disable=unused-argument
         return None
 
-    def bestDiskLabelType(self, device):
+    def best_disklabel_type(self, device):
         """The best disklabel type for the specified device."""
         if flags.testing:
-            return self.defaultDiskLabelType
+            return self.default_disklabel_type
 
         parted_device = parted.Device(path=device.path)
 
         # if there's a required type for this device type, use that
-        labelType = self.requiredDiskLabelType(parted_device.type)
+        label_type = self.required_disklabel_type(parted_device.type)
         log.debug("required disklabel type for %s (%s) is %s",
-                  device.name, parted_device.type, labelType)
-        if not labelType:
+                  device.name, parted_device.type, label_type)
+        if not label_type:
             # otherwise, use the first supported type for this platform
             # that is large enough to address the whole device
-            labelType = self.defaultDiskLabelType
+            label_type = self.default_disklabel_type
             log.debug("default disklabel type for %s is %s", device.name,
-                                                             labelType)
-            for lt in self.diskLabelTypes:
+                                                             label_type)
+            for lt in self.disklabel_types:
                 l = parted.freshDisk(device=parted_device, ty=lt)
                 if l.maxPartitionStartSector > parted_device.length:
-                    labelType = lt
+                    label_type = lt
                     log.debug("selecting %s disklabel for %s based on size",
-                              labelType, device.name)
+                              label_type, device.name)
                     break
 
-        return labelType
+        return label_type
 
     @property
     def packages (self):
@@ -154,21 +154,21 @@ class Platform(object):
             _packages.append('dracut-fips')
         return _packages
 
-    def setPlatformBootloaderReqs(self):
+    def set_platform_bootloader_reqs(self):
         """Return the required platform-specific bootloader partition
            information.  These are typically partitions that do not get mounted,
            like biosboot or prepboot, but may also include the /boot/efi
            partition."""
         return []
 
-    def setPlatformBootPartition(self):
+    def set_platform_boot_partition(self):
         """Return the default /boot partition for this platform."""
         return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
                          weight=self.weight(mountpoint="/boot"))]
 
-    def setDefaultPartitioning(self):
+    def set_default_partitioning(self):
         """Return the default platform-specific partitioning information."""
-        return self.setPlatformBootloaderReqs() + self.setPlatformBootPartition()
+        return self.set_platform_bootloader_reqs() + self.set_platform_boot_partition()
 
     def weight(self, fstype=None, mountpoint=None):
         """ Given an fstype (as a string) or a mountpoint, return an integer
@@ -203,9 +203,9 @@ class X86(Platform):
     def __init__(self):
         super(X86, self).__init__()
 
-    def setPlatformBootloaderReqs(self):
+    def set_platform_bootloader_reqs(self):
         """Return the default platform-specific partitioning information."""
-        ret = Platform.setPlatformBootloaderReqs(self)
+        ret = Platform.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(fstype="biosboot", size=Size("1MiB"),
                             weight=self.weight(fstype="biosboot")))
         return ret
@@ -237,10 +237,10 @@ class EFI(Platform):
                                     "an EFI System Partition on a GPT-formatted "
                                     "disk, mounted at /boot/efi.")
 
-    def setPlatformBootloaderReqs(self):
-        ret = Platform.setPlatformBootloaderReqs(self)
+    def set_platform_bootloader_reqs(self):
+        ret = Platform.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="efi",
-                            size=Size("20MiB"), maxSize=Size("200MiB"),
+                            size=Size("20MiB"), max_size=Size("200MiB"),
                             grow=True, weight=self.weight(fstype="efi")))
         return ret
 
@@ -259,10 +259,10 @@ class MacEFI(EFI):
     _non_linux_format_types = ["macefi"]
     _packages = ["mactel-boot"]
 
-    def setPlatformBootloaderReqs(self):
-        ret = Platform.setPlatformBootloaderReqs(self)
+    def set_platform_bootloader_reqs(self):
+        ret = Platform.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="macefi",
-                            size=Size("20MiB"), maxSize=Size("200MiB"),
+                            size=Size("20MiB"), max_size=Size("200MiB"),
                             grow=True, weight=self.weight(mountpoint="/boot/efi")))
         return ret
 
@@ -270,12 +270,12 @@ class Aarch64EFI(EFI):
     _non_linux_format_types = ["vfat", "ntfs"]
 
 class PPC(Platform):
-    _ppcMachine = arch.getPPCMachine()
+    _ppc_machine = arch.get_ppc_machine()
     _boot_stage1_device_types = ["partition"]
 
     @property
-    def ppcMachine(self):
-        return self._ppcMachine
+    def ppc_machine(self):
+        return self._ppc_machine
 
 class IPSeriesPPC(PPC):
     _boot_stage1_format_types = ["prepboot"]
@@ -287,8 +287,8 @@ class IPSeriesPPC(PPC):
                                     "within the first 4GiB of an MBR- "
                                     "or GPT-formatted disk.")
 
-    def setPlatformBootloaderReqs(self):
-        ret = PPC.setPlatformBootloaderReqs(self)
+    def set_platform_bootloader_reqs(self):
+        ret = PPC.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(fstype="prepboot", size=Size("4MiB"),
                             weight=self.weight(fstype="prepboot")))
         return ret
@@ -312,8 +312,8 @@ class NewWorldPPC(PPC):
                                     "Partition on an Apple Partition Map-"
                                     "formatted disk.")
 
-    def setPlatformBootloaderReqs(self):
-        ret = Platform.setPlatformBootloaderReqs(self)
+    def set_platform_bootloader_reqs(self):
+        ret = Platform.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(fstype="appleboot", size=Size("1MiB"),
                             weight=self.weight(fstype="appleboot")))
         return ret
@@ -347,20 +347,20 @@ class S390(Platform):
     def __init__(self):
         Platform.__init__(self)
 
-    def setPlatformBootPartition(self):
+    def set_platform_boot_partition(self):
         """Return the default platform-specific partitioning information."""
         return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
                          weight=self.weight(mountpoint="/boot"), lv=False)]
 
-    def requiredDiskLabelType(self, device_type):
+    def required_disklabel_type(self, device_type):
         """The required disklabel type for the specified device type."""
         if device_type == parted.DEVICE_DASD:
             return "dasd"
 
-        return super(S390, self).requiredDiskLabelType(device_type)
+        return super(S390, self).required_disklabel_type(device_type)
 
 class ARM(Platform):
-    _armMachine = None
+    _arm_machine = None
     _boot_stage1_device_types = ["disk"]
     _boot_mbr_description = N_("Master Boot Record")
     _boot_descriptions = {"disk": _boot_mbr_description,
@@ -371,10 +371,10 @@ class ARM(Platform):
                                     "disk as an install target.")
 
     @property
-    def armMachine(self):
-        if not self._armMachine:
-            self._armMachine = arch.getARMMachine()
-        return self._armMachine
+    def arm_machine(self):
+        if not self._arm_machine:
+            self._arm_machine = arch.get_arm_machine()
+        return self._arm_machine
 
     def weight(self, fstype=None, mountpoint=None):
         """Return the ARM platform-specific weight for the / partition.
@@ -394,18 +394,18 @@ class omapARM(ARM):
     _boot_stage1_missing_error = N_("You must include a U-Boot Partition on a "
                                     "FAT-formatted disk, mounted at /boot/uboot.")
 
-    def setPlatformBootloaderReqs(self):
+    def set_platform_bootloader_reqs(self):
         """Return the ARM-OMAP platform-specific partitioning information."""
         ret = [PartSpec(mountpoint="/boot/uboot", fstype="vfat",
-                        size=Size("20MiB"), maxSize=Size("200MiB"),
+                        size=Size("20MiB"), max_size=Size("200MiB"),
                         grow=True,
                         weight=self.weight(fstype="vfat", mountpoint="/boot/uboot"))]
         return ret
 
-    def setDefaultPartitioning(self):
-        ret = ARM.setDefaultPartitioning(self)
+    def set_default_partitioning(self):
+        ret = ARM.set_default_partitioning(self)
         ret.append(PartSpec(mountpoint="/", fstype="ext4",
-                            size=Size("2GiB"), maxSize=Size("3GiB"),
+                            size=Size("2GiB"), max_size=Size("3GiB"),
                             weight=self.weight(mountpoint="/")))
         return ret
 
@@ -421,39 +421,39 @@ class omapARM(ARM):
         else:
             return Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
 
-def getPlatform():
+def get_platform():
     """Check the architecture of the system and return an instance of a
        Platform subclass to match.  If the architecture could not be determined,
        raise an exception."""
-    if arch.isPPC():
-        ppcMachine = arch.getPPCMachine()
+    if arch.is_ppc():
+        ppc_machine = arch.get_ppc_machine()
 
-        if (ppcMachine == "PMac" and arch.getPPCMacGen() == "NewWorld"):
+        if (ppc_machine == "PMac" and arch.get_ppc_mac_gen() == "NewWorld"):
             return NewWorldPPC()
-        elif ppcMachine in ["iSeries", "pSeries"]:
+        elif ppc_machine in ["iSeries", "pSeries"]:
             return IPSeriesPPC()
-        elif ppcMachine == "PS3":
+        elif ppc_machine == "PS3":
             return PS3()
         else:
-            raise SystemError("Unsupported PPC machine type: %s" % ppcMachine)
-    elif arch.isS390():
+            raise SystemError("Unsupported PPC machine type: %s" % ppc_machine)
+    elif arch.is_s390():
         return S390()
-    elif arch.isEfi():
-        if arch.isMactel():
+    elif arch.is_efi():
+        if arch.is_mactel():
             return MacEFI()
-        elif arch.isAARCH64():
+        elif arch.is_aarch64():
             return Aarch64EFI()
         else:
             return EFI()
-    elif arch.isX86():
+    elif arch.is_x86():
         return X86()
-    elif arch.isARM():
-        armMachine = arch.getARMMachine()
-        if armMachine == "omap":
+    elif arch.is_arm():
+        arm_machine = arch.get_arm_machine()
+        if arm_machine == "omap":
             return omapARM()
         else:
             return ARM()
     else:
         raise SystemError("Could not determine system architecture.")
 
-platform = getPlatform()
+platform = get_platform()

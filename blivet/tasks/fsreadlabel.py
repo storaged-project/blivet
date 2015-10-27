@@ -44,7 +44,7 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
     # IMPLEMENTATION methods
 
     @property
-    def _readCommand(self):
+    def _read_command(self):
         """Get the command to read the filesystem label.
 
            :return: the command
@@ -52,7 +52,7 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.args
 
-    def _extractLabel(self, labelstr):
+    def _extract_label(self, labelstr):
         """Extract the label from an output string.
 
            :param str labelstr: the string containing the label information
@@ -67,23 +67,23 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
             raise FSReadLabelError("Unknown format for application %s" % self.ext)
         return match.group('label')
 
-    def doTask(self):
+    def do_task(self):
         """ Get the label.
 
             :returns: the filesystem label
             :rtype: str
         """
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSReadLabelError("\n".join(error_msgs))
 
-        (rc, out) = util.run_program_and_capture_output(self._readCommand)
+        (rc, out) = util.run_program_and_capture_output(self._read_command)
         if rc != 0:
             raise FSReadLabelError("read label failed")
 
         label = out.strip()
 
-        return label if label == "" else self._extractLabel(label)
+        return label if label == "" else self._extract_label(label)
 
 class DosFSReadLabel(FSReadLabel):
     ext = availability.DOSFSLABEL_APP

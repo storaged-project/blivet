@@ -84,7 +84,7 @@ def resolve_devspec(devspec, sysname=False):
     # import devices locally to avoid cyclic import (devices <-> udev)
     from . import devices
 
-    devname = devices.devicePathToName(devspec)
+    devname = devices.device_path_to_name(devspec)
 
     ret = None
     for dev in get_devices():
@@ -269,7 +269,7 @@ def device_get_dasd_flag(info, flag=None):
 def device_is_cdrom(info):
     """ Return True if the device is an optical drive. """
     # FIXME: how can we differentiate USB drives from CD-ROM drives?
-    #         -- USB drives also generate a sdX device.
+    #         -- USB drives also generate a sd_x device.
     return info.get("ID_CDROM") == "1"
 
 def device_is_disk(info):
@@ -539,8 +539,8 @@ def device_is_biosraid_member(info):
     from .formats.dmraid import DMRaidMember
     from .formats.mdraid import MDRaidMember
     if 'ID_FS_TYPE' in info and \
-            (info["ID_FS_TYPE"] in DMRaidMember._udevTypes or \
-             info["ID_FS_TYPE"] in MDRaidMember._udevTypes) and \
+            (info["ID_FS_TYPE"] in DMRaidMember._udev_types or \
+             info["ID_FS_TYPE"] in MDRaidMember._udev_types) and \
             info["ID_FS_TYPE"] != "linux_raid_member":
         return True
 

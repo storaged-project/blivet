@@ -38,15 +38,15 @@ class OpticalDevice(StorageDevice):
     _type = "cdrom"
 
     def __init__(self, name, major=None, minor=None, exists=False,
-                 fmt=None, parents=None, sysfsPath='', vendor="",
+                 fmt=None, parents=None, sysfs_path='', vendor="",
                  model=""):
         StorageDevice.__init__(self, name, fmt=fmt,
                                major=major, minor=minor, exists=True,
-                               parents=parents, sysfsPath=sysfsPath,
+                               parents=parents, sysfs_path=sysfs_path,
                                vendor=vendor, model=model)
 
     @property
-    def mediaPresent(self):
+    def media_present(self):
         """ Return a boolean indicating whether or not the device contains
             media.
         """

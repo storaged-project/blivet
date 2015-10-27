@@ -31,9 +31,9 @@ __version__ = '1.16'
 ##
 iutil = None
 ROOT_PATH = '/'
-_storageRoot = ROOT_PATH
+_storage_root = ROOT_PATH
 _sysroot = ROOT_PATH
-shortProductName = 'blivet'
+short_product_name = 'blivet'
 ERROR_RAISE = 0
 
 class ErrorHandler(object):
@@ -41,7 +41,7 @@ class ErrorHandler(object):
         # pylint: disable=unused-argument
         return ERROR_RAISE
 
-errorHandler = ErrorHandler()
+error_handler = ErrorHandler()
 
 get_bootloader = lambda: None
 
@@ -78,7 +78,7 @@ gi.require_version("BlockDev", "1.0")
 # initialize the libblockdev library
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
-if arch.isS390():
+if arch.is_s390():
     _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390"))
 else:
     _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
@@ -99,34 +99,34 @@ def enable_installer_mode():
     """ Configure the module for use by anaconda (OS installer). """
     global iutil
     global ROOT_PATH
-    global _storageRoot
+    global _storage_root
     global _sysroot
-    global shortProductName
+    global short_product_name
     global get_bootloader
-    global errorHandler
+    global error_handler
     global ERROR_RAISE
 
     from pyanaconda import iutil # pylint: disable=redefined-outer-name
-    from pyanaconda.constants import shortProductName # pylint: disable=redefined-outer-name
+    from pyanaconda.constants import shortProductName as short_product_name # pylint: disable=redefined-outer-name
     from pyanaconda.bootloader import get_bootloader # pylint: disable=redefined-outer-name
-    from pyanaconda.errors import errorHandler # pylint: disable=redefined-outer-name
+    from pyanaconda.errors import errorHandler as error_handler # pylint: disable=redefined-outer-name
     from pyanaconda.errors import ERROR_RAISE # pylint: disable=redefined-outer-name
 
     if hasattr(iutil, 'getTargetPhysicalRoot'):
         # For anaconda versions > 21.43
-        _storageRoot = iutil.getTargetPhysicalRoot() # pylint: disable=no-name-in-module
+        _storage_root = iutil.getTargetPhysicalRoot() # pylint: disable=no-name-in-module
         _sysroot = iutil.getSysroot()
     else:
         # For prior anaconda versions
         from pyanaconda.constants import ROOT_PATH # pylint: disable=redefined-outer-name,no-name-in-module
-        _storageRoot = _sysroot = ROOT_PATH
+        _storage_root = _sysroot = ROOT_PATH
 
     from pyanaconda.anaconda_log import program_log_lock
     util.program_log_lock = program_log_lock
 
     flags.installer_mode = True
 
-def getSysroot():
+def get_sysroot():
     """Returns the path to the target OS installation.
 
     For traditional installations, this is the same as the physical
@@ -134,23 +134,23 @@ def getSysroot():
     """
     return _sysroot
 
-def getTargetPhysicalRoot():
+def get_target_physical_root():
     """Returns the path to the "physical" storage root.
 
     This may be distinct from the sysroot, which could be a
     chroot-type subdirectory of the physical root.  This is used for
     example by all OSTree-based installations.
     """
-    return _storageRoot
+    return _storage_root
 
-def setSysroot(storageRoot, sysroot=None):
+def set_sysroot(storage_root, sysroot=None):
     """Change the OS root path.
-       :param storageRoot: The root of physical storage
-       :param sysroot: An optional chroot subdirectory of storageRoot
+       :param storage_root: The root of physical storage
+       :param sysroot: An optional chroot subdirectory of storage_root
     """
-    global _storageRoot
+    global _storage_root
     global _sysroot
-    _storageRoot = _sysroot = storageRoot
+    _storage_root = _sysroot = storage_root
     if sysroot is not None:
         _sysroot = sysroot
 

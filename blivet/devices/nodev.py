@@ -59,7 +59,7 @@ class NoDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
         # just make sure the format is unmounted
-        self._preTeardown(recursive=recursive)
+        self._pre_teardown(recursive=recursive)
 
     def create(self):
         """ Create the device. """
@@ -68,15 +68,15 @@ class NoDevice(StorageDevice):
     def destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        self._preDestroy()
+        self._pre_destroy()
 
-    def updateSize(self):
+    def update_size(self):
         pass
 
 class TmpFSDevice(NoDevice):
     """ A nodev device for a tmpfs filesystem. """
     _type = "tmpfs"
-    _formatImmutable = True
+    _format_immutable = True
 
     def __init__(self, *args, **kwargs):
         """Create a tmpfs device"""
@@ -86,7 +86,7 @@ class TmpFSDevice(NoDevice):
         # the tmpfs device does not exist until mounted
         self.exists = False
         self._size = kwargs["size"]
-        self._targetSize = self._size
+        self._target_size = self._size
 
     @property
     def size(self):
@@ -98,11 +98,11 @@ class TmpFSDevice(NoDevice):
             return Size(0)
 
     @property
-    def fstabSpec(self):
+    def fstab_spec(self):
         return self._type
 
-    def populateKSData(self, data):
-        super(TmpFSDevice, self).populateKSData(data)
+    def populate_ksdata(self, data):
+        super(TmpFSDevice, self).populate_ksdata(data)
         # we need to supply a format to ksdata, otherwise the kickstart line
         # would include --noformat, resulting in an invalid command combination
         data.format = self.format

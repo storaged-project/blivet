@@ -59,14 +59,14 @@ class MultipathMember(DeviceFormat):
         s += ("  member = %(member)r" % {"member": self.member})
         return s
 
-    def _getMember(self):
+    def _get_member(self):
         return self._member
 
-    def _setMember(self, member):
+    def _set_member(self, member):
         self._member = member
 
-    member = property(lambda s: s._getMember(),
-                      lambda s,m: s._setMember(m))
+    member = property(lambda s: s._get_member(),
+                      lambda s,m: s._set_member(m))
 
     def create(self, **kwargs):
         log_method_call(self, device=self.device,

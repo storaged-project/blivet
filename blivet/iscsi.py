@@ -125,7 +125,7 @@ class iscsi(object):
         This class will automatically discover and login to iBFT (or
         other firmware) configured iscsi devices when the startup() method
         gets called. It can also be used to manually configure iscsi devices
-        through the addTarget() method.
+        through the add_target() method.
 
         As this class needs to make sure certain things like starting iscsid
         and logging in to firmware discovered disks only happens once
@@ -138,9 +138,9 @@ class iscsi(object):
         # logged_in) tuples.
         self.discovered_targets = {}
         # This list contains nodes discovered through iBFT (or other firmware)
-        self.ibftNodes = []
+        self.ibft_nodes = []
         self._initiator = ""
-        self.initiatorSet = False
+        self.initiator_set = False
         self.started = False
         self.ifaces = {}
 
@@ -148,7 +148,7 @@ class iscsi(object):
             try:
                 initiatorname = libiscsi.get_firmware_initiator_name()
                 self._initiator = initiatorname
-                self.initiatorSet = True
+                self.initiator_set = True
             except Exception: # pylint: disable=broad-except
                 log_exception_info(fmt_str="failed to get initiator name from iscsi firmware")
 
@@ -156,20 +156,20 @@ class iscsi(object):
     def __call__(self):
         return self
 
-    def _getInitiator(self):
+    def _get_initiator(self):
         if self._initiator != "":
             return self._initiator
 
         return util.capture_output(["iscsi-iname"]).strip()
 
-    def _setInitiator(self, val):
-        if self.initiatorSet and val != self._initiator:
+    def _set_initiator(self, val):
+        if self.initiator_set and val != self._initiator:
             raise ValueError(_("Unable to change iSCSI initiator name once set"))
         if len(val) == 0:
             raise ValueError(_("Must provide an iSCSI initiator name"))
         self._initiator = val
 
-    initiator = property(_getInitiator, _setInitiator)
+    initiator = property(_get_initiator, _set_initiator)
 
     def active_nodes(self, target=None):
         """Nodes logged in to"""
@@ -180,9 +180,9 @@ class iscsi(object):
         else:
             return [node for (node, logged_in) in
                     itertools.chain(*list(self.discovered_targets.values()))
-                    if logged_in] + self.ibftNodes
+                    if logged_in] + self.ibft_nodes
 
-    def _getMode(self):
+    def _get_mode(self):
         if not self.active_nodes():
             return "none"
         if self.ifaces:
@@ -190,7 +190,7 @@ class iscsi(object):
         else:
             return "default"
 
-    mode = property(_getMode)
+    mode = property(_get_mode)
 
     def _mark_node_active(self, node, active=True):
         """Mark node as one logged in to
@@ -205,7 +205,7 @@ class iscsi(object):
         return False
 
 
-    def _startIBFT(self):
+    def _start_ibft(self):
         if not flags.ibft:
             return
 
@@ -221,7 +221,7 @@ class iscsi(object):
                 node.login()
                 log.info("iscsi IBFT: logged into %s at %s:%s through %s",
                     node.name, node.address, node.port, node.iface)
-                self.ibftNodes.append(node)
+                self.ibft_nodes.append(node)
             except IOError as e:
                 log.error("Could not log into ibft iscsi target %s: %s",
                           node.name, str(e))
@@ -280,7 +280,7 @@ class iscsi(object):
         initiator_name = "InitiatorName=%s\n" % self.initiator
         util.eintr_retry_call(os.write, fd, initiator_name.encode("utf-8"))
         util.eintr_ignore(os.close, fd)
-        self.initiatorSet = True
+        self.initiator_set = True
 
         for fulldir in (os.path.join("/var/lib/iscsi", d) for d in \
            ['ifaces','isns','nodes','send_targets','slp','static']):
@@ -303,7 +303,7 @@ class iscsi(object):
         util.run_program([ISCSID])
         time.sleep(1)
 
-        self._startIBFT()
+        self._start_ibft()
         self.started = True
 
     def discover(self, ipaddr, port="3260", username=None, password=None,
@@ -313,7 +313,7 @@ class iscsi(object):
 
         If we are logged in a node discovered for specified target
         do not do the discovery again as it can corrupt credentials
-        stored for the node (setAuth and getAuth are using database
+        stored for the node (set_auth and get_auth are using database
         in /var/lib/iscsi/nodes which is filled by discovery). Just
         return nodes obtained and stored in the first discovery
         instead.
@@ -401,7 +401,7 @@ class iscsi(object):
                                                  password=password,
                                                  reverse_username=r_username,
                                                  reverse_password=r_password)
-            node.setAuth(authinfo)
+            node.set_auth(authinfo)
             node.login()
             rc = True
             log.info("iSCSI: logged into %s at %s:%s through %s",
@@ -414,7 +414,7 @@ class iscsi(object):
 
         return (rc, msg)
 
-    def addTarget(self, ipaddr, port="3260", user=None, pw=None,
+    def add_target(self, ipaddr, port="3260", user=None, pw=None,
                   user_in=None, pw_in=None, target=None, iface=None,
                   discover_user=None, discover_pw=None,
                   discover_user_in=None, discover_pw_in=None):
@@ -484,21 +484,21 @@ class iscsi(object):
         self.stabilize()
 
     def write(self, root, storage):
-        if not self.initiatorSet:
+        if not self.initiator_set:
             return
 
         # set iscsi nodes to autostart
-        rootdev = storage.rootDevice
+        rootdev = storage.root_device
         for node in self.active_nodes():
             autostart = True
-            disks = self.getNodeDisks(node, storage)
+            disks = self.get_node_disks(node, storage)
             for disk in disks:
                 # nodes used for root get started by the initrd
-                if rootdev.dependsOn(disk):
+                if rootdev.depends_on(disk):
                     autostart = False
 
             if autostart:
-                node.setParameter("node.startup", "automatic")
+                node.set_parameter("node.startup", "automatic")
 
         if not os.path.isdir(root + "/etc/iscsi"):
             os.makedirs(root + "/etc/iscsi", 0o755)
@@ -514,7 +514,7 @@ class iscsi(object):
             shutil.copytree("/var/lib/iscsi", root + "/var/lib/iscsi",
                             symlinks=True)
 
-    def getNode(self, name, address, port, iface):
+    def get_node(self, name, address, port, iface):
         for node in self.active_nodes():
             if node.name == name and node.address == address and \
                node.port == int(port) and node.iface == iface:
@@ -522,14 +522,14 @@ class iscsi(object):
 
         return None
 
-    def getNodeDisks(self, node, storage):
-        nodeDisks = []
-        iscsiDisks = storage.devicetree.getDevicesByType("iscsi")
-        for disk in iscsiDisks:
+    def get_node_disks(self, node, storage):
+        node_disks = []
+        iscsi_disks = storage.devicetree.get_devices_by_type("iscsi")
+        for disk in iscsi_disks:
             if disk.node == node:
-                nodeDisks.append(disk)
+                node_disks.append(disk)
 
-        return nodeDisks
+        return node_disks
 
 # Create iscsi singleton
 iscsi = iscsi()

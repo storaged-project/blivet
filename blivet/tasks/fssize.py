@@ -46,23 +46,23 @@ class FSSize(fstask.FSTask):
     # TASK methods
 
     @property
-    def _availabilityErrors(self):
+    def _availability_errors(self):
         return []
 
     @property
-    def dependsOn(self):
+    def depends_on(self):
         return [self.fs._info]
 
     # IMPLEMENTATION methods
 
-    def doTask(self):
+    def do_task(self):
         """ Returns the size of the filesystem.
 
             :returns: the size of the filesystem
             :rtype: :class:`~.size.Size`
             :raises FSError: on failure
         """
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
@@ -121,24 +121,24 @@ class TmpFSSize(task.BasicApplication, fstask.FSTask):
     ext = availability.DF_APP
 
     @property
-    def _sizeCommand(self):
-        return [str(self.ext), self.fs.systemMountpoint, "--output=size"]
+    def _size_command(self):
+        return [str(self.ext), self.fs.system_mountpoint, "--output=size"]
 
-    def doTask(self):
-        error_msgs = self.availabilityErrors
+    def do_task(self):
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         try:
-            (ret, out) = util.run_program_and_capture_output(self._sizeCommand)
+            (ret, out) = util.run_program_and_capture_output(self._size_command)
             if ret:
-                raise FSError("Failed to execute command %s." % self._sizeCommand)
+                raise FSError("Failed to execute command %s." % self._size_command)
         except OSError:
-            raise FSError("Failed to execute command %s." % self._sizeCommand)
+            raise FSError("Failed to execute command %s." % self._size_command)
 
         lines = out.splitlines()
         if len(lines) != 2 or lines[0].strip() != "1K-blocks":
-            raise FSError("Failed to parse output of command %s." % self._sizeCommand)
+            raise FSError("Failed to parse output of command %s." % self._size_command)
 
         return Size("%s KiB" % lines[1])
 

@@ -48,8 +48,8 @@ class DiskLabel(DeviceFormat):
         """
             :keyword device: full path to the block device node
             :type device: str
-            :keyword labelType: type of disklabel to create
-            :type labelType: str
+            :keyword label_type: type of disklabel to create
+            :type label_type: str
             :keyword exists: whether the formatting exists
             :type exists: bool
         """
@@ -57,23 +57,23 @@ class DiskLabel(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
 
         if not self.exists:
-            self._labelType = kwargs.get("labelType", "msdos")
+            self._label_type = kwargs.get("label_type", "msdos")
         else:
-            self._labelType = ""
+            self._label_type = ""
 
         self._size = Size(0)
 
-        self._partedDevice = None
-        self._partedDisk = None
-        self._origPartedDisk = None
+        self._parted_device = None
+        self._parted_disk = None
+        self._orig_parted_disk = None
 
-        self._diskLabelAlignment = None
-        self._minimalAlignment = None
-        self._optimalAlignment = None
+        self._disk_label_alignment = None
+        self._minimal_alignment = None
+        self._optimal_alignment = None
 
-        if self.partedDevice:
+        if self.parted_device:
             # set up the parted objects and raise exception on failure
-            self.updateOrigPartedDisk()
+            self.update_orig_parted_disk()
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Disklabel instance.
@@ -81,30 +81,30 @@ class DiskLabel(DeviceFormat):
             We can't do copy.deepcopy on parted objects, which is okay.
         """
         return util.variable_copy(self, memo,
-           shallow=('_partedDevice', '_optimalAlignment', '_minimalAlignment',),
-           duplicate=('_partedDisk', '_origPartedDisk'))
+           shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',),
+           duplicate=('_parted_disk', '_orig_parted_disk'))
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         if flags.testing:
             return s
         s += ("  type = %(type)s  partition count = %(count)s"
-              "  sectorSize = %(sectorSize)s\n"
+              "  sector_size = %(sector_size)s\n"
               "  align_offset = %(offset)s  align_grain = %(grain)s\n"
-              "  partedDisk = %(disk)s\n"
-              "  origPartedDisk = %(orig_disk)r\n"
-              "  partedDevice = %(dev)s\n" %
-              {"type": self.labelType, "count": len(self.partitions),
-               "sectorSize": self.sectorSize,
-               "offset": self.getAlignment().offset,
-               "grain": self.getAlignment().grainSize,
-               "disk": self.partedDisk, "orig_disk": self._origPartedDisk,
-               "dev": self.partedDevice})
+              "  parted_disk = %(disk)s\n"
+              "  orig_parted_disk = %(orig_disk)r\n"
+              "  parted_device = %(dev)s\n" %
+              {"type": self.label_type, "count": len(self.partitions),
+               "sector_size": self.sector_size,
+               "offset": self.get_alignment().offset,
+               "grain": self.get_alignment().grainSize,
+               "disk": self.parted_disk, "orig_disk": self._orig_parted_disk,
+               "dev": self.parted_device})
         return s
 
     @property
     def desc(self):
-        return "%s %s" % (self.labelType, self.type)
+        return "%s %s" % (self.label_type, self.type)
 
     @property
     def dict(self):
@@ -112,37 +112,37 @@ class DiskLabel(DeviceFormat):
         if flags.testing:
             return d
 
-        d.update({"labelType": self.labelType,
-                  "partitionCount": len(self.partitions),
-                  "sectorSize": self.sectorSize,
-                  "offset": self.getAlignment().offset,
-                  "grainSize": self.getAlignment().grainSize})
+        d.update({"label_type": self.label_type,
+                  "partition_count": len(self.partitions),
+                  "sector_size": self.sector_size,
+                  "offset": self.get_alignment().offset,
+                  "grain_size": self.get_alignment().grainSize})
         return d
 
-    def updateOrigPartedDisk(self):
-        self._origPartedDisk = self.partedDisk.duplicate()
+    def update_orig_parted_disk(self):
+        self._orig_parted_disk = self.parted_disk.duplicate()
 
-    def resetPartedDisk(self):
-        """ Set this instance's partedDisk to reflect the disk's contents. """
+    def reset_parted_disk(self):
+        """ Set this instance's parted_disk to reflect the disk's contents. """
         log_method_call(self, device=self.device)
-        self._partedDisk = self._origPartedDisk
+        self._parted_disk = self._orig_parted_disk
 
-    def freshPartedDisk(self):
+    def fresh_parted_disk(self):
         """ Return a new, empty parted.Disk instance for this device. """
-        log_method_call(self, device=self.device, labelType=self._labelType)
-        return parted.freshDisk(device=self.partedDevice, ty=self._labelType)
+        log_method_call(self, device=self.device, label_type=self._label_type)
+        return parted.freshDisk(device=self.parted_device, ty=self._label_type)
 
     @property
-    def partedDisk(self):
-        if not self._partedDisk:
+    def parted_disk(self):
+        if not self._parted_disk:
             if self.exists:
                 try:
-                    self._partedDisk = parted.Disk(device=self.partedDevice)
+                    self._parted_disk = parted.Disk(device=self.parted_device)
                 except (_ped.DiskLabelException, _ped.IOException,
                         NotImplementedError) as e:
                     raise InvalidDiskLabelError(e)
 
-                if self._partedDisk.type == "loop":
+                if self._parted_disk.type == "loop":
                     # When the device has no partition table but it has a FS,
                     # it will be created with label type loop.  Treat the
                     # same as if the device had no label (cause it really
@@ -151,76 +151,76 @@ class DiskLabel(DeviceFormat):
 
                 # here's where we correct the ctor-supplied disklabel type for
                 # preexisting disklabels if the passed type was wrong
-                self._labelType = self._partedDisk.type
+                self._label_type = self._parted_disk.type
             else:
-                self._partedDisk = self.freshPartedDisk()
+                self._parted_disk = self.fresh_parted_disk()
 
             # turn off cylinder alignment
-            if self._partedDisk.isFlagAvailable(parted.DISK_CYLINDER_ALIGNMENT):
-                self._partedDisk.unsetFlag(parted.DISK_CYLINDER_ALIGNMENT)
+            if self._parted_disk.isFlagAvailable(parted.DISK_CYLINDER_ALIGNMENT):
+                self._parted_disk.unsetFlag(parted.DISK_CYLINDER_ALIGNMENT)
 
             # Set the boot flag on the GPT PMBR, this helps some BIOS systems boot
-            if self._partedDisk.isFlagAvailable(parted.DISK_GPT_PMBR_BOOT):
+            if self._parted_disk.isFlagAvailable(parted.DISK_GPT_PMBR_BOOT):
                 # MAC can boot as EFI or as BIOS, neither should have PMBR boot set
-                if arch.isEfi() or arch.isMactel():
-                    self._partedDisk.unsetFlag(parted.DISK_GPT_PMBR_BOOT)
-                    log.debug("Clear pmbr_boot on %s", self._partedDisk)
+                if arch.is_efi() or arch.is_mactel():
+                    self._parted_disk.unsetFlag(parted.DISK_GPT_PMBR_BOOT)
+                    log.debug("Clear pmbr_boot on %s", self._parted_disk)
                 else:
-                    self._partedDisk.setFlag(parted.DISK_GPT_PMBR_BOOT)
-                    log.debug("Set pmbr_boot on %s", self._partedDisk)
+                    self._parted_disk.setFlag(parted.DISK_GPT_PMBR_BOOT)
+                    log.debug("Set pmbr_boot on %s", self._parted_disk)
             else:
-                log.debug("Did not change pmbr_boot on %s", self._partedDisk)
+                log.debug("Did not change pmbr_boot on %s", self._parted_disk)
 
         udev.settle(quiet=True)
-        return self._partedDisk
+        return self._parted_disk
 
     @property
-    def partedDevice(self):
-        if not self._partedDevice and self.device:
+    def parted_device(self):
+        if not self._parted_device and self.device:
             if os.path.exists(self.device):
                 # We aren't guaranteed to be able to get a device.  In
                 # particular, built-in USB flash readers show up as devices but
                 # do not always have any media present, so parted won't be able
                 # to find a device.
                 try:
-                    self._partedDevice = parted.Device(path=self.device)
+                    self._parted_device = parted.Device(path=self.device)
                 except (_ped.IOException, _ped.DeviceException) as e:
-                    log.error("DiskLabel.partedDevice: Parted exception: %s", e)
+                    log.error("DiskLabel.parted_device: Parted exception: %s", e)
             else:
-                log.info("DiskLabel.partedDevice: %s does not exist", self.device)
+                log.info("DiskLabel.parted_device: %s does not exist", self.device)
 
-        if not self._partedDevice:
-            log.info("DiskLabel.partedDevice returning None")
-        return self._partedDevice
+        if not self._parted_device:
+            log.info("DiskLabel.parted_device returning None")
+        return self._parted_device
 
     @property
-    def labelType(self):
+    def label_type(self):
         """ The disklabel type (eg: 'gpt', 'msdos') """
         try:
-            lt = self.partedDisk.type
+            lt = self.parted_disk.type
         except Exception: # pylint: disable=broad-except
             log_exception_info()
-            lt = self._labelType
+            lt = self._label_type
         return lt
 
     @property
-    def sectorSize(self):
+    def sector_size(self):
         try:
-            return Size(self.partedDevice.sectorSize)
+            return Size(self.parted_device.sectorSize)
         except AttributeError:
             log_exception_info()
             return None
 
     @property
     def name(self):
-        return "%s (%s)" % (_(self._name), self.labelType.upper())
+        return "%s (%s)" % (_(self._name), self.label_type.upper())
 
     @property
     def size(self):
         size = self._size
         if not size:
             try:
-                size = Size(self.partedDevice.getLength(unit="B"))
+                size = Size(self.parted_device.getLength(unit="B"))
             except Exception: # pylint: disable=broad-except
                 log_exception_info()
                 size = Size(0)
@@ -236,8 +236,8 @@ class DiskLabel(DeviceFormat):
         """ Create the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        # We're relying on someone having called resetPartedDisk -- we
-        # could ensure a fresh disklabel by setting self._partedDisk to
+        # We're relying on someone having called reset_parted_disk -- we
+        # could ensure a fresh disklabel by setting self._parted_disk to
         # None right before calling self.commit(), but that might hide
         # other problems.
         self.commit()
@@ -246,32 +246,32 @@ class DiskLabel(DeviceFormat):
         """ Wipe the disklabel from the device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        self.partedDevice.clobber()
+        self.parted_device.clobber()
 
     def commit(self):
         """ Commit the current partition table to disk and notify the OS. """
         log_method_call(self, device=self.device,
                         numparts=len(self.partitions))
         try:
-            self.partedDisk.commit()
+            self.parted_disk.commit()
         except parted.DiskException as msg:
             raise DiskLabelCommitError(msg)
         else:
-            self.updateOrigPartedDisk()
+            self.update_orig_parted_disk()
             udev.settle()
 
-    def commitToDisk(self):
+    def commit_to_disk(self):
         """ Commit the current partition table to disk. """
         log_method_call(self, device=self.device,
                         numparts=len(self.partitions))
         try:
-            self.partedDisk.commitToDevice()
+            self.parted_disk.commitToDevice()
         except parted.DiskException as msg:
             raise DiskLabelCommitError(msg)
         else:
-            self.updateOrigPartedDisk()
+            self.update_orig_parted_disk()
 
-    def addPartition(self, start, end, ptype=None):
+    def add_partition(self, start, end, ptype=None):
         """ Add a partition to the disklabel.
 
             :param int start: start sector
@@ -284,61 +284,61 @@ class DiskLabel(DeviceFormat):
             an extended partition.
         """
         if ptype is None:
-            extended = self.extendedPartition
+            extended = self.extended_partition
             if extended and extended.geometry.contains(start):
                 ptype = parted.PARTITION_LOGICAL
             else:
                 ptype = parted.PARTITION_NORMAL
 
-        geometry = parted.Geometry(device=self.partedDevice,
+        geometry = parted.Geometry(device=self.parted_device,
                                    start=start, end=end)
-        new_partition = parted.Partition(disk=self.partedDisk,
+        new_partition = parted.Partition(disk=self.parted_disk,
                                          type=ptype,
                                          geometry=geometry)
 
         constraint = parted.Constraint(exactGeom=geometry)
-        self.partedDisk.addPartition(partition=new_partition,
+        self.parted_disk.addPartition(partition=new_partition,
                                      constraint=constraint)
 
-    def removePartition(self, partition):
+    def remove_partition(self, partition):
         """ Remove a partition from the disklabel.
 
             :param partition: the partition to remove
             :type partition: :class:`parted.Partition`
         """
-        self.partedDisk.removePartition(partition)
+        self.parted_disk.removePartition(partition)
 
     @property
-    def extendedPartition(self):
+    def extended_partition(self):
         try:
-            extended = self.partedDisk.getExtendedPartition()
+            extended = self.parted_disk.getExtendedPartition()
         except Exception: # pylint: disable=broad-except
             log_exception_info()
             extended = None
         return extended
 
     @property
-    def logicalPartitions(self):
+    def logical_partitions(self):
         try:
-            logicals = self.partedDisk.getLogicalPartitions()
+            logicals = self.parted_disk.getLogicalPartitions()
         except Exception: # pylint: disable=broad-except
             log_exception_info()
             logicals = []
         return logicals
 
     @property
-    def primaryPartitions(self):
+    def primary_partitions(self):
         try:
-            primaries = self.partedDisk.getPrimaryPartitions()
+            primaries = self.parted_disk.getPrimaryPartitions()
         except Exception: # pylint: disable=broad-except
             log_exception_info()
             primaries = []
         return primaries
 
     @property
-    def firstPartition(self):
+    def first_partition(self):
         try:
-            part = self.partedDisk.getFirstPartition()
+            part = self.parted_disk.getFirstPartition()
         except Exception: # pylint: disable=broad-except
             log_exception_info()
             part = None
@@ -346,31 +346,31 @@ class DiskLabel(DeviceFormat):
 
     @property
     def partitions(self):
-        return self.partedDisk.partitions
+        return self.parted_disk.partitions
 
-    def _getDiskLabelAlignment(self):
+    def _get_disk_label_alignment(self):
         """ Return the disklabel's required alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
         """
-        if not self._diskLabelAlignment:
+        if not self._disk_label_alignment:
             try:
-                self._diskLabelAlignment = self.partedDisk.partitionAlignment
+                self._disk_label_alignment = self.parted_disk.partitionAlignment
             except _ped.CreateException:
-                self._diskLabelAlignment = parted.Alignment(offset=0,
+                self._disk_label_alignment = parted.Alignment(offset=0,
                                                             grainSize=1)
 
-        return self._diskLabelAlignment
+        return self._disk_label_alignment
 
-    def _getMinimalAlignment(self):
+    def _get_minimal_alignment(self):
         """ Return the device's minimal alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
         """
-        if not self._minimalAlignment:
-            disklabel_alignment = self._getDiskLabelAlignment()
+        if not self._minimal_alignment:
+            disklabel_alignment = self._get_disk_label_alignment()
             try:
-                minimal_alignment = self.partedDevice.minimumAlignment
+                minimal_alignment = self.parted_device.minimumAlignment
             except _ped.CreateException:
                 # handle this in the same place we'd handle an ArithmeticError
                 minimal_alignment = None
@@ -380,11 +380,11 @@ class DiskLabel(DeviceFormat):
             except (ArithmeticError, AttributeError):
                 alignment = disklabel_alignment
 
-            self._minimalAlignment = alignment
+            self._minimal_alignment = alignment
 
-        return self._minimalAlignment
+        return self._minimal_alignment
 
-    def _getOptimalAlignment(self):
+    def _get_optimal_alignment(self):
         """ Return the device's optimal alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
@@ -394,26 +394,26 @@ class DiskLabel(DeviceFormat):
                 If there is no device-supplied optimal alignment this method
                 returns the minimal device alignment.
         """
-        if not self._optimalAlignment:
-            disklabel_alignment = self._getDiskLabelAlignment()
+        if not self._optimal_alignment:
+            disklabel_alignment = self._get_disk_label_alignment()
             try:
-                optimal_alignment = self.partedDevice.optimumAlignment
+                optimal_alignment = self.parted_device.optimumAlignment
             except _ped.CreateException:
                 # if there is no optimal alignment, use the minimal alignment,
                 # which has already been intersected with the disklabel
                 # alignment
-                alignment = self._getMinimalAlignment()
+                alignment = self._get_minimal_alignment()
             else:
                 try:
                     alignment = optimal_alignment.intersect(disklabel_alignment)
                 except ArithmeticError:
                     alignment = disklabel_alignment
 
-            self._optimalAlignment = alignment
+            self._optimal_alignment = alignment
 
-        return self._optimalAlignment
+        return self._optimal_alignment
 
-    def getAlignment(self, size=None):
+    def get_alignment(self, size=None):
         """ Return an appropriate alignment for a new partition.
 
             :keyword size: proposed partition size (optional)
@@ -424,15 +424,15 @@ class DiskLabel(DeviceFormat):
                                                          small to be aligned
         """
         # default to the optimal alignment
-        alignment = self._getOptimalAlignment()
+        alignment = self._get_optimal_alignment()
         if size is None:
             return alignment
 
         # use the minimal alignment if the requested size is smaller than the
         # optimal io size
-        minimal_alignment = self._getMinimalAlignment()
-        optimal_grain_size = Size(alignment.grainSize * self.sectorSize)
-        minimal_grain_size = Size(minimal_alignment.grainSize * self.sectorSize)
+        minimal_alignment = self._get_minimal_alignment()
+        optimal_grain_size = Size(alignment.grainSize * self.sector_size)
+        minimal_grain_size = Size(minimal_alignment.grainSize * self.sector_size)
         if size < minimal_grain_size:
             raise AlignmentError("requested size cannot be aligned")
         elif size < optimal_grain_size:
@@ -440,7 +440,7 @@ class DiskLabel(DeviceFormat):
 
         return alignment
 
-    def getEndAlignment(self, size=None, alignment=None):
+    def get_end_alignment(self, size=None, alignment=None):
         """ Return an appropriate end-alignment for a new partition.
 
             :keyword size: proposed partition size (optional)
@@ -453,29 +453,29 @@ class DiskLabel(DeviceFormat):
                                                          small to be aligned
         """
         if alignment is None:
-            alignment = self.getAlignment(size=size)
+            alignment = self.get_alignment(size=size)
 
         return parted.Alignment(offset=alignment.offset - 1,
                             grainSize=alignment.grainSize)
 
     @property
     def alignment(self):
-        return self.getAlignment()
+        return self.get_alignment()
 
     @property
-    def endAlignment(self):
-        return self.getEndAlignment()
+    def end_alignment(self):
+        return self.get_end_alignment()
 
     @property
     def free(self):
-        return sum((Size(f.getLength(unit="B")) for f in self.partedDisk.getFreeSpacePartitions()), Size(0))
+        return sum((Size(f.getLength(unit="B")) for f in self.parted_disk.getFreeSpacePartitions()), Size(0))
 
     @property
-    def magicPartitionNumber(self):
+    def magic_partition_number(self):
         """ Number of disklabel-type-specific special partition. """
-        if self.labelType == "mac":
+        if self.label_type == "mac":
             return 1
-        elif self.labelType == "sun":
+        elif self.label_type == "sun":
             return 3
         else:
             return 0

@@ -11,45 +11,45 @@ b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create a disk image file on which to create new devices
 disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
-b.config.diskImages["disk1"] = disk1_file
+b.config.disk_images["disk1"] = disk1_file
 
 b.reset()
 
 try:
-    disk1 = b.devicetree.getDeviceByName("disk1")
+    disk1 = b.devicetree.get_device_by_name("disk1")
 
-    b.initializeDisk(disk1)
+    b.initialize_disk(disk1)
 
-    pv = b.newPartition(size=Size("50GiB"), fmt_type="lvmpv")
-    b.createDevice(pv)
+    pv = b.new_partition(size=Size("50GiB"), fmt_type="lvmpv")
+    b.create_device(pv)
 
     # allocate the partitions (decide where and on which disks they'll reside)
-    blivet.partitioning.doPartitioning(b)
+    blivet.partitioning.do_partitioning(b)
 
-    vg = b.newVG(parents=[pv])
-    b.createDevice(vg)
+    vg = b.new_vg(parents=[pv])
+    b.create_device(vg)
 
     # new lv with base size 5GiB and unbounded growth and an ext4 filesystem
-    dev = b.newLV(fmt_type="ext4", size=Size("5GiB"), grow=True,
+    dev = b.new_lv(fmt_type="ext4", size=Size("5GiB"), grow=True,
                   parents=[vg], name="unbounded")
-    b.createDevice(dev)
+    b.create_device(dev)
 
     # new lv with base size 5GiB and growth up to 15GiB and an ext4 filesystem
-    dev = b.newLV(fmt_type="ext4", size=Size("5GiB"), grow=True,
+    dev = b.new_lv(fmt_type="ext4", size=Size("5GiB"), grow=True,
                   maxsize=Size("15GiB"), parents=[vg], name="bounded")
-    b.createDevice(dev)
+    b.create_device(dev)
 
     # new lv with a fixed size of 2GiB formatted as swap space
-    dev = b.newLV(fmt_type="swap", size=Size("2GiB"), parents=[vg])
-    b.createDevice(dev)
+    dev = b.new_lv(fmt_type="swap", size=Size("2GiB"), parents=[vg])
+    b.create_device(dev)
 
     # allocate the growable lvs
-    blivet.partitioning.growLVM(b)
+    blivet.partitioning.grow_lvm(b)
     print_devices(b)
 
     # write the new partitions to disk and format them as specified
-    b.doIt()
+    b.do_it()
     print_devices(b)
 finally:
-    b.devicetree.teardownDiskImages()
+    b.devicetree.teardown_disk_images()
     os.unlink(disk1_file)

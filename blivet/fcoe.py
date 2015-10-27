@@ -44,7 +44,7 @@ class fcoe(object):
 
         This class will automatically discover and connect to EDD configured
         FCoE SAN's when the startup() method gets called. It can also be
-        used to manually configure FCoE SAN's through the addSan() method.
+        used to manually configure FCoE SAN's through the add_san() method.
 
         As this class needs to make sure certain things like starting fcoe
         daemons and connecting to firmware discovered SAN's only happens once
@@ -54,7 +54,7 @@ class fcoe(object):
 
     def __init__(self):
         self.started = False
-        self.lldpadStarted = False
+        self.lldpad_started = False
         self.nics = []
         self.added_nics = []
 
@@ -67,7 +67,7 @@ class fcoe(object):
         time.sleep(10)
         udev.settle()
 
-    def _startEDD(self):
+    def _start_edd(self):
         try:
             buf = util.capture_output(["/usr/libexec/fcoe/fcoe_edd.sh", "-i"])
         except OSError as e:
@@ -80,7 +80,7 @@ class fcoe(object):
             return
 
         log.info("FCoE NIC found in EDD: %s", val)
-        self.addSan(val, dcb=True, auto_vlan=True)
+        self.add_san(val, dcb=True, auto_vlan=True)
 
     def startup(self):
         if self.started:
@@ -89,17 +89,17 @@ class fcoe(object):
         if not has_fcoe():
             return
 
-        self._startEDD()
+        self._start_edd()
         self.started = True
 
-    def _startLldpad(self):
-        if self.lldpadStarted:
+    def _start_lldpad(self):
+        if self.lldpad_started:
             return
 
         util.run_program(["lldpad", "-d"])
-        self.lldpadStarted = True
+        self.lldpad_started = True
 
-    def addSan(self, nic, dcb=False, auto_vlan=True):
+    def add_san(self, nic, dcb=False, auto_vlan=True):
         """Activates FCoE SANs attached to interface specified by nic.
 
            Returns error message, or empty string if succeeded.
@@ -115,7 +115,7 @@ class fcoe(object):
         rc = 0
         error_msg = ""
         if dcb:
-            self._startLldpad()
+            self._start_lldpad()
             util.run_program(["dcbtool", "sc", nic, "dcb", "on"])
             util.run_program(["dcbtool", "sc", nic, "app:fcoe",
                                                 "e:1", "a:1", "w:1"])

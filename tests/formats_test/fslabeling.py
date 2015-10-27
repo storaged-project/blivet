@@ -20,8 +20,8 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
     _invalid_label = abc.abstractproperty(
        doc="A label which is invalid for this filesystem.")
 
-    def __init__(self, methodName='runTest'):
-        super(LabelingAsRoot, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB")])
+    def __init__(self, methodName='run_test'):
+        super(LabelingAsRoot, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
 
     def setUp(self):
         an_fs = self._fs_class()
@@ -31,47 +31,47 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
             self.skipTest("can not label filesystem %s" % an_fs.name)
         super(LabelingAsRoot, self).setUp()
 
-    def testLabeling(self):
+    def test_labeling(self):
         """A sequence of tests of filesystem labeling.
 
            * create the filesystem when passing an invalid label
            * raise an exception when reading the filesystem
            * raise an exception when relabeling the filesystem
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
-        if an_fs._readlabel.availabilityErrors or not an_fs.relabels():
+        an_fs = self._fs_class(device=self.loop_devices[0], label=self._invalid_label)
+        if an_fs._readlabel.availability_errors or not an_fs.relabels():
             self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
 
         with self.assertRaises(FSReadLabelError):
-            an_fs.readLabel()
+            an_fs.read_label()
 
         an_fs.label = "an fs"
         with self.assertRaises(FSError):
-            an_fs.writeLabel()
+            an_fs.write_label()
 
-    def testCreating(self):
+    def test_creating(self):
         """Create the filesystem when passing a valid label """
-        an_fs = self._fs_class(device=self.loopDevices[0], label="start")
+        an_fs = self._fs_class(device=self.loop_devices[0], label="start")
         self.assertIsNone(an_fs.create())
 
-    def testCreatingNone(self):
+    def test_creating_none(self):
         """Create the filesystem when passing None
            (indicates filesystem default)
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label=None)
+        an_fs = self._fs_class(device=self.loop_devices[0], label=None)
         self.assertIsNone(an_fs.create())
 
-    def testCreatingEmpty(self):
+    def test_creating_empty(self):
         """Create the filesystem when passing the empty label."""
-        an_fs = self._fs_class(device=self.loopDevices[0], label="")
+        an_fs = self._fs_class(device=self.loop_devices[0], label="")
         self.assertIsNone(an_fs.create())
 
 class LabelingWithRelabeling(LabelingAsRoot):
     """Tests labeling where it is possible to relabel.
     """
 
-    def testLabeling(self):
+    def test_labeling(self):
         """A sequence of tests of filesystem labeling.
 
            * create the filesystem when passing an invalid label
@@ -81,34 +81,34 @@ class LabelingWithRelabeling(LabelingAsRoot):
            * raise an exception when relabeling when None is specified
            * raise an exception when relabeling with an invalid label
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
-        if an_fs._readlabel.availabilityErrors or not an_fs.relabels():
+        an_fs = self._fs_class(device=self.loop_devices[0], label=self._invalid_label)
+        if an_fs._readlabel.availability_errors or not an_fs.relabels():
             self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
 
         with self.assertRaises(FSReadLabelError):
-            an_fs.readLabel()
+            an_fs.read_label()
 
         an_fs.label = "an fs"
-        self.assertIsNone(an_fs.writeLabel())
+        self.assertIsNone(an_fs.write_label())
 
         an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
+        self.assertIsNone(an_fs.write_label())
 
         an_fs.label = None
         with self.assertRaisesRegex(FSError, "default label"):
-            an_fs.writeLabel()
+            an_fs.write_label()
 
         an_fs.label = self._invalid_label
         with self.assertRaisesRegex(FSError, "bad label format"):
-            an_fs.writeLabel()
+            an_fs.write_label()
 
 class CompleteLabelingAsRoot(LabelingAsRoot):
     """Tests where it is possible to read the label and to relabel
        an existing filesystem.
     """
 
-    def testLabeling(self):
+    def test_labeling(self):
         """A sequence of tests of filesystem labeling.
 
            * create the filesystem when passing an invalid label
@@ -120,54 +120,54 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
            * raise an exception when relabeling when None is specified
            * raise an exception when relabeling with an invalid label
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label=self._invalid_label)
-        if an_fs._readlabel.availabilityErrors or not an_fs.relabels():
+        an_fs = self._fs_class(device=self.loop_devices[0], label=self._invalid_label)
+        if an_fs._readlabel.availability_errors or not an_fs.relabels():
             self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
+        self.assertEqual(an_fs.read_label(), an_fs._labelfs.default_label)
 
         an_fs.label = "an_fs"
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
+        self.assertIsNone(an_fs.write_label())
+        self.assertEqual(an_fs.read_label(), an_fs.label)
 
         an_fs.label = ""
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
+        self.assertIsNone(an_fs.write_label())
+        self.assertEqual(an_fs.read_label(), an_fs.label)
 
         an_fs.label = None
         with self.assertRaisesRegex(FSError, "default label"):
-            an_fs.writeLabel()
+            an_fs.write_label()
 
         an_fs.label = "n" * 129
         with self.assertRaisesRegex(FSError, "bad label format"):
-            an_fs.writeLabel()
+            an_fs.write_label()
 
-    def testCreating(self):
+    def test_creating(self):
         """Create the filesystem when passing a valid label.
            Verify that the filesystem has that label.
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label="start")
-        if an_fs._readlabel.availabilityErrors:
+        an_fs = self._fs_class(device=self.loop_devices[0], label="start")
+        if an_fs._readlabel.availability_errors:
             self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "start")
+        self.assertEqual(an_fs.read_label(), "start")
 
-    def testCreatingNone(self):
+    def test_creating_none(self):
         """Create a filesystem with the label None.
            Verify that the filesystem has the default label.
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label=None)
-        if an_fs._readlabel.availabilityErrors:
+        an_fs = self._fs_class(device=self.loop_devices[0], label=None)
+        if an_fs._readlabel.availability_errors:
             self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
+        self.assertEqual(an_fs.read_label(), an_fs._labelfs.default_label)
 
-    def testCreatingEmpty(self):
+    def test_creating_empty(self):
         """Create a filesystem with an empty label.
            Verify that the filesystem has the empty label.
         """
-        an_fs = self._fs_class(device=self.loopDevices[0], label="")
-        if an_fs._readlabel.availabilityErrors:
+        an_fs = self._fs_class(device=self.loop_devices[0], label="")
+        if an_fs._readlabel.availability_errors:
             self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "")
+        self.assertEqual(an_fs.read_label(), "")

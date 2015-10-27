@@ -131,9 +131,9 @@ def get_mount_paths(dev):
         :returns: A list of mountpoints or []
         :rtype: list
     """
-    from .mounts import mountsCache
+    from .mounts import mounts_cache
 
-    mount_paths = mountsCache.getMountpoints(dev)
+    mount_paths = mounts_cache.get_mountpoints(dev)
     if mount_paths:
         log.debug("%s is mounted on %s", dev, ', '.join(mount_paths))
     return mount_paths
@@ -247,8 +247,8 @@ def get_cow_sysfs_path(dev_path, dev_sysfsPath):
                             (dev_path))
 
     # dev path for cow devices is actually a link to a dm device (e.g. /dev/dm-X)
-    # we need the 'dm-X' name for sysfsPath (e.g. /sys/devices/virtual/block/dm-X)
-    # where first part is the same as in sysfsPath of the original device
+    # we need the 'dm-X' name for sysfs_path (e.g. /sys/devices/virtual/block/dm-X)
+    # where first part is the same as in sysfs_path of the original device
     dm_name = os.path.basename(os.path.realpath(cow_path))
     cow_sysfsPath = os.path.join(os.path.split(dev_sysfsPath)[0], dm_name)
 
@@ -336,13 +336,13 @@ def makedirs(path):
 
 def copy_to_system(source):
     # do the import now because enable_installer_mode() has finally been called.
-    from . import getSysroot
+    from . import get_sysroot
 
     if not os.access(source, os.R_OK):
         log.info("copy_to_system: source '%s' does not exist.", source)
         return False
 
-    target = getSysroot() + source
+    target = get_sysroot() + source
     target_dir = os.path.dirname(target)
     log.debug("copy_to_system: '%s' -> '%s'.", source, target)
     if not os.path.isdir(target_dir):

@@ -5,7 +5,7 @@ import blivet.formats as formats
 
 class FormatsTestCase(unittest.TestCase):
 
-    def testFormatsMethods(self):
+    def test_formats_methods(self):
         ##
         ## get_device_format_class
         ##
@@ -25,11 +25,11 @@ class FormatsTestCase(unittest.TestCase):
 
         ## A DeviceFormat object is returned if lookup by name fails
         for name in format_names:
-            self.assertIs(formats.getFormat(name).__class__,
+            self.assertIs(formats.get_format(name).__class__,
                formats.DeviceFormat if format_pairs[name] is None else format_pairs[name])
         ## Consecutively constructed DeviceFormat objects have consecutive ids
         names = [key for key in format_pairs.keys() if format_pairs[key] is not None]
-        objs = [formats.getFormat(name) for name in names]
+        objs = [formats.get_format(name) for name in names]
         ids = [obj.id for obj in objs]
         self.assertEqual(ids, list(range(ids[0], ids[0] + len(ids))))
 

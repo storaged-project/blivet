@@ -38,7 +38,7 @@ class FileDevice(StorageDevice):
         This exists because of swap files.
     """
     _type = "file"
-    _devDir = ""
+    _dev_dir = ""
 
     def __init__(self, path, fmt=None, size=None,
                  exists=False, parents=None):
@@ -61,13 +61,13 @@ class FileDevice(StorageDevice):
                                exists=exists, parents=parents)
 
     @property
-    def fstabSpec(self):
+    def fstab_spec(self):
         return self.name
 
     @property
     def path(self):
         try:
-            root = self.parents[0].format.systemMountpoint
+            root = self.parents[0].format.system_mountpoint
             mountpoint = self.parents[0].format.mountpoint
         except (AttributeError, IndexError):
             root = ""
@@ -81,7 +81,7 @@ class FileDevice(StorageDevice):
 
         return os.path.normpath("%s%s" % (root, self.name))
 
-    def _getSize(self):
+    def _get_size(self):
         size = self._size
         if self.exists and os.path.exists(self.path):
             st = os.stat(self.path)
@@ -89,17 +89,17 @@ class FileDevice(StorageDevice):
 
         return size
 
-    def _preSetup(self, orig=False):
+    def _pre_setup(self, orig=False):
         if self.format and self.format.exists and not self.format.status:
             self.format.device = self.path
 
-        return StorageDevice._preSetup(self, orig=orig)
+        return StorageDevice._pre_setup(self, orig=orig)
 
-    def _preTeardown(self, recursive=None):
+    def _pre_teardown(self, recursive=None):
         if self.format and self.format.exists and not self.format.status:
             self.format.device = self.path
 
-        return StorageDevice._preTeardown(self, recursive=recursive)
+        return StorageDevice._pre_teardown(self, recursive=recursive)
 
     def _create(self):
         """ Create the device. """
@@ -127,8 +127,8 @@ class FileDevice(StorageDevice):
         os.unlink(self.path)
 
     @classmethod
-    def isNameValid(cls, name):
-        # Override StorageDevice.isNameValid to allow /
+    def is_name_valid(cls, name):
+        # Override StorageDevice.is_name_valid to allow /
         return not('\x00' in name or name == '.' or name == '..')
 
 class SparseFileDevice(FileDevice):

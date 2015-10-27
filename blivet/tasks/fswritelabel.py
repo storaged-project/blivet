@@ -41,7 +41,7 @@ class FSWriteLabel(task.BasicApplication, fstask.FSTask):
     # IMPLEMENTATION methods
 
     @property
-    def _setCommand(self):
+    def _set_command(self):
         """Get the command to label the filesystem.
 
            :return: the command
@@ -49,12 +49,12 @@ class FSWriteLabel(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.args
 
-    def doTask(self):
-        error_msgs = self.availabilityErrors
+    def do_task(self):
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSWriteLabelError("\n".join(error_msgs))
 
-        rc = util.run_program(self._setCommand)
+        rc = util.run_program(self._set_command)
         if rc:
             raise FSWriteLabelError("label failed")
 

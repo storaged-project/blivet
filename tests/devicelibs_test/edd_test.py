@@ -35,7 +35,7 @@ class FakeEddEntry(edd.EddEntry):
 
 class EddTestCase(unittest.TestCase):
     _edd_logger = None
-    maxDiff = None
+    max_diff = None
 
     def setUp(self):
         super(EddTestCase, self).setUp()
@@ -79,7 +79,7 @@ class EddTestCase(unittest.TestCase):
         edd.testdata_log.removeHandler(self.td_log_handler)
         super(EddTestCase, self).tearDown()
 
-    def checkLogs(self, debugs=None, infos=None, warnings=None, errors=None):
+    def check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
         def check(left, right_object):
             left = [mock.call(*x) for x in left or []]
             left.sort()
@@ -140,7 +140,7 @@ class EddTestCase(unittest.TestCase):
         self.assertEqual(len(edd_dict), 2)
         self.assertEqual(fakeedd[0x80], edd_dict[0x80])
         self.assertEqual(fakeedd[0x81], edd_dict[0x81])
-        self.checkLogs(debugs=debugs)
+        self.check_logs(debugs=debugs)
 
     def test_get_edd_dict_sata_usb(self):
         # test with sata sda, usb sdb
@@ -190,4 +190,4 @@ class EddTestCase(unittest.TestCase):
                 "/sys/firmware/edd/int13_dev81"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
             ]
-        self.checkLogs(debugs=debugs, infos=infos, warnings=warnings)
+        self.check_logs(debugs=debugs, infos=infos, warnings=warnings)

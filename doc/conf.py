@@ -66,7 +66,7 @@ release = '1.16'
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']
 
-# The reST default role (used for this markup: `text`) to use for all documents.
+# The re_st default role (used for this markup: `text`) to use for all documents.
 #default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
@@ -148,7 +148,7 @@ html_static_path = ['_static']
 # If true, the index is split into individual pages for each letter.
 #html_split_index = False
 
-# If true, links to the reST sources are added to the pages.
+# If true, links to the re_st sources are added to the pages.
 #html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
@@ -314,9 +314,9 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            mockType = type(name, (), {})
-            mockType.__module__ = __name__
-            return mockType
+            mock_type = type(name, (), {})
+            mock_type.__module__ = __name__
+            return mock_type
         else:
             return Mock()
 

@@ -11,7 +11,7 @@ class RaidTestCase(unittest.TestCase):
         self.levels_none = raid.RAIDLevels([])
         self.levels_some = raid.RAIDLevels(["mirror", 6])
 
-    def testRaid(self):
+    def test_raid(self):
 
         with self.assertRaisesRegex(TypeError, "Can't instantiate abstract class"):
             raid.ErsatzRAID()
@@ -40,21 +40,21 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.Single.get_max_spares(5), 4)
 
         ##
-        ## raidLevel
+        ## raid_level
         ##
         # pass
-        self.assertIs(self.levels.raidLevel(10), raid.RAID10)
-        self.assertIs(self.levels.raidLevel("6"), raid.RAID6)
-        self.assertIs(self.levels.raidLevel("RAID5"), raid.RAID5)
-        self.assertIs(self.levels.raidLevel("raid4"), raid.RAID4)
-        self.assertIs(self.levels.raidLevel("mirror"), raid.RAID1)
-        self.assertIs(self.levels.raidLevel("stripe"), raid.RAID0)
-        self.assertIs(self.levels.raidLevel(raid.RAID0), raid.RAID0)
+        self.assertIs(self.levels.raid_level(10), raid.RAID10)
+        self.assertIs(self.levels.raid_level("6"), raid.RAID6)
+        self.assertIs(self.levels.raid_level("RAID5"), raid.RAID5)
+        self.assertIs(self.levels.raid_level("raid4"), raid.RAID4)
+        self.assertIs(self.levels.raid_level("mirror"), raid.RAID1)
+        self.assertIs(self.levels.raid_level("stripe"), raid.RAID0)
+        self.assertIs(self.levels.raid_level(raid.RAID0), raid.RAID0)
 
         with self.assertRaises(errors.RaidError):
-            self.levels.raidLevel("bogus")
+            self.levels.raid_level("bogus")
         with self.assertRaises(errors.RaidError):
-            self.levels.raidLevel(None)
+            self.levels.raid_level(None)
 
         ##
         ## get_max_spares
@@ -146,10 +146,10 @@ class RaidTestCase(unittest.TestCase):
         ## __init__
         ##
         with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
-            self.levels_none.raidLevel(10)
+            self.levels_none.raid_level(10)
 
         with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
-            self.levels_some.raidLevel(10)
+            self.levels_some.raid_level(10)
 
         with self.assertRaisesRegex(errors.RaidError, "invalid standard RAID level descriptor"):
             raid.RAIDLevels(["raid3.1415"])

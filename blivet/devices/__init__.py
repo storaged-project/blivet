@@ -19,7 +19,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from .lib import get_device_majors, devicePathToName, deviceNameToDiskByPath, ParentList
+from .lib import get_device_majors, device_path_to_name, device_name_to_disk_by_path, ParentList
 from .device import Device
 from .storage import StorageDevice
 from .disk import DiskDevice, DiskFile, DMRaidArrayDevice, MultipathDevice, iScsiDiskDevice, FcoeDiskDevice, DASDDevice, ZFCPDiskDevice

@@ -39,16 +39,16 @@ class SwapSpace(DeviceFormat):
     """ Swap space """
     _type = "swap"
     _name = None
-    _udevTypes = ["swap"]
-    partedFlag = PARTITION_SWAP
-    partedSystem = fileSystemType["linux-swap(v1)"]
+    _udev_types = ["swap"]
+    parted_flag = PARTITION_SWAP
+    parted_system = fileSystemType["linux-swap(v1)"]
     _formattable = True                # can be formatted
     _supported = True                  # is supported
-    _linuxNative = True                # for clearpart
+    _linux_native = True                # for clearpart
     _plugin = availability.BLOCKDEV_SWAP_PLUGIN
 
     #see rhbz#744129 for details
-    _maxSize = Size("128 GiB")
+    _max_size = Size("128 GiB")
 
     def __init__(self, **kwargs):
         """
@@ -102,14 +102,14 @@ class SwapSpace(DeviceFormat):
         """Returns True as mkswap can write a label to the swap space."""
         return True
 
-    def labelFormatOK(self, label):
+    def label_format_ok(self, label):
         """Returns True since no known restrictions on the label."""
         return True
 
-    label = property(lambda s: s._getLabel(), lambda s,l: s._setLabel(l),
+    label = property(lambda s: s._get_label(), lambda s,l: s._set_label(l),
        doc="the label for this swap space")
 
-    def _setPriority(self, priority):
+    def _set_priority(self, priority):
         # pylint: disable=attribute-defined-outside-init
         if priority is None:
             self._priority = -1
@@ -121,20 +121,20 @@ class SwapSpace(DeviceFormat):
 
         self._priority = priority
 
-    def _getPriority(self):
+    def _get_priority(self):
         return self._priority
 
-    priority = property(_getPriority, _setPriority,
+    priority = property(_get_priority, _set_priority,
                         doc="The priority of the swap device")
 
-    def _getOptions(self):
+    def _get_options(self):
         opts = ""
         if self.priority is not None and self.priority != -1:
             opts += "pri=%d" % self.priority
 
         return opts
 
-    def _setOptions(self, opts):
+    def _set_options(self, opts):
         if not opts:
             self.priority = None
             return

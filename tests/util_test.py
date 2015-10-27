@@ -8,7 +8,7 @@ class MiscTest(unittest.TestCase):
 
     # Disable this warning, which will only be triggered on python3.  For
     # python2, the default is False.
-    longMessage = True      # pylint: disable=pointless-class-attribute-override
+    long_message = True      # pylint: disable=pointless-class-attribute-override
 
     def test_power_of_two(self):
         self.assertFalse(util.power_of_two(None))
