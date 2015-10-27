@@ -36,7 +36,7 @@ Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: libselinux-python
-Requires: libblockdev >= %{libblockdevver}
+Requires: python2-blockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
 Requires: python-hawkey
@@ -63,7 +63,7 @@ Requires: python3-pyudev
 Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
-Requires: libblockdev >= %{libblockdevver}
+Requires: python3-blockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: util-linux >= %{utillinuxver}
 Requires: dosfstools
