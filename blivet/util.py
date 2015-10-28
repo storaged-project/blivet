@@ -526,7 +526,7 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
     program_log.setLevel(logging.DEBUG)
 
     def make_handler(path, prefix, level):
-        log_file = "%s/%s.log" % (path, log)
+        log_file = "%s/%s.log" % (path, prefix)
         log_file = os.path.realpath(log_file)
         handler = logging.FileHandler(log_file)
         handler.setLevel(level)
