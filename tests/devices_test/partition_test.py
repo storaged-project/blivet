@@ -49,21 +49,21 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
             # ValueError if not Size
             with self.assertRaisesRegex(ValueError,
-                                         "new size must.*type Size"):
+                                        "new size must.*type Size"):
                 device.target_size = 22
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if size smaller than min_size
             with self.assertRaisesRegex(ValueError,
-                                         "size.*smaller than the minimum"):
+                                        "size.*smaller than the minimum"):
                 device.target_size = Size("1 MiB")
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if size larger than max_size
             with self.assertRaisesRegex(ValueError,
-                                         "size.*larger than the maximum"):
+                                        "size.*larger than the maximum"):
                 device.target_size = Size("11 MiB")
 
             self.assertEqual(device.target_size, orig_size)
@@ -122,7 +122,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             min_end_sector = partition.geometry.start + min_sectors - 1
             self.assertEqual(
                 disk.format.end_alignment.isAligned(partition.geometry,
-                                                   min_end_sector),
+                                                    min_end_sector),
                 False)
 
             # The end sector based on device min size should be aligned.
@@ -130,7 +130,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             min_end_sector = partition.geometry.start + min_sectors - 1
             self.assertEqual(
                 disk.format.end_alignment.isAligned(partition.geometry,
-                                                   min_end_sector),
+                                                    min_end_sector),
                 True)
 
             ##

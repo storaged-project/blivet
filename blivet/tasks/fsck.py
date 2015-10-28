@@ -42,7 +42,7 @@ class FSCK(task.BasicApplication, fstask.FSTask):
     description = "fsck"
 
     options = abc.abstractproperty(
-       doc="Options for invoking the application.")
+        doc="Options for invoking the application.")
 
     # IMPLEMENTATION methods
 
@@ -84,15 +84,15 @@ class FSCK(task.BasicApplication, fstask.FSTask):
         error_msg = self._error_message(rc)
         if error_msg is not None:
             hdr = "%(type)s filesystem check failure on %(device)s: " % \
-                    {"type": self.fs.type, "device": self.fs.device}
+                {"type": self.fs.type, "device": self.fs.device}
 
             raise FSError(hdr + error_msg)
 
 
 class DosFSCK(FSCK):
     _fsck_errors = {1: "Recoverable errors have been detected or dosfsck has "
-                      "discovered an internal inconsistency.",
-                   2: "Usage error."}
+                    "discovered an internal inconsistency.",
+                    2: "Usage error."}
 
     ext = availability.DOSFSCK_APP
     options = ["-n"]
@@ -108,10 +108,10 @@ class DosFSCK(FSCK):
 
 class Ext2FSCK(FSCK):
     _fsck_errors = {4: "File system errors left uncorrected.",
-                   8: "Operational error.",
-                   16: "Usage or syntax error.",
-                   32: "e2fsck cancelled by user request.",
-                   128: "Shared library error."}
+                    8: "Operational error.",
+                    16: "Usage or syntax error.",
+                    32: "e2fsck cancelled by user request.",
+                    128: "Shared library error."}
 
     ext = availability.E2FSCK_APP
     options = ["-f", "-p", "-C", "0"]
@@ -123,9 +123,9 @@ class Ext2FSCK(FSCK):
 
 class HFSPlusFSCK(FSCK):
     _fsck_errors = {3: "Quick check found a dirty filesystem; no repairs done.",
-                   4: "Root filesystem was dirty. System should be rebooted.",
-                   8: "Corrupt filesystem, repairs did not succeed.",
-                   47: "Major error found; no repairs attempted."}
+                    4: "Root filesystem was dirty. System should be rebooted.",
+                    8: "Corrupt filesystem, repairs did not succeed.",
+                    47: "Major error found; no repairs attempted."}
     ext = availability.FSCK_HFSPLUS_APP
     options = []
 

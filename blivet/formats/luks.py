@@ -273,4 +273,3 @@ class LUKS(DeviceFormat):
 
 
 register_device_format(LUKS)
-

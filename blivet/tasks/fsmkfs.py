@@ -45,7 +45,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
     description = "mkfs"
 
     label_option = abc.abstractproperty(
-       doc="Option for setting a filesystem label.")
+        doc="Option for setting a filesystem label.")
 
     args = abc.abstractproperty(doc="options for creating filesystem")
 

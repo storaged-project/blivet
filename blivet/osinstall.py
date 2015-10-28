@@ -187,9 +187,9 @@ def parse_fstab(devicetree, chroot=None):
 
             # find device in the tree
             device = devicetree.resolve_device(devspec,
-                                              crypt_tab=crypt_tab,
-                                              blkid_tab=blkid_tab,
-                                              options=options)
+                                               crypt_tab=crypt_tab,
+                                               blkid_tab=blkid_tab,
+                                               options=options)
 
             if device is None:
                 continue
@@ -264,10 +264,10 @@ def _find_existing_installations(devicetree):
                 name = _("Unknown Linux")
             elif "linux" in product.lower():
                 name = _("%(product)s %(version)s for %(arch)s") % \
-                        {"product": product, "version": version, "arch": architecture}
+                    {"product": product, "version": version, "arch": architecture}
             else:
                 name = _("%(product)s Linux %(version)s for %(arch)s") % \
-                        {"product": product, "version": version, "arch": architecture}
+                    {"product": product, "version": version, "arch": architecture}
 
         (mounts, swaps) = parse_fstab(devicetree, chroot=get_sysroot())
         util.umount(mountpoint=get_sysroot())
@@ -311,8 +311,8 @@ class FSSet(object):
     def dev(self):
         if not self._dev:
             self._dev = DirectoryDevice("/dev",
-               fmt=get_format("bind", device="/dev", mountpoint="/dev", exists=True),
-               exists=True)
+                                        fmt=get_format("bind", device="/dev", mountpoint="/dev", exists=True),
+                                        exists=True)
 
         return self._dev
 
@@ -356,8 +356,8 @@ class FSSet(object):
     def run(self):
         if not self._run:
             self._run = DirectoryDevice("/run",
-               fmt=get_format("bind", device="/run", mountpoint="/run", exists=True),
-               exists=True)
+                                        fmt=get_format("bind", device="/run", mountpoint="/run", exists=True),
+                                        exists=True)
 
         return self._run
 
@@ -390,9 +390,9 @@ class FSSet(object):
 
         # find device in the tree
         device = self.devicetree.resolve_device(devspec,
-                                               crypt_tab=self.crypt_tab,
-                                               blkid_tab=self.blkid_tab,
-                                               options=options)
+                                                crypt_tab=self.crypt_tab,
+                                                blkid_tab=self.blkid_tab,
+                                                options=options)
 
         if device:
             # fall through to the bottom of this block
@@ -404,15 +404,15 @@ class FSSet(object):
             # NFS -- preserve but otherwise ignore
             device = NFSDevice(devspec,
                                fmt=get_format(fstype,
-                                                exists=True,
-                                                device=devspec))
+                                              exists=True,
+                                              device=devspec))
         elif devspec.startswith("/") and fstype == "swap":
             # swap file
             device = FileDevice(devspec,
                                 parents=get_containing_device(devspec, self.devicetree),
                                 fmt=get_format(fstype,
-                                                 device=devspec,
-                                                 exists=True),
+                                               device=devspec,
+                                               exists=True),
                                 exists=True)
         elif fstype == "bind" or "bind" in options:
             # bind mount... set fstype so later comparison won't
@@ -426,8 +426,8 @@ class FSSet(object):
             parents = get_containing_device(devspec, self.devicetree)
             device = DirectoryDevice(devspec, parents=parents, exists=True)
             device.format = get_format("bind",
-                                      device=device.path,
-                                      exists=True)
+                                       device=device.path,
+                                       exists=True)
         elif mountpoint in ("/proc", "/sys", "/dev/shm", "/dev/pts",
                             "/sys/fs/selinux", "/proc/bus/usb", "/sys/firmware/efi/efivars"):
             # drop these now -- we'll recreate later
@@ -442,7 +442,7 @@ class FSSet(object):
 
         if device is None:
             log.error("failed to resolve %s (%s) from fstab", devspec,
-                                                              fstype)
+                      fstype)
             raise UnrecognizedFSTabEntryError()
 
         device.setup()
@@ -672,7 +672,7 @@ class FSSet(object):
         basedir = os.path.normpath("%s/%s" % (get_target_physical_root(),
                                               device.format.mountpoint))
         while os.path.exists("%s/%s" % (basedir, filename)) or \
-              self.devicetree.get_device_by_name(filename):
+                self.devicetree.get_device_by_name(filename):
             count += 1
             filename = "/SWAP-%d" % count
 
@@ -838,8 +838,8 @@ class FSSet(object):
                 options = device.format.options
                 if not mountpoint:
                     log.warning("%s filesystem on %s has no mountpoint",
-                                                            fstype,
-                                                            device.path)
+                                fstype,
+                                device.path)
                     continue
 
             options = options or "defaults"
@@ -1022,7 +1022,7 @@ class CryptTab(object):
 
                 # resolve devspec to a device in the tree
                 device = self.devicetree.resolve_device(devspec,
-                                                       blkid_tab=self.blkid_tab)
+                                                        blkid_tab=self.blkid_tab)
                 if device:
                     self.mappings[name] = {"device": device,
                                            "keyfile": keyfile,
@@ -1045,8 +1045,8 @@ class CryptTab(object):
             options = device.format.options or ""
 
             self.mappings[device.format.map_name] = {"device": device,
-                                                    "keyfile": key_file,
-                                                    "options": options}
+                                                     "keyfile": key_file,
+                                                     "options": options}
 
     def crypttab(self):
         """ Write out /etc/crypttab """
@@ -1128,7 +1128,7 @@ def turn_on_filesystems(storage, mount_only=False, callbacks=None):
 
 def write_escrow_packets(storage):
     escrow_devices = [d for d in storage.devices if d.format.type == 'luks' and
-                     d.format.escrow_cert]
+                      d.format.escrow_cert]
 
     if not escrow_devices:
         return
@@ -1209,8 +1209,8 @@ def mount_existing_system(fsset, root_device, read_only=None):
     else:
         root_device.setup()
         root_device.format.mount(chroot=root_path,
-                                mountpoint="/",
-                                options=read_only)
+                                 mountpoint="/",
+                                 options=read_only)
 
     fsset.parse_fstab()
     fsset.mount_filesystems(root_path=root_path, read_only=read_only, skip_root=True)

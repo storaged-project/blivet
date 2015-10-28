@@ -16,10 +16,10 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
     """
 
     _fs_class = abc.abstractproperty(
-       doc="The class of the filesystem being tested on.")
+        doc="The class of the filesystem being tested on.")
 
     _invalid_label = abc.abstractproperty(
-       doc="A label which is invalid for this filesystem.")
+        doc="A label which is invalid for this filesystem.")
 
     def __init__(self, methodName='run_test'):
         super(LabelingAsRoot, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])

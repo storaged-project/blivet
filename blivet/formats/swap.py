@@ -108,7 +108,7 @@ class SwapSpace(DeviceFormat):
         return True
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
-       doc="the label for this swap space")
+                     doc="the label for this swap space")
 
     def _set_priority(self, priority):
         # pylint: disable=attribute-defined-outside-init

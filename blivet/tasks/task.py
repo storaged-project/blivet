@@ -40,7 +40,7 @@ class Task(object):
     def availability_errors(self):
         """ Reasons if this task or the tasks it depends on are unavailable. """
         return self._availability_errors + \
-           [e for t in self.depends_on for e in t.availability_errors]
+            [e for t in self.depends_on for e in t.availability_errors]
 
     @property
     def available(self):
@@ -52,7 +52,7 @@ class Task(object):
         return self.availability_errors == []
 
     _availability_errors = abc.abstractproperty(
-       doc="Reasons if the necessary external tools are unavailable.")
+        doc="Reasons if the necessary external tools are unavailable.")
 
     depends_on = abc.abstractproperty(doc="tasks that this task depends on")
 

@@ -138,7 +138,7 @@ class Platform(object):
             # that is large enough to address the whole device
             label_type = self.default_disklabel_type
             log.debug("default disklabel type for %s is %s", device.name,
-                                                             label_type)
+                      label_type)
             for lt in self.disklabel_types:
                 l = parted.freshDisk(device=parted_device, ty=lt)
                 if l.maxPartitionStartSector > parted_device.length:

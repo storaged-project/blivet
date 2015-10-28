@@ -110,10 +110,10 @@ def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
             # TODO: change libiscsi.node to pickable object
             for node in found_nodes:
                 nodes.append({'name': node.name,
-                             'tpgt': node.tpgt,
-                             'address': node.address,
-                             'port': node.port,
-                             'iface': node.iface})
+                              'tpgt': node.tpgt,
+                              'address': node.address,
+                              'port': node.port,
+                              'iface': node.iface})
 
             con_write.send((True, nodes))
 
@@ -222,7 +222,7 @@ class iscsi(object):
             try:
                 node.login()
                 log.info("iscsi IBFT: logged into %s at %s:%s through %s",
-                    node.name, node.address, node.port, node.iface)
+                         node.name, node.address, node.port, node.iface)
                 self.ibft_nodes.append(node)
             except IOError as e:
                 log.error("Could not log into ibft iscsi target %s: %s",
@@ -285,7 +285,7 @@ class iscsi(object):
         self.initiator_set = True
 
         for fulldir in (os.path.join("/var/lib/iscsi", d) for d in
-           ['ifaces', 'isns', 'nodes', 'send_targets', 'slp', 'static']):
+                        ['ifaces', 'isns', 'nodes', 'send_targets', 'slp', 'static']):
             if not os.path.isdir(fulldir):
                 os.makedirs(fulldir, 0o755)
 
@@ -295,7 +295,7 @@ class iscsi(object):
         # not present in iscsi-initiator-utils for Fedora.
         try:
             iscsiuio = util.find_program_in_path('iscsiuio',
-                                                   raise_on_error=True)
+                                                 raise_on_error=True)
         except RuntimeError:
             log.info("iscsi: iscsiuio not found.")
         else:
@@ -388,7 +388,7 @@ class iscsi(object):
                 if not logged_in]
 
     def log_into_node(self, node, username=None, password=None,
-                  r_username=None, r_password=None):
+                      r_username=None, r_password=None):
         """
         Raises IOError.
         """
@@ -407,7 +407,7 @@ class iscsi(object):
             node.login()
             rc = True
             log.info("iSCSI: logged into %s at %s:%s through %s",
-                    node.name, node.address, node.port, node.iface)
+                     node.name, node.address, node.port, node.iface)
             if not self._mark_node_active(node):
                 log.error("iSCSI: node not found among discovered")
         except (IOError, ValueError) as e:
@@ -417,9 +417,9 @@ class iscsi(object):
         return (rc, msg)
 
     def add_target(self, ipaddr, port="3260", user=None, pw=None,
-                  user_in=None, pw_in=None, target=None, iface=None,
-                  discover_user=None, discover_pw=None,
-                  discover_user_in=None, discover_pw_in=None):
+                   user_in=None, pw_in=None, target=None, iface=None,
+                   discover_user=None, discover_pw=None,
+                   discover_user_in=None, discover_pw_in=None):
         """
         Connect to iSCSI server specified by IP address and port
         and add all targets found on the server and authenticate if necessary.
@@ -468,7 +468,7 @@ class iscsi(object):
                 node_net_iface = self.ifaces.get(node.iface, node.iface)
                 if iface != node_net_iface:
                     log.debug("iscsi: skipping logging to iscsi node '%s' via %s",
-                               node.name, node_net_iface)
+                              node.name, node_net_iface)
                     continue
 
             found = found + 1

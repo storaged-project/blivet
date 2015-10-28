@@ -15,13 +15,13 @@ from blivet.devices.lvm import LVMCacheRequest
 from blivet.size import Size
 
 DEVICE_CLASSES = [
-   LVMLogicalVolumeDevice,
-   LVMSnapShotDevice,
-   LVMThinLogicalVolumeDevice,
-   LVMThinPoolDevice,
-   LVMThinSnapShotDevice,
-   LVMVolumeGroupDevice,
-   StorageDevice
+    LVMLogicalVolumeDevice,
+    LVMSnapShotDevice,
+    LVMThinLogicalVolumeDevice,
+    LVMThinPoolDevice,
+    LVMThinSnapShotDevice,
+    LVMVolumeGroupDevice,
+    StorageDevice
 ]
 
 
@@ -98,7 +98,7 @@ class LVMDeviceTest(unittest.TestCase):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
-                           size=Size("512 MiB"))
+                            size=Size("512 MiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
         cache_req = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
@@ -147,7 +147,7 @@ class LVMDeviceTest(unittest.TestCase):
 
         # ValueError if size smaller than min_size
         with self.assertRaisesRegex(ValueError,
-                                     "size.*smaller than the minimum"):
+                                    "size.*smaller than the minimum"):
             lv.target_size = Size("1 MiB")
 
         # target size should be unchanged
@@ -155,7 +155,7 @@ class LVMDeviceTest(unittest.TestCase):
 
         # ValueError if size larger than max_size
         with self.assertRaisesRegex(ValueError,
-                                     "size.*larger than the maximum"):
+                                    "size.*larger than the maximum"):
             lv.target_size = Size("1 GiB")
 
         # target size should be unchanged

@@ -174,9 +174,9 @@ def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
                 fmt_type = "btrfs"
             fmt_args = {}
         part = storage.new_partition(fmt_type=fmt_type,
-                                                fmt_args=fmt_args,
-                                                grow=True,
-                                                parents=[disk])
+                                     fmt_args=fmt_args,
+                                     grow=True,
+                                     parents=[disk])
         storage.create_device(part)
         devs.append(part)
 
@@ -235,15 +235,15 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
     for request in requests:
         if ((request.lv and storage.do_autopart and
              storage.autopart_type in (AUTOPART_TYPE_LVM,
-                                      AUTOPART_TYPE_LVM_THINP)) or
-            (request.btr and storage.autopart_type == AUTOPART_TYPE_BTRFS)):
+                                       AUTOPART_TYPE_LVM_THINP)) or
+                (request.btr and storage.autopart_type == AUTOPART_TYPE_BTRFS)):
             continue
 
         if request.required_space and request.required_space > free:
             continue
 
         elif request.fstype in ("prepboot", "efi", "macefi", "hfs+") and \
-             (storage.bootloader.skip_bootloader or stage1_device):
+                (storage.bootloader.skip_bootloader or stage1_device):
             # there should never be a need for more than one of these
             # partitions, so skip them.
             log.info("skipping unneeded stage1 %s request", request.fstype)
@@ -260,11 +260,11 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
                       getattr(stage1_device.format, "labelType", None) == "gpt")
             has_bios_boot = (stage1_device and
                              any([p.format.type == "biosboot"
-                                    for p in storage.partitions
-                                        if p.disk == stage1_device]))
+                                  for p in storage.partitions
+                                  if p.disk == stage1_device]))
             if (storage.bootloader.skip_bootloader or
                 not (stage1_device and stage1_device.is_disk and
-                    is_gpt and not has_bios_boot)):
+                     is_gpt and not has_bios_boot)):
                 # there should never be a need for more than one of these
                 # partitions, so skip them.
                 log.info("skipping unneeded stage1 %s request", request.fstype)
@@ -289,21 +289,21 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
             fmt_args = {}
 
         dev = storage.new_partition(fmt_type=fmt_type,
-                                            fmt_args=fmt_args,
-                                            size=request.size,
-                                            grow=request.grow,
-                                            maxsize=request.max_size,
-                                            mountpoint=request.mountpoint,
-                                            parents=disks,
-                                            weight=request.weight)
+                                    fmt_args=fmt_args,
+                                    size=request.size,
+                                    grow=request.grow,
+                                    maxsize=request.max_size,
+                                    mountpoint=request.mountpoint,
+                                    parents=disks,
+                                    weight=request.weight)
 
         # schedule the device for creation
         storage.create_device(dev)
 
         if request.encrypted and storage.encrypted_autopart:
             luks_fmt = get_format(request.fstype,
-                                 device=dev.path,
-                                 mountpoint=request.mountpoint)
+                                  device=dev.path,
+                                  mountpoint=request.mountpoint)
             luks_dev = LUKSDevice("luks-%s" % dev.name,
                                   fmt=luks_fmt,
                                   size=dev.size,
@@ -312,7 +312,7 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
 
         if storage.do_autopart and \
            storage.autopart_type in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP,
-                                    AUTOPART_TYPE_BTRFS):
+                                     AUTOPART_TYPE_BTRFS):
             # doing LVM/BTRFS -- make sure the newly created partition fits in some
             # free space together with one of the implicitly requested partitions
             smallest_implicit = sorted(implicit_devices, key=lambda d: d.size)[0]
@@ -381,8 +381,8 @@ def _schedule_volumes(storage, devs):
     for request in storage.autopart_requests:
         btr = storage.autopart_type == AUTOPART_TYPE_BTRFS and request.btr
         lv = (storage.autopart_type in (AUTOPART_TYPE_LVM,
-                                       AUTOPART_TYPE_LVM_THINP) and request.lv)
-        thinlv = (storage.autopart_type == AUTOPART_TYPE_LVM_THINP and
+                                        AUTOPART_TYPE_LVM_THINP) and request.lv)
+        thinlv = (storage.auto_part_type == AUTOPART_TYPE_LVM_THINP and
                   request.lv and request.thin)
         if thinlv and pool is None:
             # create a single thin pool in the vg
@@ -445,7 +445,7 @@ def do_reqpart(storage, requests):
 
     if disks == []:
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
-                                      "automatic partitioning"))
+                                        "automatic partitioning"))
 
     _schedule_partitions(storage, disks, [], requests=requests)
 
@@ -500,7 +500,7 @@ def do_autopart(storage, data, min_luks_entropy=0):
 
     if disks == []:
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
-                                      "automatic partitioning"))
+                                        "automatic partitioning"))
 
     devs = _schedule_partitions(storage, disks, devs, min_luks_entropy=min_luks_entropy)
 

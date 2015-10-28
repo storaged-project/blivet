@@ -54,9 +54,9 @@ class RaidDevice(StorageDevice):
         num_members = len(self.members) + parent_diff  # pylint: disable=no-member
         if not self.exists and num_members < level.min_members:
             message = P_(
-               "RAID level %(raid_level)s requires that device have at least %(min_members)d member.",
-               "RAID level %(raid_level)s requires that device have at least %(min_members)d members.",
-               level.min_members
+                "RAID level %(raid_level)s requires that device have at least %(min_members)d member.",
+                "RAID level %(raid_level)s requires that device have at least %(min_members)d members.",
+                level.min_members
             )
             return message % {"raid_level": level, "min_members": level.min_members}
         return None

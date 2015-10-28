@@ -206,13 +206,13 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         if self.parents and not self.format.type:
             label = getattr(self.parents[0].format, "label", None)
             self.format = get_format("btrfs",
-                                    exists=self.exists,
-                                    label=label,
-                                    vol_uuid=self.uuid,
-                                    device=self.path,
-                                    subvolspec=self.vol_id,
-                                    mountopts="subvolid=%d" % self.vol_id,
-                                    create_options=create_options)
+                                     exists=self.exists,
+                                     label=label,
+                                     vol_uuid=self.uuid,
+                                     device=self.path,
+                                     subvolspec=self.vol_id,
+                                     mountopts="subvolid=%d" % self.vol_id,
+                                     create_options=create_options)
             self.original_format = copy.deepcopy(self.format)
 
         self._default_subvolume_id = None
@@ -309,8 +309,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         # Calculate the size as if it were a RAID with no superblock and a chunk_size of 1
         data_level = self.data_level or raid.Single
         return data_level.get_size([d.size for d in self.parents],
-                chunk_size=Size(1),
-                superblock_size_func=lambda x: 0)
+                                   chunk_size=Size(1),
+                                   superblock_size_func=lambda x: 0)
 
     def _remove_parent(self, member):
         levels = (l for l in (self.data_level, self.metadata_level) if l)

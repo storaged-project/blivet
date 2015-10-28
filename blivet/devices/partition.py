@@ -251,7 +251,7 @@ class PartitionDevice(StorageDevice):
             return newsize
 
         (_constraint, geometry) = self._compute_resize(self.parted_partition,
-                                                      newsize=newsize)
+                                                       newsize=newsize)
         return Size(geometry.getLength(unit="B"))
 
     def _set_target_size(self, newsize):
@@ -345,7 +345,7 @@ class PartitionDevice(StorageDevice):
         self.update_name()
 
     parted_partition = property(lambda d: d._get_parted_partition(),
-                               lambda d, p: d._set_parted_partition(p))
+                                lambda d, p: d._set_parted_partition(p))
 
     def pre_commit_fixup(self):
         """ Re-get self.parted_partition from the original disklabel. """
@@ -361,14 +361,14 @@ class PartitionDevice(StorageDevice):
             # getPartitionBySector doesn't work on extended partitions
             _partition = _disklabel.extended_partition
             log.debug("extended lookup found partition %s",
-                        device_path_to_name(getattr(_partition, "path", None) or "(none)"))
+                      device_path_to_name(getattr(_partition, "path", None) or "(none)"))
         else:
             # lookup the partition by sector to avoid the renumbering
             # nonsense entirely
             _sector = self.parted_partition.geometry.start
             _partition = _disklabel.parted_disk.getPartitionBySector(_sector)
             log.debug("sector-based lookup found partition %s",
-                        device_path_to_name(getattr(_partition, "path", None) or "(none)"))
+                      device_path_to_name(getattr(_partition, "path", None) or "(none)"))
 
         self.parted_partition = _partition
 
@@ -489,7 +489,7 @@ class PartitionDevice(StorageDevice):
             if self.parted_partition.type == parted.PARTITION_EXTENDED and \
                     len(self.disk.format.logical_partitions) > 0:
                 raise ValueError("Cannot remove extended partition %s.  "
-                        "Logical partitions present." % self.name)
+                                 "Logical partitions present." % self.name)
 
             self.disk.format.remove_partition(self.parted_partition)
 
@@ -505,8 +505,8 @@ class PartitionDevice(StorageDevice):
             return
 
         self.disk.format.add_partition(self.parted_partition.geometry.start,
-                                      self.parted_partition.geometry.end,
-                                      self.parted_partition.type)
+                                       self.parted_partition.geometry.end,
+                                       self.parted_partition.type)
 
         # Look up the path by start sector to deal with automatic renumbering of
         # logical partitions on msdos disklabels.
@@ -575,8 +575,8 @@ class PartitionDevice(StorageDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         self.disk.format.add_partition(self.parted_partition.geometry.start,
-                                      self.parted_partition.geometry.end,
-                                      self.parted_partition.type)
+                                       self.parted_partition.geometry.end,
+                                       self.parted_partition.type)
 
         self._wipe()
         try:
@@ -594,7 +594,7 @@ class PartitionDevice(StorageDevice):
             partition = self.disk.format.parted_disk.getPartitionBySector(start)
 
         log.debug("post-commit partition path is %s", getattr(partition,
-                                                             "path", None))
+                                                              "path", None))
         self.parted_partition = partition
         if not self.is_extended:
             # Ensure old metadata which lived in freespace so did not get
@@ -625,8 +625,8 @@ class PartitionDevice(StorageDevice):
         current_dev = current_geom.device
         new_len = int(newsize // Size(current_dev.sectorSize))
         new_geometry = parted.Geometry(device=current_dev,
-                                      start=current_geom.start,
-                                      length=new_len)
+                                       start=current_geom.start,
+                                       length=new_len)
         # and align the end sector
         if new_geometry.length < current_geom.length:
             align = self.disk.format.end_alignment.alignUp
@@ -652,9 +652,9 @@ class PartitionDevice(StorageDevice):
         (constraint, geometry) = self._compute_resize(partition)
 
         parted_disk.setPartitionGeometry(partition=partition,
-                                        constraint=constraint,
-                                        start=geometry.start,
-                                        end=geometry.end)
+                                         constraint=constraint,
+                                         start=geometry.start,
+                                         end=geometry.end)
 
         self.disk.format.commit()
         self.update_size()
@@ -690,9 +690,9 @@ class PartitionDevice(StorageDevice):
             self.disk.original_format.commit()
         except errors.DiskLabelCommitError:
             self.disk.original_format.add_partition(
-                                        self.parted_partition.geometry.start,
-                                        self.parted_partition.geometry.end,
-                                        self.parted_partition.type)
+                self.parted_partition.geometry.start,
+                self.parted_partition.geometry.end,
+                self.parted_partition.type)
             self.parted_partition = self.disk.original_format.parted_disk.getPartitionByPath(self.path)
             raise
 
@@ -851,7 +851,7 @@ class PartitionDevice(StorageDevice):
     @property
     def resizable(self):
         return super(PartitionDevice, self).resizable and \
-               self.disk.type != 'dasd'
+            self.disk.type != 'dasd'
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the

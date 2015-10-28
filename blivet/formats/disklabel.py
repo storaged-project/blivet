@@ -82,8 +82,8 @@ class DiskLabel(DeviceFormat):
             We can't do copy.deepcopy on parted objects, which is okay.
         """
         return util.variable_copy(self, memo,
-           shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',),
-           duplicate=('_parted_disk', '_orig_parted_disk'))
+                                  shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',),
+                                  duplicate=('_parted_disk', '_orig_parted_disk'))
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -299,7 +299,7 @@ class DiskLabel(DeviceFormat):
 
         constraint = parted.Constraint(exactGeom=geometry)
         self.parted_disk.addPartition(partition=new_partition,
-                                     constraint=constraint)
+                                      constraint=constraint)
 
     def remove_partition(self, partition):
         """ Remove a partition from the disklabel.
@@ -359,7 +359,7 @@ class DiskLabel(DeviceFormat):
                 self._disk_label_alignment = self.parted_disk.partitionAlignment
             except _ped.CreateException:
                 self._disk_label_alignment = parted.Alignment(offset=0,
-                                                            grainSize=1)
+                                                              grainSize=1)
 
         return self._disk_label_alignment
 
@@ -457,7 +457,7 @@ class DiskLabel(DeviceFormat):
             alignment = self.get_alignment(size=size)
 
         return parted.Alignment(offset=alignment.offset - 1,
-                            grainSize=alignment.grainSize)
+                                grainSize=alignment.grainSize)
 
     @property
     def alignment(self):

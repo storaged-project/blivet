@@ -28,7 +28,7 @@ class ClearPartTestCase(unittest.TestCase):
         # sda is a disk with an existing disklabel containing two partitions
         sda = DiskDevice("sda", size=100000, exists=True)
         sda.format = blivet.formats.get_format("disklabel", device=sda.path,
-                                              exists=True)
+                                               exists=True)
         sda.format._parted_disk = mock.Mock()
         sda.format._parted_device = mock.Mock()
         sda.format._parted_disk.configure_mock(partitions=[])
@@ -38,26 +38,26 @@ class ClearPartTestCase(unittest.TestCase):
         sda1 = PartitionDevice("sda1", size=500, exists=True,
                                parents=[sda])
         sda1._parted_partition = mock.Mock(**{'type': PARTITION_NORMAL,
-                                             'getFlag.return_value': 0})
+                                              'getFlag.return_value': 0})
         sda1.format = blivet.formats.get_format("ext4", mountpoint="/boot",
-                                               device=sda1.path,
-                                               exists=True)
+                                                device=sda1.path,
+                                                exists=True)
         b.devicetree._add_device(sda1)
 
         # sda2 is a partition containing an existing vfat filesystem
         sda2 = PartitionDevice("sda2", size=10000, exists=True,
                                parents=[sda])
         sda2._parted_partition = mock.Mock(**{'type': PARTITION_NORMAL,
-                                             'getFlag.return_value': 0})
+                                              'getFlag.return_value': 0})
         sda2.format = blivet.formats.get_format("vfat", mountpoint="/foo",
-                                               device=sda2.path,
-                                               exists=True)
+                                                device=sda2.path,
+                                                exists=True)
         b.devicetree._add_device(sda2)
 
         # sdb is an unpartitioned disk containing an xfs filesystem
         sdb = DiskDevice("sdb", size=100000, exists=True)
         sdb.format = blivet.formats.get_format("xfs", device=sdb.path,
-                                              exists=True)
+                                               exists=True)
         b.devicetree._add_device(sdb)
 
         # sdc is an unformatted/uninitialized/empty disk
@@ -67,7 +67,7 @@ class ClearPartTestCase(unittest.TestCase):
         # sdd is a disk containing an existing disklabel with no partitions
         sdd = DiskDevice("sdd", size=100000, exists=True)
         sdd.format = blivet.formats.get_format("disklabel", device=sdd.path,
-                                              exists=True)
+                                               exists=True)
         b.devicetree._add_device(sdd)
 
         #
@@ -138,11 +138,11 @@ class ClearPartTestCase(unittest.TestCase):
                         msg="type linux should clear linux-native whole-disk "
                             "formatting regardless of initlabel setting")
         self.assertTrue(b.should_clear(sdc),
-                         msg="type linux should clear unformatted disks when "
-                             "initlabel is set")
+                        msg="type linux should clear unformatted disks when "
+                        "initlabel is set")
         self.assertTrue(b.should_clear(sdd),
-                         msg="type linux should clear disks with empty "
-                             "partition tables when initlabel is set")
+                        msg="type linux should clear disks with empty "
+                        "partition tables when initlabel is set")
 
         sda1.protected = True
         self.assertFalse(b.should_clear(sda1),

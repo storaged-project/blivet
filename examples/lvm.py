@@ -31,12 +31,12 @@ try:
 
     # new lv with base size 5GiB and unbounded growth and an ext4 filesystem
     dev = b.new_lv(fmt_type="ext4", size=Size("5GiB"), grow=True,
-                  parents=[vg], name="unbounded")
+                   parents=[vg], name="unbounded")
     b.create_device(dev)
 
     # new lv with base size 5GiB and growth up to 15GiB and an ext4 filesystem
     dev = b.new_lv(fmt_type="ext4", size=Size("5GiB"), grow=True,
-                  maxsize=Size("15GiB"), parents=[vg], name="bounded")
+                   maxsize=Size("15GiB"), parents=[vg], name="bounded")
     b.create_device(dev)
 
     # new lv with a fixed size of 2GiB formatted as swap space

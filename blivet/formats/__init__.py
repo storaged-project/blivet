@@ -51,7 +51,7 @@ def register_device_format(fmt_class):
 
     device_formats[fmt_class._type] = fmt_class
     log.debug("registered device format class %s as %s", fmt_class.__name__,
-                                                         fmt_class._type)
+              fmt_class._type)
 
 default_fstypes = ("ext4", "ext3", "ext2")
 
@@ -97,7 +97,7 @@ def get_format(fmt_type, *args, **kwargs):
         fmt._name = fmt_type
 
     log.debug("getFormat('%s') returning %s instance with object id %d",
-       fmt_type, fmt.__class__.__name__, fmt.id)
+              fmt_type, fmt.__class__.__name__, fmt.id)
     return fmt
 
 
@@ -302,9 +302,9 @@ class DeviceFormat(ObjectID):
         return self._options
 
     options = property(
-       lambda s: s._get_options(),
-       lambda s, v: s._set_options(v),
-       doc="fstab entry option string"
+        lambda s: s._get_options(),
+        lambda s, v: s._set_options(v),
+        doc="fstab entry option string"
     )
 
     def _set_create_options(self, options):

@@ -5,4 +5,3 @@ from unittest import TestCase
 if six.PY2:
     TestCase.assertRaisesRegex = TestCase.assertRaisesRegexp
     TestCase.assertRegex = TestCase.assertRegexpMatches
-

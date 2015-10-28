@@ -46,7 +46,7 @@ class TopologicalSortTestCase(unittest.TestCase):
 
         # verify output list is of the correct length
         self.assertFalse(len(order) != len(graph['items']),
-                    "sorted list length is incorrect")
+                         "sorted list length is incorrect")
 
         # verify that all ordering constraints are satisfied
         self.assertTrue(check_order(order, graph),

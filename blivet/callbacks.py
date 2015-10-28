@@ -78,4 +78,4 @@ ResizeFormatPostData = namedtuple("ResizeFormatPostData",
 WaitForEntropyData = namedtuple("WaitForEntropyData",
                                 ["msg", "min_entropy"])
 ReportProgressData = namedtuple("ReportProgressData",
-                                 ["msg"])
+                                ["msg"])

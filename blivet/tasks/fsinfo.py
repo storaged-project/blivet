@@ -39,7 +39,7 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
     description = "filesystem info"
 
     options = abc.abstractproperty(
-       doc="Options for invoking the application.")
+        doc="Options for invoking the application.")
 
     @property
     def _info_command(self):

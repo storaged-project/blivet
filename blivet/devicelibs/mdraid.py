@@ -37,10 +37,10 @@ class MDRaidLevels(raid.RAIDLevels):
     @classmethod
     def is_raid_level(cls, level):
         return super(MDRaidLevels, cls).is_raid_level(level) and \
-           hasattr(level, 'get_max_spares') and \
-           hasattr(level, 'get_space') and \
-           hasattr(level, 'get_recommended_stride') and \
-           hasattr(level, 'get_size')
+            hasattr(level, 'get_max_spares') and \
+            hasattr(level, 'get_space') and \
+            hasattr(level, 'get_recommended_stride') and \
+            hasattr(level, 'get_size')
 
 RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "linear"])
 

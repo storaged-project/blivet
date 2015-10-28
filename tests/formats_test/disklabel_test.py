@@ -36,11 +36,11 @@ class DiskLabelTestCase(unittest.TestCase):
 
         # expected end alignments
         optimal_end_alignment = parted.Alignment(
-                                        grainSize=optimal_alignment.grainSize,
-                                        offset=-1)
+            grainSize=optimal_alignment.grainSize,
+            offset=-1)
         minimal_end_alignment = parted.Alignment(
-                                        grainSize=minimal_alignment.grainSize,
-                                        offset=-1)
+            grainSize=minimal_alignment.grainSize,
+            offset=-1)
 
         # make sure the private methods all return the expected values
         self.assertEqual(dl._get_disk_label_alignment(), disklabel_alignment)
@@ -49,7 +49,7 @@ class DiskLabelTestCase(unittest.TestCase):
 
         # validate result when passing a start alignment to get_end_alignment
         self.assertEqual(dl.get_end_alignment(alignment=optimal_alignment),
-                                            optimal_end_alignment)
+                         optimal_end_alignment)
         self.assertEqual(dl.get_end_alignment(alignment=minimal_alignment),
                          minimal_end_alignment)
 

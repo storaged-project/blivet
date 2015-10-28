@@ -53,9 +53,9 @@ class ContainerDevice(StorageDevice):
     """
 
     _format_class_name = abc.abstractproperty(lambda s: None,
-        doc="The type of member devices' required format")
+                                              doc="The type of member devices' required format")
     _format_uuid_attr = abc.abstractproperty(lambda s: None,
-        doc="The container UUID attribute in the member format class")
+                                             doc="The container UUID attribute in the member format class")
 
     def __init__(self, *args, **kwargs):
         self.format_class = get_device_format_class(self._format_class_name)

@@ -100,4 +100,3 @@ class PPCPRePBoot(DeviceFormat):
         return super(PPCPRePBoot, self).supported and isinstance(platform.platform, platform.IPSeriesPPC)
 
 register_device_format(PPCPRePBoot)
-

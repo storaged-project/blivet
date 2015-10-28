@@ -196,7 +196,7 @@ def parse_spec(spec):
     # be detected when an exception is raised during conversion of the numeric
     # part to a numeric value.
     spec_re = re.compile(
-       r"""(?P<numeric> # the numeric part consists of three parts, below
+        r"""(?P<numeric> # the numeric part consists of three parts, below
            (-|\+)? # optional sign character
            (?P<base>([0-9\.]+)) # the base
            (?P<exp>(e|E)(-|\+)[0-9]+)?) # optional exponent

@@ -144,4 +144,3 @@ class LVMPhysicalVolume(DeviceFormat):
                 os.path.isdir("/dev/%s" % self.vg_name))
 
 register_device_format(LVMPhysicalVolume)
-

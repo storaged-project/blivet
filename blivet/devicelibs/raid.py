@@ -112,17 +112,17 @@ class RAIDn(RAIDLevel):
     is_uniform = property(lambda s: True)
 
     number = property(lambda s: int(s.level),
-       doc="A numeric code for this level")
+                      doc="A numeric code for this level")
 
     name = property(lambda s: "raid" + s.level,
-       doc="The canonical name for this level")
+                    doc="The canonical name for this level")
 
     alt_synth_names = property(lambda s: ["RAID" + s.level, s.level, s.number],
-       doc="names that can be synthesized from level but are not name")
+                               doc="names that can be synthesized from level but are not name")
 
     names = property(lambda s:
-       [n for n in [s.name] + [s.nick] + s.alt_synth_names if n is not None],
-       doc="all valid names for this level")
+                     [n for n in [s.name] + [s.nick] + s.alt_synth_names if n is not None],
+                     doc="all valid names for this level")
 
     # METHODS
     def get_max_spares(self, member_count):

@@ -189,7 +189,7 @@ class ActionList(object):
         # Call pre_commit_fixup on all devices, including those we're going to
         # destroy (these are already removed from the tree)
         fixup_devices = devices + [a.device for a in self._actions
-                                                if a.is_destroy and a.is_device]
+                                   if a.is_destroy and a.is_device]
         for device in fixup_devices:
             device.pre_commit_fixup()
 

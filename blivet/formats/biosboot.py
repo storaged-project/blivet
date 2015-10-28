@@ -62,4 +62,3 @@ class BIOSBoot(DeviceFormat):
         return super(BIOSBoot, self).supported and isinstance(platform.platform, platform.X86)
 
 register_device_format(BIOSBoot)
-

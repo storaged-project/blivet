@@ -27,13 +27,13 @@ try:
     # new partition on either disk1 or disk2 with base size 10GiB and growth
     # up to a maximum size of 50GiB
     dev = b.new_partition(size=Size("10MiB"), maxsize=Size("50GiB"),
-                         grow=True, parents=[disk1, disk2])
+                          grow=True, parents=[disk1, disk2])
     b.create_device(dev)
 
     # new partition on disk1 with base size 5GiB and unbounded growth and an
     # ext4 filesystem
     dev = b.new_partition(fmt_type="ext4", size=Size("5GiB"), grow=True,
-                         parents=[disk1])
+                          parents=[disk1])
     b.create_device(dev)
 
     # new partition on any suitable disk with a fixed size of 2GiB formatted

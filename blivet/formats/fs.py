@@ -142,7 +142,7 @@ class FS(DeviceFormat):
                 self.update_size_info()
             except FSError:
                 log.warning("%s filesystem on %s needs repair", self.type,
-                                                                self.device)
+                            self.device)
 
         self._target_size = self._size
 
@@ -214,7 +214,7 @@ class FS(DeviceFormat):
         return label is None or (self._labelfs is not None and self._labelfs.label_format_ok(label))
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
-       doc="this filesystem's label")
+                     doc="this filesystem's label")
 
     def _set_target_size(self, newsize):
         """ Set the target size for this filesystem.
@@ -243,14 +243,14 @@ class FS(DeviceFormat):
         return self._target_size
 
     target_size = property(_get_target_size, _set_target_size,
-                          doc="Target size for this filesystem")
+                           doc="Target size for this filesystem")
 
     def _get_size(self):
         """ Get this filesystem's size. """
         return self.target_size if self.resizable else self._size
 
     size = property(_get_size, doc="This filesystem's size, accounting "
-                                  "for pending changes")
+                    "for pending changes")
 
     def update_size_info(self):
         """ Update this filesystem's current and minimum size (for resize). """
@@ -431,7 +431,7 @@ class FS(DeviceFormat):
         # contains it. To round up would risk quietly setting a target size too
         # large for the device to hold.
         rounded = self.target_size.round_to_nearest(self._resize.unit,
-                                                 rounding=ROUND_DOWN)
+                                                    rounding=ROUND_DOWN)
 
         # 1. target size was between the min size and max size values prior to
         #    rounding (see _set_target_size)
@@ -524,7 +524,7 @@ class FS(DeviceFormat):
         # It is possible to have multiple mountpoints, return the last one
         try:
             return mounts_cache.get_mountpoints(self.device,
-                                              getattr(self, "subvolspec", None))[-1]
+                                                getattr(self, "subvolspec", None))[-1]
         except IndexError:
             return None
 
@@ -783,8 +783,8 @@ class FS(DeviceFormat):
             available under the install root.
         """
         if not self.status or not self.system_mountpoint or \
-            not self.system_mountpoint.startswith(root) or \
-            not self._sync.available:
+                not self.system_mountpoint.startswith(root) or \
+                not self._sync.available:
             return
 
         try:

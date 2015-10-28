@@ -81,4 +81,3 @@ class MultipathMember(DeviceFormat):
         raise MultipathMemberError("destruction of multipath members is non-sense")
 
 register_device_format(MultipathMember)
-

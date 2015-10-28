@@ -436,7 +436,7 @@ class EddMatcher(object):
             'chan': self.edd.channel,
             'dev': self.edd.scsi_id,
             'lun': self.edd.scsi_lun,
-            }
+        }
         path = tmpl0 % args
         pattern = tmpl1 % args
         testdata_log.debug("sysfs glob: %s", pattern[len(fsroot):])
@@ -447,8 +447,8 @@ class EddMatcher(object):
             block_entries = os.listdir(path)
             if len(block_entries) == 1:
                 self.edd.sysfslink = "..%s/%s" % (
-                                path[len(fsroot) + len("/sys"):],
-                                block_entries[0])
+                    path[len(fsroot) + len("/sys"):],
+                    block_entries[0])
                 name = block_entries[0]
         elif len(matching_paths) > 1:
             log.error("edd: Too many devices match for pci dev %s channel %s "
@@ -460,8 +460,8 @@ class EddMatcher(object):
             block_entries = os.listdir(matching_paths[0])
             if len(block_entries) == 1:
                 self.edd.sysfslink = "..%s/%s" % (
-                                matching_paths[0][len(fsroot) + len("/sys"):],
-                                block_entries[0])
+                    matching_paths[0][len(fsroot) + len("/sys"):],
+                    block_entries[0])
                 name = block_entries[0]
         else:
             log.warning("edd: Could not find SCSI device for pci dev %s "
@@ -473,7 +473,7 @@ class EddMatcher(object):
         args = {
             'fsroot': fsroot,
             'pci_dev': self.edd.pci_dev
-            }
+        }
         pattern = "%(fsroot)s/sys/devices/pci0000:00/0000:%(pci_dev)s/virtio*"
         matching_paths = tuple(glob.glob(pattern % args))
         testdata_log.debug("sysfs glob: %s",
@@ -489,8 +489,8 @@ class EddMatcher(object):
                 block_entries = os.listdir(newpath)
             if len(block_entries) == 1:
                 self.edd.sysfslink = "..%s/%s" % (
-                        matching_paths[0][len(fsroot) + len("/sys"):],
-                        block_entries[0])
+                    matching_paths[0][len(fsroot) + len("/sys"):],
+                    block_entries[0])
                 return block_entries[0]
             else:
                 # Virtio SCSI looks like scsi but with a virtio%d/ stuck in
@@ -629,7 +629,7 @@ def get_edd_dict(devices):
             old_edd_number = edd_dict.get(name)
             if old_edd_number:
                 log.info("edd: both edd entries 0x%x and 0x%x seem to map to %s",
-                          old_edd_number, edd_number, name)
+                         old_edd_number, edd_number, name)
                 # this means all the other data can be confused and useless
                 return {}
             edd_dict[name] = edd_number

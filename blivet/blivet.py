@@ -527,9 +527,9 @@ class Blivet(object):
         """
         clear_part_type = kwargs.get("clear_part_type", self.config.clear_part_type)
         clear_part_disks = kwargs.get("clear_part_disks",
-                                    self.config.clear_part_disks)
+                                      self.config.clear_part_disks)
         clear_part_devices = kwargs.get("clear_part_devices",
-                                      self.config.clear_part_devices)
+                                        self.config.clear_part_devices)
 
         for disk in device.disks:
             # this will not include disks with hidden formats like multipath
@@ -689,7 +689,7 @@ class Blivet(object):
 
         # create a new disklabel on the disk
         new_label = get_format("disklabel", device=disk.path,
-                             label_type=label_type)
+                               label_type=label_type)
         create_action = ActionCreateFormat(disk, fmt=new_label)
         self.devicetree.register_action(create_action)
 
@@ -737,7 +737,7 @@ class Blivet(object):
         free = {}
         for disk in disks:
             should_clear = self.should_clear(disk, clear_part_type=clear_part_type,
-                                            clear_part_disks=[disk.name])
+                                             clear_part_disks=[disk.name])
             if should_clear:
                 free[disk.name] = (disk.size, Size(0))
                 continue
@@ -751,8 +751,8 @@ class Blivet(object):
                     # operations to translate free filesystem space into free disk
                     # space
                     should_clear = self.should_clear(partition,
-                                                    clear_part_type=clear_part_type,
-                                                    clear_part_disks=[disk.name])
+                                                     clear_part_type=clear_part_type,
+                                                     clear_part_disks=[disk.name])
                     if should_clear:
                         disk_free += partition.size
                     elif hasattr(partition.format, "free"):
@@ -796,9 +796,9 @@ class Blivet(object):
         """
         if 'fmt_type' in kwargs:
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
-                                         mountpoint=kwargs.pop("mountpoint",
-                                                               None),
-                                         **kwargs.pop("fmt_args", {}))
+                                       mountpoint=kwargs.pop("mountpoint",
+                                                             None),
+                                       **kwargs.pop("fmt_args", {}))
 
         if 'name' in kwargs:
             name = kwargs.pop("name")
@@ -811,7 +811,7 @@ class Blivet(object):
                 mountpoint = getattr(fmt, "mountpoint", None)
 
                 kwargs["weight"] = _platform.weight(mountpoint=mountpoint,
-                                                        fstype=fmt.type)
+                                                    fstype=fmt.type)
 
         return PartitionDevice(name, *args, **kwargs)
 
@@ -835,23 +835,23 @@ class Blivet(object):
         """
         if 'fmt_type' in kwargs:
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
-                                         mountpoint=kwargs.pop("mountpoint",
-                                                               None),
-                                         **kwargs.pop("fmt_args", {}))
+                                       mountpoint=kwargs.pop("mountpoint",
+                                                             None),
+                                       **kwargs.pop("fmt_args", {}))
 
         name = kwargs.pop("name", None)
         if name:
             safe_name = self.safe_device_name(name)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
-                                safe_name, name)
+                            safe_name, name)
                 name = safe_name
         else:
             swap = getattr(kwargs.get("fmt"), "type", None) == "swap"
             mountpoint = getattr(kwargs.get("fmt"), "mountpoint", None)
             name = self.suggest_device_name(prefix=short_product_name,
-                                          swap=swap,
-                                          mountpoint=mountpoint)
+                                            swap=swap,
+                                            mountpoint=mountpoint)
 
         return MDRaidArrayDevice(name, *args, **kwargs)
 
@@ -877,7 +877,7 @@ class Blivet(object):
             safe_name = self.safe_device_name(name)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
-                                safe_name, name)
+                            safe_name, name)
                 name = safe_name
         else:
             hostname = ""
@@ -930,8 +930,8 @@ class Blivet(object):
         mountpoint = kwargs.pop("mountpoint", None)
         if 'fmt_type' in kwargs:
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
-                                         mountpoint=mountpoint,
-                                         **kwargs.pop("fmt_args", {}))
+                                       mountpoint=mountpoint,
+                                       **kwargs.pop("fmt_args", {}))
 
         name = kwargs.pop("name", None)
         if name:
@@ -942,7 +942,7 @@ class Blivet(object):
             if safe_name != full_name:
                 new_name = safe_name[len(safe_vg_name) + 1:]
                 log.warning("using '%s' instead of specified name '%s'",
-                                new_name, name)
+                            new_name, name)
                 name = new_name
         else:
             if kwargs.get("fmt") and kwargs["fmt"].type == "swap":
@@ -955,9 +955,9 @@ class Blivet(object):
                 prefix = "pool"
 
             name = self.suggest_device_name(parent=vg,
-                                          swap=swap,
-                                          mountpoint=mountpoint,
-                                          prefix=prefix)
+                                            swap=swap,
+                                            mountpoint=mountpoint,
+                                            prefix=prefix)
 
         if "%s-%s" % (vg.name, name) in self.names:
             raise ValueError("name already in use")
@@ -1268,7 +1268,7 @@ class Blivet(object):
         return name
 
     def suggest_device_name(self, parent=None, swap=None,
-                                  mountpoint=None, prefix=""):
+                            mountpoint=None, prefix=""):
         """ Return a suitable, unused name for a new device.
 
             :keyword parent: the parent device
@@ -1411,7 +1411,7 @@ class Blivet(object):
 
     def mount_filesystems(self, read_only=None, skip_root=False):
         self.fsset.mount_filesystems(root_path=get_sysroot(),
-                                    read_only=read_only, skip_root=skip_root)
+                                     read_only=read_only, skip_root=skip_root)
 
     def umount_filesystems(self, swapoff=True):
         self.fsset.umount_filesystems(swapoff=swapoff)
@@ -1514,7 +1514,7 @@ class Blivet(object):
             raise ValueError("unrecognized value %s for new default fs type" % newtype)
 
         if (not fmt.mountable or not fmt.formattable or not fmt.supported or
-            not fmt.linux_native):
+                not fmt.linux_native):
             log.debug("invalid default fstype: %r", fmt)
             raise ValueError("new value %s is not valid as a default fs type" % fmt)
 
@@ -1694,7 +1694,7 @@ class Blivet(object):
         # go through and re-get parted_partitions from the disks since they
         # don't get deep-copied
         hidden_partitions = [d for d in new.devicetree._hidden
-                                if isinstance(d, PartitionDevice)]
+                             if isinstance(d, PartitionDevice)]
         for partition in new.partitions + hidden_partitions:
             if not partition._parted_partition:
                 continue
@@ -1774,10 +1774,10 @@ class Blivet(object):
             self.ksdata.clearpart.devices = []
             self.ksdata.clearpart.drives = []
             fresh_disks = [d.name for d in self.disks if d.partitioned and
-                                                         not d.format.exists]
+                           not d.format.exists]
 
             destroy_actions = self.devicetree.find_actions(action_type="destroy",
-                                                          object_type="device")
+                                                           object_type="device")
 
             cleared_partitions = []
             partial = False
@@ -1809,15 +1809,15 @@ class Blivet(object):
 
         # custom storage
         ks_map = {PartitionDevice: ("PartData", "partition"),
-                 TmpFSDevice: ("PartData", "partition"),
-                 LVMLogicalVolumeDevice: ("LogVolData", "logvol"),
-                 LVMVolumeGroupDevice: ("VolGroupData", "volgroup"),
-                 MDRaidArrayDevice: ("RaidData", "raid"),
-                 BTRFSDevice: ("BTRFSData", "btrfs")}
+                  TmpFSDevice: ("PartData", "partition"),
+                  LVMLogicalVolumeDevice: ("LogVolData", "logvol"),
+                  LVMVolumeGroupDevice: ("VolGroupData", "volgroup"),
+                  MDRaidArrayDevice: ("RaidData", "raid"),
+                  BTRFSDevice: ("BTRFSData", "btrfs")}
 
         # make a list of ancestors of all used devices
         devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
-                                for a in d.ancestors))
+                           for a in d.ancestors))
 
         # devices which share information with their distinct raw device
         complementary_devices = [d for d in devices if d.raw_device is not d]

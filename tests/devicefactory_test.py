@@ -66,7 +66,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
     def _factory_device(self, *args, **kwargs):
         """ Run the device factory and return the device it produces. """
         factory = devicefactory.get_device_factory(self.b,
-                                    *args, **kwargs)
+                                                   *args, **kwargs)
         factory.configure()
         return factory.device
 
@@ -230,7 +230,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
         # PartitionFactory
         size = self.b.disks[0].size - Size("4 MiB")
         device = self._factory_device(self.device_type, size,
-                                     disks=self.b.disks, **kwargs)
+                                      disks=self.b.disks, **kwargs)
         self.assertAlmostEqual(device.size, size, delta=self._get_size_delta())
 
         factory.size = None
@@ -418,7 +418,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
 
     def _validate_factory_device(self, *args, **kwargs):
         super(LVMThinPFactoryTestCase, self)._validate_factory_device(*args,
-                                                                    **kwargs)
+                                                                      **kwargs)
         device = args[0]
 
         if kwargs.get("encrypted", False):
@@ -517,20 +517,20 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
 
     def test_mdfactory(self):
         factory1 = devicefactory.get_device_factory(self.b,
-           devicefactory.DEVICE_TYPE_MD,
-           Size("1 GiB"),
-           raid_level=raid.RAID1)
+                                                    devicefactory.DEVICE_TYPE_MD,
+                                                    Size("1 GiB"),
+                                                    raid_level=raid.RAID1)
 
         factory2 = devicefactory.get_device_factory(self.b,
-           devicefactory.DEVICE_TYPE_MD,
-           Size("1 GiB"),
-           raid_level=0)
+                                                    devicefactory.DEVICE_TYPE_MD,
+                                                    Size("1 GiB"),
+                                                    raid_level=0)
 
         with self.assertRaisesRegex(devicefactory.DeviceFactoryError, "must have some RAID level"):
             devicefactory.get_device_factory(
-               self.b,
-               devicefactory.DEVICE_TYPE_MD,
-               Size("1 GiB"))
+                self.b,
+                devicefactory.DEVICE_TYPE_MD,
+                Size("1 GiB"))
 
         with self.assertRaisesRegex(RaidError, "requires at least"):
             factory1._get_device_space()
@@ -543,8 +543,8 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         self.assertIsNone(factory1.get_container())
 
         parents = [
-           DiskDevice("name1", fmt=get_format("mdmember")),
-           DiskDevice("name2", fmt=get_format("mdmember"))
+            DiskDevice("name1", fmt=get_format("mdmember")),
+            DiskDevice("name2", fmt=get_format("mdmember"))
         ]
         self.assertIsNotNone(factory1._get_new_device(parents=parents))
 

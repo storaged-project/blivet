@@ -166,7 +166,7 @@ def get_mount_device(mountpoint):
         loop_name = os.path.basename(mount_device)
         mount_device = blockdev.loop.get_backing_file(loop_name)
         log.debug("found backing file %s for loop device %s", mount_device,
-                                                              loop_name)
+                  loop_name)
 
     if mount_device:
         log.debug("%s is mounted on %s", mount_device, mountpoint)
@@ -260,7 +260,7 @@ def get_cow_sysfs_path(dev_path, dev_sysfsPath):
     cow_path = dev_path + "-cow"
     if not os.path.islink(cow_path):
         raise RuntimeError("get_cow_sysfs_path: Could not find cow device for" %
-                            (dev_path))
+                           (dev_path))
 
     # dev path for cow devices is actually a link to a dm device (e.g. /dev/dm-X)
     # we need the 'dm-X' name for sysfs_path (e.g. /sys/devices/virtual/block/dm-X)

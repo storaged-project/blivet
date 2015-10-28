@@ -46,8 +46,8 @@ class DMDevice(StorageDevice):
     _type = "dm"
     _dev_dir = "/dev/mapper"
     _external_dependencies = [
-       availability.KPARTX_APP,
-       availability.BLOCKDEV_DM_PLUGIN
+        availability.KPARTX_APP,
+        availability.BLOCKDEV_DM_PLUGIN
     ]
 
     def __init__(self, name, fmt=None, size=None, dm_uuid=None, uuid=None,
@@ -78,8 +78,8 @@ class DMDevice(StorageDevice):
                 stored in device metadata on disk.
         """
         super(DMDevice, self).__init__(name, fmt=fmt, size=size,
-                               exists=exists, uuid=uuid,
-                               parents=parents, sysfs_path=sysfs_path)
+                                       exists=exists, uuid=uuid,
+                                       parents=parents, sysfs_path=sysfs_path)
         self.target = target
         self.dm_uuid = dm_uuid
 

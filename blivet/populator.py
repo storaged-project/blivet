@@ -170,8 +170,8 @@ class Populator(object):
             return False
 
         if udev.device_get_md_container(info) and \
-               udev.device_is_md(info) and \
-               udev.device_get_md_name(info):
+                udev.device_is_md(info) and \
+                udev.device_get_md_name(info):
             md_name = udev.device_get_md_name(info)
             # mdadm may have appended _<digit>+ if the current hostname
             # does not match the one in the array metadata
@@ -310,7 +310,7 @@ class Populator(object):
         # if this is a luks device whose map name is not what we expect,
         # fix up the map name and see if that sorts us out
         handle_luks = (udev.device_is_dm_luks(info) and
-                        (self._cleanup or not flags.installer_mode))
+                       (self._cleanup or not flags.installer_mode))
         if device is None and handle_luks and slave_devices:
             slave_dev = slave_devices[0]
             slave_dev.format.map_name = name
@@ -528,7 +528,7 @@ class Populator(object):
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
                     log.error("failed to find md container %s at %s",
-                                parent_name, container_sysfs)
+                              parent_name, container_sysfs)
                     return
 
                 self.add_udev_device(container_info)
@@ -567,9 +567,9 @@ class Populator(object):
             log.info("%s is a disk", name)
 
         device = disk_type(name,
-                          major=udev.device_get_major(info),
-                          minor=udev.device_get_minor(info),
-                          sysfs_path=sysfs_path, **kwargs)
+                           major=udev.device_get_major(info),
+                           minor=udev.device_get_minor(info),
+                           sysfs_path=sysfs_path, **kwargs)
 
         if disk_type == DASDDevice:
             self.dasd.append(device)
@@ -631,8 +631,8 @@ class Populator(object):
         # make sure this device was not scheduled for removal and also has not
         # been hidden
         removed = [a.device for a in self.devicetree.actions.find(
-                                                        action_type="destroy",
-                                                        object_type="device")]
+            action_type="destroy",
+            object_type="device")]
         for ignored in removed + self.devicetree._hidden:
             if (sysfs_path and ignored.sysfs_path == sysfs_path) or \
                (uuid and uuid in (ignored.uuid, ignored.format.uuid)):
@@ -706,7 +706,7 @@ class Populator(object):
             log.info("%s is a loop device", name)
             device = self.add_udev_loop_device(info)
         elif udev.device_is_dm_mpath(info) and \
-             not udev.device_is_dm_partition(info):
+                not udev.device_is_dm_partition(info):
             log.info("%s is a multipath device", name)
             device = self.add_udev_multipath_device(info)
         elif udev.device_is_dm_lvm(info):
@@ -792,9 +792,9 @@ class Populator(object):
         if not device.partitionable:
             try:
                 fmt = formats.get_format("disklabel",
-                                        device=device.path,
-                                        label_type=disklabel_type,
-                                        exists=True)
+                                         device=device.path,
+                                         label_type=disklabel_type,
+                                         exists=True)
             except InvalidDiskLabelError:
                 log.warning("disklabel detected but not usable on %s",
                             device.name)
@@ -804,8 +804,8 @@ class Populator(object):
 
         try:
             fmt = formats.get_format("disklabel",
-                                    device=device.path,
-                                    exists=True)
+                                     device=device.path,
+                                     exists=True)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", device.name)
             if disklabel_type == "gpt":
@@ -830,7 +830,7 @@ class Populator(object):
                 device.format.passphrase = passphrase
             elif device.format.uuid in self.__luks_devs:
                 log.info("skipping previously-skipped luks device %s",
-                            device.name)
+                         device.name)
             elif self._cleanup or flags.testing:
                 # if we're only building the devicetree so that we can
                 # tear down all of the devices we don't need a passphrase
@@ -876,7 +876,7 @@ class Populator(object):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
         lv_info = dict((k, v) for (k, v) in iter(self.devicetree.lv_info.items())
-                                if v.vg_name == vg_name)
+                       if v.vg_name == vg_name)
 
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
 
@@ -939,7 +939,7 @@ class Populator(object):
                 origin_name = blockdev.lvm.lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin",
-                                vg_name, lv_name)
+                              vg_name, lv_name)
                     return
 
                 if origin_name.endswith("_vorigin]"):
@@ -948,7 +948,7 @@ class Populator(object):
                 else:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
                     add_required_lv(origin_device_name,
-                                  "failed to locate origin lv")
+                                    "failed to locate origin lv")
                     origin = self.get_device_by_name(origin_device_name)
 
                 lv_kwargs["origin"] = origin
@@ -1211,12 +1211,12 @@ class Populator(object):
 
             try:
                 md_array = array_type(
-                   md_name,
-                   level=md_level,
-                   member_devices=md_devices,
-                   uuid=md_uuid,
-                   metadata_version=md_metadata,
-                   exists=True
+                    md_name,
+                    level=md_level,
+                    member_devices=md_devices,
+                    uuid=md_uuid,
+                    metadata_version=md_metadata,
+                    exists=True
                 )
             except (ValueError, DeviceError) as e:
                 log.error("failed to create md array: %s", e)
@@ -1326,11 +1326,11 @@ class Populator(object):
                     raise DeviceTreeError("could not find parent for subvol")
 
                 fmt = formats.get_format("btrfs",
-                                        device=btrfs_dev.path,
-                                        exists=True,
-                                        vol_uuid=btrfs_dev.format.vol_uuid,
-                                        subvolspec=vol_path,
-                                        mountopts="subvol=%s" % vol_path)
+                                         device=btrfs_dev.path,
+                                         exists=True,
+                                         vol_uuid=btrfs_dev.format.vol_uuid,
+                                         subvolspec=vol_path,
+                                         mountopts="subvol=%s" % vol_path)
                 if vol_id in snapshot_ids:
                     device_class = BTRFSSnapShotDevice
                 else:
@@ -1373,7 +1373,7 @@ class Populator(object):
             self.handle_udev_disk_label_format(info, device)
             if device.partitioned or self.is_ignored(info) or \
                (not device.partitionable and
-                device.format.type == "disklabel"):
+                    device.format.type == "disklabel"):
                 # If the device has a disklabel, or the user chose not to
                 # create one, we are finished with this device. Otherwise
                 # it must have some non-disklabel formatting, in which case
@@ -1464,7 +1464,7 @@ class Populator(object):
                 log.info("got format: %s", device.format)
         except FSError:
             log.warning("type '%s' on '%s' invalid, assuming no format",
-                      format_designator, name)
+                        format_designator, name)
             device.format = formats.DeviceFormat()
             return
 
@@ -1636,7 +1636,7 @@ class Populator(object):
 
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
-                    self.ignored_disks, self.exclusive_disks)
+                 self.ignored_disks, self.exclusive_disks)
 
         self.devicetree.drop_lvm_cache()
 

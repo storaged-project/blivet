@@ -25,7 +25,7 @@ def can_resize(an_fs):
 class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
 
     _fs_class = abc.abstractproperty(
-       doc="The class of the filesystem being tested on.")
+        doc="The class of the filesystem being tested on.")
 
     _DEVICE_SIZE = Size("100 MiB")
 

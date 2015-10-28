@@ -65,7 +65,7 @@ LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 # argument.  For every time we call an lvm_cc (lvm compose config) funciton
 # we regenerate the config_args with all global info.
 config_args_data = {"filterRejects": [],    # regular expressions to reject.
-                     "filterAccepts": []}   # regexp to accept
+                    "filterAccepts": []}   # regexp to accept
 
 
 def _set_global_config():

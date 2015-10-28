@@ -58,8 +58,8 @@ class FSMount(task.BasicApplication, fstask.FSTask):
     @property
     def _can_mount(self):
         return (self.mount_type in fslib.kernel_filesystems) or \
-           (os.access("/sbin/mount.%s" % (self.mount_type,), os.X_OK)) or \
-           self._has_driver
+            (os.access("/sbin/mount.%s" % (self.mount_type,), os.X_OK)) or \
+            self._has_driver
 
     @property
     def _availability_errors(self):

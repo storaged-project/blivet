@@ -111,4 +111,3 @@ if not flags.noiswmd and flags.dmraid:
     MDRaidMember._udev_types.append("isw_raid_member")
 
 register_device_format(MDRaidMember)
-

@@ -110,9 +110,9 @@ class NTFSResize(FSResize):
     @property
     def args(self):
         return [
-           "-ff",  # need at least two 'f's to fully suppress interaction
-           "-s", self.size_spec(),
-           self.fs.device
+            "-ff",  # need at least two 'f's to fully suppress interaction
+            "-s", self.size_spec(),
+            self.fs.device
         ]
 
 

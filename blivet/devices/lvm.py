@@ -125,8 +125,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
             self._complete = True
 
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
-                                            uuid=uuid, size=size,
-                                            exists=exists, sysfs_path=sysfs_path)
+                                                   uuid=uuid, size=size,
+                                                   exists=exists, sysfs_path=sysfs_path)
 
         self.free = util.numeric_type(free)
         self.pe_size = util.numeric_type(pe_size)
@@ -315,7 +315,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         super(LVMVolumeGroupDevice, self)._add_parent(member)
 
         if (self.exists and member.format.exists and
-            len(self.parents) + 1 == self.pv_count):
+                len(self.parents) + 1 == self.pv_count):
             self._complete = True
 
     def _remove_parent(self, member):
@@ -799,7 +799,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         if self.size > can_use:
             msg = ("%s LV's size (%s) exceeds the VG's usable free space (%s),"
-                  "shrinking the LV") % (self.name, self.size, can_use)
+                   "shrinking the LV") % (self.name, self.size, can_use)
             log.warning(msg)
             self.size = can_use
 
@@ -865,7 +865,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         # Thin snapshots do not need to be removed prior to removal of the
         # origin, but the old snapshots do.
         non_thin_snapshots = any(s for s in self.snapshots
-                                    if not isinstance(s, LVMThinSnapShotDevice))
+                                 if not isinstance(s, LVMThinSnapShotDevice))
         return (super(LVMLogicalVolumeDevice, self).isleaf and
                 not non_thin_snapshots)
 
@@ -1045,8 +1045,8 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
         # and some parameters set to values reflecting the fact that this is an
         # internal LV
         super(LVMInternalLogicalVolumeDevice, self).__init__(name, parents=None,
-              size=size, uuid=uuid, seg_type=seg_type, fmt=None, exists=exists,
-              sysfs_path=sysfs_path, grow=None, maxsize=None, percent=None)
+                                                             size=size, uuid=uuid, seg_type=seg_type, fmt=None, exists=exists,
+                                                             sysfs_path=sysfs_path, grow=None, maxsize=None, percent=None)
 
         if parent_lv:
             self._parent_lv.add_internal_lv(self)
@@ -1200,7 +1200,7 @@ class LVMMetadataLogicalVolumeDevice(LVMInternalLogicalVolumeDevice):
     # (only) thin pool metadata LVs can be resized directly
     def resize(self):
         if ((self._parent_lv and not isinstance(self._parent_lv, LVMThinPoolDevice)) or
-            re.search(r'_[rc]meta', self.lvname)):
+                re.search(r'_[rc]meta', self.lvname)):
             raise errors.DeviceError("RAID and cache pool metadata LVs cannot be resized directly")
 
         # skip the generic LVMInternalLogicalVolumeDevice class and call the

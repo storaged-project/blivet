@@ -418,8 +418,8 @@ class ActionDestroyDevice(DeviceAction):
             if self.id >= action.id and not self.device.exists:
                 rc = True
             elif self.id > action.id and \
-                 self.device.exists and \
-                 not (action.is_destroy and action.is_format):
+                    self.device.exists and \
+                    not (action.is_destroy and action.is_format):
                 rc = True
             elif action.is_add and (action.device == self.device):
                 rc = True
@@ -893,8 +893,8 @@ class ActionAddMember(DeviceAction):
         """
         retval = False
         if (action.is_remove and
-            action.device == self.device and
-            action.container == self.container):
+                action.device == self.device and
+                action.container == self.container):
             retval = True
         elif (action.is_add and
               action.device == self.device and
@@ -945,7 +945,7 @@ class ActionRemoveMember(DeviceAction):
         """
         retval = False
         if ((action.is_shrink or action.is_destroy) and
-            action.device.container == self.container):
+                action.device.container == self.container):
             retval = True
         elif action.is_add and action.container == self.container:
             retval = True
@@ -963,8 +963,8 @@ class ActionRemoveMember(DeviceAction):
         """
         retval = False
         if (action.is_add and
-            action.device == self.device and
-            action.container == self.container):
+                action.device == self.device and
+                action.container == self.container):
             retval = True
         elif (action.is_remove and
               action.device == self.device and

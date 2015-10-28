@@ -232,8 +232,8 @@ class StorageDevice(Device):
         self._target_size = newsize
 
     target_size = property(lambda s: s._get_target_size(),
-                          lambda s, v: s._set_target_size(v),
-                          doc="Target size of this device")
+                           lambda s, v: s._set_target_size(v),
+                           doc="Target size of this device")
 
     def __repr__(self):
         s = Device.__repr__(self)
@@ -834,7 +834,7 @@ class StorageDevice(Device):
             device type and of all superclass device types.
         """
         return set(
-           d for p in cls.__mro__ if issubclass(p, StorageDevice) for d in p._external_dependencies
+            d for p in cls.__mro__ if issubclass(p, StorageDevice) for d in p._external_dependencies
         )
 
     @classmethod

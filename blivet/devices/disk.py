@@ -147,9 +147,9 @@ class DiskFile(DiskDevice):
         self._dev_dir = os.path.dirname(name)
 
         super(DiskFile, self).__init__(_name, fmt=fmt, size=size,
-                            major=major, minor=minor, sysfs_path=sysfs_path,
-                            parents=parents, serial=serial, vendor=vendor,
-                            model=model, bus=bus, exists=exists)
+                                       major=major, minor=minor, sysfs_path=sysfs_path,
+                                       parents=parents, serial=serial, vendor=vendor,
+                                       model=model, bus=bus, exists=exists)
 
     #
     # Regular files do not have sysfs entries.
@@ -341,7 +341,7 @@ class MultipathDevice(DMDevice):
         rc = util.run_program(["multipath", self.name])
         if rc:
             raise errors.MPathError("multipath activation failed for '%s'" %
-                            self.name, hardware_fault=True)
+                                    self.name, hardware_fault=True)
 
     def _post_setup(self):
         StorageDevice._post_setup(self)
@@ -400,10 +400,10 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             NetworkStorageDevice.__init__(self, host_address=self.node.address,
                                           nic=self.nic)
             log.debug("created new iscsi disk %s %s:%d via %s:%s", self.node.name,
-                                                                   self.node.address,
-                                                                   self.node.port,
-                                                                   self.node.iface,
-                                                                   self.nic)
+                      self.node.address,
+                      self.node.port,
+                      self.node.iface,
+                      self.nic)
 
     def dracut_setup_args(self):
         if self.ibft:

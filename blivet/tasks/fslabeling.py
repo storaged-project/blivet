@@ -31,7 +31,7 @@ class FSLabeling(object):
     """
 
     default_label = abc.abstractproperty(
-       doc="Default label set on this filesystem at creation.")
+        doc="Default label set on this filesystem at creation.")
 
     @abc.abstractmethod
     def label_format_ok(self, label):

@@ -229,9 +229,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         if not self.exists or not self.media_present:
             try:
                 size = self.level.get_size([d.size for d in self.members],
-                    self.member_devices,
-                    self.chunk_size,
-                    self.get_superblock_size)
+                                           self.member_devices,
+                                           self.chunk_size,
+                                           self.get_superblock_size)
             except (blockdev.MDRaidError, errors.RaidError) as e:
                 log.info("could not calculate size of device %s for raid level %s: %s", self.name, self.level, e)
                 size = Size(0)
@@ -305,8 +305,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self._member_devices = number
 
     member_devices = property(lambda d: d._get_member_devices(),
-                             lambda d, m: d._set_member_devices(m),
-                             doc="number of member devices")
+                              lambda d, m: d._set_member_devices(m),
+                              doc="number of member devices")
 
     def _get_spares(self):
         spares = 0

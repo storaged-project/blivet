@@ -199,12 +199,12 @@ class DeviceTree(object):
         # don't include "req%d" partition names
         if ((newdev.type != "partition" or
              not newdev.name.startswith("req")) and
-            newdev.type != "btrfs volume" and
-            newdev.name not in self.names):
+                newdev.type != "btrfs volume" and
+                newdev.name not in self.names):
             self.names.append(newdev.name)
         log.info("added %s %s (id %d) to device tree", newdev.type,
-                                                       newdev.name,
-                                                       newdev.id)
+                 newdev.name,
+                 newdev.id)
 
     def _remove_device(self, dev, force=None, modparent=True):
         """ Remove a device from the tree.
@@ -243,8 +243,8 @@ class DeviceTree(object):
         if dev.name in self.names and getattr(dev, "complete", True):
             self.names.remove(dev.name)
         log.info("removed %s %s (id %d) from device tree", dev.type,
-                                                           dev.name,
-                                                           dev.id)
+                 dev.name,
+                 dev.id)
 
     def recursive_remove(self, device, actions=True):
         """ Remove a device after removing its dependent devices.
@@ -351,7 +351,7 @@ class DeviceTree(object):
         log.info("canceled action %s", action)
 
     def find_actions(self, device=None, action_type=None, object_type=None,
-                    path=None, devid=None):
+                     path=None, devid=None):
         """ Find all actions that match all specified parameters.
 
             A value of None for any of the keyword arguments indicates that any
@@ -424,7 +424,7 @@ class DeviceTree(object):
 
         """
         return set(d for dep in self.get_dependent_devices(disk, hidden=True)
-                        for d in dep.disks)
+                   for d in dep.disks)
 
     def hide(self, device):
         """ Hide the specified device.
@@ -471,13 +471,13 @@ class DeviceTree(object):
             # aggregate/container device (eg: lvm volume group).
             disks = [device]
             related_actions = [a for a in self._actions
-                                    if a.device.depends_on(device)]
+                               if a.device.depends_on(device)]
             for related_device in (a.device for a in related_actions):
                 disks.extend(related_device.disks)
 
             disks = set(disks)
             cancel = [a for a in self._actions
-                            if set(a.device.disks).intersection(disks)]
+                      if set(a.device.disks).intersection(disks)]
             for action in reversed(cancel):
                 self.cancel_action(action)
 
@@ -519,8 +519,8 @@ class DeviceTree(object):
                not any(parent in self._hidden for parent in hidden.parents):
 
                 log.info("unhiding device %s %s (id %d)", hidden.type,
-                                                          hidden.name,
-                                                          hidden.id)
+                         hidden.name,
+                         hidden.id)
                 self._hidden.remove(hidden)
                 self._devices.append(hidden)
                 hidden.add_hook(new=False)
@@ -747,8 +747,8 @@ class DeviceTree(object):
         if name:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
             result = next((d for d in devices if d.name == name or
-               (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
-               None)
+                           (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
+                          None)
         log_method_return(self, result)
         return result
 
@@ -773,8 +773,8 @@ class DeviceTree(object):
             # the end. So that the search can prefer leaves to interior nodes
             # the list that is searched is the reverse of the devices list.
             result = next((d for d in reversed(list(devices)) if d.path == path or
-               (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
-               None)
+                           (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
+                          None)
 
         log_method_return(self, result)
         return result
@@ -925,14 +925,14 @@ class DeviceTree(object):
             # device-by-uuid
             uuid = devspec.partition("=")[2]
             if ((uuid.startswith('"') and uuid.endswith('"')) or
-                (uuid.startswith("'") and uuid.endswith("'"))):
+                    (uuid.startswith("'") and uuid.endswith("'"))):
                 uuid = uuid[1:-1]
             device = self.uuids.get(uuid)
         elif devspec.startswith("LABEL="):
             # device-by-label
             label = devspec.partition("=")[2]
             if ((label.startswith('"') and label.endswith('"')) or
-                (label.startswith("'") and label.endswith("'"))):
+                    (label.startswith("'") and label.endswith("'"))):
                 label = label[1:-1]
             device = self.labels.get(label)
         elif re.match(r'(0x)?[A-Fa-f0-9]{2}(p\d+)?$', devspec):
@@ -1067,7 +1067,7 @@ class DeviceTree(object):
                     continue
 
                 log.info("found nodev %s filesystem mounted at %s",
-                            fstype, mountpoint)
+                         fstype, mountpoint)
                 # nodev filesystems require some special handling.
                 # For now, a lot of this is based on the idea that it's a losing
                 # battle to require the presence of an FS class for every type

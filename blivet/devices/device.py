@@ -97,8 +97,8 @@ class Device(util.ObjectID):
             For these parted objects, we just do a shallow copy.
         """
         return util.variable_copy(self, memo,
-           omit=('node',),
-           shallow=('_parted_partition',))
+                                  omit=('node',),
+                                  shallow=('_parted_partition',))
 
     def __repr__(self):
         s = ("%(type)s instance (%(id)s) --\n"
@@ -163,7 +163,7 @@ class Device(util.ObjectID):
     @property
     def dict(self):
         d = {"type": self.type, "name": self.name,
-              "parents": [p.name for p in self.parents]}
+             "parents": [p.name for p in self.parents]}
         return d
 
     def remove_child(self):

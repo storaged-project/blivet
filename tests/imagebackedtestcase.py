@@ -32,7 +32,7 @@ class ImageBackedTestCase(unittest.TestCase):
     """ Whether or not to create a disklabel on the disks. """
 
     disks = {"disk1": Size("2 GiB"),
-              "disk2": Size("2 GiB")}
+             "disk2": Size("2 GiB")}
     """ The names and sizes of the disk images to create/use. """
 
     def set_up_disks(self):

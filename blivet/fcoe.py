@@ -121,15 +121,15 @@ class fcoe(object):
             self._start_lldpad()
             util.run_program(["dcbtool", "sc", nic, "dcb", "on"])
             util.run_program(["dcbtool", "sc", nic, "app:fcoe",
-                                                "e:1", "a:1", "w:1"])
+                              "e:1", "a:1", "w:1"])
             rc, out = util.run_program_and_capture_output(["fipvlan", "-c", "-s", "-f",
-                                               "-fcoe", nic], stderr_to_stdout=True)
+                                                           "-fcoe", nic], stderr_to_stdout=True)
         else:
             if auto_vlan:
                 # certain network configrations require the VLAN layer module:
                 util.run_program(["modprobe", "8021q"])
                 rc, out = util.run_program_and_capture_output(["fipvlan", '-c', '-s', '-f',
-                                                   "-fcoe", nic], stderr_to_stdout=True)
+                                                               "-fcoe", nic], stderr_to_stdout=True)
             else:
                 f = open("/sys/module/libfcoe/parameters/create", "w")
                 f.write(nic)
@@ -153,7 +153,7 @@ class fcoe(object):
 
         for nic, dcb, auto_vlan in self.nics:
             fd = util.eintr_retry_call(os.open, root + "/etc/fcoe/cfg-" + nic,
-                                                os.O_RDWR | os.O_CREAT)
+                                       os.O_RDWR | os.O_CREAT)
             config = '# Created by anaconda\n'
             config += '# Enable/Disable FCoE service at the Ethernet port\n'
             config += 'FCOE_ENABLE="yes"\n'
