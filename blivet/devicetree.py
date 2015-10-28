@@ -91,7 +91,8 @@ class DeviceTree(object):
         """ Reset the instance to its initial state. """
         # internal data members
         self._devices = []
-        self._actions = ActionList()
+        self._actions = ActionList(addfunc=self._register_action,
+                                   removefunc=self._cancel_action)
 
         # a list of all device names we encounter
         self.names = []
@@ -251,9 +252,9 @@ class DeviceTree(object):
                 if actions:
                     if leaf.format.exists and not leaf.protected and \
                        not leaf.format_immutable:
-                        self.register_action(ActionDestroyFormat(leaf))
+                        self.actions.add(ActionDestroyFormat(leaf))
 
-                    self.register_action(ActionDestroyDevice(leaf))
+                    self.actions.add(ActionDestroyDevice(leaf))
                 else:
                     if not leaf.format_immutable:
                         leaf.format = None
@@ -263,13 +264,13 @@ class DeviceTree(object):
 
         if not device.format_immutable:
             if actions:
-                self.register_action(ActionDestroyFormat(device))
+                self.actions.add(ActionDestroyFormat(device))
             else:
                 device.format = None
 
         if not device.is_disk:
             if actions:
-                self.register_action(ActionDestroyDevice(device))
+                self.actions.add(ActionDestroyDevice(device))
             else:
                 self._remove_device(device)
 
@@ -280,7 +281,7 @@ class DeviceTree(object):
     def actions(self):
         return self._actions
 
-    def register_action(self, action):
+    def _register_action(self, action):
         """ Register an action to be performed at a later time.
 
             :param action: the action
@@ -305,12 +306,7 @@ class DeviceTree(object):
                action.device.format.mountpoint in self.filesystems:
                 raise DeviceTreeError("mountpoint already in use")
 
-        # apply the action before adding it in case apply raises an exception
-        action.apply()
-        log.info("registered action: %s", action)
-        self._actions.append(action)
-
-    def cancel_action(self, action):
+    def _cancel_action(self, action):
         """ Cancel a registered action.
 
             :param action: the action
@@ -328,48 +324,6 @@ class DeviceTree(object):
         elif action.is_destroy and action.is_device:
             # add the device back into the tree
             self._add_device(action.device, new=False)
-
-        action.cancel()
-        self._actions.remove(action)
-        log.info("canceled action %s", action)
-
-    def find_actions(self, device=None, action_type=None, object_type=None,
-                     path=None, devid=None):
-        """ Find all actions that match all specified parameters.
-
-            A value of None for any of the keyword arguments indicates that any
-            value is acceptable for that field.
-
-            :keyword device: device to match
-            :type device: :class:`~.devices.StorageDevice` or None
-            :keyword action_type: action type to match (eg: "create", "destroy")
-            :type action_type: str or None
-            :keyword object_type: operand type to match (eg: "device" or "format")
-            :type object_type: str or None
-            :keyword path: device path to match
-            :type path: str or None
-            :keyword devid: device id to match
-            :type devid: int or None
-            :returns: a list of matching actions
-            :rtype: list of :class:`~.deviceaction.DeviceAction`
-
-        """
-        return self._actions.find(device=device,
-                                  action_type=action_type,
-                                  object_type=object_type,
-                                  path=path,
-                                  devid=devid)
-
-    def prune_actions(self):
-        return self._actions.prune()
-
-    def sort_actions(self):
-        return self._actions.sort()
-
-    def process_actions(self, callbacks=None, dry_run=False):
-        self.actions.process(devices=self.devices,
-                             dry_run=dry_run,
-                             callbacks=callbacks)
 
     #
     # Device detection
@@ -1002,7 +956,7 @@ class DeviceTree(object):
             cancel = [a for a in self._actions
                       if set(a.device.disks).intersection(disks)]
             for action in reversed(cancel):
-                self.cancel_action(action)
+                self.actions.remove(action)
 
         for d in self.get_children(device):
             self.hide(d)

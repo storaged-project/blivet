@@ -36,18 +36,31 @@ log = logging.getLogger("blivet")
 
 class ActionList(object):
 
-    def __init__(self):
+    def __init__(self, addfunc=None, removefunc=None):
+        self._add_func = addfunc
+        self._remove_func = removefunc
         self._actions = []
         self._completed_actions = []
 
     def __iter__(self):
         return iter(self._actions)
 
-    def append(self, action):
+    def add(self, action):
+        if self._add_func is not None:
+            self._add_func(action)
+
+        # apply the action before adding it in case apply raises an exception
+        action.apply()
         self._actions.append(action)
+        log.info("registered action: %s", action)
 
     def remove(self, action):
+        if self._remove_func:
+            self._remove_func(action)
+
+        action.cancel()
         self._actions.remove(action)
+        log.info("canceled action %s", action)
 
     def find(self, device=None, action_type=None, object_type=None,
              path=None, devid=None):
