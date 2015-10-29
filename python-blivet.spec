@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.15
+Version: 1.16
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -109,6 +109,52 @@ popd
 %{python3_sitelib}/*
 
 %changelog
+* Wed Oct 28 2015 Brian C. Lane <bcl@redhat.com> - 1.16-1
+- Merge pull request #257 from vpodzime/master-singleton_decorator (vpodzime)
+- Add pylint stuff to .gitignore (pjones)
+- Minor cleanups in set_up_logging() (pjones)
+- Make a logger for test data that we can automatically use later (pjones)
+- edd: Fix one regexp so it matches against a real system /or/ test data.
+  (pjones)
+- Merge pull request #253 from dashea/libblockdev-python (vpodzime)
+- Make the function adding the deprecation doc text more generic (vpodzime)
+- Merge pull request #242 from dwlehman/resolveDevice-regex (dlehman)
+- Fix an overly inclusive regex in DeviceTree.resolveDevice. (dlehman)
+- Merge pull request #244 from atodorov/master (vpodzime)
+- Require the python libblockdev packages (dshea)
+- Merge pull request #243 from dwlehman/flexible-alignment (dlehman)
+- Merge pull request #230 from vpodzime/master-lvm_debug (vpodzime)
+- Add a 'debug' flag and use it for LVM debugging (vpodzime)
+- Bypass util.run_program to avoid logging deadlock. (dlehman)
+- Add an edd test data harvester. (pjones)
+- Do not save None as passphrase for LUKS devices (#1269646) (vtrefny)
+- edd: make logging work usefully during tests (pjones)
+- edd: Get rid of biosdev_to_edd_dir(), it is pointless. (pjones)
+- Make distutils.filelist.findall() do the right thing with symlinks maybe.
+  (pjones)
+- edd: Fix some minor 'make check' complaints. (pjones)
+- edd: Make devicetree not use edd.edd_dict, instead use blivet's copy.
+  (pjones)
+- edd: Remove the "absurd_virt" test cases for now. (pjones)
+- Add a udev settle call after instantiating parted.Disk. (#1267858) (dlehman)
+- edd: Add missing directories for absurd_virt test case. (pjones)
+- produce coverage-report.log and enable coverage in CI (atodorov)
+- Use minimal alignment as needed when allocating small partitions. (dlehman)
+- Add support for minimal alignment of very small partitions. (dlehman)
+- Add an error class for alignment errors. (dlehman)
+- Deprecate createSubVolumes method (vtrefny)
+- Change btrfs.do_self_mount to contextmanager (#1266673) (vtrefny)
+- edd: Remove a bunch of nonfunctional EDD tests. (pjones)
+- edd: Add another set of test cases for our QEMU data. (pjones)
+- edd: Add another set of test data. (pjones)
+- edd: Add some working tests for EDD. (pjones)
+- edd: Add a real EDD dataset captured from a system. (pjones)
+- edd: Make our edd matcher able to use a fake sysfs root. (pjones)
+- edd: Add EDD 4 code and some logging cleanups. (pjones)
+- edd: Try to make EDD support actually match what the kernel does. (pjones)
+- Always build python2 and python3 versions. (bcl)
+- Switch to using rd.iscsi.initiator (#1268315) (bcl)
+
 * Fri Oct 02 2015 Brian C. Lane <bcl@redhat.com> - 1.15-1
 - Update Makefile to default to python3. (dlehman)
 - Add test for extended partition minSize (vtrefny)

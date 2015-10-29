@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-02 17:22-0700\n"
+"POT-Creation-Date: 2015-10-28 18:20-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,68 +17,68 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/blivet.py:1196
+#: ../blivet/blivet.py:1197
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/partitioning.py:408
+#: ../blivet/partitioning.py:423
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:416
+#: ../blivet/partitioning.py:431
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:529
+#: ../blivet/partitioning.py:544
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:586
+#: ../blivet/partitioning.py:601
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:591
+#: ../blivet/partitioning.py:606
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:877
+#: ../blivet/partitioning.py:893
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:906
+#: ../blivet/partitioning.py:922
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:913
+#: ../blivet/partitioning.py:929
 msgid "failed to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1105
+#: ../blivet/partitioning.py:1121
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1317
+#: ../blivet/partitioning.py:1333
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1330
+#: ../blivet/partitioning.py:1346
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1413
+#: ../blivet/partitioning.py:1429
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1900
+#: ../blivet/partitioning.py:1927
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -378,21 +378,21 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/errors.py:143
+#: ../blivet/errors.py:146
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
 "kernel is reporting partitions on. It is unclear what the exact problem is. "
 "Please file a bug at http://bugzilla.redhat.com"
 msgstr ""
 
-#: ../blivet/errors.py:149
+#: ../blivet/errors.py:152
 msgid ""
 "Either restore the disklabel to a completely working state or remove it "
 "completely.\n"
 "Hint: parted can restore it or wipefs can remove it."
 msgstr ""
 
-#: ../blivet/errors.py:154
+#: ../blivet/errors.py:157
 msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
@@ -577,16 +577,16 @@ msgstr ""
 msgid "PPC PReP Boot"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:42
-msgid "software RAID"
-msgstr ""
-
 #: ../blivet/formats/luks.py:45
 msgid "LUKS"
 msgstr ""
 
 #: ../blivet/formats/luks.py:46
 msgid "Encrypted"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:152
+msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:33
@@ -597,12 +597,12 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:152
-msgid "Unknown"
-msgstr ""
-
 #: ../blivet/formats/disklabel.py:44
 msgid "partition table"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:42
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:38
