@@ -67,6 +67,13 @@ def has_iscsi():
 
 
 NodeInfo = namedtuple("NodeInfo", ["name", "tpgt", "address", "port", "iface"])
+TargetInfo = namedtuple("TargetInfo", ["ipaddr", "port"])
+
+
+class LoginInfo(object):
+    def __init__(self, node, logged_in):
+        self.node = node
+        self.logged_in = logged_in
 
 
 def _to_node_infos(variant):
@@ -97,8 +104,8 @@ class _iSCSI(object):
     """
 
     def __init__(self):
-        # Dictionary of discovered targets containing list of (node,
-        # logged_in) tuples.
+        # Dictionary mapping discovered TargetInfo data to lists of LoginInfo
+        # data.
         self.discovered_targets = {}
         # This list contains nodes discovered through iBFT (or other firmware)
         self.ibft_nodes = []
@@ -171,9 +178,8 @@ class _iSCSI(object):
     def active_nodes(self, target=None):
         """Nodes logged in to"""
         if target:
-            return [node for (node, logged_in) in
-                    self.discovered_targets.get(target, [])
-                    if logged_in]
+            return [info.node for info in self.discovered_targets.get(target, [])
+                    if info.logged_in]
         else:
             return [info.node for info in itertools.chain(*list(self.discovered_targets.values()))
                     if info.logged_in] + self.ibft_nodes
@@ -192,10 +198,10 @@ class _iSCSI(object):
 
            Returns False if not found
         """
-        for target_nodes in self.discovered_targets.values():
-            for nodeinfo in target_nodes:
-                if nodeinfo[0] is node:
-                    nodeinfo[1] = active
+        for login_infos in self.discovered_targets.values():
+            for info in login_infos:
+                if info.node is node:
+                    info.logged_in = active
                     return True
         return False
 
@@ -326,7 +332,7 @@ class _iSCSI(object):
         if self._initiator == "":
             raise ValueError(_("No initiator name set"))
 
-        if self.active_nodes((ipaddr, port)):
+        if self.active_nodes(TargetInfo(ipaddr, port)):
             log.debug("iSCSI: skipping discovery of %s:%s due to active nodes",
                       ipaddr, port)
         else:
@@ -345,15 +351,15 @@ class _iSCSI(object):
             nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", args)
 
             found_nodes = _to_node_infos(nodes)
-            self.discovered_targets[(ipaddr, port)] = []
+            t_info = TargetInfo(ipaddr, port)
+            self.discovered_targets[t_info] = []
             for node in found_nodes:
-                self.discovered_targets[(ipaddr, port)].append([node, False])
+                self.discovered_targets[t_info].append(LoginInfo(node, False))
                 log.debug("discovered iSCSI node: %s", node.name)
 
         # only return the nodes we are not logged into yet
-        return [node for (node, logged_in) in
-                self.discovered_targets[(ipaddr, port)]
-                if not logged_in]
+        return [info.node for info in self.discovered_targets[TargetInfo(ipaddr, port)]
+                if not info.logged_in]
 
     def log_into_node(self, node, username=None, password=None,
                       r_username=None, r_password=None):
