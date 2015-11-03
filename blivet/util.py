@@ -538,13 +538,13 @@ def compare(first, second):
         This method replaces Python 2 cmp() built-in-function.
     """
 
-    if first == None and second == None:
+    if first is None and second is None:
         return 0
 
-    elif first == None:
+    elif first is None:
         return -1
 
-    elif second == None:
+    elif second is None:
         return 1
 
     else:
@@ -656,7 +656,7 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
     new = obj.__class__.__new__(obj.__class__)
     memo[id(obj)] = new
     for (attr, value) in obj.__dict__.items():
-        if attr in omit or value == None:
+        if attr in omit or value is None:
             setattr(new, attr, value)
         elif attr in shallow:
             setattr(new, attr, copy.copy(value))

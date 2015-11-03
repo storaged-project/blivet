@@ -165,7 +165,7 @@ def get_ppc_mac_book():
     if get_ppc_machine() != "PMac":
         return False
 
-    #@TBD - Search for 'book' anywhere in cpuinfo? Shouldn't this be more restrictive?
+    # @TBD - Search for 'book' anywhere in cpuinfo? Shouldn't this be more restrictive?
     with open('/proc/cpuinfo', 'r') as f:
         for line in f:
             if 'book' in line.lower():

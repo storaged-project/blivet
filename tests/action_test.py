@@ -441,7 +441,7 @@ class DeviceActionTestCase(StorageTestCase):
         # sda1 exists
         sda1 = self.storage.devicetree.get_device_by_name("sda1")
         self.assertNotEqual(sda1, None)
-        #sda1.format._resizable = True
+        # sda1.format._resizable = True
         resize_sda1_format = ActionResizeFormat(sda1,
                                                 sda1.size - Size("50 MiB"))
         resize_sda1_format.apply()
@@ -561,7 +561,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(lv_root, None)
         lv_root.format._min_instance_size = Size("10 MiB")
         lv_root.format._target_size = lv_root.format._min_instance_size
-        #lv_root.format._resizable = True
+        # lv_root.format._resizable = True
         shrink_format = ActionResizeFormat(lv_root,
                                            lv_root.size - Size("5 GiB"))
         shrink_format.apply()
@@ -968,7 +968,7 @@ class DeviceActionTestCase(StorageTestCase):
         lv_root.format._target_size = lv_root.size
         original_format_size = lv_root.format.current_size
         target_size = lv_root.size - Size("1 GiB")
-        #lv_root.format._resizable = True
+        # lv_root.format._resizable = True
         action = ActionResizeFormat(lv_root, target_size)
         self.assertEqual(lv_root.format.size, original_format_size)
         action.apply()

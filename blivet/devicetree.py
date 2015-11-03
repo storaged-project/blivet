@@ -845,7 +845,6 @@ class DeviceTree(object):
     @property
     def filesystems(self):
         """ List of filesystems. """
-        #""" Dict with mountpoint keys and filesystem values. """
         filesystems = []
         for dev in self.leaves:
             if dev.format and getattr(dev.format, 'mountpoint', None):
@@ -1022,7 +1021,7 @@ class DeviceTree(object):
                     name = devspec[5:]      # strip off leading "/dev/"
 
                     (vg_name, _slash, lv_name) = name.partition("/")
-                    if lv_name and not "/" in lv_name:
+                    if lv_name and "/" not in lv_name:
                         # looks like we may have one
                         lv = "%s-%s" % (vg_name, lv_name)
                         device = self.get_device_by_name(lv)

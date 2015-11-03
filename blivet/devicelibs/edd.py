@@ -196,31 +196,31 @@ class EddEntry(object):
     def _fmt(self, line_pad, separator):
         s = "%(t)spath: %(_sysfspath)s version: %(version)s %(nl)s" \
             "mbr_signature: %(mbr_sig)s sectors: %(sectors)s"
-        if self.type != None:
+        if self.type is not None:
             s += " %(type)s"
-        if self.sysfslink != None:
+        if self.sysfslink is not None:
             s += "%(nl)s%(t)ssysfs pci path: %(sysfslink)s"
-        if any([self.host_bus, self.pci_dev, self.channel != None]):
+        if any([self.host_bus, self.pci_dev, self.channel is not None]):
             s += "%(nl)s%(t)shost_bus: %(host_bus)s pci_dev: %(pci_dev)s "\
                 "channel: %(channel)s"
-        if self.interface != None:
+        if self.interface is not None:
             s += "%(nl)s%(t)sinterface: \"%(interface)s\""
-        if any([self.atapi_device != None, self.atapi_lun != None]):
+        if any([self.atapi_device is not None, self.atapi_lun is not None]):
             s += "%(nl)s%(t)satapi_device: %(atapi_device)s " \
                  "atapi_lun: %(atapi_lun)s"
-        if self.ata_device != None:
+        if self.ata_device is not None:
             s += "%(nl)s%(t)sata_device: %(ata_device)s"
-            if self.ata_pmp != None:
+            if self.ata_pmp is not None:
                 s += ", ata_pmp: %(ata_pmp)s"
-        if any([self.scsi_id != None, self.scsi_lun != None]):
+        if any([self.scsi_id is not None, self.scsi_lun is not None]):
             s += "%(nl)s%(t)sscsi_id: %(scsi_id)s, scsi_lun: %(scsi_lun)s"
-        if self.usb_serial != None:
+        if self.usb_serial is not None:
             s += "%(nl)s%(t)susb_serial: %(usb_serial)s"
-        if self.ieee1394_eui64 != None:
+        if self.ieee1394_eui64 is not None:
             s += "%(nl)s%(t)s1394_eui: %(ieee1394_eui64)s"
         if any([self.fibre_wwid, self.fibre_lun]):
             s += "%(nl)s%(t)sfibre wwid: %(fibre_wwid)s lun: %s(fibre_lun)s"
-        if self.i2o_identity != None:
+        if self.i2o_identity is not None:
             s += "%(nl)s%(t)si2o_identity: %(i2o_identity)s"
         if any([self.sas_address, self.sas_lun]):
             s += "%(nl)s%(t)ssas_address: %(sas_address)s sas_lun: %(sas_lun)s"
@@ -501,7 +501,7 @@ class EddMatcher(object):
 
     def devname_from_pci_dev(self):
         name = self.devname_from_virt_pci_dev()
-        if not name is None:
+        if name is not None:
             return name
 
         unsupported = ("ATAPI", "USB", "1394", "I2O", "RAID", "FIBRE", "SAS")

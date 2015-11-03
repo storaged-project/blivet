@@ -457,7 +457,7 @@ class iscsi(object):
 
         found_nodes = self.discover(ipaddr, port, discover_user, discover_pw,
                                     discover_user_in, discover_pw_in)
-        if found_nodes == None:
+        if found_nodes is None:
             raise IOError(_("No iSCSI nodes discovered"))
 
         for node in found_nodes:

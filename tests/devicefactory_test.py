@@ -499,7 +499,7 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         kwargs["label"] = "fedora 53 root"
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
-        #kwargs["encrypted"] = False
+        # kwargs["encrypted"] = False
         device = self._factory_device(device_type, size, **kwargs)
         self._validate_factory_device(device, device_type, size, **kwargs)
 

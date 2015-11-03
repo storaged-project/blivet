@@ -593,7 +593,7 @@ class FS(DeviceFormat):
         #
         #         os.path.join("/mnt/foo", "/") -> "/"
         #
-        #mountpoint = os.path.join(chroot, mountpoint)
+        # mountpoint = os.path.join(chroot, mountpoint)
         chrooted_mountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
         self._mount.do_task(chrooted_mountpoint, options=options)
 
