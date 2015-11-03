@@ -195,7 +195,7 @@ class NTFSMkfs(FSMkfs):
 
     @property
     def args(self):
-        return []
+        return ["-f"]
 
 class ReiserFSMkfs(FSMkfs):
     ext = availability.MKREISERFS_APP
