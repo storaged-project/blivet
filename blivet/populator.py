@@ -1534,6 +1534,7 @@ class Populator(object):
                                        exists=True)
                 dmdev.setup()
                 dmdev.updateSysfsPath()
+                dmdev.updateSize()
                 log.debug("%s", dmdev)
             except (ValueError, DeviceError) as e:
                 log.error("failed to set up disk image: %s", e)
