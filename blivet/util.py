@@ -15,6 +15,7 @@ import warnings
 from decimal import Decimal
 from contextlib import contextmanager
 from functools import wraps
+from collections import namedtuple
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -861,3 +862,45 @@ def deprecated(version, message):
         return the_func
 
     return deprecate_func
+
+def default_namedtuple(name, fields, doc=""):
+    """Create a namedtuple class
+
+    The difference between a namedtuple class and this class is that default
+    values may be specified for fields and fields with missing values on
+    initialization being initialized to None.
+
+    :param str name: name of the new class
+    :param fields: field descriptions - an iterable of either "name" or ("name", default_value)
+    :type fields: list of str or (str, object) objects
+    :param str doc: the docstring for the new class (should at least describe the meanings and
+                    types of fields)
+    :returns: a new default namedtuple class
+    :rtype: type
+
+    """
+    field_names = list()
+    for field in fields:
+        if isinstance(field, tuple):
+            field_names.append(field[0])
+        else:
+            field_names.append(field)
+    nt = namedtuple(name, field_names)
+
+    class TheDefaultNamedTuple(nt):
+        if doc:
+            __doc__ = doc
+        def __new__(cls, *args, **kwargs):
+            args_list = list(args)
+            sorted_kwargs = sorted(kwargs.keys(), key=lambda x: field_names.index(x))
+            for i in range(len(args), len(field_names)):
+                if field_names[i] in sorted_kwargs:
+                    args_list.append(kwargs[field_names[i]])
+                elif isinstance(fields[i], tuple):
+                    args_list.append(fields[i][1])
+                else:
+                    args_list.append(None)
+
+            return nt.__new__(cls, *args_list)
+
+    return TheDefaultNamedTuple
