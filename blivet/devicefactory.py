@@ -1233,6 +1233,12 @@ class LVMFactory(DeviceFactory):
             if self.container:
                 space += sum([p.size for p in self.container.parents])
                 space -= self.container.freeSpace
+                # we need to account for the LVM metadata being placed somewhere
+                space += self.container.lvm_metadata_space
+
+            # we need to account for the LVM metadata being placed on each disk
+            # (and thus taking up to one extent from each disk)
+            space += len(self.disks) * lvm.LVM_PE_SIZE
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
             if self.container:
@@ -1245,6 +1251,10 @@ class LVMFactory(DeviceFactory):
             # container_size is a request for a fixed size for the container
             # XXX: should respect the real extent size
             space += blockdev.lvm.get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
+
+            # we need to account for the LVM metadata being placed on each disk
+            # (and thus taking up to one extent from each disk)
+            space += len(self.disks) * lvm.LVM_PE_SIZE
 
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
