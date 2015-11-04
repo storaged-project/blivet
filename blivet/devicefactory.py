@@ -1224,45 +1224,45 @@ class LVMFactory(DeviceFactory):
 
     def _get_total_space(self):
         """ Total disk space requirement for this device and its container. """
-        size = Size(0)
+        space = Size(0)
         if self.container and self.container.exists:
-            return size
+            return space
 
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic container size management
             if self.container:
-                size += sum([p.size for p in self.container.parents])
-                size -= self.container.freeSpace
+                space += sum([p.size for p in self.container.parents])
+                space -= self.container.freeSpace
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
             if self.container:
-                size += sum(p.size for p in self.container.parents)
-                log.debug("size bumped to %s to include container parents", size)
+                space += sum(p.size for p in self.container.parents)
+                log.debug("size bumped to %s to include container parents", space)
 
-            size += self._get_free_disk_space()
-            log.debug("size bumped to %s to include free disk space", size)
+            space += self._get_free_disk_space()
+            log.debug("size bumped to %s to include free disk space", space)
         else:
             # container_size is a request for a fixed size for the container
             # XXX: should respect the real extent size
-            size += blockdev.lvm.get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
+            space += blockdev.lvm.get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
 
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
-            size += self._get_device_space()
-            log.debug("size bumped to %s to include new device space", size)
+            space += self._get_device_space()
+            log.debug("size bumped to %s to include new device space", space)
             if self.device and self.container_size == SIZE_POLICY_AUTO:
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
                 # XXX: should respect the real extent size
-                size -= blockdev.lvm.get_lv_physical_size(self.device.size, lvm.LVM_PE_SIZE)
-                log.debug("size cut to %s to omit old device space", size)
+                space -= blockdev.lvm.get_lv_physical_size(self.device.size, lvm.LVM_PE_SIZE)
+                log.debug("size cut to %s to omit old device space", space)
 
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
-            size += lvm.LVM_PE_SIZE * len(self.disks)
+            space += lvm.LVM_PE_SIZE * len(self.disks)
 
-        return size
+        return space
 
     #
     # methods related to parent/container devices
