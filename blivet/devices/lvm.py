@@ -27,6 +27,7 @@ import pprint
 import re
 import os
 import time
+from collections import namedtuple
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -70,6 +71,10 @@ def get_internal_lv_class(lv_attr):
             return cls
 
     return None
+
+
+LVPVSpec = namedtuple("LVPVSpec", ["pv", "size"])
+""" A namedtuple class for specifying how much space on a PV should be allocated for some LV """
 
 
 class LVMVolumeGroupDevice(ContainerDevice):
@@ -512,7 +517,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
-                 percent=None, cache_request=None):
+                 percent=None, cache_request=None, pvs=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -544,6 +549,8 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type percent: int
             :keyword cache_request: parameters of requested cache (if any)
             :type cache_request: :class:`~.devices.lvm.LVMCacheRequest`
+            :keyword pvs: list of PVs to allocate extents from (size could be specified for each PV)
+            :type pvs: list of :class:`~.devices.StorageDevice` or :class:`LVPVSpec` objects (tuples)
 
         """
 
@@ -580,6 +587,21 @@ class LVMLogicalVolumeDevice(DMDevice):
         if cache_request and not self.exists:
             self._cache = LVMCache(self, size=cache_request.size, exists=False,
                                    fast_pvs=cache_request.fast_devs, mode=cache_request.mode)
+
+        self._pv_specs = []
+        for pv_spec in pvs:
+            if isinstance(pv_spec, LVPVSpec):
+                self._pv_specs.append(pv_spec)
+            elif isinstance(pv_spec, StorageDevice):
+                self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
+            else:
+                raise ValueError("Invalid PV spec '%s' for the '%s' LV" % (pv_spec, self.name))
+        # Make sure any destination PVs are actually PVs in this VG
+        if not set(spec.pv for spec in self._pv_specs).issubset(set(self.vg.parents)):
+            missing = [r.name for r in
+                        set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
+            msg = "invalid destination PV(s) %s for LV %s" % (missing, self.name)
+            raise ValueError(msg)
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
@@ -819,7 +841,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         # should we use --zero for safety's sake?
         if not self.cache:
             # just a plain LV
-            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size)
+            # TODO: specify sizes together with PVs once LVM and libblockdev support it
+            pvs = [spec.pv.path for spec in self._pv_specs]
+            pvs = pvs or None
+            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size, pv_list=pvs)
         else:
             mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
             # prepare the list of fast PV devices
@@ -831,13 +856,17 @@ class LVMLogicalVolumeDevice(DMDevice):
                 else:
                     fast_pvs.append(pv_name)
 
-            # get the list of all fast PV devices used in the VG so that we can
-            # consider the rest to be slow PVs and generate a list of them
-            all_fast_pvs_names = set()
-            for lv in self.vg.lvs:
-                if lv.cached and lv.cache.fast_pvs:
-                    all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
-            slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
+            if self._pv_specs:
+                # (slow) PVs specified for this LV
+                slow_pvs = [spec.pv.path for spec in self._pv_specs]
+            else:
+                # get the list of all fast PV devices used in the VG so that we can
+                # consider the rest to be slow PVs and generate a list of them
+                all_fast_pvs_names = set()
+                for lv in self.vg.lvs:
+                    if lv.cached and lv.cache.fast_pvs:
+                        all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
+                slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
 
             # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
             # XXX: we need to pass slow_pvs+fast_pvs as slow PVs because parts
@@ -1576,6 +1605,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         else:
             profile_name = None
         # TODO: chunk size, data/metadata split --> profile
+        # TODO: allow for specification of PVs
         blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
                                   md_size=self.metadata_size,
                                   chunk_size=self.chunk_size,
