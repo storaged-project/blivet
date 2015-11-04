@@ -354,12 +354,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return self.align(reserved, roundup=True)
 
     @property
-    def size(self):
-        """ The size of this VG """
-        # TODO: just ask lvm if is_modified returns False
-
-        # sum up the sizes of the PVs, subtract the unusable (meta data) space
-        # and align to pesize
+    def lvm_metadata_space(self):
+        """ The amount of the space LVM metadata cost us in this VG's PVs """
         # NOTE: we either specify data alignment in a PV or the default is used
         #       which is both handled by pv.format.pe_start, but LVM takes into
         #       account also the underlying block device which means that e.g.
@@ -369,14 +365,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # TODO: move this to either LVMPhysicalVolume's pe_start property once
         #       formats know about their devices or to a new LVMPhysicalVolumeDevice
         #       class once it exists
-        avail = Size(0)
+        diff = Size(0)
         for pv in self.pvs:
             if isinstance(pv, MDRaidArrayDevice):
-                avail += self.align(pv.size - 2 * pv.format.pe_start)
+                diff += pv.size - self.align(pv.size - 2 * pv.format.pe_start)
             else:
-                avail += self.align(pv.size - pv.format.pe_start)
+                diff += pv.size - self.align(pv.size - pv.format.pe_start)
 
-        return avail
+        return diff
+
+    @property
+    def size(self):
+        """ The size of this VG """
+        # TODO: just ask lvm if isModified returns False
+
+        # sum up the sizes of the PVs, subtract the unusable (meta data) space
+        size = sum(pv.size for pv in self.pvs)
+        size -= self.lvm_metadata_space
+
+        return size
 
     @property
     def extents(self):
