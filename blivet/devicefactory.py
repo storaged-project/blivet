@@ -1276,7 +1276,7 @@ class LVMFactory(DeviceFactory):
                 # since that's the basis for the current device's disk space
                 # usage.
                 # XXX: should respect the real extent size
-                space -= blockdev.lvm.get_lv_physical_size(self.device.size, lvm.LVM_PE_SIZE)
+                space -= blockdev.lvm.round_size_to_pe(self.device.size, lvm.LVM_PE_SIZE)
                 log.debug("size cut to %s to omit old device space", space)
 
         if self.container_encrypted:
