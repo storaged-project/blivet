@@ -32,29 +32,29 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
-from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
-from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
-from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
-from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
-from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
-from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
-from .devices import LVMSnapShotDevice, LVMThinSnapShotDevice
-from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
-from .devices import MDContainerDevice
-from .devices import MultipathDevice, OpticalDevice
-from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
-from .devices import device_path_to_name
-from .devices.lvm import get_internal_lv_class
-from . import formats
-from .devicelibs import lvm
-from .devicelibs import raid
-from . import udev
-from . import util
-from .util import open  # pylint: disable=redefined-builtin
-from .flags import flags
-from .storage_log import log_exception_info, log_method_call
-from .i18n import _
-from .size import Size
+from ..errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
+from ..devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
+from ..devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
+from ..devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
+from ..devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
+from ..devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
+from ..devices import LVMSnapShotDevice, LVMThinSnapShotDevice
+from ..devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
+from ..devices import MDContainerDevice
+from ..devices import MultipathDevice, OpticalDevice
+from ..devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
+from ..devices import device_path_to_name
+from ..devices.lvm import get_internal_lv_class
+from .. import formats
+from ..devicelibs import lvm
+from ..devicelibs import raid
+from .. import udev
+from .. import util
+from ..util import open  # pylint: disable=redefined-builtin
+from ..flags import flags
+from ..storage_log import log_exception_info, log_method_call
+from ..i18n import _
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
