@@ -28,13 +28,15 @@ from ..i18n import _, P_
 
 from .storage import StorageDevice
 
+
 @add_metaclass(abc.ABCMeta)
 class RaidDevice(StorageDevice):
+
     """ Metaclass for devices that support RAID in some form. """
     members = abc.abstractproperty(lambda s: [],
                                    doc="A list of the member device instances")
 
-    def _validateRaidLevel(self, level, parent_diff=0):
+    def _validate_raid_level(self, level, parent_diff=0):
         """ Returns an error message if the RAID level is invalid for this
             device, otherwise None.
 
@@ -49,17 +51,17 @@ class RaidDevice(StorageDevice):
             number of parents. The number is positive for added parents,
             negative for removed parents.
         """
-        num_members = len(self.members) + parent_diff # pylint: disable=no-member
+        num_members = len(self.members) + parent_diff  # pylint: disable=no-member
         if not self.exists and num_members < level.min_members:
             message = P_(
-               "RAID level %(raidLevel)s requires that device have at least %(minMembers)d member.",
-               "RAID level %(raidLevel)s requires that device have at least %(minMembers)d members.",
-               level.min_members
+                "RAID level %(raid_level)s requires that device have at least %(min_members)d member.",
+                "RAID level %(raid_level)s requires that device have at least %(min_members)d members.",
+                level.min_members
             )
-            return message % {"raidLevel": level, "minMembers" : level.min_members}
+            return message % {"raid_level": level, "min_members": level.min_members}
         return None
 
-    def _getLevel(self, value, levels):
+    def _get_level(self, value, levels):
         """ Obtains a valid level for the allowed set of levels.
 
             :param value: a RAID level
@@ -71,19 +73,19 @@ class RaidDevice(StorageDevice):
             :raises ValueError: if invalid RAID level
         """
         try:
-            level = levels.raidLevel(value)
+            level = levels.raid_level(value)
         except errors.RaidError:
-            message = _("RAID level %(raidLevel)s is an invalid value. Must be one of (%(levels)s).")
+            message = _("RAID level %(raid_level)s is an invalid value. Must be one of (%(levels)s).")
             choices = ", ".join([str(l) for l in levels])
-            raise ValueError(message % {"raidLevel": value, "levels" : choices})
+            raise ValueError(message % {"raid_level": value, "levels": choices})
 
-        error_msg = self._validateRaidLevel(level)
+        error_msg = self._validate_raid_level(level)
         if error_msg:
             raise ValueError(error_msg)
 
         return level
 
-    def _validateParentRemoval(self, level, parent):
+    def _validate_parent_removal(self, level, parent):
         """ Check if it is possible to remove a parent from this device.
 
             :param level: a RAID level
@@ -105,4 +107,4 @@ class RaidDevice(StorageDevice):
             pass
 
         # Removing a member may invalidate the RAID level
-        return self._validateRaidLevel(level, -1)
+        return self._validate_raid_level(level, -1)

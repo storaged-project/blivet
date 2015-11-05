@@ -27,7 +27,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .network import NetworkStorageDevice
 
+
 class NFSDevice(StorageDevice, NetworkStorageDevice):
+
     """ An NFS device """
     _type = "nfs"
     _packages = ["dracut-network"]
@@ -63,16 +65,16 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
     def create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        self._preCreate()
+        self._pre_create()
 
     def destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
 
-    def updateSize(self):
+    def update_size(self):
         pass
 
     @classmethod
-    def isNameValid(cls, name):
-        # Override StorageDevice.isNameValid to allow /
+    def is_name_valid(cls, name):
+        # Override StorageDevice.is_name_valid to allow /
         return not('\x00' in name or name == '.' or name == '..')

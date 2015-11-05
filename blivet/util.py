@@ -32,6 +32,7 @@ from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
 
+
 def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False, binary_output=False):
     if env_prune is None:
         env_prune = []
@@ -83,22 +84,28 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
 
     return (proc.returncode, out)
 
+
 def run_program(*args, **kwargs):
     return _run_program(*args, **kwargs)[0]
 
+
 def capture_output(*args, **kwargs):
     return _run_program(*args, **kwargs)[1]
+
 
 def capture_output_binary(*args, **kwargs):
     kwargs["binary_output"] = True
     return _run_program(*args, **kwargs)[1]
 
+
 def run_program_and_capture_output(*args, **kwargs):
     return _run_program(*args, **kwargs)
+
 
 def run_program_and_capture_output_binary(*args, **kwargs):
     kwargs["binary_output"] = True
     return _run_program(*args, **kwargs)
+
 
 def mount(device, mountpoint, fstype, options=None):
     if options is None:
@@ -116,6 +123,7 @@ def mount(device, mountpoint, fstype, options=None):
 
     return rc
 
+
 def umount(mountpoint):
     try:
         rc = run_program(["umount", mountpoint])
@@ -124,6 +132,7 @@ def umount(mountpoint):
 
     return rc
 
+
 def get_mount_paths(dev):
     """ Given a device node path, return a list of all active mountpoints.
 
@@ -131,12 +140,13 @@ def get_mount_paths(dev):
         :returns: A list of mountpoints or []
         :rtype: list
     """
-    from .mounts import mountsCache
+    from .mounts import mounts_cache
 
-    mount_paths = mountsCache.getMountpoints(dev)
+    mount_paths = mounts_cache.get_mountpoints(dev)
     if mount_paths:
         log.debug("%s is mounted on %s", dev, ', '.join(mount_paths))
     return mount_paths
+
 
 def get_mount_device(mountpoint):
     """ Given a mountpoint, return the device node path mounted there. """
@@ -156,12 +166,13 @@ def get_mount_device(mountpoint):
         loop_name = os.path.basename(mount_device)
         mount_device = blockdev.loop.get_backing_file(loop_name)
         log.debug("found backing file %s for loop device %s", mount_device,
-                                                              loop_name)
+                  loop_name)
 
     if mount_device:
         log.debug("%s is mounted on %s", mount_device, mountpoint)
 
     return mount_device
+
 
 def total_memory():
     """ Return the amount of system RAM.
@@ -183,8 +194,10 @@ def total_memory():
     return mem
 
 ##
-## sysfs functions
+# sysfs functions
 ##
+
+
 def notify_kernel(path, action="change"):
     """ Signal the kernel that the specified device has changed.
 
@@ -199,6 +212,7 @@ def notify_kernel(path, action="change"):
     f = open(path, "a")
     f.write("%s\n" % action)
     f.close()
+
 
 def get_sysfs_attr(path, attr):
     if not attr:
@@ -219,6 +233,7 @@ def get_sysfs_attr(path, attr):
     testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
     return data.strip()
 
+
 def get_sysfs_path_by_name(dev_node, class_name="block"):
     """ Return sysfs path for a given device.
 
@@ -237,6 +252,7 @@ def get_sysfs_path_by_name(dev_node, class_name="block"):
         raise RuntimeError("get_sysfs_path_by_name: Could not find sysfs path "
                            "for '%s' (it is not at '%s')" % (dev_node, dev_path))
 
+
 def get_cow_sysfs_path(dev_path, dev_sysfsPath):
     """ Return sysfs path of cow device for a given device.
     """
@@ -244,19 +260,21 @@ def get_cow_sysfs_path(dev_path, dev_sysfsPath):
     cow_path = dev_path + "-cow"
     if not os.path.islink(cow_path):
         raise RuntimeError("get_cow_sysfs_path: Could not find cow device for" %
-                            (dev_path))
+                           (dev_path))
 
     # dev path for cow devices is actually a link to a dm device (e.g. /dev/dm-X)
-    # we need the 'dm-X' name for sysfsPath (e.g. /sys/devices/virtual/block/dm-X)
-    # where first part is the same as in sysfsPath of the original device
+    # we need the 'dm-X' name for sysfs_path (e.g. /sys/devices/virtual/block/dm-X)
+    # where first part is the same as in sysfs_path of the original device
     dm_name = os.path.basename(os.path.realpath(cow_path))
     cow_sysfsPath = os.path.join(os.path.split(dev_sysfsPath)[0], dm_name)
 
     return cow_sysfsPath
 
 ##
-## SELinux functions
+# SELinux functions
 ##
+
+
 def match_path_context(path):
     """ Return the default SELinux context for the given path. """
     context = None
@@ -266,6 +284,7 @@ def match_path_context(path):
         log.info("failed to get default SELinux context for %s: %s", path, e)
 
     return context
+
 
 def set_file_context(path, context, root=None):
     """ Set the SELinux file context of a file.
@@ -298,6 +317,7 @@ def set_file_context(path, context, root=None):
 
     return rc
 
+
 def reset_file_context(path, root=None):
     """ Restore the SELinux context of a file to its default value.
 
@@ -319,8 +339,10 @@ def reset_file_context(path, root=None):
             return context
 
 ##
-## Miscellaneous
+# Miscellaneous
 ##
+
+
 def find_program_in_path(prog, raise_on_error=False):
     for d in os.environ["PATH"].split(os.pathsep):
         full = os.path.join(d, prog)
@@ -330,19 +352,21 @@ def find_program_in_path(prog, raise_on_error=False):
     if raise_on_error:
         raise RuntimeError("Unable to locate a needed executable: '%s'" % prog)
 
+
 def makedirs(path):
     if not os.path.isdir(path):
         os.makedirs(path, 0o755)
 
+
 def copy_to_system(source):
     # do the import now because enable_installer_mode() has finally been called.
-    from . import getSysroot
+    from . import get_sysroot
 
     if not os.access(source, os.R_OK):
         log.info("copy_to_system: source '%s' does not exist.", source)
         return False
 
-    target = getSysroot() + source
+    target = get_sysroot() + source
     target_dir = os.path.dirname(target)
     log.debug("copy_to_system: '%s' -> '%s'.", source, target)
     if not os.path.isdir(target_dir):
@@ -350,11 +374,13 @@ def copy_to_system(source):
     shutil.copy(source, target)
     return True
 
+
 def lsmod():
     """ Returns list of names of all loaded modules. """
     with open("/proc/modules") as f:
         lines = f.readlines()
     return [l.split()[0] for l in lines]
+
 
 def get_option_value(opt_name, options):
     """ Return the value of a named option in the specified options string. """
@@ -365,6 +391,7 @@ def get_option_value(opt_name, options):
         name, val = opt.split("=")
         if name == opt_name:
             return val.strip()
+
 
 def numeric_type(num):
     """ Verify that a value is given as a numeric data type.
@@ -382,6 +409,7 @@ def numeric_type(num):
 
     return num
 
+
 def insert_colons(a_string):
     """ Insert colon between every second character.
 
@@ -393,6 +421,7 @@ def insert_colons(a_string):
         return insert_colons(a_string[:-2]) + ':' + suffix
     else:
         return suffix
+
 
 def md5_file(filename):
 
@@ -406,7 +435,9 @@ def md5_file(filename):
 
     return md5.hexdigest()
 
+
 class ObjectID(object):
+
     """This class is meant to be extended by other classes which require
        an ID which is preserved when an object copy is made.
        The value returned by the builtin function id() is not adequate:
@@ -424,8 +455,9 @@ class ObjectID(object):
     def __new__(cls, *args, **kwargs):
         # pylint: disable=unused-argument
         self = super(ObjectID, cls).__new__(cls)
-        self.id = self._newid_gen() # pylint: disable=attribute-defined-outside-init
+        self.id = self._newid_gen()  # pylint: disable=attribute-defined-outside-init
         return self
+
 
 def canonicalize_UUID(a_uuid):
     """ Converts uuids to canonical form.
@@ -449,6 +481,8 @@ def canonicalize_UUID(a_uuid):
 # Most Python 2/3 compatibility code equates python 2 str with python 3 bytes,
 # but the equivalence that we actually need to avoid return type surprises is
 # str/str.
+
+
 def stringize(inputstr):
     """ Convert strings to a format compatible with Python 2's str.
 
@@ -471,6 +505,8 @@ def stringize(inputstr):
 
 # Like six.u, but without the part where it raises an exception on unicode
 # objects
+
+
 def unicodeize(inputstr):
     """ Convert strings to a format compatible with Python 2's unicode.
 
@@ -490,6 +526,7 @@ def unicodeize(inputstr):
     else:
         return str(inputstr)
 
+
 def compare(first, second):
     """ Compare two objects.
 
@@ -501,21 +538,23 @@ def compare(first, second):
         This method replaces Python 2 cmp() built-in-function.
     """
 
-    if first == None and second == None:
+    if first is None and second is None:
         return 0
 
-    elif first == None:
+    elif first is None:
         return -1
 
-    elif second == None:
+    elif second is None:
         return 1
 
     else:
         return (first > second) - (first < second)
 
 ##
-## Convenience functions for examples and tests
+# Convenience functions for examples and tests
 ##
+
+
 def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
     """ Configure the blivet logger to write out a log file.
 
@@ -549,6 +588,7 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
     testdata_log.setLevel(logging.DEBUG)
     testdata_log.addHandler(handler)
 
+
 def create_sparse_tempfile(name, size):
     """ Create a temporary sparse file.
 
@@ -561,6 +601,7 @@ def create_sparse_tempfile(name, size):
     create_sparse_file(path, size)
     return path
 
+
 def create_sparse_file(path, size):
     """ Create a sparse file.
 
@@ -568,9 +609,10 @@ def create_sparse_file(path, size):
         :param :class:`~.size.Size` size: the size of the file
         :returns: None
     """
-    fd = eintr_retry_call(os.open, path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+    fd = eintr_retry_call(os.open, path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
     eintr_retry_call(os.ftruncate, fd, size)
     eintr_ignore(os.close, fd)
+
 
 @contextmanager
 def sparsetmpfile(name, size):
@@ -586,6 +628,7 @@ def sparsetmpfile(name, size):
         yield path
     finally:
         os.unlink(path)
+
 
 def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
     """ A configurable copy function. Any attributes not specified in omit,
@@ -613,7 +656,7 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
     new = obj.__class__.__new__(obj.__class__)
     memo[id(obj)] = new
     for (attr, value) in obj.__dict__.items():
-        if attr in omit or value == None:
+        if attr in omit or value is None:
             setattr(new, attr, value)
         elif attr in shallow:
             setattr(new, attr, copy.copy(value))
@@ -624,9 +667,11 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
 
     return new
 
+
 def get_current_entropy():
     with open("/proc/sys/kernel/random/entropy_avail", "r") as fobj:
         return int(fobj.readline())
+
 
 def power_of_two(value):
     """ Checks whether value is a power of 2 greater than 1.
@@ -657,6 +702,8 @@ def power_of_two(value):
     return True
 
 # Copied from python's subprocess.py
+
+
 def eintr_retry_call(func, *args, **kwargs):
     """Retry an interruptible system call if interrupted."""
     while True:
@@ -666,6 +713,7 @@ def eintr_retry_call(func, *args, **kwargs):
             if e.errno == errno.EINTR:
                 continue
             raise
+
 
 def eintr_ignore(func, *args, **kwargs):
     """Call a function and ignore EINTR.
@@ -682,9 +730,12 @@ def eintr_ignore(func, *args, **kwargs):
         raise
 
 _open = open
+
+
 def open(*args, **kwargs):  # pylint: disable=redefined-builtin
     """Open a file, and retry on EINTR."""
     return eintr_retry_call(_open, *args, **kwargs)
+
 
 def indent(text, spaces=4):
     """ Indent text by a specified number of spaces.
@@ -705,6 +756,7 @@ def indent(text, spaces=4):
 
     return "\n".join(indented)
 
+
 def _add_extra_doc_text(func, field=None, desc=None, field_unique=False):
     """ Add extra doc text to a function's docstring.
 
@@ -721,9 +773,9 @@ def _add_extra_doc_text(func, field=None, desc=None, field_unique=False):
 
     base_text = func.__doc__
     if base_text is None:
-        base_text = " " # They contain leading and trailing spaces. *shrug*
+        base_text = " "  # They contain leading and trailing spaces. *shrug*
     else:
-        base_text = base_text[:-1] # Trim the trailing space.
+        base_text = base_text[:-1]  # Trim the trailing space.
 
     if field_unique and field in base_text:
         # Don't add multiple fields
@@ -761,6 +813,8 @@ def _add_extra_doc_text(func, field=None, desc=None, field_unique=False):
 # Deprecation decorator.
 #
 _DEPRECATION_MESSAGE = "will be removed in a future version."
+
+
 def _default_deprecation_msg(func):
     return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
 
@@ -769,9 +823,11 @@ _DEPRECATION_INFO = """%(version)s
     %(message)s
 """
 
+
 def _add_deprecation_doc_text(func, version=None, message=None):
     desc = _DEPRECATION_INFO % {"version": version, "message": message}
     _add_extra_doc_text(func, _SPHINX_DEPRECATE, desc, field_unique=True)
+
 
 def deprecated(version, message):
     """ Decorator to deprecate a function or method via warning and docstring.

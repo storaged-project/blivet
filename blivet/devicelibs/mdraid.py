@@ -31,14 +31,16 @@ log = logging.getLogger("blivet")
 MD_SUPERBLOCK_SIZE = Size("2 MiB")
 MD_CHUNK_SIZE = Size("512 KiB")
 
+
 class MDRaidLevels(raid.RAIDLevels):
+
     @classmethod
-    def isRaidLevel(cls, level):
-        return super(MDRaidLevels, cls).isRaidLevel(level) and \
-           hasattr(level, 'get_max_spares') and \
-           hasattr(level, 'get_space') and \
-           hasattr(level, 'get_recommended_stride') and \
-           hasattr(level, 'get_size')
+    def is_raid_level(cls, level):
+        return super(MDRaidLevels, cls).is_raid_level(level) and \
+            hasattr(level, 'get_max_spares') and \
+            hasattr(level, 'get_space') and \
+            hasattr(level, 'get_recommended_stride') and \
+            hasattr(level, 'get_size')
 
 RAID_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "linear"])
 

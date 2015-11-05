@@ -34,7 +34,7 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
 from ..tasks import availability
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 from ..fcoe import fcoe
 
@@ -46,19 +46,21 @@ from .container import ContainerDevice
 from .network import NetworkStorageDevice
 from .dm import DMDevice
 
+
 class DiskDevice(StorageDevice):
+
     """ A local/generic disk.
 
         This is not the only kind of device that is treated as a disk. More
         useful than checking isinstance(device, DiskDevice) is checking
-        device.isDisk.
+        device.is_disk.
     """
     _type = "disk"
     _partitionable = True
-    _isDisk = True
+    _is_disk = True
 
     def __init__(self, name, fmt=None,
-                 size=None, major=None, minor=None, sysfsPath='',
+                 size=None, major=None, minor=None, sysfs_path='',
                  parents=None, serial=None, vendor="", model="", bus="",
                  exists=True):
         """
@@ -72,8 +74,8 @@ class DiskDevice(StorageDevice):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword uuid: universally unique identifier (device -- not fs)
             :type uuid: str
-            :keyword sysfsPath: sysfs device path
-            :type sysfsPath: str
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
             :keyword removable: whether or not this is a removable device
             :type removable: bool
             :keyword serial: the ID_SERIAL_RAW, ID_SERIAL or ID_SERIAL_SHORT for
@@ -90,7 +92,7 @@ class DiskDevice(StorageDevice):
         """
         StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                major=major, minor=minor, exists=exists,
-                               sysfsPath=sysfsPath, parents=parents,
+                               sysfs_path=sysfs_path, parents=parents,
                                serial=serial, model=model,
                                vendor=vendor, bus=bus)
 
@@ -100,28 +102,30 @@ class DiskDevice(StorageDevice):
         return s
 
     @property
-    def mediaPresent(self):
+    def media_present(self):
         if flags.testing:
             return True
 
         # Some drivers (cpqarray <blegh>) make block device nodes for
         # controllers with no disks attached and then report a 0 size,
         # treat this as no media present
-        return self.exists and self.currentSize > Size(0)
+        return self.exists and self.current_size > Size(0)
 
     @property
     def description(self):
         return " ".join(s for s in (self.vendor, self.model) if s)
 
-    def _preDestroy(self):
+    def _pre_destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        if not self.mediaPresent:
+        if not self.media_present:
             raise errors.DeviceError("cannot destroy disk with no media", self.name)
 
-        StorageDevice._preDestroy(self)
+        StorageDevice._pre_destroy(self)
+
 
 class DiskFile(DiskDevice):
+
     """ This is a file that we will pretend is a disk.
 
         This is intended only for testing purposes. The benefit of this class
@@ -129,10 +133,10 @@ class DiskFile(DiskDevice):
         class as a non-root user. It is not known how the system will behave if
         partitions are committed to one of these disks.
     """
-    _devDir = ""
+    _dev_dir = ""
 
     def __init__(self, name, fmt=None,
-                 size=None, major=None, minor=None, sysfsPath='',
+                 size=None, major=None, minor=None, sysfs_path='',
                  parents=None, serial=None, vendor="", model="", bus="",
                  exists=True):
         """
@@ -140,28 +144,28 @@ class DiskFile(DiskDevice):
             :keyword :class:`~.formats.DeviceFormat` fmt: the device's format
         """
         _name = os.path.basename(name)
-        self._devDir = os.path.dirname(name)
+        self._dev_dir = os.path.dirname(name)
 
         super(DiskFile, self).__init__(_name, fmt=fmt, size=size,
-                            major=major, minor=minor, sysfsPath=sysfsPath,
-                            parents=parents, serial=serial, vendor=vendor,
-                            model=model, bus=bus, exists=exists)
+                                       major=major, minor=minor, sysfs_path=sysfs_path,
+                                       parents=parents, serial=serial, vendor=vendor,
+                                       model=model, bus=bus, exists=exists)
 
     #
     # Regular files do not have sysfs entries.
     #
     @property
-    def sysfsPath(self):
+    def sysfs_path(self):
         return ""
 
-    @sysfsPath.setter
-    def sysfsPath(self, value):
+    @sysfs_path.setter
+    def sysfs_path(self, value):
         pass
 
-    def updateSysfsPath(self):
+    def update_sysfs_path(self):
         pass
 
-    def readCurrentSize(self):
+    def read_current_size(self):
         size = Size(0)
         if self.exists and os.path.exists(self.path):
             st = os.stat(self.path)
@@ -169,18 +173,20 @@ class DiskFile(DiskDevice):
 
         return size
 
+
 class DMRaidArrayDevice(DMDevice, ContainerDevice):
+
     """ A dmraid (device-mapper RAID) device """
     _type = "dm-raid array"
     _packages = ["dmraid"]
     _partitionable = True
-    _isDisk = True
-    _formatClassName = property(lambda s: "dmraidmember")
-    _formatUUIDAttr = property(lambda s: None)
+    _is_disk = True
+    _format_class_name = property(lambda s: "dmraidmember")
+    _format_uuid_attr = property(lambda s: None)
     _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
 
     def __init__(self, name, fmt=None,
-                 size=None, parents=None, sysfsPath=''):
+                 size=None, parents=None, sysfs_path=''):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -190,16 +196,15 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword fmt: this device's formatting
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
-            :keyword sysfsPath: sysfs device path
-            :type sysfsPath: str
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
 
             DMRaidArrayDevices always exist. Blivet cannot create or destroy
             them.
         """
         super(DMRaidArrayDevice, self).__init__(name, fmt=fmt, size=size,
                                                 parents=parents, exists=True,
-                                                sysfsPath=sysfsPath)
-
+                                                sysfs_path=sysfs_path)
 
     @property
     def devices(self):
@@ -229,7 +234,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        if not self._preTeardown(recursive=recursive):
+        if not self._pre_teardown(recursive=recursive):
             return
 
         log.debug("not tearing down dmraid device %s", self.name)
@@ -248,19 +253,21 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     def model(self):
         return self.description
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         return set(["rd.dm.uuid=%s" % self.name])
 
+
 class MultipathDevice(DMDevice):
+
     """ A multipath device """
     _type = "dm-multipath"
     _packages = ["device-mapper-multipath"]
     _partitionable = True
-    _isDisk = True
+    _is_disk = True
     _external_dependencies = [availability.MULTIPATH_APP]
 
     def __init__(self, name, fmt=None, size=None, serial=None,
-                 parents=None, sysfsPath=''):
+                 parents=None, sysfs_path=''):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -270,8 +277,8 @@ class MultipathDevice(DMDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword fmt: this device's formatting
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
-            :keyword sysfsPath: sysfs device path
-            :type sysfsPath: str
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
             :keyword serial: the device's serial number
             :type serial: str
 
@@ -280,15 +287,15 @@ class MultipathDevice(DMDevice):
         """
 
         DMDevice.__init__(self, name, fmt=fmt, size=size,
-                          parents=parents, sysfsPath=sysfsPath,
+                          parents=parents, sysfs_path=sysfs_path,
                           exists=True)
 
         self.identity = serial
         self.config = {
-            'wwid' : self.identity,
-            'mode' : '0600',
-            'uid' : '0',
-            'gid' : '0',
+            'wwid': self.identity,
+            'mode': '0600',
+            'uid': '0',
+            'gid': '0',
         }
 
     @property
@@ -316,7 +323,7 @@ class MultipathDevice(DMDevice):
     def description(self):
         return "WWID %s" % (self.wwid,)
 
-    def addParent(self, parent):
+    def add_parent(self, parent):
         """ Add a parent device to the mpath. """
         log_method_call(self, self.name, status=self.status)
         if self.status:
@@ -334,17 +341,16 @@ class MultipathDevice(DMDevice):
         rc = util.run_program(["multipath", self.name])
         if rc:
             raise errors.MPathError("multipath activation failed for '%s'" %
-                            self.name, hardware_fault=True)
+                                    self.name, hardware_fault=True)
 
-    def _postSetup(self):
-        StorageDevice._postSetup(self)
-        self.setupPartitions()
+    def _post_setup(self):
+        StorageDevice._post_setup(self)
+        self.setup_partitions()
         udev.settle()
 
 
-
-
 class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
+
     """ An iSCSI disk. """
     _type = "iscsi"
     _packages = ["iscsi-initiator-utils", "dracut-network"]
@@ -394,12 +400,12 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             NetworkStorageDevice.__init__(self, host_address=self.node.address,
                                           nic=self.nic)
             log.debug("created new iscsi disk %s %s:%d via %s:%s", self.node.name,
-                                                                   self.node.address,
-                                                                   self.node.port,
-                                                                   self.node.iface,
-                                                                   self.nic)
+                      self.node.address,
+                      self.node.port,
+                      self.node.iface,
+                      self.nic)
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         if self.ibft:
             return set(["iscsi_firmware"])
 
@@ -412,8 +418,8 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         if ":" in address:
             address = "[%s]" % address
 
-        netroot="netroot=iscsi:"
-        auth = self.node.getAuth()
+        netroot = "netroot=iscsi:"
+        auth = self.node.get_auth()
         if auth:
             netroot += "%s:%s" % (auth.username, auth.password)
             if len(auth.reverse_username) or len(auth.reverse_password):
@@ -432,7 +438,9 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
 
         return set([netroot, initiator])
 
+
 class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
+
     """ An FCoE disk. """
     _type = "fcoe"
     _packages = ["fcoe-utils", "dracut-network"]
@@ -459,7 +467,7 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         log.debug("created new fcoe disk %s (%s) @ %s",
                   device, self.identifier, self.nic)
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         dcb = True
 
         for nic, dcb, _auto_vlan in fcoe().nics:
@@ -469,17 +477,18 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
             return set()
 
         if dcb:
-            dcbOpt = "dcb"
+            dcb_opt = "dcb"
         else:
-            dcbOpt = "nodcb"
+            dcb_opt = "nodcb"
 
         if self.nic in fcoe().added_nics:
-            return set(["fcoe=%s:%s" % (self.nic, dcbOpt)])
+            return set(["fcoe=%s:%s" % (self.nic, dcb_opt)])
         else:
-            return set(["fcoe=edd:%s" % dcbOpt])
+            return set(["fcoe=edd:%s" % dcb_opt])
 
 
 class ZFCPDiskDevice(DiskDevice):
+
     """ A mainframe ZFCP disk. """
     _type = "zfcp"
 
@@ -519,10 +528,12 @@ class ZFCPDiskDevice(DiskDevice):
                   'wwpn': self.wwpn,
                   'lun': self.fcp_lun}
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         return set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
 
+
 class DASDDevice(DiskDevice):
+
     """ A mainframe DASD. """
     _type = "dasd"
 
@@ -550,15 +561,15 @@ class DASDDevice(DiskDevice):
     def description(self):
         return "DASD device %s" % self.busid
 
-    def getOpts(self):
+    def get_opts(self):
         return ["%s=%s" % (k, v) for k, v in self.opts.items() if v == '1']
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         conf = "/etc/dasd.conf"
         line = None
         if os.path.isfile(conf):
             f = open(conf)
-            # grab the first line that starts with our busID
+            # grab the first line that starts with our bus_id
             for l in f.readlines():
                 if l.startswith(self.busid):
                     line = l.rstrip()
@@ -566,10 +577,10 @@ class DASDDevice(DiskDevice):
 
             f.close()
 
-        # See if we got a line.  If not, grab our getOpts
+        # See if we got a line.  If not, grab our get_opts
         if not line:
             line = self.busid
-            for devopt in self.getOpts():
+            for devopt in self.get_opts():
                 line += " %s" % devopt
 
         # Create a translation mapping from dasd.conf format to module format

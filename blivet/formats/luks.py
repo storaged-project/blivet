@@ -40,15 +40,16 @@ log = logging.getLogger("blivet")
 
 
 class LUKS(DeviceFormat):
+
     """ LUKS """
     _type = "luks"
     _name = N_("LUKS")
-    _lockedName = N_("Encrypted")
-    _udevTypes = ["crypto_LUKS"]
+    _locked_name = N_("Encrypted")
+    _udev_types = ["crypto_LUKS"]
     _formattable = True                 # can be formatted
-    _linuxNative = True                 # for clearpart
+    _linux_native = True                 # for clearpart
     _packages = ["cryptsetup"]          # required packages
-    _minSize = crypto.LUKS_METADATA_SIZE
+    _min_size = crypto.LUKS_METADATA_SIZE
     _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
 
     def __init__(self, **kwargs):
@@ -86,7 +87,7 @@ class LUKS(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
         self.cipher = kwargs.get("cipher")
         self.key_size = kwargs.get("key_size")
-        self.mapName = kwargs.get("name")
+        self.map_name = kwargs.get("name")
 
         if not self.exists and not self.cipher:
             self.cipher = "aes-xts-plain64"
@@ -105,10 +106,10 @@ class LUKS(DeviceFormat):
             msg = "Invalid value for minimum required entropy: %s" % self.min_luks_entropy
             raise ValueError(msg)
 
-        if not self.mapName and self.exists and self.uuid:
-            self.mapName = "luks-%s" % self.uuid
-        elif not self.mapName and self.device:
-            self.mapName = "luks-%s" % os.path.basename(self.device)
+        if not self.map_name and self.exists and self.uuid:
+            self.map_name = "luks-%s" % self.uuid
+        elif not self.map_name and self.device:
+            self.map_name = "luks-%s" % os.path.basename(self.device)
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -116,42 +117,42 @@ class LUKS(DeviceFormat):
             passphrase = "(set)"
         else:
             passphrase = "(not set)"
-        s += ("  cipher = %(cipher)s  keySize = %(keySize)s"
-              "  mapName = %(mapName)s\n"
-              "  keyFile = %(keyFile)s  passphrase = %(passphrase)s\n"
-              "  escrowCert = %(escrowCert)s  addBackup = %(backup)s" %
-              {"cipher": self.cipher, "keySize": self.key_size,
-               "mapName": self.mapName, "keyFile": self._key_file,
-               "passphrase": passphrase, "escrowCert": self.escrow_cert,
+        s += ("  cipher = %(cipher)s  key_size = %(key_size)s"
+              "  map_name = %(map_name)s\n"
+              "  key_file = %(key_file)s  passphrase = %(passphrase)s\n"
+              "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s" %
+              {"cipher": self.cipher, "key_size": self.key_size,
+               "map_name": self.map_name, "key_file": self._key_file,
+               "passphrase": passphrase, "escrow_cert": self.escrow_cert,
                "backup": self.add_backup_passphrase})
         return s
 
     @property
     def dict(self):
         d = super(LUKS, self).dict
-        d.update({"cipher": self.cipher, "keySize": self.key_size,
-                  "mapName": self.mapName, "hasKey": self.hasKey,
-                  "escrowCert": self.escrow_cert,
+        d.update({"cipher": self.cipher, "key_size": self.key_size,
+                  "map_name": self.map_name, "has_key": self.has_key,
+                  "escrow_cert": self.escrow_cert,
                   "backup": self.add_backup_passphrase})
         return d
 
     @property
     def name(self):
         # for existing locked devices, show "Encrypted" instead of LUKS
-        if self.hasKey or not self.exists:
+        if self.has_key or not self.exists:
             name = _(self._name)
         else:
-            name = "%s (%s)" % (_(self._lockedName), _(self._name))
+            name = "%s (%s)" % (_(self._locked_name), _(self._name))
         return name
 
-    def _setPassphrase(self, passphrase):
+    def _set_passphrase(self, passphrase):
         """ Set the passphrase used to access this device. """
         self.__passphrase = passphrase
 
-    passphrase = property(fset=_setPassphrase)
+    passphrase = property(fset=_set_passphrase)
 
     @property
-    def hasKey(self):
+    def has_key(self):
         return ((self.__passphrase not in ["", None]) or
                 (self._key_file and os.access(self._key_file, os.R_OK)))
 
@@ -170,25 +171,25 @@ class LUKS(DeviceFormat):
     @property
     def configured(self):
         """ To be ready we need a key or passphrase and a map name. """
-        return self.hasKey and self.mapName
+        return self.has_key and self.map_name
 
     @property
     def status(self):
-        if not self.exists or not self.mapName:
+        if not self.exists or not self.map_name:
             return False
-        return os.path.exists("/dev/mapper/%s" % self.mapName)
+        return os.path.exists("/dev/mapper/%s" % self.map_name)
 
-    def _preSetup(self, **kwargs):
+    def _pre_setup(self, **kwargs):
         if not self.configured:
             raise LUKSError("luks device not configured")
 
-        return super(LUKS, self)._preSetup(**kwargs)
+        return super(LUKS, self)._pre_setup(**kwargs)
 
     def _setup(self, **kwargs):
-        log_method_call(self, device=self.device, mapName=self.mapName,
+        log_method_call(self, device=self.device, map_name=self.map_name,
                         type=self.type, status=self.status)
         try:
-            blockdev.crypto.luks_open(self.device, self.mapName,
+            blockdev.crypto.luks_open(self.device, self.map_name,
                                       passphrase=self.__passphrase,
                                       key_file=self._key_file)
         except blockdev.CryptoError as e:
@@ -198,18 +199,18 @@ class LUKS(DeviceFormat):
         """ Close, or tear down, the format. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        log.debug("unmapping %s", self.mapName)
-        blockdev.crypto.luks_close(self.mapName)
+        log.debug("unmapping %s", self.map_name)
+        blockdev.crypto.luks_close(self.map_name)
 
-    def _preCreate(self, **kwargs):
-        super(LUKS, self)._preCreate(**kwargs)
-        if not self.hasKey:
+    def _pre_create(self, **kwargs):
+        super(LUKS, self)._pre_create(**kwargs)
+        if not self.has_key:
             raise LUKSError("luks device has no key/passphrase")
 
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        super(LUKS, self)._create(**kwargs) # set up the event sync
+        super(LUKS, self)._create(**kwargs)  # set up the event sync
         blockdev.crypto.luks_format(self.device,
                                     passphrase=self.__passphrase,
                                     key_file=self._key_file,
@@ -217,22 +218,22 @@ class LUKS(DeviceFormat):
                                     key_size=self.key_size,
                                     min_entropy=self.min_luks_entropy)
 
-    def _postCreate(self, **kwargs):
-        super(LUKS, self)._postCreate(**kwargs)
+    def _post_create(self, **kwargs):
+        super(LUKS, self)._post_create(**kwargs)
         self.uuid = blockdev.crypto.luks_uuid(self.device)
-        if flags.installer_mode or not self.mapName:
-            self.mapName = "luks-%s" % self.uuid
+        if flags.installer_mode or not self.map_name:
+            self.map_name = "luks-%s" % self.uuid
 
     @property
     def destroyable(self):
         return self._plugin.available
 
     @property
-    def keyFile(self):
+    def key_file(self):
         """ Path to key file to be used in /etc/crypttab """
         return self._key_file
 
-    def addPassphrase(self, passphrase):
+    def add_passphrase(self, passphrase):
         """ Add a new passphrase.
 
             Add the specified passphrase to an available key slot in the
@@ -248,7 +249,7 @@ class LUKS(DeviceFormat):
                                      key_file=self._key_file,
                                      npass=passphrase)
 
-    def removePassphrase(self):
+    def remove_passphrase(self):
         """
         Remove the saved passphrase (and possibly key file) from the LUKS
         header.
@@ -264,12 +265,11 @@ class LUKS(DeviceFormat):
                                         pass_=self.__passphrase,
                                         key_file=self._key_file)
 
-    def escrow(self, directory, backupPassphrase):
-        log.debug("escrow: escrowVolume start for %s", self.device)
+    def escrow(self, directory, backup_passphrase):
+        log.debug("escrow: escrow_volume start for %s", self.device)
         blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
-                                      directory, backupPassphrase)
-        log.debug("escrow: escrowVolume done for %s", repr(self.device))
+                                      directory, backup_passphrase)
+        log.debug("escrow: escrow_volume done for %s", repr(self.device))
 
 
 register_device_format(LUKS)
-

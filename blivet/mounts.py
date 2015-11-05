@@ -28,7 +28,9 @@ from .devicelibs import btrfs
 import logging
 log = logging.getLogger("blivet")
 
+
 class _MountinfoCache(object):
+
     """ Cache for info from /proc/self/mountinfo. Looks up the root of the
         mount within the filesystem using a pair of mountpoint, mount
         source as keys.
@@ -43,7 +45,7 @@ class _MountinfoCache(object):
     def __init__(self):
         self._cache = None
 
-    def _getCache(self):
+    def _get_cache(self):
         """ Reads lines in /proc/self/mountinfo and builds a table. """
         cache = {}
 
@@ -64,7 +66,7 @@ class _MountinfoCache(object):
 
         return cache
 
-    def getRoot(self, devspec, mountpoint):
+    def get_root(self, devspec, mountpoint):
         """ Retrieves the root of the mount within the filesystem
             that corresponds to devspec and mountpoint.
 
@@ -74,22 +76,24 @@ class _MountinfoCache(object):
             :returns: the root of the mount within the filesystem, if available
         """
         if self._cache is None:
-            self._cache = self._getCache()
+            self._cache = self._get_cache()
 
         # get the canonical device path
         devspec = resolve_devspec(devspec, sysname=True)
         return self._cache.get((devspec, mountpoint))
 
+
 class MountsCache(object):
+
     """ Cache object for system mountpoints; checks /proc/mounts and
         /proc/self/mountinfo for up-to-date information.
     """
 
     def __init__(self):
-        self.mountsHash = 0
+        self.mounts_hash = 0
         self.mountpoints = defaultdict(list)
 
-    def getMountpoints(self, devspec, subvolspec=None):
+    def get_mountpoints(self, devspec, subvolspec=None):
         """ Get mountpoints for selected device
 
             :param devscpec: device specification, eg. "/dev/vda1"
@@ -103,7 +107,7 @@ class MountsCache(object):
                 Devices can be mounted on multiple paths, and paths can have multiple
                 devices mounted to them (hiding previous mounts). Callers should take this into account.
         """
-        self._cacheCheck()
+        self._cache_check()
 
         if subvolspec is not None:
             subvolspec = str(subvolspec)
@@ -121,16 +125,16 @@ class MountsCache(object):
 
         return self.mountpoints[(devspec, subvolspec)]
 
-    def isMountpoint(self, path):
+    def is_mountpoint(self, path):
         """ Check to see if a path is already mounted
 
             :param str path: Path to check
         """
-        self._cacheCheck()
+        self._cache_check()
 
         return any(path in p for p in self.mountpoints.values())
 
-    def _getActiveMounts(self):
+    def _get_active_mounts(self):
         """ Get information about mounted devices from /proc/mounts and
             /proc/self/mountinfo
 
@@ -151,7 +155,7 @@ class MountsCache(object):
                 devspec = resolve_devspec(devspec, sysname=True) or devspec
 
                 if fstype == "btrfs":
-                    root = mountinfo.getRoot(devspec, mountpoint)
+                    root = mountinfo.get_root(devspec, mountpoint)
                     if root is not None:
                         subvolspec = root[1:] or str(btrfs.MAIN_VOLUME_ID)
                         self.mountpoints[(devspec, subvolspec)].append(mountpoint)
@@ -160,14 +164,14 @@ class MountsCache(object):
                 else:
                     self.mountpoints[(devspec, None)].append(mountpoint)
 
-    def _cacheCheck(self):
+    def _cache_check(self):
         """ Computes the MD5 hash on /proc/mounts and updates the cache on change
         """
 
         md5hash = util.md5_file("/proc/mounts")
 
-        if md5hash != self.mountsHash:
-            self.mountsHash = md5hash
-            self._getActiveMounts()
+        if md5hash != self.mounts_hash:
+            self.mounts_hash = md5hash
+            self._get_active_mounts()
 
-mountsCache = MountsCache()
+mounts_cache = MountsCache()

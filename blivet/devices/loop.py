@@ -35,12 +35,14 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 class LoopDevice(StorageDevice):
+
     """ A loop device. """
     _type = "loop"
     _external_dependencies = [availability.BLOCKDEV_LOOP_PLUGIN]
 
-    def __init__(self, name=None, fmt=None, size=None, sysfsPath=None,
+    def __init__(self, name=None, fmt=None, size=None, sysfs_path=None,
                  exists=False, parents=None):
         """
             :param name: the device name (generally a device node's basename)
@@ -66,10 +68,10 @@ class LoopDevice(StorageDevice):
         StorageDevice.__init__(self, name, fmt=fmt, size=size,
                                exists=True, parents=parents)
 
-    def _setName(self, value):
+    def _set_name(self, value):
         self._name = value  # actual name is set by losetup
 
-    def updateName(self):
+    def update_name(self):
         """ Update this device's name. """
         if not self.slave.status:
             # if the backing device is inactive, so are we
@@ -95,10 +97,10 @@ class LoopDevice(StorageDevice):
     def size(self):
         return self.slave.size
 
-    def _preSetup(self, orig=False):
+    def _pre_setup(self, orig=False):
         if not os.path.exists(self.slave.path):
             raise errors.DeviceError("specified file (%s) does not exist" % self.slave.path)
-        return StorageDevice._preSetup(self, orig=orig)
+        return StorageDevice._pre_setup(self, orig=orig)
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -106,10 +108,10 @@ class LoopDevice(StorageDevice):
                         controllable=self.controllable)
         blockdev.loop.setup(self.slave.path)
 
-    def _postSetup(self):
-        StorageDevice._postSetup(self)
-        self.updateName()
-        self.updateSysfsPath()
+    def _post_setup(self):
+        StorageDevice._post_setup(self)
+        self.update_name()
+        self.update_sysfs_path()
 
     def _teardown(self, recursive=False):
         """ Close, or tear down, a device. """
@@ -117,10 +119,10 @@ class LoopDevice(StorageDevice):
                         controllable=self.controllable)
         blockdev.loop.teardown(self.path)
 
-    def _postTeardown(self, recursive=False):
-        StorageDevice._postTeardown(self, recursive=recursive)
+    def _post_teardown(self, recursive=False):
+        StorageDevice._post_teardown(self, recursive=recursive)
         self.name = "tmploop%d" % self.id
-        self.sysfsPath = ''
+        self.sysfs_path = ''
 
     @property
     def slave(self):

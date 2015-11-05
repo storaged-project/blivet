@@ -22,125 +22,170 @@
 
 from .i18n import N_
 
+
 class StorageError(Exception):
+
     def __init__(self, *args, **kwargs):
         self.hardware_fault = kwargs.pop("hardware_fault", False)
         super(StorageError, self).__init__(*args, **kwargs)
+
 
 class NoDisksError(StorageError):
     pass
 
 # Device
+
+
 class DeviceError(StorageError):
     pass
+
 
 class DeviceCreateError(DeviceError):
     pass
 
+
 class DeviceDestroyError(DeviceError):
     pass
+
 
 class DeviceResizeError(DeviceError):
     pass
 
+
 class DeviceSetupError(DeviceError):
     pass
 
+
 class DeviceTeardownError(DeviceError):
     pass
+
 
 class DeviceUserDeniedFormatError(DeviceError):
     pass
 
 # DeviceFormat
+
+
 class DeviceFormatError(StorageError):
     pass
+
 
 class FormatCreateError(DeviceFormatError):
     pass
 
+
 class FormatDestroyError(DeviceFormatError):
     pass
+
 
 class FormatSetupError(DeviceFormatError):
     pass
 
+
 class FormatTeardownError(DeviceFormatError):
     pass
+
 
 class DMRaidMemberError(DeviceFormatError):
     pass
 
+
 class MultipathMemberError(DeviceFormatError):
     pass
+
 
 class FSError(DeviceFormatError):
     pass
 
+
 class FSWriteLabelError(FSError):
     pass
+
 
 class FSReadLabelError(FSError):
     pass
 
+
 class FSResizeError(FSError):
+
     def __init__(self, message, details):
         FSError.__init__(self, message)
         self.details = details
 
+
 class LUKSError(DeviceFormatError):
     pass
+
 
 class MDMemberError(DeviceFormatError):
     pass
 
+
 class PhysicalVolumeError(DeviceFormatError):
     pass
+
 
 class SinglePhysicalVolumeError(DeviceFormatError):
     pass
 
+
 class SwapSpaceError(DeviceFormatError):
     pass
+
 
 class DiskLabelError(DeviceFormatError):
     pass
 
+
 class InvalidDiskLabelError(DiskLabelError):
     pass
 
+
 class DiskLabelCommitError(DiskLabelError):
     pass
+
 
 class AlignmentError(DiskLabelError):
     pass
 
 # devicelibs
+
+
 class RaidError(StorageError):
     pass
+
 
 class DMError(StorageError):
     pass
 
+
 class MPathError(StorageError):
     pass
 
+
 class BTRFSError(StorageError):
     pass
+
 
 class BTRFSValueError(BTRFSError, ValueError):
     pass
 
 # DeviceTree
+
+
 class DeviceTreeError(StorageError):
     pass
+
 
 class DeviceNotFoundError(StorageError):
     pass
 
+
 class UnusableConfigurationError(StorageError):
+
     """ User has an unusable initial storage configuration. """
     suggestion = ""
+
 
 class DiskLabelScanError(UnusableConfigurationError):
     suggestion = N_("For some reason we were unable to locate a disklabel on a "
@@ -148,10 +193,12 @@ class DiskLabelScanError(UnusableConfigurationError):
                     "unclear what the exact problem is. Please file a bug at "
                     "http://bugzilla.redhat.com")
 
+
 class CorruptGPTError(UnusableConfigurationError):
     suggestion = N_("Either restore the disklabel to a completely working "
                     "state or remove it completely.\n"
                     "Hint: parted can restore it or wipefs can remove it.")
+
 
 class DuplicateVGError(UnusableConfigurationError):
     suggestion = N_("Rename one of the volume groups so the names are "
@@ -161,39 +208,57 @@ class DuplicateVGError(UnusableConfigurationError):
                     "'pvs -o +vg_uuid'.")
 
 # DeviceAction
+
+
 class DeviceActionError(StorageError):
     pass
 
 # partitioning
+
+
 class PartitioningError(StorageError):
     pass
+
 
 class NotEnoughFreeSpaceError(StorageError):
     pass
 
 # udev
+
+
 class UdevError(StorageError):
     pass
 
 # fstab
+
+
 class UnrecognizedFSTabEntryError(StorageError):
     pass
+
 
 class FSTabTypeMismatchError(StorageError):
     pass
 
 # size
+
+
 class SizePlacesError(StorageError):
     pass
 
 # probing
+
+
 class UnknownSourceDeviceError(StorageError):
     pass
 
 # factories
+
+
 class DeviceFactoryError(StorageError):
     pass
 
+
 class AvailabilityError(StorageError):
+
     """ Raised if problem determining availability of external resource. """
     pass

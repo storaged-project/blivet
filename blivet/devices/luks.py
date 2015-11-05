@@ -28,13 +28,15 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .dm import DMCryptDevice
 
+
 class LUKSDevice(DMCryptDevice):
+
     """ A mapped LUKS device. """
     _type = "luks/dm-crypt"
     _packages = ["cryptsetup"]
 
     def __init__(self, name, fmt=None, size=None, uuid=None,
-                 exists=False, sysfsPath='', parents=None):
+                 exists=False, sysfs_path='', parents=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -46,13 +48,13 @@ class LUKSDevice(DMCryptDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword fmt: this device's formatting
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
-            :keyword sysfsPath: sysfs device path
-            :type sysfsPath: str
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
             :keyword uuid: the device UUID
             :type uuid: str
         """
         DMCryptDevice.__init__(self, name, fmt=fmt, size=size,
-                               parents=parents, sysfsPath=sysfsPath,
+                               parents=parents, sysfs_path=sysfs_path,
                                uuid=None, exists=exists)
 
     @property
@@ -64,25 +66,25 @@ class LUKSDevice(DMCryptDevice):
         if not self.exists:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
         else:
-            size = self.currentSize
+            size = self.current_size
         return size
 
-    def _postCreate(self):
-        self.name = self.slave.format.mapName
-        StorageDevice._postCreate(self)
+    def _post_create(self):
+        self.name = self.slave.format.map_name
+        StorageDevice._post_create(self)
 
-    def _postTeardown(self, recursive=False):
+    def _post_teardown(self, recursive=False):
         if not recursive:
-            # this is handled by StorageDevice._postTeardown if recursive
+            # this is handled by StorageDevice._post_teardown if recursive
             # is True
-            self.teardownParents(recursive=recursive)
+            self.teardown_parents(recursive=recursive)
 
-        StorageDevice._postTeardown(self, recursive=recursive)
+        StorageDevice._post_teardown(self, recursive=recursive)
 
-    def dracutSetupArgs(self):
+    def dracut_setup_args(self):
         return set(["rd.luks.uuid=luks-%s" % self.slave.format.uuid])
 
-    def populateKSData(self, data):
-        self.slave.populateKSData(data)
+    def populate_ksdata(self, data):
+        self.slave.populate_ksdata(data)
         data.encrypted = True
-        super(LUKSDevice, self).populateKSData(data)
+        super(LUKSDevice, self).populate_ksdata(data)

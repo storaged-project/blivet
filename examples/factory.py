@@ -11,35 +11,35 @@ b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
 disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
-b.config.diskImages["disk1"] = disk1_file
+b.config.disk_images["disk1"] = disk1_file
 disk2_file = create_sparse_tempfile("disk2", Size("100GiB"))
-b.config.diskImages["disk2"] = disk2_file
+b.config.disk_images["disk2"] = disk2_file
 
 b.reset()
 
 try:
-    disk1 = b.devicetree.getDeviceByName("disk1")
-    disk2 = b.devicetree.getDeviceByName("disk2")
-    disk1.format = blivet.formats.getFormat("disklabel", device=disk1.path)
-    disk2.format = blivet.formats.getFormat("disklabel", device=disk2.path)
+    disk1 = b.devicetree.get_device_by_name("disk1")
+    disk2 = b.devicetree.get_device_by_name("disk2")
+    disk1.format = blivet.formats.get_format("disklabel", device=disk1.path)
+    disk2.format = blivet.formats.get_format("disklabel", device=disk2.path)
 
     # create an lv named data in a vg named testvg
-    device = b.factoryDevice(blivet.devicefactory.DEVICE_TYPE_LVM,
-                             Size("50GiB"), disks=[disk1, disk2],
-                             fstype="xfs", mountpoint="/data")
+    device = b.factory_device(blivet.devicefactory.DEVICE_TYPE_LVM,
+                              Size("50GiB"), disks=[disk1, disk2],
+                              fstype="xfs", mountpoint="/data")
     print_devices(b)
 
     # change testvg to have an md RAID1 pv instead of partition pvs
-    device = b.factoryDevice(blivet.devicefactory.DEVICE_TYPE_LVM,
-                             Size("50GiB"), disks=[disk1, disk2],
-                             fstype="xfs", mountpoint="/data",
-                             container_raid_level="raid1",
-                             device=device)
+    device = b.factory_device(blivet.devicefactory.DEVICE_TYPE_LVM,
+                              Size("50GiB"), disks=[disk1, disk2],
+                              fstype="xfs", mountpoint="/data",
+                              container_raid_level="raid1",
+                              device=device)
     print_devices(b)
 
-    b.devicetree.processActions()
+    b.devicetree.process_actions()
     print_devices(b)
 finally:
-    b.devicetree.teardownDiskImages()
+    b.devicetree.teardown_disk_images()
     os.unlink(disk1_file)
     os.unlink(disk2_file)

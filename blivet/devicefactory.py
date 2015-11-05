@@ -25,14 +25,14 @@ from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
 from .devices import LUKSDevice, LVMLogicalVolumeDevice, LVMThinPoolDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
-from .formats import getFormat
+from .formats import get_format
 from .devicelibs import btrfs
 from .devicelibs import mdraid
 from .devicelibs import lvm
 from .devicelibs import raid
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
-from .partitioning import doPartitioning
+from .partitioning import do_partitioning
 from .size import Size
 
 import gi
@@ -53,6 +53,7 @@ DEVICE_TYPE_PARTITION = 2
 DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
+
 
 def is_supported_device_type(device_type):
     """ Return True if blivet supports this device type.
@@ -75,7 +76,8 @@ def is_supported_device_type(device_type):
     elif device_type == DEVICE_TYPE_MD:
         devices = [MDRaidArrayDevice]
 
-    return not any(c.unavailableTypeDependencies() for c in devices)
+    return not any(c.unavailable_type_dependencies() for c in devices)
+
 
 def get_supported_raid_levels(device_type):
     """ Return the supported raid levels for this device type.
@@ -95,9 +97,10 @@ def get_supported_raid_levels(device_type):
         pkg = mdraid
 
     if pkg and all(d.available for d in pkg.EXTERNAL_DEPENDENCIES):
-        return set(pkg.RAID_levels)
+        return set(pkg.raid_levels)
     else:
         return set()
+
 
 def get_device_type(device):
     # the only time we should ever get a thin pool here is when we're removing
@@ -113,13 +116,12 @@ def get_device_type(device):
                     "mdarray": DEVICE_TYPE_MD}
 
     use_dev = device.raw_device
-    if use_dev.isDisk:
+    if use_dev.is_disk:
         device_type = DEVICE_TYPE_DISK
     else:
         device_type = device_types.get(use_dev.type)
 
     return device_type
-
 
 
 def get_device_factory(blivet, device_type, size, **kwargs):
@@ -135,11 +137,12 @@ def get_device_factory(blivet, device_type, size, **kwargs):
 
     factory_class = class_table[device_type]
     log.debug("instantiating %s: %s, %s, %s, %s", factory_class,
-                blivet, size, [d.name for d in disks], kwargs)
+              blivet, size, [d.name for d in disks], kwargs)
     return factory_class(blivet, size, disks, **kwargs)
 
 
 class DeviceFactory(object):
+
     """ Class for creation of devices based on a top-down specification
 
         DeviceFactory instances can be combined/stacked to create more complex
@@ -219,7 +222,7 @@ class DeviceFactory(object):
 
             # Write the new devices to disk and create the filesystems they
             # contain.
-            _blivet.doIt()
+            _blivet.do_it()
 
 
         Some operations (on non-existent devices) these classes do support:
@@ -299,7 +302,7 @@ class DeviceFactory(object):
 
         if encrypted and size:
             # encrypted, bump size up with LUKS metadata size
-            size += getFormat("luks").minSize
+            size += get_format("luks").min_size
 
         self.storage = storage          # a Blivet instance
         self.size = size                # the requested size for this device
@@ -327,7 +330,7 @@ class DeviceFactory(object):
         self.device = device
 
         if not self.fstype:
-            self.fstype = self.storage.getFSType(mountpoint=self.mountpoint)
+            self.fstype = self.storage.get_fstype(mountpoint=self.mountpoint)
             if fstype == "swap":
                 self.mountpoint = None
 
@@ -357,7 +360,7 @@ class DeviceFactory(object):
         if value is None:
             self._raid_level = None
         else:
-            self._raid_level = raid.getRaidLevel(value)
+            self._raid_level = raid.get_raid_level(value)
 
     @property
     def container_raid_level(self):
@@ -375,12 +378,13 @@ class DeviceFactory(object):
         if value is None:
             self._container_raid_level = None
         else:
-            self._container_raid_level = raid.getRaidLevel(value)
+            self._container_raid_level = raid.get_raid_level(value)
     #
     # methods related to device size and disk space requirements
     #
+
     def _get_free_disk_space(self):
-        free_info = self.storage.getFreeSpace(disks=self.disks)
+        free_info = self.storage.get_free_space(disks=self.disks)
         return sum(d[0] for d in free_info.values())
 
     def _normalize_size(self):
@@ -388,11 +392,11 @@ class DeviceFactory(object):
             self._handle_no_size()
 
         size = self.size
-        fmt = getFormat(self.fstype)
-        if size < fmt.minSize:
-            size = fmt.minSize
-        elif fmt.maxSize and size > fmt.maxSize:
-            size = fmt.maxSize
+        fmt = get_format(self.fstype)
+        if size < fmt.min_size:
+            size = fmt.min_size
+        elif fmt.max_size and size > fmt.max_size:
+            size = fmt.max_size
 
         if self.size != size:
             log.debug("adjusted size from %s to %s to honor format limits",
@@ -516,7 +520,7 @@ class DeviceFactory(object):
                     break
         else:
             containers = [c for c in self.container_list
-                            if allow_existing or not c.exists]
+                          if allow_existing or not c.exists]
             if containers:
                 # XXX All containers should have a "free" attribute
                 containers.sort(key=lambda c: getattr(c, "freeSpace", c.size),
@@ -530,13 +534,12 @@ class DeviceFactory(object):
         self.container = self.get_container(device=self.raw_device,
                                             name=self.container_name)
 
-
     def _create_container(self):
         """ Create the container device required by this factory device. """
         parents = self._get_parent_devices()
         self.container = self._get_new_container(name=self.container_name,
                                                  parents=parents)
-        self.storage.createDevice(self.container)
+        self.storage.create_device(self.container)
         if self.container_name is None:
             self.container_name = self.container.name
 
@@ -638,7 +641,7 @@ class DeviceFactory(object):
             log.error("device instance creation failed: %s", e)
             raise
 
-        self.storage.createDevice(device)
+        self.storage.create_device(device)
         e = None
         try:
             self._post_create()
@@ -649,7 +652,7 @@ class DeviceFactory(object):
                 e = StorageError("failed to create device")
 
         if e:
-            self.storage.destroyDevice(device)
+            self.storage.destroy_device(device)
             raise StorageError(e)
 
         ret = device
@@ -658,13 +661,13 @@ class DeviceFactory(object):
             if self.label:
                 fmt_args["label"] = self.label
 
-            fmt = getFormat(self.fstype,
-                            mountpoint=self.mountpoint,
-                            min_luks_entropy=self.min_luks_entropy,
-                            **fmt_args)
+            fmt = get_format(self.fstype,
+                             mountpoint=self.mountpoint,
+                             min_luks_entropy=self.min_luks_entropy,
+                             **fmt_args)
             luks_device = LUKSDevice("luks-" + device.name,
                                      parents=[device], fmt=fmt)
-            self.storage.createDevice(luks_device)
+            self.storage.create_device(luks_device)
             ret = luks_device
 
         self.device = ret
@@ -706,26 +709,26 @@ class DeviceFactory(object):
             log.error("device post-create method failed: %s", e)
             raise
         else:
-            if (self.device.size < self.device.format.minSize or
-                (self.device.size == self.device.format.minSize and
-                 self.size > self.device.format.minSize)):
+            if (self.device.size < self.device.format.min_size or
+                (self.device.size == self.device.format.min_size and
+                 self.size > self.device.format.min_size)):
                 raise StorageError("failed to adjust device -- not enough free space in specified disks?")
 
     def _set_format(self):
         current_format = self.device.format
         if current_format.type != self.fstype:
-            new_format = getFormat(self.fstype,
-                                   mountpoint=self.mountpoint,
-                                   label=self.label,
-                                   exists=False)
-            self.storage.formatDevice(self.device, new_format)
+            new_format = get_format(self.fstype,
+                                    mountpoint=self.mountpoint,
+                                    label=self.label,
+                                    exists=False)
+            self.storage.format_device(self.device, new_format)
         else:
             if (hasattr(current_format, "mountpoint") and
-                current_format.mountpoint != self.mountpoint):
+                    current_format.mountpoint != self.mountpoint):
                 current_format.mountpoint = self.mountpoint
 
             if (hasattr(current_format, "label") and
-                current_format.label != self.label):
+                    current_format.label != self.label):
                 current_format.label = self.label
 
     def _set_encryption(self):
@@ -737,40 +740,40 @@ class DeviceFactory(object):
             leaf_format = self.device.format
             if parent_container:
                 parent_container.parents.remove(orig_device)
-            self.storage.destroyDevice(self.device)
-            self.storage.formatDevice(self.raw_device, leaf_format)
+            self.storage.destroy_device(self.device)
+            self.storage.format_device(self.raw_device, leaf_format)
             self.device = raw_device
             if parent_container:
                 parent_container.parents.append(self.device)
         elif self.encrypted and not isinstance(self.device, LUKSDevice):
             orig_device = self.device
             leaf_format = self.device.format
-            self.storage.formatDevice(self.device, getFormat("luks",
-                                                             min_luks_entropy=self.min_luks_entropy))
+            self.storage.format_device(self.device, get_format("luks",
+                                                               min_luks_entropy=self.min_luks_entropy))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
-            self.storage.createDevice(luks_device)
+            self.storage.create_device(luks_device)
             self.device = luks_device
             if parent_container:
                 parent_container.parents.replace(orig_device, self.device)
 
     def _set_name(self):
         if not self.device_name:
-            self.device_name = self.storage.suggestDeviceName(
-                                                  parent=self.container,
-                                                  swap=(self.fstype == "swap"),
-                                                  mountpoint=self.mountpoint)
+            self.device_name = self.storage.suggest_device_name(
+                parent=self.container,
+                swap=(self.fstype == "swap"),
+                mountpoint=self.mountpoint)
 
-        safe_new_name = self.storage.safeDeviceName(self.device_name)
+        safe_new_name = self.storage.safe_device_name(self.device_name)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
-                            self.device.name, safe_new_name)
+                          self.device.name, safe_new_name)
                 return
 
             log.debug("renaming device '%s' to '%s'",
-                        self.device.name, safe_new_name)
+                      self.device.name, safe_new_name)
             self.device.name = safe_new_name
 
     def _post_create(self):
@@ -793,7 +796,7 @@ class DeviceFactory(object):
         log.debug("child factory class: %s", self.child_factory_class)
         log.debug("child factory args: %s", args)
         log.debug("child factory kwargs: %s", kwargs)
-        factory = self.child_factory_class(*args, **kwargs) # pylint: disable=not-callable
+        factory = self.child_factory_class(*args, **kwargs)  # pylint: disable=not-callable
         self.child_factory = factory
         factory.parent_factory = self
 
@@ -885,21 +888,24 @@ class DeviceFactory(object):
         self.storage.devicetree.names = self.__names
         self.storage.roots = self.__roots
 
+
 class PartitionFactory(DeviceFactory):
+
     """ Factory class for creating a partition. """
     #
     # methods related to device size and disk space requirements
     #
+
     def _get_base_size(self):
         if self.device:
-            min_format_size = self.device.format.minSize
+            min_format_size = self.device.format.min_size
         else:
-            min_format_size = getFormat(self.fstype).minSize
+            min_format_size = get_format(self.fstype).min_size
 
         # min_format_size may be None here, make sure it is a number
         min_format_size = min_format_size or 0
         if self.encrypted:
-            min_format_size += getFormat("luks").minSize
+            min_format_size += get_format("luks").min_size
 
         return max(Size("1MiB"), min_format_size)
 
@@ -911,7 +917,7 @@ class PartitionFactory(DeviceFactory):
         """ Set the size of a defined factory device. """
         if self.raw_device and self.size != self.raw_device.size:
             log.info("adjusting device size from %s to %s",
-                            self.raw_device.size, self.size)
+                     self.raw_device.size, self.size)
 
             base_size = self._get_base_size()
             size = self._get_device_size()
@@ -941,9 +947,9 @@ class PartitionFactory(DeviceFactory):
         max_size = kwargs.pop("size")
         kwargs["size"] = self._get_base_size()
 
-        device = self.storage.newPartition(*args,
-                                           grow=True, maxsize=max_size,
-                                           **kwargs)
+        device = self.storage.new_partition(*args,
+                                            grow=True, maxsize=max_size,
+                                            **kwargs)
         return device
 
     def _set_disks(self):
@@ -954,13 +960,16 @@ class PartitionFactory(DeviceFactory):
 
     def _post_create(self):
         try:
-            doPartitioning(self.storage)
+            do_partitioning(self.storage)
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("failed to allocate partitions: %s", e)
             raise
 
+
 class PartitionSetFactory(PartitionFactory):
+
     """ Factory for creating a set of related partitions. """
+
     def __init__(self, storage, size, disks, fstype=None, encrypted=False,
                  devices=None):
         """ Create a new DeviceFactory instance.
@@ -979,8 +988,8 @@ class PartitionSetFactory(PartitionFactory):
                 devices             an initial set of devices
         """
         super(PartitionSetFactory, self).__init__(storage, size, disks,
-                                                     fstype=fstype,
-                                                     encrypted=encrypted)
+                                                  fstype=fstype,
+                                                  encrypted=encrypted)
         self._devices = []
         if devices:
             self._devices = devices
@@ -1023,7 +1032,7 @@ class PartitionSetFactory(PartitionFactory):
         log.debug("members: %s", [d.name for d in members])
 
         ##
-        ## Determine the target disk set.
+        # Determine the target disk set.
         ##
         # XXX how can we detect/handle failure to use one or more of the disks?
         if self.parent_factory.device:
@@ -1041,13 +1050,13 @@ class PartitionSetFactory(PartitionFactory):
         # drop any new disks that don't have free space
         min_free = min(Size("500MiB"), self.parent_factory.size)
         add_disks = [d for d in add_disks if d.partitioned and
-                                             d.format.free >= min_free]
+                     d.format.free >= min_free]
 
         log.debug("add_disks: %s", [d.name for d in add_disks])
         log.debug("remove_disks: %s", [d.name for d in remove_disks])
 
         ##
-        ## Make a list of members we'll later remove from dropped disks.
+        # Make a list of members we'll later remove from dropped disks.
         ##
         removed = []
         for member in members[:]:
@@ -1056,15 +1065,15 @@ class PartitionSetFactory(PartitionFactory):
                 members.remove(member)
 
         ##
-        ## Handle toggling of member encryption.
+        # Handle toggling of member encryption.
         ##
         for member in members[:]:
             member_encrypted = isinstance(member, LUKSDevice)
             if member_encrypted and not self.encrypted:
-                self.storage.destroyDevice(member)
+                self.storage.destroy_device(member)
                 members.remove(member)
-                self.storage.formatDevice(member.slave,
-                                          getFormat(self.fstype))
+                self.storage.format_device(member.slave,
+                                           get_format(self.fstype))
                 members.append(member.slave)
                 if container:
                     container.parents.replace(member, member.slave)
@@ -1073,12 +1082,12 @@ class PartitionSetFactory(PartitionFactory):
 
             if not member_encrypted and self.encrypted:
                 members.remove(member)
-                self.storage.formatDevice(member, getFormat("luks",
-                                                             min_luks_entropy=self.min_luks_entropy))
+                self.storage.format_device(member, get_format("luks",
+                                                              min_luks_entropy=self.min_luks_entropy))
                 luks_member = LUKSDevice("luks-%s" % member.name,
-                                    parents=[member],
-                                    fmt=getFormat(self.fstype))
-                self.storage.createDevice(luks_member)
+                                         parents=[member],
+                                         fmt=get_format(self.fstype))
+                self.storage.create_device(luks_member)
                 members.append(luks_member)
                 if container:
                     container.parents.replace(member, luks_member)
@@ -1086,7 +1095,7 @@ class PartitionSetFactory(PartitionFactory):
                 continue
 
         ##
-        ## Prepare previously allocated member partitions for reallocation.
+        # Prepare previously allocated member partitions for reallocation.
         ##
         base_size = self._get_base_size()
         for member in members[:]:
@@ -1098,7 +1107,7 @@ class PartitionSetFactory(PartitionFactory):
             member.req_grow = True
 
         ##
-        ## Define members on added disks.
+        # Define members on added disks.
         ##
         new_members = []
         for disk in add_disks:
@@ -1108,19 +1117,19 @@ class PartitionSetFactory(PartitionFactory):
                 member_format = self.fstype
 
             try:
-                member = self.storage.newPartition(parents=[disk], grow=True,
-                                           size=base_size,
-                                           fmt_type=member_format)
+                member = self.storage.new_partition(parents=[disk], grow=True,
+                                                    size=base_size,
+                                                    fmt_type=member_format)
             except (StorageError, blockdev.BlockDevError) as e:
                 log.error("failed to create new member partition: %s", e)
                 continue
 
-            self.storage.createDevice(member)
+            self.storage.create_device(member)
             if self.encrypted:
-                fmt = getFormat(self.fstype)
+                fmt = get_format(self.fstype)
                 member = LUKSDevice("luks-%s" % member.name,
                                     parents=[member], fmt=fmt)
-                self.storage.createDevice(member)
+                self.storage.create_device(member)
 
             members.append(member)
             new_members.append(member)
@@ -1128,7 +1137,7 @@ class PartitionSetFactory(PartitionFactory):
                 container.parents.append(member)
 
         ##
-        ## Remove members from dropped disks.
+        # Remove members from dropped disks.
         ##
         # Do this last to prevent tripping raid level constraints on the number
         # of members.
@@ -1137,18 +1146,18 @@ class PartitionSetFactory(PartitionFactory):
                 container.parents.remove(member)
 
             if isinstance(member, LUKSDevice):
-                self.storage.destroyDevice(member)
+                self.storage.destroy_device(member)
                 member = member.slave
 
-            self.storage.destroyDevice(member)
+            self.storage.destroy_device(member)
 
         ##
-        ## Determine target container size.
+        # Determine target container size.
         ##
         total_space = self.parent_factory._get_total_space()
 
         ##
-        ## Set up SizeSet to manage growth of member partitions.
+        # Set up SizeSet to manage growth of member partitions.
         ##
         log.debug("adding a %s with size %s",
                   self.parent_factory.size_set_class.__name__, total_space)
@@ -1159,11 +1168,13 @@ class PartitionSetFactory(PartitionFactory):
             member.req_max_size = size_set.size
 
         ##
-        ## Allocate the member partitions.
+        # Allocate the member partitions.
         ##
         self._post_create()
 
+
 class LVMFactory(DeviceFactory):
+
     """ Factory for creating LVM logical volumes with partition PVs. """
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "lvmpv"
@@ -1184,7 +1195,7 @@ class LVMFactory(DeviceFactory):
 
         if self.container and (self.container.exists or
                                self.container_size != SIZE_POLICY_AUTO):
-            self.size = self.container.freeSpace
+            self.size = self.container.free_space
 
             if self.container_size == SIZE_POLICY_MAX:
                 self.size += self._get_free_disk_space()
@@ -1203,7 +1214,7 @@ class LVMFactory(DeviceFactory):
 
     def _get_device_size(self):
         size = self.size
-        free = self.container.freeSpace
+        free = self.container.free_space
         if self.device:
             free += self.raw_device.size
 
@@ -1218,7 +1229,7 @@ class LVMFactory(DeviceFactory):
         size = self._get_device_size()
         if self.device and size != self.raw_device.size:
             log.info("adjusting device size from %s to %s",
-                            self.raw_device.size, size)
+                     self.raw_device.size, size)
             self.raw_device.size = size
             self.raw_device.req_grow = False
 
@@ -1232,7 +1243,7 @@ class LVMFactory(DeviceFactory):
             # automatic container size management
             if self.container:
                 size += sum([p.size for p in self.container.parents])
-                size -= self.container.freeSpace
+                size -= self.container.free_space
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
             if self.container:
@@ -1272,14 +1283,14 @@ class LVMFactory(DeviceFactory):
         return self.storage.vgs[:]
 
     def _get_new_container(self, *args, **kwargs):
-        return self.storage.newVG(*args, **kwargs)
+        return self.storage.new_vg(*args, **kwargs)
 
     def _check_container_size(self):
         """ Raise an exception if the container cannot hold its devices. """
         if not self.container:
             return
 
-        free_space = self.container.freeSpace + getattr(self.device, "size", 0)
+        free_space = self.container.free_space + getattr(self.device, "size", 0)
         if free_space < 0:
             raise DeviceFactoryError("container changes impossible due to "
                                      "the devices it already contains")
@@ -1297,27 +1308,27 @@ class LVMFactory(DeviceFactory):
                 kwargs["device"] = self.container.parents[0]
                 kwargs["name"] = self.container.parents[0].name
             else:
-                kwargs["name"] = self.storage.suggestDeviceName(prefix="pv")
+                kwargs["name"] = self.storage.suggest_device_name(prefix="pv")
 
         return kwargs
 
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
-        return self.storage.newLV(*args, **kwargs)
+        return self.storage.new_lv(*args, **kwargs)
 
     def _set_name(self):
         if not self.device_name:
-            self.device_name = self.storage.suggestDeviceName(
-                                                  parent=self.container,
-                                                  swap=(self.fstype == "swap"),
-                                                  mountpoint=self.mountpoint)
+            self.device_name = self.storage.suggest_device_name(
+                parent=self.container,
+                swap=(self.fstype == "swap"),
+                mountpoint=self.mountpoint)
 
         lvname = "%s-%s" % (self.container.name, self.device_name)
-        safe_new_name = self.storage.safeDeviceName(lvname)
+        safe_new_name = self.storage.safe_device_name(lvname)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
-                            self.device.name, safe_new_name)
+                          self.device.name, safe_new_name)
                 return
 
             if not safe_new_name.startswith(self.container.name):
@@ -1325,9 +1336,9 @@ class LVMFactory(DeviceFactory):
                 return
 
             # strip off the vg name before setting
-            safe_new_name = safe_new_name[len(self.container.name)+1:]
+            safe_new_name = safe_new_name[len(self.container.name) + 1:]
             log.debug("renaming device '%s' to '%s'",
-                        self.device.name, safe_new_name)
+                      self.device.name, safe_new_name)
             self.device.name = safe_new_name
 
     def _configure(self):
@@ -1341,21 +1352,23 @@ class LVMFactory(DeviceFactory):
                 use_dev = member.raw_device
 
                 if ((self.container_raid_level and use_dev.type != "mdarray") or
-                    (not self.container_raid_level and use_dev.type == "mdarray")):
+                        (not self.container_raid_level and use_dev.type == "mdarray")):
                     self.container.parents.remove(member)
-                    self.storage.destroyDevice(member)
+                    self.storage.destroy_device(member)
                     if member != use_dev:
-                        self.storage.destroyDevice(use_dev)
+                        self.storage.destroy_device(use_dev)
 
                     # for md pv we also need to remove the md member partitions
                     if not self.container_raid_level and \
                        use_dev.type == "mdarray":
                         for mdmember in use_dev.parents[:]:
-                            self.storage.destroyDevice(mdmember)
+                            self.storage.destroy_device(mdmember)
 
         super(LVMFactory, self)._configure()
 
+
 class LVMThinPFactory(LVMFactory):
+
     """ Factory for creating LVM using thin provisioning.
 
         This class will be very similar to LVMFactory except that there are two
@@ -1396,6 +1409,7 @@ class LVMThinPFactory(LVMFactory):
             - the pool will need to be adjusted on device removal, which means
               pool management must not be hidden in device management routines
     """
+
     def __init__(self, *args, **kwargs):
         # pool name is for identification -- not renaming
         self.pool_name = kwargs.pop("pool_name", None)
@@ -1410,9 +1424,9 @@ class LVMThinPFactory(LVMFactory):
         # calculate device size based on space in the pool
         pool_size = self.pool.size
         log.debug("pool size is %s", pool_size)
-        free = pool_size - self.pool.usedSpace
+        free = pool_size - self.pool.used_space
         if self.device:
-            free += self.raw_device.poolSpaceUsed
+            free += self.raw_device.pool_space_used
 
         size = self.size
         if free < size:
@@ -1447,12 +1461,12 @@ class LVMThinPFactory(LVMFactory):
         # this does not apply if a specific container size was requested
         if self.container_size in (SIZE_POLICY_AUTO, SIZE_POLICY_MAX):
             if self.container_size == SIZE_POLICY_AUTO and \
-               self.pool and not self.pool.exists and self.pool.freeSpace > 0:
+               self.pool and not self.pool.exists and self.pool.free_space > 0:
                 # this is mostly for cleaning up after removing a thin lv
-                size -= self.pool.freeSpace
+                size -= self.pool.free_space
                 log.debug("size cut to %s to omit pool free space", size)
 
-                pad = Size(blockdev.lvm.get_thpool_padding(self.pool.freeSpace, self._pesize))
+                pad = Size(blockdev.lvm.get_thpool_padding(self.pool.free_space, self._pesize))
                 size -= pad
                 log.debug("size cut to %s to omit pool padding from free "
                           "space", size)
@@ -1487,7 +1501,7 @@ class LVMThinPFactory(LVMFactory):
         # that would prevent users from setting up custom pools on tty2.
         pool = None
         pools = [p for p in self.pool_list if p.vg == self.container]
-        pools.sort(key=lambda p: p.freeSpace, reverse=True)
+        pools.sort(key=lambda p: p.free_space, reverse=True)
         if pools:
             new_pools = [p for p in pools if not p.exists]
             if new_pools:
@@ -1515,16 +1529,16 @@ class LVMThinPFactory(LVMFactory):
 
         log.debug("requested size is %s", self.size)
         size = self.size    # projected size for the pool (not padded)
-        free = Size(0)# total space within the vg that is available to us
+        free = Size(0)  # total space within the vg that is available to us
         if self.pool:
-            free += self.pool.freeSpace # pools are always auto-sized
+            free += self.pool.free_space  # pools are always auto-sized
             # pool lv sizes go toward projected pool size and vg free space
-            size += self.pool.usedSpace
-            free += self.pool.usedSpace
-            log.debug("increasing free and size by pool used (%s)", self.pool.usedSpace)
+            size += self.pool.used_space
+            free += self.pool.used_space
+            log.debug("increasing free and size by pool used (%s)", self.pool.used_space)
             if self.device:
-                log.debug("reducing size by device space (%s)", self.device.poolSpaceUsed)
-                size -= self.device.poolSpaceUsed   # don't count our device
+                log.debug("reducing size by device space (%s)", self.device.pool_space_used)
+                size -= self.device.pool_space_used   # don't count our device
 
             # increase vg free space by the size of the current pool's pad
             pad = Size(blockdev.lvm.get_thpool_padding(self.pool.size, self._pesize))
@@ -1532,7 +1546,7 @@ class LVMThinPFactory(LVMFactory):
             free += pad
 
         # round to nearest extent. free rounds down, size rounds up.
-        free = self.container.align(free + self.container.freeSpace)
+        free = self.container.align(free + self.container.free_space)
         size = self.container.align(size, roundup=True)
 
         pad = Size(blockdev.lvm.get_thpool_padding(size, self._pesize))
@@ -1540,7 +1554,7 @@ class LVMThinPFactory(LVMFactory):
         log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
         if free < (size + pad):
             pad = Size(blockdev.lvm.get_thpool_padding(free, self._pesize, included=True))
-            free = self.container.align(free - pad) # round down
+            free = self.container.align(free - pad)  # round down
             log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s", size, free, self.container.name)
             size = free
@@ -1566,7 +1580,7 @@ class LVMThinPFactory(LVMFactory):
             raise DeviceFactoryError("not enough free space for thin pool")
 
         self.pool = self._get_new_pool(size=size, parents=[self.container])
-        self.storage.createDevice(self.pool)
+        self.storage.create_device(self.pool)
 
     #
     # methods to configure the factory's container (both vg and pool)
@@ -1576,8 +1590,8 @@ class LVMThinPFactory(LVMFactory):
         self.pool = self.get_pool()
         if self.pool:
             log.debug("pool is %s ; size: %s ; free: %s", self.pool.name,
-                                                          self.pool.size,
-                                                          self.pool.freeSpace)
+                      self.pool.size,
+                      self.pool.free_space)
             for lv in self.pool.lvs:
                 log.debug("  %s size is %s", lv.name, lv.size)
 
@@ -1603,7 +1617,9 @@ class LVMThinPFactory(LVMFactory):
         kwargs["thin_volume"] = True
         return super(LVMThinPFactory, self)._get_new_device(*args, **kwargs)
 
+
 class MDFactory(DeviceFactory):
+
     """ Factory for creating MD RAID devices. """
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "mdmember"
@@ -1616,9 +1632,9 @@ class MDFactory(DeviceFactory):
 
     def _get_device_space(self):
         return self.raid_level.get_space(self.size,
-           len(self._get_member_devices()),
-           None,
-           blockdev.md.get_superblock_size)
+                                         len(self._get_member_devices()),
+                                         None,
+                                         blockdev.md.get_superblock_size)
 
     def _get_total_space(self):
         return self._get_device_space()
@@ -1632,9 +1648,9 @@ class MDFactory(DeviceFactory):
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
         kwargs["level"] = self.raid_level
-        kwargs["totalDevices"] = len(kwargs.get("parents"))
-        kwargs["memberDevices"] = len(kwargs.get("parents"))
-        return self.storage.newMDArray(*args, **kwargs)
+        kwargs["total_devices"] = len(kwargs.get("parents"))
+        kwargs["member_devices"] = len(kwargs.get("parents"))
+        return self.storage.new_mdarray(*args, **kwargs)
 
     @property
     def container_list(self):
@@ -1646,7 +1662,9 @@ class MDFactory(DeviceFactory):
     def _create_container(self, *args, **kwargs):
         pass
 
+
 class BTRFSFactory(DeviceFactory):
+
     """ BTRFS subvolume """
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "btrfs"
@@ -1658,7 +1676,7 @@ class BTRFSFactory(DeviceFactory):
             log.info("overriding encryption setting for btrfs factory")
             self.encrypted = False
 
-        self.container_raid_level = self.container_raid_level or btrfs.RAID_levels.raidLevel("single")
+        self.container_raid_level = self.container_raid_level or btrfs.raid_levels.raid_level("single")
         if self.container_raid_level.is_uniform:
             self.size_set_class = SameSizeSet
         else:
@@ -1707,25 +1725,25 @@ class BTRFSFactory(DeviceFactory):
 
     @property
     def container_list(self):
-        return self.storage.btrfsVolumes[:]
+        return self.storage.btrfs_volumes[:]
 
     def _get_new_container(self, *args, **kwargs):
-        return self.storage.newBTRFS(*args, **kwargs)
+        return self.storage.new_btrfs(*args, **kwargs)
 
     def _create_container(self):
         """ Create the container device required by this factory device. """
         parents = self._get_parent_devices()
         self.container = self._get_new_container(name=self.container_name,
-                                                 dataLevel=self.container_raid_level,
+                                                 data_level=self.container_raid_level,
                                                  parents=parents)
-        self.storage.createDevice(self.container)
+        self.storage.create_device(self.container)
 
     def _set_container_raid_level(self):
-        # TODO: write BTRFSVolumeDevice.setRAIDLevel
+        # TODO: write BTRFSVolumeDevice.set_raid_level
         # make sure the member count is adequate for the new level
 
         # set the new level
-        self.container.dataLevel = self.container_raid_level
+        self.container.data_level = self.container_raid_level
 
     def _get_child_factory_kwargs(self):
         kwargs = super(BTRFSFactory, self)._get_child_factory_kwargs()
@@ -1737,7 +1755,7 @@ class BTRFSFactory(DeviceFactory):
         kwargs["dataLevel"] = self.container_raid_level
         kwargs["metaDataLevel"] = self.container_raid_level
         kwargs["subvol"] = True
-        return self.storage.newBTRFS(*args, **kwargs)
+        return self.storage.new_btrfs(*args, **kwargs)
 
     def _set_name(self):
         super(BTRFSFactory, self)._set_name()

@@ -21,11 +21,14 @@
 
 __all__ = ["_", "N_", "P_"]
 
-import gettext, locale
+import gettext
+import locale
 import six
 
 # Create and cache a translations object for the current LC_MESSAGES value
 _cached_translations = {}
+
+
 def _get_translations():
     # Use setlocale instead of getlocale even though that looks like it makes no sense,
     # since this way we're just reading environment variables instead of mandating some

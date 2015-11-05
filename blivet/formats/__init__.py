@@ -43,15 +43,19 @@ log = logging.getLogger("blivet")
 
 
 device_formats = {}
+
+
 def register_device_format(fmt_class):
     if not issubclass(fmt_class, DeviceFormat):
         raise ValueError("arg1 must be a subclass of DeviceFormat")
 
     device_formats[fmt_class._type] = fmt_class
     log.debug("registered device format class %s as %s", fmt_class.__name__,
-                                                         fmt_class._type)
+              fmt_class._type)
 
 default_fstypes = ("ext4", "ext3", "ext2")
+
+
 def get_default_filesystem_type():
     for fstype in default_fstypes:
         try:
@@ -64,7 +68,8 @@ def get_default_filesystem_type():
 
     raise DeviceFormatError("None of %s is supported by your kernel" % ",".join(default_fstypes))
 
-def getFormat(fmt_type, *args, **kwargs):
+
+def get_format(fmt_type, *args, **kwargs):
     """ Return an instance of the appropriate DeviceFormat class.
 
         :param fmt_type: The name of the formatting type
@@ -92,8 +97,9 @@ def getFormat(fmt_type, *args, **kwargs):
         fmt._name = fmt_type
 
     log.debug("getFormat('%s') returning %s instance with object id %d",
-       fmt_type, fmt.__class__.__name__, fmt.id)
+              fmt_type, fmt.__class__.__name__, fmt.id)
     return fmt
+
 
 def collect_device_format_classes():
     """ Pick up all device format classes from this directory.
@@ -110,11 +116,12 @@ def collect_device_format_classes():
         (mod_name, ext) = os.path.splitext(module_file)
         if ext == ".py" and mod_name != myfile_name and not mod_name.startswith("."):
             try:
-                globals()[mod_name] = importlib.import_module("."+mod_name, package=__package__)
+                globals()[mod_name] = importlib.import_module("." + mod_name, package=__package__)
             except ImportError:
                 log.error("import of device format module '%s' failed", mod_name)
                 from traceback import format_exc
                 log.debug("%s", format_exc())
+
 
 def get_device_format_class(fmt_type):
     """ Return an appropriate format class.
@@ -135,13 +142,15 @@ def get_device_format_class(fmt_type):
             if fmt_type and fmt_type == fmt_class._name:
                 fmt = fmt_class
                 break
-            elif fmt_type in fmt_class._udevTypes:
+            elif fmt_type in fmt_class._udev_types:
                 fmt = fmt_class
                 break
 
     return fmt
 
+
 class DeviceFormat(ObjectID):
+
     """ Generic device format.
 
         This represents the absence of recognized formatting. That could mean a
@@ -150,20 +159,20 @@ class DeviceFormat(ObjectID):
     """
     _type = None
     _name = N_("Unknown")
-    _udevTypes = []
-    partedFlag = None
-    partedSystem = None
+    _udev_types = []
+    parted_flag = None
+    parted_system = None
     _formattable = False                # can be formatted
     _supported = False                  # is supported
-    _linuxNative = False                # for clearpart
+    _linux_native = False                # for clearpart
     _packages = []                      # required packages
     _resizable = False                  # can be resized
-    _maxSize = Size(0)                  # maximum size
-    _minSize = Size(0)                  # minimum size
+    _max_size = Size(0)                  # maximum size
+    _min_size = Size(0)                  # minimum size
     _dump = False
     _check = False
     _hidden = False                     # hide devices with this formatting?
-    _ksMountpoint = None
+    _ks_mountpoint = None
 
     def __init__(self, **kwargs):
         """
@@ -191,14 +200,14 @@ class DeviceFormat(ObjectID):
         self.uuid = kwargs.get("uuid")
         self.exists = kwargs.get("exists", False)
         self.options = kwargs.get("options")
-        self._createOptions = kwargs.get("createOptions")
+        self._create_options = kwargs.get("create_options")
 
     def __repr__(self):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
              "  type = %(type)s  name = %(name)s  status = %(status)s\n"
              "  device = %(device)s  uuid = %(uuid)s  exists = %(exists)s\n"
              "  options = %(options)s\n"
-             "  createOptions = %(createOptions)s  supported = %(supported)s"
+             "  create_options = %(create_options)s  supported = %(supported)s"
              "  formattable = %(format)s  resizable = %(resize)s\n" %
              {"classname": self.__class__.__name__, "id": "%#x" % id(self),
               "object_id": self.id,
@@ -206,7 +215,7 @@ class DeviceFormat(ObjectID):
               "device": self.device, "uuid": self.uuid, "exists": self.exists,
               "options": self.options, "supported": self.supported,
               "format": self.formattable, "resize": self.resizable,
-              "createOptions": self.createOptions})
+              "create_options": self.create_options})
         return s
 
     @property
@@ -225,14 +234,15 @@ class DeviceFormat(ObjectID):
         d = {"type": self.type, "name": self.name, "device": self.device,
              "uuid": self.uuid, "exists": self.exists,
              "options": self.options, "supported": self.supported,
-             "resizable": self.resizable, "createOptions": self.createOptions}
+             "resizable": self.resizable, "create_options": self.create_options}
+
         return d
 
     def labeling(self):
         """Returns False by default since most formats are non-labeling."""
         return False
 
-    def labelFormatOK(self, label):
+    def label_format_ok(self, label):
         """Checks whether the format of the label is OK for whatever
            application is used by blivet to write a label for this format.
            If there is no application that blivet uses to write a label,
@@ -246,7 +256,7 @@ class DeviceFormat(ObjectID):
         # pylint: disable=unused-argument
         return self.labeling()
 
-    def _setLabel(self, label):
+    def _set_label(self, label):
         """Sets the label for this format.
 
            :param label: the label for this format
@@ -275,7 +285,7 @@ class DeviceFormat(ObjectID):
         """
         self._label = label
 
-    def _getLabel(self):
+    def _get_label(self):
         """The label for this filesystem.
 
            :return: the label for this device
@@ -285,31 +295,31 @@ class DeviceFormat(ObjectID):
         """
         return self._label
 
-    def _setOptions(self, options):
+    def _set_options(self, options):
         self._options = options
 
-    def _getOptions(self):
+    def _get_options(self):
         return self._options
 
     options = property(
-       lambda s: s._getOptions(),
-       lambda s,v: s._setOptions(v),
-       doc="fstab entry option string"
+        lambda s: s._get_options(),
+        lambda s, v: s._set_options(v),
+        doc="fstab entry option string"
     )
 
-    def _setCreateOptions(self, options):
-        self._createOptions = options
+    def _set_create_options(self, options):
+        self._create_options = options
 
-    def _getCreateOptions(self):
-        return self._createOptions
+    def _get_create_options(self):
+        return self._create_options
 
-    createOptions = property(
-        lambda s: s._getCreateOptions(),
-        lambda s,v: s._setCreateOptions(v),
+    create_options = property(
+        lambda s: s._get_create_options(),
+        lambda s, v: s._set_create_options(v),
         doc="options to be used when running mkfs"
     )
 
-    def _deviceCheck(self, devspec):
+    def _device_check(self, devspec):
         """ Verifies that device spec has a proper format.
 
             :param devspec: the device spec
@@ -321,17 +331,17 @@ class DeviceFormat(ObjectID):
             return "device must be a fully qualified path"
         return None
 
-    def _setDevice(self, devspec):
-        error_msg = self._deviceCheck(devspec)
+    def _set_device(self, devspec):
+        error_msg = self._device_check(devspec)
         if error_msg:
             raise ValueError(error_msg)
         self._device = devspec
 
-    def _getDevice(self):
+    def _get_device(self):
         return self._device
 
-    device = property(lambda f: f._getDevice(),
-                      lambda f,d: f._setDevice(d),
+    device = property(lambda f: f._get_device(),
+                      lambda f, d: f._set_device(d),
                       doc="Full path the device this format occupies")
 
     @property
@@ -342,7 +352,7 @@ class DeviceFormat(ObjectID):
     def type(self):
         return self._type
 
-    def notifyKernel(self):
+    def notify_kernel(self):
         log_method_call(self, device=self.device,
                         type=self.type)
         if not self.device:
@@ -384,11 +394,11 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        self._preCreate(**kwargs)
+        self._pre_create(**kwargs)
         self._create(**kwargs)
-        self._postCreate(**kwargs)
+        self._post_create(**kwargs)
 
-    def _preCreate(self, **kwargs):
+    def _pre_create(self, **kwargs):
         """ Perform checks and setup prior to creating the format. """
         # allow late specification of device path
         device = kwargs.get("device")
@@ -410,9 +420,9 @@ class DeviceFormat(ObjectID):
         pass
 
     # pylint: disable=unused-argument
-    def _postCreate(self, **kwargs):
+    def _post_create(self, **kwargs):
         self.exists = True
-        self.notifyKernel()
+        self.notify_kernel()
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
@@ -422,12 +432,12 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        self._preDestroy(**kwargs)
+        self._pre_destroy(**kwargs)
         self._destroy(**kwargs)
-        self._postDestroy(**kwargs)
+        self._post_destroy(**kwargs)
 
     # pylint: disable=unused-argument
-    def _preDestroy(self, **kwargs):
+    def _pre_destroy(self, **kwargs):
         if not self.exists:
             raise DeviceFormatError("format has not been created")
 
@@ -452,9 +462,9 @@ class DeviceFormat(ObjectID):
             msg = "error wiping old signatures from %s: %s" % (self.device, err)
             raise FormatDestroyError(msg)
 
-    def _postDestroy(self, **kwargs):
+    def _post_destroy(self, **kwargs):
         self.exists = False
-        self.notifyKernel()
+        self.notify_kernel()
 
     @property
     def destroyable(self):
@@ -477,11 +487,11 @@ class DeviceFormat(ObjectID):
         """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self._preSetup(**kwargs):
+        if not self._pre_setup(**kwargs):
             return
 
         self._setup(**kwargs)
-        self._postSetup(**kwargs)
+        self._post_setup(**kwargs)
 
     @property
     def controllable(self):
@@ -493,7 +503,7 @@ class DeviceFormat(ObjectID):
         """
         return True
 
-    def _preSetup(self, **kwargs):
+    def _pre_setup(self, **kwargs):
         """ Return True if setup should proceed. """
         if not self.exists:
             raise FormatSetupError("format has not been created")
@@ -513,20 +523,20 @@ class DeviceFormat(ObjectID):
         pass
 
     # pylint: disable=unused-argument
-    def _postSetup(self, **kwargs):
+    def _post_setup(self, **kwargs):
         pass
 
     def teardown(self, **kwargs):
         """ Deactivate the formatting. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if not self._preTeardown(**kwargs):
+        if not self._pre_teardown(**kwargs):
             return
 
         self._teardown(**kwargs)
-        self._postTeardown(**kwargs)
+        self._post_teardown(**kwargs)
 
-    def _preTeardown(self, **kwargs):
+    def _pre_teardown(self, **kwargs):
         """ Return True if teardown should proceed. """
         if not self.exists:
             raise DeviceFormatError("format has not been created")
@@ -536,7 +546,7 @@ class DeviceFormat(ObjectID):
     def _teardown(self, **kwargs):
         pass
 
-    def _postTeardown(self, **kwargs):
+    def _post_teardown(self, **kwargs):
         pass
 
     @property
@@ -573,9 +583,9 @@ class DeviceFormat(ObjectID):
         return self._resizable and self.exists
 
     @property
-    def linuxNative(self):
+    def linux_native(self):
         """ Is this format type native to linux? """
-        return self._linuxNative
+        return self._linux_native
 
     @property
     def mountable(self):
@@ -593,12 +603,12 @@ class DeviceFormat(ObjectID):
         return self._check
 
     @property
-    def maxSize(self):
+    def max_size(self):
         """ Maximum size for this format type. """
-        return self._maxSize
+        return self._max_size
 
     @property
-    def minSize(self):
+    def min_size(self):
         """ Minimum size for this format instance.
 
             :returns: the minimum size for this format instance
@@ -606,7 +616,7 @@ class DeviceFormat(ObjectID):
 
             A value of 0 indicates an unknown size.
         """
-        return self._minSize
+        return self._min_size
 
     @property
     def hidden(self):
@@ -614,13 +624,13 @@ class DeviceFormat(ObjectID):
         return self._hidden
 
     @property
-    def ksMountpoint(self):
-        return (self._ksMountpoint or self.type or "")
+    def ks_mountpoint(self):
+        return (self._ks_mountpoint or self.type or "")
 
-    def populateKSData(self, data):
+    def populate_ksdata(self, data):
         data.format = not self.exists
         data.fstype = self.type
-        data.mountpoint = self.ksMountpoint
+        data.mountpoint = self.ks_mountpoint
 
 register_device_format(DeviceFormat)
 

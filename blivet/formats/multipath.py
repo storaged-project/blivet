@@ -32,13 +32,15 @@ from . import DeviceFormat, register_device_format
 import logging
 log = logging.getLogger("blivet")
 
+
 class MultipathMember(DeviceFormat):
+
     """ A multipath member disk. """
     _type = "multipath_member"
     _name = N_("multipath member device")
     _udev_types = ["multipath_member"]
     _supported = True                   # is supported
-    _packages = ["device-mapper-multipath"] # required packages
+    _packages = ["device-mapper-multipath"]  # required packages
     _hidden = True                      # hide devices with this formatting?
 
     def __init__(self, **kwargs):
@@ -59,14 +61,14 @@ class MultipathMember(DeviceFormat):
         s += ("  member = %(member)r" % {"member": self.member})
         return s
 
-    def _getMember(self):
+    def _get_member(self):
         return self._member
 
-    def _setMember(self, member):
+    def _set_member(self, member):
         self._member = member
 
-    member = property(lambda s: s._getMember(),
-                      lambda s,m: s._setMember(m))
+    member = property(lambda s: s._get_member(),
+                      lambda s, m: s._set_member(m))
 
     def create(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -79,4 +81,3 @@ class MultipathMember(DeviceFormat):
         raise MultipathMemberError("destruction of multipath members is non-sense")
 
 register_device_format(MultipathMember)
-

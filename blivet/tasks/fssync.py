@@ -30,48 +30,53 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSSync(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents syncing a filesystem. """
 
     description = "filesystem syncing"
 
     @abc.abstractmethod
-    def doTask(self):
+    def do_task(self):
         raise NotImplementedError()
 
+
 class XFSSync(FSSync):
+
     """ Sync application for XFS. """
 
     ext = availability.XFSFREEZE_APP
 
-    def _freezeCommand(self):
-        return [str(self.ext), "-f", self.fs.systemMountpoint]
+    def _freeze_command(self):
+        return [str(self.ext), "-f", self.fs.system_mountpoint]
 
-    def _unfreezeCommand(self):
-        return [str(self.ext), "-u", self.fs.systemMountpoint]
+    def _unfreeze_command(self):
+        return [str(self.ext), "-u", self.fs.system_mountpoint]
 
-    def doTask(self, root="/"):
+    def do_task(self, root="/"):
         # pylint: disable=arguments-differ
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         error_msg = None
         try:
-            rc = util.run_program(self._freezeCommand(), root=root)
+            rc = util.run_program(self._freeze_command(), root=root)
         except OSError as e:
             error_msg = "failed to sync filesytem: %s" % e
         error_msg = error_msg or rc
 
         try:
-            rc = util.run_program(self._unfreezeCommand(), root=root)
+            rc = util.run_program(self._unfreeze_command(), root=root)
         except OSError as e:
             error_msg = error_msg or "failed to sync filesystem: %s" % e
         error_msg = error_msg or rc
 
         if error_msg:
             raise FSError(error_msg)
+
 
 class UnimplementedFSSync(fstask.UnimplementedFSTask):
     pass

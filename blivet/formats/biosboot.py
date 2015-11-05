@@ -27,15 +27,17 @@ from .. import platform
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
+
 class BIOSBoot(DeviceFormat):
+
     """ BIOS boot partition for GPT disklabels. """
     _type = "biosboot"
     _name = N_("BIOS Boot")
-    partedFlag = PARTITION_BIOS_GRUB
+    parted_flag = PARTITION_BIOS_GRUB
     _formattable = True                 # can be formatted
-    _linuxNative = True                 # for clearpart
-    _maxSize = Size("2 MiB")
-    _minSize = Size("512 KiB")
+    _linux_native = True                 # for clearpart
+    _max_size = Size("2 MiB")
+    _min_size = Size("512 KiB")
     _supported = True
 
     def __init__(self, **kwargs):
@@ -57,7 +59,6 @@ class BIOSBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return super(BIOSBoot,self).supported and isinstance(platform.platform, platform.X86)
+        return super(BIOSBoot, self).supported and isinstance(platform.platform, platform.X86)
 
 register_device_format(BIOSBoot)
-

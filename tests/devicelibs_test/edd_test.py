@@ -7,14 +7,18 @@ import copy
 
 from blivet.devicelibs import edd
 
+
 class FakeDevice(object):
+
     def __init__(self, name):
         self.name = name
 
+
 class FakeEddEntry(edd.EddEntry):
+
     def __init__(self, sysfspath, **kw):
         edd.EddEntry.__init__(self, sysfspath)
-        for (name,value) in kw.items():
+        for (name, value) in kw.items():
             self.__dict__[name] = value
 
     @property
@@ -33,9 +37,10 @@ class FakeEddEntry(edd.EddEntry):
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+
 class EddTestCase(unittest.TestCase):
     _edd_logger = None
-    maxDiff = None
+    max_diff = None
 
     def setUp(self):
         super(EddTestCase, self).setUp()
@@ -63,13 +68,13 @@ class EddTestCase(unittest.TestCase):
         edd.log.setLevel(logging.DEBUG)
         newlog = mock.MagicMock(name='log')
         newlog.debug = mock.Mock(name='debug',
-                        side_effect=self._edd_logger.debug)
+                                 side_effect=self._edd_logger.debug)
         newlog.info = mock.Mock(name='info',
-                        side_effect=self._edd_logger.info)
+                                side_effect=self._edd_logger.info)
         newlog.warning = mock.Mock(name='warning',
-                        side_effect=self._edd_logger.warning)
+                                   side_effect=self._edd_logger.warning)
         newlog.error = mock.Mock(name='error',
-                        side_effect=self._edd_logger.error)
+                                 side_effect=self._edd_logger.error)
         edd.log = newlog
 
     def tearDown(self):
@@ -79,7 +84,7 @@ class EddTestCase(unittest.TestCase):
         edd.testdata_log.removeHandler(self.td_log_handler)
         super(EddTestCase, self).tearDown()
 
-    def checkLogs(self, debugs=None, infos=None, warnings=None, errors=None):
+    def check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
         def check(left, right_object):
             left = [mock.call(*x) for x in left or []]
             left.sort()
@@ -117,54 +122,54 @@ class EddTestCase(unittest.TestCase):
         edd.testdata_log.debug("starting test %s", self._testMethodName)
         fakeedd = {
             0x80: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
-                           sectors=312581808, host_bus="PCI", type="SATA",
-                           pci_dev="00:1f.2", channel=255, ata_device=1,
-                           interface="SATA    \tdevice: 1",
-                           sysfspath="/sys/firmware/edd/int13_dev80"),
+                               sectors=312581808, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=1,
+                               interface="SATA    \tdevice: 1",
+                               sysfspath="/sys/firmware/edd/int13_dev80"),
             0x81: FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
-                           sectors=31293440, host_bus="PCI", type="USB",
-                           pci_dev="ff:ff.255", channel=255,
-                           usb_serial=0x30302e31,
-                           interface="USB     \tserial_number: 30302e31",
-                           sysfspath="/sys/firmware/edd/int13_dev81"),
-            }
+                               sectors=31293440, host_bus="PCI", type="USB",
+                               pci_dev="ff:ff.255", channel=255,
+                               usb_serial=0x30302e31,
+                               interface="USB     \tserial_number: 30302e31",
+                               sysfspath="/sys/firmware/edd/int13_dev81"),
+        }
 
         edd_dict = edd.collect_edd_data()
         self.debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
-                    '/sys/firmware/edd/int13_dev80'),
+             '/sys/firmware/edd/int13_dev80'),
             ("edd: found device 0x%x at %s", 0x81,
-                    '/sys/firmware/edd/int13_dev81'),
-            ]
+             '/sys/firmware/edd/int13_dev81'),
+        ]
         self.assertEqual(len(edd_dict), 2)
         self.assertEqual(fakeedd[0x80], edd_dict[0x80])
         self.assertEqual(fakeedd[0x81], edd_dict[0x81])
-        self.checkLogs(debugs=debugs)
+        self.check_logs(debugs=debugs)
 
     def test_get_edd_dict_sata_usb(self):
         # test with sata sda, usb sdb
         self._set_fs_root(edd, "sata_usb")
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 )
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   )
         fakeedd = {
             0x80: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
-                           sectors=312581808, host_bus="PCI", type="SATA",
-                           pci_dev="00:1f.2", channel=255, ata_device=1,
-                           interface="SATA    \tdevice: 1",
-                           sysfspath="/sys/firmware/edd/int13_dev80",
-                           sysfslink="../devices/pci0000:00/0000:00:1f.2/ata2"\
-                                     "/host1/target1:0:0/1:0:0:0/block/sda"),
+                               sectors=312581808, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=1,
+                               interface="SATA    \tdevice: 1",
+                               sysfspath="/sys/firmware/edd/int13_dev80",
+                               sysfslink="../devices/pci0000:00/0000:00:1f.2/ata2"
+                               "/host1/target1:0:0/1:0:0:0/block/sda"),
             0x81: FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
-                           sectors=31293440, host_bus="PCI", type="USB",
-                           pci_dev="ff:ff.255", channel=255,
-                           usb_serial=0x30302e31,
-                           interface="USB     \tserial_number: 30302e31",
-                           sysfspath="/sys/firmware/edd/int13_dev81"),
-            }
+                               sectors=31293440, host_bus="PCI", type="USB",
+                               pci_dev="ff:ff.255", channel=255,
+                               usb_serial=0x30302e31,
+                               interface="USB     \tserial_number: 30302e31",
+                               sysfspath="/sys/firmware/edd/int13_dev81"),
+        }
 
         edd_dict = edd.get_edd_dict(devices)
         self.debug('edd_dict: %s', edd_dict)
@@ -175,19 +180,19 @@ class EddTestCase(unittest.TestCase):
             ("edd: data extracted from 0x%x:\n%s", 0x80, fakeedd[0x80]),
             ("edd: data extracted from 0x%x:\n%s", 0x81, fakeedd[0x81]),
             ("edd: found device 0x%x at %s", 0x80,
-                    '/sys/firmware/edd/int13_dev80'),
+             '/sys/firmware/edd/int13_dev80'),
             ("edd: found device 0x%x at %s", 0x81,
-                    '/sys/firmware/edd/int13_dev81'),
-            ]
+             '/sys/firmware/edd/int13_dev81'),
+        ]
         infos = [
             ("edd: MBR signature on %s is zero. new disk image?", "sda"),
-            ("edd: collected mbr signatures: %s",{'sdb': '0x96a20d28'}),
+            ("edd: collected mbr signatures: %s", {'sdb': '0x96a20d28'}),
             ("edd: matched 0x%x to %s using PCI dev", 0x80, "sda"),
             ("edd: matched 0x%x to %s using MBR sig", 0x81, "sdb"),
-            ]
+        ]
         warnings = [
             ("edd: interface type %s is not implemented (%s)", "USB",
                 "/sys/firmware/edd/int13_dev81"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
-            ]
-        self.checkLogs(debugs=debugs, infos=infos, warnings=warnings)
+        ]
+        self.check_logs(debugs=debugs, infos=infos, warnings=warnings)

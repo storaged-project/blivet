@@ -27,7 +27,7 @@ arguments.
 from collections import namedtuple
 
 # A private namedtuple class with self-descriptive fields for passing callbacks
-# to the blivet.doIt method. Each field should be populated with a function
+# to the blivet.do_it method. Each field should be populated with a function
 # taking the matching CallbackTypeData (create_format_pre ->
 # CreateFormatPreData, etc.)  object or None if no such callback is provided.
 _CallbacksRegister = namedtuple("_CallbacksRegister",
@@ -37,6 +37,7 @@ _CallbacksRegister = namedtuple("_CallbacksRegister",
                                  "resize_format_post",
                                  "wait_for_entropy",
                                  "report_progress"])
+
 
 def create_new_callbacks_register(create_format_pre=None,
                                   create_format_post=None,
@@ -77,4 +78,4 @@ ResizeFormatPostData = namedtuple("ResizeFormatPostData",
 WaitForEntropyData = namedtuple("WaitForEntropyData",
                                 ["msg", "min_entropy"])
 ReportProgressData = namedtuple("ReportProgressData",
-                                 ["msg"])
+                                ["msg"])

@@ -30,8 +30,10 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSWriteLabel(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents writing a label for a filesystem. """
 
     description = "write filesystem label"
@@ -41,7 +43,7 @@ class FSWriteLabel(task.BasicApplication, fstask.FSTask):
     # IMPLEMENTATION methods
 
     @property
-    def _setCommand(self):
+    def _set_command(self):
         """Get the command to label the filesystem.
 
            :return: the command
@@ -49,14 +51,15 @@ class FSWriteLabel(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.args
 
-    def doTask(self):
-        error_msgs = self.availabilityErrors
+    def do_task(self):
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSWriteLabelError("\n".join(error_msgs))
 
-        rc = util.run_program(self._setCommand)
+        rc = util.run_program(self._set_command)
         if rc:
             raise FSWriteLabelError("label failed")
+
 
 class DosFSWriteLabel(FSWriteLabel):
     ext = availability.DOSFSLABEL_APP
@@ -65,12 +68,14 @@ class DosFSWriteLabel(FSWriteLabel):
     def args(self):
         return [self.fs.device, self.fs.label]
 
+
 class Ext2FSWriteLabel(FSWriteLabel):
     ext = availability.E2LABEL_APP
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
+
 
 class JFSWriteLabel(FSWriteLabel):
     ext = availability.JFSTUNE_APP
@@ -79,12 +84,14 @@ class JFSWriteLabel(FSWriteLabel):
     def args(self):
         return ["-L", self.fs.label, self.fs.device]
 
+
 class NTFSWriteLabel(FSWriteLabel):
     ext = availability.NTFSLABEL_APP
 
     @property
     def args(self):
         return [self.fs.device, self.fs.label]
+
 
 class ReiserFSWriteLabel(FSWriteLabel):
     ext = availability.REISERFSTUNE_APP
@@ -93,12 +100,14 @@ class ReiserFSWriteLabel(FSWriteLabel):
     def args(self):
         return ["-l", self.fs.label, self.fs.device]
 
+
 class XFSWriteLabel(FSWriteLabel):
     ext = availability.XFSADMIN_APP
 
     @property
     def args(self):
         return ["-L", self.fs.label if self.fs.label != "" else "--", self.fs.device]
+
 
 class UnimplementedFSWriteLabel(fstask.UnimplementedFSTask):
     pass

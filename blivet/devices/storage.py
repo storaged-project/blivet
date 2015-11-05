@@ -29,9 +29,9 @@ from .. import util
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
-from ..formats import getFormat, DeviceFormat
+from ..formats import get_format, DeviceFormat
 from ..size import Size
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
@@ -40,7 +40,9 @@ from .device import Device
 from .network import NetworkStorageDevice
 from .lib import LINUX_SECTOR_SIZE
 
+
 class StorageDevice(Device):
+
     """ A generic storage device.
 
         A fully qualified path to the device node can be obtained via the
@@ -52,16 +54,16 @@ class StorageDevice(Device):
     """Whether this type of device is inherently resizable."""
 
     _type = "blivet"
-    _devDir = "/dev"
-    _formatImmutable = False
+    _dev_dir = "/dev"
+    _format_immutable = False
     _partitionable = False
-    _isDisk = False
+    _is_disk = False
     _encrypted = False
     _external_dependencies = []
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
-                 sysfsPath='', parents=None, exists=False, serial=None,
+                 sysfs_path='', parents=None, exists=False, serial=None,
                  vendor="", model="", bus=""):
         """
             :param name: the device name (generally a device node's basename)
@@ -76,8 +78,8 @@ class StorageDevice(Device):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword uuid: universally unique identifier (device -- not fs)
             :type uuid: str
-            :keyword sysfsPath: sysfs device path
-            :type sysfsPath: str
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
             :keyword major: the device major
             :type major: int
             :keyword minor: the device minor
@@ -99,28 +101,27 @@ class StorageDevice(Device):
         self.exists = exists
         self.uuid = uuid
 
-        # Set these fields before super call as MDRaidArrayDevice._addParent()
-        # reads them, through calls to status() and partedDevice().
-        self.sysfsPath = sysfsPath
-        self._partedDevice = None
+        # Set sysfs path before super call as MDRaidArrayDevice._add_parent()
+        # reads it via status().
+        self.sysfs_path = sysfs_path
 
-        self._format = getFormat(None)
+        self._format = get_format(None)
 
         # For non-existent devices, make sure the initial size is enough for
         # the format's metadata. This is mostly relevant for growable
         # partitions and lvs with thoughtless initial sizes.
-        if not self.exists and fmt and fmt.minSize:
-            min_size = max(util.numeric_type(size), fmt.minSize)
+        if not self.exists and fmt and fmt.min_size:
+            min_size = max(util.numeric_type(size), fmt.min_size)
             if min_size > util.numeric_type(size):
                 log.info("%s: using size %s instead of %s to accommodate "
                          "format minimum size", name, min_size, size)
                 size = min_size
 
-        # The size will be overridden by a call to updateSize at the end of this
+        # The size will be overridden by a call to update_size at the end of this
         # method for existing and active devices.
         self._size = Size(util.numeric_type(size))
-        self._targetSize = self._size
-        self._currentSize = self._size if self.exists else Size(0)
+        self._target_size = self._size
+        self._current_size = self._size if self.exists else Size(0)
         self.major = util.numeric_type(major)
         self.minor = util.numeric_type(minor)
         self._serial = serial
@@ -135,13 +136,13 @@ class StorageDevice(Device):
         super(StorageDevice, self).__init__(name, parents=parents)
 
         self.format = fmt
-        self.originalFormat = copy.deepcopy(self.format)
-        self.fstabComment = ""
+        self.original_format = copy.deepcopy(self.format)
+        self.fstab_comment = ""
 
-        self.deviceLinks = []
+        self.device_links = []
 
         if self.exists and self.status:
-            self.updateSize()
+            self.update_size()
 
     def __str__(self):
         exist = "existing"
@@ -166,7 +167,7 @@ class StorageDevice(Device):
         for parent in self.parents:
             _disks.extend(d for d in parent.disks if d not in _disks)
 
-        if self.isDisk and not self.format.hidden:
+        if self.is_disk and not self.format.hidden:
             _disks.append(self)
 
         return _disks
@@ -181,7 +182,7 @@ class StorageDevice(Device):
         """ The device itself, or when encrypted, the backing device. """
         return self
 
-    def _setName(self, value):
+    def _set_name(self, value):
         """Set the device's name.
 
         :param value: the new device name
@@ -191,7 +192,7 @@ class StorageDevice(Device):
         if value == self._name:
             return
 
-        super(StorageDevice, self)._setName(value)
+        super(StorageDevice, self)._set_name(value)
 
         # update our format's path
         # First, check that self._format has been defined in case this is
@@ -199,7 +200,7 @@ class StorageDevice(Device):
         if hasattr(self, "_format") and self.format.device:
             self.format.device = self.path
 
-    def alignTargetSize(self, newsize):
+    def align_target_size(self, newsize):
         """ Return a proposed target size adjusted for device specifics.
 
             :param :class:`~.Size` newsize: the proposed/unaligned target size
@@ -209,30 +210,30 @@ class StorageDevice(Device):
 
         return newsize
 
-    def _getTargetSize(self):
-        return self._targetSize
+    def _get_target_size(self):
+        return self._target_size
 
-    def _setTargetSize(self, newsize):
+    def _set_target_size(self, newsize):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if self.maxSize and newsize > self.maxSize:
+        if self.max_size and newsize > self.max_size:
             log.error("requested size %s is larger than maximum %s",
-                      newsize, self.maxSize)
+                      newsize, self.max_size)
             raise ValueError("size is larger than the maximum for this device")
-        elif self.minSize and newsize < self.minSize:
+        elif self.min_size and newsize < self.min_size:
             log.error("requested size %s is smaller than minimum %s",
-                      newsize, self.minSize)
+                      newsize, self.min_size)
             raise ValueError("size is smaller than the minimum for this device")
 
-        if self.alignTargetSize(newsize) != newsize:
+        if self.align_target_size(newsize) != newsize:
             raise ValueError("new size would violate alignment requirements")
 
-        self._targetSize = newsize
+        self._target_size = newsize
 
-    targetSize = property(lambda s: s._getTargetSize(),
-                          lambda s, v: s._setTargetSize(v),
-                          doc="Target size of this device")
+    target_size = property(lambda s: s._get_target_size(),
+                           lambda s, v: s._set_target_size(v),
+                           doc="Target size of this device")
 
     def __repr__(self):
         s = Device.__repr__(self)
@@ -241,32 +242,32 @@ class StorageDevice(Device):
               "  major = %(major)s  minor = %(minor)s  exists = %(exists)s"
               "  protected = %(protected)s\n"
               "  sysfs path = %(sysfs)s\n"
-              "  target size = %(targetSize)s  path = %(path)s\n"
-              "  format args = %(formatArgs)s  originalFormat = %(origFmt)s" %
+              "  target size = %(target_size)s  path = %(path)s\n"
+              "  format args = %(format_args)s  original_format = %(orig_fmt)s" %
               {"uuid": self.uuid, "format": self.format, "size": self.size,
                "major": self.major, "minor": self.minor, "exists": self.exists,
-               "sysfs": self.sysfsPath,
-               "targetSize": self.targetSize, "path": self.path,
+               "sysfs": self.sysfs_path,
+               "target_size": self.target_size, "path": self.path,
                "protected": self.protected,
-               "formatArgs": self.formatArgs, "origFmt": self.originalFormat.type})
+               "format_args": self.format_args, "orig_fmt": self.original_format.type})
         return s
 
     @property
     def dict(self):
-        d =  super(StorageDevice, self).dict
+        d = super(StorageDevice, self).dict
         d.update({"uuid": self.uuid, "size": self.size,
                   "format": self.format.dict, "removable": self.removable,
                   "major": self.major, "minor": self.minor,
-                  "exists": self.exists, "sysfs": self.sysfsPath,
-                  "targetSize": self.targetSize, "path": self.path})
+                  "exists": self.exists, "sysfs": self.sysfs_path,
+                  "target_size": self.target_size, "path": self.path})
         return d
 
     @property
     def path(self):
         """ Device node representing this device. """
-        return "%s/%s" % (self._devDir, self.name)
+        return "%s/%s" % (self._dev_dir, self.name)
 
-    def updateSysfsPath(self):
+    def update_sysfs_path(self):
         """ Update this device's sysfs path. """
         # We're using os.path.exists as a stand-in for status. We can't use
         # the status property directly because MDRaidArrayDevice.status calls
@@ -283,13 +284,13 @@ class StorageDevice(Device):
         # any errors that are raised.
         except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError, OSError) as e:
             log.error("failed to update sysfs path for %s: %s", self.name, e)
-            self.sysfsPath = ''
+            self.sysfs_path = ''
         else:
-            self.sysfsPath = udev_device.sys_path
-            log.debug("%s sysfsPath set to %s", self.name, self.sysfsPath)
+            self.sysfs_path = udev_device.sys_path
+            log.debug("%s sysfs_path set to %s", self.name, self.sysfs_path)
 
     @property
-    def formatArgs(self):
+    def format_args(self):
         """ Device-specific arguments to format creation program. """
         return []
 
@@ -300,7 +301,7 @@ class StorageDevice(Device):
                 (self.format.type is None or self.format.resizable or
                  not self.format.exists))
 
-    def notifyKernel(self):
+    def notify_kernel(self):
         """ Send a 'change' uevent to the kernel for this device. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
@@ -311,21 +312,21 @@ class StorageDevice(Device):
             log.debug("not sending change uevent for inactive device")
             return
 
-        path = os.path.normpath(self.sysfsPath)
+        path = os.path.normpath(self.sysfs_path)
         try:
             util.notify_kernel(path, action="change")
         except (ValueError, IOError) as e:
             log.warning("failed to notify kernel of change: %s", e)
 
     @property
-    def fstabSpec(self):
+    def fstab_spec(self):
         spec = self.path
         if self.format and self.format.uuid:
             spec = "UUID=%s" % self.format.uuid
         return spec
 
     def resize(self):
-        """ Resize a device to self.targetSize.
+        """ Resize a device to self.target_size.
 
             This method should only be invoked via the
             ActionResizeDevice.execute method. All the pre-conditions
@@ -358,7 +359,7 @@ class StorageDevice(Device):
     #
     # setup
     #
-    def _preSetup(self, orig=False):
+    def _pre_setup(self, orig=False):
         """ Preparation and pre-condition checking for device setup.
 
             Return True if setup should proceed or False if not.
@@ -369,7 +370,7 @@ class StorageDevice(Device):
         if self.status or not self.controllable:
             return False
 
-        self.setupParents(orig=orig)
+        self.setup_parents(orig=orig)
         return True
 
     def _setup(self, orig=False):
@@ -380,24 +381,24 @@ class StorageDevice(Device):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        if not self._preSetup(orig=orig):
+        if not self._pre_setup(orig=orig):
             return
 
         self._setup(orig=orig)
-        self._postSetup()
+        self._post_setup()
 
-    def _postSetup(self):
+    def _post_setup(self):
         """ Perform post-setup operations. """
         udev.settle()
-        self.updateSysfsPath()
+        self.update_sysfs_path()
         # the device may not be set up when we want information about it
         if self._size == Size(0):
-            self.updateSize()
+            self.update_size()
 
     #
     # teardown
     #
-    def _preTeardown(self, recursive=None):
+    def _pre_teardown(self, recursive=None):
         """ Preparation and pre-condition checking for device teardown.
 
             Return True if teardown should proceed or False if not.
@@ -408,8 +409,8 @@ class StorageDevice(Device):
         if not self.status or not self.controllable or self.protected:
             return False
 
-        if self.originalFormat.exists:
-            self.originalFormat.teardown()
+        if self.original_format.exists:
+            self.original_format.teardown()
         if self.format.exists:
             self.format.teardown()
         udev.settle()
@@ -423,28 +424,28 @@ class StorageDevice(Device):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        if not self._preTeardown(recursive=recursive):
+        if not self._pre_teardown(recursive=recursive):
             if recursive:
-                self.teardownParents(recursive=recursive)
+                self.teardown_parents(recursive=recursive)
             return
 
         self._teardown(recursive=recursive)
-        self._postTeardown(recursive=recursive)
+        self._post_teardown(recursive=recursive)
 
-    def _postTeardown(self, recursive=None):
+    def _post_teardown(self, recursive=None):
         """ Perform post-teardown operations. """
         if recursive:
-            self.teardownParents(recursive=recursive)
+            self.teardown_parents(recursive=recursive)
 
     #
     # create
     #
-    def _preCreate(self):
+    def _pre_create(self):
         """ Preparation and pre-condition checking for device creation. """
         if self.exists:
             raise errors.DeviceError("device has already been created", self.name)
 
-        self.setupParents()
+        self.setup_parents()
 
     def _create(self):
         """ Perform device-specific create operations. """
@@ -453,26 +454,26 @@ class StorageDevice(Device):
     def create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        self._preCreate()
+        self._pre_create()
         self._create()
-        self._postCreate()
+        self._post_create()
 
-    def _postCreate(self):
+    def _post_create(self):
         """ Perform post-create operations. """
         self.exists = True
         self.setup()
-        self.updateSysfsPath()
+        self.update_sysfs_path()
         udev.settle()
 
-        # make sure that targetSize is updated to reflect the actual size
-        self.updateSize()
+        # make sure that target_size is updated to reflect the actual size
+        self.update_size()
 
-        self._updateNetDevMountOption()
+        self._update_netdev_mount_option()
 
     #
     # destroy
     #
-    def _preDestroy(self):
+    def _pre_destroy(self):
         """ Preparation and precondition checking for device destruction. """
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
@@ -489,24 +490,24 @@ class StorageDevice(Device):
     def destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        self._preDestroy()
+        self._pre_destroy()
         self._destroy()
-        self._postDestroy()
+        self._post_destroy()
 
-    def _postDestroy(self):
+    def _post_destroy(self):
         """ Perform post-destruction operations. """
         self.exists = False
 
     #
     # parents' modifications/notifications
     #
-    def setupParents(self, orig=False):
+    def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
         log_method_call(self, name=self.name, orig=orig, kids=self.kids)
         for parent in self.parents:
             parent.setup(orig=orig)
             if orig:
-                _format = parent.originalFormat
+                _format = parent.original_format
             else:
                 _format = parent.format
 
@@ -515,7 +516,7 @@ class StorageDevice(Device):
                 _format.setup()
 
     # pylint: disable=unused-argument
-    def removeHook(self, modparent=True):
+    def remove_hook(self, modparent=True):
         """ Perform actions related to removing a device from the devicetree.
 
             :keyword bool modparent: whether to account for removal in parents
@@ -527,9 +528,9 @@ class StorageDevice(Device):
             override the default value of modparent in new code.
         """
         for parent in self.parents:
-            parent.removeChild()
+            parent.remove_child()
 
-    def addHook(self, new=True):
+    def add_hook(self, new=True):
         """ Perform actions related to adding a device to the devicetree.
 
             :keyword bool new: whether this device is new to the devicetree
@@ -540,20 +541,20 @@ class StorageDevice(Device):
         """
         if not new:
             for p in self.parents:
-                p.addChild()
+                p.add_child()
 
     #
     # size manipulations
     #
-    def _getSize(self):
+    def _get_size(self):
         """ Get the device's size, accounting for pending changes. """
         size = self._size
-        if self.exists and self.resizable and self.targetSize != Size(0):
-            size = self.targetSize
+        if self.exists and self.resizable and self.target_size != Size(0):
+            size = self.target_size
 
         return size
 
-    def _setSize(self, newsize):
+    def _set_size(self, newsize):
         """ Set the device's size to a new value.
 
             This is not adequate to set up a resize as it does not set a new
@@ -567,8 +568,8 @@ class StorageDevice(Device):
         # to this setter for an existing device should be to reflect existing
         # state.
         if not self.exists:
-            max_size = self.format.maxSize
-            min_size = self.format.minSize
+            max_size = self.format.max_size
+            min_size = self.format.min_size
             if max_size and newsize > max_size:
                 raise errors.DeviceError("device cannot be larger than %s" %
                                          max_size, self.name)
@@ -578,57 +579,57 @@ class StorageDevice(Device):
 
         self._size = newsize
 
-    size = property(lambda x: x._getSize(),
-                    lambda x, y: x._setSize(y),
+    size = property(lambda x: x._get_size(),
+                    lambda x, y: x._set_size(y),
                     doc="The device's size, accounting for pending changes")
 
-    def readCurrentSize(self):
+    def read_current_size(self):
         log_method_call(self, exists=self.exists, path=self.path,
-                        sysfsPath=self.sysfsPath)
+                        sysfs_path=self.sysfs_path)
         size = Size(0)
         if self.exists and os.path.exists(self.path) and \
-           os.path.isdir(self.sysfsPath):
-            blocks = int(util.get_sysfs_attr(self.sysfsPath, "size") or '0')
+           os.path.isdir(self.sysfs_path):
+            blocks = int(util.get_sysfs_attr(self.sysfs_path, "size") or '0')
             size = Size(blocks * LINUX_SECTOR_SIZE)
 
         return size
 
     @property
-    def currentSize(self):
+    def current_size(self):
         """ The device's actual size, generally the size discovered by using
             system tools. May use a cached value if the information is
             currently unavailable.
 
             If the device does not exist, then the actual size is 0.
         """
-        if self._currentSize == Size(0):
-            self._currentSize = self.readCurrentSize()
-        return self._currentSize
+        if self._current_size == Size(0):
+            self._current_size = self.read_current_size()
+        return self._current_size
 
-    def updateSize(self):
-        """ Update size, currentSize, and targetSize to actual size. """
-        self._currentSize = Size(0)
-        new_size = self.currentSize
+    def update_size(self):
+        """ Update size, current_size, and target_size to actual size. """
+        self._current_size = Size(0)
+        new_size = self.current_size
         self._size = new_size
-        self._targetSize = new_size # bypass setter checks
+        self._target_size = new_size  # bypass setter checks
         log.debug("updated %s size to %s (%s)", self.name, self.size, new_size)
 
     @property
-    def minSize(self):
+    def min_size(self):
         """ The minimum size this device can be. """
-        return self.alignTargetSize(self.format.minSize) if self.resizable else self.currentSize
+        return self.align_target_size(self.format.min_size) if self.resizable else self.current_size
 
     @property
-    def maxSize(self):
+    def max_size(self):
         """ The maximum size this device can be. """
-        return self.alignTargetSize(self.format.maxSize) if self.resizable else self.currentSize
+        return self.align_target_size(self.format.max_size) if self.resizable else self.current_size
 
     @property
     def growable(self):
         """ True if this device or its component devices are growable. """
         return getattr(self, "req_grow", False) or any(p.growable for p in self.parents)
 
-    def checkSize(self):
+    def check_size(self):
         """ Check to make sure the size of the device is allowed by the
             format used.
 
@@ -637,9 +638,9 @@ class StorageDevice(Device):
             1  - Too large
             -1 - Too small
         """
-        if self.format.maxSize and self.size > self.format.maxSize:
+        if self.format.max_size and self.size > self.format.max_size:
             return 1
-        elif self.format.minSize and self.size < self.format.minSize:
+        elif self.format.min_size and self.size < self.format.min_size:
             return -1
         return 0
 
@@ -647,7 +648,7 @@ class StorageDevice(Device):
     # status
     #
     @property
-    def mediaPresent(self):
+    def media_present(self):
         """ True if this device contains usable media. """
         return True
 
@@ -666,7 +667,7 @@ class StorageDevice(Device):
     #
     # format manipulations
     #
-    def _setFormat(self, fmt):
+    def _set_format(self, fmt):
         """ Set the Device's format.
 
             :param fmt: the new format or None
@@ -680,12 +681,12 @@ class StorageDevice(Device):
                 :attr:`format` should always be an instance of
                 :class:`~.formats.DeviceFormat`. To ensure this continues to be
                 the case, all subclasses that define their own :attr:`format`
-                setter should call :meth:`StorageDevice._setFormat` from their
+                setter should call :meth:`StorageDevice._set_format` from their
                 setter.
 
         """
         if not fmt:
-            fmt = getFormat(None, device=self.path, exists=self.exists)
+            fmt = get_format(None, device=self.path, exists=self.exists)
 
         if not isinstance(fmt, DeviceFormat):
             raise ValueError("format must be a DeviceFormat instance")
@@ -698,16 +699,16 @@ class StorageDevice(Device):
 
         # check device size against format limits
         if not fmt.exists:
-            if fmt.maxSize and fmt.maxSize < self.size:
+            if fmt.max_size and fmt.max_size < self.size:
                 raise errors.DeviceError("device is too large for new format")
-            elif fmt.minSize and fmt.minSize > self.size:
+            elif fmt.min_size and fmt.min_size > self.size:
                 raise errors.DeviceError("device is too small for new format")
 
         self._format = fmt
         self._format.device = self.path
-        self._updateNetDevMountOption()
+        self._update_netdev_mount_option()
 
-    def _updateNetDevMountOption(self):
+    def _update_netdev_mount_option(self):
         """ Fix mount options to include or exclude _netdev as appropriate. """
         if not hasattr(self._format, "mountpoint"):
             return
@@ -724,7 +725,7 @@ class StorageDevice(Device):
             option_list.append(netdev_option)
             self._format.options = ",".join(option_list)
 
-    def _getFormat(self):
+    def _get_format(self):
         """ Get the device's format instance.
 
             :returns: this device's format instance
@@ -738,27 +739,27 @@ class StorageDevice(Device):
         """
         return self._format
 
-    format = property(lambda d: d._getFormat(),
-                      lambda d,f: d._setFormat(f),
+    format = property(lambda d: d._get_format(),
+                      lambda d, f: d._set_format(f),
                       doc="The device's formatting.")
 
-    def preCommitFixup(self):
+    def pre_commit_fixup(self):
         """ Do any necessary pre-commit fixups."""
         pass
 
     @property
-    def formatImmutable(self):
+    def format_immutable(self):
         """ Is it possible to execute format actions on this device? """
-        return self._formatImmutable or self.protected
+        return self._format_immutable or self.protected
 
     #
     # misc properties
     #
     @property
     def removable(self):
-        devpath = os.path.normpath(self.sysfsPath)
+        devpath = os.path.normpath(self.sysfs_path)
         remfile = os.path.normpath("%s/removable" % devpath)
-        return (self.sysfsPath and os.path.exists(devpath) and
+        return (self.sysfs_path and os.path.exists(devpath) and
                 os.access(remfile, os.R_OK) and
                 open(remfile).readline().strip() == "1")
 
@@ -768,8 +769,8 @@ class StorageDevice(Device):
         return self.isleaf
 
     @property
-    def isDisk(self):
-        return self._isDisk
+    def is_disk(self):
+        return self._is_disk
 
     @property
     def partitionable(self):
@@ -791,9 +792,9 @@ class StorageDevice(Device):
     def vendor(self):
         return self._vendor
 
-    def populateKSData(self, data):
+    def populate_ksdata(self, data):
         # the common pieces are basically the formatting
-        self.format.populateKSData(data)
+        self.format.populate_ksdata(data)
 
         # this is a little bit of a hack for container member devices that
         # need aliases, but even more of a hack for btrfs since you cannot tell
@@ -806,7 +807,7 @@ class StorageDevice(Device):
             data.mountpoint += str(self.id)
 
     @classmethod
-    def isNameValid(cls, name):
+    def is_name_valid(cls, name):
         # This device corresponds to a file in /dev, so no /'s or nulls,
         # and the name cannot be . or ..
 
@@ -814,7 +815,7 @@ class StorageDevice(Device):
         # is an imperfect world of joy and sorrow mingled. For cciss, split
         # the path into its components and do the real check on each piece
         if name.startswith("cciss/"):
-            return all(cls.isNameValid(n) for n in name.split('/'))
+            return all(cls.is_name_valid(n) for n in name.split('/'))
 
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
@@ -823,7 +824,7 @@ class StorageDevice(Device):
     # dependencies
     #
     @classmethod
-    def typeExternalDependencies(cls):
+    def type_external_dependencies(cls):
         """ A list of external dependencies of this device type.
 
             :returns: a set of external dependencies
@@ -833,33 +834,33 @@ class StorageDevice(Device):
             device type and of all superclass device types.
         """
         return set(
-           d for p in cls.__mro__ if issubclass(p, StorageDevice) for d in p._external_dependencies
+            d for p in cls.__mro__ if issubclass(p, StorageDevice) for d in p._external_dependencies
         )
 
     @classmethod
-    def unavailableTypeDependencies(cls):
+    def unavailable_type_dependencies(cls):
         """ A set of unavailable dependencies for this type.
 
             :return: the unavailable external dependencies for this type
             :rtype: set of availability.ExternalResource
         """
-        return set(e for e in cls.typeExternalDependencies() if not e.available)
+        return set(e for e in cls.type_external_dependencies() if not e.available)
 
     @property
-    def externalDependencies(self):
+    def external_dependencies(self):
         """ A list of external dependencies of this device and its parents.
 
             :returns: the external dependencies of this device and all parents.
             :rtype: set of availability.ExternalResource
         """
-        return set(d for p in self.ancestors for d in p.typeExternalDependencies())
+        return set(d for p in self.ancestors for d in p.type_external_dependencies())
 
     @property
-    def unavailableDependencies(self):
+    def unavailable_dependencies(self):
         """ Any unavailable external dependencies of this device or its
             parents.
 
             :returns: A list of unavailable external dependencies.
-            :rtype: set of availability.externalResource
+            :rtype: set of availability.external_resource
         """
-        return set(e for e in self.externalDependencies if not e.available)
+        return set(e for e in self.external_dependencies if not e.available)

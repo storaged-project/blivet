@@ -2,6 +2,7 @@
 import unittest
 import mock
 
+
 class UdevTest(unittest.TestCase):
 
     def setUp(self):

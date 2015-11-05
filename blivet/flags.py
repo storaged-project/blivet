@@ -24,7 +24,9 @@ import selinux
 
 from .util import open  # pylint: disable=redefined-builtin
 
+
 class Flags(object):
+
     def __init__(self):
         #
         # mode of operation

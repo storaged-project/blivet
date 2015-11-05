@@ -2,9 +2,10 @@ import unittest
 
 import blivet
 
+
 class DeviceFormatTestCase(unittest.TestCase):
 
-    def testFormats(self):
+    def test_formats(self):
         absolute_path = "/abs/path"
         host_path = "host:path"
         garbage = "abc#<def>"
@@ -50,9 +51,10 @@ class DeviceFormatTestCase(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     an_fs.device = garbage
 
+
 class DeviceValueTestCase(unittest.TestCase):
 
-    def testValue(self):
+    def test_value(self):
         for fclass in blivet.formats.device_formats.values():
             an_fs = fclass()
 

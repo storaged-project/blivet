@@ -3,7 +3,7 @@ import unittest
 
 from tests.storagetestcase import StorageTestCase
 import blivet
-from blivet.formats import getFormat
+from blivet.formats import get_format
 from blivet.size import Size
 
 # device classes for brevity's sake -- later on, that is
@@ -24,15 +24,17 @@ from blivet.deviceaction import ActionAddMember
 from blivet.deviceaction import ActionRemoveMember
 
 DEVICE_CLASSES = [
-   DiskDevice,
-   PartitionDevice,
-   MDRaidArrayDevice,
-   LVMVolumeGroupDevice,
-   LVMLogicalVolumeDevice
+    DiskDevice,
+    PartitionDevice,
+    MDRaidArrayDevice,
+    LVMVolumeGroupDevice,
+    LVMLogicalVolumeDevice
 ]
 
-@unittest.skipUnless(not any(x.unavailableTypeDependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
+
     """ DeviceActionTestSuite """
 
     def setUp(self):
@@ -43,58 +45,58 @@ class DeviceActionTestCase(StorageTestCase):
         super(DeviceActionTestCase, self).setUp()
 
         for name in ["sda", "sdb", "sdc", "sdd"]:
-            disk = self.newDevice(device_class=DiskDevice,
-                                  name=name, size=Size("100 GiB"))
-            disk.format = self.newFormat("disklabel", path=disk.path,
-                                         exists=True)
-            self.storage.devicetree._addDevice(disk)
+            disk = self.new_device(device_class=DiskDevice,
+                                   name=name, size=Size("100 GiB"))
+            disk.format = self.new_format("disklabel", path=disk.path,
+                                          exists=True)
+            self.storage.devicetree._add_device(disk)
 
         # create a layout similar to autopart as a starting point
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
+        sda = self.storage.devicetree.get_device_by_name("sda")
+        sdb = self.storage.devicetree.get_device_by_name("sdb")
 
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              exists=True, name="sda1", parents=[sda],
-                              size=Size("500 MiB"))
-        sda1.format = self.newFormat("ext4", mountpoint="/boot",
-                                     device_instance=sda1,
-                                     device=sda1.path, exists=True)
-        self.storage.devicetree._addDevice(sda1)
+        sda1 = self.new_device(device_class=PartitionDevice,
+                               exists=True, name="sda1", parents=[sda],
+                               size=Size("500 MiB"))
+        sda1.format = self.new_format("ext4", mountpoint="/boot",
+                                      device_instance=sda1,
+                                      device=sda1.path, exists=True)
+        self.storage.devicetree._add_device(sda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.5 GiB"), name="sda2",
-                              parents=[sda], exists=True)
-        sda2.format = self.newFormat("lvmpv", device=sda2.path, exists=True)
-        self.storage.devicetree._addDevice(sda2)
+        sda2 = self.new_device(device_class=PartitionDevice,
+                               size=Size("99.5 GiB"), name="sda2",
+                               parents=[sda], exists=True)
+        sda2.format = self.new_format("lvmpv", device=sda2.path, exists=True)
+        self.storage.devicetree._add_device(sda2)
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.999 GiB"), name="sdb1",
-                              parents=[sdb], exists=True)
-        sdb1.format = self.newFormat("lvmpv", device=sdb1.path, exists=True)
-        self.storage.devicetree._addDevice(sdb1)
+        sdb1 = self.new_device(device_class=PartitionDevice,
+                               size=Size("99.999 GiB"), name="sdb1",
+                               parents=[sdb], exists=True)
+        sdb1.format = self.new_format("lvmpv", device=sdb1.path, exists=True)
+        self.storage.devicetree._add_device(sdb1)
 
-        vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="VolGroup", parents=[sda2, sdb1],
-                            exists=True)
-        self.storage.devicetree._addDevice(vg)
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="VolGroup", parents=[sda2, sdb1],
+                             exists=True)
+        self.storage.devicetree._add_device(vg)
 
-        lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_root", parents=[vg],
-                                 size=Size("160 GiB"), exists=True)
-        lv_root.format = self.newFormat("ext4", mountpoint="/",
-                                        device_instance=lv_root,
-                                        device=lv_root.path, exists=True)
-        self.storage.devicetree._addDevice(lv_root)
+        lv_root = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_root", parents=[vg],
+                                  size=Size("160 GiB"), exists=True)
+        lv_root.format = self.new_format("ext4", mountpoint="/",
+                                         device_instance=lv_root,
+                                         device=lv_root.path, exists=True)
+        self.storage.devicetree._add_device(lv_root)
 
-        lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_swap", parents=[vg],
-                                 size=Size("4000 MiB"), exists=True)
-        lv_swap.format = self.newFormat("swap", device=lv_swap.path,
-                                        device_instance=lv_swap,
-                                        exists=True)
-        self.storage.devicetree._addDevice(lv_swap)
+        lv_swap = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_swap", parents=[vg],
+                                  size=Size("4000 MiB"), exists=True)
+        lv_swap.format = self.new_format("swap", device=lv_swap.path,
+                                         device_instance=lv_swap,
+                                         exists=True)
+        self.storage.devicetree._add_device(lv_swap)
 
-    def testActions(self):
+    def test_actions(self):
         """ Verify correct management of actions.
 
             - action creation/registration/cancellation
@@ -125,101 +127,101 @@ class DeviceActionTestCase(StorageTestCase):
         devicetree = self.storage.devicetree
 
         # clear the disks
-        self.destroyAllDevices()
-        self.assertEqual(devicetree.getDevicesByType("lvmlv"), [])
-        self.assertEqual(devicetree.getDevicesByType("lvmvg"), [])
-        self.assertEqual(devicetree.getDevicesByType("partition"), [])
+        self.destroy_all_devices()
+        self.assertEqual(devicetree.get_devices_by_type("lvmlv"), [])
+        self.assertEqual(devicetree.get_devices_by_type("lvmvg"), [])
+        self.assertEqual(devicetree.get_devices_by_type("partition"), [])
 
-        sda = devicetree.getDeviceByName("sda")
+        sda = devicetree.get_device_by_name("sda")
         self.assertNotEqual(sda, None, "failed to find disk 'sda'")
 
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              name="sda1", size=Size("500 MiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda1)
+        sda1 = self.new_device(device_class=PartitionDevice,
+                               name="sda1", size=Size("500 MiB"),
+                               parents=[sda])
+        self.schedule_create_device(sda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              name="sda2", size=Size("100 GiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda2)
-        fmt = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateFormat(device=sda2, fmt=fmt)
+        sda2 = self.new_device(device_class=PartitionDevice,
+                               name="sda2", size=Size("100 GiB"),
+                               parents=[sda])
+        self.schedule_create_device(sda2)
+        fmt = self.new_format("lvmpv", device=sda2.path)
+        self.schedule_create_format(device=sda2, fmt=fmt)
 
-        vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="vg", parents=[sda2])
-        self.scheduleCreateDevice(vg)
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="vg", parents=[sda2])
+        self.schedule_create_device(vg)
 
-        lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_root", parents=[vg],
-                                 size=Size("60 GiB"))
-        self.scheduleCreateDevice(lv_root)
-        fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
-        self.scheduleCreateFormat(device=lv_root, fmt=fmt)
+        lv_root = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_root", parents=[vg],
+                                  size=Size("60 GiB"))
+        self.schedule_create_device(lv_root)
+        fmt = self.new_format("ext4", device=lv_root.path, mountpoint="/")
+        self.schedule_create_format(device=lv_root, fmt=fmt)
 
-        lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_swap", parents=[vg],
-                                 size=Size("4000 MiB"))
-        self.scheduleCreateDevice(lv_swap)
-        fmt = self.newFormat("swap", device=lv_swap.path)
-        self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
+        lv_swap = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_swap", parents=[vg],
+                                  size=Size("4000 MiB"))
+        self.schedule_create_device(lv_swap)
+        fmt = self.new_format("swap", device=lv_swap.path)
+        self.schedule_create_format(device=lv_swap, fmt=fmt)
 
-        sda3 = self.newDevice(device_class=PartitionDevice,
-                              name="sda3", parents=[sda],
-                              size=Size("40 GiB"))
-        self.scheduleCreateDevice(sda3)
-        fmt = self.newFormat("mdmember", device=sda3.path)
-        self.scheduleCreateFormat(device=sda3, fmt=fmt)
+        sda3 = self.new_device(device_class=PartitionDevice,
+                               name="sda3", parents=[sda],
+                               size=Size("40 GiB"))
+        self.schedule_create_device(sda3)
+        fmt = self.new_format("mdmember", device=sda3.path)
+        self.schedule_create_format(device=sda3, fmt=fmt)
 
-        sdb = devicetree.getDeviceByName("sdb")
+        sdb = devicetree.get_device_by_name("sdb")
         self.assertNotEqual(sdb, None, "failed to find disk 'sdb'")
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdb1", parents=[sdb],
-                              size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdb1)
-        fmt = self.newFormat("mdmember", device=sdb1.path,)
-        self.scheduleCreateFormat(device=sdb1, fmt=fmt)
+        sdb1 = self.new_device(device_class=PartitionDevice,
+                               name="sdb1", parents=[sdb],
+                               size=Size("40 GiB"))
+        self.schedule_create_device(sdb1)
+        fmt = self.new_format("mdmember", device=sdb1.path,)
+        self.schedule_create_format(device=sdb1, fmt=fmt)
 
-        md0 = self.newDevice(device_class=MDRaidArrayDevice,
-                             name="md0", level="raid0", minor=0,
-                             memberDevices=2, totalDevices=2,
-                             parents=[sdb1, sda3])
-        self.scheduleCreateDevice(md0)
+        md0 = self.new_device(device_class=MDRaidArrayDevice,
+                              name="md0", level="raid0", minor=0,
+                              member_devices=2, total_devices=2,
+                              parents=[sdb1, sda3])
+        self.schedule_create_device(md0)
 
-        fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
-        self.scheduleCreateFormat(device=md0, fmt=fmt)
+        fmt = self.new_format("ext4", device=md0.path, mountpoint="/home")
+        self.schedule_create_format(device=md0, fmt=fmt)
 
-        fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
-        self.scheduleCreateFormat(device=sda1, fmt=fmt)
+        fmt = self.new_format("ext4", mountpoint="/boot", device=sda1.path)
+        self.schedule_create_format(device=sda1, fmt=fmt)
 
-    def testActionCreation(self):
+    def test_action_creation(self):
         """ Verify correct operation of action class constructors. """
         # instantiation of device resize action for non-existent device should
         # fail
         # XXX resizable depends on existence, so this is covered implicitly
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
-        p = self.newDevice(device_class=PartitionDevice,
-                           name="sdd1", size=Size("32 GiB"), parents=[sdd])
+        sdd = self.storage.devicetree.get_device_by_name("sdd")
+        p = self.new_device(device_class=PartitionDevice,
+                            name="sdd1", size=Size("32 GiB"), parents=[sdd])
         with self.assertRaises(ValueError):
             ActionResizeDevice(p, p.size + Size("7232 MiB"))
 
         # instantiation of device resize action for non-resizable device
         # should fail
-        vg = self.storage.devicetree.getDeviceByName("VolGroup")
+        vg = self.storage.devicetree.get_device_by_name("VolGroup")
         self.assertNotEqual(vg, None)
         with self.assertRaises(ValueError):
             ActionResizeDevice(vg, vg.size + Size("32 MiB"))
 
         # instantiation of format resize action for non-resizable format type
         # should fail
-        lv_swap = self.storage.devicetree.getDeviceByName("VolGroup-lv_swap")
+        lv_swap = self.storage.devicetree.get_device_by_name("VolGroup-lv_swap")
         self.assertNotEqual(lv_swap, None)
         with self.assertRaises(ValueError):
             ActionResizeFormat(lv_swap, lv_swap.size + Size("32 MiB"))
 
         # instantiation of format resize action for non-existent format
         # should fail
-        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+        lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
         lv_root.format.exists = False
         with self.assertRaises(ValueError):
@@ -228,7 +230,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         # instantiation of device create action for existing device should
         # fail
-        lv_swap = self.storage.devicetree.getDeviceByName("VolGroup-lv_swap")
+        lv_swap = self.storage.devicetree.get_device_by_name("VolGroup-lv_swap")
         self.assertNotEqual(lv_swap, None)
         self.assertEqual(lv_swap.exists, True)
         with self.assertRaises(ValueError):
@@ -236,7 +238,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         # instantiation of format destroy action for device causes device's
         # format attribute to be a DeviceFormat instance
-        lv_swap = self.storage.devicetree.getDeviceByName("VolGroup-lv_swap")
+        lv_swap = self.storage.devicetree.get_device_by_name("VolGroup-lv_swap")
         self.assertNotEqual(lv_swap, None)
         orig_format = lv_swap.format
         self.assertEqual(lv_swap.format.type, "swap")
@@ -247,39 +249,39 @@ class DeviceActionTestCase(StorageTestCase):
 
         # instantiation of format create action for device causes new format
         # to be accessible via device's format attribute
-        new_format = getFormat("vfat", device=lv_swap.path)
+        new_format = get_format("vfat", device=lv_swap.path)
         create_swap = ActionCreateFormat(lv_swap, new_format)
         self.assertEqual(lv_swap.format.type, None)
         create_swap.apply()
         self.assertEqual(lv_swap.format, new_format)
         lv_swap.format = orig_format
 
-    def testActionRegistration(self):
+    def test_action_registration(self):
         """ Verify correct operation of action registration and cancelling. """
         # self.setUp has just been run, so we should have something like
         # a preexisting autopart config in the devicetree.
 
         # registering a destroy action for a non-leaf device should fail
-        vg = self.storage.devicetree.getDeviceByName("VolGroup")
+        vg = self.storage.devicetree.get_device_by_name("VolGroup")
         self.assertNotEqual(vg, None)
         self.assertEqual(vg.isleaf, False)
         a = ActionDestroyDevice(vg)
         with self.assertRaises(ValueError):
-            self.storage.devicetree.registerAction(a)
+            self.storage.devicetree.register_action(a)
 
         # registering any action other than create for a device that's not in
         # the devicetree should fail
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
         self.assertNotEqual(sdc, None)
-        sdc1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdc1", size=Size("100 GiB"),
-                              parents=[sdc], exists=True)
+        sdc1 = self.new_device(device_class=PartitionDevice,
+                               name="sdc1", size=Size("100 GiB"),
+                               parents=[sdc], exists=True)
 
-        sdc1_format = self.newFormat("ext2", device=sdc1.path, mountpoint="/")
+        sdc1_format = self.new_format("ext2", device=sdc1.path, mountpoint="/")
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
         create_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.registerAction(create_sdc1_format)
+            self.storage.devicetree.register_action(create_sdc1_format)
 
         sdc1_format.exists = True
         sdc1_format._resizable = True
@@ -287,57 +289,56 @@ class DeviceActionTestCase(StorageTestCase):
                                                 sdc1.size - Size("10 GiB"))
         resize_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.registerAction(resize_sdc1_format)
+            self.storage.devicetree.register_action(resize_sdc1_format)
 
         resize_sdc1 = ActionResizeDevice(sdc1, sdc1.size - Size("10 GiB"))
         resize_sdc1.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.registerAction(resize_sdc1)
+            self.storage.devicetree.register_action(resize_sdc1)
 
         resize_sdc1.cancel()
         resize_sdc1_format.cancel()
 
         destroy_sdc1_format = ActionDestroyFormat(sdc1)
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.registerAction(destroy_sdc1_format)
-
+            self.storage.devicetree.register_action(destroy_sdc1_format)
 
         destroy_sdc1 = ActionDestroyDevice(sdc1)
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.registerAction(destroy_sdc1)
+            self.storage.devicetree.register_action(destroy_sdc1)
 
         # registering a device destroy action should cause the device to be
         # removed from the devicetree
-        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+        lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
         a = ActionDestroyDevice(lv_root)
-        self.storage.devicetree.registerAction(a)
-        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+        self.storage.devicetree.register_action(a)
+        lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertEqual(lv_root, None)
-        self.storage.devicetree.cancelAction(a)
+        self.storage.devicetree.cancel_action(a)
 
         # registering a device create action should cause the device to be
         # added to the devicetree
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
+        sdd = self.storage.devicetree.get_device_by_name("sdd")
         self.assertNotEqual(sdd, None)
-        sdd1 = self.storage.devicetree.getDeviceByName("sdd1")
+        sdd1 = self.storage.devicetree.get_device_by_name("sdd1")
         self.assertEqual(sdd1, None)
-        sdd1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdd1", size=Size("100 GiB"),
-                              parents=[sdd])
+        sdd1 = self.new_device(device_class=PartitionDevice,
+                               name="sdd1", size=Size("100 GiB"),
+                               parents=[sdd])
         a = ActionCreateDevice(sdd1)
-        self.storage.devicetree.registerAction(a)
-        sdd1 = self.storage.devicetree.getDeviceByName("sdd1")
+        self.storage.devicetree.register_action(a)
+        sdd1 = self.storage.devicetree.get_device_by_name("sdd1")
         self.assertNotEqual(sdd1, None)
 
-    def testActionObsoletes(self):
+    def test_action_obsoletes(self):
         """ Verify correct operation of DeviceAction.obsoletes. """
-        self.destroyAllDevices(disks=["sdc"])
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        self.destroy_all_devices(disks=["sdc"])
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
         self.assertNotEqual(sdc, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdc1", parents=[sdc], size=Size("40 GiB"))
+        sdc1 = self.new_device(device_class=PartitionDevice,
+                               name="sdc1", parents=[sdc], size=Size("40 GiB"))
 
         # ActionCreateDevice
         #
@@ -354,8 +355,8 @@ class DeviceActionTestCase(StorageTestCase):
         #
         # - obsoletes other ActionCreateFormat instances w/ lower id and same
         #   device
-        format_1 = self.newFormat("ext3", mountpoint="/home", device=sdc1.path)
-        format_2 = self.newFormat("ext3", mountpoint="/opt", device=sdc1.path)
+        format_1 = self.new_format("ext3", mountpoint="/home", device=sdc1.path)
+        format_2 = self.new_format("ext3", mountpoint="/opt", device=sdc1.path)
         create_format_1 = ActionCreateFormat(sdc1, format_1)
         create_format_1.apply()
         create_format_2 = ActionCreateFormat(sdc1, format_2)
@@ -382,7 +383,7 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionCreateFormat
         #
         # - obsoletes resize format actions w/ lower id on same device
-        new_format = self.newFormat("ext4", mountpoint="/foo", device=sdc1.path)
+        new_format = self.new_format("ext4", mountpoint="/foo", device=sdc1.path)
         create_format_3 = ActionCreateFormat(sdc1, new_format)
         create_format_3.apply()
         self.assertEqual(create_format_3.obsoletes(resize_format_1), True)
@@ -438,9 +439,9 @@ class DeviceActionTestCase(StorageTestCase):
         # - obsoletes all but ActionDestroyFormat actions w/ lower id on the
         #   same existing device
         # sda1 exists
-        sda1 = self.storage.devicetree.getDeviceByName("sda1")
+        sda1 = self.storage.devicetree.get_device_by_name("sda1")
         self.assertNotEqual(sda1, None)
-        #sda1.format._resizable = True
+        # sda1.format._resizable = True
         resize_sda1_format = ActionResizeFormat(sda1,
                                                 sda1.size - Size("50 MiB"))
         resize_sda1_format.apply()
@@ -455,79 +456,79 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1), False)
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1_format), False)
 
-    def testActionPruning(self):
+    def test_action_pruning(self):
         """ Verify correct functioning of action pruning. """
-        self.destroyAllDevices()
+        self.destroy_all_devices()
 
-        sda = self.storage.devicetree.getDeviceByName("sda")
+        sda = self.storage.devicetree.get_device_by_name("sda")
         self.assertNotEqual(sda, None, "failed to find disk 'sda'")
 
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              name="sda1", size=Size("500 MiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda1)
+        sda1 = self.new_device(device_class=PartitionDevice,
+                               name="sda1", size=Size("500 MiB"),
+                               parents=[sda])
+        self.schedule_create_device(sda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              name="sda2", size=Size("100 GiB"),
-                              parents=[sda])
-        self.scheduleCreateDevice(sda2)
-        fmt = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateFormat(device=sda2, fmt=fmt)
+        sda2 = self.new_device(device_class=PartitionDevice,
+                               name="sda2", size=Size("100 GiB"),
+                               parents=[sda])
+        self.schedule_create_device(sda2)
+        fmt = self.new_format("lvmpv", device=sda2.path)
+        self.schedule_create_format(device=sda2, fmt=fmt)
 
-        vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="vg", parents=[sda2])
-        self.scheduleCreateDevice(vg)
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="vg", parents=[sda2])
+        self.schedule_create_device(vg)
 
-        lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_root", parents=[vg],
-                                 size=Size("60 GiB"))
-        self.scheduleCreateDevice(lv_root)
-        fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
-        self.scheduleCreateFormat(device=lv_root, fmt=fmt)
+        lv_root = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_root", parents=[vg],
+                                  size=Size("60 GiB"))
+        self.schedule_create_device(lv_root)
+        fmt = self.new_format("ext4", device=lv_root.path, mountpoint="/")
+        self.schedule_create_format(device=lv_root, fmt=fmt)
 
-        lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_swap", parents=[vg],
-                                 size=Size("4 GiB"))
-        self.scheduleCreateDevice(lv_swap)
-        fmt = self.newFormat("swap", device=lv_swap.path)
-        self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
+        lv_swap = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_swap", parents=[vg],
+                                  size=Size("4 GiB"))
+        self.schedule_create_device(lv_swap)
+        fmt = self.new_format("swap", device=lv_swap.path)
+        self.schedule_create_format(device=lv_swap, fmt=fmt)
 
         # we'll soon schedule destroy actions for these members and the array,
         # which will test pruning. the whole mess should reduce to nothing
-        sda3 = self.newDevice(device_class=PartitionDevice,
-                              name="sda3", parents=[sda],
-                              size=Size("40 GiB"))
-        self.scheduleCreateDevice(sda3)
-        fmt = self.newFormat("mdmember", device=sda3.path)
-        self.scheduleCreateFormat(device=sda3, fmt=fmt)
+        sda3 = self.new_device(device_class=PartitionDevice,
+                               name="sda3", parents=[sda],
+                               size=Size("40 GiB"))
+        self.schedule_create_device(sda3)
+        fmt = self.new_format("mdmember", device=sda3.path)
+        self.schedule_create_format(device=sda3, fmt=fmt)
 
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
+        sdb = self.storage.devicetree.get_device_by_name("sdb")
         self.assertNotEqual(sdb, None, "failed to find disk 'sdb'")
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              name="sdb1", parents=[sdb],
-                              size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdb1)
-        fmt = self.newFormat("mdmember", device=sdb1.path,)
-        self.scheduleCreateFormat(device=sdb1, fmt=fmt)
+        sdb1 = self.new_device(device_class=PartitionDevice,
+                               name="sdb1", parents=[sdb],
+                               size=Size("40 GiB"))
+        self.schedule_create_device(sdb1)
+        fmt = self.new_format("mdmember", device=sdb1.path,)
+        self.schedule_create_format(device=sdb1, fmt=fmt)
 
-        md0 = self.newDevice(device_class=MDRaidArrayDevice,
-                             name="md0", level="raid0", minor=0,
-                             memberDevices=2, totalDevices=2,
-                             parents=[sdb1, sda3])
-        self.scheduleCreateDevice(md0)
+        md0 = self.new_device(device_class=MDRaidArrayDevice,
+                              name="md0", level="raid0", minor=0,
+                              member_devices=2, total_devices=2,
+                              parents=[sdb1, sda3])
+        self.schedule_create_device(md0)
 
-        fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
-        self.scheduleCreateFormat(device=md0, fmt=fmt)
+        fmt = self.new_format("ext4", device=md0.path, mountpoint="/home")
+        self.schedule_create_format(device=md0, fmt=fmt)
 
         # now destroy the md and its components
-        self.scheduleDestroyFormat(md0)
-        self.scheduleDestroyDevice(md0)
-        self.scheduleDestroyDevice(sdb1)
-        self.scheduleDestroyDevice(sda3)
+        self.schedule_destroy_format(md0)
+        self.schedule_destroy_device(md0)
+        self.schedule_destroy_device(sdb1)
+        self.schedule_destroy_device(sda3)
 
-        fmt = self.newFormat("ext4", mountpoint="/boot", device=sda1.path)
-        self.scheduleCreateFormat(device=sda1, fmt=fmt)
+        fmt = self.new_format("ext4", mountpoint="/boot", device=sda1.path)
+        self.schedule_create_format(device=sda1, fmt=fmt)
 
         # verify the md actions are present prior to pruning
         md0_actions = self.storage.devicetree.actions.find(devid=md0.id)
@@ -551,16 +552,16 @@ class DeviceActionTestCase(StorageTestCase):
         sda3_actions = self.storage.devicetree.actions.find(sda3.id)
         self.assertEqual(len(sda3_actions), 0)
 
-    def testActionDependencies(self):
+    def test_action_dependencies(self):
         """ Verify correct functioning of action dependencies. """
         # ActionResizeDevice
         # an action that shrinks a device should require the action that
         # shrinks the device's format
-        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+        lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
-        lv_root.format._minInstanceSize = Size("10 MiB")
-        lv_root.format._targetSize = lv_root.format._minInstanceSize
-        #lv_root.format._resizable = True
+        lv_root.format._min_instance_size = Size("10 MiB")
+        lv_root.format._target_size = lv_root.format._min_instance_size
+        # lv_root.format._resizable = True
         shrink_format = ActionResizeFormat(lv_root,
                                            lv_root.size - Size("5 GiB"))
         shrink_format.apply()
@@ -575,7 +576,7 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionResizeDevice
         # an action that grows a format should require the action that
         # grows the device
-        orig_size = lv_root.currentSize
+        orig_size = lv_root.current_size
         grow_device = ActionResizeDevice(lv_root,
                                          orig_size + Size("100 MiB"))
         grow_device.apply()
@@ -586,54 +587,54 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(grow_device.requires(grow_format), False)
 
         # create something like uncommitted autopart
-        self.destroyAllDevices()
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
-        sda1 = self.newDevice(device_class=PartitionDevice, name="sda1",
-                              size=Size("500 MiB"), parents=[sda])
-        sda1_format = self.newFormat("ext4", mountpoint="/boot",
-                                     device=sda1.path)
-        self.scheduleCreateDevice(sda1)
-        self.scheduleCreateFormat(device=sda1, fmt=sda1_format)
+        self.destroy_all_devices()
+        sda = self.storage.devicetree.get_device_by_name("sda")
+        sdb = self.storage.devicetree.get_device_by_name("sdb")
+        sda1 = self.new_device(device_class=PartitionDevice, name="sda1",
+                               size=Size("500 MiB"), parents=[sda])
+        sda1_format = self.new_format("ext4", mountpoint="/boot",
+                                      device=sda1.path)
+        self.schedule_create_device(sda1)
+        self.schedule_create_format(device=sda1, fmt=sda1_format)
 
-        sda2 = self.newDevice(device_class=PartitionDevice, name="sda2",
-                              size=Size("99.5 GiB"), parents=[sda])
-        sda2_format = self.newFormat("lvmpv", device=sda2.path)
-        self.scheduleCreateDevice(sda2)
-        self.scheduleCreateFormat(device=sda2, fmt=sda2_format)
+        sda2 = self.new_device(device_class=PartitionDevice, name="sda2",
+                               size=Size("99.5 GiB"), parents=[sda])
+        sda2_format = self.new_format("lvmpv", device=sda2.path)
+        self.schedule_create_device(sda2)
+        self.schedule_create_format(device=sda2, fmt=sda2_format)
 
-        sdb1 = self.newDevice(device_class=PartitionDevice, name="sdb1",
-                              size=Size("100 GiB"), parents=[sdb])
-        sdb1_format = self.newFormat("lvmpv", device=sdb1.path)
-        self.scheduleCreateDevice(sdb1)
-        self.scheduleCreateFormat(device=sdb1, fmt=sdb1_format)
+        sdb1 = self.new_device(device_class=PartitionDevice, name="sdb1",
+                               size=Size("100 GiB"), parents=[sdb])
+        sdb1_format = self.new_format("lvmpv", device=sdb1.path)
+        self.schedule_create_device(sdb1)
+        self.schedule_create_format(device=sdb1, fmt=sdb1_format)
 
-        vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="VolGroup", parents=[sda2, sdb1])
-        self.scheduleCreateDevice(vg)
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="VolGroup", parents=[sda2, sdb1])
+        self.schedule_create_device(vg)
 
-        lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_root", parents=[vg],
-                                 size=Size("160 GiB"))
-        self.scheduleCreateDevice(lv_root)
-        fmt = self.newFormat("ext4", device=lv_root.path, mountpoint="/")
-        self.scheduleCreateFormat(device=lv_root, fmt=fmt)
+        lv_root = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_root", parents=[vg],
+                                  size=Size("160 GiB"))
+        self.schedule_create_device(lv_root)
+        fmt = self.new_format("ext4", device=lv_root.path, mountpoint="/")
+        self.schedule_create_format(device=lv_root, fmt=fmt)
 
-        lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_swap", parents=[vg],
-                                 size=Size("4 GiB"))
-        self.scheduleCreateDevice(lv_swap)
-        fmt = self.newFormat("swap", device=lv_swap.path)
-        self.scheduleCreateFormat(device=lv_swap, fmt=fmt)
+        lv_swap = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_swap", parents=[vg],
+                                  size=Size("4 GiB"))
+        self.schedule_create_device(lv_swap)
+        fmt = self.new_format("swap", device=lv_swap.path)
+        self.schedule_create_format(device=lv_swap, fmt=fmt)
 
         # ActionCreateDevice
         # creation of an LV should require the actions that create the VG,
         # its PVs, and the devices that contain the PVs
-        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+        lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
         actions = self.storage.devicetree.actions.find(action_type="create",
-                                                      object_type="device",
-                                                      device=lv_root)
+                                                       object_type="device",
+                                                       device=lv_root)
         self.assertEqual(len(actions), 1,
                          "wrong number of device create actions for lv_root: "
                          "%d" % len(actions))
@@ -643,8 +644,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertNotEqual(vgs, [])
         vg = vgs[0]
         actions = self.storage.devicetree.actions.find(action_type="create",
-                                                      object_type="device",
-                                                      device=vg)
+                                                       object_type="device",
+                                                       device=vg)
         self.assertEqual(len(actions), 1,
                          "wrong number of device create actions for VolGroup")
         create_vg_action = actions[0]
@@ -657,7 +658,7 @@ class DeviceActionTestCase(StorageTestCase):
         for pv in pvs:
             # include device and format create actions for each pv
             actions = self.storage.devicetree.actions.find(action_type="create",
-                                                          device=pv)
+                                                           device=pv)
             self.assertEqual(len(actions), 2,
                              "wrong number of device create actions for "
                              "pv %s" % pv.name)
@@ -672,17 +673,17 @@ class DeviceActionTestCase(StorageTestCase):
         # the higher numbered partition of two that are scheduled to be
         # created on a single disk should require the action that creates the
         # lower numbered of the two, eg: create sda2 before creating sda3
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
         self.assertNotEqual(sdc, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("50 GiB"))
-        create_sdc1 = self.scheduleCreateDevice(sdc1)
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               parents=[sdc], size=Size("50 GiB"))
+        create_sdc1 = self.schedule_create_device(sdc1)
         self.assertEqual(isinstance(create_sdc1, ActionCreateDevice), True)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              parents=[sdc], size=Size("50 GiB"))
-        create_sdc2 = self.scheduleCreateDevice(sdc2)
+        sdc2 = self.new_device(device_class=PartitionDevice, name="sdc2",
+                               parents=[sdc], size=Size("50 GiB"))
+        create_sdc2 = self.schedule_create_device(sdc2)
         self.assertEqual(isinstance(create_sdc2, ActionCreateDevice), True)
 
         self.assertEqual(create_sdc2.requires(create_sdc1), True)
@@ -691,11 +692,11 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionCreateDevice
         # actions that create partitions on two separate disks should not
         # require each other, regardless of the partitions' numbers
-        sda1 = self.storage.devicetree.getDeviceByName("sda1")
+        sda1 = self.storage.devicetree.get_device_by_name("sda1")
         self.assertNotEqual(sda1, None)
         actions = self.storage.devicetree.actions.find(action_type="create",
-                                                      object_type="device",
-                                                      device=sda1)
+                                                       object_type="device",
+                                                       device=sda1)
         self.assertEqual(len(actions), 1,
                          "wrong number of create actions found for sda1")
         create_sda1 = actions[0]
@@ -706,36 +707,36 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that destroys a device containing an mdmember format
         # should require the action that destroys the md array it is a
         # member of if an array is defined
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        self.destroy_all_devices(disks=["sdc", "sdd"])
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
         self.assertNotEqual(sdc, None)
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
+        sdd = self.storage.devicetree.get_device_by_name("sdd")
         self.assertNotEqual(sdd, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdc1)
-        fmt = self.newFormat("mdmember", device=sdc1.path)
-        self.scheduleCreateFormat(device=sdc1, fmt=fmt)
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               parents=[sdc], size=Size("40 GiB"))
+        self.schedule_create_device(sdc1)
+        fmt = self.new_format("mdmember", device=sdc1.path)
+        self.schedule_create_format(device=sdc1, fmt=fmt)
 
-        sdd1 = self.newDevice(device_class=PartitionDevice, name="sdd1",
-                              parents=[sdd], size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdd1)
-        fmt = self.newFormat("mdmember", device=sdd1.path,)
-        self.scheduleCreateFormat(device=sdd1, fmt=fmt)
+        sdd1 = self.new_device(device_class=PartitionDevice, name="sdd1",
+                               parents=[sdd], size=Size("40 GiB"))
+        self.schedule_create_device(sdd1)
+        fmt = self.new_format("mdmember", device=sdd1.path,)
+        self.schedule_create_format(device=sdd1, fmt=fmt)
 
-        md0 = self.newDevice(device_class=MDRaidArrayDevice,
-                             name="md0", level="raid0", minor=0,
-                             memberDevices=2, totalDevices=2,
-                             parents=[sdc1, sdd1])
-        self.scheduleCreateDevice(md0)
-        fmt = self.newFormat("ext4", device=md0.path, mountpoint="/home")
-        self.scheduleCreateFormat(device=md0, fmt=fmt)
+        md0 = self.new_device(device_class=MDRaidArrayDevice,
+                              name="md0", level="raid0", minor=0,
+                              member_devices=2, total_devices=2,
+                              parents=[sdc1, sdd1])
+        self.schedule_create_device(md0)
+        fmt = self.new_format("ext4", device=md0.path, mountpoint="/home")
+        self.schedule_create_format(device=md0, fmt=fmt)
 
-        destroy_md0_format = self.scheduleDestroyFormat(md0)
-        destroy_md0 = self.scheduleDestroyDevice(md0)
-        destroy_members = [self.scheduleDestroyDevice(sdc1)]
-        destroy_members.append(self.scheduleDestroyDevice(sdd1))
+        destroy_md0_format = self.schedule_destroy_format(md0)
+        destroy_md0 = self.schedule_destroy_device(md0)
+        destroy_members = [self.schedule_destroy_device(sdc1)]
+        destroy_members.append(self.schedule_destroy_device(sdd1))
 
         for member in destroy_members:
             # device and format destroy actions for md members should require
@@ -748,41 +749,41 @@ class DeviceActionTestCase(StorageTestCase):
         # same disk, the action that will destroy the lower-numbered
         # partition should require the action that will destroy the higher-
         # numbered partition, eg: destroy sda2 before destroying sda1
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("50 GiB"))
-        self.scheduleCreateDevice(sdc1)
+        self.destroy_all_devices(disks=["sdc", "sdd"])
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               parents=[sdc], size=Size("50 GiB"))
+        self.schedule_create_device(sdc1)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              parents=[sdc], size=Size("40 GiB"))
-        self.scheduleCreateDevice(sdc2)
+        sdc2 = self.new_device(device_class=PartitionDevice, name="sdc2",
+                               parents=[sdc], size=Size("40 GiB"))
+        self.schedule_create_device(sdc2)
 
-        destroy_sdc1 = self.scheduleDestroyDevice(sdc1)
-        destroy_sdc2 = self.scheduleDestroyDevice(sdc2)
+        destroy_sdc1 = self.schedule_destroy_device(sdc1)
+        destroy_sdc2 = self.schedule_destroy_device(sdc2)
         self.assertEqual(destroy_sdc1.requires(destroy_sdc2), True)
         self.assertEqual(destroy_sdc2.requires(destroy_sdc1), False)
 
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        self.destroy_all_devices(disks=["sdc", "sdd"])
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
         self.assertNotEqual(sdc, None)
-        sdd = self.storage.devicetree.getDeviceByName("sdd")
+        sdd = self.storage.devicetree.get_device_by_name("sdd")
         self.assertNotEqual(sdd, None)
 
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              parents=[sdc], size=Size("50 GiB"))
-        create_pv = self.scheduleCreateDevice(sdc1)
-        fmt = self.newFormat("lvmpv", device=sdc1.path)
-        create_pv_format = self.scheduleCreateFormat(device=sdc1, fmt=fmt)
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               parents=[sdc], size=Size("50 GiB"))
+        create_pv = self.schedule_create_device(sdc1)
+        fmt = self.new_format("lvmpv", device=sdc1.path)
+        create_pv_format = self.schedule_create_format(device=sdc1, fmt=fmt)
 
-        testvg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                                name="testvg", parents=[sdc1])
-        create_vg = self.scheduleCreateDevice(testvg)
-        testlv = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                name="testlv", parents=[testvg],
-                                size=Size("30 GiB"))
-        create_lv = self.scheduleCreateDevice(testlv)
-        fmt = self.newFormat("ext4", device=testlv.path)
-        create_lv_format = self.scheduleCreateFormat(device=testlv, fmt=fmt)
+        testvg = self.new_device(device_class=LVMVolumeGroupDevice,
+                                 name="testvg", parents=[sdc1])
+        create_vg = self.schedule_create_device(testvg)
+        testlv = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                 name="testlv", parents=[testvg],
+                                 size=Size("30 GiB"))
+        create_lv = self.schedule_create_device(testlv)
+        fmt = self.new_format("ext4", device=testlv.path)
+        create_lv_format = self.schedule_create_format(device=testlv, fmt=fmt)
 
         # ActionCreateFormat
         # creation of a format on a non-existent device should require the
@@ -802,20 +803,20 @@ class DeviceActionTestCase(StorageTestCase):
 
         # XXX from here on, the devices are existing but not in the tree, so
         #     we instantiate and use actions directly
-        self.destroyAllDevices(disks=["sdc", "sdd"])
-        sdc1 = self.newDevice(device_class=PartitionDevice, exists=True,
-                              name="sdc1", parents=[sdc],
-                              size=Size("50 GiB"))
-        sdc1.format = self.newFormat("lvmpv", device=sdc1.path, exists=True,
-                                     device_instance=sdc1)
-        testvg = self.newDevice(device_class=LVMVolumeGroupDevice, exists=True,
-                                name="testvg", parents=[sdc1],
-                                size=Size("50 GiB"))
-        testlv = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                exists=True, size=Size("30 GiB"),
-                                name="testlv", parents=[testvg])
-        testlv.format = self.newFormat("ext4", device=testlv.path,
-                                       exists=True, device_instance=testlv)
+        self.destroy_all_devices(disks=["sdc", "sdd"])
+        sdc1 = self.new_device(device_class=PartitionDevice, exists=True,
+                               name="sdc1", parents=[sdc],
+                               size=Size("50 GiB"))
+        sdc1.format = self.new_format("lvmpv", device=sdc1.path, exists=True,
+                                      device_instance=sdc1)
+        testvg = self.new_device(device_class=LVMVolumeGroupDevice, exists=True,
+                                 name="testvg", parents=[sdc1],
+                                 size=Size("50 GiB"))
+        testlv = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                 exists=True, size=Size("30 GiB"),
+                                 name="testlv", parents=[testvg])
+        testlv.format = self.new_format("ext4", device=testlv.path,
+                                        exists=True, device_instance=testlv)
 
         # ActionResizeDevice
         # an action that resizes a device should require an action that grows
@@ -870,8 +871,8 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that resizes a device should require an action that
         # shrinks a device that depends on the first action's device, eg:
         # shrink LV before resizing VG or PV devices
-        testlv.format._minInstanceSize = Size("10 MiB")
-        testlv.format._targetSize = testlv.format._minInstanceSize
+        testlv.format._min_instance_size = Size("10 MiB")
+        testlv.format._target_size = testlv.format._min_instance_size
         shrink_lv = ActionResizeDevice(testlv,
                                        testlv.size - Size("10 GiB"))
         shrink_lv.apply()
@@ -924,7 +925,7 @@ class DeviceActionTestCase(StorageTestCase):
         # an action that creates a format on a device should require an action
         # that resizes the device that will contain the format
         grow_lv = ActionResizeDevice(testlv, testlv.size + Size("1 GiB"))
-        fmt = self.newFormat("disklabel", device=testlv.path)
+        fmt = self.new_format("disklabel", device=testlv.path)
         format_lv = ActionCreateFormat(testlv, fmt)
         self.assertEqual(format_lv.requires(grow_lv), True)
         self.assertEqual(grow_lv.requires(format_lv), False)
@@ -945,9 +946,9 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_pv_format.requires(destroy_lv_format), True)
         self.assertEqual(destroy_lv_format.requires(destroy_pv_format), False)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              size=Size("5 GiB"), parents=[sdc])
-        create_sdc2 = self.scheduleCreateDevice(sdc2)
+        sdc2 = self.new_device(device_class=PartitionDevice, name="sdc2",
+                               size=Size("5 GiB"), parents=[sdc])
+        create_sdc2 = self.schedule_create_device(sdc2)
 
         # create actions should always require destroy actions -- even for
         # unrelated devices -- since, after pruning, it should always be the
@@ -958,16 +959,16 @@ class DeviceActionTestCase(StorageTestCase):
         # similarly, create actions should also require resize actions
         self.assertEqual(create_sdc2.requires(grow_lv), True)
 
-    def testActionApplyCancel(self):
-        lv_root = self.storage.devicetree.getDeviceByName("VolGroup-lv_root")
+    def test_action_apply_cancel(self):
+        lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
 
         # ActionResizeFormat
-        lv_root.format._minInstanceSize = Size("10 MiB")
+        lv_root.format._min_instance_size = Size("10 MiB")
         lv_root.format._size = lv_root.size
-        lv_root.format._targetSize = lv_root.size
-        original_format_size = lv_root.format.currentSize
+        lv_root.format._target_size = lv_root.size
+        original_format_size = lv_root.format.current_size
         target_size = lv_root.size - Size("1 GiB")
-        #lv_root.format._resizable = True
+        # lv_root.format._resizable = True
         action = ActionResizeFormat(lv_root, target_size)
         self.assertEqual(lv_root.format.size, original_format_size)
         action.apply()
@@ -976,7 +977,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(lv_root.format.size, original_format_size)
 
         # ActionResizeDevice
-        original_device_size = lv_root.currentSize
+        original_device_size = lv_root.current_size
         action = ActionResizeDevice(lv_root, target_size)
         self.assertEqual(lv_root.size, original_device_size)
         action.apply()
@@ -994,12 +995,11 @@ class DeviceActionTestCase(StorageTestCase):
         action.cancel()
         self.assertEqual(lv_root.format, original_format)
 
-
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
         sdc.format = None
-        pv_fmt = self.newFormat("lvmpv", device_instance=sdc, device=sdc.path)
-        self.scheduleCreateFormat(device=sdc, fmt=pv_fmt)
-        vg = self.storage.devicetree.getDeviceByName("VolGroup")
+        pv_fmt = self.new_format("lvmpv", device_instance=sdc, device=sdc.path)
+        self.schedule_create_format(device=sdc, fmt=pv_fmt)
+        vg = self.storage.devicetree.get_device_by_name("VolGroup")
         original_pvs = vg.parents[:]
 
         # ActionAddMember
@@ -1018,7 +1018,7 @@ class DeviceActionTestCase(StorageTestCase):
 
         # ActionRemoveMember
         pvs = original_pvs[:]
-        sdb1 = self.storage.devicetree.getDeviceByName("sdb1")
+        sdb1 = self.storage.devicetree.get_device_by_name("sdb1")
         action = ActionRemoveMember(vg, sdb1)
         self.assertEqual(list(vg.parents), original_pvs)
         action.apply()
@@ -1027,65 +1027,65 @@ class DeviceActionTestCase(StorageTestCase):
         action.cancel()
         self.assertEqual(list(vg.parents), original_pvs)
 
-    def testContainerActions(self):
-        self.destroyAllDevices()
-        sda = self.storage.devicetree.getDeviceByName("sda")
-        sdb = self.storage.devicetree.getDeviceByName("sdb")
+    def test_container_actions(self):
+        self.destroy_all_devices()
+        sda = self.storage.devicetree.get_device_by_name("sda")
+        sdb = self.storage.devicetree.get_device_by_name("sdb")
 
         #
         # create something like an existing lvm autopart layout across two disks
         #
-        sda1 = self.newDevice(device_class=PartitionDevice,
-                              exists=True, name="sda1", parents=[sda],
-                              size=Size("500 MiB"))
-        sda1.format = self.newFormat("ext4", mountpoint="/boot",
-                                     device_instance=sda1,
-                                     device=sda1.path, exists=True)
-        self.storage.devicetree._addDevice(sda1)
+        sda1 = self.new_device(device_class=PartitionDevice,
+                               exists=True, name="sda1", parents=[sda],
+                               size=Size("500 MiB"))
+        sda1.format = self.new_format("ext4", mountpoint="/boot",
+                                      device_instance=sda1,
+                                      device=sda1.path, exists=True)
+        self.storage.devicetree._add_device(sda1)
 
-        sda2 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.5 GiB"), name="sda2",
-                              parents=[sda], exists=True)
-        sda2.format = self.newFormat("lvmpv", device=sda2.path, exists=True)
-        self.storage.devicetree._addDevice(sda2)
+        sda2 = self.new_device(device_class=PartitionDevice,
+                               size=Size("99.5 GiB"), name="sda2",
+                               parents=[sda], exists=True)
+        sda2.format = self.new_format("lvmpv", device=sda2.path, exists=True)
+        self.storage.devicetree._add_device(sda2)
 
-        sdb1 = self.newDevice(device_class=PartitionDevice,
-                              size=Size("99.999 GiB"), name="sdb1",
-                              parents=[sdb], exists=True)
-        sdb1.format = self.newFormat("lvmpv", device=sdb1.path, exists=True)
-        self.storage.devicetree._addDevice(sdb1)
+        sdb1 = self.new_device(device_class=PartitionDevice,
+                               size=Size("99.999 GiB"), name="sdb1",
+                               parents=[sdb], exists=True)
+        sdb1.format = self.new_format("lvmpv", device=sdb1.path, exists=True)
+        self.storage.devicetree._add_device(sdb1)
 
-        vg = self.newDevice(device_class=LVMVolumeGroupDevice,
-                            name="VolGroup", parents=[sda2, sdb1],
-                            exists=True)
-        self.storage.devicetree._addDevice(vg)
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="VolGroup", parents=[sda2, sdb1],
+                             exists=True)
+        self.storage.devicetree._add_device(vg)
 
-        lv_root = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_root", parents=[vg],
-                                 size=Size("160 GiB"), exists=True)
-        lv_root.format = self.newFormat("ext4", mountpoint="/",
-                                        device_instance=lv_root,
-                                        device=lv_root.path, exists=True)
-        self.storage.devicetree._addDevice(lv_root)
+        lv_root = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_root", parents=[vg],
+                                  size=Size("160 GiB"), exists=True)
+        lv_root.format = self.new_format("ext4", mountpoint="/",
+                                         device_instance=lv_root,
+                                         device=lv_root.path, exists=True)
+        self.storage.devicetree._add_device(lv_root)
 
-        lv_swap = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                 name="lv_swap", parents=[vg],
-                                 size=Size("4000 MiB"), exists=True)
-        lv_swap.format = self.newFormat("swap", device=lv_swap.path,
-                                        device_instance=lv_swap,
-                                        exists=True)
-        self.storage.devicetree._addDevice(lv_swap)
+        lv_swap = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  name="lv_swap", parents=[vg],
+                                  size=Size("4000 MiB"), exists=True)
+        lv_swap.format = self.new_format("swap", device=lv_swap.path,
+                                         device_instance=lv_swap,
+                                         exists=True)
+        self.storage.devicetree._add_device(lv_swap)
 
         #
         # test some modifications to the VG
         #
-        sdc = self.storage.devicetree.getDeviceByName("sdc")
-        sdc1 = self.newDevice(device_class=PartitionDevice, name="sdc1",
-                              size=Size("50 GiB"), parents=[sdc])
-        sdc1_format = self.newFormat("lvmpv", device=sdc1.path)
-        create_sdc1 = self.scheduleCreateDevice(sdc1)
-        create_sdc1_format = self.scheduleCreateFormat(device=sdc1,
-                                                       fmt=sdc1_format)
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               size=Size("50 GiB"), parents=[sdc])
+        sdc1_format = self.new_format("lvmpv", device=sdc1.path)
+        create_sdc1 = self.schedule_create_device(sdc1)
+        create_sdc1_format = self.schedule_create_format(device=sdc1,
+                                                         fmt=sdc1_format)
 
         self.assertEqual(len(vg.parents), 2)
 
@@ -1097,19 +1097,19 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(add_sdc1.requires(create_sdc1), True)
         self.assertEqual(add_sdc1.requires(create_sdc1_format), True)
 
-        new_lv = self.newDevice(device_class=LVMLogicalVolumeDevice,
-                                name="newlv", parents=[vg],
-                                size=Size("20 GiB"))
-        create_new_lv = self.scheduleCreateDevice(new_lv)
-        new_lv_format = self.newFormat("xfs", device=new_lv.path)
-        create_new_lv_format = self.scheduleCreateFormat(device=new_lv,
-                                                         fmt=new_lv_format)
+        new_lv = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                 name="newlv", parents=[vg],
+                                 size=Size("20 GiB"))
+        create_new_lv = self.schedule_create_device(new_lv)
+        new_lv_format = self.new_format("xfs", device=new_lv.path)
+        create_new_lv_format = self.schedule_create_format(device=new_lv,
+                                                           fmt=new_lv_format)
 
         self.assertEqual(create_new_lv.requires(add_sdc1), True)
         self.assertEqual(create_new_lv_format.requires(add_sdc1), False)
 
-        self.storage.devicetree.cancelAction(create_new_lv_format)
-        self.storage.devicetree.cancelAction(create_new_lv)
+        self.storage.devicetree.cancel_action(create_new_lv_format)
+        self.storage.devicetree.cancel_action(create_new_lv)
 
         remove_sdb1 = ActionRemoveMember(vg, sdb1)
         self.assertEqual(len(vg.parents), 3)
@@ -1135,14 +1135,14 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(add_sdb1.obsoletes(remove_sdb1), True)
         self.assertEqual(remove_sdb1.obsoletes(add_sdb1), True)
 
-        sdc2 = self.newDevice(device_class=PartitionDevice, name="sdc2",
-                              size=Size("5 GiB"), parents=[sdc])
-        create_sdc2 = self.scheduleCreateDevice(sdc2)
+        sdc2 = self.new_device(device_class=PartitionDevice, name="sdc2",
+                               size=Size("5 GiB"), parents=[sdc])
+        create_sdc2 = self.schedule_create_device(sdc2)
 
         # destroy/resize/create sequencing does not apply to container actions
         self.assertEqual(create_sdc2.requires(remove_sdc1), False)
         self.assertEqual(remove_sdc1.requires(create_sdc2), False)
 
-    def testActionSorting(self, *args, **kwargs):
+    def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
         pass

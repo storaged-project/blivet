@@ -31,6 +31,7 @@ log = logging.getLogger("blivet")
 
 
 class DMRaidMember(DeviceFormat):
+
     """ A dmraid member disk. """
     _type = "dmraidmember"
     _name = N_("dm-raid member device")
@@ -42,12 +43,12 @@ class DMRaidMember(DeviceFormat):
     #
     #     One problem that presents is the possibility of someone passing
     #     a dmraid member to the MDRaidArrayDevice constructor.
-    _udevTypes = ["adaptec_raid_member", "ddf_raid_member",
-                 "hpt37x_raid_member", "hpt45x_raid_member",
-                 "isw_raid_member",
-                 "jmicron_raid_member", "lsi_mega_raid_member",
-                 "nvidia_raid_member", "promise_fasttrack_raid_member",
-                 "silicon_medley_raid_member", "via_raid_member"]
+    _udev_types = ["adaptec_raid_member", "ddf_raid_member",
+                   "hpt37x_raid_member", "hpt45x_raid_member",
+                   "isw_raid_member",
+                   "jmicron_raid_member", "lsi_mega_raid_member",
+                   "nvidia_raid_member", "promise_fasttrack_raid_member",
+                   "silicon_medley_raid_member", "via_raid_member"]
     _supported = True                   # is supported
     _packages = ["dmraid"]              # required packages
     _hidden = True                      # hide devices with this formatting?
@@ -73,14 +74,14 @@ class DMRaidMember(DeviceFormat):
         s += ("  raidmem = %(raidmem)r" % {"raidmem": self.raidmem})
         return s
 
-    def _getRaidmem(self):
+    def _get_raidmem(self):
         return self._raidmem
 
-    def _setRaidmem(self, raidmem):
+    def _set_raidmem(self, raidmem):
         self._raidmem = raidmem
 
-    raidmem = property(lambda d: d._getRaidmem(),
-                       lambda d,r: d._setRaidmem(r))
+    raidmem = property(lambda d: d._get_raidmem(),
+                       lambda d, r: d._set_raidmem(r))
 
     def create(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -94,12 +95,11 @@ class DMRaidMember(DeviceFormat):
 
 
 if not flags.noiswmd:
-    DMRaidMember._udevTypes.remove("isw_raid_member")
+    DMRaidMember._udev_types.remove("isw_raid_member")
 
 # The anaconda cmdline has not been parsed yet when we're first imported,
 # so we can not use flags.dmraid here
 if not flags.dmraid:
-    DMRaidMember._udevTypes = []
+    DMRaidMember._udev_types = []
 
 register_device_format(DMRaidMember)
-

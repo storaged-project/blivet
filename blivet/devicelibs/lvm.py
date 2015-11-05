@@ -64,8 +64,9 @@ LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 # Theoretically we can handle all that can be handled with the LVM --config
 # argument.  For every time we call an lvm_cc (lvm compose config) funciton
 # we regenerate the config_args with all global info.
-config_args_data = { "filterRejects": [],    # regular expressions to reject.
-                     "filterAccepts": [] }   # regexp to accept
+config_args_data = {"filterRejects": [],    # regular expressions to reject.
+                    "filterAccepts": []}   # regexp to accept
+
 
 def _set_global_config():
     """lvm command accepts lvm.conf type arguments preceded by --config. """
@@ -87,13 +88,14 @@ def _set_global_config():
     # devices_string can have (inside the brackets) "dir", "scan",
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
-    config_string = " devices { %s } " % (devices_string) # strings can be added
+    config_string = " devices { %s } " % (devices_string)  # strings can be added
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
     if flags.debug:
         config_string += "log {level=7 file=/tmp/lvm.log}"
 
     blockdev.lvm.set_global_config(config_string)
+
 
 def needs_config_refresh(fn):
     if not availability.BLOCKDEV_LVM_PLUGIN.available:
@@ -106,11 +108,13 @@ def needs_config_refresh(fn):
 
     return fn_with_refresh
 
+
 @needs_config_refresh
 def lvm_cc_addFilterRejectRegexp(regexp):
     """ Add a regular expression to the --config string."""
     log.debug("lvm filter: adding %s to the reject list", regexp)
     config_args_data["filterRejects"].append(regexp)
+
 
 @needs_config_refresh
 def lvm_cc_removeFilterRejectRegexp(regexp):
@@ -122,10 +126,12 @@ def lvm_cc_removeFilterRejectRegexp(regexp):
         log.debug("%s wasn't in the reject list", regexp)
         return
 
+
 @needs_config_refresh
 def lvm_cc_resetFilter():
     config_args_data["filterRejects"] = []
     config_args_data["filterAccepts"] = []
+
 
 def determine_parent_lv(vg_name, internal_lv, lvs):
     """Try to determine which of the lvs is the parent of the internal_lv
@@ -143,7 +149,7 @@ def determine_parent_lv(vg_name, internal_lv, lvs):
 
         # check if the lv's name is the name of the internal LV without the suffix
         # e.g. 'pool' and 'pool_tmeta'
-        if re.match(lv.lvname+internal_lv.name_suffix+"$", internal_lv.lvname):
+        if re.match(lv.lvname + internal_lv.name_suffix + "$", internal_lv.lvname):
             return lv
 
     # now try checking relations between LVs
@@ -177,6 +183,7 @@ def determine_parent_lv(vg_name, internal_lv, lvs):
                 return lv
 
     return None
+
 
 def lvmetad_socket_exists():
     return os.path.exists(LVMETAD_SOCKET_PATH)

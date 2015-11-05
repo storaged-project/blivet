@@ -43,7 +43,7 @@ from .devices import MDRaidArrayDevice, MDBiosRaidArrayDevice
 from .devices import MDContainerDevice
 from .devices import MultipathDevice, OpticalDevice
 from .devices import PartitionDevice, ZFCPDiskDevice, iScsiDiskDevice
-from .devices import devicePathToName
+from .devices import device_path_to_name
 from .devices.lvm import get_internal_lv_class
 from . import formats
 from .devicelibs import lvm
@@ -59,6 +59,7 @@ from .size import Size
 import logging
 log = logging.getLogger("blivet")
 
+
 def parted_exn_handler(exn_type, exn_options, exn_msg):
     """ Answer any of parted's yes/no questions in the affirmative.
 
@@ -71,15 +72,17 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
         ret = parted.EXCEPTION_RESOLVE_YES
     return ret
 
+
 class Populator(object):
+
     def __init__(self, devicetree=None, conf=None, passphrase=None,
-                 luksDict=None, iscsi=None, dasd=None):
+                 luks_dict=None, iscsi=None, dasd=None):
         """
             :keyword conf: storage discovery configuration
             :type conf: :class:`~.StorageDiscoveryConfig`
             :keyword passphrase: default LUKS passphrase
-            :keyword luksDict: a dict with UUID keys and passphrase values
-            :type luksDict: dict
+            :keyword luks_dict: a dict with UUID keys and passphrase values
+            :type luks_dict: dict
             :keyword iscsi: ISCSI control object
             :type iscsi: :class:`~.iscsi.iscsi`
             :keyword dasd: DASD control object
@@ -91,39 +94,39 @@ class Populator(object):
         # indicates whether or not the tree has been fully populated
         self.populated = False
 
-        self.exclusiveDisks = getattr(conf, "exclusiveDisks", [])
-        self.ignoredDisks = getattr(conf, "ignoredDisks", [])
+        self.exclusive_disks = getattr(conf, "exclusiveDisks", [])
+        self.ignored_disks = getattr(conf, "ignoredDisks", [])
         self.iscsi = iscsi
         self.dasd = dasd
 
-        self.diskImages = {}
+        self.disk_images = {}
         images = getattr(conf, "diskImages", {})
         if images:
-            # this will overwrite self.exclusiveDisks
-            self.setDiskImages(images)
+            # this will overwrite self.exclusive_disks
+            self.set_disk_images(images)
 
         # protected device specs as provided by the user
-        self.protectedDevSpecs = getattr(conf, "protectedDevSpecs", [])
-        self.liveBackingDevice = None
+        self.protected_dev_specs = getattr(conf, "protectedDevSpecs", [])
+        self.live_backing_device = None
 
         # names of protected devices at the time of tree population
-        self.protectedDevNames = []
+        self.protected_dev_names = []
 
-        self.unusedRaidMembers = []
+        self.unused_raid_members = []
 
         self.__passphrases = []
         if passphrase:
             self.__passphrases.append(passphrase)
 
-        self.__luksDevs = {}
-        if luksDict and isinstance(luksDict, dict):
-            self.__luksDevs = luksDict
-            self.__passphrases.extend([p for p in luksDict.values() if p])
+        self.__luks_devs = {}
+        if luks_dict and isinstance(luks_dict, dict):
+            self.__luks_devs = luks_dict
+            self.__passphrases.extend([p for p in luks_dict.values() if p])
 
         self._cleanup = False
 
-    def setDiskImages(self, images):
-        """ Set the disk images and reflect them in exclusiveDisks.
+    def set_disk_images(self, images):
+        """ Set the disk images and reflect them in exclusive_disks.
 
             :param images: dict with image name keys and filename values
             :type images: dict
@@ -134,15 +137,15 @@ class Populator(object):
                 presence of disk images, any local storage not associated with
                 the disk images is ignored.
         """
-        self.diskImages = images
+        self.disk_images = images
         # disk image files are automatically exclusive
-        self.exclusiveDisks = list(self.diskImages.keys())
+        self.exclusive_disks = list(self.disk_images.keys())
 
-    def addIgnoredDisk(self, disk):
-        self.ignoredDisks.append(disk)
+    def add_ignored_disk(self, disk):
+        self.ignored_disks.append(disk)
         lvm.lvm_cc_addFilterRejectRegexp(disk)
 
-    def isIgnored(self, info):
+    def is_ignored(self, info):
         """ Return True if info is a device we should ignore.
 
             :param info: udevdb device entry
@@ -158,7 +161,7 @@ class Populator(object):
 
         # Special handling for mdraid external metadata sets (mdraid BIOSRAID):
         # 1) The containers are intermediate devices which will never be
-        # in exclusiveDisks
+        # in exclusive_disks
         # 2) Sets get added to exclusive disks with their dmraid set name by
         # the filter ui.  Note that making the ui use md names instead is not
         # possible as the md names are simpy md# and we cannot predict the #
@@ -167,18 +170,18 @@ class Populator(object):
             return False
 
         if udev.device_get_md_container(info) and \
-               udev.device_is_md(info) and \
-               udev.device_get_md_name(info):
+                udev.device_is_md(info) and \
+                udev.device_get_md_name(info):
             md_name = udev.device_get_md_name(info)
             # mdadm may have appended _<digit>+ if the current hostname
             # does not match the one in the array metadata
             alt_name = re.sub(r"_\d+$", "", md_name)
             raw_pattern = "isw_[a-z]*_%s"
             # XXX FIXME: This is completely insane.
-            for i in range(0, len(self.exclusiveDisks)):
-                if re.match(raw_pattern % md_name, self.exclusiveDisks[i]) or \
-                   re.match(raw_pattern % alt_name, self.exclusiveDisks[i]):
-                    self.exclusiveDisks[i] = name
+            for i in range(0, len(self.exclusive_disks)):
+                if re.match(raw_pattern % md_name, self.exclusive_disks[i]) or \
+                   re.match(raw_pattern % alt_name, self.exclusive_disks[i]):
+                    self.exclusive_disks[i] = name
                     return False
 
         # never ignore mapped disk images. if you don't want to use them,
@@ -199,10 +202,10 @@ class Populator(object):
 
         # FIXME: check for virtual devices whose slaves are on the ignore list
 
-    def _isIgnoredDisk(self, disk):
-        return self.devicetree._isIgnoredDisk(disk)
+    def _is_ignored_disk(self, disk):
+        return self.devicetree._is_ignored_disk(disk)
 
-    def udevDeviceIsDisk(self, info):
+    def udev_device_is_disk(self, info):
         """ Return True if the udev device looks like a disk.
 
             :param info: udevdb device entry
@@ -210,7 +213,7 @@ class Populator(object):
             :returns: whether the device is a disk
             :rtype: bool
 
-            We want exclusiveDisks to operate on anything that could be
+            We want exclusive_disks to operate on anything that could be
             considered a directly usable disk, ie: fwraid array, mpath, or disk.
 
             Unfortunately, since so many things are represented as disks by
@@ -226,7 +229,7 @@ class Populator(object):
                      (udev.device_is_md(info) and
                       not udev.device_get_md_container(info))))
 
-    def _addSlaveDevices(self, info):
+    def _add_slave_devices(self, info):
         """ Add all slaves of a device, raising DeviceTreeError on failure.
 
             :param :class:`pyudev.Device` info: the device's udev info
@@ -254,14 +257,14 @@ class Populator(object):
             if not slave_info:
                 log.warning("unable to get udev info for %s", slave_name)
 
-            slave_dev = self.getDeviceByName(slave_name)
+            slave_dev = self.get_device_by_name(slave_name)
             if not slave_dev and slave_info:
                 # we haven't scanned the slave yet, so do it now
-                self.addUdevDevice(slave_info)
-                slave_dev = self.getDeviceByName(slave_name)
+                self.add_udev_device(slave_info)
+                slave_dev = self.get_device_by_name(slave_name)
                 if slave_dev is None:
                     if udev.device_is_dm_lvm(info):
-                        if slave_name not in self.devicetree.lvInfo:
+                        if slave_name not in self.devicetree.lv_info:
                             # we do not expect hidden lvs to be in the tree
                             continue
 
@@ -276,55 +279,55 @@ class Populator(object):
 
         return slave_devices
 
-    def addUdevLVDevice(self, info):
+    def add_udev_lv_device(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
 
         vg_name = udev.device_get_lv_vg_name(info)
-        device = self.getDeviceByName(vg_name, hidden=True)
+        device = self.get_device_by_name(vg_name, hidden=True)
         if device and not isinstance(device, LVMVolumeGroupDevice):
             log.warning("found non-vg device with name %s", vg_name)
             device = None
 
-        self._addSlaveDevices(info)
+        self._add_slave_devices(info)
 
         # LVM provides no means to resolve conflicts caused by duplicated VG
         # names, so we're just being optimistic here. Woo!
         vg_name = udev.device_get_lv_vg_name(info)
-        vg_device = self.getDeviceByName(vg_name)
+        vg_device = self.get_device_by_name(vg_name)
         if not vg_device:
             log.error("failed to find vg '%s' after scanning pvs", vg_name)
 
-        return self.getDeviceByName(name)
+        return self.get_device_by_name(name)
 
-    def addUdevDMDevice(self, info):
+    def add_udev_dm_device(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
-        slave_devices = self._addSlaveDevices(info)
-        device = self.getDeviceByName(name)
+        slave_devices = self._add_slave_devices(info)
+        device = self.get_device_by_name(name)
 
         # if this is a luks device whose map name is not what we expect,
         # fix up the map name and see if that sorts us out
         handle_luks = (udev.device_is_dm_luks(info) and
-                        (self._cleanup or not flags.installer_mode))
+                       (self._cleanup or not flags.installer_mode))
         if device is None and handle_luks and slave_devices:
             slave_dev = slave_devices[0]
-            slave_dev.format.mapName = name
-            slave_info = udev.get_device(slave_dev.sysfsPath)
-            self.handleUdevLUKSFormat(slave_info, slave_dev)
+            slave_dev.format.map_name = name
+            slave_info = udev.get_device(slave_dev.sysfs_path)
+            self.handle_udev_luks_format(slave_info, slave_dev)
 
             # try once more to get the device
-            device = self.getDeviceByName(name)
+            device = self.get_device_by_name(name)
 
         # create a device for the livecd OS image(s)
         if device is None and udev.device_is_dm_livecd(info):
-            device = DMDevice(name, dmUuid=info.get('DM_UUID'),
-                              sysfsPath=sysfs_path, exists=True,
+            device = DMDevice(name, dm_uuid=info.get('DM_UUID'),
+                              sysfs_path=sysfs_path, exists=True,
                               parents=[slave_devices[0]])
             device.protected = True
             device.controllable = False
-            self.devicetree._addDevice(device)
+            self.devicetree._add_device(device)
 
         # if we get here, we found all of the slave devices and
         # something must be wrong -- if all of the slaves are in
@@ -335,11 +338,11 @@ class Populator(object):
 
         return device
 
-    def addUdevMultiPathDevice(self, info):
+    def add_udev_multipath_device(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
 
-        slave_devices = self._addSlaveDevices(info)
+        slave_devices = self._add_slave_devices(info)
 
         device = None
         if slave_devices:
@@ -350,20 +353,20 @@ class Populator(object):
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
 
             device = MultipathDevice(name, parents=slave_devices,
-                                     sysfsPath=udev.device_get_sysfs_path(info),
+                                     sysfs_path=udev.device_get_sysfs_path(info),
                                      serial=serial)
-            self.devicetree._addDevice(device)
+            self.devicetree._add_device(device)
 
         return device
 
-    def addUdevMDDevice(self, info):
+    def add_udev_md_device(self, info):
         name = udev.device_get_md_name(info)
         log_method_call(self, name=name)
 
-        self._addSlaveDevices(info)
+        self._add_slave_devices(info)
 
         # try to get the device again now that we've got all the slaves
-        device = self.getDeviceByName(name, incomplete=flags.allow_imperfect_devices)
+        device = self.get_device_by_name(name, incomplete=flags.allow_imperfect_devices)
 
         if device is None:
             try:
@@ -371,7 +374,7 @@ class Populator(object):
             except KeyError:
                 log.warning("failed to obtain uuid for mdraid device")
             else:
-                device = self.getDeviceByUuid(uuid, incomplete=flags.allow_imperfect_devices)
+                device = self.get_device_by_uuid(uuid, incomplete=flags.allow_imperfect_devices)
 
         if device and name:
             # update the device instance with the real name in case we had to
@@ -396,31 +399,31 @@ class Populator(object):
 
         return device
 
-    def addUdevPartitionDevice(self, info, disk=None):
+    def add_udev_partition_device(self, info, disk=None):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
 
         if name.startswith("md"):
             name = blockdev.md.name_from_node(name)
-            device = self.getDeviceByName(name)
+            device = self.get_device_by_name(name)
             if device:
                 return device
 
         if disk is None:
             disk_name = os.path.basename(os.path.dirname(sysfs_path))
-            disk_name = disk_name.replace('!','/')
+            disk_name = disk_name.replace('!', '/')
             if disk_name.startswith("md"):
                 disk_name = blockdev.md.name_from_node(disk_name)
 
-            disk = self.getDeviceByName(disk_name)
+            disk = self.get_device_by_name(disk_name)
 
         if disk is None:
             # create a device instance for the disk
             new_info = udev.get_device(os.path.dirname(sysfs_path))
             if new_info:
-                self.addUdevDevice(new_info)
-                disk = self.getDeviceByName(disk_name)
+                self.add_udev_device(new_info)
+                disk = self.get_device_by_name(disk_name)
 
             if disk is None:
                 # if the current device is still not in
@@ -438,7 +441,7 @@ class Populator(object):
             if disk.partitionable and \
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
-               not self._isIgnoredDisk(disk):
+               not self._is_ignored_disk(disk):
                 if info.get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
                     cls = CorruptGPTError
@@ -459,7 +462,7 @@ class Populator(object):
 
         device = None
         try:
-            device = PartitionDevice(name, sysfsPath=sysfs_path,
+            device = PartitionDevice(name, sysfs_path=sysfs_path,
                                      major=udev.device_get_major(info),
                                      minor=udev.device_get_minor(info),
                                      exists=True, parents=[disk])
@@ -472,10 +475,10 @@ class Populator(object):
             log.error("Failed to instantiate PartitionDevice: %s", e)
             return
 
-        self.devicetree._addDevice(device)
+        self.devicetree._add_device(device)
         return device
 
-    def addUdevDiskDevice(self, info):
+    def add_udev_disk_device(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
@@ -485,9 +488,9 @@ class Populator(object):
         vendor = util.get_sysfs_attr(sysfs_path, "device/vendor")
         model = util.get_sysfs_attr(sysfs_path, "device/model")
 
-        kwargs = { "serial": serial, "vendor": vendor, "model": model, "bus": bus }
+        kwargs = {"serial": serial, "vendor": vendor, "model": model, "bus": bus}
         if udev.device_is_iscsi(info) and not self._cleanup:
-            diskType = iScsiDiskDevice
+            disk_type = iScsiDiskDevice
             initiator = udev.device_get_iscsi_initiator(info)
             target = udev.device_get_iscsi_name(info)
             address = udev.device_get_iscsi_address(info)
@@ -495,9 +498,9 @@ class Populator(object):
             nic = udev.device_get_iscsi_nic(info)
             kwargs["initiator"] = initiator
             if initiator == self.iscsi.initiator:
-                node = self.iscsi.getNode(target, address, port, nic)
+                node = self.iscsi.get_node(target, address, port, nic)
                 kwargs["node"] = node
-                kwargs["ibft"] = node in self.iscsi.ibftNodes
+                kwargs["ibft"] = node in self.iscsi.ibft_nodes
                 kwargs["nic"] = self.iscsi.ifaces.get(node.iface, node.iface)
                 log.info("%s is an iscsi disk", name)
             else:
@@ -509,42 +512,42 @@ class Populator(object):
                 kwargs["fw_port"] = port
                 kwargs["fw_name"] = name
         elif udev.device_is_fcoe(info):
-            diskType = FcoeDiskDevice
-            kwargs["nic"]        = udev.device_get_fcoe_nic(info)
+            disk_type = FcoeDiskDevice
+            kwargs["nic"] = udev.device_get_fcoe_nic(info)
             kwargs["identifier"] = udev.device_get_fcoe_identifier(info)
             log.info("%s is an fcoe disk", name)
         elif udev.device_get_md_container(info):
             name = udev.device_get_md_name(info)
-            diskType = MDBiosRaidArrayDevice
-            parentPath = udev.device_get_md_container(info)
-            parentName = devicePathToName(parentPath)
-            container = self.getDeviceByName(parentName)
+            disk_type = MDBiosRaidArrayDevice
+            parent_path = udev.device_get_md_container(info)
+            parent_name = device_path_to_name(parent_path)
+            container = self.get_device_by_name(parent_name)
             if not container:
-                parentSysName = blockdev.md.node_from_name(parentName)
-                container_sysfs = "/sys/class/block/" + parentSysName
+                parent_sys_name = blockdev.md.node_from_name(parent_name)
+                container_sysfs = "/sys/class/block/" + parent_sys_name
                 container_info = udev.get_device(container_sysfs)
                 if not container_info:
                     log.error("failed to find md container %s at %s",
-                                parentName, container_sysfs)
+                              parent_name, container_sysfs)
                     return
 
-                self.addUdevDevice(container_info)
-                container = self.getDeviceByName(parentName)
+                self.add_udev_device(container_info)
+                container = self.get_device_by_name(parent_name)
                 if not container:
-                    log.error("failed to scan md container %s", parentName)
+                    log.error("failed to scan md container %s", parent_name)
                     return
 
             kwargs["parents"] = [container]
-            kwargs["level"]  = udev.device_get_md_level(info)
-            kwargs["memberDevices"] = udev.device_get_md_devices(info)
+            kwargs["level"] = udev.device_get_md_level(info)
+            kwargs["member_devices"] = udev.device_get_md_devices(info)
             kwargs["uuid"] = udev.device_get_md_uuid(info)
-            kwargs["exists"]  = True
+            kwargs["exists"] = True
             del kwargs["model"]
             del kwargs["serial"]
             del kwargs["vendor"]
             del kwargs["bus"]
         elif udev.device_is_dasd(info) and not self._cleanup:
-            diskType = DASDDevice
+            disk_type = DASDDevice
             kwargs["busid"] = udev.device_get_dasd_bus_id(info)
             kwargs["opts"] = {}
 
@@ -553,28 +556,28 @@ class Populator(object):
 
             log.info("%s is a dasd device", name)
         elif udev.device_is_zfcp(info):
-            diskType = ZFCPDiskDevice
+            disk_type = ZFCPDiskDevice
 
             for attr in ['hba_id', 'wwpn', 'fcp_lun']:
                 kwargs[attr] = udev.device_get_zfcp_attribute(info, attr=attr)
 
             log.info("%s is a zfcp device", name)
         else:
-            diskType = DiskDevice
+            disk_type = DiskDevice
             log.info("%s is a disk", name)
 
-        device = diskType(name,
-                          major=udev.device_get_major(info),
-                          minor=udev.device_get_minor(info),
-                          sysfsPath=sysfs_path, **kwargs)
+        device = disk_type(name,
+                           major=udev.device_get_major(info),
+                           minor=udev.device_get_minor(info),
+                           sysfs_path=sysfs_path, **kwargs)
 
-        if diskType == DASDDevice:
+        if disk_type == DASDDevice:
             self.dasd.append(device)
 
-        self.devicetree._addDevice(device)
+        self.devicetree._add_device(device)
         return device
 
-    def addUdevOpticalDevice(self, info):
+    def add_udev_optical_device(self, info):
         log_method_call(self)
         # XXX should this be RemovableDevice instead?
         #
@@ -582,43 +585,43 @@ class Populator(object):
         device = OpticalDevice(udev.device_get_name(info),
                                major=udev.device_get_major(info),
                                minor=udev.device_get_minor(info),
-                               sysfsPath=udev.device_get_sysfs_path(info),
+                               sysfs_path=udev.device_get_sysfs_path(info),
                                vendor=udev.device_get_vendor(info),
                                model=udev.device_get_model(info))
-        self.devicetree._addDevice(device)
+        self.devicetree._add_device(device)
         return device
 
-    def addUdevLoopDevice(self, info):
+    def add_udev_loop_device(self, info):
         name = udev.device_get_name(info)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(info)
         sys_file = "%s/loop/backing_file" % sysfs_path
         backing_file = open(sys_file).read().strip()
-        file_device = self.getDeviceByName(backing_file)
+        file_device = self.get_device_by_name(backing_file)
         if not file_device:
             file_device = FileDevice(backing_file, exists=True)
-            self.devicetree._addDevice(file_device)
+            self.devicetree._add_device(file_device)
         device = LoopDevice(name,
                             parents=[file_device],
-                            sysfsPath=sysfs_path,
+                            sysfs_path=sysfs_path,
                             exists=True)
-        if not self._cleanup or file_device not in self.diskImages.values():
+        if not self._cleanup or file_device not in self.disk_images.values():
             # don't allow manipulation of loop devices other than those
             # associated with disk images, and then only during cleanup
             file_device.controllable = False
             device.controllable = False
-        self.devicetree._addDevice(device)
+        self.devicetree._add_device(device)
         return device
 
-    def addUdevDevice(self, info, updateOrigFmt=False):
+    def add_udev_device(self, info, update_orig_fmt=False):
         """
             :param :class:`pyudev.Device` info: udev info for the device
-            :keyword bool updateOrigFmt: update original format unconditionally
+            :keyword bool update_orig_fmt: update original format unconditionally
 
             If a device is added to the tree based on info its original format
             will be saved after the format has been detected. If the device
             that corresponds to info is already in the tree, its original format
-            will not be updated unless updateOrigFmt is True.
+            will not be updated unless update_orig_fmt is True.
         """
         name = udev.device_get_name(info)
         log_method_call(self, name=name, info=pprint.pformat(dict(info)))
@@ -628,10 +631,10 @@ class Populator(object):
         # make sure this device was not scheduled for removal and also has not
         # been hidden
         removed = [a.device for a in self.devicetree.actions.find(
-                                                        action_type="destroy",
-                                                        object_type="device")]
+            action_type="destroy",
+            object_type="device")]
         for ignored in removed + self.devicetree._hidden:
-            if (sysfs_path and ignored.sysfsPath == sysfs_path) or \
+            if (sysfs_path and ignored.sysfs_path == sysfs_path) or \
                (uuid and uuid in (ignored.uuid, ignored.format.uuid)):
                 if ignored in removed:
                     reason = "removed"
@@ -645,15 +648,15 @@ class Populator(object):
         if name not in self.names:
             self.names.append(name)
 
-        if self.isIgnored(info):
+        if self.is_ignored(info):
             log.info("ignoring %s (%s)", name, sysfs_path)
-            if name not in self.ignoredDisks:
-                self.addIgnoredDisk(name)
+            if name not in self.ignored_disks:
+                self.add_ignored_disk(name)
 
             return
 
         log.info("scanning %s (%s)...", name, sysfs_path)
-        device = self.getDeviceByName(name)
+        device = self.get_device_by_name(name)
         if device is None and udev.device_is_md(info):
 
             # If the md name is None, then some udev info is missing. Likely,
@@ -676,20 +679,20 @@ class Populator(object):
             if md_name is None:
                 log.warning("No name for possibly degraded md array.")
             else:
-                device = self.getDeviceByName(md_name, incomplete=flags.allow_imperfect_devices)
+                device = self.get_device_by_name(md_name, incomplete=flags.allow_imperfect_devices)
 
             if device and not isinstance(device, MDRaidArrayDevice):
                 log.warning("Found device %s, but it turns out not be an md array device after all.", device.name)
                 device = None
 
-        if device and device.isDisk and \
+        if device and device.is_disk and \
            blockdev.mpath.is_mpath_member(device.path):
             # newly added device (eg iSCSI) could make this one a multipath member
             if device.format and device.format.type != "multipath_member":
                 log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
                 # remove children from tree so that we don't stumble upon them later
-                for child in self.devicetree.getChildren(device):
-                    self.devicetree.recursiveRemove(child, actions=False)
+                for child in self.devicetree.get_children(device):
+                    self.devicetree.recursive_remove(child, actions=False)
 
                 device.format = None
 
@@ -701,28 +704,28 @@ class Populator(object):
             device_added = False
         elif udev.device_is_loop(info):
             log.info("%s is a loop device", name)
-            device = self.addUdevLoopDevice(info)
+            device = self.add_udev_loop_device(info)
         elif udev.device_is_dm_mpath(info) and \
-             not udev.device_is_dm_partition(info):
+                not udev.device_is_dm_partition(info):
             log.info("%s is a multipath device", name)
-            device = self.addUdevMultiPathDevice(info)
+            device = self.add_udev_multipath_device(info)
         elif udev.device_is_dm_lvm(info):
             log.info("%s is an lvm logical volume", name)
-            device = self.addUdevLVDevice(info)
+            device = self.add_udev_lv_device(info)
         elif udev.device_is_dm(info):
             log.info("%s is a device-mapper device", name)
-            device = self.addUdevDMDevice(info)
+            device = self.add_udev_dm_device(info)
         elif udev.device_is_md(info) and not udev.device_get_md_container(info):
             log.info("%s is an md device", name)
-            device = self.addUdevMDDevice(info)
+            device = self.add_udev_md_device(info)
         elif udev.device_is_cdrom(info):
             log.info("%s is a cdrom", name)
-            device = self.addUdevOpticalDevice(info)
+            device = self.add_udev_optical_device(info)
         elif udev.device_is_disk(info):
-            device = self.addUdevDiskDevice(info)
+            device = self.add_udev_disk_device(info)
         elif udev.device_is_partition(info):
             log.info("%s is a partition", name)
-            device = self.addUdevPartitionDevice(info)
+            device = self.add_udev_partition_device(info)
         else:
             log.error("Unknown block device type for: %s", name)
             return
@@ -732,45 +735,45 @@ class Populator(object):
             return
 
         # If this device is read-only, mark it as such now.
-        if self.udevDeviceIsDisk(info) and \
+        if self.udev_device_is_disk(info) and \
                 util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
             device.readonly = True
 
         # If this device is protected, mark it as such now. Once the tree
         # has been populated, devices' protected attribute is how we will
         # identify protected devices.
-        if device.name in self.protectedDevNames:
+        if device.name in self.protected_dev_names:
             device.protected = True
             # if this is the live backing device we want to mark its parents
             # as protected also
-            if device.name == self.liveBackingDevice:
+            if device.name == self.live_backing_device:
                 for parent in device.parents:
                     parent.protected = True
 
-        # If we just added a multipath or fwraid disk that is in exclusiveDisks
+        # If we just added a multipath or fwraid disk that is in exclusive_disks
         # we have to make sure all of its members are in the list too.
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
-        if device.isDisk and isinstance(device, mdclasses):
-            if device.name in self.exclusiveDisks:
+        if device.is_disk and isinstance(device, mdclasses):
+            if device.name in self.exclusive_disks:
                 for parent in device.parents:
-                    if parent.name not in self.exclusiveDisks:
-                        self.exclusiveDisks.append(parent.name)
+                    if parent.name not in self.exclusive_disks:
+                        self.exclusive_disks.append(parent.name)
 
         log.info("got device: %r", device)
 
         # now handle the device's formatting
-        self.handleUdevDeviceFormat(info, device)
-        if device_added or updateOrigFmt:
-            device.originalFormat = copy.deepcopy(device.format)
-        device.deviceLinks = udev.device_get_symlinks(info)
+        self.handle_udev_device_format(info, device)
+        if device_added or update_orig_fmt:
+            device.original_format = copy.deepcopy(device.format)
+        device.device_links = udev.device_get_symlinks(info)
 
-    def handleUdevDiskLabelFormat(self, info, device):
+    def handle_udev_disk_label_format(self, info, device):
         disklabel_type = udev.device_get_disklabel_type(info)
         log_method_call(self, device=device.name, label_type=disklabel_type)
         # if there is no disklabel on the device
         # blkid doesn't understand dasd disklabels, so bypass for dasd
         if disklabel_type is None and not \
-           (device.isDisk and udev.device_is_dasd(info)):
+           (device.is_disk and udev.device_is_dasd(info)):
             log.debug("device %s does not contain a disklabel", device.name)
             return
 
@@ -781,17 +784,17 @@ class Populator(object):
 
         try:
             device.setup()
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log_exception_info(log.warning, "setup of %s failed, aborting disklabel handler", [device.name])
             return
 
         # special handling for unsupported partitioned devices
         if not device.partitionable:
             try:
-                fmt = formats.getFormat("disklabel",
-                                        device=device.path,
-                                        labelType=disklabel_type,
-                                        exists=True)
+                fmt = formats.get_format("disklabel",
+                                         device=device.path,
+                                         label_type=disklabel_type,
+                                         exists=True)
             except InvalidDiskLabelError:
                 log.warning("disklabel detected but not usable on %s",
                             device.name)
@@ -800,18 +803,18 @@ class Populator(object):
             return
 
         try:
-            fmt = formats.getFormat("disklabel",
-                                    device=device.path,
-                                    exists=True)
+            fmt = formats.get_format("disklabel",
+                                     device=device.path,
+                                     exists=True)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", device.name)
             if disklabel_type == "gpt":
                 log.debug(e)
-                device.format = formats.getFormat(_("Invalid Disk Label"))
+                device.format = formats.get_format(_("Invalid Disk Label"))
         else:
             device.format = fmt
 
-    def handleUdevLUKSFormat(self, info, device):
+    def handle_udev_luks_format(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
         if not device.format.uuid:
@@ -819,15 +822,15 @@ class Populator(object):
             return
 
         # look up or create the mapped device
-        if not self.getDeviceByName(device.format.mapName):
-            passphrase = self.__luksDevs.get(device.format.uuid)
+        if not self.get_device_by_name(device.format.map_name):
+            passphrase = self.__luks_devs.get(device.format.uuid)
             if device.format.configured:
                 pass
             elif passphrase:
                 device.format.passphrase = passphrase
-            elif device.format.uuid in self.__luksDevs:
+            elif device.format.uuid in self.__luks_devs:
                 log.info("skipping previously-skipped luks device %s",
-                            device.name)
+                         device.name)
             elif self._cleanup or flags.testing:
                 # if we're only building the devicetree so that we can
                 # tear down all of the devices we don't need a passphrase
@@ -835,11 +838,11 @@ class Populator(object):
                     # this makes device.configured return True
                     device.format.passphrase = 'yabbadabbadoo'
             else:
-                # Try each known passphrase. Include luksDevs values in case a
+                # Try each known passphrase. Include luks_devs values in case a
                 # passphrase has been set for a specific device without a full
                 # reset/populate, in which case the new passphrase would not be
                 # in self.__passphrases.
-                for passphrase in self.__passphrases + list(self.__luksDevs.values()):
+                for passphrase in self.__passphrases + list(self.__luks_devs.values()):
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
@@ -848,32 +851,32 @@ class Populator(object):
                     else:
                         break
 
-            luks_device = LUKSDevice(device.format.mapName,
+            luks_device = LUKSDevice(device.format.map_name,
                                      parents=[device],
                                      exists=True)
             try:
                 luks_device.setup()
             except (LUKSError, blockdev.CryptoError, DeviceError) as e:
-                log.info("setup of %s failed: %s", device.format.mapName, e)
-                device.removeChild()
+                log.info("setup of %s failed: %s", device.format.map_name, e)
+                device.remove_child()
             else:
-                luks_device.updateSysfsPath()
-                self.devicetree._addDevice(luks_device)
-                luks_info = udev.get_device(luks_device.sysfsPath)
+                luks_device.update_sysfs_path()
+                self.devicetree._add_device(luks_device)
+                luks_info = udev.get_device(luks_device.sysfs_path)
                 if not luks_info:
                     log.error("failed to get udev data for %s", luks_device.name)
                     return
 
-                self.addUdevDevice(luks_info, updateOrigFmt=True)
+                self.add_udev_device(luks_info, update_orig_fmt=True)
         else:
             log.warning("luks device %s already in the tree",
-                        device.format.mapName)
+                        device.format.map_name)
 
-    def handleVgLvs(self, vg_device):
+    def handle_vg_lvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
-        lv_info = dict((k, v) for (k, v) in iter(self.devicetree.lvInfo.items())
-                                if v.vg_name == vg_name)
+        lv_info = dict((k, v) for (k, v) in iter(self.devicetree.lv_info.items())
+                       if v.vg_name == vg_name)
 
         self.names.extend(n for n in lv_info.keys() if n not in self.names)
 
@@ -888,7 +891,7 @@ class Populator(object):
         all_lvs = []
         internal_lvs = []
 
-        def addRequiredLV(name, msg):
+        def add_required_lv(name, msg):
             """ Add a prerequisite/parent LV.
 
                 The parent is strictly required in order to be able to add
@@ -902,18 +905,18 @@ class Populator(object):
                 :raises: :class:`~.errors.DeviceTreeError` on failure
 
             """
-            vol = self.getDeviceByName(name)
+            vol = self.get_device_by_name(name)
             if vol is None:
-                new_lv = addLV(lv_info[name])
+                new_lv = add_lv(lv_info[name])
                 if new_lv:
                     all_lvs.append(new_lv)
-                vol = self.getDeviceByName(name)
+                vol = self.get_device_by_name(name)
 
                 if vol is None:
                     log.error("%s: %s", msg, name)
                     raise DeviceTreeError(msg)
 
-        def addLV(lv):
+        def add_lv(lv):
             """ Instantiate and add an LV based on data from the VG. """
             lv_name = lv.lv_name
             lv_uuid = lv.uuid
@@ -926,7 +929,7 @@ class Populator(object):
             lv_kwargs = {}
             name = "%s-%s" % (vg_name, lv_name)
 
-            if self.getDeviceByName(name):
+            if self.get_device_by_name(name):
                 # some lvs may have been added on demand below
                 log.debug("already added %s", name)
                 return
@@ -936,7 +939,7 @@ class Populator(object):
                 origin_name = blockdev.lvm.lvorigin(vg_name, lv_name)
                 if not origin_name:
                     log.error("lvm snapshot '%s-%s' has unknown origin",
-                                vg_name, lv_name)
+                              vg_name, lv_name)
                     return
 
                 if origin_name.endswith("_vorigin]"):
@@ -944,9 +947,9 @@ class Populator(object):
                     origin = None
                 else:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
-                    addRequiredLV(origin_device_name,
-                                  "failed to locate origin lv")
-                    origin = self.getDeviceByName(origin_device_name)
+                    add_required_lv(origin_device_name,
+                                    "failed to locate origin lv")
+                    origin = self.get_device_by_name(origin_device_name)
 
                 lv_kwargs["origin"] = origin
                 lv_class = LVMSnapShotDevice
@@ -966,19 +969,19 @@ class Populator(object):
                 # thin volume
                 pool_name = blockdev.lvm.thlvpoolname(vg_name, lv_name)
                 pool_device_name = "%s-%s" % (vg_name, pool_name)
-                addRequiredLV(pool_device_name, "failed to look up thin pool")
+                add_required_lv(pool_device_name, "failed to look up thin pool")
 
                 origin_name = blockdev.lvm.lvorigin(vg_name, lv_name)
                 if origin_name:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
-                    addRequiredLV(origin_device_name, "failed to locate origin lv")
-                    origin = self.getDeviceByName(origin_device_name)
+                    add_required_lv(origin_device_name, "failed to locate origin lv")
+                    origin = self.get_device_by_name(origin_device_name)
                     lv_kwargs["origin"] = origin
                     lv_class = LVMThinSnapShotDevice
                 else:
                     lv_class = LVMThinLogicalVolumeDevice
 
-                lv_parents = [self.getDeviceByName(pool_device_name)]
+                lv_parents = [self.get_device_by_name(pool_device_name)]
             elif lv_name.endswith(']'):
                 # unrecognized Internal LVM2 device
                 return
@@ -994,31 +997,31 @@ class Populator(object):
                 #   C cached LV
                 return
 
-            lv_dev = self.getDeviceByUuid(lv_uuid)
+            lv_dev = self.get_device_by_uuid(lv_uuid)
             if lv_dev is None:
                 lv_device = lv_class(lv_name, parents=lv_parents,
-                                     uuid=lv_uuid, size=lv_size,segType=lv_type,
+                                     uuid=lv_uuid, size=lv_size, seg_type=lv_type,
                                      exists=True, **lv_kwargs)
-                self.devicetree._addDevice(lv_device)
+                self.devicetree._add_device(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
 
                 if lv_device.status:
-                    lv_device.updateSysfsPath()
-                    lv_device.updateSize()
-                    lv_info = udev.get_device(lv_device.sysfsPath)
+                    lv_device.update_sysfs_path()
+                    lv_device.update_size()
+                    lv_info = udev.get_device(lv_device.sysfs_path)
                     if not lv_info:
                         log.error("failed to get udev data for lv %s", lv_device.name)
                         return lv_device
 
                     # do format handling now
-                    self.addUdevDevice(lv_info, updateOrigFmt=True)
+                    self.add_udev_device(lv_info, update_orig_fmt=True)
 
                 return lv_device
 
             return None
 
-        def createInternalLV(lv):
+        def create_internal_lv(lv):
             lv_name = lv.lv_name
             lv_uuid = lv.uuid
             lv_attr = lv.attr
@@ -1033,12 +1036,12 @@ class Populator(object):
             lv_name = lv_name.strip("[]")
 
             # don't know the parent LV yet, will be set later
-            new_lv = matching_cls(lv_name, vg_device, parent_lv=None, size=lv_size, uuid=lv_uuid, exists=True, segType=lv_type)
+            new_lv = matching_cls(lv_name, vg_device, parent_lv=None, size=lv_size, uuid=lv_uuid, exists=True, seg_type=lv_type)
             if new_lv.status:
-                new_lv.updateSysfsPath()
-                new_lv.updateSize()
+                new_lv.update_sysfs_path()
+                new_lv.update_size()
 
-                lv_info = udev.get_device(new_lv.sysfsPath)
+                lv_info = udev.get_device(new_lv.sysfs_path)
                 if not lv_info:
                     log.error("failed to get udev data for lv %s", new_lv.name)
                     return new_lv
@@ -1048,7 +1051,7 @@ class Populator(object):
         # add LVs
         for lv in lv_info.values():
             # add the LV to the DeviceTree
-            new_lv = addLV(lv)
+            new_lv = add_lv(lv)
 
             if new_lv:
                 # save the reference for later use
@@ -1066,7 +1069,7 @@ class Populator(object):
         for lv_name in internal_lvs:
             full_name = "%s-%s" % (vg_name, lv_name)
             try:
-                new_lv = createInternalLV(lv_info[full_name])
+                new_lv = create_internal_lv(lv_info[full_name])
             except DeviceTreeError as e:
                 log.warning("Failed to process an internal LV '%s': %s", full_name, e)
             else:
@@ -1082,10 +1085,10 @@ class Populator(object):
             else:
                 log.warning("Failed to determine parent LV for an internal LV '%s'", lv.name)
 
-    def handleUdevLVMPVFormat(self, info, device):
+    def handle_udev_lvm_pv_format(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        pv_info = self.devicetree.pvInfo.get(device.path, None)
+        pv_info = self.devicetree.pv_info.get(device.path, None)
         if pv_info:
             vg_name = pv_info.vg_name
             vg_uuid = pv_info.vg_uuid
@@ -1097,11 +1100,11 @@ class Populator(object):
             log.info("lvm pv %s has no vg", device.name)
             return
 
-        vg_device = self.getDeviceByUuid(vg_uuid, incomplete=True)
+        vg_device = self.get_device_by_uuid(vg_uuid, incomplete=True)
         if vg_device:
             vg_device.parents.append(device)
         else:
-            same_name = self.getDeviceByName(vg_name)
+            same_name = self.get_device_by_name(vg_name)
             if isinstance(same_name, LVMVolumeGroupDevice):
                 raise DuplicateVGError("multiple LVM volume groups with the same name (%s)" % vg_name)
 
@@ -1121,24 +1124,24 @@ class Populator(object):
                                              uuid=vg_uuid,
                                              size=vg_size,
                                              free=vg_free,
-                                             peSize=pe_size,
-                                             peCount=pe_count,
-                                             peFree=pe_free,
-                                             pvCount=pv_count,
+                                             pe_size=pe_size,
+                                             pe_count=pe_count,
+                                             pe_free=pe_free,
+                                             pv_count=pv_count,
                                              exists=True)
-            self.devicetree._addDevice(vg_device)
+            self.devicetree._add_device(vg_device)
 
-        self.handleVgLvs(vg_device)
+        self.handle_vg_lvs(vg_device)
 
-    def handleUdevMDMemberFormat(self, info, device):
+    def handle_udev_md_member_format(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
         md_info = blockdev.md.examine(device.path)
 
         # Use mdadm info if udev info is missing
         md_uuid = md_info.uuid
-        device.format.mdUuid = device.format.mdUuid or md_uuid
-        md_array = self.getDeviceByUuid(device.format.mdUuid, incomplete=True)
+        device.format.md_uuid = device.format.md_uuid or md_uuid
+        md_array = self.get_device_by_uuid(device.format.md_uuid, incomplete=True)
 
         if md_array:
             md_array.parents.append(device)
@@ -1180,13 +1183,13 @@ class Populator(object):
 
             md_path = md_info.device or ""
             if md_path and not md_name:
-                md_name = devicePathToName(md_path)
+                md_name = device_path_to_name(md_path)
                 if re.match(r'md\d+$', md_name):
                     # md0 -> 0
                     md_name = md_name[2:]
 
                 if md_name:
-                    array = self.getDeviceByName(md_name, incomplete=True)
+                    array = self.get_device_by_name(md_name, incomplete=True)
                     if array and array.uuid != md_uuid:
                         log.error("found multiple devices with the name %s", md_name)
 
@@ -1199,7 +1202,7 @@ class Populator(object):
 
             array_type = MDRaidArrayDevice
             try:
-                if raid.getRaidLevel(md_level) is raid.Container and \
+                if raid.get_raid_level(md_level) is raid.Container and \
                    getattr(device.format, "biosraid", False):
                     array_type = MDContainerDevice
             except raid.RaidError as e:
@@ -1208,29 +1211,29 @@ class Populator(object):
 
             try:
                 md_array = array_type(
-                   md_name,
-                   level=md_level,
-                   memberDevices=md_devices,
-                   uuid=md_uuid,
-                   metadataVersion=md_metadata,
-                   exists=True
+                    md_name,
+                    level=md_level,
+                    member_devices=md_devices,
+                    uuid=md_uuid,
+                    metadata_version=md_metadata,
+                    exists=True
                 )
             except (ValueError, DeviceError) as e:
                 log.error("failed to create md array: %s", e)
                 return
 
-            md_array.updateSysfsPath()
+            md_array.update_sysfs_path()
             md_array.parents.append(device)
-            self.devicetree._addDevice(md_array)
+            self.devicetree._add_device(md_array)
             if md_array.status:
-                array_info = udev.get_device(md_array.sysfsPath)
+                array_info = udev.get_device(md_array.sysfs_path)
                 if not array_info:
                     log.error("failed to get udev data for %s", md_array.name)
                     return
 
-                self.addUdevDevice(array_info, updateOrigFmt=True)
+                self.add_udev_device(array_info, update_orig_fmt=True)
 
-    def handleUdevDMRaidMemberFormat(self, info, device):
+    def handle_udev_dmraid_member_format(self, info, device):
         # if dmraid usage is disabled skip any dmraid set activation
         if not flags.dmraid:
             return
@@ -1249,7 +1252,7 @@ class Populator(object):
             return
 
         for rs_name in rs_names:
-            dm_array = self.getDeviceByName(rs_name, incomplete=True)
+            dm_array = self.get_device_by_name(rs_name, incomplete=True)
             if dm_array is not None:
                 # We add the new device.
                 dm_array.parents.append(device)
@@ -1259,7 +1262,7 @@ class Populator(object):
                 dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[device])
 
-                self.devicetree._addDevice(dm_array)
+                self.devicetree._add_device(dm_array)
 
                 # Wait for udev to scan the just created nodes, to avoid a race
                 # with the udev.get_device() call below.
@@ -1267,19 +1270,19 @@ class Populator(object):
 
                 # Get the DMRaidArrayDevice a DiskLabel format *now*, in case
                 # its partitions get scanned before it does.
-                dm_array.updateSysfsPath()
-                dm_array_info = udev.get_device(dm_array.sysfsPath)
-                self.handleUdevDiskLabelFormat(dm_array_info, dm_array)
+                dm_array.update_sysfs_path()
+                dm_array_info = udev.get_device(dm_array.sysfs_path)
+                self.handle_udev_disk_label_format(dm_array_info, dm_array)
 
                 # Use the rs's object on the device.
                 # pyblock can return the memebers of a set and the
                 # device has the attribute to hold it.  But ATM we
                 # are not really using it. Commenting this out until
                 # we really need it.
-                #device.format.raidmem = block.getMemFromRaidSet(dm_array,
+                # device.format.raidmem = block.getMemFromRaidSet(dm_array,
                 #        major=major, minor=minor, uuid=uuid, name=name)
 
-    def handleBTRFSFormat(self, info, device):
+    def handle_btrfs_format(self, info, device):
         log_method_call(self, name=device.name)
         uuid = udev.device_get_uuid(info)
 
@@ -1297,12 +1300,12 @@ class Populator(object):
             log.info("creating btrfs volume btrfs.%s", label)
             btrfs_dev = BTRFSVolumeDevice(label, parents=[device], uuid=uuid,
                                           exists=True)
-            self.devicetree._addDevice(btrfs_dev)
+            self.devicetree._add_device(btrfs_dev)
 
         if not btrfs_dev.subvolumes:
-            snapshots = btrfs_dev.listSubVolumes(snapshotsOnly=True)
+            snapshots = btrfs_dev.list_subvolumes(snapshots_only=True)
             snapshot_ids = [s.id for s in snapshots]
-            for subvol_dict in btrfs_dev.listSubVolumes():
+            for subvol_dict in btrfs_dev.list_subvolumes():
                 vol_id = subvol_dict.id
                 vol_path = subvol_dict.path
                 parent_id = subvol_dict.parent_id
@@ -1322,12 +1325,12 @@ class Populator(object):
                               parent_id, vol_path)
                     raise DeviceTreeError("could not find parent for subvol")
 
-                fmt = formats.getFormat("btrfs",
-                                        device=btrfs_dev.path,
-                                        exists=True,
-                                        volUUID=btrfs_dev.format.volUUID,
-                                        subvolspec=vol_path,
-                                        mountopts="subvol=%s" % vol_path)
+                fmt = formats.get_format("btrfs",
+                                         device=btrfs_dev.path,
+                                         exists=True,
+                                         vol_uuid=btrfs_dev.format.vol_uuid,
+                                         subvolspec=vol_path,
+                                         mountopts="subvol=%s" % vol_path)
                 if vol_id in snapshot_ids:
                     device_class = BTRFSSnapShotDevice
                 else:
@@ -1338,15 +1341,15 @@ class Populator(object):
                                       fmt=fmt,
                                       parents=[parent],
                                       exists=True)
-                self.devicetree._addDevice(subvol)
+                self.devicetree._add_device(subvol)
 
-    def handleUdevDeviceFormat(self, info, device):
+    def handle_udev_device_format(self, info, device):
         log_method_call(self, name=getattr(device, "name", None))
 
         if not info:
             log.debug("no information for device %s", device.name)
             return
-        if not device.mediaPresent:
+        if not device.media_present:
             log.debug("no media present for device %s", device.name)
             return
 
@@ -1356,7 +1359,7 @@ class Populator(object):
         format_type = udev.device_get_format(info)
         serial = udev.device_get_serial(info)
 
-        is_multipath_member = (device.isDisk and
+        is_multipath_member = (device.is_disk and
                                blockdev.mpath_is_mpath_member(device.path))
         if is_multipath_member:
             format_type = "multipath_member"
@@ -1367,10 +1370,10 @@ class Populator(object):
         if not udev.device_is_biosraid_member(info) and \
            not is_multipath_member and \
            format_type != "iso9660":
-            self.handleUdevDiskLabelFormat(info, device)
-            if device.partitioned or self.isIgnored(info) or \
+            self.handle_udev_disk_label_format(info, device)
+            if device.partitioned or self.is_ignored(info) or \
                (not device.partitionable and
-                device.format.type == "disklabel"):
+                    device.format.type == "disklabel"):
                 # If the device has a disklabel, or the user chose not to
                 # create one, we are finished with this device. Otherwise
                 # it must have some non-disklabel formatting, in which case
@@ -1395,7 +1398,7 @@ class Populator(object):
         if format_type == "crypto_LUKS":
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
-        elif format_type in formats.mdraid.MDRaidMember._udevTypes:
+        elif format_type in formats.mdraid.MDRaidMember._udev_types:
             # mdraid
             try:
                 # ID_FS_UUID contains the array UUID
@@ -1410,7 +1413,7 @@ class Populator(object):
             kwargs["biosraid"] = udev.device_is_biosraid_member(info)
         elif format_type == "LVM2_member":
             # lvm
-            pv_info = self.devicetree.pvInfo.get(device.path, None)
+            pv_info = self.devicetree.pv_info.get(device.path, None)
             if pv_info:
                 if pv_info.vg_name:
                     kwargs["vgName"] = pv_info.vg_name
@@ -1427,24 +1430,24 @@ class Populator(object):
         elif format_type == "vfat":
             # efi magic
             if isinstance(device, PartitionDevice) and device.bootable:
-                efi = formats.getFormat("efi")
-                if efi.minSize <= device.size <= efi.maxSize:
+                efi = formats.get_format("efi")
+                if efi.min_size <= device.size <= efi.max_size:
                     format_designator = "efi"
         elif format_type == "hfsplus":
             if isinstance(device, PartitionDevice):
-                macefi = formats.getFormat("macefi")
-                if macefi.minSize <= device.size <= macefi.maxSize and \
-                   device.partedPartition.name == macefi.name:
+                macefi = formats.get_format("macefi")
+                if macefi.min_size <= device.size <= macefi.max_size and \
+                   device.parted_partition.name == macefi.name:
                     format_designator = "macefi"
         elif format_type == "hfs":
             # apple bootstrap magic
             if isinstance(device, PartitionDevice) and device.bootable:
-                apple = formats.getFormat("appleboot")
-                if apple.minSize <= device.size <= apple.maxSize:
+                apple = formats.get_format("appleboot")
+                if apple.min_size <= device.size <= apple.max_size:
                     format_designator = "appleboot"
         elif format_type == "btrfs":
             # the format's uuid attr will contain the UUID_SUB, while the
-            # overarching volume UUID will be stored as volUUID
+            # overarching volume UUID will be stored as vol_uuid
             kwargs["uuid"] = info["ID_FS_UUID_SUB"]
             kwargs["volUUID"] = uuid
         elif format_type == "multipath_member":
@@ -1456,12 +1459,12 @@ class Populator(object):
 
         try:
             log.info("type detected on '%s' is '%s'", name, format_designator)
-            device.format = formats.getFormat(format_designator, **kwargs)
+            device.format = formats.get_format(format_designator, **kwargs)
             if device.format.type:
                 log.info("got format: %s", device.format)
         except FSError:
             log.warning("type '%s' on '%s' invalid, assuming no format",
-                      format_designator, name)
+                        format_designator, name)
             device.format = formats.DeviceFormat()
             return
 
@@ -1469,29 +1472,29 @@ class Populator(object):
         # now do any special handling required for the device's format
         #
         if device.format.type == "luks":
-            self.handleUdevLUKSFormat(info, device)
+            self.handle_udev_luks_format(info, device)
         elif device.format.type == "mdmember":
-            self.handleUdevMDMemberFormat(info, device)
+            self.handle_udev_md_member_format(info, device)
         elif device.format.type == "dmraidmember":
-            self.handleUdevDMRaidMemberFormat(info, device)
+            self.handle_udev_dmraid_member_format(info, device)
         elif device.format.type == "lvmpv":
-            self.handleUdevLVMPVFormat(info, device)
+            self.handle_udev_lvm_pv_format(info, device)
         elif device.format.type == "btrfs":
-            self.handleBTRFSFormat(info, device)
+            self.handle_btrfs_format(info, device)
 
-    def updateDeviceFormat(self, device):
+    def update_device_format(self, device):
         log.info("updating format of device: %s", device)
         try:
-            util.notify_kernel(device.sysfsPath)
+            util.notify_kernel(device.sysfs_path)
         except (ValueError, IOError) as e:
             log.warning("failed to notify kernel of change: %s", e)
 
         udev.settle()
-        info = udev.get_device(device.sysfsPath)
+        info = udev.get_device(device.sysfs_path)
 
-        self.handleUdevDeviceFormat(info, device)
+        self.handle_udev_device_format(info, device)
 
-    def _handleInconsistencies(self):
+    def _handle_inconsistencies(self):
         for vg in [d for d in self.devicetree.devices if d.type == "lvmvg"]:
             if vg.complete:
                 continue
@@ -1502,11 +1505,11 @@ class Populator(object):
             for pv in vg.pvs:
                 lvm.lvm_cc_addFilterRejectRegexp(pv.name)
 
-    def setupDiskImages(self):
+    def setup_disk_images(self):
         """ Set up devices to represent the disk image files. """
-        for (name, path) in self.diskImages.items():
+        for (name, path) in self.disk_images.items():
             log.info("setting up disk image file '%s' as '%s'", path, name)
-            dmdev = self.getDeviceByName(name)
+            dmdev = self.get_device_by_name(name)
             if dmdev and isinstance(dmdev, DMLinearDevice) and \
                path in (d.path for d in dmdev.ancestors):
                 log.debug("using %s", dmdev)
@@ -1524,31 +1527,31 @@ class Populator(object):
                     loop_sysfs = "/class/block/%s" % loop_name
                 loopdev = LoopDevice(name=loop_name,
                                      parents=[filedev],
-                                     sysfsPath=loop_sysfs,
+                                     sysfs_path=loop_sysfs,
                                      exists=True)
                 loopdev.setup()
                 log.debug("%s", loopdev)
                 dmdev = DMLinearDevice(name,
-                                       dmUuid="ANACONDA-%s" % name,
+                                       dm_uuid="ANACONDA-%s" % name,
                                        parents=[loopdev],
                                        exists=True)
                 dmdev.setup()
-                dmdev.updateSysfsPath()
-                dmdev.updateSize()
+                dmdev.update_sysfs_path()
+                dmdev.update_size()
                 log.debug("%s", dmdev)
             except (ValueError, DeviceError) as e:
                 log.error("failed to set up disk image: %s", e)
             else:
-                self.devicetree._addDevice(filedev)
-                self.devicetree._addDevice(loopdev)
-                self.devicetree._addDevice(dmdev)
-                info = udev.get_device(dmdev.sysfsPath)
-                self.addUdevDevice(info, updateOrigFmt=True)
+                self.devicetree._add_device(filedev)
+                self.devicetree._add_device(loopdev)
+                self.devicetree._add_device(dmdev)
+                info = udev.get_device(dmdev.sysfs_path)
+                self.add_udev_device(info, update_orig_fmt=True)
 
-    def teardownDiskImages(self):
+    def teardown_disk_images(self):
         """ Tear down any disk image stacks. """
-        for (name, _path) in self.diskImages.items():
-            dm_device = self.getDeviceByName(name)
+        for (name, _path) in self.disk_images.items():
+            dm_device = self.get_device_by_name(name)
             if not dm_device:
                 continue
 
@@ -1556,7 +1559,7 @@ class Populator(object):
             loop_device = dm_device.parents[0]
             loop_device.teardown()
 
-    def backupConfigs(self, restore=False):
+    def backup_configs(self, restore=False):
         """ Create a backup copies of some storage config files. """
         configs = ["/etc/mdadm.conf"]
         for cfg in configs:
@@ -1597,18 +1600,18 @@ class Populator(object):
                 # don't try to backup non-existent configs
                 log.info("not going to %s of non-existent %s", op, cfg)
 
-    def restoreConfigs(self):
-        self.backupConfigs(restore=True)
+    def restore_configs(self):
+        self.backup_configs(restore=True)
 
-    def saveLUKSpassphrase(self, device):
+    def save_luks_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
 
         passphrase = device.format._LUKS__passphrase
         if passphrase:
-            self.__luksDevs[device.format.uuid] = passphrase
+            self.__luks_devs[device.format.uuid] = passphrase
             self.__passphrases.append(passphrase)
 
-    def populate(self, cleanupOnly=False):
+    def populate(self, cleanup_only=False):
         """ Locate all storage devices.
 
             Everything should already be active. We just go through and gather
@@ -1618,8 +1621,8 @@ class Populator(object):
             scanned just the rest, but then they are hidden at the end of this
             process.
         """
-        self.backupConfigs()
-        if cleanupOnly:
+        self.backup_configs()
+        if cleanup_only:
             self._cleanup = True
 
         parted.register_exn_handler(parted_exn_handler)
@@ -1629,29 +1632,29 @@ class Populator(object):
             raise
         finally:
             parted.clear_exn_handler()
-            self.restoreConfigs()
+            self.restore_configs()
 
     def _populate(self):
-        log.info("DeviceTree.populate: ignoredDisks is %s ; exclusiveDisks is %s",
-                    self.ignoredDisks, self.exclusiveDisks)
+        log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
+                 self.ignored_disks, self.exclusive_disks)
 
-        self.devicetree.dropLVMCache()
+        self.devicetree.drop_lvm_cache()
 
         if flags.installer_mode and not flags.image_install:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
-        self.setupDiskImages()
+        self.setup_disk_images()
 
         # mark the tree as unpopulated so exception handlers can tell the
         # exception originated while finding storage devices
         self.populated = False
 
         # resolve the protected device specs to device names
-        for spec in self.protectedDevSpecs:
+        for spec in self.protected_dev_specs:
             name = udev.resolve_devspec(spec)
             log.debug("protected device spec %s resolved to %s", spec, name)
             if name:
-                self.protectedDevNames.append(name)
+                self.protected_dev_names.append(name)
 
         # FIXME: the backing dev for the live image can't be used as an
         # install target.  note that this is a little bit of a hack
@@ -1663,8 +1666,8 @@ class Populator(object):
             live_device_name = mnt.split()[0].split("/")[-1]
             log.info("%s looks to be the live device; marking as protected",
                      live_device_name)
-            self.protectedDevNames.append(live_device_name)
-            self.liveBackingDevice = live_device_name
+            self.protected_dev_names.append(live_device_name)
+            self.live_backing_device = live_device_name
             break
 
         old_devices = {}
@@ -1687,20 +1690,20 @@ class Populator(object):
 
             log.info("devices to scan: %s", [udev.device_get_name(d) for d in devices])
             for dev in devices:
-                self.addUdevDevice(dev)
+                self.add_udev_device(dev)
 
         self.populated = True
 
         # After having the complete tree we make sure that the system
         # inconsistencies are ignored or resolved.
-        self._handleInconsistencies()
+        self._handle_inconsistencies()
 
     @property
     def names(self):
         return self.devicetree.names
 
-    def getDeviceByName(self, *args, **kwargs):
-        return self.devicetree.getDeviceByName(*args, **kwargs)
+    def get_device_by_name(self, *args, **kwargs):
+        return self.devicetree.get_device_by_name(*args, **kwargs)
 
-    def getDeviceByUuid(self, *args, **kwargs):
-        return self.devicetree.getDeviceByUuid(*args, **kwargs)
+    def get_device_by_uuid(self, *args, **kwargs):
+        return self.devicetree.get_device_by_uuid(*args, **kwargs)

@@ -23,16 +23,18 @@ import abc
 
 from six import add_metaclass
 
+
 @add_metaclass(abc.ABCMeta)
 class FSLabeling(object):
+
     """An abstract class that represents filesystem labeling actions.
     """
 
     default_label = abc.abstractproperty(
-       doc="Default label set on this filesystem at creation.")
+        doc="Default label set on this filesystem at creation.")
 
     @abc.abstractmethod
-    def labelFormatOK(self, label):
+    def label_format_ok(self, label):
         """Returns True if this label is correctly formatted for this
            filesystem, otherwise False.
 
@@ -41,66 +43,74 @@ class FSLabeling(object):
         """
         raise NotImplementedError
 
+
 class Ext2FSLabeling(FSLabeling):
 
     default_label = ""
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return len(label) < 17
+
 
 class FATFSLabeling(FSLabeling):
 
     default_label = "NO NAME"
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return len(label) < 12
+
 
 class JFSLabeling(FSLabeling):
 
     default_label = ""
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return len(label) < 17
+
 
 class ReiserFSLabeling(FSLabeling):
 
     default_label = ""
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return len(label) < 17
+
 
 class XFSLabeling(FSLabeling):
 
     default_label = ""
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return ' ' not in label and len(label) < 13
+
 
 class HFSLabeling(FSLabeling):
 
     default_label = "Untitled"
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return ':' not in label and len(label) < 28 and len(label) > 0
+
 
 class HFSPlusLabeling(FSLabeling):
 
     default_label = "Untitled"
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return ':' not in label and 0 < len(label) < 129
+
 
 class NTFSLabeling(FSLabeling):
 
     default_label = ""
 
     @classmethod
-    def labelFormatOK(cls, label):
+    def label_format_ok(cls, label):
         return len(label) < 129

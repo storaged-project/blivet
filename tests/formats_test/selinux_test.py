@@ -8,25 +8,27 @@ from tests import loopbackedtestcase
 import blivet.formats.fs as fs
 from blivet.size import Size
 
+
 @unittest.skipUnless(selinux.is_selinux_enabled() == 1, "SELinux is disabled")
 class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
+
     """Testing SELinux contexts.
     """
 
-    def __init__(self, methodName='runTest'):
-        super(SELinuxContextTestCase, self).__init__(methodName=methodName, deviceSpec=[Size("100 MiB")])
+    def __init__(self, methodName='run_test'):
+        super(SELinuxContextTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
 
     def setUp(self):
         self.installer_mode = blivet.flags.installer_mode
         super(SELinuxContextTestCase, self).setUp()
 
-    def testMountingExt2FS(self):
+    def test_mounting_ext2fs(self):
         """ Test that lost+found directory gets assigned correct SELinux
             context if installer_mode is True, and retains some random old
             context if installer_mode is False.
         """
         LOST_AND_FOUND_CONTEXT = 'system_u:object_r:lost_found_t:s0'
-        an_fs = fs.Ext2FS(device=self.loopDevices[0], label="test")
+        an_fs = fs.Ext2FS(device=self.loop_devices[0], label="test")
 
         if not an_fs.formattable or not an_fs.mountable:
             self.skipTest("can not create or mount filesystem %s" % an_fs.name)
@@ -61,9 +63,9 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
 
-    def testMountingXFS(self):
+    def test_mounting_xfs(self):
         """ XFS does not have a lost+found directory. """
-        an_fs = fs.XFS(device=self.loopDevices[0], label="test")
+        an_fs = fs.XFS(device=self.loop_devices[0], label="test")
 
         if not an_fs.formattable or not an_fs.mountable:
             self.skipTest("can not create or mount filesystem %s" % an_fs.name)

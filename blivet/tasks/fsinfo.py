@@ -30,17 +30,19 @@ from . import availability
 from . import fstask
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSInfo(task.BasicApplication, fstask.FSTask):
+
     """ An abstract class that represents an information gathering app. """
 
     description = "filesystem info"
 
     options = abc.abstractproperty(
-       doc="Options for invoking the application.")
+        doc="Options for invoking the application.")
 
     @property
-    def _infoCommand(self):
+    def _info_command(self):
         """ Returns the command for reading filesystem information.
 
             :returns: a list of appropriate options
@@ -48,20 +50,20 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.options + [self.fs.device]
 
-    def doTask(self):
+    def do_task(self):
         """ Returns information from the command.
 
             :returns: a string representing the output of the command
             :rtype: str
             :raises FSError: if info cannot be obtained
         """
-        error_msgs = self.availabilityErrors
+        error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         error_msg = None
         try:
-            (rc, out) = util.run_program_and_capture_output(self._infoCommand)
+            (rc, out) = util.run_program_and_capture_output(self._info_command)
             if rc:
                 error_msg = "failed to gather fs info: %s" % rc
         except OSError as e:
@@ -70,25 +72,31 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
             raise FSError(error_msg)
         return out
 
+
 class Ext2FSInfo(FSInfo):
     ext = availability.DUMPE2FS_APP
     options = ["-h"]
+
 
 class JFSInfo(FSInfo):
     ext = availability.JFSTUNE_APP
     options = ["-l"]
 
+
 class NTFSInfo(FSInfo):
     ext = availability.NTFSINFO_APP
     options = ["-m"]
+
 
 class ReiserFSInfo(FSInfo):
     ext = availability.DEBUGREISERFS_APP
     options = []
 
+
 class XFSInfo(FSInfo):
     ext = availability.XFSDB_APP
     options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize"]
+
 
 class UnimplementedFSInfo(fstask.UnimplementedFSTask):
     pass

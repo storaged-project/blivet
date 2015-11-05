@@ -37,16 +37,17 @@ log = logging.getLogger("blivet")
 
 
 class MDRaidMember(DeviceFormat):
+
     """ An mdraid member disk. """
     _type = "mdmember"
     _name = N_("software RAID")
-    _udevTypes = ["linux_raid_member"]
-    partedFlag = PARTITION_RAID
+    _udev_types = ["linux_raid_member"]
+    parted_flag = PARTITION_RAID
     _formattable = True                 # can be formatted
     _supported = True                   # is supported
-    _linuxNative = True                 # for clearpart
+    _linux_native = True                 # for clearpart
     _packages = ["mdadm"]               # required packages
-    _ksMountpoint = "raid."
+    _ks_mountpoint = "raid."
     _plugin = availability.BLOCKDEV_MDRAID_PLUGIN
 
     def __init__(self, **kwargs):
@@ -55,7 +56,7 @@ class MDRaidMember(DeviceFormat):
             :keyword uuid: this member device's uuid
             :keyword exists: whether this is an existing format
             :type exists: bool
-            :keyword mdUuid: the uuid of the array this device belongs to
+            :keyword md_uuid: the uuid of the array this device belongs to
 
             .. note::
 
@@ -63,20 +64,20 @@ class MDRaidMember(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
-        self.mdUuid = kwargs.get("mdUuid")
+        self.md_uuid = kwargs.get("md_uuid")
 
         self.biosraid = kwargs.get("biosraid")
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
-        s += ("  mdUUID = %(mdUUID)s  biosraid = %(biosraid)s" %
-              {"mdUUID": self.mdUuid, "biosraid": self.biosraid})
+        s += ("  md_uuid = %(md_uuid)s  biosraid = %(biosraid)s" %
+              {"md_uuid": self.md_uuid, "biosraid": self.biosraid})
         return s
 
     @property
     def dict(self):
         d = super(MDRaidMember, self).dict
-        d.update({"mdUUID": self.mdUuid, "biosraid": self.biosraid})
+        d.update({"md_uuid": self.md_uuid, "biosraid": self.biosraid})
         return d
 
     @property
@@ -107,7 +108,6 @@ class MDRaidMember(DeviceFormat):
 # Note the anaconda cmdline has not been parsed yet when we're first imported,
 # so we can not use flags.dmraid here
 if not flags.noiswmd and flags.dmraid:
-    MDRaidMember._udevTypes.append("isw_raid_member")
+    MDRaidMember._udev_types.append("isw_raid_member")
 
 register_device_format(MDRaidMember)
-

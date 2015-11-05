@@ -40,17 +40,18 @@ log = logging.getLogger("blivet")
 
 
 class LVMPhysicalVolume(DeviceFormat):
+
     """ An LVM physical volume. """
     _type = "lvmpv"
     _name = N_("physical volume (LVM)")
-    _udevTypes = ["LVM2_member"]
-    partedFlag = PARTITION_LVM
+    _udev_types = ["LVM2_member"]
+    parted_flag = PARTITION_LVM
     _formattable = True                 # can be formatted
     _supported = True                   # is supported
-    _linuxNative = True                 # for clearpart
-    _minSize = lvm.LVM_PE_SIZE * 2      # one for metadata and one for data
+    _linux_native = True                 # for clearpart
+    _min_size = lvm.LVM_PE_SIZE * 2      # one for metadata and one for data
     _packages = ["lvm2"]                # required packages
-    _ksMountpoint = "pv."
+    _ks_mountpoint = "pv."
     _plugin = availability.BLOCKDEV_LVM_PLUGIN
 
     def __init__(self, **kwargs):
@@ -59,12 +60,12 @@ class LVMPhysicalVolume(DeviceFormat):
             :keyword uuid: this PV's uuid (not the VG uuid)
             :keyword exists: indicates whether this is an existing format
             :type exists: bool
-            :keyword vgName: the name of the VG this PV belongs to
-            :keyword vgUuid: the UUID of the VG this PV belongs to
-            :keyword peStart: offset of first physical extent
-            :type peStart: :class:`~.size.Size`
-            :keyword dataAlignment: data alignment (for non-existent PVs)
-            :type dataAlignment: :class:`~.size.Size`
+            :keyword vg_name: the name of the VG this PV belongs to
+            :keyword vg_uuid: the UUID of the VG this PV belongs to
+            :keyword pe_start: offset of first physical extent
+            :type pe_start: :class:`~.size.Size`
+            :keyword data_alignment: data alignment (for non-existent PVs)
+            :type data_alignment: :class:`~.size.Size`
 
             .. note::
 
@@ -76,26 +77,26 @@ class LVMPhysicalVolume(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
-        self.vgName = kwargs.get("vgName")
-        self.vgUuid = kwargs.get("vgUuid")
-        self.peStart = kwargs.get("peStart", lvm.LVM_PE_START)
-        self.dataAlignment = kwargs.get("dataAlignment", Size(0))
+        self.vg_name = kwargs.get("vg_name")
+        self.vg_uuid = kwargs.get("vg_uuid")
+        self.pe_start = kwargs.get("pe_start", lvm.LVM_PE_START)
+        self.data_alignment = kwargs.get("data_alignment", Size(0))
 
-        self.inconsistentVG = False
+        self.inconsistent_vg = False
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
-        s += ("  vgName = %(vgName)s  vgUUID = %(vgUUID)s"
-              "  peStart = %(peStart)s  dataAlignment = %(dataAlignment)s" %
-              {"vgName": self.vgName, "vgUUID": self.vgUuid,
-               "peStart": self.peStart, "dataAlignment": self.dataAlignment})
+        s += ("  vg_name = %(vg_name)s  vg_uuid = %(vg_uuid)s"
+              "  pe_start = %(pe_start)s  data_alignment = %(data_alignment)s" %
+              {"vg_name": self.vg_name, "vg_uuid": self.vg_uuid,
+               "pe_start": self.pe_start, "data_alignment": self.data_alignment})
         return s
 
     @property
     def dict(self):
         d = super(LVMPhysicalVolume, self).dict
-        d.update({"vgName": self.vgName, "vgUUID": self.vgUuid,
-                  "peStart": self.peStart, "dataAlignment": self.dataAlignment})
+        d.update({"vg_name": self.vg_name, "vg_uuid": self.vg_uuid,
+                  "pe_start": self.pe_start, "data_alignment": self.data_alignment})
         return d
 
     @property
@@ -119,7 +120,7 @@ class LVMPhysicalVolume(DeviceFormat):
         #     for destroy by calling _destroy directly.
         DeviceFormat._destroy(self, **kwargs)
         blockdev.lvm.pvscan(self.device)
-        blockdev.lvm.pvcreate(self.device, data_alignment=self.dataAlignment)
+        blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment)
         blockdev.lvm.pvscan(self.device)
 
     def _destroy(self, **kwargs):
@@ -139,8 +140,7 @@ class LVMPhysicalVolume(DeviceFormat):
     @property
     def status(self):
         # XXX hack
-        return (self.exists and self.vgName and
-                os.path.isdir("/dev/%s" % self.vgName))
+        return (self.exists and self.vg_name and
+                os.path.isdir("/dev/%s" % self.vg_name))
 
 register_device_format(LVMPhysicalVolume)
-

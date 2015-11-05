@@ -30,7 +30,9 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 class OpticalDevice(StorageDevice):
+
     """ An optical drive, eg: cdrom, dvd+r, &c.
 
         XXX Is this useful?
@@ -38,15 +40,15 @@ class OpticalDevice(StorageDevice):
     _type = "cdrom"
 
     def __init__(self, name, major=None, minor=None, exists=False,
-                 fmt=None, parents=None, sysfsPath='', vendor="",
+                 fmt=None, parents=None, sysfs_path='', vendor="",
                  model=""):
         StorageDevice.__init__(self, name, fmt=fmt,
                                major=major, minor=minor, exists=True,
-                               parents=parents, sysfsPath=sysfsPath,
+                               parents=parents, sysfs_path=sysfs_path,
                                vendor=vendor, model=model)
 
     @property
-    def mediaPresent(self):
+    def media_present(self):
         """ Return a boolean indicating whether or not the device contains
             media.
         """
@@ -72,7 +74,7 @@ class OpticalDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        #try to umount and close device before ejecting
+        # try to umount and close device before ejecting
         self.teardown()
 
         try:

@@ -38,7 +38,9 @@ log = logging.getLogger("blivet")
 
 CACHE_AVAILABILITY = True
 
+
 class ExternalResource(object):
+
     """ An external resource. """
 
     def __init__(self, method, name):
@@ -50,21 +52,21 @@ class ExternalResource(object):
         """
         self._method = method
         self.name = name
-        self._availabilityErrors = None
+        self._availability_errors = None
 
     def __str__(self):
         return self.name
 
     @property
-    def availabilityErrors(self):
+    def availability_errors(self):
         """ Whether the resource has any availability errors.
 
             :returns: [] if the resource is available
             :rtype: list of str
         """
-        if self._availabilityErrors is None or not CACHE_AVAILABILITY:
-            self._availabilityErrors = self._method.availabilityErrors(self)
-        return self._availabilityErrors[:]
+        if self._availability_errors is None or not CACHE_AVAILABILITY:
+            self._availability_errors = self._method.availability_errors(self)
+        return self._availability_errors[:]
 
     @property
     def available(self):
@@ -73,14 +75,16 @@ class ExternalResource(object):
             :returns: True if the resource is available
             :rtype: bool
         """
-        return self.availabilityErrors == []
+        return self.availability_errors == []
+
 
 @add_metaclass(abc.ABCMeta)
 class Method(object):
+
     """ Method for determining if external resource is available."""
 
     @abc.abstractmethod
-    def availabilityErrors(self, resource):
+    def availability_errors(self, resource):
         """ Returns [] if the resource is available.
 
             :param resource: any external resource
@@ -91,10 +95,12 @@ class Method(object):
         """
         raise NotImplementedError()
 
+
 class Path(Method):
+
     """ Methods for when application is found in  PATH. """
 
-    def availabilityErrors(self, resource):
+    def availability_errors(self, resource):
         """ Returns [] if the name of the application is in the path.
 
             :param resource: any application
@@ -109,6 +115,7 @@ class Path(Method):
             return []
 
 Path = Path()
+
 
 class PackageInfo(object):
 
@@ -125,7 +132,9 @@ class PackageInfo(object):
     def __str__(self):
         return "%s-%s" % (self.package_name, self.required_version)
 
+
 class PackageMethod(Method):
+
     """ Methods for checking the package version of the external resource. """
 
     def __init__(self, package=None):
@@ -134,10 +143,10 @@ class PackageMethod(Method):
             :param :class:`PackageInfo` package:
         """
         self.package = package
-        self._availabilityErrors = None
+        self._availability_errors = None
 
     @property
-    def packageVersion(self):
+    def package_version(self):
         """ Returns the version of the installed package.
 
             :returns: the package version
@@ -161,29 +170,31 @@ class PackageMethod(Method):
 
         return LooseVersion(packages[0].version)
 
-    def availabilityErrors(self, resource):
-        if self._availabilityErrors is not None and CACHE_AVAILABILITY:
-            return self._availabilityErrors[:]
+    def availability_errors(self, resource):
+        if self._availability_errors is not None and CACHE_AVAILABILITY:
+            return self._availability_errors[:]
 
-        self._availabilityErrors = Path.availabilityErrors(resource)
+        self._availability_errors = Path.availability_errors(resource)
 
         if self.package.required_version is None:
-            return self._availabilityErrors[:]
+            return self._availability_errors[:]
 
         try:
-            if self.packageVersion < self.package.required_version:
-                self._availabilityErrors.append("installed version %s for package %s is less than required version %s" % (self.packageVersion, self.package.package_name, self.package.required_version))
+            if self.package_version < self.package.required_version:
+                self._availability_errors.append("installed version %s for package %s is less than required version %s" % (self.package_version, self.package.package_name, self.package.required_version))
         except AvailabilityError as e:
             # In contexts like the installer, a package may not be available,
             # but the version of the tools is likely to be correct.
             log.warning(str(e))
 
-        return self._availabilityErrors[:]
+        return self._availability_errors[:]
+
 
 class BlockDevMethod(Method):
+
     """ Methods for when application is actually a libblockdev plugin. """
 
-    def availabilityErrors(self, resource):
+    def availability_errors(self, resource):
         """ Returns [] if the plugin is loaded.
 
             :param resource: a libblockdev plugin
@@ -199,21 +210,26 @@ class BlockDevMethod(Method):
 
 BlockDevMethod = BlockDevMethod()
 
+
 class UnavailableMethod(Method):
+
     """ Method that indicates a resource is unavailable. """
 
-    def availabilityErrors(self, resource):
+    def availability_errors(self, resource):
         return ["always unavailable"]
 
 UnavailableMethod = UnavailableMethod()
 
+
 class AvailableMethod(Method):
+
     """ Method that indicates a resource is available. """
 
-    def availabilityErrors(self, resource):
+    def availability_errors(self, resource):
         return []
 
 AvailableMethod = AvailableMethod()
+
 
 def application(name):
     """ Construct an external resource that is an application.
@@ -221,6 +237,7 @@ def application(name):
         This application will be available if its name can be found in $PATH.
     """
     return ExternalResource(Path, name)
+
 
 def application_by_package(name, package_method):
     """ Construct an external resource that is an application.
@@ -232,13 +249,16 @@ def application_by_package(name, package_method):
     """
     return ExternalResource(package_method, name)
 
+
 def blockdev_plugin(name):
     """ Construct an external resource that is a libblockdev plugin. """
     return ExternalResource(BlockDevMethod, name)
 
+
 def unavailable_resource(name):
     """ Construct an external resource that is always unavailable. """
     return ExternalResource(UnavailableMethod, name)
+
 
 def available_resource(name):
     """ Construct an external resource that is always available. """

@@ -19,7 +19,9 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+
 class NetworkStorageDevice(object):
+
     """ Virtual base class for network backed storage devices """
 
     def __init__(self, host_address=None, nic=None):

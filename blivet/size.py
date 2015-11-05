@@ -72,11 +72,12 @@ _BINARY_PREFIXES = [KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB]
 _EMPTY_PREFIX = B
 
 if six.PY2:
-    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)  # pylint: disable=no-member
 else:
-    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase) # pylint: disable=no-member
+    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)  # pylint: disable=no-member
 
-def _lowerASCII(s):
+
+def _lower_ascii(s):
     """Convert a string to lowercase using only ASCII character definitions.
 
        :param s: string instance to convert
@@ -90,9 +91,10 @@ def _lowerASCII(s):
     # out we expect this function to always return string even if given bytes.
     if not six.PY2 and isinstance(s, bytes):
         s = s.decode(sys.getdefaultencoding())
-    return s.translate(_ASCIIlower_table) # pylint: disable=no-member
+    return s.translate(_ASCIIlower_table)  # pylint: disable=no-member
 
-def _makeSpec(prefix, suffix, xlate, lowercase=True):
+
+def _make_spec(prefix, suffix, xlate, lowercase=True):
     """ Synthesizes a whole word from prefix and suffix.
 
         :param str prefix: a prefix
@@ -108,9 +110,10 @@ def _makeSpec(prefix, suffix, xlate, lowercase=True):
         return word.lower() if lowercase else word
     else:
         word = prefix + suffix
-        return _lowerASCII(word) if lowercase else word
+        return _lower_ascii(word) if lowercase else word
 
-def unitStr(unit, xlate=False):
+
+def unit_str(unit, xlate=False):
     """ Return a string representation of unit.
 
         :param unit: a named unit, e.g., KiB
@@ -118,9 +121,10 @@ def unitStr(unit, xlate=False):
         :rtype: some kind of string type
         :returns: string representation of unit
     """
-    return _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+    return _make_spec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
 
-def parseUnits(spec, xlate):
+
+def parse_units(spec, xlate):
     """ Parse a unit specification and return corresponding factor.
 
         :param spec: a units specifier
@@ -141,22 +145,23 @@ def parseUnits(spec, xlate):
     if xlate:
         spec = spec.lower()
     else:
-        spec = _lowerASCII(spec)
+        spec = _lower_ascii(spec)
 
     # Search for complete matches
     for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
-        if spec == _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate) or \
-           spec in (_makeSpec(unit.prefix, s, xlate) for s in _BYTES_WORDS):
+        if spec == _make_spec(unit.abbr, _BYTES_SYMBOL, xlate) or \
+           spec in (_make_spec(unit.prefix, s, xlate) for s in _BYTES_WORDS):
             return unit
 
     # Search for unambiguous partial match among binary abbreviations
-    matches = [p for p in _BINARY_PREFIXES if _makeSpec(p.abbr, "", xlate).startswith(spec)]
+    matches = [p for p in _BINARY_PREFIXES if _make_spec(p.abbr, "", xlate).startswith(spec)]
     if len(matches) == 1:
         return matches[0]
 
     return None
 
-def parseSpec(spec):
+
+def parse_spec(spec):
     """ Parse string representation of size.
 
         :param spec: the specification of a size with, optionally, units
@@ -191,7 +196,7 @@ def parseSpec(spec):
     # be detected when an exception is raised during conversion of the numeric
     # part to a numeric value.
     spec_re = re.compile(
-       r"""(?P<numeric> # the numeric part consists of three parts, below
+        r"""(?P<numeric> # the numeric part consists of three parts, below
            (-|\+)? # optional sign character
            (?P<base>([0-9\.]+)) # the base
            (?P<exp>(e|E)(-|\+)[0-9]+)?) # optional exponent
@@ -221,7 +226,7 @@ def parseSpec(spec):
         # String contains non-ascii characters, so can not be English.
         pass
     else:
-        unit = parseUnits(spec_ascii, False)
+        unit = parse_units(spec_ascii, False)
         if unit is not None:
             return size * unit.factor
 
@@ -235,13 +240,15 @@ def parseSpec(spec):
     else:
         spec_local = specifier
 
-    unit = parseUnits(spec_local, True)
+    unit = parse_units(spec_local, True)
     if unit is not None:
         return size * unit.factor
 
     raise ValueError("invalid size specification", spec)
 
+
 class Size(Decimal):
+
     """ Common class to represent storage device and filesystem sizes.
         Can handle parsing strings such as 45MB or 6.7GB to initialize
         itself, or can be initialized with a numerical size in bytes.
@@ -268,11 +275,11 @@ class Size(Decimal):
             you can use the letter 'b' or 'B' or omit the size specifier.
         """
         if isinstance(value, (six.string_types, bytes)):
-            size = parseSpec(value)
+            size = parse_spec(value)
         elif isinstance(value, (six.integer_types, float, Decimal)):
             size = Decimal(value)
         elif isinstance(value, Size):
-            size = Decimal(value.convertTo())
+            size = Decimal(value.convert_to())
         else:
             raise ValueError("invalid value %s for size" % value)
 
@@ -282,25 +289,25 @@ class Size(Decimal):
         return self
 
     # Force str and unicode types since the translated sizespec may be unicode
-    def _toString(self):
-        return self.humanReadable()
+    def _to_string(self):
+        return self.human_readable()
 
     def __str__(self, eng=False, context=None):
-        return stringize(self._toString())
+        return stringize(self._to_string())
 
     def __unicode__(self):
-        return unicodeize(self._toString())
+        return unicodeize(self._to_string())
 
     def __repr__(self):
         return "Size('%s')" % self
 
     def __deepcopy__(self, memo):
-        return Size(self.convertTo())
+        return Size(self.convert_to())
 
     # pickling support for Size
     # see https://docs.python.org/3/library/pickle.html#object.__reduce__
     def __reduce__(self):
-        return (self.__class__, (self.convertTo(),))
+        return (self.__class__, (self.convert_to(),))
 
     def __add__(self, other, context=None):
         # because float is not automatically converted to Decimal type
@@ -342,7 +349,7 @@ class Size(Decimal):
     def __mod__(self, other, context=None):
         return Size(Decimal.__mod__(self, other))
 
-    def convertTo(self, spec=None):
+    def convert_to(self, spec=None):
         """ Return the size in the units indicated by the specifier.
 
             :param spec: a units specifier
@@ -362,7 +369,7 @@ class Size(Decimal):
 
         return Decimal(self) / factor
 
-    def humanReadable(self, max_places=2, strip=True, min_value=1, xlate=True):
+    def human_readable(self, max_places=2, strip=True, min_value=1, xlate=True):
         """ Return a string representation of this size with appropriate
             size specifier and in the specified number of decimal places.
             Values are always represented using binary not decimal units.
@@ -393,10 +400,10 @@ class Size(Decimal):
             If min_value is 0.1, then 0.75 GiB is preferred to 768 MiB,
             but 0.05 GiB is still displayed as 51.2 MiB.
 
-            humanReadable() is a function that evaluates to a number which
+            human_readable() is a function that evaluates to a number which
             represents a range of values. For a constant choice of max_places,
             all ranges are of equal size, and are bisected by the result. So,
-            if n.humanReadable() == x U and b is the number of bytes in 1 U,
+            if n.human_readable() == x U and b is the number of bytes in 1 U,
             and e = 1/2 * 1/(10^max_places) * b, then x - e < n < x + e.
         """
         if max_places is not None and (max_places < 0 or not isinstance(max_places, six.integer_types)):
@@ -411,7 +418,7 @@ class Size(Decimal):
         # requirement use the largest prefix.
         limit = _BINARY_FACTOR * min_value
         for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
-            newcheck = self.convertTo(unit)
+            newcheck = self.convert_to(unit)
 
             if abs(newcheck) < limit:
                 break
@@ -430,9 +437,9 @@ class Size(Decimal):
                 retval_str = retval_str.replace('.', radix)
 
         # pylint: disable=undefined-loop-variable
-        return retval_str + " " + _makeSpec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+        return retval_str + " " + _make_spec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
 
-    def roundToNearest(self, unit, rounding=ROUND_DEFAULT):
+    def round_to_nearest(self, unit, rounding=ROUND_DEFAULT):
         """ Rounds to nearest unit specified as a named constant or a Size.
 
             :param unit: a unit specifier

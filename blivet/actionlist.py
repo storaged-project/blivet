@@ -33,7 +33,9 @@ from . import tsort
 import logging
 log = logging.getLogger("blivet")
 
+
 class ActionList(object):
+
     def __init__(self):
         self._actions = []
         self._completed_actions = []
@@ -150,7 +152,7 @@ class ActionList(object):
             actions.append(self._actions[idx])
         self._actions = actions
 
-    def _preProcess(self, devices=None):
+    def _pre_process(self, devices=None):
         """ Prepare the action queue for execution. """
         devices = devices or []
         for action in self._actions:
@@ -159,7 +161,7 @@ class ActionList(object):
         log.info("pruning action queue...")
         self.prune()
 
-        problematic = self._findActiveDevicesOnActionDisks(devices=devices)
+        problematic = self._find_active_devices_on_action_disks(devices=devices)
         if problematic:
             if flags.installer_mode:
                 for device in devices:
@@ -178,18 +180,18 @@ class ActionList(object):
         log.info("resetting parted disks...")
         for device in devices:
             if device.partitioned:
-                device.format.resetPartedDisk()
+                device.format.reset_parted_disk()
 
-            if device.originalFormat.type == "disklabel" and \
-               device.originalFormat != device.format:
-                device.originalFormat.resetPartedDisk()
+            if device.original_format.type == "disklabel" and \
+               device.original_format != device.format:
+                device.original_format.reset_parted_disk()
 
-        # Call preCommitFixup on all devices, including those we're going to
+        # Call pre_commit_fixup on all devices, including those we're going to
         # destroy (these are already removed from the tree)
         fixup_devices = devices + [a.device for a in self._actions
-                                                if a.isDestroy and a.isDevice]
+                                   if a.is_destroy and a.is_device]
         for device in fixup_devices:
-            device.preCommitFixup()
+            device.pre_commit_fixup()
 
         # setup actions to create any extended partitions we added
         #
@@ -202,7 +204,7 @@ class ActionList(object):
         #     directly here.
         for device in devices:
             if isinstance(device, PartitionDevice) and \
-               device.isExtended and not device.exists and \
+               device.is_extended and not device.exists and \
                not self.find(device=device, action_type="create"):
                 # don't properly register the action since the device is
                 # already in the tree
@@ -217,25 +219,25 @@ class ActionList(object):
             log.debug("action: %s", action)
 
             # Remove lvm filters for devices we are operating on
-            for device in (d for d in devices if d.dependsOn(action.device)):
+            for device in (d for d in devices if d.depends_on(action.device)):
                 lvm.lvm_cc_removeFilterRejectRegexp(device.name)
 
-    def _postProcess(self, devices=None):
+    def _post_process(self, devices=None):
         """ Clean up relics from action queue execution. """
         devices = devices or []
-        # removal of partitions makes use of originalFormat, so it has to stay
+        # removal of partitions makes use of original_format, so it has to stay
         # up to date in case of multiple passes through this method
         for disk in (d for d in devices if d.partitioned):
-            disk.format.updateOrigPartedDisk()
-            disk.originalFormat = copy.deepcopy(disk.format)
+            disk.format.update_orig_parted_disk()
+            disk.original_format = copy.deepcopy(disk.format)
 
         # now we have to update the parted partitions of all devices so they
         # match the parted disks we just updated
         for partition in (d for d in devices if isinstance(d, PartitionDevice)):
-            pdisk = partition.disk.format.partedDisk
-            partition.partedPartition = pdisk.getPartitionByPath(partition.path)
+            pdisk = partition.disk.format.parted_disk
+            partition.parted_partition = pdisk.getPartitionByPath(partition.path)
 
-    def _findActiveDevicesOnActionDisks(self, devices=None):
+    def _find_active_devices_on_action_disks(self, devices=None):
         """ Return a list of devices using the disks we plan to change. """
         # Find out now if there are active devices using partitions on disks
         # whose disklabels we are going to change. If there are, do not proceed.
@@ -243,7 +245,7 @@ class ActionList(object):
         disks = []
         for action in self._actions:
             disk = None
-            if action.isFormat and action.format.type == "disklabel":
+            if action.is_format and action.format.type == "disklabel":
                 disk = action.device
 
             if disk is not None and disk not in disks:
@@ -251,17 +253,17 @@ class ActionList(object):
 
         active = []
         for dev in devices:
-            if dev.status and not dev.isDisk and \
+            if dev.status and not dev.is_disk and \
                not isinstance(dev, PartitionDevice):
                 active.append(dev)
 
-            elif dev.format.status and not dev.isDisk:
+            elif dev.format.status and not dev.is_disk:
                 active.append(dev)
 
         devices = [a.name for a in active if any(d in disks for d in a.disks)]
         return devices
 
-    def process(self, callbacks=None, devices=None, dryRun=None):
+    def process(self, callbacks=None, devices=None, dry_run=None):
         """
         Execute all registered actions.
 
@@ -271,11 +273,11 @@ class ActionList(object):
 
         """
         devices = devices or []
-        self._preProcess(devices=devices)
+        self._pre_process(devices=devices)
 
         for action in self._actions[:]:
             log.info("executing action: %s", action)
-            if not dryRun:
+            if not dry_run:
                 try:
                     action.execute(callbacks)
                 except DiskLabelCommitError:
@@ -284,7 +286,7 @@ class ActionList(object):
                     # include deps no longer in the tree due to pending removal
                     devs = devices + [a.device for a in self._actions]
                     for dep in set(devs):
-                        if dep.exists and dep.dependsOn(action.device.disk):
+                        if dep.exists and dep.depends_on(action.device.disk):
                             dep.teardown(recursive=True)
 
                     action.execute(callbacks)
@@ -292,9 +294,9 @@ class ActionList(object):
                 for device in devices:
                     # make sure we catch any renumbering parted does
                     if device.exists and isinstance(device, PartitionDevice):
-                        device.updateName()
+                        device.update_name()
                         device.format.device = device.path
 
                 self._completed_actions.append(self._actions.pop(0))
 
-        self._postProcess(devices=devices)
+        self._post_process(devices=devices)

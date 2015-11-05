@@ -25,8 +25,10 @@ from six import add_metaclass
 
 from . import task
 
+
 @add_metaclass(abc.ABCMeta)
 class FSTask(task.Task):
+
     """ An abstract class that encapsulates the fact that all FSTasks
         have a single master object: the filesystem that they belong to.
     """
@@ -39,7 +41,9 @@ class FSTask(task.Task):
         """
         self.fs = an_fs
 
+
 class UnimplementedFSTask(FSTask, task.UnimplementedTask):
+
     """ A convenience class for unimplemented filesystem tasks.
         Useful in the usual case where an Unimplemented task has
         no special methods that it is required to implement.

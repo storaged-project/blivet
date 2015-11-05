@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -66,7 +67,7 @@ release = '1.16'
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']
 
-# The reST default role (used for this markup: `text`) to use for all documents.
+# The re_st default role (used for this markup: `text`) to use for all documents.
 #default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
@@ -148,7 +149,7 @@ html_static_path = ['_static']
 # If true, the index is split into individual pages for each letter.
 #html_split_index = False
 
-# If true, links to the reST sources are added to the pages.
+# If true, links to the re_st sources are added to the pages.
 #html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
@@ -172,21 +173,21 @@ htmlhelp_basename = 'Blivetdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Blivet.tex', u'Blivet Documentation',
-   u'David Lehman', 'manual'),
+    ('index', 'Blivet.tex', u'Blivet Documentation',
+     u'David Lehman', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -229,9 +230,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Blivet', u'Blivet Documentation',
-   u'David Lehman', 'Blivet', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'Blivet', u'Blivet Documentation',
+     u'David Lehman', 'Blivet', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -299,6 +300,8 @@ intersphinx_mapping = {'https://docs.python.org/2': None}
 # NOTE: this can be removed whenever we move to sphinx-1.3, at which point we'll
 #       be able to use autodoc_mock_imports (value is a list of modules to be
 #       mocked).
+
+
 class Mock(object):
 
     __all__ = []
@@ -314,9 +317,9 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            mockType = type(name, (), {})
-            mockType.__module__ = __name__
-            return mockType
+            mock_type = type(name, (), {})
+            mock_type.__module__ = __name__
+            return mock_type
         else:
             return Mock()
 

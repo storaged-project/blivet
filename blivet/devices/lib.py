@@ -23,9 +23,10 @@ import os
 from .. import errors
 from .. import udev
 from ..size import Size
-from ..util import open # pylint: disable=redefined-builtin
+from ..util import open  # pylint: disable=redefined-builtin
 
 LINUX_SECTOR_SIZE = Size(512)
+
 
 def get_device_majors():
     majors = {}
@@ -41,21 +42,22 @@ def get_device_majors():
     return majors
 device_majors = get_device_majors()
 
-def devicePathToName(devicePath):
+
+def device_path_to_name(device_path):
     """ Return a name based on the given path to a device node.
 
-        :param devicePath: the path to a device node
-        :type devicePath: str
+        :param device_path: the path to a device node
+        :type device_path: str
         :returns: the name
         :rtype: str
     """
-    if not devicePath:
+    if not device_path:
         return None
 
-    if devicePath.startswith("/dev/"):
-        name = devicePath[5:]
+    if device_path.startswith("/dev/"):
+        name = device_path[5:]
     else:
-        name = devicePath
+        name = device_path
 
     if name.startswith("mapper/"):
         name = name[7:]
@@ -68,28 +70,31 @@ def devicePathToName(devicePath):
 
     return name
 
-def deviceNameToDiskByPath(deviceName=None):
+
+def device_name_to_disk_by_path(device_name=None):
     """ Return a /dev/disk/by-path/ symlink path for the given device name.
 
-        :param deviceName: the device name
-        :type deviceName: str
+        :param device_name: the device name
+        :type device_name: str
         :returns: the full path to a /dev/disk/by-path/ symlink, or None
         :rtype: str or NoneType
     """
-    if not deviceName:
+    if not device_name:
         return ""
 
     ret = None
     for dev in udev.get_devices():
-        if udev.device_get_name(dev) == deviceName:
+        if udev.device_get_name(dev) == device_name:
             ret = udev.device_get_by_path(dev)
             break
 
     if ret:
         return ret
-    raise errors.DeviceNotFoundError(deviceName)
+    raise errors.DeviceNotFoundError(device_name)
+
 
 class ParentList(object):
+
     """ A list with auditing and side-effects for additions and removals.
 
         The class provides an ordered list with guaranteed unique members and
@@ -108,6 +113,7 @@ class ParentList(object):
             x in ml
             x = ml[i]   # not ml[i] = x
     """
+
     def __init__(self, items=None, appendfunc=None, removefunc=None):
         """
             :keyword items: initial contents
@@ -183,5 +189,5 @@ class ParentList(object):
 
         idx = self.items.index(x)
         self.items[idx] = y
-        x.removeChild()
-        y.addChild()
+        x.remove_child()
+        y.add_child()

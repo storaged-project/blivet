@@ -30,15 +30,17 @@ import os
 import logging
 log = logging.getLogger("blivet")
 
+
 class PPCPRePBoot(DeviceFormat):
+
     """ Generic device format. """
     _type = "prepboot"
     _name = N_("PPC PReP Boot")
-    partedFlag = PARTITION_PREP
+    parted_flag = PARTITION_PREP
     _formattable = True                 # can be formatted
-    _linuxNative = True                 # for clearpart
-    _maxSize = Size("10 MiB")
-    _minSize = Size("4 MiB")
+    _linux_native = True                 # for clearpart
+    _max_size = Size("10 MiB")
+    _min_size = Size("4 MiB")
     _supported = True
 
     def __init__(self, **kwargs):
@@ -98,4 +100,3 @@ class PPCPRePBoot(DeviceFormat):
         return super(PPCPRePBoot, self).supported and isinstance(platform.platform, platform.IPSeriesPPC)
 
 register_device_format(PPCPRePBoot)
-

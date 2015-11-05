@@ -32,8 +32,10 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 
+
 @add_metaclass(abc.ABCMeta)
 class ContainerDevice(StorageDevice):
+
     """ A device that aggregates a set of member devices.
 
         The only interfaces provided by this class are for addition and removal
@@ -50,19 +52,19 @@ class ContainerDevice(StorageDevice):
         :meth:`.deviceaction.ActionRemoveMember.execute`.
     """
 
-    _formatClassName = abc.abstractproperty(lambda s: None,
-        doc="The type of member devices' required format")
-    _formatUUIDAttr = abc.abstractproperty(lambda s: None,
-        doc="The container UUID attribute in the member format class")
+    _format_class_name = abc.abstractproperty(lambda s: None,
+                                              doc="The type of member devices' required format")
+    _format_uuid_attr = abc.abstractproperty(lambda s: None,
+                                             doc="The container UUID attribute in the member format class")
 
     def __init__(self, *args, **kwargs):
-        self.formatClass = get_device_format_class(self._formatClassName)
-        if not self.formatClass:
-            raise errors.StorageError("cannot find '%s' class" % self._formatClassName)
+        self.format_class = get_device_format_class(self._format_class_name)
+        if not self.format_class:
+            raise errors.StorageError("cannot find '%s' class" % self._format_class_name)
 
         super(ContainerDevice, self).__init__(*args, **kwargs)
 
-    def _verifyMemberUuid(self, member, expect_equality=True, require_existence=True):
+    def _verify_member_uuid(self, member, expect_equality=True, require_existence=True):
         """ Whether the member's array UUID has the proper relationship
             with its array's UUID.
 
@@ -73,15 +75,15 @@ class ContainerDevice(StorageDevice):
             :returns: error msg if the UUIDs lack the correct relationship
             :rtype: str or NoneType
         """
-        if not self._formatUUIDAttr:
+        if not self._format_uuid_attr:
             log.info("No attribute name corresponding to member's array UUID.")
             return None
 
-        if not hasattr(member.format, self._formatUUIDAttr):
-            log.warning("Attribute name (%s) which specifies member format's array UUID does not exist for this object (%s).", self._formatUUIDAttr, member)
+        if not hasattr(member.format, self._format_uuid_attr):
+            log.warning("Attribute name (%s) which specifies member format's array UUID does not exist for this object (%s).", self._format_uuid_attr, member)
             return None
 
-        member_fmt_uuid = getattr(member.format, self._formatUUIDAttr)
+        member_fmt_uuid = getattr(member.format, self._format_uuid_attr)
 
         # If either UUID can not be obtained, nothing to check.
         if self.exists and (not member_fmt_uuid or not self.uuid):
@@ -104,7 +106,7 @@ class ContainerDevice(StorageDevice):
 
         return None
 
-    def _addParent(self, member):
+    def _add_parent(self, member):
         """ Add a member device to the container.
 
             :param member: the member device to add
@@ -114,14 +116,14 @@ class ContainerDevice(StorageDevice):
             contents at all.
         """
         log_method_call(self, self.name, member=member.name)
-        if not isinstance(member.format, self.formatClass):
+        if not isinstance(member.format, self.format_class):
             raise ValueError("member has wrong format")
 
-        error = self._verifyMemberUuid(member)
+        error = self._verify_member_uuid(member)
         if error:
             raise ValueError("cannot add member with mismatched UUID")
 
-        super(ContainerDevice, self)._addParent(member)
+        super(ContainerDevice, self)._add_parent(member)
 
     @abc.abstractmethod
     def _add(self, member):
@@ -145,7 +147,7 @@ class ContainerDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        error = self._verifyMemberUuid(member, expect_equality=False)
+        error = self._verify_member_uuid(member, expect_equality=False)
         if error:
             log.error("cannot re-add member: %s (%s)", member, error)
             raise ValueError("cannot add members that are already part of the container")
@@ -178,7 +180,7 @@ class ContainerDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        error = self._verifyMemberUuid(member, require_existence=False)
+        error = self._verify_member_uuid(member, require_existence=False)
         if error:
             log.error("cannot remove non-member: %s (%s)", member, error)
             raise ValueError("cannot remove members that are not part of the container")
@@ -188,5 +190,5 @@ class ContainerDevice(StorageDevice):
         if member in self.parents:
             self.parents.remove(member)
 
-    def updateSize(self):
+    def update_size(self):
         pass

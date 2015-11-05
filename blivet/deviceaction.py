@@ -27,7 +27,7 @@ from . import udev
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice, LVMLogicalVolumeDevice
-from .formats import getFormat, luks
+from .formats import get_format, luks
 from parted import partitionFlag, PARTITION_LBA
 from .i18n import _, N_
 from .callbacks import CreateFormatPreData, CreateFormatPostData
@@ -70,33 +70,38 @@ RESIZE_GROW = 89
 resize_strings = {RESIZE_SHRINK: "Shrink",
                   RESIZE_GROW: "Grow"}
 
+
 def action_type_from_string(type_string):
     if type_string is None:
         return None
 
-    for (k,v) in action_strings.items():
+    for (k, v) in action_strings.items():
         if v.lower() == type_string.lower():
             return k
 
     return resize_type_from_string(type_string)
 
+
 def action_object_from_string(type_string):
     if type_string is None:
         return None
 
-    for (k,v) in object_strings.items():
+    for (k, v) in object_strings.items():
         if v.lower() == type_string.lower():
             return k
+
 
 def resize_type_from_string(type_string):
     if type_string is None:
         return None
 
-    for (k,v) in resize_strings.items():
+    for (k, v) in resize_strings.items():
         if v.lower() == type_string.lower():
             return k
 
+
 class DeviceAction(util.ObjectID):
+
     """ An action that will be carried out in the future on a Device.
 
         These classes represent actions to be performed on devices or
@@ -142,14 +147,14 @@ class DeviceAction(util.ObjectID):
 """
     type = ACTION_TYPE_NONE
     obj = ACTION_OBJECT_NONE
-    typeDescStr = ""
+    type_desc_str = ""
 
     def __init__(self, device):
         util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
 
-        unavailable_dependencies = device.unavailableDependencies
+        unavailable_dependencies = device.unavailable_dependencies
         if unavailable_dependencies:
             dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
             raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, dependencies_str))
@@ -167,7 +172,7 @@ class DeviceAction(util.ObjectID):
         Perform the action.
 
         :param callbacks: callbacks to be run when matching actions are
-                          executed (see :meth:`~.blivet.Blivet.doIt`)
+                          executed (see :meth:`~.blivet.Blivet.do_it`)
 
         """
         # pylint: disable=unused-argument
@@ -183,43 +188,43 @@ class DeviceAction(util.ObjectID):
         self._applied = False
 
     @property
-    def isDestroy(self):
+    def is_destroy(self):
         return self.type == ACTION_TYPE_DESTROY
 
     @property
-    def isCreate(self):
+    def is_create(self):
         return self.type == ACTION_TYPE_CREATE
 
     @property
-    def isResize(self):
+    def is_resize(self):
         return self.type == ACTION_TYPE_RESIZE
 
     @property
-    def isShrink(self):
-        return (self.isResize and self.dir == RESIZE_SHRINK) # pylint: disable=no-member
+    def is_shrink(self):
+        return (self.is_resize and self.dir == RESIZE_SHRINK)  # pylint: disable=no-member
 
     @property
-    def isGrow(self):
-        return (self.isResize and self.dir == RESIZE_GROW) # pylint: disable=no-member
+    def is_grow(self):
+        return (self.is_resize and self.dir == RESIZE_GROW)  # pylint: disable=no-member
 
     @property
-    def isAdd(self):
+    def is_add(self):
         return self.type == ACTION_TYPE_ADD
 
     @property
-    def isRemove(self):
+    def is_remove(self):
         return self.type == ACTION_TYPE_REMOVE
 
     @property
-    def isDevice(self):
+    def is_device(self):
         return self.obj == ACTION_OBJECT_DEVICE
 
     @property
-    def isContainer(self):
+    def is_container(self):
         return self.obj == ACTION_OBJECT_CONTAINER
 
     @property
-    def isFormat(self):
+    def is_format(self):
         return self.obj == ACTION_OBJECT_FORMAT
 
     @property
@@ -227,28 +232,28 @@ class DeviceAction(util.ObjectID):
         return self.device.format
 
     @property
-    def typeString(self):
+    def type_string(self):
         """ String indicating if this action is a create, destroy or resize. """
         return action_strings[self.type]
 
     @property
-    def objectString(self):
+    def object_string(self):
         """ String indicating if this action's operand is device or format. """
         return object_strings[self.obj]
 
     @property
-    def resizeString(self):
+    def resize_string(self):
         """ String representing the direction of a resize action. """
         s = ""
-        if self.isResize:
-            s = resize_strings[self.dir] # pylint: disable=no-member
+        if self.is_resize:
+            s = resize_strings[self.dir]  # pylint: disable=no-member
 
         return s
 
     @property
-    def objectTypeString(self):
+    def object_type_string(self):
         """ String representing the type of the operand device or format. """
-        if self.isFormat:
+        if self.is_format:
             s = self.format.name
         else:
             s = self.device.type
@@ -256,30 +261,30 @@ class DeviceAction(util.ObjectID):
         return s
 
     @property
-    def typeDesc(self):
-        return _(self.typeDescStr)
+    def type_desc(self):
+        return _(self.type_desc_str)
 
     # Force str and unicode types since there's a good chance that the self.device.*
     # strings are unicode.
-    def _toString(self):
-        s = "[%d] %s" % (self.id, self.typeDescStr)
-        if self.isResize:
-            s += " (%s)" % self.resizeString
-        if self.isFormat:
+    def _to_string(self):
+        s = "[%d] %s" % (self.id, self.type_desc_str)
+        if self.is_resize:
+            s += " (%s)" % self.resize_string
+        if self.is_format:
             s += " %s on" % self.format.desc
         s += " %s %s (id %d)" % (self.device.type, self.device.name,
                                  self.device.id)
         return s
 
     def __str__(self):
-        return util.stringize(self._toString())
+        return util.stringize(self._to_string())
 
     def __unicode__(self):
-        return util.unicodeize(self._toString())
+        return util.unicodeize(self._to_string())
 
     def requires(self, action):
         """ Return True if self requires action. """
-        return (not (self.isContainer or action.isContainer) and
+        return (not (self.is_container or action.is_container) and
                 self.type < action.type)
 
     def obsoletes(self, action):
@@ -295,10 +300,11 @@ class DeviceAction(util.ObjectID):
 
 
 class ActionCreateDevice(DeviceAction):
+
     """ Action representing the creation of a new device. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_DEVICE
-    typeDescStr = N_("create device")
+    type_desc_str = N_("create device")
 
     def __init__(self, device):
         if device.exists:
@@ -323,18 +329,18 @@ class ActionCreateDevice(DeviceAction):
                 - the other action adds a member to this device's container
         """
         rc = super(ActionCreateDevice, self).requires(action)
-        if self.device.dependsOn(action.device):
+        if self.device.depends_on(action.device):
             rc = True
-        elif (action.isCreate and action.isDevice and
+        elif (action.is_create and action.is_device and
               isinstance(self.device, PartitionDevice) and
               isinstance(action.device, PartitionDevice) and
               self.device.disk == action.device.disk):
             # create partitions in ascending numerical order
-            selfNum = self.device.partedPartition.number
-            otherNum = action.device.partedPartition.number
-            if selfNum > otherNum:
+            self_num = self.device.parted_partition.number
+            other_num = action.device.parted_partition.number
+            if self_num > other_num:
                 rc = True
-        elif (action.isCreate and action.isDevice and
+        elif (action.is_create and action.is_device and
               isinstance(self.device, LVMLogicalVolumeDevice) and
               isinstance(action.device, LVMLogicalVolumeDevice) and
               self.device.vg == action.device.vg):
@@ -342,17 +348,18 @@ class ActionCreateDevice(DeviceAction):
             # is not taken by non-cached LVs
             if not self.device.cached and action.device.cached:
                 rc = True
-        elif (action.isAdd and action.container == self.container):
+        elif (action.is_add and action.container == self.container):
             rc = True
 
         return rc
 
 
 class ActionDestroyDevice(DeviceAction):
+
     """ An action representing the deletion of an existing device. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
-    typeDescStr = N_("destroy device")
+    type_desc_str = N_("destroy device")
 
     def __init__(self, device):
         # XXX should we insist that device.fs be None?
@@ -374,22 +381,22 @@ class ActionDestroyDevice(DeviceAction):
                 - the other action removes this action's device from a container
         """
         rc = super(ActionDestroyDevice, self).requires(action)
-        if action.device.dependsOn(self.device) and action.isDestroy:
+        if action.device.depends_on(self.device) and action.is_destroy:
             rc = True
-        elif (action.isDestroy and action.isDevice and
+        elif (action.is_destroy and action.is_device and
               isinstance(self.device, PartitionDevice) and
               isinstance(action.device, PartitionDevice) and
               self.device.disk == action.device.disk):
             # remove partitions in descending numerical order
-            selfNum = self.device.partedPartition.number
-            otherNum = action.device.partedPartition.number
-            if selfNum < otherNum:
+            self_num = self.device.parted_partition.number
+            other_num = action.device.parted_partition.number
+            if self_num < other_num:
                 rc = True
-        elif (action.isDestroy and action.isFormat and
+        elif (action.is_destroy and action.is_format and
               action.device.id == self.device.id):
             # device destruction comes after destruction of device's format
             rc = True
-        elif (action.isRemove and action.device == self.device):
+        elif (action.is_remove and action.device == self.device):
             rc = True
         return rc
 
@@ -411,54 +418,55 @@ class ActionDestroyDevice(DeviceAction):
             if self.id >= action.id and not self.device.exists:
                 rc = True
             elif self.id > action.id and \
-                 self.device.exists and \
-                 not (action.isDestroy and action.isFormat):
+                    self.device.exists and \
+                    not (action.is_destroy and action.is_format):
                 rc = True
-            elif action.isAdd and (action.device == self.device):
+            elif action.is_add and (action.device == self.device):
                 rc = True
-        elif action.isAdd and (action.container == self.device):
+        elif action.is_add and (action.container == self.device):
             rc = True
 
         return rc
 
 
 class ActionResizeDevice(DeviceAction):
+
     """ An action representing the resizing of an existing device. """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_DEVICE
-    typeDescStr = N_("resize device")
+    type_desc_str = N_("resize device")
 
     def __init__(self, device, newsize):
         if not device.resizable:
             raise ValueError("device is not resizable")
 
-        if device.currentSize == newsize:
+        if device.current_size == newsize:
             raise ValueError("new size same as old size")
 
-        if newsize < device.minSize:
+        if newsize < device.min_size:
             raise ValueError("new size is too small")
 
-        if device.maxSize and newsize > device.maxSize:
+        if device.max_size and newsize > device.max_size:
             raise ValueError("new size is too large")
 
         DeviceAction.__init__(self, device)
-        if newsize > device.currentSize:
+        if newsize > device.current_size:
             self.dir = RESIZE_GROW
         else:
             self.dir = RESIZE_SHRINK
-        if device.targetSize > Size(0):
-            self.origsize = device.targetSize
+        if device.target_size > Size(0):
+            self.origsize = device.target_size
         else:
             self.origsize = device.size
 
-        self._targetSize = newsize
+        self._target_size = newsize
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
         if self._applied:
             return
 
-        self.device.targetSize = self._targetSize
+        self.device.target_size = self._target_size
         super(ActionResizeDevice, self).apply()
 
     def execute(self, callbacks=None):
@@ -469,7 +477,7 @@ class ActionResizeDevice(DeviceAction):
         if not self._applied:
             return
 
-        self.device.targetSize = self.origsize
+        self.device.target_size = self.origsize
         super(ActionResizeDevice, self).cancel()
 
     def requires(self, action):
@@ -487,28 +495,29 @@ class ActionResizeDevice(DeviceAction):
                 - the other action adds a member to this device's container
         """
         retval = super(ActionResizeDevice, self).requires(action)
-        if action.isResize:
+        if action.is_resize:
             if self.device.id == action.device.id and \
                self.dir == action.dir and \
-               action.isFormat and self.isShrink:
+               action.is_format and self.is_shrink:
                 retval = True
-            elif action.isGrow and self.device.dependsOn(action.device):
+            elif action.is_grow and self.device.depends_on(action.device):
                 retval = True
-            elif action.isShrink and action.device.dependsOn(self.device):
+            elif action.is_shrink and action.device.depends_on(self.device):
                 retval = True
-        elif (action.isRemove and action.device == self.device):
+        elif (action.is_remove and action.device == self.device):
             retval = True
-        elif (action.isAdd and action.container == self.container):
+        elif (action.is_add and action.container == self.container):
             retval = True
 
         return retval
 
 
 class ActionCreateFormat(DeviceAction):
+
     """ An action representing creation of a new filesystem. """
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_FORMAT
-    typeDescStr = N_("create format")
+    type_desc_str = N_("create format")
 
     def __init__(self, device, fmt=None):
         """
@@ -520,14 +529,14 @@ class ActionCreateFormat(DeviceAction):
             If no format is specified, it is assumed that the format is already
             associated with the device.
         """
-        if device.formatImmutable:
+        if device.format_immutable:
             raise ValueError("this device's formatting cannot be modified")
 
         DeviceAction.__init__(self, device)
         if fmt:
-            self.origFormat = device.format
+            self.orig_format = device.format
         else:
-            self.origFormat = getFormat(None)
+            self.orig_format = get_format(None)
 
         self._format = fmt or device.format
 
@@ -554,17 +563,17 @@ class ActionCreateFormat(DeviceAction):
         if isinstance(self.device, PartitionDevice):
             for flag in partitionFlag.keys():
                 # Keep the LBA flag on pre-existing partitions
-                if flag in [ PARTITION_LBA, self.format.partedFlag ]:
+                if flag in [PARTITION_LBA, self.format.parted_flag]:
                     continue
-                self.device.unsetFlag(flag)
+                self.device.unset_flag(flag)
 
-            if self.format.partedFlag is not None:
-                self.device.setFlag(self.format.partedFlag)
+            if self.format.parted_flag is not None:
+                self.device.set_flag(self.format.parted_flag)
 
-            if self.format.partedSystem is not None:
-                self.device.partedPartition.system = self.format.partedSystem
+            if self.format.parted_system is not None:
+                self.device.parted_partition.system = self.format.parted_system
 
-            self.device.disk.format.commitToDisk()
+            self.device.disk.format.commit_to_disk()
             udev.settle()
 
         if isinstance(self.device.format, luks.LUKS):
@@ -587,18 +596,18 @@ class ActionCreateFormat(DeviceAction):
 
         self.device.setup()
         self.device.format.create(device=self.device.path,
-                                  options=self.device.formatArgs)
+                                  options=self.device.format_args)
 
         # Get the UUID now that the format is created
         udev.settle()
-        self.device.updateSysfsPath()
-        info = udev.get_device(self.device.sysfsPath)
+        self.device.update_sysfs_path()
+        info = udev.get_device(self.device.sysfs_path)
         # only do this if the format has a device known to udev
         # (the format might not have a normal device at all)
         if info:
             if self.device.format.type != "btrfs":
                 self.device.format.uuid = udev.device_get_uuid(info)
-            self.device.deviceLinks = udev.device_get_symlinks(info)
+            self.device.device_links = udev.device_get_symlinks(info)
         elif self.device.format.type != "tmpfs":
             # udev lookup failing is a serious issue for anything other than tmpfs
             log.error("udev lookup failed for device: %s", self.device)
@@ -611,7 +620,7 @@ class ActionCreateFormat(DeviceAction):
         if not self._applied:
             return
 
-        self.device.format = self.origFormat
+        self.device.format = self.orig_format
         super(ActionCreateFormat, self).cancel()
 
     def requires(self, action):
@@ -626,10 +635,10 @@ class ActionCreateFormat(DeviceAction):
                   device
         """
         return (super(ActionCreateFormat, self).requires(action) or
-                (self.device.dependsOn(action.device) and
-                 not ((action.isDestroy and action.isDevice) or
-                      action.isContainer)) or
-                (action.isDevice and (action.isCreate or action.isResize) and
+                (self.device.depends_on(action.device) and
+                 not ((action.is_destroy and action.is_device) or
+                      action.is_container)) or
+                (action.is_device and (action.is_create or action.is_resize) and
                  self.device.id == action.device.id))
 
     def obsoletes(self, action):
@@ -642,22 +651,23 @@ class ActionCreateFormat(DeviceAction):
         """
         return (self.device.id == action.device.id and
                 self.obj == action.obj and
-                not (action.isDestroy and action.format.exists) and
+                not (action.is_destroy and action.format.exists) and
                 self.id > action.id)
 
 
 class ActionDestroyFormat(DeviceAction):
+
     """ An action representing the removal of an existing filesystem. """
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_FORMAT
-    typeDescStr = N_("destroy format")
+    type_desc_str = N_("destroy format")
 
     def __init__(self, device):
-        if device.formatImmutable:
+        if device.format_immutable:
             raise ValueError("this device's formatting cannot be modified")
 
         DeviceAction.__init__(self, device)
-        self.origFormat = self.device.format
+        self.orig_format = self.device.format
 
         if not device.format.destroyable:
             raise ValueError("resource to destroy this format type %s is unavailable" % device.format.type)
@@ -683,12 +693,12 @@ class ActionDestroyFormat(DeviceAction):
         if not self._applied:
             return
 
-        self.device.format = self.origFormat
+        self.device.format = self.orig_format
         super(ActionDestroyFormat, self).cancel()
 
     @property
     def format(self):
-        return self.origFormat
+        return self.orig_format
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -700,9 +710,9 @@ class ActionDestroyFormat(DeviceAction):
                 - the other action removes this action's device from a container
         """
         retval = super(ActionDestroyFormat, self).requires(action)
-        if action.device.dependsOn(self.device) and action.isDestroy:
+        if action.device.depends_on(self.device) and action.is_destroy:
             retval = True
-        elif (action.isRemove and action.device == self.device):
+        elif (action.is_remove and action.device == self.device):
             retval = True
 
         return retval
@@ -724,7 +734,7 @@ class ActionDestroyFormat(DeviceAction):
         same_device = self.device.id == action.device.id
         format_action = self.obj == action.obj
         if same_device and format_action:
-            if action.isDestroy:
+            if action.is_destroy:
                 if self.format.exists and not action.format.exists:
                     retval = True
                 elif not self.format.exists and action.format.exists:
@@ -738,7 +748,9 @@ class ActionDestroyFormat(DeviceAction):
 
         return retval
 
+
 class ActionResizeFormat(DeviceAction):
+
     """ An action representing the resizing of an existing filesystem.
 
         XXX Do we even want to support resizing of a filesystem without
@@ -746,37 +758,37 @@ class ActionResizeFormat(DeviceAction):
     """
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_FORMAT
-    typeDescStr = N_("resize format")
+    type_desc_str = N_("resize format")
 
     def __init__(self, device, newsize):
-        if device.formatImmutable:
+        if device.format_immutable:
             raise ValueError("this device's formatting cannot be modified")
 
         if not device.format.resizable:
             raise ValueError("format is not resizable")
 
-        if device.format.currentSize == newsize:
+        if device.format.current_size == newsize:
             raise ValueError("new size same as old size")
 
         DeviceAction.__init__(self, device)
-        if newsize > device.format.currentSize:
+        if newsize > device.format.current_size:
             self.dir = RESIZE_GROW
         else:
             self.dir = RESIZE_SHRINK
 
-        if device.format.targetSize > Size(0):
-            self.origSize = device.format.targetSize
-        # no targetSize -- original size for device was its currentSize
+        if device.format.target_size > Size(0):
+            self.orig_size = device.format.target_size
+        # no target_size -- original size for device was its current_size
         else:
-            self.origSize = device.format.currentSize
+            self.orig_size = device.format.current_size
 
-        self._targetSize = newsize
+        self._target_size = newsize
 
     def apply(self):
         if self._applied:
             return
 
-        self.device.format.targetSize = self._targetSize
+        self.device.format.target_size = self._target_size
         super(ActionResizeFormat, self).apply()
 
     def execute(self, callbacks=None):
@@ -786,7 +798,7 @@ class ActionResizeFormat(DeviceAction):
             callbacks.resize_format_pre(ResizeFormatPreData(msg))
 
         self.device.setup(orig=True)
-        self.device.format.doResize()
+        self.device.format.do_resize()
 
         if callbacks and callbacks.resize_format_post:
             msg = _("Resized filesystem on %(device)s") % {"device": self.device.path}
@@ -796,7 +808,7 @@ class ActionResizeFormat(DeviceAction):
         if not self._applied:
             return
 
-        self.device.format.targetSize = self.origSize
+        self.device.format.target_size = self.orig_size
         super(ActionResizeFormat, self).cancel()
 
     def requires(self, action):
@@ -813,26 +825,27 @@ class ActionResizeFormat(DeviceAction):
                 - the other action removes this action's device from a container
         """
         retval = super(ActionResizeFormat, self).requires(action)
-        if action.isResize:
+        if action.is_resize:
             if self.device.id == action.device.id and \
                self.dir == action.dir and \
-               action.isDevice and self.isGrow:
+               action.is_device and self.is_grow:
                 retval = True
-            elif action.isShrink and action.device.dependsOn(self.device):
+            elif action.is_shrink and action.device.depends_on(self.device):
                 retval = True
-            elif action.isGrow and self.device.dependsOn(action.device):
+            elif action.is_grow and self.device.depends_on(action.device):
                 retval = True
-        elif (action.isRemove and action.device == self.device):
+        elif (action.is_remove and action.device == self.device):
             retval = True
 
         return retval
 
 
 class ActionAddMember(DeviceAction):
+
     """ An action representing addition of a member device to a container. """
     type = ACTION_TYPE_ADD
     obj = ACTION_OBJECT_CONTAINER
-    typeDescStr = N_("add container member")
+    type_desc_str = N_("add container member")
 
     def __init__(self, container, device):
         super(ActionAddMember, self).__init__(device)
@@ -864,7 +877,7 @@ class ActionAddMember(DeviceAction):
             required by
                 - any create/grow action on a device in the same container
         """
-        return ((action.isCreate or action.isResize) and
+        return ((action.is_create or action.is_resize) and
                 action.device == self.device)
 
     def obsoletes(self, action):
@@ -879,11 +892,11 @@ class ActionAddMember(DeviceAction):
                 - remove same member from same container
         """
         retval = False
-        if (action.isRemove and
-            action.device == self.device and
-            action.container == self.container):
+        if (action.is_remove and
+                action.device == self.device and
+                action.container == self.container):
             retval = True
-        elif (action.isAdd and
+        elif (action.is_add and
               action.device == self.device and
               action.container == self.container and
               action.id > self.id):
@@ -893,10 +906,11 @@ class ActionAddMember(DeviceAction):
 
 
 class ActionRemoveMember(DeviceAction):
+
     """ An action representing removal of a member device from a container. """
     type = ACTION_TYPE_REMOVE
     obj = ACTION_OBJECT_CONTAINER
-    typeDescStr = N_("remove container member")
+    type_desc_str = N_("remove container member")
 
     def __init__(self, container, device):
         super(ActionRemoveMember, self).__init__(device)
@@ -930,10 +944,10 @@ class ActionRemoveMember(DeviceAction):
                 - any destroy/resize action on the device
         """
         retval = False
-        if ((action.isShrink or action.isDestroy) and
-            action.device.container == self.container):
+        if ((action.is_shrink or action.is_destroy) and
+                action.device.container == self.container):
             retval = True
-        elif action.isAdd and action.container == self.container:
+        elif action.is_add and action.container == self.container:
             retval = True
 
         return retval
@@ -948,11 +962,11 @@ class ActionRemoveMember(DeviceAction):
                 - add same member to same container
         """
         retval = False
-        if (action.isAdd and
-            action.device == self.device and
-            action.container == self.container):
+        if (action.is_add and
+                action.device == self.device and
+                action.container == self.container):
             retval = True
-        elif (action.isRemove and
+        elif (action.is_remove and
               action.device == self.device and
               action.container == self.container and
               action.id > self.id):
