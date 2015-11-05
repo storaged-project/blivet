@@ -844,7 +844,9 @@ class LVMLogicalVolumeDevice(DMDevice):
             # TODO: specify sizes together with PVs once LVM and libblockdev support it
             pvs = [spec.pv.path for spec in self._pv_specs]
             pvs = pvs or None
-            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size, pv_list=pvs)
+
+            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
+                                  type=self.seg_type, pv_list=pvs)
         else:
             mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
             # prepare the list of fast PV devices
