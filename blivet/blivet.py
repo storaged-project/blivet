@@ -168,7 +168,7 @@ class Blivet(object):
 
         """
 
-        self.devicetree.process_actions(callbacks=callbacks)
+        self.devicetree.actions.process(callbacks=callbacks)
         if not flags.installer_mode:
             return
 
@@ -683,7 +683,7 @@ class Blivet(object):
 
         # remove existing formatting from the disk
         destroy_action = ActionDestroyFormat(disk)
-        self.devicetree.register_action(destroy_action)
+        self.devicetree.actions.add(destroy_action)
 
         label_type = _platform.best_disklabel_type(disk)
 
@@ -691,7 +691,7 @@ class Blivet(object):
         new_label = get_format("disklabel", device=disk.path,
                                label_type=label_type)
         create_action = ActionCreateFormat(disk, fmt=new_label)
-        self.devicetree.register_action(create_action)
+        self.devicetree.actions.add(create_action)
 
     def remove_empty_extended_partitions(self):
         for disk in self.partitioned:
@@ -1078,9 +1078,9 @@ class Blivet(object):
             :type device: :class:`~.devices.StorageDevice`
             :rtype: None
         """
-        self.devicetree.register_action(ActionCreateDevice(device))
+        self.devicetree.actions.add(ActionCreateDevice(device))
         if device.format.type and not device.format_immutable:
-            self.devicetree.register_action(ActionCreateFormat(device))
+            self.devicetree.actions.add(ActionCreateFormat(device))
 
     def destroy_device(self, device):
         """ Schedule destruction of a device.
@@ -1095,10 +1095,10 @@ class Blivet(object):
         if device.format.exists and device.format.type and \
            not device.format_immutable:
             # schedule destruction of any formatting while we're at it
-            self.devicetree.register_action(ActionDestroyFormat(device))
+            self.devicetree.actions.add(ActionDestroyFormat(device))
 
         action = ActionDestroyDevice(device)
-        self.devicetree.register_action(action)
+        self.devicetree.actions.add(action)
 
     def format_device(self, device, fmt):
         """ Schedule formatting of a device.
@@ -1117,8 +1117,8 @@ class Blivet(object):
         if device.protected:
             raise ValueError("cannot modify protected device")
 
-        self.devicetree.register_action(ActionDestroyFormat(device))
-        self.devicetree.register_action(ActionCreateFormat(device, fmt))
+        self.devicetree.actions.add(ActionDestroyFormat(device))
+        self.devicetree.actions.add(ActionCreateFormat(device, fmt))
 
     def reset_device(self, device):
         """ Cancel all scheduled actions and reset formatting.
@@ -1127,9 +1127,9 @@ class Blivet(object):
             :type device: :class:`~.devices.StorageDevice`
             :rtype: None
         """
-        actions = self.devicetree.find_actions(device=device)
+        actions = self.devicetree.actions.find(device=device)
         for action in reversed(actions):
-            self.devicetree.cancel_action(action)
+            self.devicetree.actions.remove(action)
 
         # make sure any random overridden attributes are reset
         device.format = copy.deepcopy(device.original_format)
@@ -1164,7 +1164,7 @@ class Blivet(object):
             classes.reverse()
 
         for action_class in classes:
-            self.devicetree.register_action(action_class(device, new_size))
+            self.devicetree.actions.add(action_class(device, new_size))
 
     def format_by_default(self, device):
         """Return whether the device should be reformatted by default."""
@@ -1776,7 +1776,7 @@ class Blivet(object):
             fresh_disks = [d.name for d in self.disks if d.partitioned and
                            not d.format.exists]
 
-            destroy_actions = self.devicetree.find_actions(action_type="destroy",
+            destroy_actions = self.devicetree.actions.find(action_type="destroy",
                                                            object_type="device")
 
             cleared_partitions = []

@@ -91,7 +91,8 @@ class DeviceTree(object):
         """ Reset the instance to its initial state. """
         # internal data members
         self._devices = []
-        self._actions = ActionList()
+        self._actions = ActionList(addfunc=self._register_action,
+                                   removefunc=self._cancel_action)
 
         # a list of all device names we encounter
         self.names = []
@@ -112,68 +113,44 @@ class DeviceTree(object):
                                     iscsi=iscsi,
                                     dasd=dasd)
 
+    def __str__(self):
+        done = []
+
+        def show_subtree(root, depth):
+            abbreviate_subtree = root in done
+            s = "%s%s\n" % ("  " * depth, root)
+            done.append(root)
+            if abbreviate_subtree:
+                s += "%s...\n" % ("  " * (depth + 1),)
+            else:
+                for child in self.get_children(root):
+                    s += show_subtree(child, depth + 1)
+            return s
+
+        roots = [d for d in self._devices if not d.parents]
+        tree = ""
+        for root in roots:
+            tree += show_subtree(root, 0)
+        return tree
+
+    #
+    # Device list
+    #
     @property
-    def actions(self):
-        return self._actions
+    def devices(self):
+        """ List of devices currently in the tree """
+        devices = []
+        for device in self._devices:
+            if not getattr(device, "complete", True):
+                continue
 
-    def set_disk_images(self, images):
-        """ Set the disk images and reflect them in exclusive_disks.
+            if device.uuid and device.uuid in [d.uuid for d in devices] and \
+               not isinstance(device, NoDevice):
+                raise DeviceTreeError("duplicate uuids in device tree")
 
-            :param images: dict with image name keys and filename values
-            :type images: dict
+            devices.append(device)
 
-            .. note::
-
-                Disk images are automatically exclusive. That means that, in the
-                presence of disk images, any local storage not associated with
-                the disk images is ignored.
-        """
-        self._populator.set_disk_images(images)
-
-    @property
-    def exclusive_disks(self):
-        return self._populator.exclusive_disks
-
-    @property
-    def ignored_disks(self):
-        return self._populator.ignored_disks
-
-    @property
-    def dasd(self):
-        return self._populator.dasd
-
-    @dasd.setter
-    def dasd(self, dasd):
-        self._populator.dasd = dasd
-
-    @property
-    def protected_dev_names(self):
-        return self._populator.protected_dev_names
-
-    @property
-    def disk_images(self):
-        return self._populator.disk_images
-
-    @property
-    def pv_info(self):
-        if self._pvs_cache is None:
-            pvs = blockdev.lvm.pvs()
-            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._pvs_cache
-
-    @property
-    def lv_info(self):
-        if self._lvs_cache is None:
-            lvs = blockdev.lvm.lvs()
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._lvs_cache
-
-    def drop_lvm_cache(self):
-        """ Drop cached lvm information. """
-        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
-        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        return devices
 
     def _add_device(self, newdev, new=True):
         """ Add a device to the tree.
@@ -275,9 +252,9 @@ class DeviceTree(object):
                 if actions:
                     if leaf.format.exists and not leaf.protected and \
                        not leaf.format_immutable:
-                        self.register_action(ActionDestroyFormat(leaf))
+                        self.actions.add(ActionDestroyFormat(leaf))
 
-                    self.register_action(ActionDestroyDevice(leaf))
+                    self.actions.add(ActionDestroyDevice(leaf))
                 else:
                     if not leaf.format_immutable:
                         leaf.format = None
@@ -287,17 +264,24 @@ class DeviceTree(object):
 
         if not device.format_immutable:
             if actions:
-                self.register_action(ActionDestroyFormat(device))
+                self.actions.add(ActionDestroyFormat(device))
             else:
                 device.format = None
 
         if not device.is_disk:
             if actions:
-                self.register_action(ActionDestroyDevice(device))
+                self.actions.add(ActionDestroyDevice(device))
             else:
                 self._remove_device(device)
 
-    def register_action(self, action):
+    #
+    # Actions
+    #
+    @property
+    def actions(self):
+        return self._actions
+
+    def _register_action(self, action):
         """ Register an action to be performed at a later time.
 
             :param action: the action
@@ -322,12 +306,7 @@ class DeviceTree(object):
                action.device.format.mountpoint in self.filesystems:
                 raise DeviceTreeError("mountpoint already in use")
 
-        # apply the action before adding it in case apply raises an exception
-        action.apply()
-        log.info("registered action: %s", action)
-        self._actions.append(action)
-
-    def cancel_action(self, action):
+    def _cancel_action(self, action):
         """ Cancel a registered action.
 
             :param action: the action
@@ -346,41 +325,91 @@ class DeviceTree(object):
             # add the device back into the tree
             self._add_device(action.device, new=False)
 
-        action.cancel()
-        self._actions.remove(action)
-        log.info("canceled action %s", action)
+    #
+    # Device detection
+    #
+    def populate(self, cleanup_only=False):
+        """ Locate all storage devices.
 
-    def find_actions(self, device=None, action_type=None, object_type=None,
-                     path=None, devid=None):
-        """ Find all actions that match all specified parameters.
+            Everything should already be active. We just go through and gather
+            details as needed and set up the relations between various devices.
 
-            A value of None for any of the keyword arguments indicates that any
-            value is acceptable for that field.
-
-            :keyword device: device to match
-            :type device: :class:`~.devices.StorageDevice` or None
-            :keyword action_type: action type to match (eg: "create", "destroy")
-            :type action_type: str or None
-            :keyword object_type: operand type to match (eg: "device" or "format")
-            :type object_type: str or None
-            :keyword path: device path to match
-            :type path: str or None
-            :keyword devid: device id to match
-            :type devid: int or None
-            :returns: a list of matching actions
-            :rtype: list of :class:`~.deviceaction.DeviceAction`
-
+            Devices excluded via disk filtering (or because of disk images) are
+            scanned just the rest, but then they are hidden at the end of this
+            process.
         """
-        return self._actions.find(device=device,
-                                  action_type=action_type,
-                                  object_type=object_type,
-                                  path=path,
-                                  devid=devid)
+        udev.settle()
+        self.drop_lvm_cache()
+        try:
+            self._populator.populate(cleanup_only=cleanup_only)
+        except Exception:
+            raise
+        finally:
+            self._hide_ignored_disks()
 
-    def process_actions(self, callbacks=None, dry_run=False):
-        self.actions.process(devices=self.devices,
-                             dry_run=dry_run,
-                             callbacks=callbacks)
+        if flags.installer_mode:
+            self.teardown_all()
+
+    def update_device_format(self, device):
+        return self._populator.update_device_format(device)
+
+    def handle_nodev_filesystems(self):
+        for line in open("/proc/mounts").readlines():
+            try:
+                (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
+            except ValueError:
+                log.error("failed to parse /proc/mounts line: %s", line)
+                continue
+            if fstype in formats.fslib.nodev_filesystems:
+                if not flags.include_nodev:
+                    continue
+
+                log.info("found nodev %s filesystem mounted at %s",
+                         fstype, mountpoint)
+                # nodev filesystems require some special handling.
+                # For now, a lot of this is based on the idea that it's a losing
+                # battle to require the presence of an FS class for every type
+                # of nodev filesystem. Based on that idea, we just instantiate
+                # NoDevFS directly and then hack in the fstype as the device
+                # attribute.
+                fmt = formats.get_format("nodev")
+                fmt.device = fstype
+
+                # NoDevice also needs some special works since they don't have
+                # per-instance names in the kernel.
+                device = NoDevice(fmt=fmt)
+                n = len([d for d in self.devices if d.format.type == fstype])
+                device._name += ".%d" % n
+                self._add_device(device)
+
+    #
+    # Device control
+    #
+    def teardown_all(self):
+        """ Run teardown methods on all devices. """
+        for device in self.leaves:
+            if device.protected:
+                continue
+
+            try:
+                device.teardown(recursive=True)
+            except (StorageError, blockdev.BlockDevError) as e:
+                log.info("teardown of %s failed: %s", device.name, e)
+
+    def setup_all(self):
+        """ Run setup methods on all devices. """
+        for device in self.leaves:
+            try:
+                device.setup()
+            except DeviceError as e:
+                log.error("setup of %s failed: %s", device.name, e)
+
+    #
+    # Device search by relation
+    #
+    def get_children(self, device):
+        """ Return a list of a device's children. """
+        return [c for c in self._devices if device in c.parents]
 
     def get_dependent_devices(self, dep, hidden=False):
         """ Return a list of devices that depend on dep.
@@ -426,186 +455,9 @@ class DeviceTree(object):
         return set(d for dep in self.get_dependent_devices(disk, hidden=True)
                    for d in dep.disks)
 
-    def hide(self, device):
-        """ Hide the specified device.
-
-            :param device: the device to hide
-            :type device: :class:`~.devices.StorageDevice`
-
-            Hiding a device will cancel all actions that involve the device and
-            will remove the device from the device list.
-
-            If the device is not a leaf device, all devices that depend on it
-            will be hidden leaves-first until the device is a leaf device.
-
-            If a device exists, performs some special actions and places
-            it on a list of hidden devices.
-
-            Mixes recursion and side effects, most significantly in the code
-            that removes all the actions. However, this code is a null op
-            in every case except the first base case that is reached,
-            where all actions are removed. This means that when a device
-            is removed explicitly in this function by means of a direct call to
-            _remove_devices it is guaranteed that all actions have already
-            been canceled.
-
-            If a device does not exist then it must have been removed by the
-            cancelation of all the actions, so it does not need to be removed
-            explicitly.
-
-            Most devices are considered leaf devices if they have no children,
-            however, some devices must satisfy more stringent requirements.
-            _remove_device() will raise an exception if the device it is
-            removing is not a leaf device. hide() guarantees that any
-            device that it removes will have no children, but it does not
-            guarantee that the more stringent requirements will be enforced.
-            Therefore, _remove_device() is invoked with the force parameter
-            set to True, to skip the isleaf check.
-        """
-        if device in self._hidden:
-            return
-
-        # cancel actions first thing so that we hide the correct set of devices
-        if device.is_disk:
-            # Cancel all actions on this disk and any disk related by way of an
-            # aggregate/container device (eg: lvm volume group).
-            disks = [device]
-            related_actions = [a for a in self._actions
-                               if a.device.depends_on(device)]
-            for related_device in (a.device for a in related_actions):
-                disks.extend(related_device.disks)
-
-            disks = set(disks)
-            cancel = [a for a in self._actions
-                      if set(a.device.disks).intersection(disks)]
-            for action in reversed(cancel):
-                self.cancel_action(action)
-
-        for d in self.get_children(device):
-            self.hide(d)
-
-        log.info("hiding device %s", device)
-
-        if not device.exists:
-            return
-
-        self._remove_device(device, force=True, modparent=False)
-
-        self._hidden.append(device)
-        lvm.lvm_cc_addFilterRejectRegexp(device.name)
-
-        if isinstance(device, DASDDevice):
-            self.dasd.remove(device)
-
-        if device.name not in self.names:
-            self.names.append(device.name)
-
-    def unhide(self, device):
-        """ Restore a device's visibility.
-
-            :param device: the device to restore/unhide
-            :type device: :class:`~.devices.StorageDevice`
-
-            .. note::
-
-                Actions canceled while hiding the device are not rescheduled
-                automatically.
-
-        """
-
-        # the hidden list should be in leaves-first order
-        for hidden in reversed(self._hidden):
-            if hidden == device or hidden.depends_on(device) and \
-               not any(parent in self._hidden for parent in hidden.parents):
-
-                log.info("unhiding device %s %s (id %d)", hidden.type,
-                         hidden.name,
-                         hidden.id)
-                self._hidden.remove(hidden)
-                self._devices.append(hidden)
-                hidden.add_hook(new=False)
-                lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
-                if isinstance(device, DASDDevice):
-                    self.dasd.append(device)
-
-    def setup_disk_images(self):
-        """ Set up devices to represent the disk image files. """
-        self._populator.setup_disk_images()
-
-    def update_device_format(self, device):
-        return self._populator.update_device_format(device)
-
-    def prune_actions(self):
-        return self._actions.prune()
-
-    def sort_actions(self):
-        return self._actions.sort()
-
-    def populate(self, cleanup_only=False):
-        """ Locate all storage devices.
-
-            Everything should already be active. We just go through and gather
-            details as needed and set up the relations between various devices.
-
-            Devices excluded via disk filtering (or because of disk images) are
-            scanned just the rest, but then they are hidden at the end of this
-            process.
-        """
-        udev.settle()
-        self.drop_lvm_cache()
-        try:
-            self._populator.populate(cleanup_only=cleanup_only)
-        except Exception:
-            raise
-        finally:
-            self._hide_ignored_disks()
-
-        if flags.installer_mode:
-            self.teardown_all()
-
-    def _is_ignored_disk(self, disk):
-        return ((self.ignored_disks and disk.name in self.ignored_disks) or
-                (self.exclusive_disks and
-                 disk.name not in self.exclusive_disks))
-
-    def _hide_ignored_disks(self):
-        # hide any subtrees that begin with an ignored disk
-        for disk in [d for d in self._devices if d.is_disk]:
-            if self._is_ignored_disk(disk):
-                ignored = True
-                # If the filter allows all members of a fwraid or mpath, the
-                # fwraid or mpath itself is implicitly allowed as well. I don't
-                # like this very much but we have supported this usage in the
-                # past, so I guess we will support it forever.
-                if disk.parents and all(p.format.hidden for p in disk.parents):
-                    ignored = any(self._is_ignored_disk(d) for d in disk.parents)
-
-                if ignored:
-                    self.hide(disk)
-
-    def teardown_all(self):
-        """ Run teardown methods on all devices. """
-        for device in self.leaves:
-            if device.protected:
-                continue
-
-            try:
-                device.teardown(recursive=True)
-            except (StorageError, blockdev.BlockDevError) as e:
-                log.info("teardown of %s failed: %s", device.name, e)
-
-    def teardown_disk_images(self):
-        """ Tear down any disk image stacks. """
-        self._populator.teardown_disk_images()
-
-    def setup_all(self):
-        """ Run setup methods on all devices. """
-        for device in self.leaves:
-            try:
-                device.setup()
-            except DeviceError as e:
-                log.error("setup of %s failed: %s", device.name, e)
-
+    #
+    # Device search by property
+    #
     def _filter_devices(self, incomplete=False, hidden=False):
         """ Return list of devices modified according to parameters.
 
@@ -623,42 +475,6 @@ class DeviceTree(object):
         if not incomplete:
             devices = (d for d in devices if getattr(d, "complete", True))
         return devices
-
-    def make_dasd_list(self, dasds, disks):
-        """ Create a list of DASDs recognized by the system
-
-            :param list dasds: a list of DASD devices
-            :param list disks: a list of disks on the system
-            :returns: a list of DASD devices identified on the system
-            :rtype: list of :class:
-        """
-        if not arch.is_s390():
-            return
-
-        log.info("Generating DASD list....")
-        for dev in (disk for disk in disks if disk.type == "dasd"):
-            if dev not in dasds:
-                dasds.append(dev)
-
-        return dasds
-
-    def make_unformatted_dasd_list(self, dasds):
-        """ Create a list of DASDs which are detected to require dasdfmt.
-
-            :param list dasds: a list of DASD devices
-            :returns: a list of DASDs which need dasdfmt in order to be used
-            :rtype: list of :class:
-        """
-        if not arch.is_s390():
-            return
-
-        unformatted = []
-
-        for dasd in dasds:
-            if blockdev.s390.dasd_needs_format(dasd.busid):
-                unformatted.append(dasd)
-
-        return unformatted
 
     def get_device_by_sysfs_path(self, path, incomplete=False, hidden=False):
         """ Return a list of devices with a matching sysfs path.
@@ -826,80 +642,6 @@ class DeviceTree(object):
         log_method_return(self, result)
         return result
 
-    @property
-    def devices(self):
-        """ List of devices currently in the tree """
-        devices = []
-        for device in self._devices:
-            if not getattr(device, "complete", True):
-                continue
-
-            if device.uuid and device.uuid in [d.uuid for d in devices] and \
-               not isinstance(device, NoDevice):
-                raise DeviceTreeError("duplicate uuids in device tree")
-
-            devices.append(device)
-
-        return devices
-
-    @property
-    def filesystems(self):
-        """ List of filesystems. """
-        filesystems = []
-        for dev in self.leaves:
-            if dev.format and getattr(dev.format, 'mountpoint', None):
-                filesystems.append(dev.format)
-
-        return filesystems
-
-    @property
-    def uuids(self):
-        """ Dict with uuid keys and :class:`~.devices.Device` values. """
-        uuids = {}
-        for dev in self._devices:
-            try:
-                uuid = dev.uuid
-            except AttributeError:
-                uuid = None
-
-            if uuid:
-                uuids[uuid] = dev
-
-            try:
-                uuid = dev.format.uuid
-            except AttributeError:
-                uuid = None
-
-            if uuid:
-                uuids[uuid] = dev
-
-        return uuids
-
-    @property
-    def labels(self):
-        """ Dict with label keys and Device values.
-
-            FIXME: duplicate labels are a possibility
-        """
-        labels = {}
-        for dev in self._devices:
-            # don't include btrfs member devices
-            if getattr(dev.format, "label", None) and \
-               (dev.format.type != "btrfs" or isinstance(dev, BTRFSDevice)):
-                labels[dev.format.label] = dev
-
-        return labels
-
-    @property
-    def leaves(self):
-        """ List of all devices upon which no other devices exist. """
-        leaves = [d for d in self._devices if d.isleaf]
-        return leaves
-
-    def get_children(self, device):
-        """ Return a list of a device's children. """
-        return [c for c in self._devices if device in c.parents]
-
     def resolve_device(self, devspec, blkid_tab=None, crypt_tab=None, options=None):
         """ Return the device matching the provided device specification.
 
@@ -1054,56 +796,301 @@ class DeviceTree(object):
             log.debug("failed to resolve '%s'", devspec)
         return device
 
-    def handle_nodev_filesystems(self):
-        for line in open("/proc/mounts").readlines():
+    #
+    # DASD
+    #
+    def make_dasd_list(self, dasds, disks):
+        """ Create a list of DASDs recognized by the system
+
+            :param list dasds: a list of DASD devices
+            :param list disks: a list of disks on the system
+            :returns: a list of DASD devices identified on the system
+            :rtype: list of :class:
+        """
+        if not arch.is_s390():
+            return
+
+        log.info("Generating DASD list....")
+        for dev in (disk for disk in disks if disk.type == "dasd"):
+            if dev not in dasds:
+                dasds.append(dev)
+
+        return dasds
+
+    def make_unformatted_dasd_list(self, dasds):
+        """ Create a list of DASDs which are detected to require dasdfmt.
+
+            :param list dasds: a list of DASD devices
+            :returns: a list of DASDs which need dasdfmt in order to be used
+            :rtype: list of :class:
+        """
+        if not arch.is_s390():
+            return
+
+        unformatted = []
+
+        for dasd in dasds:
+            if blockdev.s390.dasd_needs_format(dasd.busid):
+                unformatted.append(dasd)
+
+        return unformatted
+
+    #
+    # Conveniences
+    #
+    @property
+    def leaves(self):
+        """ List of all devices upon which no other devices exist. """
+        leaves = [d for d in self._devices if d.isleaf]
+        return leaves
+
+    @property
+    def filesystems(self):
+        """ List of filesystems. """
+        filesystems = []
+        for dev in self.leaves:
+            if dev.format and getattr(dev.format, 'mountpoint', None):
+                filesystems.append(dev.format)
+
+        return filesystems
+
+    @property
+    def uuids(self):
+        """ Dict with uuid keys and :class:`~.devices.Device` values. """
+        uuids = {}
+        for dev in self._devices:
             try:
-                (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
-            except ValueError:
-                log.error("failed to parse /proc/mounts line: %s", line)
-                continue
-            if fstype in formats.fslib.nodev_filesystems:
-                if not flags.include_nodev:
-                    continue
+                uuid = dev.uuid
+            except AttributeError:
+                uuid = None
 
-                log.info("found nodev %s filesystem mounted at %s",
-                         fstype, mountpoint)
-                # nodev filesystems require some special handling.
-                # For now, a lot of this is based on the idea that it's a losing
-                # battle to require the presence of an FS class for every type
-                # of nodev filesystem. Based on that idea, we just instantiate
-                # NoDevFS directly and then hack in the fstype as the device
-                # attribute.
-                fmt = formats.get_format("nodev")
-                fmt.device = fstype
+            if uuid:
+                uuids[uuid] = dev
 
-                # NoDevice also needs some special works since they don't have
-                # per-instance names in the kernel.
-                device = NoDevice(fmt=fmt)
-                n = len([d for d in self.devices if d.format.type == fstype])
-                device._name += ".%d" % n
-                self._add_device(device)
+            try:
+                uuid = dev.format.uuid
+            except AttributeError:
+                uuid = None
+
+            if uuid:
+                uuids[uuid] = dev
+
+        return uuids
+
+    @property
+    def labels(self):
+        """ Dict with label keys and Device values.
+
+            FIXME: duplicate labels are a possibility
+        """
+        labels = {}
+        for dev in self._devices:
+            # don't include btrfs member devices
+            if getattr(dev.format, "label", None) and \
+               (dev.format.type != "btrfs" or isinstance(dev, BTRFSDevice)):
+                labels[dev.format.label] = dev
+
+        return labels
+
+    #
+    # Disk filter
+    #
+    @property
+    def exclusive_disks(self):
+        return self._populator.exclusive_disks
+
+    @property
+    def ignored_disks(self):
+        return self._populator.ignored_disks
+
+    def hide(self, device):
+        """ Hide the specified device.
+
+            :param device: the device to hide
+            :type device: :class:`~.devices.StorageDevice`
+
+            Hiding a device will cancel all actions that involve the device and
+            will remove the device from the device list.
+
+            If the device is not a leaf device, all devices that depend on it
+            will be hidden leaves-first until the device is a leaf device.
+
+            If a device exists, performs some special actions and places
+            it on a list of hidden devices.
+
+            Mixes recursion and side effects, most significantly in the code
+            that removes all the actions. However, this code is a null op
+            in every case except the first base case that is reached,
+            where all actions are removed. This means that when a device
+            is removed explicitly in this function by means of a direct call to
+            _remove_devices it is guaranteed that all actions have already
+            been canceled.
+
+            If a device does not exist then it must have been removed by the
+            cancelation of all the actions, so it does not need to be removed
+            explicitly.
+
+            Most devices are considered leaf devices if they have no children,
+            however, some devices must satisfy more stringent requirements.
+            _remove_device() will raise an exception if the device it is
+            removing is not a leaf device. hide() guarantees that any
+            device that it removes will have no children, but it does not
+            guarantee that the more stringent requirements will be enforced.
+            Therefore, _remove_device() is invoked with the force parameter
+            set to True, to skip the isleaf check.
+        """
+        if device in self._hidden:
+            return
+
+        # cancel actions first thing so that we hide the correct set of devices
+        if device.is_disk:
+            # Cancel all actions on this disk and any disk related by way of an
+            # aggregate/container device (eg: lvm volume group).
+            disks = [device]
+            related_actions = [a for a in self._actions
+                               if a.device.depends_on(device)]
+            for related_device in (a.device for a in related_actions):
+                disks.extend(related_device.disks)
+
+            disks = set(disks)
+            cancel = [a for a in self._actions
+                      if set(a.device.disks).intersection(disks)]
+            for action in reversed(cancel):
+                self.actions.remove(action)
+
+        for d in self.get_children(device):
+            self.hide(d)
+
+        log.info("hiding device %s", device)
+
+        if not device.exists:
+            return
+
+        self._remove_device(device, force=True, modparent=False)
+
+        self._hidden.append(device)
+        lvm.lvm_cc_addFilterRejectRegexp(device.name)
+
+        if isinstance(device, DASDDevice):
+            self.dasd.remove(device)
+
+        if device.name not in self.names:
+            self.names.append(device.name)
+
+    def unhide(self, device):
+        """ Restore a device's visibility.
+
+            :param device: the device to restore/unhide
+            :type device: :class:`~.devices.StorageDevice`
+
+            .. note::
+
+                Actions canceled while hiding the device are not rescheduled
+                automatically.
+
+        """
+
+        # the hidden list should be in leaves-first order
+        for hidden in reversed(self._hidden):
+            if hidden == device or hidden.depends_on(device) and \
+               not any(parent in self._hidden for parent in hidden.parents):
+
+                log.info("unhiding device %s %s (id %d)", hidden.type,
+                         hidden.name,
+                         hidden.id)
+                self._hidden.remove(hidden)
+                self._devices.append(hidden)
+                hidden.add_hook(new=False)
+                lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
+                if isinstance(device, DASDDevice):
+                    self.dasd.append(device)
+
+    def _is_ignored_disk(self, disk):
+        return ((self.ignored_disks and disk.name in self.ignored_disks) or
+                (self.exclusive_disks and
+                 disk.name not in self.exclusive_disks))
+
+    def _hide_ignored_disks(self):
+        # hide any subtrees that begin with an ignored disk
+        for disk in [d for d in self._devices if d.is_disk]:
+            if self._is_ignored_disk(disk):
+                ignored = True
+                # If the filter allows all members of a fwraid or mpath, the
+                # fwraid or mpath itself is implicitly allowed as well. I don't
+                # like this very much but we have supported this usage in the
+                # past, so I guess we will support it forever.
+                if disk.parents and all(p.format.hidden for p in disk.parents):
+                    ignored = any(self._is_ignored_disk(d) for d in disk.parents)
+
+                if ignored:
+                    self.hide(disk)
+
+    #
+    # Disk images
+    #
+    def set_disk_images(self, images):
+        """ Set the disk images and reflect them in exclusive_disks.
+
+            :param images: dict with image name keys and filename values
+            :type images: dict
+
+            .. note::
+
+                Disk images are automatically exclusive. That means that, in the
+                presence of disk images, any local storage not associated with
+                the disk images is ignored.
+        """
+        self._populator.set_disk_images(images)
+
+    def setup_disk_images(self):
+        """ Set up devices to represent the disk image files. """
+        self._populator.setup_disk_images()
+
+    def teardown_disk_images(self):
+        """ Tear down any disk image stacks. """
+        self._populator.teardown_disk_images()
+
+    @property
+    def disk_images(self):
+        return self._populator.disk_images
+
+    #
+    # Miscellaneous (global) data
+    #
+    @property
+    def pv_info(self):
+        if self._pvs_cache is None:
+            pvs = blockdev.lvm.pvs()
+            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
+
+        return self._pvs_cache
+
+    @property
+    def lv_info(self):
+        if self._lvs_cache is None:
+            lvs = blockdev.lvm.lvs()
+            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
+
+        return self._lvs_cache
+
+    def drop_lvm_cache(self):
+        """ Drop cached lvm information. """
+        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
+
+    @property
+    def dasd(self):
+        return self._populator.dasd
+
+    @dasd.setter
+    def dasd(self, dasd):
+        self._populator.dasd = dasd
+
+    @property
+    def protected_dev_names(self):
+        return self._populator.protected_dev_names
 
     def save_luks_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
 
         self._populator.save_luks_passphrase(device)
-
-    def __str__(self):
-        done = []
-
-        def show_subtree(root, depth):
-            abbreviate_subtree = root in done
-            s = "%s%s\n" % ("  " * depth, root)
-            done.append(root)
-            if abbreviate_subtree:
-                s += "%s...\n" % ("  " * (depth + 1),)
-            else:
-                for child in self.get_children(root):
-                    s += show_subtree(child, depth + 1)
-            return s
-
-        roots = [d for d in self._devices if not d.parents]
-        tree = ""
-        for root in roots:
-            tree += show_subtree(root, 0)
-        return tree

@@ -560,7 +560,7 @@ def do_partitioning(storage):
     #     a PartitionDevice for it.
     for partition in storage.partitions:
         if not partition.exists and partition.is_extended and \
-           not storage.devicetree.find_actions(device=partition, action_type="create"):
+           not storage.devicetree.actions.find(device=partition, action_type="create"):
             storage.devicetree._remove_device(partition, modparent=False, force=True)
 
     partitions = storage.partitions[:]

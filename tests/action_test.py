@@ -267,7 +267,7 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(vg.isleaf, False)
         a = ActionDestroyDevice(vg)
         with self.assertRaises(ValueError):
-            self.storage.devicetree.register_action(a)
+            self.storage.devicetree.actions.add(a)
 
         # registering any action other than create for a device that's not in
         # the devicetree should fail
@@ -281,7 +281,7 @@ class DeviceActionTestCase(StorageTestCase):
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
         create_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.register_action(create_sdc1_format)
+            self.storage.devicetree.actions.add(create_sdc1_format)
 
         sdc1_format.exists = True
         sdc1_format._resizable = True
@@ -289,33 +289,33 @@ class DeviceActionTestCase(StorageTestCase):
                                                 sdc1.size - Size("10 GiB"))
         resize_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.register_action(resize_sdc1_format)
+            self.storage.devicetree.actions.add(resize_sdc1_format)
 
         resize_sdc1 = ActionResizeDevice(sdc1, sdc1.size - Size("10 GiB"))
         resize_sdc1.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.register_action(resize_sdc1)
+            self.storage.devicetree.actions.add(resize_sdc1)
 
         resize_sdc1.cancel()
         resize_sdc1_format.cancel()
 
         destroy_sdc1_format = ActionDestroyFormat(sdc1)
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.register_action(destroy_sdc1_format)
+            self.storage.devicetree.actions.add(destroy_sdc1_format)
 
         destroy_sdc1 = ActionDestroyDevice(sdc1)
         with self.assertRaises(blivet.errors.DeviceTreeError):
-            self.storage.devicetree.register_action(destroy_sdc1)
+            self.storage.devicetree.actions.add(destroy_sdc1)
 
         # registering a device destroy action should cause the device to be
         # removed from the devicetree
         lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
         a = ActionDestroyDevice(lv_root)
-        self.storage.devicetree.register_action(a)
+        self.storage.devicetree.actions.add(a)
         lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertEqual(lv_root, None)
-        self.storage.devicetree.cancel_action(a)
+        self.storage.devicetree.actions.remove(a)
 
         # registering a device create action should cause the device to be
         # added to the devicetree
@@ -327,7 +327,7 @@ class DeviceActionTestCase(StorageTestCase):
                                name="sdd1", size=Size("100 GiB"),
                                parents=[sdd])
         a = ActionCreateDevice(sdd1)
-        self.storage.devicetree.register_action(a)
+        self.storage.devicetree.actions.add(a)
         sdd1 = self.storage.devicetree.get_device_by_name("sdd1")
         self.assertNotEqual(sdd1, None)
 
@@ -1108,8 +1108,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(create_new_lv.requires(add_sdc1), True)
         self.assertEqual(create_new_lv_format.requires(add_sdc1), False)
 
-        self.storage.devicetree.cancel_action(create_new_lv_format)
-        self.storage.devicetree.cancel_action(create_new_lv)
+        self.storage.devicetree.actions.remove(create_new_lv_format)
+        self.storage.devicetree.actions.remove(create_new_lv)
 
         remove_sdb1 = ActionRemoveMember(vg, sdb1)
         self.assertEqual(len(vg.parents), 3)

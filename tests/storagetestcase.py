@@ -214,7 +214,7 @@ class StorageTestCase(unittest.TestCase):
 
         self.assertEqual(devicetree.get_device_by_name(device.name), None)
         action = blivet.deviceaction.ActionCreateDevice(device)
-        devicetree.register_action(action)
+        devicetree.actions.add(action)
         self.assertEqual(devicetree.get_device_by_name(device.name), device)
         return action
 
@@ -231,7 +231,7 @@ class StorageTestCase(unittest.TestCase):
 
         self.assertEqual(devicetree.get_device_by_name(device.name), device)
         action = blivet.deviceaction.ActionDestroyDevice(device)
-        devicetree.register_action(action)
+        devicetree.actions.add(action)
         self.assertEqual(devicetree.get_device_by_name(device.name), None)
         return action
 
@@ -250,7 +250,7 @@ class StorageTestCase(unittest.TestCase):
         self.assertNotEqual(device.format, fmt)
         self.assertEqual(devicetree.get_device_by_name(device.name), device)
         action = blivet.deviceaction.ActionCreateFormat(device, fmt)
-        devicetree.register_action(action)
+        devicetree.actions.add(action)
         _device = devicetree.get_device_by_name(device.name)
         self.assertEqual(_device.format, fmt)
         return action
@@ -268,7 +268,7 @@ class StorageTestCase(unittest.TestCase):
 
         self.assertEqual(devicetree.get_device_by_name(device.name), device)
         action = blivet.deviceaction.ActionDestroyFormat(device)
-        devicetree.register_action(action)
+        devicetree.actions.add(action)
         _device = devicetree.get_device_by_name(device.name)
         self.assertEqual(_device.format.type, None)
         return action
