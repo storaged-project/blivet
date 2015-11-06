@@ -529,8 +529,11 @@ class EddMatcher(object):
             This will obviously fail for a fresh drive/image, but in extreme
             cases can also show false positives for randomly matching data.
         """
+        sysblock = "%s/%s" % (fsroot, "/sys/block")
         for (name, mbr_sig) in mbr_dict.items():
             if mbr_sig == self.edd.mbr_sig:
+                self.edd.sysfslink = util.sysfs_readlink(sysblock, link=name,
+                                                         root=fsroot)
                 return name
         return None
 
