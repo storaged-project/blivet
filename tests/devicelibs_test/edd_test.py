@@ -6,6 +6,7 @@ import logging
 import copy
 
 from blivet.devicelibs import edd
+import lib
 
 
 class FakeDevice(object):
@@ -39,8 +40,14 @@ class FakeEddEntry(edd.EddEntry):
 
 
 class EddTestCase(unittest.TestCase):
-    _edd_logger = None
-    max_diff = None
+
+    def __init__(self, *args, **kwds):
+        super(EddTestCase, self).__init__(*args, **kwds)
+        self._edd_logger = None
+
+        # these don't follow PEP8 because unittest.TestCase expects them this way
+        self.maxDiff = None
+        self.longMessage = True
 
     def setUp(self):
         super(EddTestCase, self).setUp()
@@ -86,15 +93,13 @@ class EddTestCase(unittest.TestCase):
 
     def check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
         def check(left, right_object):
-            left = [mock.call(*x) for x in left or []]
-            left.sort()
+            newleft = [mock.call(*x) for x in left or []]
             right = copy.copy(right_object.call_args_list or [])
-            right.sort()
-            self.assertEqual(left, right)
-            if len(left) == 0:
-                self.assertEqual(right_object.called, False)
+            lib.assertVerboseListEqual(newleft, right)
+            if len(newleft) == 0:
+                lib.assertVerboseEqual(right_object.called, False)
             else:
-                self.assertEqual(right_object.called, True)
+                lib.assertVerboseEqual(right_object.called, True)
 
         check(debugs, edd.log.debug)
         check(infos, edd.log.info)
@@ -142,9 +147,9 @@ class EddTestCase(unittest.TestCase):
             ("edd: found device 0x%x at %s", 0x81,
              '/sys/firmware/edd/int13_dev81'),
         ]
-        self.assertEqual(len(edd_dict), 2)
-        self.assertEqual(fakeedd[0x80], edd_dict[0x80])
-        self.assertEqual(fakeedd[0x81], edd_dict[0x81])
+        lib.assertVerboseEqual(len(edd_dict), 2)
+        lib.assertVerboseEqual(fakeedd[0x80], edd_dict[0x80])
+        lib.assertVerboseEqual(fakeedd[0x81], edd_dict[0x81])
         self.check_logs(debugs=debugs)
 
     def test_get_edd_dict_sata_usb(self):
@@ -176,9 +181,9 @@ class EddTestCase(unittest.TestCase):
 
         edd_dict = edd.get_edd_dict(devices)
         self.debug('edd_dict: %s', edd_dict)
-        self.assertEqual(len(edd_dict), 2)
-        self.assertEqual(edd_dict["sda"], 0x80)
-        self.assertEqual(edd_dict["sdb"], 0x81)
+        lib.assertVerboseEqual(len(edd_dict), 2)
+        lib.assertVerboseEqual(edd_dict["sda"], 0x80)
+        lib.assertVerboseEqual(edd_dict["sdb"], 0x81)
         debugs = [
             ("edd: data extracted from 0x%x:\n%s", 0x80, fakeedd[0x80]),
             ("edd: data extracted from 0x%x:\n%s", 0x81, fakeedd[0x81]),
