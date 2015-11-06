@@ -137,8 +137,14 @@ class Path(str):
             account when globbing and returns path objects with the same
             root, so you don't have to think about that part.
         """
+
+        testdata_log.debug("glob: %s", self.ondisk)
+        if "None" in self.ondisk:
+            log.error("glob: %s", self.ondisk)
+            log.error("^^ Somehow \"None\" got logged and that's never right.")
         for g in glob.glob(self.ondisk):
-            yield Path(g, root=self.root)
+            testdata_log.debug("glob match: %s", g)
+            yield Path(g, self.root)
 
     def __hash__(self):
         return self._path.__hash__()
