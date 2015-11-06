@@ -339,25 +339,47 @@ def join_paths(*paths):
         return join_paths(*paths[0])
     return normalize_path_slashes('/'.join(paths))
 
-def get_sysfs_attr(path, attr):
+def get_sysfs_attr(path, attr, root=None):
     if not attr:
         log.debug("get_sysfs_attr() called with attr=None")
         return None
+    if not isinstance(path, Path):
+        path = Path(path=path, root=root)
+    elif root != None:
+        path.newroot(root)
 
-    attribute = "%s/%s" % (path, attr)
-    attribute = os.path.realpath(attribute)
+    attribute = path + attr
+    fullattr = os.path.realpath(attribute.ondisk)
 
-    if not os.path.isfile(attribute) and not os.path.islink(attribute):
+    if not os.path.isfile(fullattr) and not os.path.islink(fullattr):
         log.warning("%s is not a valid attribute", attr)
         return None
 
-    f = open(attribute, "r")
+    f = open(fullattr, "r")
     data = f.read()
     f.close()
     sdata = "".join(["%02x" % (ord(x),) for x in data])
     testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
     return data.strip()
 
+def sysfs_readlink(path, link, root=None):
+    if not link:
+        log.debug("sysfs_readlink() called with link=None")
+    if isinstance(path, Path):
+        linkpath = path + link
+    else:
+        linkpath = Path(path, root=root) + link
+
+    linkpath = Path(os.path.normpath(linkpath), root=linkpath.root)
+    fullpath = os.path.normpath(linkpath.ondisk)
+
+    if not os.path.islink(fullpath):
+        log.warning("%s is not a valid symlink", linkpath)
+        return None
+
+    output = os.readlink(fullpath)
+    testdata_log.debug("new sysfs link: \"%s\" -> \"%s\"", linkpath, output)
+    return output
 
 def get_sysfs_path_by_name(dev_node, class_name="block"):
     """ Return sysfs path for a given device.
