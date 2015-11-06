@@ -213,6 +213,21 @@ def notify_kernel(path, action="change"):
     f.write("%s\n" % action)
     f.close()
 
+def normalize_path_slashes(path):
+    """ Normalize the slashes in a filesystem path.
+        Does not actually examine the filesystme in any way.
+    """
+    while "//" in path:
+        path = path.replace("//", "/")
+    return path
+
+def join_paths(*paths):
+    """ Joins filesystem paths without any consiration of slashes or
+        whatnot and then normalizes repeated slashes.
+    """
+    if len(paths) == 1 and hasattr(paths[0], "__iter__"):
+        return join_paths(*paths[0])
+    return normalize_path_slashes('/'.join(paths))
 
 def get_sysfs_attr(path, attr):
     if not attr:
