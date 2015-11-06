@@ -358,10 +358,62 @@ class EddMatcher(object):
 
     def devname_from_ata_pci_dev(self):
         pattern = util.Path('/sys/block/*', root=self.root)
+        retries = []
+
+        def match_port(components, ata_port, ata_port_idx, path, link):
+            fn = util.Path(util.join_paths(components[0:6] \
+                                           + ['ata_port', ata_port]), root=self.root)
+            port_no = int(util.get_sysfs_attr(fn, 'port_no'))
+
+            if self.edd.type == "ATA":
+                # On ATA, port_no is kernel's ata_port->local_port_no, which
+                # should be the same as the ata device number.
+                if port_no != self.edd.ata_device:
+                    return
+            else:
+                # On SATA, "port_no" is the kernel's ata_port->print_id, which
+                # is awesomely ata_port->id + 1, where ata_port->id is edd's
+                # ata_device
+                if port_no != self.edd.ata_device + 1:
+                    return
+
+            fn = components[0:6] + ['link%d' % (ata_port_idx,),]
+            exp = [r'.*']+fn+[r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
+            exp = util.join_paths(exp)
+            expmatcher = re.compile(exp)
+
+            pmp = util.join_paths(fn + ['dev%d.*.*' % (ata_port_idx,)])
+            pmp = util.Path(pmp, root=self.root)
+            dev = util.join_paths(fn + ['dev%d.*' % (ata_port_idx,)])
+            dev = util.Path(dev, root=self.root)
+            for ataglob in [pmp, dev]:
+                for atapath in ataglob.glob():
+                    match = expmatcher.match(atapath.ondisk)
+                    if match is None:
+                        continue
+
+                    # so at this point it's devW.X.Y or devW.Z as such:
+                    # dev_set_name(dev, "dev%d.%d",
+                    # ap->print_id,ata_dev->devno); dev_set_name(dev,
+                    # "dev%d.%d.0", ap->print_id, link->pmp); we care about
+                    # print_id and pmp for matching and the ATA channel if
+                    # applicable. We already checked print_id above.
+                    if match.group(3) is None:
+                        channel = int(match.group(1))
+                        if (self.edd.channel == 255 and channel == 0) or \
+                                (self.edd.channel == channel):
+                            yield ({'link': util.Path(link, root=self.root),
+                                    'path': path.split('/')[-1]})
+                    else:
+                        pmp = int(match.group(1))
+                        if self.edd.ata_pmp == pmp:
+                            yield ({'link': util.Path(link, root=self.root),
+                                    'path': path.split('/')[-1]})
+
         answers = []
         for path in pattern.glob():
-            emptyslash = util.Path("/", root=self.root)
-            path = util.Path(path, root=self.root)
+            emptyslash = util.Path("/", self.root)
+            path = util.Path(path, self.root)
             link = util.sysfs_readlink(path=emptyslash, link=path)
             testdata_log.debug("sysfs link: \"%s\" -> \"%s\"", path, link)
             # just add /sys/block/ at the beginning so it's always valid
@@ -399,56 +451,43 @@ class EddMatcher(object):
             ata_port = components[5]
             ata_port_idx = int(components[5][3:])
 
-            fn = util.Path(util.join_paths(components[0:6] \
-                                           + ['ata_port', ata_port]), root=self.root)
-            port_no = int(util.get_sysfs_attr(fn, 'port_no'))
+            # strictly this should always be required, but #!@#!@#!@ seabios
+            # iterates the sata device number /independently/ of the host
+            # bridge it claims things are attached to.  In that case this
+            # the scsi target will always have "0" as the ID component.
+            args = { 'device': self.edd.ata_device }
+            exp = r"target\d+:0:%(device)s/\d+:0:%(device)s:0/block/.*" % args
+            matcher = re.compile(exp)
+            match = matcher.match("/".join(components[7:]))
+            if not match:
+                retries.append({
+                    'components': components,
+                    'ata_port': ata_port,
+                    'ata_port_idx': ata_port_idx,
+                    'path': path,
+                    'link': link,
+                })
+                continue
 
-            if self.edd.type == "ATA":
-                # On ATA, port_no is kernel's ata_port->local_port_no, which
-                # should be the same as the ata device number.
-                if port_no != self.edd.ata_device:
-                    continue
-            else:
-                # On SATA, "port_no" is the kernel's ata_port->print_id, which
-                # is awesomely ata_port->id + 1, where ata_port->id is edd's
-                # ata_device
-                if port_no != self.edd.ata_device + 1:
-                    continue
+            for port in match_port(components, ata_port, ata_port_idx, path,
+                                   link):
+                answers.append(port)
 
-            fn = components[0:6] + ['link%d' % (ata_port_idx,),]
-            exp = [r'.*']+fn+[r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
-            exp = util.join_paths(exp)
-            expmatcher = re.compile(exp)
-
-            pmp = util.join_paths(fn + ['dev%d.*.*' % (ata_port_idx,)])
-            pmp = util.Path(pmp, root=self.root)
-            dev = util.join_paths(fn + ['dev%d.*' % (ata_port_idx,)])
-            dev = util.Path(dev, root=self.root)
-            for ataglob in [pmp, dev]:
-                for atapath in ataglob.glob():
-                    match = expmatcher.match(atapath.ondisk)
-                    if match is None:
-                        continue
-
-                    # so at this point it's devW.X.Y or devW.Z as such:
-                    # dev_set_name(dev, "dev%d.%d",
-                    # ap->print_id,ata_dev->devno); dev_set_name(dev,
-                    # "dev%d.%d.0", ap->print_id, link->pmp); we care about
-                    # print_id and pmp for matching and the ATA channel if
-                    # applicable. We already checked print_id above.
-                    if match.group(3) is None:
-                        channel = int(match.group(1))
-                        if (self.edd.channel == 255 and channel == 0) or \
-                                (self.edd.channel == channel):
-                            answers.append({
-                                'link': util.Path(link, root=self.root),
-                                'path': path.split('/')[-1]})
-                    else:
-                        pmp = int(match.group(1))
-                        if self.edd.ata_pmp == pmp:
-                            answers.append({
-                                'link': util.Path(link, root=self.root),
-                                'path': path.split('/')[-1]})
+        # now handle the ones we discarded because libata's scsi id doesn't
+        # match the ata_device.
+        for retry in retries:
+            for port in match_port(**retry):
+                if answers:
+                    log.warning("edd: ignoring possible extra match for ATA device %s channel %s ata %d pmp %s: %s",
+                                self.edd.pci_dev, self.edd.channel,
+                                self.edd.ata_device, self.edd.ata_pmp,
+                                retry['path'])
+                else:
+                    log.warning("edd: using possible extra match for ATA device %s channel %s ata %d pmp %s: %s",
+                                self.edd.pci_dev, self.edd.channel,
+                                self.edd.ata_device, self.edd.ata_pmp,
+                                retry['path'])
+                    answers.append(port)
 
         if len(answers) > 1:
             log.error("edd: Found too many ATA devices for EDD device 0x%x: %s",
@@ -459,7 +498,7 @@ class EddMatcher(object):
             return answers[0]['path']
         else:
             log.warning(
-                "edd: Could not find ATA device for pci dev %s channel %s ata %d pmp %d",
+                "edd: Could not find ATA device for pci dev %s channel %s ata %d pmp %s",
                 self.edd.pci_dev, self.edd.channel,
                 self.edd.ata_device, self.edd.ata_pmp)
 
