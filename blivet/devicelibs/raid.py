@@ -422,8 +422,16 @@ class RAID0(RAIDn):
     def _get_recommended_stride(self, member_count):
         return member_count * 16
 
+
+class Striped(RAID0):
+    """ subclass with canonical lvm name """
+    name = 'striped'
+    names = [name]
+
 RAID0 = RAID0()
 ALL_LEVELS.add_raid_level(RAID0)
+Striped = Striped()
+ALL_LEVELS.add_raid_level(Striped)
 
 
 class RAID1(RAIDn):
