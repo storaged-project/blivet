@@ -358,6 +358,7 @@ class EddMatcher(object):
 
     def devname_from_ata_pci_dev(self):
         pattern = util.Path('/sys/block/*', root=self.root)
+        answers = []
         for path in pattern.glob():
             emptyslash = util.Path("/", root=self.root)
             path = util.Path(path, root=self.root)
@@ -439,13 +440,28 @@ class EddMatcher(object):
                         channel = int(match.group(1))
                         if (self.edd.channel == 255 and channel == 0) or \
                                 (self.edd.channel == channel):
-                            self.edd.sysfslink = util.Path(link, root=self.root)
-                            return path.split('/')[-1]
+                            answers.append({
+                                'link': util.Path(link, root=self.root),
+                                'path': path.split('/')[-1]})
                     else:
                         pmp = int(match.group(1))
                         if self.edd.ata_pmp == pmp:
-                            self.edd.sysfslink = util.Path(link, root=self.root)
-                            return path.split('/')[-1]
+                            answers.append({
+                                'link': util.Path(link, root=self.root),
+                                'path': path.split('/')[-1]})
+
+        if len(answers) > 1:
+            log.error("edd: Found too many ATA devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.warning(
+                "edd: Could not find ATA device for pci dev %s channel %s ata %d pmp %d",
+                self.edd.pci_dev, self.edd.channel,
+                self.edd.ata_device, self.edd.ata_pmp)
 
         return None
 
@@ -462,12 +478,25 @@ class EddMatcher(object):
             'lun' : self.edd.scsi_lun,
         }
         pattern = util.Path(tmpl % args, self.root + "/sys/block/")
+        answers = []
         for mp in pattern.glob():
             # Normal VirtIO devices just have the block link right there...
             block_entries = os.listdir(mp.ondisk)
             for be in block_entries:
-                self.edd.sysfslink = mp + be
-                return be
+                link = mp + be
+                answers.append({'link':link, 'path':be})
+
+        if len(answers) > 1:
+            log.error("Found too many VirtIO SCSI devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.info("edd: Could not find VirtIO SCSI device for pci dev %s "\
+                     "channel %s scsi id %s lun %s", self.edd.pci_dev,
+                     self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
 
     def devname_from_scsi_pci_dev(self):
         tmpl = "../devices/pci0000:00/0000:%(pci_dev)s/" \
@@ -485,9 +514,20 @@ class EddMatcher(object):
             # Normal VirtIO devices just have the block link right there...
             block_entries = os.listdir(mp.ondisk)
             for be in block_entries:
-                self.edd.sysfslink = mp + be
-                return be
+                link = mp + be
+                answers.append({'link':link, 'path':be})
 
+        if len(answers) > 1:
+            log.error("Found too many SCSI devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.warning("edd: Could not find SCSI device for pci dev %s "\
+                        "channel %s scsi id %s lun %s", self.edd.pci_dev,
+                        self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
         return None
 
     def devname_from_virt_pci_dev(self):
@@ -498,8 +538,20 @@ class EddMatcher(object):
             # Normal VirtIO devices just have the block link right there...
             block_entries = os.listdir(mp.ondisk)
             for be in block_entries:
-                self.edd.sysfslink = mp + be
-                return be
+                link = mp + be
+                answers.append({'link':link, 'path':be})
+
+        if len(answers) > 1:
+            log.error("Found too many VirtIO devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.info(
+                "edd: Could not find Virtio device for pci dev %s channel %s",
+                self.edd.pci_dev, self.edd.channel)
 
         return None
 
