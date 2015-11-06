@@ -358,9 +358,7 @@ class EddMatcher(object):
 
     def devname_from_ata_pci_dev(self):
         pattern = util.Path('/sys/block/*', root=self.root)
-        testdata_log.debug("sysfs glob: %s", pattern)
         for path in pattern.glob():
-            testdata_log.debug("sysfs glob match: %s", path)
             emptyslash = util.Path("/", root=self.root)
             path = util.Path(path, root=self.root)
             link = util.sysfs_readlink(path=emptyslash, link=path)
@@ -426,9 +424,7 @@ class EddMatcher(object):
             dev = util.join_paths(fn + ['dev%d.*' % (ata_port_idx,)])
             dev = util.Path(dev, root=self.root)
             for ataglob in [pmp, dev]:
-                testdata_log.debug("sysfs glob: %s", ataglob)
                 for atapath in ataglob.glob():
-                    testdata_log.debug("sysfs glob match: %s", atapath)
                     match = expmatcher.match(atapath.ondisk)
                     if match is None:
                         continue
@@ -469,10 +465,7 @@ class EddMatcher(object):
         }
         path = util.Path(tmpl0 % args, root=self.root)
         pattern = util.Path(tmpl1 % args, root=self.root)
-        testdata_log.debug("sysfs glob: %s", pattern)
         matching_paths = list(pattern.glob())
-        for mp in matching_paths:
-            testdata_log.debug("sysfs glob match: %s", mp)
         if os.path.isdir(path.ondisk):
             block_entries = os.listdir(path.ondisk)
             if len(block_entries) == 1:
@@ -505,11 +498,7 @@ class EddMatcher(object):
     def devname_from_virt_pci_dev(self):
         pattern = util.Path("/sys/devices/pci0000:00/0000:%s/virtio*" %
                             (self.edd.pci_dev,), root=self.root)
-        testdata_log.debug("sysfs glob: %s", pattern)
         matching_paths = tuple(pattern.glob())
-        for mp in matching_paths:
-            testdata_log.debug("sysfs glob match: %s", mp)
-
         if len(matching_paths) == 1 and os.path.exists(matching_paths[0]):
             # Normal VirtIO devices just have the block link right there...
             newpath = util.Path(matching_paths[0], root=self.root) + "/block"
@@ -571,9 +560,7 @@ class EddMatcher(object):
 def collect_edd_data(root=None):
     edd_data_dict = {}
     globstr = util.Path("/sys/firmware/edd/int13_dev*/", root=root)
-    testdata_log.debug("sysfs glob: %s", globstr)
     for path in globstr.glob():
-        testdata_log.debug("sysfs glob match: %s", path)
         match = re_bios_device_number.match(path)
         biosdev = int("0x%s" % (match.group(1),), base=16)
         log.debug("edd: found device 0x%x at %s", biosdev, path)
