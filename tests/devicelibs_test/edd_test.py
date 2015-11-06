@@ -197,6 +197,7 @@ class EddTestCase(unittest.TestCase):
             ("edd: interface type %s is not implemented (%s)", "USB",
                 "/sys/firmware/edd/int13_dev81/"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
+            ('edd: using possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:1f.2', 255, 1, None, '/sys/block/sda')
         ]
         self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
 
@@ -358,7 +359,167 @@ class EddTestCase(unittest.TestCase):
             ('edd: Could not find Virtio device for pci dev %s channel %s', '00:01.1', 0),
             ('edd: Could not find Virtio device for pci dev %s channel %s', '00:0b.0', 0),
         ]
-        errors = [
-            ('edd: Found too many ATA devices for EDD device 0x%x: %s', 129, ['../devices/pci0000:00/0000:00:01.1/ata7/host6/target6:0:1/6:0:1:0/block/sdb', '../devices/pci0000:00/0000:00:01.1/ata7/host6/target6:0:0/6:0:0:0/block/sr0']),
+        warnings = [
+            ('edd: ignoring possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:01.1', 0, 1, None, '/sys/block/sr0'),
         ]
-        self.check_logs(debugs=debugs, infos=infos, errors=errors)
+        self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
+
+    def test_collect_mbrs_strawberry_mountain(self):
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
+        devices=(FakeDevice("sda"),
+                 FakeDevice("sdb"),
+                 FakeDevice("sdc"),
+                 FakeDevice("sdd"),
+                 )
+        fake_mbr_dict = { 'sdc': '0x00033091',
+                          'sdd': '0x91271645',
+                          }
+        mbr_dict = edd.collect_mbrs(devices,
+                                    root=self.root('strawberry_mountain'))
+        infos = [
+            ("edd: MBR signature on %s is zero. new disk image?", "sda"),
+            ("edd: MBR signature on %s is zero. new disk image?", "sdb"),
+            ("edd: collected mbr signatures: %s", { 'sdc': '0x00033091',
+                                                    'sdd': '0x91271645',
+                                                    }),
+        ]
+        warnings = [
+        ]
+        self.check_logs(infos=infos, warnings=warnings)
+        lib.assertVerboseEqual(fake_mbr_dict, mbr_dict)
+
+    def test_collect_edd_data_strawberry_mountain(self):
+        # test with sata sda, usb sdb
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
+        fakeedd = {
+            0x80: FakeEddEntry(version="0x21", mbr_sig="0x91271645",
+                               sectors=31293440, host_bus="PCI", type="USB",
+                               pci_dev="ff:ff.255", channel=255,
+                               interface="USB     \tserial_number: 30302e31",
+                               usb_serial=0x30302e31,
+                               sysfspath="/sys/firmware/edd/int13_dev80/"),
+            0x81: FakeEddEntry(version="0x30", mbr_sig="0x00033091",
+                               sectors=312581808, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=2,
+                               interface="SATA    \tdevice: 2",
+                               sysfspath="/sys/firmware/edd/int13_dev81/"),
+            0x82: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
+                               sectors=156301488, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=1,
+                               interface="SATA    \tdevice: 1",
+                               sysfspath="/sys/firmware/edd/int13_dev82/"),
+            0x83: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
+                               sectors=312581808, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=0,
+                               interface="SATA    \tdevice: 0",
+                               sysfspath="/sys/firmware/edd/int13_dev83/"),
+        }
+
+        edd_dict = edd.collect_edd_data(root=self.root('strawberry_mountain'))
+        self.debug('edd_dict: %s', edd_dict)
+        debugs = [
+            ("edd: found device 0x%x at %s", 0x80,
+             '/sys/firmware/edd/int13_dev80/'),
+            ("edd: found device 0x%x at %s", 0x81,
+             '/sys/firmware/edd/int13_dev81/'),
+            ("edd: found device 0x%x at %s", 0x82,
+             '/sys/firmware/edd/int13_dev82/'),
+            ("edd: found device 0x%x at %s", 0x83,
+             '/sys/firmware/edd/int13_dev83/'),
+        ]
+        self.check_logs(debugs=debugs)
+        lib.assertVerboseEqual(fakeedd[0x80], edd_dict[0x80])
+        lib.assertVerboseEqual(fakeedd[0x81], edd_dict[0x81])
+        lib.assertVerboseEqual(fakeedd[0x82], edd_dict[0x82])
+        lib.assertVerboseEqual(fakeedd[0x83], edd_dict[0x83])
+        lib.assertVerboseEqual(len(edd_dict), 4)
+
+    def test_get_edd_dict_strawberry_mountain(self):
+        # test with sata sda, usb sdb
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
+        devices=(FakeDevice("sda"),
+                 FakeDevice("sdb"),
+                 FakeDevice("sdc"),
+                 FakeDevice("sdd"),
+                 )
+        fakeedd = {
+            0x80: FakeEddEntry(version="0x21", mbr_sig="0x91271645",
+                               sectors=31293440, host_bus="PCI", type="USB",
+                               pci_dev="ff:ff.255", channel=255,
+                               interface="USB     \tserial_number: 30302e31",
+                               usb_serial=0x30302e31,
+                               sysfslink="../devices/pci0000:00/0000:00:1d.0/"
+                               "usb4/4-1/4-1.2/4-1.2:1.0/host6/target6:0:0/"
+                               "6:0:0:0/block/sdd",
+                               sysfspath="/sys/firmware/edd/int13_dev80/"),
+            0x81: FakeEddEntry(version="0x30", mbr_sig="0x00033091",
+                               sectors=312581808, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=2,
+                               interface="SATA    \tdevice: 2",
+                               sysfspath="/sys/firmware/edd/int13_dev81/",
+                               sysfslink="../devices/pci0000:00/0000:00:1f.2/"
+                               "ata3/host2/target2:0:0/2:0:0:0/block/sdc"),
+            0x82: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
+                               sectors=156301488, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=1,
+                               interface="SATA    \tdevice: 1",
+                               sysfspath="/sys/firmware/edd/int13_dev82/",
+                               sysfslink="../devices/pci0000:00/0000:00:1f.2/"
+                               "ata2/host1/target1:0:0/1:0:0:0/block/sdb"),
+            0x83: FakeEddEntry(version="0x30", mbr_sig="0x00000000",
+                               sectors=312581808, host_bus="PCI", type="SATA",
+                               pci_dev="00:1f.2", channel=255, ata_device=0,
+                               interface="SATA    \tdevice: 0",
+                               sysfspath="/sys/firmware/edd/int13_dev83/",
+                               sysfslink="../devices/pci0000:00/0000:00:1f.2/"
+                               "ata1/host0/target0:0:0/0:0:0:0/block/sda"),
+        }
+
+        edd_dict = edd.get_edd_dict(devices,
+                                    root=self.root('strawberry_mountain'))
+        self.debug('edd_dict: %s', edd_dict)
+        debugs = [
+            ("edd: data extracted from 0x%x:%r", 0x80, fakeedd[0x80]),
+            ("edd: data extracted from 0x%x:%r", 0x81, fakeedd[0x81]),
+            ("edd: data extracted from 0x%x:%r", 0x82, fakeedd[0x82]),
+            ("edd: data extracted from 0x%x:%r", 0x83, fakeedd[0x83]),
+            ("edd: found device 0x%x at %s", 0x80,
+             '/sys/firmware/edd/int13_dev80/'),
+            ("edd: found device 0x%x at %s", 0x81,
+             '/sys/firmware/edd/int13_dev81/'),
+            ("edd: found device 0x%x at %s", 0x82,
+             '/sys/firmware/edd/int13_dev82/'),
+            ("edd: found device 0x%x at %s", 0x83,
+             '/sys/firmware/edd/int13_dev83/'),
+        ]
+        infos = [
+            ("edd: MBR signature on %s is zero. new disk image?", "sda"),
+            ("edd: MBR signature on %s is zero. new disk image?", "sdb"),
+            ("edd: collected mbr signatures: %s", { 'sdc': '0x00033091',
+                                                    'sdd': '0x91271645',
+                                                    }),
+            ("edd: matched 0x%x to %s using MBR sig", 0x80, "sdd"),
+            ("edd: matched 0x%x to %s using PCI dev", 0x81, "sdc"),
+            ("edd: matched 0x%x to %s using PCI dev", 0x82, "sdb"),
+            ("edd: matched 0x%x to %s using PCI dev", 0x83, "sda"),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', '00:1f.2', 255),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', '00:1f.2', 255),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', '00:1f.2', 255),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', 'ff:ff.255', 255)
+        ]
+        warnings = [
+            ("edd: interface type %s is not implemented (%s)", "USB",
+                "/sys/firmware/edd/int13_dev80/"),
+            ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
+            ('edd: using possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:1f.2', 255, 1, None, '/sys/block/sdb'),
+            ('edd: using possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:1f.2', 255, 2, None, '/sys/block/sdc'),
+        ]
+        self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
+        lib.assertVerboseEqual(edd_dict["sda"], 0x83)
+        lib.assertVerboseEqual(edd_dict["sdb"], 0x82)
+        lib.assertVerboseEqual(edd_dict["sdc"], 0x81)
+        lib.assertVerboseEqual(edd_dict["sdd"], 0x80)
+        lib.assertVerboseEqual(len(edd_dict), 4)
