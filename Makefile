@@ -67,7 +67,7 @@ coverage: check-requires
 	$(COVERAGE) report --include="blivet/*" > coverage-report.log
 
 check: check-requires
-	PYTHONPATH=. tests/pylint/runpylint.py
+	PYTHONPATH=.:tests/ tests/pylint/runpylint.py
 
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
