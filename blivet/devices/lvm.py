@@ -73,9 +73,11 @@ def get_internal_lv_class(lv_attr):
     return None
 
 
-LVPVSpec = namedtuple("LVPVSpec", ["pv", "size"])
-""" A namedtuple class for specifying how much space on a PV should be allocated for some LV """
-
+class LVPVSpec(object):
+    """ Class for specifying how much space on a PV should be allocated for some LV """
+    def __init__(self, pv, size):
+        self.pv = pv
+        self.size = size
 
 PVFreeInfo = namedtuple("PVFreeInfo", ["pv", "size", "free"])
 """ A namedtuple class holding the information about PV's (usable) size and free space """
@@ -602,6 +604,9 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
+        self._raid_level = None
+        if self.seg_type in (level.name for level in lvm.raid_levels):
+            self._raid_level = lvm.raid_levels.raid_level(self.seg_type)
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -638,11 +643,20 @@ class LVMLogicalVolumeDevice(DMDevice):
                         set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
             msg = "invalid destination PV(s) %s for LV %s" % (missing, self.name)
             raise ValueError(msg)
+        if self._pv_specs:
+            self._assign_pv_space()
 
         # check that we got parents as expected and add this device to them now
         # that it is fully-initialized
         self._check_parents()
         self._add_to_parents()
+
+    def _assign_pv_space(self):
+        if self.seg_type == "linear" or not self._raid_level:
+            # nothing to do for non-RAID (including striped) LVs here
+            return
+        for spec in self._pv_specs:
+            spec.size = self._raid_level.get_base_member_size(self.size, len(self._pv_specs))
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
