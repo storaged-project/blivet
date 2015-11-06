@@ -55,7 +55,7 @@ class EddTestCase(unittest.TestCase):
         edd.log.addHandler(self.log_handler)
 
         self.td_log_handler = logging.FileHandler("%s/%s" %
-                                        (ws, "blivet-edd-testdata.log"))
+                                                  (ws, "blivet-edd-testdata.log"))
         self.td_log_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
         self.td_log_handler.setFormatter(formatter)
