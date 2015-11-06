@@ -197,6 +197,7 @@ class EddTestCase(unittest.TestCase):
             ("edd: interface type %s is not implemented (%s)", "USB",
                 "/sys/firmware/edd/int13_dev81/"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
+            ('edd: using possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:1f.2', 255, 1, None, '/sys/block/sda')
         ]
         self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
 
@@ -358,7 +359,7 @@ class EddTestCase(unittest.TestCase):
             ('edd: Could not find Virtio device for pci dev %s channel %s', '00:01.1', 0),
             ('edd: Could not find Virtio device for pci dev %s channel %s', '00:0b.0', 0),
         ]
-        errors = [
-            ('edd: Found too many ATA devices for EDD device 0x%x: %s', 129, ['../devices/pci0000:00/0000:00:01.1/ata7/host6/target6:0:1/6:0:1:0/block/sdb', '../devices/pci0000:00/0000:00:01.1/ata7/host6/target6:0:0/6:0:0:0/block/sr0']),
+        warnings = [
+            ('edd: ignoring possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:01.1', 0, 1, None, '/sys/block/sr0'),
         ]
-        self.check_logs(debugs=debugs, infos=infos, errors=errors)
+        self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
