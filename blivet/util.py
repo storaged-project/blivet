@@ -1,6 +1,7 @@
 import copy
 import errno
 import functools
+import glob
 import itertools
 import os
 import shutil
@@ -32,6 +33,115 @@ from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
 
+class Path(str):
+
+    """ Path(path, root=None) provides a filesystem path object, which
+        automatically normalizes slashes, assumes appends are what you
+        always hoped os.path.join() was (but with out the weird slash
+        games), and can easily handle paths with a root directory other
+        than /
+    """
+    _root = None
+    _path = None
+
+    def __new__(cls, path, root=None, *args, **kwds):
+        obj = str.__new__(cls, path, *args, **kwds)
+        obj._path = path
+        obj._root = None
+        if root is not None:
+            obj.newroot(str(root))
+        return obj
+
+    @property
+    def ondisk(self):
+        """ Path.ondisk evaluates as the real filesystem path of the path,
+            including the path's root in the data.
+        """
+        return normalize_path_slashes(Path(self.root) + Path(self.path))
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def normpath(self):
+        return Path(os.path.normpath(str(self.path)), root=self.root)
+
+    @property
+    def realpath(self):
+        rp = os.path.realpath(self.ondisk)
+        return Path(rp, root=self.root)
+
+    @property
+    def root(self):
+        return self._root
+
+    def newroot(self, newroot=None):
+        """ Change the root directory of this Path """
+        if newroot is None:
+            self._root = None
+        else:
+            self._root = normalize_path_slashes(newroot)
+            if self.startswith(self._root):
+                path = self._path[len(self._root):]
+                self._path = normalize_path_slashes(path)
+        return self
+
+    def __str__(self):
+        return str(self.path)
+
+    def __repr__(self):
+        return repr(str(self.path))
+
+    def __getitem__(self, idx):
+        ret = str(self)
+        return ret.__getitem__(idx)
+
+    def __add__(self, other):
+        if isinstance(other, Path):
+            if other.root != None and other.root != "/":
+                if self.root == None:
+                    self._root = other.root
+                elif other.root != self.root:
+                    raise ValueError("roots <%s> and <%s> don't match." %
+                        (self.root, other.root))
+            path = "%s/%s" % (self.path, other.path)
+        else:
+            path = "%s/%s" % (self.path, other)
+        path = normalize_path_slashes(path)
+        return Path(path, root=self.root)
+
+    def __eq__(self, other):
+        if isinstance(other, Path):
+            return self.path == other.path
+        else:
+            return self.path == str(other)
+
+    def __lt__(self, other):
+        if isinstance(other, Path):
+            return self.path < other.path
+        else:
+            return self.path < str(other)
+
+    def __gt__(self, other):
+        if isinstance(other, Path):
+            return self.path > other.path
+        else:
+            return self.path > str(other)
+
+    def startswith(self, other):
+        return self._path.startswith(str(other))
+
+    def glob(self):
+        """ Similar to glob.glob(), except it takes the Path's root into
+            account when globbing and returns path objects with the same
+            root, so you don't have to think about that part.
+        """
+        for g in glob.glob(self.ondisk):
+            yield Path(g, root=self.root)
+
+    def __hash__(self):
+        return self._path.__hash__()
 
 def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False, binary_output=False):
     if env_prune is None:
