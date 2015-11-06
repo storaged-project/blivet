@@ -632,3 +632,152 @@ class EddTestCase(unittest.TestCase):
         lib.assertVerboseEqual(edd_dict["sda"], 0x81)
         lib.assertVerboseEqual(edd_dict["sdb"], 0x82)
         lib.assertVerboseEqual(len(edd_dict), 3)
+
+    def test_collect_mbrs_mostly_fixed_virt(self):
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
+        devices=(FakeDevice("sda"),
+                 FakeDevice("sdb"),
+                 FakeDevice("sdc"),
+                 FakeDevice("vda"),
+                 )
+        fake_mbr_dict = { 'sda': '0xe3bf124b',
+                          'sdb': '0x7dfff0db',
+                          'sdc': '0x648873aa',
+                          'vda': '0x86531966',
+                          }
+        mbr_dict = edd.collect_mbrs(devices,
+                                    root=self.root('mostly_fixed_virt'))
+        infos = [
+            ("edd: collected mbr signatures: %s", { 'sda': '0xe3bf124b',
+                                                    'sdb': '0x7dfff0db',
+                                                    'sdc': '0x648873aa',
+                                                    'vda': '0x86531966',
+                                                    }),
+        ]
+        self.check_logs(infos=infos)
+        lib.assertVerboseEqual(fake_mbr_dict, mbr_dict)
+
+    def test_collect_edd_data_mostly_fixed_virt(self):
+        # test with sata sda, usb sdb
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
+        fakeedd = {
+            0x80: FakeEddEntry(version="0x30", mbr_sig="0x86531966",
+                               sectors=10485760, host_bus="PCI", type="SCSI",
+                               pci_dev="00:07.0", channel=255, scsi_id=0xffff,
+                               scsi_lun=281474976645120,
+                               interface="SCSI    \tid: 65535  lun: 281474976645120",
+                               sysfspath="/sys/firmware/edd/int13_dev80/"),
+            0x81: FakeEddEntry(version="0x30", mbr_sig="0xe3bf124b",
+                               sectors=419432, host_bus="PCI", type="SATA",
+                               pci_dev="00:03.0", channel=255, ata_device=0,
+                               interface="SATA    \tdevice: 0",
+                               sysfspath="/sys/firmware/edd/int13_dev81/"),
+            0x82: FakeEddEntry(version="0x30", mbr_sig="0x7dfff0db",
+                               sectors=209716, host_bus="PCI", type="SATA",
+                               pci_dev="00:0c.0", channel=255, ata_device=3,
+                               interface="SATA    \tdevice: 3",
+                               sysfspath="/sys/firmware/edd/int13_dev82/"),
+            0x83: FakeEddEntry(version="0x30", mbr_sig="0x648873aa",
+                               sectors=0,
+                               sysfspath="/sys/firmware/edd/int13_dev83/"),
+        }
+
+        edd_dict = edd.collect_edd_data(root=self.root('mostly_fixed_virt'))
+        self.debug('edd_dict: %s', edd_dict)
+        debugs = [
+            ("edd: found device 0x%x at %s", 0x80,
+             '/sys/firmware/edd/int13_dev80/'),
+            ("edd: found device 0x%x at %s", 0x81,
+             '/sys/firmware/edd/int13_dev81/'),
+            ("edd: found device 0x%x at %s", 0x82,
+             '/sys/firmware/edd/int13_dev82/'),
+            ("edd: found device 0x%x at %s", 0x83,
+             '/sys/firmware/edd/int13_dev83/'),
+        ]
+        self.check_logs(debugs=debugs)
+        lib.assertVerboseEqual(fakeedd[0x80], edd_dict[0x80])
+        lib.assertVerboseEqual(fakeedd[0x81], edd_dict[0x81])
+        lib.assertVerboseEqual(fakeedd[0x82], edd_dict[0x82])
+        lib.assertVerboseEqual(fakeedd[0x83], edd_dict[0x83])
+        lib.assertVerboseEqual(len(edd_dict), 4)
+
+    def test_get_edd_dict_mostly_fixed_virt(self):
+        # test with sata sda, usb sdb
+        self._edd_logger.debug("starting test %s", self._testMethodName)
+        edd.testdata_log.debug("starting test %s", self._testMethodName)
+        devices=(FakeDevice("sda"),
+                 FakeDevice("sdb"),
+                 FakeDevice("sdc"),
+                 FakeDevice("vda"),
+                 )
+        fakeedd = {
+            0x80: FakeEddEntry(version="0x30", mbr_sig="0x86531966",
+                               sectors=10485760, host_bus="PCI", type="SCSI",
+                               pci_dev="00:07.0", channel=255, scsi_id=0xffff,
+                               scsi_lun=281474976645120,
+                               interface="SCSI    \tid: 65535  lun: 281474976645120",
+                               sysfslink="../devices/pci0000:00/0000:00:07.0/"
+                               "virtio1/block/vda",
+                               sysfspath="/sys/firmware/edd/int13_dev80/"),
+            0x81: FakeEddEntry(version="0x30", mbr_sig="0xe3bf124b",
+                               sectors=419432, host_bus="PCI", type="SATA",
+                               pci_dev="00:03.0", channel=255, ata_device=0,
+                               interface="SATA    \tdevice: 0",
+                               sysfslink="../devices/pci0000:00/0000:00:03.0/"
+                               "ata1/host0/target0:0:0/0:0:0:0/block/sda",
+                               sysfspath="/sys/firmware/edd/int13_dev81/"),
+            0x82: FakeEddEntry(version="0x30", mbr_sig="0x7dfff0db",
+                               sectors=209716, host_bus="PCI", type="SATA",
+                               pci_dev="00:0c.0", channel=255, ata_device=3,
+                               interface="SATA    \tdevice: 3",
+                               sysfslink="../devices/pci0000:00/0000:00:0c.0/"
+                               "ata10/host9/target9:0:0/9:0:0:0/block/sdb",
+                               sysfspath="/sys/firmware/edd/int13_dev82/"),
+            0x83: FakeEddEntry(version="0x30", mbr_sig="0x648873aa",
+                               sectors=0,
+                               sysfslink="../devices/pci0000:00/0000:00:06.7/"
+                               "usb1/1-1/1-1:1.0/host14/target14:0:0/14:0:0:0/"
+                               "block/sdc",
+                               sysfspath="/sys/firmware/edd/int13_dev83/"),
+        }
+
+        edd_dict = edd.get_edd_dict(devices, root=self.root('mostly_fixed_virt'))
+        self.debug('edd_dict: %s', edd_dict)
+        debugs = [
+            ("edd: found device 0x%x at %s", 0x80,
+             '/sys/firmware/edd/int13_dev80/'),
+            ("edd: found device 0x%x at %s", 0x81,
+             '/sys/firmware/edd/int13_dev81/'),
+            ("edd: found device 0x%x at %s", 0x82,
+             '/sys/firmware/edd/int13_dev82/'),
+            ("edd: found device 0x%x at %s", 0x83,
+             '/sys/firmware/edd/int13_dev83/'),
+            ('edd: data extracted from 0x%x:%r', 0x80, fakeedd[0x80]),
+            ('edd: data extracted from 0x%x:%r', 0x81, fakeedd[0x81]),
+            ('edd: data extracted from 0x%x:%r', 0x82, fakeedd[0x82]),
+            ('edd: data extracted from 0x%x:%r', 0x83, fakeedd[0x83]),
+        ]
+        infos = [
+            ('edd: Could not find Virtio device for pci dev %s channel %s', '00:03.0', 255),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', '00:0c.0', 255),
+            ('edd: collected mbr signatures: %s', { 'vda': '0x86531966',
+                                                    'sda': '0xe3bf124b',
+                                                    'sdb': '0x7dfff0db',
+                                                    'sdc': '0x648873aa',
+                                                    }),
+            ('edd: matched 0x%x to %s using PCI dev', 0x80, 'vda'),
+            ('edd: matched 0x%x to %s using PCI dev', 0x81, 'sda'),
+            ('edd: matched 0x%x to %s using PCI dev', 0x82, 'sdb'),
+            ('edd: matched 0x%x to %s using MBR sig', 0x83, 'sdc'),
+        ]
+        warnings = [
+            ('edd: using possible extra match for ATA device %s channel %s ata %d pmp %s: %s', '00:0c.0', 255, 3, None, '/sys/block/sdb'),
+        ]
+        self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
+        lib.assertVerboseEqual(edd_dict["vda"], 0x80)
+        lib.assertVerboseEqual(edd_dict["sda"], 0x81)
+        lib.assertVerboseEqual(edd_dict["sdb"], 0x82)
+        lib.assertVerboseEqual(edd_dict["sdc"], 0x83)
+        lib.assertVerboseEqual(len(edd_dict), 4)
