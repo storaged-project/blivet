@@ -80,7 +80,7 @@ class EddEntry(object):
             that this is a particular device.  Used for logging later.
         """
 
-        self.version = util.get_sysfs_attr(self.sysfspath, "version")
+        self.version = util.get_sysfs_attr(self.sysfspath, "version", root=fsroot)
         """ The edd version this entry claims conformance with, from
             /sys/firmware/edd/int13_devXX/version """
 
@@ -239,7 +239,7 @@ class EddEntry(object):
         return "<EddEntry%s>" % (self._fmt(' ', ''),)
 
     def load(self):
-        interface = util.get_sysfs_attr(self.sysfspath, "interface")
+        interface = util.get_sysfs_attr(self.sysfspath, "interface", root=fsroot)
         # save this so we can log it from the matcher.
         self.interface = interface
         if interface:
@@ -302,11 +302,11 @@ class EddEntry(object):
                 else:
                     raise e
 
-        self.mbr_sig = util.get_sysfs_attr(self.sysfspath, "mbr_signature")
-        sectors = util.get_sysfs_attr(self.sysfspath, "sectors")
+        self.mbr_sig = util.get_sysfs_attr(self.sysfspath, "mbr_signature", root=fsroot)
+        sectors = util.get_sysfs_attr(self.sysfspath, "sectors", root=fsroot)
         if sectors:
             self.sectors = int(sectors)
-        hbus = util.get_sysfs_attr(self.sysfspath, "host_bus")
+        hbus = util.get_sysfs_attr(self.sysfspath, "host_bus", root=fsroot)
         if hbus:
             match = re_host_bus_pci.match(hbus)
             if match:
@@ -372,7 +372,7 @@ class EddMatcher(object):
             ata_port_idx = int(components[5][3:])
 
             fn = components[0:6] + ['ata_port', ata_port]
-            port_no = int(util.get_sysfs_attr(os.path.join(*fn), 'port_no'))
+            port_no = int(util.get_sysfs_attr(os.path.join(*fn), 'port_no', root=fsroot))
 
             if self.edd.type == "ATA":
                 # On ATA, port_no is kernel's ata_port->local_port_no, which
