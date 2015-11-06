@@ -449,80 +449,68 @@ class EddMatcher(object):
 
         return None
 
+    def devname_from_virtio_scsi_pci_dev(self):
+        if self.edd.scsi_id is None or self.edd.scsi_lun is None:
+            return None
+        # Virtio SCSI looks like scsi but with a virtio%d/ stuck in the middle
+        # channel appears to be a total lie on VirtIO SCSI devices.
+        tmpl = "../devices/pci0000:00/0000:%(pci_dev)s/virtio*/" \
+            "host*/target*:0:%(dev)d/*:0:%(dev)d:%(lun)d/block/"
+        args = {
+            'pci_dev' : self.edd.pci_dev,
+            'dev' : self.edd.scsi_id,
+            'lun' : self.edd.scsi_lun,
+        }
+        pattern = util.Path(tmpl % args, self.root + "/sys/block/")
+        for mp in pattern.glob():
+            # Normal VirtIO devices just have the block link right there...
+            block_entries = os.listdir(mp.ondisk)
+            for be in block_entries:
+                self.edd.sysfslink = mp + be
+                return be
+
     def devname_from_scsi_pci_dev(self):
-        name = None
-        tmpl0 = "/sys/devices/pci0000:00/0000:%(pci_dev)s/" \
-                "host%(chan)d/target%(chan)d:0:%(dev)d/" \
-                "%(chan)d:0:%(dev)d:%(lun)d/block"
-        # channel appears to be a total like on VirtIO SCSI devices.
-        tmpl1 = "/sys/devices/pci0000:00/0000:%(pci_dev)s/virtio*/" \
-                "host*/target*:0:%(dev)d/*:0:%(dev)d:%(lun)d/block"
+        tmpl = "../devices/pci0000:00/0000:%(pci_dev)s/" \
+            "host%(chan)d/target%(chan)d:0:%(dev)d/" \
+            "%(chan)d:0:%(dev)d:%(lun)d/block/"
         args = {
             'pci_dev' : self.edd.pci_dev,
             'chan' : self.edd.channel,
             'dev' : self.edd.scsi_id,
             'lun' : self.edd.scsi_lun,
         }
-        path = util.Path(tmpl0 % args, root=self.root)
-        pattern = util.Path(tmpl1 % args, root=self.root)
-        matching_paths = list(pattern.glob())
-        if os.path.isdir(path.ondisk):
-            block_entries = os.listdir(path.ondisk)
-            if len(block_entries) == 1:
-                entry = util.Path(block_entries[0], root=self.root)
-                systop = util.Path(path.path, root=path.root+"/sys/")
-                link = util.Path("../", root=self.root) + systop.path + entry
-                self.edd.sysfslink = link
-                name = block_entries[0]
-        elif len(matching_paths) > 1:
-            log.error("edd: Too many devices match for pci dev %s channel %s "
-                      "scsi id %s lun %s: ", self.edd.pci_dev, self.edd.channel,
-                      self.edd.scsi_id, self.edd.scsi_lun)
-            for matching_path in matching_paths:
-                log.error("edd:   %s", matching_path)
-        elif len(matching_paths) == 1 and \
-                os.path.exists(matching_paths[0].ondisk):
-            block_entries = os.listdir(matching_paths[0].ondisk)
-            if len(block_entries) == 1:
-                entry = util.Path(block_entries[0], root=self.root)
-                systop = util.Path(path.ondisk, root=path.root+"/sys/")
-                link = util.Path("../", root=self.root) + systop.path + entry
-                self.edd.sysfslink = link
-                name = block_entries[0]
-        else:
-            log.warning("edd: Could not find SCSI device for pci dev %s "
-                        "channel %s scsi id %s lun %s", self.edd.pci_dev,
-                        self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
-        return name
+        pattern = util.Path(tmpl % args, root=self.root + "/sys/block/")
+        answers = []
+        for mp in pattern.glob():
+            # Normal VirtIO devices just have the block link right there...
+            block_entries = os.listdir(mp.ondisk)
+            for be in block_entries:
+                self.edd.sysfslink = mp + be
+                return be
+
+        return None
 
     def devname_from_virt_pci_dev(self):
-        pattern = util.Path("/sys/devices/pci0000:00/0000:%s/virtio*" %
-                            (self.edd.pci_dev,), root=self.root)
-        matching_paths = tuple(pattern.glob())
-        if len(matching_paths) == 1 and os.path.exists(matching_paths[0]):
+        pattern = util.Path("../devices/pci0000:00/0000:%s/virtio*/block/" %
+                            (self.edd.pci_dev,), root=self.root + "/sys/block/")
+        answers = []
+        for mp in pattern.glob():
             # Normal VirtIO devices just have the block link right there...
-            newpath = util.Path(matching_paths[0], root=self.root) + "/block"
-            block_entries = []
-            if os.path.exists(newpath):
-                block_entries = os.listdir(newpath)
-            if len(block_entries) == 1:
-                systop = util.Path(matching_paths[0], root=self.root+"/sys/")
-                entry = util.Path(block_entries[0], root=self.root)
-                link = util.Path("..", root=self.root) \
-                    + systop.path \
-                    + block_entries[0]
-                self.edd.sysfslink = link
-                return block_entries[0]
-            else:
-                # Virtio SCSI looks like scsi but with a virtio%d/ stuck in
-                # the middle.
-                return self.devname_from_scsi_pci_dev()
+            block_entries = os.listdir(mp.ondisk)
+            for be in block_entries:
+                self.edd.sysfslink = mp + be
+                return be
 
         return None
 
     def devname_from_pci_dev(self):
+        if self.edd.pci_dev is None:
+            return None
         name = self.devname_from_virt_pci_dev()
         if name is not None:
+            return name
+        name = self.devname_from_virtio_scsi_pci_dev()
+        if not name is None:
             return name
 
         unsupported = ("ATAPI", "USB", "1394", "I2O", "RAID", "FIBRE", "SAS")
