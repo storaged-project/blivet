@@ -1,4 +1,4 @@
-# populator/helpers/format.py
+# populator/helpers/formatpopulator.py
 # Base classes for type-specific helpers for populating a DeviceTree.
 #
 # Copyright (C) 2009-2015  Red Hat, Inc.
@@ -24,7 +24,7 @@ from ... import formats
 from ... import udev
 from ...errors import FSError
 
-from .helper import PopulatorHelper
+from .populatorhelper import PopulatorHelper
 
 import logging
 log = logging.getLogger("blivet")

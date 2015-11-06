@@ -1,5 +1,5 @@
-# populator/helpers/devicepopulator.py
-# Base class for device-type-specific helpers for populating a DeviceTree.
+# populator.py
+# Backend code for populating a DeviceTree.
 #
 # Copyright (C) 2009-2015  Red Hat, Inc.
 #
@@ -20,16 +20,27 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from .populatorhelper import PopulatorHelper
+from ... import udev
+from ...devices import OpticalDevice
+from ...storage_log import log_method_call
+from .devicepopulator import DevicePopulator
 
 
-# pylint: disable=abstract-method
-class DevicePopulator(PopulatorHelper):
-    """ Populator helper base class for devices.
-
-        Subclasses must define a match method and, if they want to instantiate
-        a device, a run method.
-    """
+class OpticalDevicePopulator(DevicePopulator):
     @classmethod
     def match(cls, data):
-        return False
+        return udev.device_is_cdrom(data)
+
+    def run(self):
+        log_method_call(self)
+        # XXX should this be RemovableDevice instead?
+        #
+        # Looks like if it has ID_INSTANCE=0:1 we can ignore it.
+        device = OpticalDevice(udev.device_get_name(self.data),
+                               major=udev.device_get_major(self.data),
+                               minor=udev.device_get_minor(self.data),
+                               sysfs_path=udev.device_get_sysfs_path(self.data),
+                               vendor=udev.device_get_vendor(self.data),
+                               model=udev.device_get_model(self.data))
+        self._populator.devicetree._add_device(device)
+        return device

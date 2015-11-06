@@ -1,4 +1,4 @@
-# populator/helpers/helper.py
+# populator/helpers/populatorhelper.py
 # Base classes for type-specific helpers for populating a DeviceTree.
 #
 # Copyright (C) 2009-2015  Red Hat, Inc.
