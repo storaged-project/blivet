@@ -22,22 +22,11 @@ class FakeEddEntry(edd.EddEntry):
         for (name, value) in kw.items():
             self.__dict__[name] = value
 
-    @property
-    def sysfspath(self):
-        return "%s/%s" % (edd.fsroot, self._sysfspath[1:])
-
     def load(self):
         pass
 
     def __repr__(self):
         return "<FakeEddEntry%s>" % (self._fmt(' ', ''),)
-
-    def __lt__(self, other):
-        return self.__dict__ < other.__dict__
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
 
 class EddTestCase(unittest.TestCase):
 
@@ -106,12 +95,18 @@ class EddTestCase(unittest.TestCase):
         check(warnings, edd.log.warning)
         check(errors, edd.log.error)
 
-    def _set_fs_root(self, edd_module, fsroot):
-        if fsroot is None:
-            edd_module.fsroot = ""
+    def root(self, name):
+        if name is None:
+            return ""
         else:
-            dirname = os.path.dirname(inspect.getfile(edd_module))
-            edd_module.fsroot = os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot)
+            if name.endswith("/"):
+                name = name[:-1]
+            if name.startswith("/"):
+                name = name[1:]
+            dirname = os.path.dirname(inspect.getfile(edd))
+            return os.path.join(dirname,
+                                "../../tests/devicelibs_test/edd_data/",
+                                name)
 
     def debug(self, *args):
         fmt = "edd_test: "
@@ -122,7 +117,6 @@ class EddTestCase(unittest.TestCase):
 
     def test_collect_edd_data_sata_usb(self):
         # test with sata sda, usb sdb
-        self._set_fs_root(edd, "sata_usb")
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
         fakeedd = {
@@ -130,22 +124,22 @@ class EddTestCase(unittest.TestCase):
                                sectors=312581808, host_bus="PCI", type="SATA",
                                pci_dev="00:1f.2", channel=255, ata_device=1,
                                interface="SATA    \tdevice: 1",
-                               sysfspath="/sys/firmware/edd/int13_dev80"),
+                               sysfspath="/sys/firmware/edd/int13_dev80/"),
             0x81: FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
                                sectors=31293440, host_bus="PCI", type="USB",
                                pci_dev="ff:ff.255", channel=255,
                                usb_serial=0x30302e31,
                                interface="USB     \tserial_number: 30302e31",
-                               sysfspath="/sys/firmware/edd/int13_dev81"),
+                               sysfspath="/sys/firmware/edd/int13_dev81/"),
         }
 
-        edd_dict = edd.collect_edd_data()
+        edd_dict = edd.collect_edd_data(root=self.root("sata_usb"))
         self.debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
-             '/sys/firmware/edd/int13_dev80'),
+             '/sys/firmware/edd/int13_dev80/'),
             ("edd: found device 0x%x at %s", 0x81,
-             '/sys/firmware/edd/int13_dev81'),
+             '/sys/firmware/edd/int13_dev81/'),
         ]
         lib.assertVerboseEqual(len(edd_dict), 2)
         lib.assertVerboseEqual(fakeedd[0x80], edd_dict[0x80])
@@ -154,7 +148,6 @@ class EddTestCase(unittest.TestCase):
 
     def test_get_edd_dict_sata_usb(self):
         # test with sata sda, usb sdb
-        self._set_fs_root(edd, "sata_usb")
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
         devices = (FakeDevice("sda"),
@@ -165,7 +158,7 @@ class EddTestCase(unittest.TestCase):
                                sectors=312581808, host_bus="PCI", type="SATA",
                                pci_dev="00:1f.2", channel=255, ata_device=1,
                                interface="SATA    \tdevice: 1",
-                               sysfspath="/sys/firmware/edd/int13_dev80",
+                               sysfspath="/sys/firmware/edd/int13_dev80/",
                                sysfslink="../devices/pci0000:00/0000:00:1f.2/"
                                "ata2/host1/target1:0:0/1:0:0:0/block/sda"),
             0x81: FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
@@ -173,24 +166,24 @@ class EddTestCase(unittest.TestCase):
                                pci_dev="ff:ff.255", channel=255,
                                usb_serial=0x30302e31,
                                interface="USB     \tserial_number: 30302e31",
-                               sysfspath="/sys/firmware/edd/int13_dev81",
+                               sysfspath="/sys/firmware/edd/int13_dev81/",
                                sysfslink="../devices/pci0000:00/0000:00:1d.0/"
                                "usb4/4-1/4-1.2/4-1.2:1.0/host6/target6:0:0/"
                                "6:0:0:0/block/sdb"),
         }
 
-        edd_dict = edd.get_edd_dict(devices)
+        edd_dict = edd.get_edd_dict(devices, root=self.root("sata_usb"))
         self.debug('edd_dict: %s', edd_dict)
         lib.assertVerboseEqual(len(edd_dict), 2)
         lib.assertVerboseEqual(edd_dict["sda"], 0x80)
         lib.assertVerboseEqual(edd_dict["sdb"], 0x81)
         debugs = [
-            ("edd: data extracted from 0x%x:\n%s", 0x80, fakeedd[0x80]),
-            ("edd: data extracted from 0x%x:\n%s", 0x81, fakeedd[0x81]),
+            ("edd: data extracted from 0x%x:%r", 0x80, fakeedd[0x80]),
+            ("edd: data extracted from 0x%x:%r", 0x81, fakeedd[0x81]),
             ("edd: found device 0x%x at %s", 0x80,
-             '/sys/firmware/edd/int13_dev80'),
+             '/sys/firmware/edd/int13_dev80/'),
             ("edd: found device 0x%x at %s", 0x81,
-             '/sys/firmware/edd/int13_dev81'),
+             '/sys/firmware/edd/int13_dev81/'),
         ]
         infos = [
             ("edd: MBR signature on %s is zero. new disk image?", "sda"),
@@ -200,7 +193,7 @@ class EddTestCase(unittest.TestCase):
         ]
         warnings = [
             ("edd: interface type %s is not implemented (%s)", "USB",
-                "/sys/firmware/edd/int13_dev81"),
+                "/sys/firmware/edd/int13_dev81/"),
             ("edd: interface details: %s", "USB     \tserial_number: 30302e31"),
         ]
         self.check_logs(debugs=debugs, infos=infos, warnings=warnings)
