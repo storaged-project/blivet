@@ -33,6 +33,7 @@ from ..devicelibs import lvm
 from ..tasks import availability
 from ..i18n import N_
 from ..size import Size
+from ..errors import PhysicalVolumeError
 from . import DeviceFormat, register_device_format
 
 import logging
@@ -66,6 +67,8 @@ class LVMPhysicalVolume(DeviceFormat):
             :type pe_start: :class:`~.size.Size`
             :keyword data_alignment: data alignment (for non-existent PVs)
             :type data_alignment: :class:`~.size.Size`
+            :keyword free: free space in the PV
+            :type free: :class:`~.size.Size`
 
             .. note::
 
@@ -81,6 +84,7 @@ class LVMPhysicalVolume(DeviceFormat):
         self.vg_uuid = kwargs.get("vg_uuid")
         self.pe_start = kwargs.get("pe_start", lvm.LVM_PE_START)
         self.data_alignment = kwargs.get("data_alignment", Size(0))
+        self._free = kwargs.get("free")  # None means unknown
 
         self.inconsistent_vg = False
 
@@ -142,5 +146,23 @@ class LVMPhysicalVolume(DeviceFormat):
         # XXX hack
         return (self.exists and self.vg_name and
                 os.path.isdir("/dev/%s" % self.vg_name))
+
+    @property
+    def free(self):
+        """ Information about the free space in this PV """
+        if self._free is None:
+            if self.exists:
+                # we don't have any actual value, but the PV exists and is
+                # active, we should try to determine it
+                pv_info = blockdev.lvm.pvinfo(self.device)
+                self._free = Size(pv_info.pv_free)
+            else:
+                raise PhysicalVolumeError("Unknown free space information for the PV '%s'" % self.device)
+
+        return self._free
+
+    @free.setter
+    def free(self, value):
+        self._free = value
 
 register_device_format(LVMPhysicalVolume)

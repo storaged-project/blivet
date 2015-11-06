@@ -77,6 +77,10 @@ LVPVSpec = namedtuple("LVPVSpec", ["pv", "size"])
 """ A namedtuple class for specifying how much space on a PV should be allocated for some LV """
 
 
+PVFreeInfo = namedtuple("PVFreeInfo", ["pv", "size", "free"])
+""" A namedtuple class holding the information about PV's (usable) size and free space """
+
+
 class LVMVolumeGroupDevice(ContainerDevice):
 
     """ An LVM Volume Group """
@@ -128,21 +132,21 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.pv_count = util.numeric_type(pv_count)
         if exists and not pv_count:
             self._complete = True
+        self.pe_size = util.numeric_type(pe_size)
+        self.pe_count = util.numeric_type(pe_count)
+        self.pe_free = util.numeric_type(pe_free)
+
+        # TODO: validate pe_size if given
+        if not self.pe_size:
+            self.pe_size = lvm.LVM_PE_SIZE
 
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
                                                    uuid=uuid, size=size,
                                                    exists=exists, sysfs_path=sysfs_path)
 
         self.free = util.numeric_type(free)
-        self.pe_size = util.numeric_type(pe_size)
-        self.pe_count = util.numeric_type(pe_count)
-        self.pe_free = util.numeric_type(pe_free)
         self._reserved_percent = 0
         self._reserved_space = Size(0)
-
-        # TODO: validate pe_size if given
-        if not self.pe_size:
-            self.pe_size = lvm.LVM_PE_SIZE
 
         if not self.exists:
             self.pv_count = len(self.parents)
@@ -304,6 +308,17 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if origin:
             origin.snapshots.append(lv)
 
+        # PV space accounting
+        pv_sizes = lv.pv_space_used
+        if pv_sizes:
+            for size_spec in pv_sizes:
+                # check that we have enough space in the PVs for the LV and
+                # account for it
+                if size_spec.pv.format.free < size_spec.size:
+                    msg = "not enough space in the '%s' PV for the '%s' LV's extents" % (size_spec.pv.name, lv.name)
+                    raise errors.DeviceError(msg)
+                size_spec.pv.format.free -= size_spec.size
+
     def _remove_log_vol(self, lv):
         """ Remove an LV from this VG. """
         if lv not in self.lvs:
@@ -316,12 +331,22 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if origin:
             origin.snapshots.remove(lv)
 
+        # PV space accounting
+        pv_sizes = lv.pv_space_used
+        if pv_sizes:
+            for size_spec in pv_sizes:
+                size_spec.pv.format.free += size_spec.size
+
     def _add_parent(self, member):
         super(LVMVolumeGroupDevice, self)._add_parent(member)
 
         if (self.exists and member.format.exists and
                 len(self.parents) + 1 == self.pv_count):
             self._complete = True
+
+        # this PV object is just being added so it has all its space available
+        # (adding LVs will eat that space later)
+        member.format.free = self._get_pv_usable_space(member)
 
     def _remove_parent(self, member):
         # XXX It would be nice to raise an exception if removing this member
@@ -331,6 +356,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         #     Maybe remove_member could be a wrapper with the checks and the
         #     devicefactory could call the _ versions to bypass the checks.
         super(LVMVolumeGroupDevice, self)._remove_parent(member)
+        member.format.free = None
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -358,6 +384,12 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return self.align(reserved, roundup=True)
 
+    def _get_pv_usable_space(self, pv):
+        if isinstance(pv, MDRaidArrayDevice):
+            return self.align(pv.size - 2 * pv.format.pe_start)
+        else:
+            return self.align(pv.size - pv.format.pe_start)
+
     @property
     def lvm_metadata_space(self):
         """ The amount of the space LVM metadata cost us in this VG's PVs """
@@ -372,10 +404,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         #       class once it exists
         diff = Size(0)
         for pv in self.pvs:
-            if isinstance(pv, MDRaidArrayDevice):
-                diff += pv.size - self.align(pv.size - 2 * pv.format.pe_start)
-            else:
-                diff += pv.size - self.align(pv.size - pv.format.pe_start)
+            diff += pv.size - self._get_pv_usable_space(pv)
 
         return diff
 
@@ -421,6 +450,16 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ The number of free extents in this VG. """
         # TODO: just ask lvm if is_modified returns False
         return int(self.free_space / self.pe_size)
+
+    @property
+    def pv_free_info(self):
+        """
+        :returns: information about sizes and free space in this VG's PVs
+        :rtype: list of PVFreeInfo
+
+        """
+        return [PVFreeInfo(pv, self._get_pv_usable_space(pv.size), pv.format.free)
+                for pv in self.pvs]
 
     def align(self, size, roundup=False):
         """ Align a size to a multiple of physical extent size. """
@@ -576,10 +615,6 @@ class LVMLogicalVolumeDevice(DMDevice):
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
 
-        # check that we got parents as expected and add this device to them
-        self._check_parents()
-        self._add_to_parents()
-
         self._metadata_size = Size(0)
         self._internal_lvs = []
         self._cache = None
@@ -589,6 +624,7 @@ class LVMLogicalVolumeDevice(DMDevice):
                                    fast_pvs=cache_request.fast_devs, mode=cache_request.mode)
 
         self._pv_specs = []
+        pvs = pvs or []
         for pv_spec in pvs:
             if isinstance(pv_spec, LVPVSpec):
                 self._pv_specs.append(pv_spec)
@@ -602,6 +638,11 @@ class LVMLogicalVolumeDevice(DMDevice):
                         set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
             msg = "invalid destination PV(s) %s for LV %s" % (missing, self.name)
             raise ValueError(msg)
+
+        # check that we got parents as expected and add this device to them now
+        # that it is fully-initialized
+        self._check_parents()
+        self._add_to_parents()
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
@@ -704,6 +745,15 @@ class LVMLogicalVolumeDevice(DMDevice):
             cache_size = Size(0)
         return (self.vg.align(self.size, roundup=True) * self.copies
                 + self.log_size + self.metadata_size + cache_size)
+
+    @property
+    def pv_space_used(self):
+        """
+        :returns: space occupied by this LV on its VG's PVs (if we have and idea)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     def _set_format(self, fmt):
         super(LVMLogicalVolumeDevice, self)._set_format(fmt)
