@@ -23,7 +23,6 @@
 #            Ales Kozumplik <akozumpl@redhat.com>
 #
 
-import glob
 import logging
 import os
 import re
@@ -36,6 +35,7 @@ log = logging.getLogger("blivet")
 testdata_log = logging.getLogger("testdata")
 testdata_log.setLevel(logging.DEBUG)
 
+re_bios_device_number = re.compile(r'.*/int13_dev(\d+)/*$')
 re_host_bus_pci = re.compile(r'^(PCIX|PCI|XPRS|HTPT)\s*(\S*)\s*channel: (\S*)\s*$')
 re_interface_atapi = re.compile(r'^ATAPI\s*device: (\S*)\s*lun: (\S*)\s*$')
 re_interface_ata = re.compile(r'^ATA\s*device: (\S*)\s*$')
@@ -60,20 +60,23 @@ re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: \(\S*\)\s*$')
 # anchoring tab that would go between them...
 re_interface_unknown = re.compile(r'^(\S*)\s*unknown: (\S*) (\S*)\s*$')
 
-fsroot = ""
-
-
 class EddEntry(object):
 
     """ This object merely collects what the /sys/firmware/edd/* entries can
         provide.
     """
 
-    def __init__(self, sysfspath):
+    def __init__(self, sysfspath, root=None):
+        self.root = util.Path(root or "", root="")
+
         # some misc data from various files...
-        self._sysfspath = sysfspath
+        self.sysfspath = util.Path(sysfspath, root=self.root)
         """ sysfspath is the path we're probing
         """
+
+        match = re_bios_device_number.match(sysfspath)
+        self.bios_device_number = int(match.group(1), base=16)
+        """ The device number from the EDD path """
 
         self.sysfslink = None
         """ The path /sys/block/BLAH is a symlink link to once we've resolved
@@ -189,14 +192,10 @@ class EddEntry(object):
 
         self.load()
 
-    @property
-    def sysfspath(self):
-        return "%s/%s" % (fsroot, self._sysfspath[1:])
-
     def _fmt(self, line_pad, separator):
-        s = "%(t)spath: %(_sysfspath)s version: %(version)s %(nl)s" \
-            "mbr_signature: %(mbr_sig)s sectors: %(sectors)s"
-        if self.type is not None:
+        s = "%(t)spath: %(sysfspath)s version: %(version)s %(nl)s" \
+            "%(t)smbr_signature: %(mbr_sig)s sectors: %(sectors)s"
+        if self.type != None:
             s += " %(type)s"
         if self.sysfslink is not None:
             s += "%(nl)s%(t)ssysfs pci path: %(sysfslink)s"
@@ -226,11 +225,40 @@ class EddEntry(object):
             s += "%(nl)s%(t)ssas_address: %(sas_address)s sas_lun: %(sas_lun)s"
 
         d = copy.copy(self.__dict__)
-        d['_sysfspath'] = self._sysfspath
-        d['t'] = line_pad
-        d['nl'] = separator
+        d['t']=line_pad
+        d['nl']=separator
 
         return s % d
+
+    def __gt__(self, other):
+        if not isinstance(self, other.__class__) and \
+           not isinstance(other, self.__class__):
+            return self.__class__ > other.__class__
+        ldict = copy.copy(self.__dict__)
+        rdict = copy.copy(other.__dict__)
+        del ldict["root"]
+        del rdict["root"]
+        return ldict > rdict
+
+    def __eq__(self, other):
+        if not isinstance(self, other.__class__) and \
+           not isinstance(other, self.__class__):
+            return self.__class__ == other.__class__
+        ldict = copy.copy(self.__dict__)
+        rdict = copy.copy(other.__dict__)
+        del ldict["root"]
+        del rdict["root"]
+        return ldict == rdict
+
+    def __lt__(self, other):
+        if not isinstance(self, other.__class__) and \
+           not isinstance(other, self.__class__):
+            return self.__class__ < other.__class__
+        ldict = copy.copy(self.__dict__)
+        rdict = copy.copy(other.__dict__)
+        del ldict["root"]
+        del rdict["root"]
+        return ldict < rdict
 
     def __str__(self):
         return self._fmt('\t', '\n')
@@ -291,14 +319,14 @@ class EddEntry(object):
                         self.sas_lun = int(unknown_match.group(2), base=16)
                     else:
                         log.warning("edd: can not match interface for %s: %s",
-                                    self._sysfspath, interface)
+                                    self.sysfspath, interface)
                 else:
                     log.warning("edd: can not match interface for %s: %s",
-                                self._sysfspath, interface)
+                                self.sysfspath, interface)
             except AttributeError as e:
                 if e.args == "'NoneType' object has no attribute 'group'":
                     log.warning("edd: can not match interface for %s: %s",
-                                self._sysfspath, interface)
+                                self.sysfspath, interface)
                 else:
                     raise e
 
@@ -315,7 +343,7 @@ class EddEntry(object):
                 self.channel = int(match.group(3))
             else:
                 log.warning("edd: can not match host_bus for %s: %s",
-                            self._sysfspath, hbus)
+                            self.sysfspath, hbus)
 
 
 class EddMatcher(object):
@@ -324,21 +352,21 @@ class EddMatcher(object):
 
         Assuming, heuristic analysis and guessing hapens here.
     """
-
-    def __init__(self, edd_entry):
+    def __init__(self, edd_entry, root=None):
         self.edd = edd_entry
+        self.root = root
 
     def devname_from_ata_pci_dev(self):
-        pattern = '%s/sys/block/*' % (fsroot,)
-        testdata_log.debug("sysfs glob: %s", pattern[len(fsroot):])
-        for path in glob.iglob(pattern):
-            testdata_log.debug("sysfs glob match: %s", path[len(fsroot):])
-            link = os.readlink(path)
-            testdata_log.debug("sysfs link: \"%s\" -> \"%s\"",
-                               path[len(fsroot):], link)
+        pattern = util.Path('/sys/block/*', root=self.root)
+        answers = []
+        for path in pattern.glob():
+            emptyslash = util.Path("/", root=self.root)
+            path = util.Path(path, root=self.root)
+            link = util.sysfs_readlink(path=emptyslash, link=path)
+            testdata_log.debug("sysfs link: \"%s\" -> \"%s\"", path, link)
             # just add /sys/block/ at the beginning so it's always valid
             # paths in the filesystem...
-            components = ['%s/sys/block' % (fsroot,)] + link.split('/')
+            components = ['/sys/block'] + link.split('/')
             if len(components) != 11:
                 continue
             # ATA and SATA paths look like:
@@ -371,8 +399,9 @@ class EddMatcher(object):
             ata_port = components[5]
             ata_port_idx = int(components[5][3:])
 
-            fn = components[0:6] + ['ata_port', ata_port]
-            port_no = int(util.get_sysfs_attr(os.path.join(*fn), 'port_no'))
+            fn = util.Path(util.join_paths(components[0:6] \
+                                           + ['ata_port', ata_port]), root=self.root)
+            port_no = int(util.get_sysfs_attr(fn, 'port_no'))
 
             if self.edd.type == "ATA":
                 # On ATA, port_no is kernel's ata_port->local_port_no, which
@@ -386,20 +415,18 @@ class EddMatcher(object):
                 if port_no != self.edd.ata_device + 1:
                     continue
 
-            fn = components[0:6] + ['link%d' % (ata_port_idx,), ]
-            exp = [r'^'] + fn + [r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
-            exp = os.path.join(*exp)
+            fn = components[0:6] + ['link%d' % (ata_port_idx,),]
+            exp = [r'.*']+fn+[r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
+            exp = util.join_paths(exp)
             expmatcher = re.compile(exp)
-            pmp_glob = fn + ['dev%d.*.*' % (ata_port_idx,)]
-            pmp_glob = os.path.join(*pmp_glob)
-            dev_glob = fn + ['dev%d.*' % (ata_port_idx,)]
-            dev_glob = os.path.join(*dev_glob)
-            for ataglob in [pmp_glob, dev_glob]:
-                testdata_log.debug("sysfs glob: %s", ataglob)
-                for atapath in glob.glob(ataglob):
-                    testdata_log.debug("sysfs glob match: %s",
-                                       atapath[len(fsroot):])
-                    match = expmatcher.match(atapath)
+
+            pmp = util.join_paths(fn + ['dev%d.*.*' % (ata_port_idx,)])
+            pmp = util.Path(pmp, root=self.root)
+            dev = util.join_paths(fn + ['dev%d.*' % (ata_port_idx,)])
+            dev = util.Path(dev, root=self.root)
+            for ataglob in [pmp, dev]:
+                for atapath in ataglob.glob():
+                    match = expmatcher.match(atapath.ondisk)
                     if match is None:
                         continue
 
@@ -413,101 +440,135 @@ class EddMatcher(object):
                         channel = int(match.group(1))
                         if (self.edd.channel == 255 and channel == 0) or \
                                 (self.edd.channel == channel):
-                            self.edd.sysfslink = link
-                            return path[len(fsroot):].split('/')[-1]
+                            answers.append({
+                                'link': util.Path(link, root=self.root),
+                                'path': path.split('/')[-1]})
                     else:
                         pmp = int(match.group(1))
                         if self.edd.ata_pmp == pmp:
-                            self.edd.sysfslink = link
-                            return path[len(fsroot):].split('/')[-1]
+                            answers.append({
+                                'link': util.Path(link, root=self.root),
+                                'path': path.split('/')[-1]})
+
+        if len(answers) > 1:
+            log.error("edd: Found too many ATA devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.warning(
+                "edd: Could not find ATA device for pci dev %s channel %s ata %d pmp %d",
+                self.edd.pci_dev, self.edd.channel,
+                self.edd.ata_device, self.edd.ata_pmp)
+
         return None
 
-    def devname_from_scsi_pci_dev(self):
-        name = None
-        tmpl0 = "%(fsroot)s/sys/devices/pci0000:00/0000:%(pci_dev)s/" \
-                "host%(chan)d/target%(chan)d:0:%(dev)d/" \
-                "%(chan)d:0:%(dev)d:%(lun)d/block"
-        # channel appears to be a total like on VirtIO SCSI devices.
-        tmpl1 = "%(fsroot)s/sys/devices/pci0000:00/0000:%(pci_dev)s/virtio*/" \
-                "host*/target*:0:%(dev)d/*:0:%(dev)d:%(lun)d/block"
+    def devname_from_virtio_scsi_pci_dev(self):
+        if self.edd.scsi_id is None or self.edd.scsi_lun is None:
+            return None
+        # Virtio SCSI looks like scsi but with a virtio%d/ stuck in the middle
+        # channel appears to be a total lie on VirtIO SCSI devices.
+        tmpl = "../devices/pci0000:00/0000:%(pci_dev)s/virtio*/" \
+            "host*/target*:0:%(dev)d/*:0:%(dev)d:%(lun)d/block/"
         args = {
-            'fsroot': fsroot,
-            'pci_dev': self.edd.pci_dev,
-            'chan': self.edd.channel,
-            'dev': self.edd.scsi_id,
-            'lun': self.edd.scsi_lun,
+            'pci_dev' : self.edd.pci_dev,
+            'dev' : self.edd.scsi_id,
+            'lun' : self.edd.scsi_lun,
         }
-        path = tmpl0 % args
-        pattern = tmpl1 % args
-        testdata_log.debug("sysfs glob: %s", pattern[len(fsroot):])
-        matching_paths = glob.glob(pattern)
-        for mp in matching_paths:
-            testdata_log.debug("sysfs glob match: %s", mp[len(fsroot):])
-        if os.path.isdir(path):
-            block_entries = os.listdir(path)
-            if len(block_entries) == 1:
-                self.edd.sysfslink = "..%s/%s" % (
-                    path[len(fsroot) + len("/sys"):],
-                    block_entries[0])
-                name = block_entries[0]
-        elif len(matching_paths) > 1:
-            log.error("edd: Too many devices match for pci dev %s channel %s "
-                      "scsi id %s lun %s: ", self.edd.pci_dev, self.edd.channel,
-                      self.edd.scsi_id, self.edd.scsi_lun)
-            for matching_path in matching_paths:
-                log.error("edd:   %s", matching_path)
-        elif len(matching_paths) == 1 and os.path.exists(matching_paths[0]):
-            block_entries = os.listdir(matching_paths[0])
-            if len(block_entries) == 1:
-                self.edd.sysfslink = "..%s/%s" % (
-                    matching_paths[0][len(fsroot) + len("/sys"):],
-                    block_entries[0])
-                name = block_entries[0]
+        pattern = util.Path(tmpl % args, self.root + "/sys/block/")
+        answers = []
+        for mp in pattern.glob():
+            # Normal VirtIO devices just have the block link right there...
+            block_entries = os.listdir(mp.ondisk)
+            for be in block_entries:
+                link = mp + be
+                answers.append({'link':link, 'path':be})
+
+        if len(answers) > 1:
+            log.error("Found too many VirtIO SCSI devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
         else:
-            log.warning("edd: Could not find SCSI device for pci dev %s "
+            log.info("edd: Could not find VirtIO SCSI device for pci dev %s "\
+                     "channel %s scsi id %s lun %s", self.edd.pci_dev,
+                     self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
+
+    def devname_from_scsi_pci_dev(self):
+        tmpl = "../devices/pci0000:00/0000:%(pci_dev)s/" \
+            "host%(chan)d/target%(chan)d:0:%(dev)d/" \
+            "%(chan)d:0:%(dev)d:%(lun)d/block/"
+        args = {
+            'pci_dev' : self.edd.pci_dev,
+            'chan' : self.edd.channel,
+            'dev' : self.edd.scsi_id,
+            'lun' : self.edd.scsi_lun,
+        }
+        pattern = util.Path(tmpl % args, root=self.root + "/sys/block/")
+        answers = []
+        for mp in pattern.glob():
+            # Normal VirtIO devices just have the block link right there...
+            block_entries = os.listdir(mp.ondisk)
+            for be in block_entries:
+                link = mp + be
+                answers.append({'link':link, 'path':be})
+
+        if len(answers) > 1:
+            log.error("Found too many SCSI devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.warning("edd: Could not find SCSI device for pci dev %s "\
                         "channel %s scsi id %s lun %s", self.edd.pci_dev,
                         self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
-        return name
+        return None
 
     def devname_from_virt_pci_dev(self):
-        args = {
-            'fsroot': fsroot,
-            'pci_dev': self.edd.pci_dev
-        }
-        pattern = "%(fsroot)s/sys/devices/pci0000:00/0000:%(pci_dev)s/virtio*"
-        matching_paths = tuple(glob.glob(pattern % args))
-        testdata_log.debug("sysfs glob: %s",
-                           (pattern % args)[len(fsroot):])
-        for mp in matching_paths:
-            testdata_log.debug("sysfs glob match: %s", mp[len(fsroot):])
-
-        if len(matching_paths) == 1 and os.path.exists(matching_paths[0]):
+        pattern = util.Path("../devices/pci0000:00/0000:%s/virtio*/block/" %
+                            (self.edd.pci_dev,), root=self.root + "/sys/block/")
+        answers = []
+        for mp in pattern.glob():
             # Normal VirtIO devices just have the block link right there...
-            newpath = os.path.join(matching_paths[0], 'block')
-            block_entries = []
-            if os.path.exists(newpath):
-                block_entries = os.listdir(newpath)
-            if len(block_entries) == 1:
-                self.edd.sysfslink = "..%s/%s" % (
-                    matching_paths[0][len(fsroot) + len("/sys"):],
-                    block_entries[0])
-                return block_entries[0]
-            else:
-                # Virtio SCSI looks like scsi but with a virtio%d/ stuck in
-                # the middle.
-                return self.devname_from_scsi_pci_dev()
+            block_entries = os.listdir(mp.ondisk)
+            for be in block_entries:
+                link = mp + be
+                answers.append({'link':link, 'path':be})
+
+        if len(answers) > 1:
+            log.error("Found too many VirtIO devices for EDD device 0x%x: %s",
+                      self.edd.bios_device_number,
+                      [a['link'] for a in answers])
+        if len(answers) > 0:
+            self.edd.sysfslink = answers[0]['link']
+            return answers[0]['path']
+        else:
+            log.info(
+                "edd: Could not find Virtio device for pci dev %s channel %s",
+                self.edd.pci_dev, self.edd.channel)
 
         return None
 
     def devname_from_pci_dev(self):
+        if self.edd.pci_dev is None:
+            return None
         name = self.devname_from_virt_pci_dev()
         if name is not None:
+            return name
+        name = self.devname_from_virtio_scsi_pci_dev()
+        if not name is None:
             return name
 
         unsupported = ("ATAPI", "USB", "1394", "I2O", "RAID", "FIBRE", "SAS")
         if self.edd.type in unsupported:
             log.warning("edd: interface type %s is not implemented (%s)",
-                        self.edd.type, self.edd._sysfspath)
+                        self.edd.type, self.edd.sysfspath)
             log.warning("edd: interface details: %s", self.edd.interface)
         if self.edd.type in ("ATA", "SATA") and \
                 self.edd.ata_device is not None:
@@ -515,11 +576,11 @@ class EddMatcher(object):
         elif self.edd.type == "SCSI":
             name = self.devname_from_scsi_pci_dev()
         if self.edd.sysfslink:
-            path = "/".join([fsroot, "sys/block", self.edd.sysfslink,
-                             "device"])
-            link = os.readlink(path)
-            testdata_log.debug("sysfs link: \"%s\" -> \"%s\"",
-                               path[len(fsroot):], link)
+            path = util.Path("/sys/block/", root=self.root) \
+                + self.edd.sysfslink \
+                + "/device"
+            link = os.readlink(path.ondisk)
+            testdata_log.debug("sysfs link: \"%s\" -> \"%s\"", path, link)
 
         return name
 
@@ -529,27 +590,24 @@ class EddMatcher(object):
             This will obviously fail for a fresh drive/image, but in extreme
             cases can also show false positives for randomly matching data.
         """
+        sysblock=util.Path("/sys/block/", root=self.root)
         for (name, mbr_sig) in mbr_dict.items():
             if mbr_sig == self.edd.mbr_sig:
+                self.edd.sysfslink = util.sysfs_readlink(sysblock, link=name)
                 return name
         return None
 
-
-def collect_edd_data():
+def collect_edd_data(root=None):
     edd_data_dict = {}
-    exp = re.compile(r'.*/int13_dev(\d+)$')
-    globstr = os.path.join(fsroot, "sys/firmware/edd/int13_dev*")
-    testdata_log.debug("sysfs glob: %s", globstr[len(fsroot):])
-    for path in glob.glob(globstr):
-        testdata_log.debug("sysfs glob match: %s", path[len(fsroot):])
-        match = exp.match(path)
+    globstr = util.Path("/sys/firmware/edd/int13_dev*/", root=root)
+    for path in globstr.glob():
+        match = re_bios_device_number.match(path)
         biosdev = int("0x%s" % (match.group(1),), base=16)
-        log.debug("edd: found device 0x%x at %s", biosdev, path[len(fsroot):])
-        edd_data_dict[biosdev] = EddEntry(path[len(fsroot):])
+        log.debug("edd: found device 0x%x at %s", biosdev, path)
+        edd_data_dict[biosdev] = EddEntry(path, root=root)
     return edd_data_dict
 
-
-def collect_mbrs(devices):
+def collect_mbrs(devices, root=None):
     """ Read MBR signatures from devices.
 
         Returns a dict mapping device names to their MBR signatures. It is not
@@ -558,10 +616,8 @@ def collect_mbrs(devices):
     mbr_dict = {}
     for dev in devices:
         try:
-            path = dev.name.split('/')
-            path = os.path.join("dev", *path)
-            path = "%s/%s" % (fsroot, path)
-            fd = util.eintr_retry_call(os.open, path, os.O_RDONLY)
+            path = util.Path("/dev", root=root) + dev.name
+            fd = util.eintr_retry_call(os.open, path.ondisk, os.O_RDONLY)
             # The signature is the unsigned integer at byte 440:
             os.lseek(fd, 440, 0)
             data = util.eintr_retry_call(os.read, fd, 4)
@@ -594,8 +650,7 @@ def collect_mbrs(devices):
     log.info("edd: collected mbr signatures: %s", mbr_dict)
     return mbr_dict
 
-
-def get_edd_dict(devices):
+def get_edd_dict(devices, root=None):
     """ Generates the 'device name' -> 'edd number' mapping.
 
         The EDD kernel module that exposes /sys/firmware/edd is thoroughly
@@ -609,14 +664,14 @@ def get_edd_dict(devices):
         of 'mbr_signature' to a real MBR signature found on the existing block
         devices.
     """
-    mbr_dict = collect_mbrs(devices)
-    edd_entries_dict = collect_edd_data()
+    mbr_dict = collect_mbrs(devices, root=root)
+    edd_entries_dict = collect_edd_data(root=root)
     edd_dict = {}
     for (edd_number, edd_entry) in edd_entries_dict.items():
-        matcher = EddMatcher(edd_entry)
+        matcher = EddMatcher(edd_entry, root=root)
         # first try to match through the pci dev etc.
         name = matcher.devname_from_pci_dev()
-        log.debug("edd: data extracted from 0x%x:\n%s", edd_number, edd_entry)
+        log.debug("edd: data extracted from 0x%x:%r", edd_number, edd_entry)
         if name:
             log.info("edd: matched 0x%x to %s using PCI dev", edd_number, name)
         # next try to compare mbr signatures
