@@ -190,6 +190,8 @@ class EddTestCase(unittest.TestCase):
             ("edd: collected mbr signatures: %s", {'sdb': '0x96a20d28'}),
             ("edd: matched 0x%x to %s using PCI dev", 0x80, "sda"),
             ("edd: matched 0x%x to %s using MBR sig", 0x81, "sdb"),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', '00:1f.2', 255),
+            ('edd: Could not find Virtio device for pci dev %s channel %s', 'ff:ff.255', 255),
         ]
         warnings = [
             ("edd: interface type %s is not implemented (%s)", "USB",
