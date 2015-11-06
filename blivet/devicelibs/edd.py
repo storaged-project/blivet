@@ -36,6 +36,7 @@ log = logging.getLogger("blivet")
 testdata_log = logging.getLogger("testdata")
 testdata_log.setLevel(logging.DEBUG)
 
+re_bios_device_number = re.compile(r'.*/int13_dev(\d+)/*$')
 re_host_bus_pci = re.compile(r'^(PCIX|PCI|XPRS|HTPT)\s*(\S*)\s*channel: (\S*)\s*$')
 re_interface_atapi = re.compile(r'^ATAPI\s*device: (\S*)\s*lun: (\S*)\s*$')
 re_interface_ata = re.compile(r'^ATA\s*device: (\S*)\s*$')
@@ -74,6 +75,10 @@ class EddEntry(object):
         self._sysfspath = sysfspath
         """ sysfspath is the path we're probing
         """
+
+        match = re_bios_device_number.match(sysfspath)
+        self.bios_device_number = int(match.group(1), base=16)
+        """ The device number from the EDD path """
 
         self.sysfslink = None
         """ The path /sys/block/BLAH is a symlink link to once we've resolved
@@ -540,12 +545,11 @@ class EddMatcher(object):
 
 def collect_edd_data():
     edd_data_dict = {}
-    exp = re.compile(r'.*/int13_dev(\d+)$')
     globstr = os.path.join(fsroot, "sys/firmware/edd/int13_dev*")
     testdata_log.debug("sysfs glob: %s", globstr[len(fsroot):])
     for path in glob.glob(globstr):
         testdata_log.debug("sysfs glob match: %s", path[len(fsroot):])
-        match = exp.match(path)
+        match = re_bios_device_number.match(path)
         biosdev = int("0x%s" % (match.group(1),), base=16)
         log.debug("edd: found device 0x%x at %s", biosdev, path[len(fsroot):])
         edd_data_dict[biosdev] = EddEntry(path[len(fsroot):])
