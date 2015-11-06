@@ -161,14 +161,17 @@ class EddTestCase(unittest.TestCase):
                                pci_dev="00:1f.2", channel=255, ata_device=1,
                                interface="SATA    \tdevice: 1",
                                sysfspath="/sys/firmware/edd/int13_dev80",
-                               sysfslink="../devices/pci0000:00/0000:00:1f.2/ata2"
-                               "/host1/target1:0:0/1:0:0:0/block/sda"),
+                               sysfslink="../devices/pci0000:00/0000:00:1f.2/"
+                               "ata2/host1/target1:0:0/1:0:0:0/block/sda"),
             0x81: FakeEddEntry(version="0x21", mbr_sig="0x96a20d28",
                                sectors=31293440, host_bus="PCI", type="USB",
                                pci_dev="ff:ff.255", channel=255,
                                usb_serial=0x30302e31,
                                interface="USB     \tserial_number: 30302e31",
-                               sysfspath="/sys/firmware/edd/int13_dev81"),
+                               sysfspath="/sys/firmware/edd/int13_dev81",
+                               sysfslink="../devices/pci0000:00/0000:00:1d.0/"
+                               "usb4/4-1/4-1.2/4-1.2:1.0/host6/target6:0:0/"
+                               "6:0:0:0/block/sdb"),
         }
 
         edd_dict = edd.get_edd_dict(devices)
