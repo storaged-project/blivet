@@ -25,6 +25,7 @@ from ...devices import MultipathDevice
 from ...errors import DeviceTreeError
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
+from .formatpopulator import FormatPopulator
 
 import logging
 log = logging.getLogger("blivet")
@@ -56,3 +57,17 @@ class MultipathDevicePopulator(DevicePopulator):
             self._populator.devicetree._add_device(device)
 
         return device
+
+
+class MultipathFormatPopulator(FormatPopulator):
+    priority = 100
+    _type_specifier = "multipath_member"
+
+    def _get_kwargs(self):
+        kwargs = super()._get_kwargs()
+        # blkid does not care that the UUID it sees on a multipath member is
+        # for the multipath set's (and not the member's) formatting, so we
+        # have to discard it.
+        kwargs.pop("uuid")
+        kwargs.pop("label")
+        return kwargs

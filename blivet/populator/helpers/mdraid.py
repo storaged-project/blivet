@@ -25,10 +25,17 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
+import re
+
 from ... import udev
+from ...devicelibs import raid
+from ...devices import MDRaidArrayDevice, MDContainerDevice
+from ...devices import device_path_to_name
+from ...errors import DeviceError
 from ...flags import flags
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
+from .formatpopulator import FormatPopulator
 
 import logging
 log = logging.getLogger("blivet")
@@ -79,3 +86,122 @@ class MDDevicePopulator(DevicePopulator):
                 log.error("failed to stop broken md array %s", name)
 
         return device
+
+
+class MDFormatPopulator(FormatPopulator):
+    priority = 100
+    _type_specifier = "mdmember"
+
+    def _get_kwargs(self):
+        kwargs = super()._get_kwargs()
+        try:
+            # ID_FS_UUID contains the array UUID
+            kwargs["md_uuid"] = udev.device_get_uuid(self.data)
+        except KeyError:
+            log.warning("mdraid member %s has no md uuid", udev.device_get_name(self.data))
+
+        # reset the uuid to the member-specific value
+        # this will be None for members of v0 metadata arrays
+        kwargs["uuid"] = udev.device_get_md_device_uuid(self.data)
+
+        kwargs["biosraid"] = udev.device_is_biosraid_member(self.data)
+        return kwargs
+
+    def run(self):
+        super().run()
+        md_info = blockdev.md.examine(self.device.path)
+
+        # Use mdadm info if udev info is missing
+        md_uuid = md_info.uuid
+        self.device.format.md_uuid = self.device.format.md_uuid or md_uuid
+        md_array = self._populator.devicetree.get_device_by_uuid(self.device.format.md_uuid, incomplete=True)
+
+        if md_array:
+            md_array.parents.append(self.device)
+        else:
+            # create the array with just this one member
+            # level is reported as, eg: "raid1"
+            md_level = md_info.level
+            md_devices = md_info.num_devices
+
+            if md_level is None:
+                log.warning("invalid data for %s: no RAID level", self.device.name)
+                return
+
+            # md_examine yields metadata (MD_METADATA) only for metadata version > 0.90
+            # if MD_METADATA is missing, assume metadata version is 0.90
+            md_metadata = md_info.metadata or "0.90"
+            md_name = None
+
+            # check the list of devices udev knows about to see if the array
+            # this device belongs to is already active
+            # XXX This is mainly for containers now since their name/device is
+            #     not given by mdadm examine as we run it.
+            for dev in udev.get_devices():
+                if not udev.device_is_md(dev):
+                    continue
+
+                try:
+                    dev_uuid = udev.device_get_md_uuid(dev)
+                    dev_level = udev.device_get_md_level(dev)
+                except KeyError:
+                    continue
+
+                if dev_uuid is None or dev_level is None:
+                    continue
+
+                if dev_uuid == md_uuid and dev_level == md_level:
+                    md_name = udev.device_get_md_name(dev)
+                    break
+
+            md_path = md_info.device or ""
+            if md_path and not md_name:
+                md_name = device_path_to_name(md_path)
+                if re.match(r'md\d+$', md_name):
+                    # md0 -> 0
+                    md_name = md_name[2:]
+
+                if md_name:
+                    array = self._populator.devicetree.get_device_by_name(md_name, incomplete=True)
+                    if array and array.uuid != md_uuid:
+                        log.error("found multiple devices with the name %s", md_name)
+
+            if md_name:
+                log.info("using name %s for md array containing member %s",
+                         md_name, self.device.name)
+            else:
+                log.error("failed to determine name for the md array %s", (md_uuid or "unknown"))
+                return
+
+            array_type = MDRaidArrayDevice
+            try:
+                if raid.get_raid_level(md_level) is raid.Container and \
+                   getattr(self.device.format, "biosraid", False):
+                    array_type = MDContainerDevice
+            except raid.RaidError as e:
+                log.error("failed to create md array: %s", e)
+                return
+
+            try:
+                md_array = array_type(
+                    md_name,
+                    level=md_level,
+                    member_devices=md_devices,
+                    uuid=md_uuid,
+                    metadata_version=md_metadata,
+                    exists=True
+                )
+            except (ValueError, DeviceError) as e:
+                log.error("failed to create md array: %s", e)
+                return
+
+            md_array.update_sysfs_path()
+            md_array.parents.append(self.device)
+            self._populator.devicetree._add_device(md_array)
+            if md_array.status:
+                array_info = udev.get_device(md_array.sysfs_path)
+                if not array_info:
+                    log.error("failed to get udev data for %s", md_array.name)
+                    return
+
+                self._populator.add_udev_device(array_info, update_orig_fmt=True)
