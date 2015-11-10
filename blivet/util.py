@@ -1040,12 +1040,13 @@ def default_namedtuple(name, fields, doc=""):
             field_names.append(field)
     nt = namedtuple(name, field_names)
 
+    # pylint: disable=no-init
     class TheDefaultNamedTuple(nt):
         if doc:
             __doc__ = doc
         def __new__(cls, *args, **kwargs):
             args_list = list(args)
-            sorted_kwargs = sorted(kwargs.keys(), key=lambda x: field_names.index(x))
+            sorted_kwargs = sorted(kwargs.keys(), key=field_names.index)
             for i in range(len(args), len(field_names)):
                 if field_names[i] in sorted_kwargs:
                     args_list.append(kwargs[field_names[i]])
