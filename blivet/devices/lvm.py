@@ -1786,8 +1786,10 @@ class LVMCache(Cache):
 
     @property
     def size(self):
-        if self.exists:
-            return self.stats.size
+        # self.stats is always dynamically fetched so store and reuse the value here
+        stats = self.stats
+        if stats:
+            return stats.size
         else:
             return self._size
 
@@ -1808,9 +1810,11 @@ class LVMCache(Cache):
 
     @property
     def stats(self):
-        if not self._exists:
+        # to get the stats we need the cached LV to exist and be activated
+        if self._exists and self._cached_lv.status:
+            return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
+        else:
             return None
-        return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
 
     @property
     def mode(self):
