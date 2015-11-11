@@ -43,6 +43,7 @@ from .. import util
 from ..util import open  # pylint: disable=redefined-builtin
 from ..flags import flags
 from ..storage_log import log_method_call
+from .helpers import get_device_helper, get_format_helper
 
 import logging
 log = logging.getLogger("blivet")
@@ -357,33 +358,8 @@ class Populator(object):
         helper_class = None
         if device:
             device_added = False
-        elif udev.device_is_loop(info):
-            log.info("%s is a loop device", name)
-            device = LoopDevicePopulator(self, info).run()
-        elif udev.device_is_dm_mpath(info) and \
-                not udev.device_is_dm_partition(info):
-            log.info("%s is a multipath device", name)
-            helper_class = MultipathDevicePopulator
-        elif udev.device_is_dm_lvm(info):
-            log.info("%s is an lvm logical volume", name)
-            helper_class = LVMDevicePopulator
-        elif udev.device_is_dm(info):
-            log.info("%s is a device-mapper device", name)
-            helper_class = DMDevicePopulator
-        elif udev.device_is_md(info) and not udev.device_get_md_container(info):
-            log.info("%s is an md device", name)
-            helper_class = MDDevicePopulator
-        elif udev.device_is_cdrom(info):
-            log.info("%s is a cdrom", name)
-            helper_class = OpticalDevicePopulator
-        elif udev.device_is_disk(info):
-            helper_class = DiskDevicePopulator
-        elif udev.device_is_partition(info):
-            log.info("%s is a partition", name)
-            helper_class = PartitionDevicePopulator
         else:
-            log.error("Unknown block device type for: %s", name)
-            return
+            helper_class = get_device_helper(info)
 
         if helper_class is not None:
             device = helper_class(self, info).run()
@@ -443,7 +419,11 @@ class Populator(object):
             log.debug("no type or existing type for %s, bailing", name)
             return
 
-        # TODO: set up the formatting
+        helper_class = get_format_helper(info, device)
+        if helper_class is not None:
+            helper_class(self, info, device).run()
+
+        log.info("got format: %s", device.format)
 
     def update_device_format(self, device):
         log.info("updating format of device: %s", device)

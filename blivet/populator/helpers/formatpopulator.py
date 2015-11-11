@@ -89,8 +89,6 @@ class FormatPopulator(PopulatorHelper):
         try:
             log.info("type detected on '%s' is '%s'", self.device.name, type_spec)
             self.device.format = formats.get_format(type_spec, **kwargs)
-            if self.device.format.type:
-                log.info("got format: %s", self.device.format)
         except FSError:
             log.warning("type '%s' on '%s' invalid, assuming no format",
                         type_spec, self.device.name)
