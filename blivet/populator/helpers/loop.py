@@ -20,6 +20,10 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import gi
+gi.require_version("BlockDev", "1.0")
+from gi.repository import BlockDev as blockdev
+
 from ... import udev
 from ...devices import FileDevice, LoopDevice
 from ...storage_log import log_method_call
