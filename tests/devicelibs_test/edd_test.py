@@ -29,6 +29,8 @@ class FakeEddEntry(edd.EddEntry):
         return "<FakeEddEntry%s>" % (self._fmt(' ', ''),)
 
 
+@unittest.skipUnless(os.uname().machine in ['i386', 'i686', 'x86_64'],
+                     reason='incompatible arch')
 class EddTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwds):
