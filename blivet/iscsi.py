@@ -164,6 +164,7 @@ class iscsi(object):
         return self
 
     def __deepcopy__(self, memo_dict):
+        # pylint: disable=unused-argument
         return self
 
     def _get_initiator(self):

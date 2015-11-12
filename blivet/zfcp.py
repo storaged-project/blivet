@@ -298,6 +298,7 @@ class ZFCP:
         return self
 
     def __deepcopy__(self, memo_dict):
+        # pylint: disable=unused-argument
         return self
 
     def read_config(self):
