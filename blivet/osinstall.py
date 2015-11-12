@@ -455,8 +455,8 @@ class FSSet(object):
 
         # make sure, if we're using a device from the tree, that
         # the device's format we found matches what's in the fstab
-        ftype = getattr(fmt, "mountType", fmt.type)
-        dtype = getattr(device.format, "mountType", device.format.type)
+        ftype = getattr(fmt, "mount_type", fmt.type)
+        dtype = getattr(device.format, "mount_type", device.format.type)
         if hasattr(fmt, "testMount") and fstype != "auto" and ftype != dtype:
             log.info("fstab says %s at %s is %s", dtype, mountpoint, ftype)
             if fmt.test_mount():     # pylint: disable=no-member
@@ -829,7 +829,7 @@ class FSSet(object):
             if isinstance(device, OpticalDevice):
                 continue
 
-            fstype = getattr(device.format, "mountType", device.format.type)
+            fstype = getattr(device.format, "mount_type", device.format.type)
             if fstype == "swap":
                 mountpoint = "swap"
                 options = device.format.options

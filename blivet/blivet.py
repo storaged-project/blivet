@@ -319,7 +319,7 @@ class Blivet(object):
             used_devices.extend(new.ancestors)
 
         for device in self.partitions:
-            if getattr(device, "isLogical", False):
+            if getattr(device, "is_logical", False):
                 extended = device.disk.format.extended_partition.path
                 used_devices.append(self.devicetree.get_device_by_path(extended))
 

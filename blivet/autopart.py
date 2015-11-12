@@ -257,7 +257,7 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
             continue
         elif request.fstype == "biosboot":
             is_gpt = (stage1_device and
-                      getattr(stage1_device.format, "labelType", None) == "gpt")
+                      getattr(stage1_device.format, "label_type", None) == "gpt")
             has_bios_boot = (stage1_device and
                              any([p.format.type == "biosboot"
                                   for p in storage.partitions
