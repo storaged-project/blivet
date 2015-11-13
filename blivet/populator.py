@@ -94,19 +94,19 @@ class Populator(object):
         # indicates whether or not the tree has been fully populated
         self.populated = False
 
-        self.exclusive_disks = getattr(conf, "exclusiveDisks", [])
-        self.ignored_disks = getattr(conf, "ignoredDisks", [])
+        self.exclusive_disks = getattr(conf, "exclusive_disks", [])
+        self.ignored_disks = getattr(conf, "ignored_disks", [])
         self.iscsi = iscsi
         self.dasd = dasd
 
         self.disk_images = {}
-        images = getattr(conf, "diskImages", {})
+        images = getattr(conf, "disk_images", {})
         if images:
             # this will overwrite self.exclusive_disks
             self.set_disk_images(images)
 
         # protected device specs as provided by the user
-        self.protected_dev_specs = getattr(conf, "protectedDevSpecs", [])
+        self.protected_dev_specs = getattr(conf, "protected_dev_specs", [])
         self.live_backing_device = None
 
         # names of protected devices at the time of tree population

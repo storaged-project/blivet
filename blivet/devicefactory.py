@@ -523,7 +523,7 @@ class DeviceFactory(object):
                           if allow_existing or not c.exists]
             if containers:
                 # XXX All containers should have a "free" attribute
-                containers.sort(key=lambda c: getattr(c, "freeSpace", c.size),
+                containers.sort(key=lambda c: getattr(c, "free_space", c.size),
                                 reverse=True)
                 container = containers[0]
 
@@ -1449,7 +1449,7 @@ class LVMThinPFactory(LVMFactory):
     @property
     def _pesize(self):
         """ The extent size of our vg or the default if we have no vg. """
-        return getattr(self.container, "peSize", lvm.LVM_PE_SIZE)
+        return getattr(self.container, "pe_size", lvm.LVM_PE_SIZE)
 
     def _get_device_space(self):
         """ Calculate and return the total disk space needed for the device.
