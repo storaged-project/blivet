@@ -1048,6 +1048,9 @@ class DeviceTree(object):
 
     def teardown_disk_images(self):
         """ Tear down any disk image stacks. """
+        # teardown all devices first so that there's nothing active running on
+        # top of disk images when we try to tear those down
+        self.teardown_all()
         self._populator.teardown_disk_images()
 
     @property
