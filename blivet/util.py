@@ -58,7 +58,10 @@ class Path(str):
         """ Path.ondisk evaluates as the real filesystem path of the path,
             including the path's root in the data.
         """
-        return normalize_path_slashes(Path(self.root) + Path(self.path))
+        if self.root:
+            return normalize_path_slashes(Path(self.root) + Path(self.path))
+        else:
+            return Path(self.path)
 
     @property
     def path(self):
