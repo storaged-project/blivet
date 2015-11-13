@@ -1361,8 +1361,6 @@ class Populator(object):
 
         is_multipath_member = (device.is_disk and
                                blockdev.mpath_is_mpath_member(device.path))
-        if is_multipath_member:
-            format_type = "multipath_member"
 
         # Now, if the device is a disk, see if there is a usable disklabel.
         # If not, see if the user would like to create one.
