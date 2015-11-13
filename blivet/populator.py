@@ -846,7 +846,7 @@ class Populator(object):
                     device.format.passphrase = passphrase
                     try:
                         device.format.setup()
-                    except blockdev.BlockDevError:
+                    except LUKSError:
                         device.format.passphrase = None
                     else:
                         break
