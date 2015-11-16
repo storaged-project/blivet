@@ -262,7 +262,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
     _validate_attrs = BlivetResetTestCase._validate_attrs + ["level", "spares"]
 
     def set_up_disks(self):
-        level = devicelibs.mdraid.RAID_levels.raid_level(self.level)
+        level = devicelibs.mdraid.raid_levels.raid_level(self.level)
         disk_count = level.min_members
         self.disks = dict()
         for i in range(disk_count):
