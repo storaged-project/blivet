@@ -173,7 +173,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     @property
     def _levels(self):
         """ Allowed RAID level for this type of device."""
-        return mdraid.RAID_levels
+        return mdraid.raid_levels
 
     @level.setter
     def level(self, value):

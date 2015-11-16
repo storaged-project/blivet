@@ -49,7 +49,7 @@ LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 
-RAID_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
+raid_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
 
 ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
 KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),

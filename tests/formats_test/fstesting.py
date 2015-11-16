@@ -17,7 +17,7 @@ def can_resize(an_fs):
 
         :param an_fs: a filesystem object
     """
-    resize_tasks = (an_fs._resize, an_fs._sizeinfo, an_fs._minsize)
+    resize_tasks = (an_fs._resize, an_fs._size_info, an_fs._minsize)
     return not any(t.availability_errors for t in resize_tasks)
 
 
@@ -48,7 +48,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         else:
             expected_size = _size
             # If the size can be obtained it will not be 0
-            if not an_fs._sizeinfo.availability_errors:
+            if not an_fs._size_info.availability_errors:
                 self.assertNotEqual(expected_size, Size(0))
                 self.assertTrue(expected_size <= self._DEVICE_SIZE)
             # Otherwise it will be 0, assuming the device was not initialized
@@ -58,7 +58,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.size, expected_size)
 
         # Only the resizable filesystems can figure out their current min size
-        if not an_fs._sizeinfo.availability_errors:
+        if not an_fs._size_info.availability_errors:
             expected_min_size = min_size
         else:
             expected_min_size = an_fs._min_size
