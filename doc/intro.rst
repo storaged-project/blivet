@@ -80,8 +80,8 @@ Now, you can do some simple things like listing the devices::
 To make changes to the configuration you'll schedule actions, but
 :class:`~.Blivet` provides some convenience methods to hide the details. Here's an example of removing partition '/dev/sda3'::
 
-    sda3 = b.devicetree.getDeviceByName("sda3")
-    b.destroyDevice(sda3)   # schedules actions to destroy format and device
+    sda3 = b.devicetree.get_device_by_name("sda3")
+    b.destroy_device(sda3)   # schedules actions to destroy format and device
 
 At this point, the StorageDevice representing sda3 is no longer in the tree.
 That means you could allocate a new partition from the newly free space if you
@@ -89,13 +89,13 @@ wanted to (via blivet, that is, since there is not actually any free space on
 the physical disk yet -- you haven't commited the changes). If you now ran the
 following line::
 
-    sda3 = b.devicetree.getDeviceByName("sda3")
+    sda3 = b.devicetree.get_device_by_name("sda3")
 
 sda3 would be None since that device has been removed from the tree.
 
 When you are ready to commit your changes to disk, here's how::
 
-    b.doIt()
+    b.do_it()
 
 That's it. Now you have actually removed /dev/sda3 from the disk.
 
@@ -105,21 +105,21 @@ Here's an alternative approach that uses the lower-level
     import blivet
     dt = blivet.devicetree.DeviceTree()
     dt.populate()
-    sda3 = dt.getDeviceByName("sda3")
+    sda3 = dt.get_device_by_name("sda3")
     action1 = ActionDestroyFormat(sda3)
     action2 = ActionDestroyDevice(sda3)
-    dt.registerAction(action1)
-    dt.registerAction(action2)
-    dt.processActions()
+    dt.actions.add(action1)
+    dt.actions.add(action2)
+    dt.actions.process()
 
 Here's the Blivet approach again for comparison::
 
     import blivet
     b = blivet.Blivet() # contains a DeviceTree instance
     b.reset()   # calls DeviceTree.populate()
-    sda3 = b.devicetree.getDeviceByName("sda3")
-    b.destroyDevice(sda3)   # schedules actions to destroy format and device
-    b.doIt()    # calls DeviceTree.processActions()
+    sda3 = b.devicetree.get_device_by_name("sda3")
+    b.destroy_device(sda3)   # schedules actions to destroy format and device
+    b.do_it()    # calls DeviceTree.actions.process()
 
 
 Scheduling a Series of Actions
@@ -131,24 +131,24 @@ Start out as before::
     from blivet.size import Size
     b = blivet.Blivet()
     b.reset()
-    sda3 = b.devicetree.getDeviceByName("sda3")
+    sda3 = b.devicetree.get_device_by_name("sda3")
 
 Now we're going to wipe the existing formatting from sda3::
 
-    b.destroyFormat(sda3)
+    b.destroy_format(sda3)
 
 Now let's assume sda3 is larger than 10GiB and resize it to that size::
 
-    b.resizeDevice(sda3, Size("10 GiB"))
+    b.resize_device(sda3, Size("10 GiB"))
 
 And then let's create a new ext4 filesystem there::
 
-    new_fmt = blivet.formats.getFormat("ext4", device=sda3.path)
-    b.formatDevice(sda3, new_fmt)
+    new_fmt = blivet.formats.get_format("ext4", device=sda3.path)
+    b.format_device(sda3, new_fmt)
 
 If you want to commit the whole set of changes in one shot, it's easy::
 
-    b.doIt()
+    b.do_it()
 
 Now you can mount the new filesystem at the directory "/mnt/test"::
 
@@ -171,13 +171,13 @@ sector on a specific disk if that's how you want to do it. Here's an example
 of letting Blivet handle the details of creating a partition of minimum size
 10GiB on either sdb or sdc that is also growable to a maximum size of 20GiB::
 
-    sdb = b.devicetree.getDeviceByName("sdb")
-    sdc = b.devicetree.getDeviceByName("sdc")
-    new_part = b.newPartition(size=Size("10 GiB"), grow=True,
-                              maxsize=Size("20 GiB"),
-                              parents=[sdb, sdc])
-    b.createDevice(new_part)
-    blivet.partitioning.doPartitioning(b)
+    sdb = b.devicetree.get_device_by_name("sdb")
+    sdc = b.devicetree.get_device_by_name("sdc")
+    new_part = b.new_partition(size=Size("10 GiB"), grow=True,
+                               maxsize=Size("20 GiB"),
+                               parents=[sdb, sdc])
+    b.create_device(new_part)
+    blivet.partitioning.do_partitioning(b)
 
 Now you could see where it ended up::
 
@@ -188,13 +188,13 @@ Now you could see where it ended up::
 From here, everything is the same as it was in the first examples. All that's
 left is to execute the scheduled action::
 
-    b.doIt()    # or b.devicetree.processActions()
+    b.do_it()    # or b.devicetree.process_actions()
 
 Backing up, let's see how it looks if you want to specify the start and end
 sectors. If you specify a start sector you have to also specify a single disk
 from which to allocate the partition::
 
-    new_part = b.newPartition(start=2048, end=204802048, parents=[sdb])
+    new_part = b.new_partition(start=2048, end=204802048, parents=[sdb])
 
 All the rest is the same as the previous partitioning example.
 
