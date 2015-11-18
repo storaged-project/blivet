@@ -620,7 +620,11 @@ class LVMLogicalVolumeDevice(DMDevice):
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
 
-        self._metadata_size = Size(0)
+        if not self.exists and self.seg_type.startswith("raid"):
+            # RAID LVs create one extent big internal metadata LVs
+            self._metadata_size = self.vg.pe_size
+        else:
+            self._metadata_size = Size(0)
         self._internal_lvs = []
         self._cache = None
 
@@ -653,10 +657,10 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def _assign_pv_space(self):
         if self.seg_type == "linear" or not self._raid_level:
-            # nothing to do for non-RAID (including striped) LVs here
+            # nothing to do for non-RAID (and thus non-striped) LVs here
             return
         for spec in self._pv_specs:
-            spec.size = self._raid_level.get_base_member_size(self.size, len(self._pv_specs))
+            spec.size = self._raid_level.get_base_member_size(self.size + self._metadata_size, len(self._pv_specs))
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
@@ -691,7 +695,12 @@ class LVMLogicalVolumeDevice(DMDevice):
     @property
     def metadata_size(self):
         if self._metadata_size:
-            return self._metadata_size
+            if self.seg_type != "linear" and self._raid_level:
+                zero_superblock = lambda x: Size(0)
+                return self._raid_level.get_space(self._metadata_size, len(self._pv_specs),
+                                                  superblock_size_func=zero_superblock)
+            else:
+                return self._metadata_size
         elif self.cached:
             return self.cache.md_size
 
@@ -751,14 +760,30 @@ class LVMLogicalVolumeDevice(DMDevice):
         return min(max_lv, max_format) if max_format else max_lv
 
     @property
+    def data_vg_space_used(self):
+        """ Space occupied by the data part of this LV, not including snapshots """
+        rounded_size = self.vg.align(self.size, roundup=True)
+        if self.seg_type != "linear" and self._raid_level:
+            zero_superblock = lambda x: Size(0)
+            return self._raid_level.get_space(rounded_size, len(self._pv_specs),
+                                              superblock_size_func=zero_superblock)
+        else:
+            return rounded_size
+
+    @property
+    def metadata_vg_space_used(self):
+        """ Space occupied by the metadata part of this LV, not including snapshots """
+        return self.log_size + self.metadata_size
+
+    @property
     def vg_space_used(self):
         """ Space occupied by this LV, not including snapshots. """
         if self.cached:
             cache_size = self.cache.size
         else:
             cache_size = Size(0)
-        return (self.vg.align(self.size, roundup=True) * self.copies
-                + self.log_size + self.metadata_size + cache_size)
+
+        return self.data_vg_space_used + self.metadata_vg_space_used + cache_size
 
     @property
     def pv_space_used(self):

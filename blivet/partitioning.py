@@ -1039,7 +1039,7 @@ class LVRequest(Request):
 
         # Round up to nearest pe. For growable requests this will mean that
         # first growth is to fill the remainder of any unused extent.
-        self.base = int(lv.vg.align(lv.req_size, roundup=True) // lv.vg.pe_size)
+        self.base = int(lv.data_vg_space_used // lv.vg.pe_size)
 
         if lv.req_grow:
             limits = [int(l // lv.vg.pe_size) for l in
@@ -1055,11 +1055,12 @@ class LVRequest(Request):
 
     @property
     def reserve_request(self):
+        lv = self.device
         reserve = super(LVRequest, self).reserve_request
-        if self.device.cached:
-            total_cache_size = self.device.cache.size + self.device.cache.md_size
-            reserve += int(self.device.vg.align(total_cache_size, roundup=True) / self.device.vg.pe_size)
-
+        if lv.cached:
+            reserve += int(lv.vg.align(lv.cache.size, roundup=True) / lv.vg.pe_size)
+        if lv.metadata_size:
+            reserve += int(lv.vg.align(lv.metadata_vg_space_used, roundup=True) / lv.vg.pe_size)
         return reserve
 
 
