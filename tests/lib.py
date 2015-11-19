@@ -1,6 +1,7 @@
 
 import pprint
 
+
 def assertVerboseListEqual(left, right, msg=None):
     left.sort()
     right.sort()
@@ -33,18 +34,19 @@ def assertVerboseListEqual(left, right, msg=None):
     if leftmissing or rightmissing:
         raise AssertionError(s)
 
+
 def assertVerboseEqual(left, right, msg=None):
     if left != right:
         l = len(left)
         r = len(right)
         for x in range(0, max(l, r)):
-            if x > l-1:
+            if x > l - 1:
                 assertVerboseEqual(None, right[x], msg)
-            if x > r-1:
+            if x > r - 1:
                 assertVerboseEqual(left[x], None, msg)
             if left[x] != right[x]:
                 if msg:
                     raise AssertionError(msg)
                 else:
                     raise AssertionError("%s != %s" % (
-                            pprint.pformat(left), pprint.pformat(right)))
+                        pprint.pformat(left), pprint.pformat(right)))

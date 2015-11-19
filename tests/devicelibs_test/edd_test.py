@@ -28,6 +28,7 @@ class FakeEddEntry(edd.EddEntry):
     def __repr__(self):
         return "<FakeEddEntry%s>" % (self._fmt(' ', ''),)
 
+
 class EddTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwds):
@@ -303,13 +304,13 @@ class EddTestCase(unittest.TestCase):
                                "block/sdd",
                                sysfspath="/sys/firmware/edd/int13_dev85/"),
         }
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 FakeDevice("sdd"),
-                 FakeDevice("sde"),
-                 FakeDevice("vda"),
-                 )
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   FakeDevice("sdd"),
+                   FakeDevice("sde"),
+                   FakeDevice("vda"),
+                   )
 
         edd_dict = edd.get_edd_dict(devices, root=self.root("absurd_virt"))
         self.debug('edd_dict: %s', edd_dict)
@@ -343,7 +344,7 @@ class EddTestCase(unittest.TestCase):
              '/sys/firmware/edd/int13_dev85/'),
         ]
         infos = [
-            ("edd: collected mbr signatures: %s",{ 'vda': '0x86531966',
+            ("edd: collected mbr signatures: %s", {'vda': '0x86531966',
                                                    'sda': '0xe3bf124b',
                                                    'sdb': '0x7dfff0db',
                                                    'sdc': '0x63f1d7d8',
@@ -367,22 +368,22 @@ class EddTestCase(unittest.TestCase):
     def test_collect_mbrs_strawberry_mountain(self):
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 FakeDevice("sdd"),
-                 )
-        fake_mbr_dict = { 'sdc': '0x00033091',
-                          'sdd': '0x91271645',
-                          }
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   FakeDevice("sdd"),
+                   )
+        fake_mbr_dict = {'sdc': '0x00033091',
+                         'sdd': '0x91271645',
+                         }
         mbr_dict = edd.collect_mbrs(devices,
                                     root=self.root('strawberry_mountain'))
         infos = [
             ("edd: MBR signature on %s is zero. new disk image?", "sda"),
             ("edd: MBR signature on %s is zero. new disk image?", "sdb"),
-            ("edd: collected mbr signatures: %s", { 'sdc': '0x00033091',
-                                                    'sdd': '0x91271645',
-                                                    }),
+            ("edd: collected mbr signatures: %s", {'sdc': '0x00033091',
+                                                   'sdd': '0x91271645',
+                                                   }),
         ]
         warnings = [
         ]
@@ -440,11 +441,11 @@ class EddTestCase(unittest.TestCase):
         # test with sata sda, usb sdb
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 FakeDevice("sdd"),
-                 )
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   FakeDevice("sdd"),
+                   )
         fakeedd = {
             0x80: FakeEddEntry(version="0x21", mbr_sig="0x91271645",
                                sectors=31293440, host_bus="PCI", type="USB",
@@ -498,9 +499,9 @@ class EddTestCase(unittest.TestCase):
         infos = [
             ("edd: MBR signature on %s is zero. new disk image?", "sda"),
             ("edd: MBR signature on %s is zero. new disk image?", "sdb"),
-            ("edd: collected mbr signatures: %s", { 'sdc': '0x00033091',
-                                                    'sdd': '0x91271645',
-                                                    }),
+            ("edd: collected mbr signatures: %s", {'sdc': '0x00033091',
+                                                   'sdd': '0x91271645',
+                                                   }),
             ("edd: matched 0x%x to %s using MBR sig", 0x80, "sdd"),
             ("edd: matched 0x%x to %s using PCI dev", 0x81, "sdc"),
             ("edd: matched 0x%x to %s using PCI dev", 0x82, "sdb"),
@@ -527,20 +528,20 @@ class EddTestCase(unittest.TestCase):
     def test_collect_mbrs_bad_sata_virt(self):
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 )
-        fake_mbr_dict = { 'sda': '0xe3bf124b',
-                          'sdb': '0x7dfff0db',
-                          'sdc': '0x86531966',
-                          }
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   )
+        fake_mbr_dict = {'sda': '0xe3bf124b',
+                         'sdb': '0x7dfff0db',
+                         'sdc': '0x86531966',
+                         }
         mbr_dict = edd.collect_mbrs(devices, root=self.root("bad_sata_virt"))
         infos = [
-            ("edd: collected mbr signatures: %s", { 'sda': '0xe3bf124b',
-                                                    'sdb': '0x7dfff0db',
-                                                    'sdc': '0x86531966',
-                                                    }),
+            ("edd: collected mbr signatures: %s", {'sda': '0xe3bf124b',
+                                                   'sdb': '0x7dfff0db',
+                                                   'sdc': '0x86531966',
+                                                   }),
         ]
         self.check_logs(infos=infos)
         lib.assertVerboseEqual(fake_mbr_dict, mbr_dict)
@@ -581,10 +582,10 @@ class EddTestCase(unittest.TestCase):
         # test with sata sda, usb sdb
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 )
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   )
         fakeedd = {
             0x80: FakeEddEntry(version="0x30", mbr_sig="0x86531966",
                                sectors=10485760,
@@ -617,10 +618,10 @@ class EddTestCase(unittest.TestCase):
             ('edd: data extracted from 0x%x:%r', 0x82, fakeedd[0x82]),
         ]
         infos = [
-            ('edd: collected mbr signatures: %s', { 'sda': '0xe3bf124b',
-                                                    'sdb': '0x7dfff0db',
-                                                    'sdc': '0x86531966',
-                                                    }),
+            ('edd: collected mbr signatures: %s', {'sda': '0xe3bf124b',
+                                                   'sdb': '0x7dfff0db',
+                                                   'sdc': '0x86531966',
+                                                   }),
             ('edd: matched 0x%x to %s using MBR sig', 128, 'sdc'),
             ('edd: matched 0x%x to %s using MBR sig', 129, 'sda'),
             ('edd: matched 0x%x to %s using MBR sig', 130, 'sdb'),
@@ -636,24 +637,24 @@ class EddTestCase(unittest.TestCase):
     def test_collect_mbrs_mostly_fixed_virt(self):
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 FakeDevice("vda"),
-                 )
-        fake_mbr_dict = { 'sda': '0xe3bf124b',
-                          'sdb': '0x7dfff0db',
-                          'sdc': '0x648873aa',
-                          'vda': '0x86531966',
-                          }
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   FakeDevice("vda"),
+                   )
+        fake_mbr_dict = {'sda': '0xe3bf124b',
+                         'sdb': '0x7dfff0db',
+                         'sdc': '0x648873aa',
+                         'vda': '0x86531966',
+                         }
         mbr_dict = edd.collect_mbrs(devices,
                                     root=self.root('mostly_fixed_virt'))
         infos = [
-            ("edd: collected mbr signatures: %s", { 'sda': '0xe3bf124b',
-                                                    'sdb': '0x7dfff0db',
-                                                    'sdc': '0x648873aa',
-                                                    'vda': '0x86531966',
-                                                    }),
+            ("edd: collected mbr signatures: %s", {'sda': '0xe3bf124b',
+                                                   'sdb': '0x7dfff0db',
+                                                   'sdc': '0x648873aa',
+                                                   'vda': '0x86531966',
+                                                   }),
         ]
         self.check_logs(infos=infos)
         lib.assertVerboseEqual(fake_mbr_dict, mbr_dict)
@@ -707,11 +708,11 @@ class EddTestCase(unittest.TestCase):
         # test with sata sda, usb sdb
         self._edd_logger.debug("starting test %s", self._testMethodName)
         edd.testdata_log.debug("starting test %s", self._testMethodName)
-        devices=(FakeDevice("sda"),
-                 FakeDevice("sdb"),
-                 FakeDevice("sdc"),
-                 FakeDevice("vda"),
-                 )
+        devices = (FakeDevice("sda"),
+                   FakeDevice("sdb"),
+                   FakeDevice("sdc"),
+                   FakeDevice("vda"),
+                   )
         fakeedd = {
             0x80: FakeEddEntry(version="0x30", mbr_sig="0x86531966",
                                sectors=10485760, host_bus="PCI", type="SCSI",
@@ -762,11 +763,11 @@ class EddTestCase(unittest.TestCase):
         infos = [
             ('edd: Could not find Virtio device for pci dev %s channel %s', '00:03.0', 255),
             ('edd: Could not find Virtio device for pci dev %s channel %s', '00:0c.0', 255),
-            ('edd: collected mbr signatures: %s', { 'vda': '0x86531966',
-                                                    'sda': '0xe3bf124b',
-                                                    'sdb': '0x7dfff0db',
-                                                    'sdc': '0x648873aa',
-                                                    }),
+            ('edd: collected mbr signatures: %s', {'vda': '0x86531966',
+                                                   'sda': '0xe3bf124b',
+                                                   'sdb': '0x7dfff0db',
+                                                   'sdc': '0x648873aa',
+                                                   }),
             ('edd: matched 0x%x to %s using PCI dev', 0x80, 'vda'),
             ('edd: matched 0x%x to %s using PCI dev', 0x81, 'sda'),
             ('edd: matched 0x%x to %s using PCI dev', 0x82, 'sdb'),

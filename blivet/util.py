@@ -34,6 +34,7 @@ from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
 
+
 class Path(str):
 
     """ Path(path, root=None) provides a filesystem path object, which
@@ -103,12 +104,12 @@ class Path(str):
 
     def __add__(self, other):
         if isinstance(other, Path):
-            if other.root != None and other.root != "/":
-                if self.root == None:
+            if other.root is not None and other.root != "/":
+                if self.root is None:
                     self._root = other.root
                 elif other.root != self.root:
                     raise ValueError("roots <%s> and <%s> don't match." %
-                        (self.root, other.root))
+                                     (self.root, other.root))
             path = "%s/%s" % (self.path, other.path)
         else:
             path = "%s/%s" % (self.path, other)
@@ -152,6 +153,7 @@ class Path(str):
 
     def __hash__(self):
         return self._path.__hash__()
+
 
 def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=False, binary_output=False):
     if env_prune is None:
@@ -333,6 +335,7 @@ def notify_kernel(path, action="change"):
     f.write("%s\n" % action)
     f.close()
 
+
 def normalize_path_slashes(path):
     """ Normalize the slashes in a filesystem path.
         Does not actually examine the filesystme in any way.
@@ -340,6 +343,7 @@ def normalize_path_slashes(path):
     while "//" in path:
         path = path.replace("//", "/")
     return path
+
 
 def join_paths(*paths):
     """ Joins filesystem paths without any consiration of slashes or
@@ -349,13 +353,14 @@ def join_paths(*paths):
         return join_paths(*paths[0])
     return normalize_path_slashes('/'.join(paths))
 
+
 def get_sysfs_attr(path, attr, root=None):
     if not attr:
         log.debug("get_sysfs_attr() called with attr=None")
         return None
     if not isinstance(path, Path):
         path = Path(path=path, root=root)
-    elif root != None:
+    elif root is not None:
         path.newroot(root)
 
     attribute = path + attr
@@ -371,6 +376,7 @@ def get_sysfs_attr(path, attr, root=None):
     sdata = "".join(["%02x" % (ord(x),) for x in data])
     testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
     return data.strip()
+
 
 def sysfs_readlink(path, link, root=None):
     if not link:
@@ -390,6 +396,7 @@ def sysfs_readlink(path, link, root=None):
     output = os.readlink(fullpath)
     testdata_log.debug("new sysfs link: \"%s\" -> \"%s\"", linkpath, output)
     return output
+
 
 def get_sysfs_path_by_name(dev_node, class_name="block"):
     """ Return sysfs path for a given device.
@@ -1019,6 +1026,7 @@ def deprecated(version, message):
 
     return deprecate_func
 
+
 def default_namedtuple(name, fields, doc=""):
     """Create a namedtuple class
 
@@ -1047,6 +1055,7 @@ def default_namedtuple(name, fields, doc=""):
     class TheDefaultNamedTuple(nt):
         if doc:
             __doc__ = doc
+
         def __new__(cls, *args, **kwargs):
             args_list = list(args)
             sorted_kwargs = sorted(kwargs.keys(), key=field_names.index)
