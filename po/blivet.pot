@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-28 18:20-0700\n"
+"POT-Creation-Date: 2015-11-18 16:34-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/blivet.py:1197
-msgid "You must create a new filesystem on the root device."
+#: ../blivet/populator.py:810
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/partitioning.py:423
@@ -82,127 +82,95 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/populator.py:810
-msgid "Invalid Disk Label"
-msgstr ""
-
-#: ../blivet/iscsi.py:167
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:169
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:326
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:328
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:459
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:479
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:482
-msgid "Could not log in to any of the discovered nodes"
-msgstr ""
-
-#: ../blivet/fcoe.py:108
+#: ../blivet/fcoe.py:116
 msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/zfcp.py:54
+#: ../blivet/zfcp.py:60
 msgid "You have not specified a device number or the number is invalid"
 msgstr ""
 
-#: ../blivet/zfcp.py:56
+#: ../blivet/zfcp.py:62
 msgid "You have not specified a worldwide port name or the name is invalid."
 msgstr ""
 
-#: ../blivet/zfcp.py:58
+#: ../blivet/zfcp.py:64
 msgid "You have not specified a FCP LUN or the number is invalid."
 msgstr ""
 
-#: ../blivet/zfcp.py:83
+#: ../blivet/zfcp.py:89
 #, python-format
 msgid "zFCP device %s not found, not even in device ignore list."
 msgstr ""
 
-#: ../blivet/zfcp.py:93
+#: ../blivet/zfcp.py:99
 #, python-format
 msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:104
+#: ../blivet/zfcp.py:110
 #, python-format
 msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
 msgstr ""
 
 #. newer zfcp sysfs interface with auto port scan
-#: ../blivet/zfcp.py:111
+#: ../blivet/zfcp.py:117
 #, python-format
 msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
 msgstr ""
 
-#: ../blivet/zfcp.py:126
+#: ../blivet/zfcp.py:132
 #, python-format
 msgid ""
 "Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
 "(%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:132
+#: ../blivet/zfcp.py:138
 #, python-format
 msgid ""
 "LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
 msgstr ""
 
-#: ../blivet/zfcp.py:144
+#: ../blivet/zfcp.py:150
 #, python-format
 msgid ""
 "Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
 "device %(devnum)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:153
+#: ../blivet/zfcp.py:159
 #, python-format
 msgid ""
 "Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
 "again."
 msgstr ""
 
-#: ../blivet/zfcp.py:210
+#: ../blivet/zfcp.py:216
 #, python-format
 msgid ""
 "Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
 "%(fcplun)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:219
+#: ../blivet/zfcp.py:225
 #, python-format
 msgid ""
 "Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
 "(%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:237
+#: ../blivet/zfcp.py:243
 #, python-format
 msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:263
+#: ../blivet/zfcp.py:269
 #, python-format
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:325
+#: ../blivet/zfcp.py:335
 msgid "Error"
 msgstr ""
 
@@ -482,6 +450,38 @@ msgstr ""
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
+msgstr ""
+
+#: ../blivet/blivet.py:1197
+msgid "You must create a new filesystem on the root device."
+msgstr ""
+
+#: ../blivet/iscsi.py:175
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:177
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:334
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:336
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:467
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:487
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:490
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/deviceaction.py:178
