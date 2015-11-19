@@ -24,6 +24,7 @@ class MiscTest(unittest.TestCase):
             self.assertFalse(util.power_of_two(2 ** i + 1), msg=i)
             self.assertFalse(util.power_of_two(2 ** i - 1), msg=i)
 
+
 class TestDefaultNamedtuple(unittest.TestCase):
     def test_default_namedtuple(self):
         TestTuple = util.default_namedtuple("TestTuple", ["x", "y", ("z", 5), "w"])

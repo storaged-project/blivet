@@ -8,6 +8,7 @@ VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 PYTHON=python3
 COVERAGE=coverage
+PEP8=$(PYTHON)-pep8
 ifeq ($(PYTHON),python3)
   COVERAGE=coverage3
 endif
@@ -24,6 +25,7 @@ TEST_DEPENDENCIES += python3-gobject
 TEST_DEPENDENCIES += python-coverage python3-coverage
 TEST_DEPENDENCIES += xfsprogs hfsplus-tools
 TEST_DEPENDENCIES += python3-pocketlint
+TEST_DEPENDENCIES += python3-pep8
 TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
 
 all:
@@ -66,8 +68,15 @@ coverage: check-requires
 	$(COVERAGE) report --include="blivet/*" --show-missing
 	$(COVERAGE) report --include="blivet/*" > coverage-report.log
 
-check: check-requires
-	PYTHONPATH=.:tests/ tests/pylint/runpylint.py
+pylint: check-requires
+	@echo "*** Running pylint ***"
+	PYTHONPATH=.:tests/:$(PYTHONPATH) tests/pylint/runpylint.py
+
+pep8: check-requires
+	@echo "*** Running pep8 compliance check ***"
+	$(PEP8) --ignore=E501 blivet/ tests/ examples/
+
+check: pylint pep8
 
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
@@ -176,4 +185,4 @@ ci: check coverage rc-release
 	@mkdir -p repo
 	@mv *rpm repo
 
-.PHONY: check clean install tag archive local
+.PHONY: check clean pylint pep8 install tag archive local

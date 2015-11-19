@@ -60,6 +60,7 @@ re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: \(\S*\)\s*$')
 # anchoring tab that would go between them...
 re_interface_unknown = re.compile(r'^(\S*)\s*unknown: (\S*) (\S*)\s*$')
 
+
 class EddEntry(object):
 
     """ This object merely collects what the /sys/firmware/edd/* entries can
@@ -195,7 +196,7 @@ class EddEntry(object):
     def _fmt(self, line_pad, separator):
         s = "%(t)spath: %(sysfspath)s version: %(version)s %(nl)s" \
             "%(t)smbr_signature: %(mbr_sig)s sectors: %(sectors)s"
-        if self.type != None:
+        if self.type is not None:
             s += " %(type)s"
         if self.sysfslink is not None:
             s += "%(nl)s%(t)ssysfs pci path: %(sysfslink)s"
@@ -225,8 +226,8 @@ class EddEntry(object):
             s += "%(nl)s%(t)ssas_address: %(sas_address)s sas_lun: %(sas_lun)s"
 
         d = copy.copy(self.__dict__)
-        d['t']=line_pad
-        d['nl']=separator
+        d['t'] = line_pad
+        d['nl'] = separator
 
         return s % d
 
@@ -352,6 +353,7 @@ class EddMatcher(object):
 
         Assuming, heuristic analysis and guessing hapens here.
     """
+
     def __init__(self, edd_entry, root=None):
         self.edd = edd_entry
         self.root = root
@@ -361,7 +363,7 @@ class EddMatcher(object):
         retries = []
 
         def match_port(components, ata_port, ata_port_idx, path, link):
-            fn = util.Path(util.join_paths(components[0:6] \
+            fn = util.Path(util.join_paths(components[0:6]
                                            + ['ata_port', ata_port]), root=self.root)
             port_no = int(util.get_sysfs_attr(fn, 'port_no'))
 
@@ -377,8 +379,8 @@ class EddMatcher(object):
                 if port_no != self.edd.ata_device + 1:
                     return
 
-            fn = components[0:6] + ['link%d' % (ata_port_idx,),]
-            exp = [r'.*']+fn+[r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
+            fn = components[0:6] + ['link%d' % (ata_port_idx,), ]
+            exp = [r'.*'] + fn + [r'dev%d\.(\d+)(\.(\d+)){0,1}$' % (ata_port_idx,)]
             exp = util.join_paths(exp)
             expmatcher = re.compile(exp)
 
@@ -455,7 +457,7 @@ class EddMatcher(object):
             # iterates the sata device number /independently/ of the host
             # bridge it claims things are attached to.  In that case this
             # the scsi target will always have "0" as the ID component.
-            args = { 'device': self.edd.ata_device }
+            args = {'device': self.edd.ata_device}
             exp = r"target\d+:0:%(device)s/\d+:0:%(device)s:0/block/.*" % args
             matcher = re.compile(exp)
             match = matcher.match("/".join(components[7:]))
@@ -512,9 +514,9 @@ class EddMatcher(object):
         tmpl = "../devices/pci0000:00/0000:%(pci_dev)s/virtio*/" \
             "host*/target*:0:%(dev)d/*:0:%(dev)d:%(lun)d/block/"
         args = {
-            'pci_dev' : self.edd.pci_dev,
-            'dev' : self.edd.scsi_id,
-            'lun' : self.edd.scsi_lun,
+            'pci_dev': self.edd.pci_dev,
+            'dev': self.edd.scsi_id,
+            'lun': self.edd.scsi_lun,
         }
         pattern = util.Path(tmpl % args, self.root + "/sys/block/")
         answers = []
@@ -523,7 +525,7 @@ class EddMatcher(object):
             block_entries = os.listdir(mp.ondisk)
             for be in block_entries:
                 link = mp + be
-                answers.append({'link':link, 'path':be})
+                answers.append({'link': link, 'path': be})
 
         if len(answers) > 1:
             log.error("Found too many VirtIO SCSI devices for EDD device 0x%x: %s",
@@ -533,7 +535,7 @@ class EddMatcher(object):
             self.edd.sysfslink = answers[0]['link']
             return answers[0]['path']
         else:
-            log.info("edd: Could not find VirtIO SCSI device for pci dev %s "\
+            log.info("edd: Could not find VirtIO SCSI device for pci dev %s "
                      "channel %s scsi id %s lun %s", self.edd.pci_dev,
                      self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
 
@@ -542,10 +544,10 @@ class EddMatcher(object):
             "host%(chan)d/target%(chan)d:0:%(dev)d/" \
             "%(chan)d:0:%(dev)d:%(lun)d/block/"
         args = {
-            'pci_dev' : self.edd.pci_dev,
-            'chan' : self.edd.channel,
-            'dev' : self.edd.scsi_id,
-            'lun' : self.edd.scsi_lun,
+            'pci_dev': self.edd.pci_dev,
+            'chan': self.edd.channel,
+            'dev': self.edd.scsi_id,
+            'lun': self.edd.scsi_lun,
         }
         pattern = util.Path(tmpl % args, root=self.root + "/sys/block/")
         answers = []
@@ -554,7 +556,7 @@ class EddMatcher(object):
             block_entries = os.listdir(mp.ondisk)
             for be in block_entries:
                 link = mp + be
-                answers.append({'link':link, 'path':be})
+                answers.append({'link': link, 'path': be})
 
         if len(answers) > 1:
             log.error("Found too many SCSI devices for EDD device 0x%x: %s",
@@ -564,7 +566,7 @@ class EddMatcher(object):
             self.edd.sysfslink = answers[0]['link']
             return answers[0]['path']
         else:
-            log.warning("edd: Could not find SCSI device for pci dev %s "\
+            log.warning("edd: Could not find SCSI device for pci dev %s "
                         "channel %s scsi id %s lun %s", self.edd.pci_dev,
                         self.edd.channel, self.edd.scsi_id, self.edd.scsi_lun)
         return None
@@ -578,7 +580,7 @@ class EddMatcher(object):
             block_entries = os.listdir(mp.ondisk)
             for be in block_entries:
                 link = mp + be
-                answers.append({'link':link, 'path':be})
+                answers.append({'link': link, 'path': be})
 
         if len(answers) > 1:
             log.error("Found too many VirtIO devices for EDD device 0x%x: %s",
@@ -601,7 +603,7 @@ class EddMatcher(object):
         if name is not None:
             return name
         name = self.devname_from_virtio_scsi_pci_dev()
-        if not name is None:
+        if name is not None:
             return name
 
         unsupported = ("ATAPI", "USB", "1394", "I2O", "RAID", "FIBRE", "SAS")
@@ -629,12 +631,13 @@ class EddMatcher(object):
             This will obviously fail for a fresh drive/image, but in extreme
             cases can also show false positives for randomly matching data.
         """
-        sysblock=util.Path("/sys/block/", root=self.root)
+        sysblock = util.Path("/sys/block/", root=self.root)
         for (name, mbr_sig) in mbr_dict.items():
             if mbr_sig == self.edd.mbr_sig:
                 self.edd.sysfslink = util.sysfs_readlink(sysblock, link=name)
                 return name
         return None
+
 
 def collect_edd_data(root=None):
     edd_data_dict = {}
@@ -645,6 +648,7 @@ def collect_edd_data(root=None):
         log.debug("edd: found device 0x%x at %s", biosdev, path)
         edd_data_dict[biosdev] = EddEntry(path, root=root)
     return edd_data_dict
+
 
 def collect_mbrs(devices, root=None):
     """ Read MBR signatures from devices.
@@ -688,6 +692,7 @@ def collect_mbrs(devices, root=None):
         mbr_dict[dev.name] = mbrsig_str
     log.info("edd: collected mbr signatures: %s", mbr_dict)
     return mbr_dict
+
 
 def get_edd_dict(devices, root=None):
     """ Generates the 'device name' -> 'edd number' mapping.
