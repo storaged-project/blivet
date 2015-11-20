@@ -595,6 +595,17 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         """
 
+        if not exists:
+            if seg_type and seg_type != "linear" and not pvs:
+                raise ValueError("List of PVs has to be given for every non-linear LV")
+            elif (not seg_type or seg_type == "linear") and pvs:
+                if not all(isinstance(pv, LVPVSpec) for pv in pvs):
+                    raise ValueError("Invalid specification of PVs for a linear LV: either no or complete "
+                                     "specification (with all space split into PVs has to be given")
+                elif sum(spec.size for spec in pvs) != size:
+                    raise ValueError("Invalid specification of PVs for a linear LV: the sum of space "
+                                     "assigned to PVs is not equal to the size of the LV")
+
         # When this device's format is set in the superclass constructor it will
         # try to access self.snapshots.
         self.snapshots = []
@@ -1615,7 +1626,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             :type sysfs_path: str
             :keyword uuid: the device UUID
             :type uuid: str
-            :keyword seg_type: segment type
+            :keyword seg_type: segment type (only "linear" supported for non-existing ThinPool LVs)
             :type seg_type: str
 
             For non-existent pools only:
@@ -1641,6 +1652,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         if chunksize is not None and \
            not blockdev.lvm.is_valid_thpool_chunk_size(chunksize):
             raise ValueError("invalid chunksize value")
+
+        if not exists and seg_type and seg_type != "linear":
+            raise ValueError("creation of non-linear thin pool LVs is not supported (yet)")
 
         super(LVMThinPoolDevice, self).__init__(name, parents=parents,
                                                 size=size, uuid=uuid,
