@@ -206,7 +206,7 @@ def get_best_free_space_region(disk, part_type, req_size, start=None,
         :type alignment: :class:`parted.Alignment`
 
     """
-    log.debug("getBestFreeSpaceRegion: disk=%s part_type=%d req_size=%s "
+    log.debug("get_best_free_space_region: disk=%s part_type=%d req_size=%s "
               "boot=%s best=%s grow=%s start=%s",
               disk.device.path, part_type, req_size, boot, best_free, grow,
               start)
@@ -650,7 +650,7 @@ def allocate_partitions(storage, disks, partitions, freespace):
         The :class:`~.devices.PartitionDevice` instances will have their name
         and parents attributes set once they have been allocated.
     """
-    log.debug("allocatePartitions: disks=%s ; partitions=%s",
+    log.debug("allocate_partitions: disks=%s ; partitions=%s",
               [d.name for d in disks],
               ["%s(id %d)" % (p.name, p.id) for p in partitions])
 
@@ -1729,7 +1729,7 @@ def grow_partitions(disks, partitions, free, size_sets=None):
         :type size_sets: list of :class:`TotalSizeSet` or :class:`SameSizeSet`
         :returns: :const:`None`
     """
-    log.debug("growPartitions: disks=%s, partitions=%s",
+    log.debug("grow_partitions: disks=%s, partitions=%s",
               [d.name for d in disks],
               ["%s(id %d)" % (p.name, p.id) for p in partitions])
     all_growable = [p for p in partitions if p.req_grow]

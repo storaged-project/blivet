@@ -457,7 +457,7 @@ class FSSet(object):
         # the device's format we found matches what's in the fstab
         ftype = getattr(fmt, "mount_type", fmt.type)
         dtype = getattr(device.format, "mount_type", device.format.type)
-        if hasattr(fmt, "testMount") and fstype != "auto" and ftype != dtype:
+        if hasattr(fmt, "test_mount") and fstype != "auto" and ftype != dtype:
             log.info("fstab says %s at %s is %s", dtype, mountpoint, ftype)
             if fmt.test_mount():     # pylint: disable=no-member
                 device.format = fmt

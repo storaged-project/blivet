@@ -172,7 +172,7 @@ class FS(DeviceFormat):
     def dict(self):
         d = super(FS, self).dict
         d.update({"mountpoint": self.mountpoint, "size": self._size,
-                  "label": self.label, "targetSize": self.target_size,
+                  "label": self.label, "target_size": self.target_size,
                   "mountable": self.mountable})
         return d
 

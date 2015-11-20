@@ -963,7 +963,7 @@ class Blivet(object):
             raise ValueError("name already in use")
 
         if thin_pool or thin_volume:
-            cache_req = kwargs.pop("cacheRequest", None)
+            cache_req = kwargs.pop("cache_request", None)
             if cache_req:
                 raise ValueError("Creating cached thin volumes and pools is not supported")
 
@@ -1001,7 +1001,7 @@ class Blivet(object):
                 contain the volume you want to contain the subvolume.
 
         """
-        log.debug("newBTRFS: args = %s ; kwargs = %s", args, kwargs)
+        log.debug("new_btrfs: args = %s ; kwargs = %s", args, kwargs)
         name = kwargs.pop("name", None)
         if args:
             name = args[0]
@@ -1021,9 +1021,9 @@ class Blivet(object):
                 name = self.suggest_device_name(mountpoint=mountpoint)
             fmt_args["mountopts"] = "subvol=%s" % name
             fmt_args["subvolspec"] = name
-            kwargs.pop("metaDataLevel", None)
-            kwargs.pop("dataLevel", None)
-            kwargs.pop("createOptions", None)
+            kwargs.pop("metadata_level", None)
+            kwargs.pop("data_level", None)
+            kwargs.pop("create_options", None)
         else:
             dev_class = BTRFSVolumeDevice
             # set up the volume label, using hostname if necessary
@@ -1666,7 +1666,7 @@ class Blivet(object):
 
         # we can't do anything with existing devices
         # if device and device.exists:
-        #    log.info("factoryDevice refusing to change device %s", device)
+        #    log.info("factory_device refusing to change device %s", device)
         #    return
 
         if not kwargs.get("fstype"):

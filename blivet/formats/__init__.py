@@ -96,7 +96,7 @@ def get_format(fmt_type, *args, **kwargs):
         # this should add/set an instance attribute
         fmt._name = fmt_type
 
-    log.debug("getFormat('%s') returning %s instance with object id %d",
+    log.debug("get_format('%s') returning %s instance with object id %d",
               fmt_type, fmt.__class__.__name__, fmt.id)
     return fmt
 
