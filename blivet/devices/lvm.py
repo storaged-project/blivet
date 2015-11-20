@@ -656,7 +656,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._add_to_parents()
 
     def _assign_pv_space(self):
-        if self.seg_type == "linear" or not self._raid_level:
+        if not self.is_raid_lv:
             # nothing to do for non-RAID (and thus non-striped) LVs here
             return
         for spec in self._pv_specs:
@@ -683,6 +683,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._parents[0]._add_log_vol(self)
 
     @property
+    def is_raid_lv(self):
+        return self.seg_type != "linear" and self._raid_level
+
+    @property
     def copies(self):
         image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
         return len(image_lvs) or 1
@@ -695,7 +699,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     @property
     def metadata_size(self):
         if self._metadata_size:
-            if self.seg_type != "linear" and self._raid_level:
+            if self.is_raid_lv:
                 zero_superblock = lambda x: Size(0)
                 return self._raid_level.get_space(self._metadata_size, len(self._pv_specs),
                                                   superblock_size_func=zero_superblock)
@@ -763,7 +767,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def data_vg_space_used(self):
         """ Space occupied by the data part of this LV, not including snapshots """
         rounded_size = self.vg.align(self.size, roundup=True)
-        if self.seg_type != "linear" and self._raid_level:
+        if self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
             return self._raid_level.get_space(rounded_size, len(self._pv_specs),
                                               superblock_size_func=zero_superblock)
