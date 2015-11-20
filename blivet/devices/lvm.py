@@ -312,7 +312,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # PV space accounting
         pv_sizes = lv.pv_space_used
-        if pv_sizes:
+        if not lv.exists and pv_sizes:
             for size_spec in pv_sizes:
                 # check that we have enough space in the PVs for the LV and
                 # account for it
@@ -335,7 +335,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # PV space accounting
         pv_sizes = lv.pv_space_used
-        if pv_sizes:
+        if not lv.exists and pv_sizes:
             for size_spec in pv_sizes:
                 size_spec.pv.format.free += size_spec.size
 
@@ -348,7 +348,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # this PV object is just being added so it has all its space available
         # (adding LVs will eat that space later)
-        member.format.free = self._get_pv_usable_space(member)
+        if not member.format.exists:
+            member.format.free = self._get_pv_usable_space(member)
 
     def _remove_parent(self, member):
         # XXX It would be nice to raise an exception if removing this member

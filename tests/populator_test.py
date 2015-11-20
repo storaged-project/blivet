@@ -888,6 +888,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_name = "testvgname"
         pv_info.vg_uuid = sentinel.vg_uuid
         pv_info.pe_start = 0
+        pv_info.pv_free = 0
 
         devicetree._pvs_cache = dict()
         devicetree._pvs_cache[sentinel.pv_path] = pv_info
