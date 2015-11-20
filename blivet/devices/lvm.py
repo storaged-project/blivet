@@ -699,9 +699,12 @@ class LVMLogicalVolumeDevice(DMDevice):
         return self.seg_type != "linear" and self._raid_level
 
     @property
-    def copies(self):
-        image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
-        return len(image_lvs) or 1
+    def _num_raid_pvs(self):
+        if self.exists:
+            image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
+            return len(image_lvs) or 1
+        else:
+            return len(self._pv_specs)
 
     @property
     def log_size(self):
@@ -713,7 +716,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         if self._metadata_size:
             if self.is_raid_lv:
                 zero_superblock = lambda x: Size(0)
-                return self._raid_level.get_space(self._metadata_size, len(self._pv_specs),
+                return self._raid_level.get_space(self._metadata_size, self._num_raid_pvs,
                                                   superblock_size_func=zero_superblock)
             else:
                 return self._metadata_size
@@ -727,10 +730,9 @@ class LVMLogicalVolumeDevice(DMDevice):
         s = DMDevice.__repr__(self)
         s += ("  VG device = %(vgdev)r\n"
               "  segment type = %(type)s percent = %(percent)s\n"
-              "  mirror copies = %(copies)d"
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
-               "copies": self.copies, "type": self.seg_type,
+               "type": self.seg_type,
                "vgspace": self.vg_space_used})
         return s
 
@@ -738,8 +740,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def dict(self):
         d = super(LVMLogicalVolumeDevice, self).dict
         if self.exists:
-            d.update({"copies": self.copies,
-                      "vgspace": self.vg_space_used})
+            d.update({"vgspace": self.vg_space_used})
         else:
             d.update({"percent": self.req_percent})
 
@@ -747,7 +748,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     @property
     def mirrored(self):
-        return self.copies > 1
+        return self._raid_level and self._raid_level.has_redundancy()
 
     def _set_size(self, size):
         if not isinstance(size, Size):
@@ -781,8 +782,16 @@ class LVMLogicalVolumeDevice(DMDevice):
         rounded_size = self.vg.align(self.size, roundup=True)
         if self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
-            return self._raid_level.get_space(rounded_size, len(self._pv_specs),
-                                              superblock_size_func=zero_superblock)
+            try:
+                return self._raid_level.get_space(rounded_size, self._num_raid_pvs,
+                                                  superblock_size_func=zero_superblock)
+            except errors.RaidError:
+                # Too few PVs for the segment type (RAID level), we must have
+                # incomplete information about the current LVM
+                # configuration. Let's just default to the basic size for
+                # now. Later calls to this property will provide better results.
+                # TODO: add pv_count field to blockdev.LVInfo and this class
+                return rounded_size
         else:
             return rounded_size
 
@@ -1257,10 +1266,9 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
         s += ("  parent LV = %r\n" % self.parent_lv)
         s += ("  VG device = %(vgdev)r\n"
               "  segment type = %(type)s percent = %(percent)s\n"
-              "  mirror copies = %(copies)d"
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
-               "copies": self.copies, "type": self.seg_type,
+               "type": self.seg_type,
                "vgspace": self.vg_space_used})
         return s
 
