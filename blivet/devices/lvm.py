@@ -980,14 +980,7 @@ class LVMLogicalVolumeDevice(DMDevice):
                                   type=self.seg_type, pv_list=pvs)
         else:
             mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
-            # prepare the list of fast PV devices
-            fast_pvs = []
-            for pv_name in (pv.name for pv in self.cache.fast_pvs):
-                # make sure we have the full device paths
-                if not pv_name.startswith("/dev/"):
-                    fast_pvs.append("/dev/%s" % pv_name)
-                else:
-                    fast_pvs.append(pv_name)
+            fast_pvs = [pv.path for pv in self.cache.fast_pvs]
 
             if self._pv_specs:
                 # (slow) PVs specified for this LV
