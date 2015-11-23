@@ -1005,6 +1005,19 @@ class LVMLogicalVolumeDevice(DMDevice):
             blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
                                                 mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
 
+    def _post_create(self):
+        super()._post_create()
+        # update the free space info of the PVs this LV could have taken space
+        # from (either specified or potentially all PVs from the VG)
+        if self._pv_specs:
+            used_pvs = [spec.pv for spec in self._pv_specs]
+        else:
+            used_pvs = self.vg.pvs
+        for pv in used_pvs:
+            # None means "not set" and triggers a dynamic fetch of the actual
+            # value when queried
+            pv.format.free = None
+
     def _pre_destroy(self):
         StorageDevice._pre_destroy(self)
         # set up the vg's pvs so lvm can remove the lv
