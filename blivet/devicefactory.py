@@ -1762,8 +1762,8 @@ class BTRFSFactory(DeviceFactory):
 
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
-        kwargs["dataLevel"] = self.container_raid_level
-        kwargs["metaDataLevel"] = self.container_raid_level
+        kwargs["data_level"] = self.container_raid_level
+        kwargs["metadata_level"] = self.container_raid_level
         kwargs["subvol"] = True
         return self.storage.new_btrfs(*args, **kwargs)
 

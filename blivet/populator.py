@@ -1402,7 +1402,7 @@ class Populator(object):
             # mdraid
             try:
                 # ID_FS_UUID contains the array UUID
-                kwargs["mdUuid"] = udev.device_get_uuid(info)
+                kwargs["md_uuid"] = udev.device_get_uuid(info)
             except KeyError:
                 log.warning("mdraid member %s has no md uuid", name)
 
@@ -1416,15 +1416,15 @@ class Populator(object):
             pv_info = self.devicetree.pv_info.get(device.path, None)
             if pv_info:
                 if pv_info.vg_name:
-                    kwargs["vgName"] = pv_info.vg_name
+                    kwargs["vg_name"] = pv_info.vg_name
                 else:
                     log.warning("PV %s has no vg_name", name)
                 if pv_info.vg_uuid:
-                    kwargs["vgUuid"] = pv_info.vg_uuid
+                    kwargs["vg_uuid"] = pv_info.vg_uuid
                 else:
                     log.warning("PV %s has no vg_uuid", name)
                 if pv_info.pe_start:
-                    kwargs["peStart"] = Size(pv_info.pe_start)
+                    kwargs["pe_start"] = Size(pv_info.pe_start)
                 else:
                     log.warning("PV %s has no pe_start", name)
         elif format_type == "vfat":
@@ -1449,7 +1449,7 @@ class Populator(object):
             # the format's uuid attr will contain the UUID_SUB, while the
             # overarching volume UUID will be stored as vol_uuid
             kwargs["uuid"] = info["ID_FS_UUID_SUB"]
-            kwargs["volUUID"] = uuid
+            kwargs["vol_uuid"] = uuid
         elif format_type == "multipath_member":
             # blkid does not care that the UUID it sees on a multipath member is
             # for the multipath set's (and not the member's) formatting, so we
