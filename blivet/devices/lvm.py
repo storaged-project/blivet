@@ -994,12 +994,14 @@ class LVMLogicalVolumeDevice(DMDevice):
                         all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
                 slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
 
+            slow_pvs = util.dedup_list(slow_pvs)
+
             # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
-            # XXX: we need to pass slow_pvs+fast_pvs as slow PVs because parts
-            # of the fast PVs may be required for allocation of the LV (it may
-            # span over the slow PVs and parts of fast PVs)
+            # XXX: we need to pass slow_pvs+fast_pvs (without duplicates) as slow PVs because parts of the
+            # fast PVs may be required for allocation of the LV (it may span over the slow PVs and parts of
+            # fast PVs)
             blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
-                                                mode, 0, slow_pvs + fast_pvs, fast_pvs)
+                                                mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
 
     def _pre_destroy(self):
         StorageDevice._pre_destroy(self)

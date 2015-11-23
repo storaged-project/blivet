@@ -714,6 +714,18 @@ def compare(first, second):
     else:
         return (first > second) - (first < second)
 
+
+def dedup_list(alist):
+    """Deduplicates the given list by removing duplicates while preserving the order"""
+    seen = set()
+    ret = []
+    for item in alist:
+        if item not in seen:
+            ret.append(item)
+        seen.add(item)
+    return ret
+
+
 ##
 # Convenience functions for examples and tests
 ##

@@ -24,6 +24,15 @@ class MiscTest(unittest.TestCase):
             self.assertFalse(util.power_of_two(2 ** i + 1), msg=i)
             self.assertFalse(util.power_of_two(2 ** i - 1), msg=i)
 
+    def test_dedup_list(self):
+        # no duplicates, no change
+        self.assertEqual([1, 2, 3, 4], util.dedup_list([1, 2, 3, 4]))
+        # empty list no issue
+        self.assertEqual([], util.dedup_list([]))
+
+        # real deduplication
+        self.assertEqual([1, 2, 3, 4, 5, 6], util.dedup_list([1, 2, 3, 4, 2, 2, 2, 1, 3, 5, 3, 6, 6, 2, 3, 1, 5]))
+
 
 class TestDefaultNamedtuple(unittest.TestCase):
     def test_default_namedtuple(self):
