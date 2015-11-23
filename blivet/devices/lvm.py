@@ -311,15 +311,19 @@ class LVMVolumeGroupDevice(ContainerDevice):
             origin.snapshots.append(lv)
 
         # PV space accounting
-        pv_sizes = lv.pv_space_used
-        if not lv.exists and pv_sizes:
-            for size_spec in pv_sizes:
+        if not lv.exists:
+            # create a copy of the list so that we don't modify the origin below
+            pv_sizes = lv.pv_space_used[:]
+            if lv.cached:
+                pv_sizes.extend(lv.cache.pv_space_used)
+            if pv_sizes:
                 # check that we have enough space in the PVs for the LV and
                 # account for it
-                if size_spec.pv.format.free < size_spec.size:
-                    msg = "not enough space in the '%s' PV for the '%s' LV's extents" % (size_spec.pv.name, lv.name)
-                    raise errors.DeviceError(msg)
-                size_spec.pv.format.free -= size_spec.size
+                for size_spec in pv_sizes:
+                    if size_spec.pv.format.free < size_spec.size:
+                        msg = "not enough space in the '%s' PV for the '%s' LV's extents" % (size_spec.pv.name, lv.name)
+                        raise errors.DeviceError(msg)
+                    size_spec.pv.format.free -= size_spec.size
 
     def _remove_log_vol(self, lv):
         """ Remove an LV from this VG. """
@@ -334,7 +338,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
             origin.snapshots.remove(lv)
 
         # PV space accounting
-        pv_sizes = lv.pv_space_used
+        pv_sizes = lv.pv_space_used[:]
+        if lv.cached:
+            pv_sizes.extend(lv.cache.pv_space_used)
         if not lv.exists and pv_sizes:
             for size_spec in pv_sizes:
                 size_spec.pv.format.free += size_spec.size
@@ -642,7 +648,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         if cache_request and not self.exists:
             self._cache = LVMCache(self, size=cache_request.size, exists=False,
-                                   fast_pvs=cache_request.fast_devs, mode=cache_request.mode)
+                                   pvs=cache_request.fast_devs, mode=cache_request.mode)
 
         self._pv_specs = []
         pvs = pvs or []
@@ -1907,7 +1913,7 @@ class LVMCache(Cache):
 
     """Class providing the cache-related functionality of a cached LV"""
 
-    def __init__(self, cached_lv, size=None, md_size=None, exists=False, fast_pvs=None, mode=None):
+    def __init__(self, cached_lv, size=None, md_size=None, exists=False, pvs=None, mode=None):
         """
         :param cached_lv: the LV the cache functionality of which to provide
         :type cached_lv: :class:`LVMLogicalVolumeDevice`
@@ -1919,8 +1925,8 @@ class LVMCache(Cache):
                         size dynamically) or None to use the default (see note below)
         :type md_size: :class:`~.size.Size` or NoneType
         :param bool exists: whether the cache exists or not
-        :param fast_pvs: PVs to allocate the cache on/from (ignored for existing)
-        :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
+        :param pvs: PVs to allocate the cache on/from (ignored for existing)
+        :type pvs: list of :class:`LVPVSpec`
         :param str mode: desired mode for non-existing cache (ignored for existing)
 
         .. note::
@@ -1939,12 +1945,34 @@ class LVMCache(Cache):
             self._size = size
             self._md_size = md_size
         self._exists = exists
+        self._mode = None
+        self._pv_specs = []
         if not exists:
             self._mode = mode or "writethrough"
-            self._fast_pvs = fast_pvs
-        else:
-            self._mode = None
-            self._fast_pvs = None
+            for pv_spec in pvs:
+                if isinstance(pv_spec, LVPVSpec):
+                    self._pv_specs.append(pv_spec)
+                elif isinstance(pv_spec, StorageDevice):
+                    self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
+            self._assign_pv_space()
+
+    def _assign_pv_space(self):
+        # calculate the size of space that we need to place somewhere
+        space_to_assign = self.size + self.md_size - sum(spec.size for spec in self._pv_specs)
+
+        # skip the PVs that already have some chunk of the space assigned
+        for spec in (spec for spec in self._pv_specs if not spec.size):
+            if spec.pv.format.free >= space_to_assign:
+                # enough space in this PV, put everything in there and quit
+                spec.size = space_to_assign
+                space_to_assign = Size(0)
+                break
+            elif spec.pv.format.free > 0:
+                # some space, let's use it and move on to another PV (if any)
+                spec.size = spec.pv.format.free
+                space_to_assign -= spec.pv.format.free
+        if space_to_assign > 0:
+            raise ValueError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
 
     @property
     def size(self):
@@ -2003,7 +2031,16 @@ class LVMCache(Cache):
 
     @property
     def fast_pvs(self):
-        return self._fast_pvs
+        return [spec.pv for spec in self._pv_specs]
+
+    @property
+    def pv_space_used(self):
+        """
+        :returns: space to be occupied by the cache on its LV's VG's PVs (one has to love LVM)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     def detach(self):
         vg_name = self._cached_lv.vg.name
@@ -2086,18 +2123,23 @@ class LVMCacheRequest(CacheRequest):
 
     """Class representing the LVM cache creation request"""
 
-    def __init__(self, size, fast_pvs, mode=None):
+    def __init__(self, size, pvs, mode=None):
         """
         :param size: requested size of the cache
         :type size: :class:`~.size.Size`
-        :param fast_pvs: PVs to allocate the cache on/from
-        :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
+        :param pvs: PVs to allocate the cache on/from
+        :type pvs: list of (:class:`~.devices.storage.StorageDevice` or :class:`LVPVSpec`)
         :param str mode: requested mode for the cache (``None`` means the default is used)
 
         """
         self._size = size
-        self._fast_pvs = fast_pvs
         self._mode = mode or "writethrough"
+        self._pv_specs = []
+        for pv_spec in pvs:
+            if isinstance(pv_spec, LVPVSpec):
+                self._pv_specs.append(pv_spec)
+            elif isinstance(pv_spec, StorageDevice):
+                self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
 
     @property
     def size(self):
@@ -2105,7 +2147,16 @@ class LVMCacheRequest(CacheRequest):
 
     @property
     def fast_devs(self):
-        return self._fast_pvs
+        return [spec.pv for spec in self._pv_specs]
+
+    @property
+    def pv_space_requests(self):
+        """
+        :returns: space to be occupied by the cache on its LV's VG's PVs (one has to love LVM)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     @property
     def mode(self):
