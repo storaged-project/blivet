@@ -713,18 +713,15 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     @property
     def metadata_size(self):
-        if self._metadata_size:
-            if self.is_raid_lv:
-                zero_superblock = lambda x: Size(0)
-                return self._raid_level.get_space(self._metadata_size, self._num_raid_pvs,
-                                                  superblock_size_func=zero_superblock)
-            else:
-                return self._metadata_size
-        elif self.cached:
-            return self.cache.md_size
+        """ Size of the meta data space this LV has available (see also :property:`metadata_vg_space_used`) """
+        if self.exists:
+            md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
+            return Size(sum(lv.size for lv in md_lvs))
 
-        md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
-        return Size(sum(lv.size for lv in md_lvs))
+        ret = self._metadata_size
+        if self.cached:
+            ret += self.cache.md_size
+        return ret
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
@@ -797,8 +794,22 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     @property
     def metadata_vg_space_used(self):
-        """ Space occupied by the metadata part of this LV, not including snapshots """
-        return self.log_size + self.metadata_size
+        """ Space occupied by the metadata part(s) of this LV, not including snapshots """
+        non_raid_base = self.metadata_size + self.log_size
+        if non_raid_base and self.is_raid_lv:
+            zero_superblock = lambda x: Size(0)
+            try:
+                return self._raid_level.get_space(non_raid_base, self._num_raid_pvs,
+                                                  superblock_size_func=zero_superblock)
+            except errors.RaidError:
+                # Too few PVs for the segment type (RAID level), we must have
+                # incomplete information about the current LVM
+                # configuration. Let's just default to the basic size for
+                # now. Later calls to this property will provide better results.
+                # TODO: add pv_count field to blockdev.LVInfo and this class
+                return non_raid_base
+
+        return non_raid_base
 
     @property
     def vg_space_used(self):
