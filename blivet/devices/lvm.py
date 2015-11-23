@@ -603,6 +603,8 @@ class LVMLogicalVolumeDevice(DMDevice):
         """
 
         if not exists:
+            if seg_type not in [None, "linear"] + [level.name for level in lvm.raid_levels]:
+                raise ValueError("Invalid or unsupported segment type: %s" % seg_type)
             if seg_type and seg_type != "linear" and not pvs:
                 raise ValueError("List of PVs has to be given for every non-linear LV")
             elif (not seg_type or seg_type == "linear") and pvs:
