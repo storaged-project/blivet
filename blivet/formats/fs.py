@@ -77,7 +77,7 @@ class FS(DeviceFormat):
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
-    # This number is more guess then precise number because this
+    # This number is more guess than precise number because this
     # value is already unpredictable and can change in the future...
     _MetadataSizeFactor = 1.0
 
@@ -180,13 +180,58 @@ class FS(DeviceFormat):
     def free_space_estimate(cls, device_size):
         """ Get estimated free space when format will be done on device
             with size ``device_size``.
-            This is more guess then precise number.
+
+            .. note::
+
+                This is more guess than precise number. To get precise
+                space taken the FS must provide this number to us.
 
             :param device_size: original device size
-            :type device_size: ``Size`` object
+            :type device_size: :class:`~.size.Size` object
             :return: estimated free size after format
+            :rtype: :class:`~.size.Size`
         """
         return device_size * cls._MetadataSizeFactor
+
+    @classmethod
+    def getRequiredSize(cls, free_space):
+        """ Get device size we need to get a ``free_space`` on the device.
+            This calculation will add metadata to usable device on the FS.
+
+            .. note::
+
+                This is more guess than precise number. To get precise
+                space taken the FS must provide this number to us.
+
+            :param free_space: how much usable size we want on newly created device
+            :type free_space: :class:`~.size.Size` object
+            :return: estimated size of the device which will have given amount of
+                ``free_space``
+            :rtype: :class:`~.size.Size`
+        """
+        # to get usable size without metadata we will use
+        # usable_size = device_size * _MetadataSizeFactor
+        # we can change this to get device size with required usable_size
+        # device_size = usable_size / _MetadataSizeFactor
+        return Size(Decimal(free_space) / Decimal(cls._MetadataSizeFactor))
+
+    @classmethod
+    def biggestOverheadFS(cls, fs_list=None):
+        """ Get format class from list of format classes with largest space taken
+            by metadata.
+
+            :param fs_list: list of input filesystems
+            :type fs_list: list of classes with parent :class:`~.FS`
+            :return: FS which takes most space by metadata
+        """
+        if fs_list is None:
+            fs_list = cls.__subclasses__()
+
+        for fs_class in fs_list:
+            if not issubclass(fs_class, FS):
+                raise ValueError("You can provide only Filesystem classes!")
+
+        return min(fs_list, key=lambda x: x._MetadataSizeFactor)
 
     def labeling(self):
         """Returns True if this filesystem uses labels, otherwise False.
@@ -750,6 +795,7 @@ class FS(DeviceFormat):
             :raises: FSError
 
         .. note::
+
             When mounted multiple times the unmount method needs to be called with
             a specific mountpoint to unmount, otherwise it will try to unmount the most
             recent one listed by the system.
