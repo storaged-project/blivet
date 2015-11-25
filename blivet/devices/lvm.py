@@ -1950,6 +1950,11 @@ class LVMCache(Cache):
         if not exists and not md_size:
             default_md_size = Size(blockdev.lvm.cache_get_default_md_size(size))
             self._size = size - default_md_size
+            # if we are going to cause a pmspare LV allocation or growth, we
+            # should account for it
+            if cached_lv.vg.pmspare_size < default_md_size:
+                self._size -= default_md_size - cached_lv.vg.pmspare_size
+            self._size = cached_lv.vg.align(self._size)
             self._md_size = default_md_size
         else:
             self._size = size

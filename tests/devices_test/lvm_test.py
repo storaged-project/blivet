@@ -105,7 +105,9 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"),
                                     exists=False, cache_request=cache_req)
-        self.assertEqual(lv.vg_space_used, Size("512 MiB"))
+
+        # the cache reserves space for the 8MiB pmspare internal LV
+        self.assertEqual(lv.vg_space_used, Size("504 MiB"))
 
         # check that the LV behaves like a cached LV
         self.assertTrue(lv.cached)
@@ -113,9 +115,9 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertIsNotNone(cache)
 
         # check parameters reported by the (non-existing) cache
-        self.assertEqual(cache.size, Size("504 MiB"))
+        self.assertEqual(cache.size, Size("496 MiB"))
         self.assertEqual(cache.md_size, Size("8 MiB"))
-        self.assertEqual(cache.vg_space_used, Size("512 MiB"))
+        self.assertEqual(cache.vg_space_used, Size("504 MiB"))
         self.assertIsInstance(cache.size, Size)
         self.assertIsInstance(cache.md_size, Size)
         self.assertIsInstance(cache.vg_space_used, Size)
