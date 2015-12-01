@@ -51,6 +51,7 @@ from .lib import LINUX_SECTOR_SIZE, ParentList
 from .device import Device
 from .storage import StorageDevice
 from .container import ContainerDevice
+from .raid import RaidDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
 from .cache import Cache, CacheStats, CacheRequest
@@ -554,7 +555,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return True
 
 
-class LVMLogicalVolumeDevice(DMDevice):
+class LVMLogicalVolumeDevice(DMDevice, RaidDevice):
 
     """ An LVM Logical Volume """
     _type = "lvmlv"
@@ -621,12 +622,17 @@ class LVMLogicalVolumeDevice(DMDevice):
         DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfs_path=sysfs_path, parents=parents,
                           exists=exists)
+        RaidDevice.__init__(self, name, size=size, fmt=fmt,
+                            sysfs_path=sysfs_path, parents=parents,
+                            exists=exists)
 
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
         self._raid_level = None
         if self.seg_type in (level.name for level in lvm.raid_levels):
             self._raid_level = lvm.raid_levels.raid_level(self.seg_type)
+        else:
+            self._raid_level = lvm.raid_levels.raid_level("linear")
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -703,8 +709,12 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._parents[0]._add_log_vol(self)
 
     @property
+    def members(self):
+        return self.vg.pvs
+
+    @property
     def is_raid_lv(self):
-        return self.seg_type != "linear" and self._raid_level
+        return self.seg_type != "linear" and self._raid_level.name != "linear"
 
     @property
     def _num_raid_pvs(self):
