@@ -646,9 +646,11 @@ class LVMLogicalVolumeDevice(DMDevice, RaidDevice):
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
 
-        if not self.exists and self.seg_type.startswith("raid"):
-            # RAID LVs create one extent big internal metadata LVs
+        if not self.exists and self.seg_type.startswith(("raid", "mirror")):
+            # RAID LVs create one extent big internal metadata LVs so make sure
+            # we reserve space for it
             self._metadata_size = self.vg.pe_size
+            self._size -= self._metadata_size
         else:
             self._metadata_size = Size(0)
         self._internal_lvs = []
