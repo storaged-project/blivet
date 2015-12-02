@@ -46,6 +46,7 @@ try:
     b.create_device(dev)
 
     # new lv with a fixed size of 2GiB formatted as swap space
+    # dev = b.new_lv(fmt_type="swap", size=Size("2GiB"), parents=[vg], seg_type="mirror", pvs=[pv, pv2])
     dev = b.new_lv(fmt_type="swap", size=Size("2GiB"), parents=[vg], seg_type="raid1", pvs=[pv, pv2])
     b.create_device(dev)
 

@@ -27,6 +27,7 @@ import pprint
 import re
 import os
 import time
+import itertools
 from collections import namedtuple
 
 import gi
@@ -604,7 +605,8 @@ class LVMLogicalVolumeDevice(DMDevice, RaidDevice):
         """
 
         if not exists:
-            if seg_type not in [None, "linear"] + [level.name for level in lvm.raid_levels]:
+            raid_level_names = list(itertools.chain.from_iterable([level.names for level in lvm.raid_levels]))
+            if seg_type not in [None, "linear"] + raid_level_names:
                 raise ValueError("Invalid or unsupported segment type: %s" % seg_type)
             if seg_type and seg_type != "linear" and not pvs:
                 raise ValueError("List of PVs has to be given for every non-linear LV")
@@ -629,7 +631,7 @@ class LVMLogicalVolumeDevice(DMDevice, RaidDevice):
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
         self._raid_level = None
-        if self.seg_type in (level.name for level in lvm.raid_levels):
+        if self.seg_type in itertools.chain.from_iterable([level.names for level in lvm.raid_levels]):
             self._raid_level = lvm.raid_levels.raid_level(self.seg_type)
         else:
             self._raid_level = lvm.raid_levels.raid_level("linear")
