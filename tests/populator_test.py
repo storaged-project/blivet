@@ -12,6 +12,7 @@ except ImportError:
     pyanaconda_present = False
 
 
+@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 @unittest.skipUnless(pyanaconda_present, "pyanaconda is missing")
 class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
     """
