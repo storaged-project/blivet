@@ -6,6 +6,7 @@ doc/blivet
 doc/tests
 doc/_build
 po/*.gmo
+po/*.mo
 po/*.po
 po/POTFILES
 po/en@boldquot.insert-header

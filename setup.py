@@ -3,6 +3,7 @@
 
 from distutils.core import setup
 from distutils import filelist
+from distutils.command.sdist import sdist
 import subprocess
 import sys
 import glob
@@ -61,6 +62,15 @@ def add_member_order_option(files):
                          flags=re.DOTALL | re.MULTILINE)
         open(fn, "w").write(amended)
 
+# Extend the sdist command
+class blivet_sdist(sdist):
+    def run(self):
+        # Build the .mo files
+        subprocess.check_call(['make', '-C', 'po'])
+
+        # Run the parent command
+        sdist.run(self)
+
 data_files = []
 if os.environ.get("READTHEDOCS", False):
     generate_api_docs()
@@ -70,6 +80,7 @@ if os.environ.get("READTHEDOCS", False):
     data_files.append(("docs/blivet", api_doc_files))
 
 setup(name='blivet', version='2.0',
+      cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',
