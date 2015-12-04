@@ -21,7 +21,6 @@
 #
 
 import os
-import re
 import shutil
 import pprint
 import copy
@@ -129,67 +128,6 @@ class Populator(object):
         self.disk_images = images
         # disk image files are automatically exclusive
         self.exclusive_disks = list(self.disk_images.keys())
-
-    def add_ignored_disk(self, disk):
-        self.ignored_disks.append(disk)
-        lvm.lvm_cc_addFilterRejectRegexp(disk)
-
-    def is_ignored(self, info):
-        """ Return True if info is a device we should ignore.
-
-            :param info: udevdb device entry
-            :type info: dict
-            :returns: whether the device will be ignored
-            :rtype: bool
-
-        """
-        sysfs_path = udev.device_get_sysfs_path(info)
-        name = udev.device_get_name(info)
-        if not sysfs_path:
-            return None
-
-        # Special handling for mdraid external metadata sets (mdraid BIOSRAID):
-        # 1) The containers are intermediate devices which will never be
-        # in exclusive_disks
-        # 2) Sets get added to exclusive disks with their dmraid set name by
-        # the filter ui.  Note that making the ui use md names instead is not
-        # possible as the md names are simpy md# and we cannot predict the #
-        if udev.device_is_md(info) and \
-           udev.device_get_md_level(info) == "container":
-            return False
-
-        if udev.device_get_md_container(info) and \
-                udev.device_is_md(info) and \
-                udev.device_get_md_name(info):
-            md_name = udev.device_get_md_name(info)
-            # mdadm may have appended _<digit>+ if the current hostname
-            # does not match the one in the array metadata
-            alt_name = re.sub(r"_\d+$", "", md_name)
-            raw_pattern = "isw_[a-z]*_%s"
-            # XXX FIXME: This is completely insane.
-            for i in range(0, len(self.exclusive_disks)):
-                if re.match(raw_pattern % md_name, self.exclusive_disks[i]) or \
-                   re.match(raw_pattern % alt_name, self.exclusive_disks[i]):
-                    self.exclusive_disks[i] = name
-                    return False
-
-        # never ignore mapped disk images. if you don't want to use them,
-        # don't specify them in the first place
-        if udev.device_is_dm_anaconda(info) or udev.device_is_dm_livecd(info):
-            return False
-
-        # Ignore loop and ram devices, we normally already skip these in
-        # udev.py: enumerate_block_devices(), but we can still end up trying
-        # to add them to the tree when they are slaves of other devices, this
-        # happens for example with the livecd
-        if name.startswith("ram"):
-            return True
-
-        if name.startswith("loop"):
-            # ignore loop devices unless they're backed by a file
-            return (not blockdev.loop.get_backing_file(name))
-
-        # FIXME: check for virtual devices whose slaves are on the ignore list
 
     def _is_ignored_disk(self, disk):
         return self.devicetree._is_ignored_disk(disk)
