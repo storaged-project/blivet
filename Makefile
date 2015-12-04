@@ -42,6 +42,10 @@ po-empty:
 		exit 1 ; \
 	done
 
+# Try to fetch the real .po files, but if that fails use the empty ones
+po-fallback:
+	$(MAKE) po-pull || $(MAKE) po-empty
+
 check-requires:
 	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
 	@status=0 ; \
@@ -76,7 +80,12 @@ pep8: check-requires
 	@echo "*** Running pep8 compliance check ***"
 	$(PEP8) --ignore=E501 blivet/ tests/ examples/
 
-check: pylint pep8
+canary: check-requires po-fallback
+	@echo "*** Running translation-canary tests ***"
+	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translatable po/blivet.pot
+	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translated .
+
+check: pylint pep8 canary
 
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog

@@ -71,6 +71,15 @@ class blivet_sdist(sdist):
         # Run the parent command
         sdist.run(self)
 
+    def make_release_tree(self, base_dir, files):
+        # Run the parent command first
+        sdist.make_release_tree(self, base_dir, files)
+
+        # Run translation-canary in release mode to remove any bad translations
+        sys.path.append('translation-canary')
+        from translation_canary.translated import testSourceTree
+        testSourceTree(base_dir, releaseMode=True)
+
 data_files = []
 if os.environ.get("READTHEDOCS", False):
     generate_api_docs()
