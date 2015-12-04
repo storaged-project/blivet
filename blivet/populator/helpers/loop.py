@@ -33,7 +33,8 @@ from .devicepopulator import DevicePopulator
 class LoopDevicePopulator(DevicePopulator):
     @classmethod
     def match(cls, data):
-        return udev.device_is_loop(data)
+        return (udev.device_is_loop(data) and
+                bool(blockdev.loop.get_backing_file(udev.device_get_name(data))))
 
     def run(self):
         name = udev.device_get_name(self.data)

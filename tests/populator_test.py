@@ -179,14 +179,25 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = LoopDevicePopulator
 
+    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
+    @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_is_loop", return_value=True)
     def test_match(self, *args):
         """Test matching of loop device populator."""
         device_is_loop = args[0]
+        get_backing_file = args[2]
+        get_backing_file.return_value = True
         self.assertTrue(self.helper_class.match(None))
+
+        get_backing_file.return_value = False
+        self.assertFalse(self.helper_class.match(None))
+        get_backing_file.return_value = True
+
         device_is_loop.return_value = False
         self.assertFalse(self.helper_class.match(None))
 
+    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
+    @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
@@ -196,8 +207,14 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_get_helper(self, *args):
         """Test get_device_helper for loop devices."""
         device_is_loop = args[0]
+        get_backing_file = args[7]
         data = Mock()
+        get_backing_file.return_value = True
         self.assertEqual(get_device_helper(data), self.helper_class)
+
+        get_backing_file.return_value = False
+        self.assertNotEqual(get_device_helper(data), self.helper_class)
+        get_backing_file.return_value = True
 
         # verify that setting one of the required True return values to False prevents success
         device_is_loop.return_value = False
@@ -399,6 +416,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_partition.return_value = True
         self.assertTrue(self.helper_class.match(None))
 
+    @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
@@ -422,7 +440,9 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         # verify that setting one of the required False return values to True prevents success
         # as of now, loop is always checked before partition
         device_is_loop.return_value = True
-        self.assertNotEqual(get_device_helper(data), self.helper_class)
+        with patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file", return_value=True):
+            self.assertNotEqual(get_device_helper(data), self.helper_class)
+
         device_is_loop.return_value = False
 
     @patch.object(DiskDevice, "partitioned")
@@ -503,7 +523,7 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_get_helper(self, *args):
         """Test get_device_helper for disks."""
         device_is_disk = args[0]
-        device_is_loop = args[3]
+        device_is_cdrom = args[5]
         data = {"DM_NAME": None}
         self.assertEqual(get_device_helper(data), self.helper_class)
 
@@ -514,9 +534,9 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         # verify that setting one of the required False return values to True prevents success
         # as of now, loop is always checked before partition
-        device_is_loop.return_value = True
+        device_is_cdrom.return_value = True
         self.assertNotEqual(get_device_helper(data), self.helper_class)
-        device_is_loop.return_value = False
+        device_is_cdrom.return_value = False
 
     @patch("blivet.udev.device_get_major", return_value=99)
     @patch("blivet.udev.device_get_minor", return_value=222)
