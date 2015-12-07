@@ -97,7 +97,7 @@ class LUKSFormatPopulator(FormatPopulator):
                     log.error("failed to get udev data for %s", luks_device.name)
                     return
 
-                self._populator.add_udev_device(luks_info, update_orig_fmt=True)
+                self._populator.handle_device(luks_info, update_orig_fmt=True)
         else:
             log.warning("luks device %s already in the tree",
                         self.device.format.map_name)

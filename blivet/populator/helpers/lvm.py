@@ -236,7 +236,7 @@ class LVMFormatPopulator(FormatPopulator):
                         return lv_device
 
                     # do format handling now
-                    self._populator.add_udev_device(lv_info, update_orig_fmt=True)
+                    self._populator.handle_device(lv_info, update_orig_fmt=True)
 
                 return lv_device
 

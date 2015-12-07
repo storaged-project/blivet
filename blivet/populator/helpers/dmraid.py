@@ -80,4 +80,4 @@ class DMRaidFormatPopulator(FormatPopulator):
                 # its partitions get scanned before it does.
                 dm_array.update_sysfs_path()
                 dm_array_info = udev.get_device(dm_array.sysfs_path)
-                self._populator.add_udev_device(dm_array_info, update_orig_fmt=True)
+                self._populator.handle_device(dm_array_info, update_orig_fmt=True)

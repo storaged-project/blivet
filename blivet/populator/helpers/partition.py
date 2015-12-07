@@ -64,7 +64,7 @@ class PartitionDevicePopulator(DevicePopulator):
             # create a device instance for the disk
             new_info = udev.get_device(os.path.dirname(sysfs_path))
             if new_info:
-                self._populator.add_udev_device(new_info)
+                self._populator.handle_device(new_info)
                 disk = self._populator.devicetree.get_device_by_name(disk_name)
 
             if disk is None:

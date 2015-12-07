@@ -170,7 +170,7 @@ class Populator(object):
             slave_dev = self.get_device_by_name(slave_name)
             if not slave_dev and slave_info:
                 # we haven't scanned the slave yet, so do it now
-                self.add_udev_device(slave_info)
+                self.handle_device(slave_info)
                 slave_dev = self.get_device_by_name(slave_name)
                 if slave_dev is None:
                     if udev.device_is_dm_lvm(info):
@@ -284,7 +284,7 @@ class Populator(object):
                     if parent.name not in self.exclusive_disks:
                         self.exclusive_disks.append(parent.name)
 
-    def add_udev_device(self, info, update_orig_fmt=False):
+    def handle_device(self, info, update_orig_fmt=False):
         """
             :param :class:`pyudev.Device` info: udev info for the device
             :keyword bool update_orig_fmt: update original format unconditionally
@@ -331,12 +331,12 @@ class Populator(object):
         self._update_exclusive_disks(device)
 
         # now handle the device's formatting
-        self.handle_udev_device_format(info, device)
+        self.handle_format(info, device)
         if device_added or update_orig_fmt:
             device.original_format = copy.deepcopy(device.format)
         device.device_links = udev.device_get_symlinks(info)
 
-    def handle_udev_device_format(self, info, device):
+    def handle_format(self, info, device):
         log_method_call(self, name=getattr(device, "name", None))
 
         if not info:
@@ -360,7 +360,7 @@ class Populator(object):
 
         log.info("got format: %s", device.format)
 
-    def update_device_format(self, device):
+    def update_format(self, device):
         log.info("updating format of device: %s", device)
         try:
             util.notify_kernel(device.sysfs_path)
@@ -370,7 +370,7 @@ class Populator(object):
         udev.settle()
         info = udev.get_device(device.sysfs_path)
 
-        self.handle_udev_device_format(info, device)
+        self.handle_format(info, device)
 
     def _handle_inconsistencies(self):
         for vg in [d for d in self.devicetree.devices if d.type == "lvmvg"]:
@@ -440,7 +440,7 @@ class Populator(object):
                 self.devicetree._add_device(loopdev)
                 self.devicetree._add_device(dmdev)
                 info = udev.get_device(dmdev.sysfs_path)
-                self.add_udev_device(info, update_orig_fmt=True)
+                self.handle_device(info, update_orig_fmt=True)
 
     def teardown_disk_images(self):
         """ Tear down any disk image stacks. """
@@ -543,7 +543,7 @@ class Populator(object):
 
             log.info("devices to scan: %s", [udev.device_get_name(d) for d in devices])
             for dev in devices:
-                self.add_udev_device(dev)
+                self.handle_device(dev)
 
         self.populated = True
 

@@ -162,7 +162,7 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
                           parent_name, container_sysfs)
                 return
 
-            self._populator.add_udev_device(container_info)
+            self._populator.handle_device(container_info)
             container = self._populator.devicetree.get_device_by_name(parent_name)
             if not container:
                 log.error("failed to scan md container %s", parent_name)

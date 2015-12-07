@@ -204,4 +204,4 @@ class MDFormatPopulator(FormatPopulator):
                     log.error("failed to get udev data for %s", md_array.name)
                     return
 
-                self._populator.add_udev_device(array_info, update_orig_fmt=True)
+                self._populator.handle_device(array_info, update_orig_fmt=True)

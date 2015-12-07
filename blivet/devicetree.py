@@ -350,8 +350,8 @@ class DeviceTree(object):
         if flags.installer_mode:
             self.teardown_all()
 
-    def update_device_format(self, device):
-        return self._populator.update_device_format(device)
+    def update_format(self, device):
+        return self._populator.update_format(device)
 
     def handle_nodev_filesystems(self):
         for line in open("/proc/mounts").readlines():
