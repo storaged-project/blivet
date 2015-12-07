@@ -113,22 +113,6 @@ class Populator(object):
 
         self._cleanup = False
 
-    def set_disk_images(self, images):
-        """ Set the disk images and reflect them in exclusive_disks.
-
-            :param images: dict with image name keys and filename values
-            :type images: dict
-
-            .. note::
-
-                Disk images are automatically exclusive. That means that, in the
-                presence of disk images, any local storage not associated with
-                the disk images is ignored.
-        """
-        self.disk_images = images
-        # disk image files are automatically exclusive
-        self.exclusive_disks = list(self.disk_images.keys())
-
     def _is_ignored_disk(self, disk):
         return self.devicetree._is_ignored_disk(disk)
 
@@ -399,6 +383,22 @@ class Populator(object):
             # the time comes to remove the incomplete VG and its PVs.
             for pv in vg.pvs:
                 lvm.lvm_cc_addFilterRejectRegexp(pv.name)
+
+    def set_disk_images(self, images):
+        """ Set the disk images and reflect them in exclusive_disks.
+
+            :param images: dict with image name keys and filename values
+            :type images: dict
+
+            .. note::
+
+                Disk images are automatically exclusive. That means that, in the
+                presence of disk images, any local storage not associated with
+                the disk images is ignored.
+        """
+        self.disk_images = images
+        # disk image files are automatically exclusive
+        self.exclusive_disks = list(self.disk_images.keys())
 
     def setup_disk_images(self):
         """ Set up devices to represent the disk image files. """
