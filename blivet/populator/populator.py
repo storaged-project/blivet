@@ -529,6 +529,29 @@ class Populator(object):
             parted.clear_exn_handler()
             self.restore_configs()
 
+    def _resolve_protected_device_specs(self):
+        # resolve the protected device specs to device names
+        for spec in self.protected_dev_specs:
+            name = udev.resolve_devspec(spec)
+            log.debug("protected device spec %s resolved to %s", spec, name)
+            if name:
+                self.protected_dev_names.append(name)
+
+    def _find_live_backing_device(self):
+        # FIXME: the backing dev for the live image can't be used as an
+        # install target.  note that this is a little bit of a hack
+        # since we're assuming that /run/initramfs/live will exist
+        for mnt in open("/proc/mounts").readlines():
+            if " /run/initramfs/live " not in mnt:
+                continue
+
+            live_device_name = mnt.split()[0].split("/")[-1]
+            log.info("%s looks to be the live device; marking as protected",
+                     live_device_name)
+            self.protected_dev_names.append(live_device_name)
+            self.live_backing_device = live_device_name
+            break
+
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
                  self.ignored_disks, self.exclusive_disks)
@@ -544,26 +567,8 @@ class Populator(object):
         # exception originated while finding storage devices
         self.populated = False
 
-        # resolve the protected device specs to device names
-        for spec in self.protected_dev_specs:
-            name = udev.resolve_devspec(spec)
-            log.debug("protected device spec %s resolved to %s", spec, name)
-            if name:
-                self.protected_dev_names.append(name)
-
-        # FIXME: the backing dev for the live image can't be used as an
-        # install target.  note that this is a little bit of a hack
-        # since we're assuming that /run/initramfs/live will exist
-        for mnt in open("/proc/mounts").readlines():
-            if " /run/initramfs/live " not in mnt:
-                continue
-
-            live_device_name = mnt.split()[0].split("/")[-1]
-            log.info("%s looks to be the live device; marking as protected",
-                     live_device_name)
-            self.protected_dev_names.append(live_device_name)
-            self.live_backing_device = live_device_name
-            break
+        self._resolve_protected_device_specs()
+        self._find_live_backing_device()
 
         old_devices = {}
 
