@@ -22,6 +22,7 @@
 
 import pprint
 
+from ..xml_util import XMLUtils as ObjectID
 from .. import util
 from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
@@ -32,7 +33,7 @@ log = logging.getLogger("blivet")
 from .lib import ParentList
 
 
-class Device(util.ObjectID, metaclass=SynchronizedMeta):
+class Device(ObjectID, metaclass=SynchronizedMeta):
 
     """ A generic device.
 
@@ -77,7 +78,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             :keyword parents: a list of parent devices
             :type parents: list of :class:`Device` instances
         """
-        util.ObjectID.__init__(self)
+        ObjectID.__init__(self)
 
         # Copy only the validity check from _set_name so we don't try to check a
         # bunch of inappropriate state properties during __init__ in subclasses

@@ -49,6 +49,8 @@ from . import __version__
 from .threads import SynchronizedMeta
 from .static_data import luks_data
 
+from . import xml_util
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -57,7 +59,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     """ Top-level class for managing storage configuration. """
 
-    def __init__(self, ksdata=None):
+    def __init__(self, ksdata=None, xml_file=None):
         """
             :keyword ksdata: kickstart data store
             :type ksdata: :class:`pykickstart.Handler`
@@ -76,6 +78,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.autopart_add_backup_passphrase = False
         self.autopart_requests = []
         self.edd_dict = {}
+
+        self.xml_file = xml_file
 
         self.ignored_disks = []
         self.exclusive_disks = []
@@ -98,6 +102,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                                      luks_dict=None,
                                      ignored_disks=self.ignored_disks,
                                      exclusive_disks=self.exclusive_disks,
+                                     xml_file=self.xml_file,
                                      disk_images=self.disk_images)
         self.roots = []
         self.services = set()
@@ -131,6 +136,28 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if sysroot is not None:
             log.debug("new sysroot: %s", sysroot)
             self._sysroot = sysroot
+
+    def to_xml(self, dump_device=None, custom_name=None, rec_bool=False, test_run=False):
+        """
+            Exporter to XML File. Uses xml_util to do the work.
+        """
+        master_root_elem, super_elems = xml_util.create_basics()
+
+        if rec_bool or dump_device is not None:
+            selected_devs = xml_util.select_device(self.devices, dump_device, rec_bool)
+        elif test_run:
+            from . import export_test
+            selected_devs = export_test.vytvor_test()
+
+        else:
+            selected_devs = self.devices
+
+        actions_list = self.devicetree.actions.find()
+
+        xml_util.export_iterate(selected_devs, actions_list, master_root_elem, super_elems)
+        xml_util.save_file(master_root_elem, dump_device=dump_device,
+                           custom_name=custom_name, rec_bool=rec_bool)
+
 
     def do_it(self, callbacks=None):
         """

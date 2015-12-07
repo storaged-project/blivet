@@ -66,11 +66,47 @@ class PartitionDevice(StorageDevice):
     _resizable = True
     default_size = DEFAULT_PART_SIZE
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "fmt", "uuid", "size", "grow", "maxsize", "start", "end",
+                     "major", "minor", "bootable", "sysfs_path", "parents", "exists",
+                     "part_type", "primary", "weight", "block_size"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        init_dict["xml_import"] = True
+
+        cls_instance = PartitionDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=0):
+                 part_type=None, primary=False, weight=0,
+                 block_size=None, xml_import=False):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -129,6 +165,12 @@ class PartitionDevice(StorageDevice):
         self.req_end_sector = None
         self.req_name = None
 
+        self.start = start
+        self.end = end
+        self.block_size = block_size
+        self.lenght = None
+        self.xml_import = xml_import
+
         self._bootable = False
 
         # FIXME: Validate part_type, but only if this is a new partition
@@ -156,9 +198,12 @@ class PartitionDevice(StorageDevice):
         #        For existing partitions we will get the size from
         #        parted.
 
-        if self.exists and not flags.testing:
+        if self.exists and not flags.testing and not self.xml_import:
             log.debug("looking up parted Partition: %s", self.path)
             self._parted_partition = self.disk.format.parted_disk.getPartitionByPath(self.path)
+            self.start = self._parted_partition.geometry.start
+            self.end = self._parted_partition.geometry.end
+            self.lenght = self.end - self.start
             if not self._parted_partition:
                 raise errors.DeviceError("cannot find parted partition instance", self.name)
 
@@ -173,6 +218,10 @@ class PartitionDevice(StorageDevice):
                 # the only way to identify a BIOS Boot partition is to
                 # check the partition type/flags, so do it here.
                 self.format = get_format("biosboot", device=self.path, exists=True)
+
+        elif self.exists and not flags.testing and self.xml_import:
+            self.lenght = self.end - self.start
+
         else:
             # XXX It might be worthwhile to create a shit-simple
             #     PartitionRequest class and pass one to this constructor
@@ -528,7 +577,10 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             return
 
-        self._size = Size(self.parted_partition.getLength(unit="B"))
+        if not self.xml_import:
+            self._size = Size(self.parted_partition.getLength(unit="B"))
+        else:
+            self._size = Size(self.lenght * self.block_size)
         self.target_size = self._size
 
         self._part_type = self.parted_partition.type

@@ -40,6 +40,27 @@ class BIOSBoot(DeviceFormat):
     _min_size = Size("512 KiB")
     _supported = True
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = BIOSBoot(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, **kwargs):
         """
             :keyword device: path to the block device node

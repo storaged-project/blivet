@@ -50,6 +50,28 @@ class MultipathMember(DeviceFormat):
             :keyword exists: whether this is an existing format
             :type exists: bool
         """
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = MultipathMember(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
 

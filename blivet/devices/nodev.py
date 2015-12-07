@@ -33,6 +33,35 @@ class NoDevice(StorageDevice):
     """ A nodev device for nodev filesystems like tmpfs. """
     _type = "nodev"
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["fmt"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = NoDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
     def __init__(self, fmt=None):
         """
             :keyword fmt: the device's formatting
@@ -81,6 +110,35 @@ class TmpFSDevice(NoDevice):
     """ A nodev device for a tmpfs filesystem. """
     _type = "tmpfs"
     _format_immutable = True
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["fmt"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = TmpFSDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
 
     def __init__(self, *args, **kwargs):
         """Create a tmpfs device"""

@@ -68,13 +68,16 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
-    def __init__(self, ignored_disks=None, exclusive_disks=None):
+    def __init__(self, ignored_disks=None, exclusive_disks=None, xml_file=None):
+
         """
             :keyword ignored_disks: ignored disks
             :type ignored_disks: list
             :keyword exclusive_disks: exclusive didks
             :type exclusive_disks: list
         """
+
+        self.xml_file = xml_file
         self.reset(ignored_disks, exclusive_disks)
 
     def reset(self, ignored_disks=None, exclusive_disks=None):
@@ -893,7 +896,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
-    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None, xml_file=None):
 
         # Using {} as default optional parameter value causes Python to act funny
         # (search "mutable default argument Python" for details)
@@ -903,8 +906,8 @@ class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
         else:
             self.luks_dict_passed = luks_dict
 
-        DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict_passed, disk_images=disk_images)
+        DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks, xml_file=xml_file)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict_passed, disk_images=disk_images, xml_file=xml_file)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ

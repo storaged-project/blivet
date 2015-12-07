@@ -38,7 +38,7 @@ from gi.repository import BlockDev as blockdev
 from ..devicelibs import lvm
 
 from .. import errors
-from .. import util
+from .. import xml_util
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
@@ -85,6 +85,39 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def get_supported_pe_sizes():
         return [Size(pe_size) for pe_size in blockdev.lvm.get_supported_pe_sizes()]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "parents", "size", "free", "pe_size", "pe_count",
+                     "pe_free", "pv_count", "uuid", "exists", "sysfs_path"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # OPRAVIT: Jmeno pred prvni pomlckou odstranit
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = LVMVolumeGroupDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, name, parents=None, size=None, free=None,
                  pe_size=None, pe_count=None, pe_free=None, pv_count=None,
                  uuid=None, exists=False, sysfs_path=''):
@@ -120,12 +153,12 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self._lvs = []
         self.has_duplicate = False
         self._complete = False  # have we found all of this VG's PVs?
-        self.pv_count = util.numeric_type(pv_count)
+        self.pv_count = xml_util.util.numeric_type(pv_count)
         if exists and not pv_count:
             self._complete = True
-        self.pe_size = util.numeric_type(pe_size)
-        self.pe_count = util.numeric_type(pe_count)
-        self.pe_free = util.numeric_type(pe_free)
+        self.pe_size = xml_util.util.numeric_type(pe_size)
+        self.pe_count = xml_util.util.numeric_type(pe_count)
+        self.pe_free = xml_util.util.numeric_type(pe_free)
 
         # TODO: validate pe_size if given
         if not self.pe_size:
@@ -135,7 +168,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
                                                    uuid=uuid, size=size,
                                                    exists=exists, sysfs_path=sysfs_path)
 
-        self.free = util.numeric_type(free)
+        self.free = xml_util.util.numeric_type(free)
         self._reserved_percent = 0
         self._reserved_space = Size(0)
 
@@ -463,7 +496,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     def align(self, size, roundup=False):
         """ Align a size to a multiple of physical extent size. """
-        size = util.numeric_type(size)
+        size = xml_util.util.numeric_type(size)
         return size.round_to_nearest(self.pe_size, rounding=ROUND_UP if roundup else ROUND_DOWN)
 
     @property
@@ -556,6 +589,37 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     _packages = ["lvm2"]
     _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "parents", "size", "uuid", "seg_type", "fmt",
+                     "exists", "sysfs_path", "grow", "maxsize", "percent",
+                     "cache_request", "pvs"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = LVMLogicalVolumeBase(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
                  percent=None, cache_request=None, pvs=None):
@@ -598,10 +662,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
         if not self.exists:
             self.req_grow = grow
-            self.req_max_size = Size(util.numeric_type(maxsize))
+            self.req_max_size = Size(xml_util.util.numeric_type(maxsize))
             # XXX should we enforce that req_size be pe-aligned?
             self.req_size = self._size
-            self.req_percent = util.numeric_type(percent)
+            self.req_percent = xml_util.util.numeric_type(percent)
 
         if not self.exists and self.seg_type.startswith(("raid", "mirror")):
             # RAID LVs create one extent big internal metadata LVs so make sure
@@ -958,18 +1022,6 @@ class LVMInternalLVtype(Enum):
             else:
                 return cls.data
 
-        if lv_attr[0] == "r":
-            # internal LV which is at the same time a RAID LV
-            if lv_attr[6] == "C":
-                # part of the cache -> cache origin
-                # (cache pool cannot be a RAID LV, cache pool's data LV would
-                # have lv_attr[0] == "C", metadata LV would have
-                # lv_attr[0] == "e" even if they were RAID LVs)
-                return cls.origin
-            elif lv_attr[6] == "r":
-                # a data LV (metadata LV would have lv_attr[0] == "e")
-                return cls.data
-
         for lv_type, letters in attr_letters.items():
             if lv_attr[0] in letters:
                 return lv_type
@@ -1015,19 +1067,19 @@ class LVMInternalLogicalVolumeMixin(object):
             self._vg = self._parent_lv.vg
 
     @property
-    @util.requires_property("is_internal_lv")
+    @xml_util.util.requires_property("is_internal_lv")
     def int_lv_type(self):
         return self._lv_type
 
     @property
-    @util.requires_property("is_internal_lv")
+    @xml_util.util.requires_property("is_internal_lv")
     def takes_extra_space(self):
         return self._lv_type in (LVMInternalLVtype.meta,
                                  LVMInternalLVtype.log,
                                  LVMInternalLVtype.cache_pool)
 
     @property
-    @util.requires_property("is_internal_lv")
+    @xml_util.util.requires_property("is_internal_lv")
     def name_suffix(self):
         suffixes = {LVMInternalLVtype.data: r"_[tc]data",
                     LVMInternalLVtype.meta: r"_[trc]meta(_[0-9]+)?",
@@ -1125,7 +1177,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     @property
     def display_lvname(self):
-        """Name of the internal LV as displayed by the lvm utilities"""
+        """Name of the internal LV as displayed by the lvm xml_util.utilities"""
         return "[%s]" % self.lvname
 
     # these two methods are not needed right now, because they are only called
@@ -1215,7 +1267,7 @@ class LVMSnapshotMixin(object):
                 return meth(self, *args, **kwargs)  # pylint: disable=not-callable
         return decorated
 
-    @util.requires_property("is_snapshot_lv")
+    @xml_util.util.requires_property("is_snapshot_lv")
     def merge(self):
         """ Merge the snapshot back into its origin volume. """
         log_method_call(self, self.name, status=self.status)
@@ -1235,7 +1287,7 @@ class LVMSnapshotMixin(object):
         udev.settle()
         blockdev.lvm.lvsnapshotmerge(self.vg.name, self.lvname)
 
-    @util.requires_property("is_snapshot_lv")
+    @xml_util.util.requires_property("is_snapshot_lv")
     def _update_format_from_origin(self):
         """ Update the snapshot's format to reflect the origin's.
 
@@ -1332,10 +1384,10 @@ class LVMSnapshotMixin(object):
                         sysfs_path=self.sysfs_path)
         size = Size(0)
         if self.exists and os.path.isdir(self.sysfs_path):
-            cow_sysfs_path = util.get_cow_sysfs_path(self.path, self.sysfs_path)
+            cow_sysfs_path = xml_util.util.get_cow_sysfs_path(self.path, self.sysfs_path)
 
             if os.path.exists(cow_sysfs_path) and os.path.isdir(cow_sysfs_path):
-                blocks = int(util.get_sysfs_attr(cow_sysfs_path, "size"))
+                blocks = int(xml_util.util.get_sysfs_attr(cow_sysfs_path, "size"))
                 size = Size(blocks * LINUX_SECTOR_SIZE)
 
         return size
@@ -1376,16 +1428,16 @@ class LVMThinPoolMixin(object):
         return False
 
     @property
-    @util.requires_property("is_thin_pool")
+    @xml_util.util.requires_property("is_thin_pool")
     def used_space(self):
         return sum((l.pool_space_used for l in self.lvs), Size(0))
 
     @property
-    @util.requires_property("is_thin_pool")
+    @xml_util.util.requires_property("is_thin_pool")
     def free_space(self):
         return self.size - self.used_space
 
-    @util.requires_property("is_thin_pool")
+    @xml_util.util.requires_property("is_thin_pool")
     def _add_log_vol(self, lv):
         """ Add an LV to this pool. """
         if lv in self._lvs:
@@ -1396,7 +1448,7 @@ class LVMThinPoolMixin(object):
         log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
 
-    @util.requires_property("is_thin_pool")
+    @xml_util.util.requires_property("is_thin_pool")
     def _remove_log_vol(self, lv):
         """ Remove an LV from this pool. """
         if lv not in self._lvs:
@@ -1406,7 +1458,7 @@ class LVMThinPoolMixin(object):
         self.vg._remove_log_vol(lv)
 
     @property
-    @util.requires_property("is_thin_pool")
+    @xml_util.util.requires_property("is_thin_pool")
     def lvs(self):
         """ A list of this pool's LVs """
         return self._lvs[:]     # we don't want folks changing our list
@@ -1484,12 +1536,12 @@ class LVMThinLogicalVolumeMixin(object):
         return "lvmthinlv"
 
     @property
-    @util.requires_property("is_thin_lv")
+    @xml_util.util.requires_property("is_thin_lv")
     def pool(self):
         return self.parents[0]
 
     @property
-    @util.requires_property("is_thin_lv")
+    @xml_util.util.requires_property("is_thin_lv")
     def pool_space_used(self):
         """ The total space used within the thin pool by this volume.
 
@@ -1508,7 +1560,7 @@ class LVMThinLogicalVolumeMixin(object):
             raise ValueError("new size must of type Size")
 
         size = self.vg.align(size)
-        size = self.vg.align(util.numeric_type(size))
+        size = self.vg.align(xml_util.util.numeric_type(size))
         # just make sure the size is set (no VG size/free space check needed for
         # a thin LV)
         DMDevice._set_size(self, size)
@@ -1553,6 +1605,45 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
     # generally resizable, see :property:`resizable` for details
     _resizable = True
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "parents", "size", "uuid", "seg_type",
+                     "fmt", "exists", "sysfs_path", "grow", "maxsize",
+                     "percent", "cache_request", "pvs",
+                     "parent_lv", "int_type", "origin", "vorigin",
+                     "metadata_size", "chunk_size", "profile"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = LVMLogicalVolumeDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                elif attr == "cache":
+                    obj_attr = "_cache"
+                else:
+                    obj_attr = attr
+                setattr(cls_instance, obj_attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
@@ -1860,14 +1951,14 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                         all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
                 slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
 
-            slow_pvs = util.dedup_list(slow_pvs)
+            slow_pvs = xml_util.util.dedup_list(slow_pvs)
 
             # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
             # XXX: we need to pass slow_pvs+fast_pvs (without duplicates) as slow PVs because parts of the
             # fast PVs may be required for allocation of the LV (it may span over the slow PVs and parts of
             # fast PVs)
             blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
-                                                mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+                                                mode, 0, xml_util.util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
 
     @type_specific
     def _post_create(self):
@@ -1992,9 +2083,49 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         self._cache = LVMCache(self, size=cache_pool_lv.size, exists=True)
 
 
-class LVMCache(Cache):
+class LVMCache(Cache, xml_util.XMLUtils):
 
     """Class providing the cache-related functionality of a cached LV"""
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["cached_lv", "size", "md_size", "exists", "pvs", "mode"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = LVMCache(**init_dict)
+        # Define underscore attributes
+        underscore = {}
+
+        underscore_dict = {"mode": "_mode", "cache_device_name": "_cache_device_name", "vg_space_used": "_vg_space_used"}
+
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                elif underscore_dict.get(attr) is not None:
+                    obj_attr = underscore_dict.get(attr)
+                else:
+                    obj_attr = attr
+                setattr(cls_instance, obj_attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, cached_lv, size=None, md_size=None, exists=False, pvs=None, mode=None):
         """

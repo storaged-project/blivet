@@ -45,7 +45,6 @@ from .container import ContainerDevice
 from .network import NetworkStorageDevice
 from .dm import DMDevice
 
-
 class DiskDevice(StorageDevice):
 
     """ A local/generic disk.
@@ -57,6 +56,38 @@ class DiskDevice(StorageDevice):
     _type = "disk"
     _partitionable = True
     _is_disk = True
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "fmt", "size", "major", "minor", "sysfs_path",
+                     "parents", "serial", "vendor", "model", "bus", "exists"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = DiskDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, name, fmt=None,
                  size=None, major=None, minor=None, sysfs_path='',
@@ -121,7 +152,6 @@ class DiskDevice(StorageDevice):
             raise errors.DeviceError("cannot destroy disk with no media", self.name)
 
         StorageDevice._pre_destroy(self)
-
 
 class DiskFile(DiskDevice):
 

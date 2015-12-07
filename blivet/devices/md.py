@@ -57,6 +57,39 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     _format_uuid_attr = property(lambda s: "md_uuid")
     _external_dependencies = [availability.BLOCKDEV_MDRAID_PLUGIN]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "level", "major", "minor", "size", "member_devices",
+                     "total_devices", "uuid", "fmt", "exists", "metadata_version",
+                     "parents", "sysfs_path", "chunk_size"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = MDRaidArrayDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  member_devices=None, total_devices=None,
                  uuid=None, fmt=None, exists=False, metadata_version=None,

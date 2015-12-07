@@ -739,6 +739,27 @@ class Ext2FS(FS):
     parted_system = fileSystemType["ext2"]
     _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = Ext2FS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(Ext2FS)
 
 
@@ -757,6 +778,27 @@ class Ext3FS(Ext2FS):
     _max_size = Size("16 TiB")
     _metadata_size_factor = 0.90  # ext3 metadata may take 10% of space
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = Ext3FS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(Ext3FS)
 
 
@@ -769,6 +811,27 @@ class Ext4FS(Ext3FS):
     parted_system = fileSystemType["ext4"]
     _max_size = Size("1 EiB")
     _metadata_size_factor = 0.85  # ext4 metadata may take 15% of space
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = Ext4FS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
 register_device_format(Ext4FS)
 
@@ -792,6 +855,27 @@ class FATFS(FS):
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = FATFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(FATFS)
 
 
@@ -805,6 +889,27 @@ class EFIFS(FATFS):
     @property
     def supported(self):
         return super(EFIFS, self).supported and isinstance(platform.platform, platform.EFI)
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = EFIFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
 register_device_format(EFIFS)
 
@@ -825,6 +930,25 @@ class BTRFS(FS):
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["btrfs"]
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+        cls_instance = BTRFS(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, **kwargs):
         super(BTRFS, self).__init__(**kwargs)
@@ -872,6 +996,27 @@ class GFS2(FS):
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["gfs2"]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = GFS2(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     @property
     def supported(self):
         """ Is this filesystem a supported type? """
@@ -897,6 +1042,27 @@ class JFS(FS):
     _writelabel_class = fswritelabel.JFSWriteLabel
     _metadata_size_factor = 0.99  # jfs metadata may take 1% of space
     parted_system = fileSystemType["jfs"]
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = JFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     @property
     def supported(self):
@@ -924,6 +1090,27 @@ class ReiserFS(FS):
     _writelabel_class = fswritelabel.ReiserFSWriteLabel
     _metadata_size_factor = 0.98  # reiserfs metadata may take 2% of space
     parted_system = fileSystemType["reiserfs"]
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = ReiserFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     @property
     def supported(self):
@@ -953,6 +1140,27 @@ class XFS(FS):
     _metadata_size_factor = 0.97  # xfs metadata may take 3% of space
     parted_system = fileSystemType["xfs"]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = XFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 
 register_device_format(XFS)
 
@@ -965,6 +1173,27 @@ class HFS(FS):
     _mkfs_class = fsmkfs.HFSMkfs
     parted_system = fileSystemType["hfs"]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = HFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(HFS)
 
 
@@ -975,6 +1204,27 @@ class AppleBootstrapFS(HFS):
     _max_size = Size("1 MiB")
     _supported = True
     _mount_class = fsmount.AppleBootstrapFSMount
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = AppleBootstrapFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     @property
     def supported(self):
@@ -998,6 +1248,27 @@ class HFSPlus(FS):
     _mkfs_class = fsmkfs.HFSPlusMkfs
     _mount_class = fsmount.HFSPlusMount
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = HFSPlus(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(HFSPlus)
 
 
@@ -1011,6 +1282,27 @@ class MacEFIFS(HFSPlus):
     @property
     def supported(self):
         return super(MacEFIFS, self).supported and isinstance(platform.platform, platform.MacEFI)
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = MacEFIFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, **kwargs):
         if "label" not in kwargs:
@@ -1040,6 +1332,27 @@ class NTFS(FS):
     _writelabel_class = fswritelabel.NTFSWriteLabel
     parted_system = fileSystemType["ntfs"]
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = NTFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(NTFS)
 
 
@@ -1056,6 +1369,27 @@ class NFS(FS):
             return "device must be of the form <host>:<path>"
         return None
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = NFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(NFS)
 
 
@@ -1064,6 +1398,27 @@ class NFSv4(NFS):
     """ NFSv4 filesystem. """
     _type = "nfs4"
     _modules = ["nfs4"]
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = NFSv4(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
 register_device_format(NFSv4)
 
@@ -1075,6 +1430,27 @@ class Iso9660FS(FS):
     _supported = True
     _mount_class = fsmount.Iso9660FSMount
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = Iso9660FS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
 register_device_format(Iso9660FS)
 
 
@@ -1083,6 +1459,27 @@ class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = NoDevFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)
@@ -1136,6 +1533,27 @@ class TmpFS(NoDevFS):
     _size_info_class = fssize.TmpFSSize
     _mount_class = fsmount.TmpFSMount
     _resize_class = fsresize.TmpFSResize
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Because formats dont have any additional arg, init class right away
+        init_dict = {}
+        cls_instance = TmpFS(**init_dict)
+
+        ignored_attrs = {"class", "XMLID"}
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, **kwargs):
         NoDevFS.__init__(self, **kwargs)

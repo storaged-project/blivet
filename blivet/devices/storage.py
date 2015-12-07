@@ -62,6 +62,39 @@ class StorageDevice(Device):
     _encrypted = False
     _external_dependencies = []
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["name", "fmt", "uuid", "size", "major", "minor",
+                     "sysfs_path", "parents", "exists", "serial", "vendor",
+                     "model", "bus"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = StorageDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
                  sysfs_path='', parents=None, exists=False, serial=None,

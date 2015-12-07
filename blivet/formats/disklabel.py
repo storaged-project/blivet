@@ -46,6 +46,25 @@ class DiskLabel(DeviceFormat):
     _name = N_("partition table")
     _formattable = True                # can be formatted
 
+    @classmethod
+    def __init_xml__(self, xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # Finally, init the class
+        class_inst = DiskLabel()
+        # Set attributes to the class
+        for attr in xml_dict:
+            if attr == "class":
+                continue
+            try:
+                setattr(class_inst, attr, xml_dict.get(attr))
+            except Exception as e:
+                continue
+        # And last, return it
+        return class_inst
+
     def __init__(self, **kwargs):
         """
             :keyword device: full path to the block device node
