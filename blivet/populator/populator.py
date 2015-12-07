@@ -115,7 +115,7 @@ class Populator(object):
     def _is_ignored_disk(self, disk):
         return self.devicetree._is_ignored_disk(disk)
 
-    def udev_device_is_disk(self, info):
+    def _udev_device_is_disk(self, info):
         """ Return True if the udev device looks like a disk.
 
             :param info: udevdb device entry
@@ -258,7 +258,7 @@ class Populator(object):
 
     def _mark_readonly_device(self, info, device):
         # If this device is read-only, mark it as such now.
-        if self.udev_device_is_disk(info) and \
+        if self._udev_device_is_disk(info) and \
                 util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
             device.readonly = True
 
