@@ -21,7 +21,6 @@
 #
 
 import os
-import shutil
 import pprint
 import copy
 import parted
@@ -454,50 +453,6 @@ class Populator(object):
             loop_device = dm_device.parents[0]
             loop_device.teardown()
 
-    def backup_configs(self, restore=False):
-        """ Create a backup copies of some storage config files. """
-        configs = ["/etc/mdadm.conf"]
-        for cfg in configs:
-            if restore:
-                src = cfg + ".anacbak"
-                dst = cfg
-                func = os.rename
-                op = "restore from backup"
-            else:
-                src = cfg
-                dst = cfg + ".anacbak"
-                func = shutil.copy2
-                op = "create backup copy"
-
-            if os.access(dst, os.W_OK):
-                try:
-                    os.unlink(dst)
-                except OSError as e:
-                    msg = str(e)
-                    log.info("failed to remove %s: %s", dst, msg)
-
-            if os.access(src, os.W_OK):
-                # copy the config to a backup with extension ".anacbak"
-                try:
-                    func(src, dst)
-                except (IOError, OSError) as e:
-                    msg = str(e)
-                    log.error("failed to %s of %s: %s", op, cfg, msg)
-            elif restore and os.access(cfg, os.W_OK):
-                # remove the config since we created it
-                log.info("removing anaconda-created %s", cfg)
-                try:
-                    os.unlink(cfg)
-                except OSError as e:
-                    msg = str(e)
-                    log.error("failed to remove %s: %s", cfg, msg)
-            else:
-                # don't try to backup non-existent configs
-                log.info("not going to %s of non-existent %s", op, cfg)
-
-    def restore_configs(self):
-        self.backup_configs(restore=True)
-
     def save_luks_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
 
@@ -516,7 +471,6 @@ class Populator(object):
             scanned just the rest, but then they are hidden at the end of this
             process.
         """
-        self.backup_configs()
         if cleanup_only:
             self._cleanup = True
 
@@ -527,7 +481,6 @@ class Populator(object):
             raise
         finally:
             parted.clear_exn_handler()
-            self.restore_configs()
 
     def _resolve_protected_device_specs(self):
         # resolve the protected device specs to device names
