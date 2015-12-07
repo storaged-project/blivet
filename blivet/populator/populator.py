@@ -206,6 +206,101 @@ class Populator(object):
 
         return slave_devices
 
+    def _add_name(self, name):
+        if name not in self.names:
+            self.names.append(name)
+
+    def _reason_to_skip_device(self, info):
+        sysfs_path = udev.device_get_sysfs_path(info)
+        uuid = udev.device_get_uuid(info)
+
+        # make sure this device was not scheduled for removal and also has not
+        # been hidden
+        removed = [a.device for a in self.devicetree.actions.find(action_type="destroy",
+                                                                  object_type="device")]
+        for ignored in removed + self.devicetree._hidden:
+            if (sysfs_path and ignored.sysfs_path == sysfs_path) or \
+               (uuid and uuid in (ignored.uuid, ignored.format.uuid)):
+                if ignored in removed:
+                    reason = "removed"
+                else:
+                    reason = "hidden"
+
+                return reason
+
+    def _handle_degraded_md(self, info, device):
+        if device is not None or not udev.device_is_md(info):
+            return
+
+        # If the md name is None, then some udev info is missing. Likely,
+        # this is because the array is degraded, and mdadm has deactivated
+        # it. Try to activate it and re-get the udev info.
+        if flags.allow_imperfect_devices and udev.device_get_md_name(info) is None:
+            devname = udev.device_get_devname(info)
+            if devname:
+                try:
+                    blockdev.md.run(devname)
+                except blockdev.MDRaidError as e:
+                    log.warning("Failed to start possibly degraded md array: %s", e)
+                else:
+                    udev.settle()
+                    info = udev.get_device(udev.device_get_sysfs_path(info))
+            else:
+                log.warning("Failed to get devname for possibly degraded md array.")
+
+        md_name = udev.device_get_md_name(info)
+        if md_name is None:
+            log.warning("No name for possibly degraded md array.")
+        else:
+            device = self.get_device_by_name(md_name, incomplete=flags.allow_imperfect_devices)
+
+        if device and not isinstance(device, MDRaidArrayDevice):
+            log.warning("Found device %s, but it turns out not be an md array device after all.", device.name)
+            device = None
+
+        return device
+
+    def _clear_new_multipath_member(self, device):
+        if device is None or not device.is_disk or not blockdev.mpath.is_mpath_member(device.path):
+            return
+
+        # newly added device (eg iSCSI) could make this one a multipath member
+        if device.format and device.format.type != "multipath_member":
+            log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
+            # remove children from tree so that we don't stumble upon them later
+            for child in self.devicetree.get_children(device):
+                self.devicetree.recursive_remove(child, actions=False)
+
+            device.format = None
+
+    def _mark_readonly_device(self, info, device):
+        # If this device is read-only, mark it as such now.
+        if self.udev_device_is_disk(info) and \
+                util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
+            device.readonly = True
+
+    def _mark_protected_device(self, device):
+        # If this device is protected, mark it as such now. Once the tree
+        # has been populated, devices' protected attribute is how we will
+        # identify protected devices.
+        if device.name in self.protected_dev_names:
+            device.protected = True
+            # if this is the live backing device we want to mark its parents
+            # as protected also
+            if device.name == self.live_backing_device:
+                for parent in device.parents:
+                    parent.protected = True
+
+    def _update_exclusive_disks(self, device):
+        # If we just added a multipath or fwraid disk that is in exclusive_disks
+        # we have to make sure all of its members are in the list too.
+        mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
+        if device.is_disk and isinstance(device, mdclasses):
+            if device.name in self.exclusive_disks:
+                for parent in device.parents:
+                    if parent.name not in self.exclusive_disks:
+                        self.exclusive_disks.append(parent.name)
+
     def add_udev_device(self, info, update_orig_fmt=False):
         """
             :param :class:`pyudev.Device` info: udev info for the device
@@ -218,80 +313,21 @@ class Populator(object):
         """
         name = udev.device_get_name(info)
         log_method_call(self, name=name, info=pprint.pformat(dict(info)))
-        uuid = udev.device_get_uuid(info)
         sysfs_path = udev.device_get_sysfs_path(info)
 
-        # make sure this device was not scheduled for removal and also has not
-        # been hidden
-        removed = [a.device for a in self.devicetree.actions.find(
-            action_type="destroy",
-            object_type="device")]
-        for ignored in removed + self.devicetree._hidden:
-            if (sysfs_path and ignored.sysfs_path == sysfs_path) or \
-               (uuid and uuid in (ignored.uuid, ignored.format.uuid)):
-                if ignored in removed:
-                    reason = "removed"
-                else:
-                    reason = "hidden"
-
-                log.debug("skipping %s device %s", reason, name)
-                return
-
-        # make sure we note the name of every device we see
-        if name not in self.names:
-            self.names.append(name)
-
-        if self.is_ignored(info):
-            log.info("ignoring %s (%s)", name, sysfs_path)
-            if name not in self.ignored_disks:
-                self.add_ignored_disk(name)
-
+        reason = self._reason_to_skip_device(info)
+        if reason:
+            log.debug("skipping %s device %s", reason, name)
             return
 
         log.info("scanning %s (%s)...", name, sysfs_path)
+
+        # make sure we note the name of every device we see
+        self._add_name(name)
         device = self.get_device_by_name(name)
-        if device is None and udev.device_is_md(info):
+        device = self._handle_degraded_md(info, device)
+        self._clear_new_multipath_member(device)
 
-            # If the md name is None, then some udev info is missing. Likely,
-            # this is because the array is degraded, and mdadm has deactivated
-            # it. Try to activate it and re-get the udev info.
-            if flags.allow_imperfect_devices and udev.device_get_md_name(info) is None:
-                devname = udev.device_get_devname(info)
-                if devname:
-                    try:
-                        blockdev.md.run(devname)
-                    except blockdev.MDRaidError as e:
-                        log.warning("Failed to start possibly degraded md array: %s", e)
-                    else:
-                        udev.settle()
-                        info = udev.get_device(sysfs_path)
-                else:
-                    log.warning("Failed to get devname for possibly degraded md array.")
-
-            md_name = udev.device_get_md_name(info)
-            if md_name is None:
-                log.warning("No name for possibly degraded md array.")
-            else:
-                device = self.get_device_by_name(md_name, incomplete=flags.allow_imperfect_devices)
-
-            if device and not isinstance(device, MDRaidArrayDevice):
-                log.warning("Found device %s, but it turns out not be an md array device after all.", device.name)
-                device = None
-
-        if device and device.is_disk and \
-           blockdev.mpath.is_mpath_member(device.path):
-            # newly added device (eg iSCSI) could make this one a multipath member
-            if device.format and device.format.type != "multipath_member":
-                log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
-                # remove children from tree so that we don't stumble upon them later
-                for child in self.devicetree.get_children(device):
-                    self.devicetree.recursive_remove(child, actions=False)
-
-                device.format = None
-
-        #
-        # The first step is to either look up or create the device
-        #
         device_added = True
         helper_class = None
         if device:
@@ -307,31 +343,9 @@ class Populator(object):
             return
 
         log.info("got device: %r", device)
-
-        # If this device is read-only, mark it as such now.
-        if self.udev_device_is_disk(info) and \
-                util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
-            device.readonly = True
-
-        # If this device is protected, mark it as such now. Once the tree
-        # has been populated, devices' protected attribute is how we will
-        # identify protected devices.
-        if device.name in self.protected_dev_names:
-            device.protected = True
-            # if this is the live backing device we want to mark its parents
-            # as protected also
-            if device.name == self.live_backing_device:
-                for parent in device.parents:
-                    parent.protected = True
-
-        # If we just added a multipath or fwraid disk that is in exclusive_disks
-        # we have to make sure all of its members are in the list too.
-        mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
-        if device.is_disk and isinstance(device, mdclasses):
-            if device.name in self.exclusive_disks:
-                for parent in device.parents:
-                    if parent.name not in self.exclusive_disks:
-                        self.exclusive_disks.append(parent.name)
+        self._mark_readonly_device(info, device)
+        self._mark_protected_device(device)
+        self._update_exclusive_disks(device)
 
         # now handle the device's formatting
         self.handle_udev_device_format(info, device)
