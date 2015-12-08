@@ -51,21 +51,21 @@ class PartitionDevicePopulator(DevicePopulator):
 
         if name.startswith("md"):
             name = blockdev.md.name_from_node(name)
-            device = self._populator.devicetree.get_device_by_name(name)
+            device = self._devicetree.get_device_by_name(name)
             if device:
                 return device
 
         disk_name = udev.device_get_partition_disk(self.data)
         if disk_name.startswith("md"):
             disk_name = blockdev.md.name_from_node(disk_name)
-        disk = self._populator.devicetree.get_device_by_name(disk_name)
+        disk = self._devicetree.get_device_by_name(disk_name)
 
         if disk is None:
             # create a device instance for the disk
             new_info = udev.get_device(os.path.dirname(sysfs_path))
             if new_info:
-                self._populator.handle_device(new_info)
-                disk = self._populator.devicetree.get_device_by_name(disk_name)
+                self._devicetree.handle_device(new_info)
+                disk = self._devicetree.get_device_by_name(disk_name)
 
             if disk is None:
                 # if the current device is still not in
@@ -83,7 +83,7 @@ class PartitionDevicePopulator(DevicePopulator):
             if disk.partitionable and \
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
-               not self._populator.devicetree._is_ignored_disk(disk):
+               not self._devicetree._is_ignored_disk(disk):
                 if self.data.get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
                     cls = CorruptGPTError
@@ -117,5 +117,5 @@ class PartitionDevicePopulator(DevicePopulator):
             log.error("Failed to instantiate PartitionDevice: %s", e)
             return
 
-        self._populator.devicetree._add_device(device)
+        self._devicetree._add_device(device)
         return device

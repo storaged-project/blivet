@@ -1,1 +1,1 @@
-from .populator import Populator
+from .populator import PopulatorMixin

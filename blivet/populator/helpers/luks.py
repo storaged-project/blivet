@@ -51,16 +51,16 @@ class LUKSFormatPopulator(FormatPopulator):
             return
 
         # look up or create the mapped device
-        if not self._populator.devicetree.get_device_by_name(self.device.format.map_name):
-            passphrase = self._populator._Populator__luks_devs.get(self.device.format.uuid)
+        if not self._devicetree.get_device_by_name(self.device.format.map_name):
+            passphrase = self._devicetree._Populator__luks_devs.get(self.device.format.uuid)
             if self.device.format.configured:
                 pass
             elif passphrase:
                 self.device.format.passphrase = passphrase
-            elif self.device.format.uuid in self._populator._Populator__luks_devs:
+            elif self.device.format.uuid in self._devicetree._Populator__luks_devs:
                 log.info("skipping previously-skipped luks device %s",
                          self.device.name)
-            elif self._populator._cleanup or flags.testing:
+            elif self._devicetree._cleanup or flags.testing:
                 # if we're only building the devicetree so that we can
                 # tear down all of the devices we don't need a passphrase
                 if self.device.format.status:
@@ -71,7 +71,7 @@ class LUKSFormatPopulator(FormatPopulator):
                 # passphrase has been set for a specific device without a full
                 # reset/populate, in which case the new passphrase would not be
                 # in self.__passphrases.
-                passphrases = self._populator._Populator__passphrases + list(self._populator._Populator__luks_devs.values())
+                passphrases = self._devicetree._Populator__passphrases + list(self._devicetree._Populator__luks_devs.values())
                 for passphrase in passphrases:
                     self.device.format.passphrase = passphrase
                     try:
@@ -91,13 +91,13 @@ class LUKSFormatPopulator(FormatPopulator):
                 self.device.remove_child()
             else:
                 luks_device.update_sysfs_path()
-                self._populator.devicetree._add_device(luks_device)
+                self._devicetree._add_device(luks_device)
                 luks_info = udev.get_device(luks_device.sysfs_path)
                 if not luks_info:
                     log.error("failed to get udev data for %s", luks_device.name)
                     return
 
-                self._populator.handle_device(luks_info, update_orig_fmt=True)
+                self._devicetree.handle_device(luks_info, update_orig_fmt=True)
         else:
             log.warning("luks device %s already in the tree",
                         self.device.format.map_name)

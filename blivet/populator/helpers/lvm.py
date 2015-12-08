@@ -51,21 +51,21 @@ class LVMDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
 
         vg_name = udev.device_get_lv_vg_name(self.data)
-        device = self._populator.devicetree.get_device_by_name(vg_name, hidden=True)
+        device = self._devicetree.get_device_by_name(vg_name, hidden=True)
         if device and not isinstance(device, LVMVolumeGroupDevice):
             log.warning("found non-vg device with name %s", vg_name)
             device = None
 
-        self._populator._add_slave_devices(self.data)
+        self._devicetree._add_slave_devices(self.data)
 
         # LVM provides no means to resolve conflicts caused by duplicated VG
         # names, so we're just being optimistic here. Woo!
         vg_name = udev.device_get_lv_vg_name(self.data)
-        vg_device = self._populator.devicetree.get_device_by_name(vg_name)
+        vg_device = self._devicetree.get_device_by_name(vg_name)
         if not vg_device:
             log.error("failed to find vg '%s' after scanning pvs", vg_name)
 
-        return self._populator.devicetree.get_device_by_name(name)
+        return self._devicetree.get_device_by_name(name)
 
 
 class LVMFormatPopulator(FormatPopulator):
@@ -75,7 +75,7 @@ class LVMFormatPopulator(FormatPopulator):
     def _get_kwargs(self):
         kwargs = super()._get_kwargs()
 
-        pv_info = self._populator.pv_info.get(self.device.path, None)
+        pv_info = self._devicetree.pv_info.get(self.device.path, None)
         name = udev.device_get_name(self.data)
         if pv_info:
             if pv_info.vg_name:
@@ -96,10 +96,10 @@ class LVMFormatPopulator(FormatPopulator):
     def _handle_vg_lvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
-        lv_info = dict((k, v) for (k, v) in iter(self._populator.lv_info.items())
+        lv_info = dict((k, v) for (k, v) in iter(self._devicetree.lv_info.items())
                        if v.vg_name == vg_name)
 
-        self._populator.names.extend(n for n in lv_info.keys() if n not in self._populator.names)
+        self._devicetree.names.extend(n for n in lv_info.keys() if n not in self._devicetree.names)
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s", vg_name)
@@ -126,12 +126,12 @@ class LVMFormatPopulator(FormatPopulator):
                 :raises: :class:`~.errors.DeviceTreeError` on failure
 
             """
-            vol = self._populator.devicetree.get_device_by_name(name)
+            vol = self._devicetree.get_device_by_name(name)
             if vol is None:
                 new_lv = add_lv(lv_info[name])
                 if new_lv:
                     all_lvs.append(new_lv)
-                vol = self._populator.devicetree.get_device_by_name(name)
+                vol = self._devicetree.get_device_by_name(name)
 
                 if vol is None:
                     log.error("%s: %s", msg, name)
@@ -150,7 +150,7 @@ class LVMFormatPopulator(FormatPopulator):
             lv_kwargs = {}
             name = "%s-%s" % (vg_name, lv_name)
 
-            if self._populator.devicetree.get_device_by_name(name):
+            if self._devicetree.get_device_by_name(name):
                 # some lvs may have been added on demand below
                 log.debug("already added %s", name)
                 return
@@ -170,7 +170,7 @@ class LVMFormatPopulator(FormatPopulator):
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
                     add_required_lv(origin_device_name,
                                     "failed to locate origin lv")
-                    origin = self._populator.devicetree.get_device_by_name(origin_device_name)
+                    origin = self._devicetree.get_device_by_name(origin_device_name)
 
                 lv_kwargs["origin"] = origin
                 lv_class = LVMSnapShotDevice
@@ -196,13 +196,13 @@ class LVMFormatPopulator(FormatPopulator):
                 if origin_name:
                     origin_device_name = "%s-%s" % (vg_name, origin_name)
                     add_required_lv(origin_device_name, "failed to locate origin lv")
-                    origin = self._populator.devicetree.get_device_by_name(origin_device_name)
+                    origin = self._devicetree.get_device_by_name(origin_device_name)
                     lv_kwargs["origin"] = origin
                     lv_class = LVMThinSnapShotDevice
                 else:
                     lv_class = LVMThinLogicalVolumeDevice
 
-                lv_parents = [self._populator.devicetree.get_device_by_name(pool_device_name)]
+                lv_parents = [self._devicetree.get_device_by_name(pool_device_name)]
             elif lv_name.endswith(']'):
                 # unrecognized Internal LVM2 device
                 return
@@ -218,12 +218,12 @@ class LVMFormatPopulator(FormatPopulator):
                 #   C cached LV
                 return
 
-            lv_dev = self._populator.devicetree.get_device_by_uuid(lv_uuid)
+            lv_dev = self._devicetree.get_device_by_uuid(lv_uuid)
             if lv_dev is None:
                 lv_device = lv_class(lv_name, parents=lv_parents,
                                      uuid=lv_uuid, size=lv_size, seg_type=lv_type,
                                      exists=True, **lv_kwargs)
-                self._populator.devicetree._add_device(lv_device)
+                self._devicetree._add_device(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
 
@@ -236,7 +236,7 @@ class LVMFormatPopulator(FormatPopulator):
                         return lv_device
 
                     # do format handling now
-                    self._populator.handle_device(lv_info, update_orig_fmt=True)
+                    self._devicetree.handle_device(lv_info, update_orig_fmt=True)
 
                 return lv_device
 
@@ -308,7 +308,7 @@ class LVMFormatPopulator(FormatPopulator):
 
     def run(self):
         super().run()
-        pv_info = self._populator.pv_info.get(self.device.path, None)
+        pv_info = self._devicetree.pv_info.get(self.device.path, None)
         if pv_info:
             vg_name = pv_info.vg_name
             vg_uuid = pv_info.vg_uuid
@@ -320,11 +320,11 @@ class LVMFormatPopulator(FormatPopulator):
             log.info("lvm pv %s has no vg", self.device.name)
             return
 
-        vg_device = self._populator.devicetree.get_device_by_uuid(vg_uuid, incomplete=True)
+        vg_device = self._devicetree.get_device_by_uuid(vg_uuid, incomplete=True)
         if vg_device:
             vg_device.parents.append(self.device)
         else:
-            same_name = self._populator.devicetree.get_device_by_name(vg_name)
+            same_name = self._devicetree.get_device_by_name(vg_name)
             if isinstance(same_name, LVMVolumeGroupDevice):
                 raise DuplicateVGError("multiple LVM volume groups with the same name (%s)" % vg_name)
 
@@ -349,6 +349,6 @@ class LVMFormatPopulator(FormatPopulator):
                                              pe_free=pe_free,
                                              pv_count=pv_count,
                                              exists=True)
-            self._populator.devicetree._add_device(vg_device)
+            self._devicetree._add_device(vg_device)
 
         self._handle_vg_lvs(vg_device)

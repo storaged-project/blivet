@@ -41,7 +41,7 @@ class MultipathDevicePopulator(DevicePopulator):
         name = udev.device_get_name(self.data)
         log_method_call(self, name=name)
 
-        slave_devices = self._populator._add_slave_devices(self.data)
+        slave_devices = self._devicetree._add_slave_devices(self.data)
 
         device = None
         if slave_devices:
@@ -54,7 +54,7 @@ class MultipathDevicePopulator(DevicePopulator):
             device = MultipathDevice(name, parents=slave_devices,
                                      sysfs_path=udev.device_get_sysfs_path(self.data),
                                      serial=serial)
-            self._populator.devicetree._add_device(device)
+            self._devicetree._add_device(device)
 
         return device
 

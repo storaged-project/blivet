@@ -60,7 +60,7 @@ class DMRaidFormatPopulator(FormatPopulator):
             return
 
         for rs_name in rs_names:
-            dm_array = self._populator.devicetree.get_device_by_name(rs_name, incomplete=True)
+            dm_array = self._devicetree.get_device_by_name(rs_name, incomplete=True)
             if dm_array is not None:
                 # We add the new device.
                 dm_array.parents.append(self.device)
@@ -70,7 +70,7 @@ class DMRaidFormatPopulator(FormatPopulator):
                 dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[self.device])
 
-                self._populator.devicetree._add_device(dm_array)
+                self._devicetree._add_device(dm_array)
 
                 # Wait for udev to scan the just created nodes, to avoid a race
                 # with the udev.get_device() call below.
@@ -80,4 +80,4 @@ class DMRaidFormatPopulator(FormatPopulator):
                 # its partitions get scanned before it does.
                 dm_array.update_sysfs_path()
                 dm_array_info = udev.get_device(dm_array.sysfs_path)
-                self._populator.handle_device(dm_array_info, update_orig_fmt=True)
+                self._devicetree.handle_device(dm_array_info, update_orig_fmt=True)

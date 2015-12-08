@@ -35,7 +35,9 @@ from ..devices import DMLinearDevice, DMRaidArrayDevice
 from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
 from ..devices import MultipathDevice
+from ..devices import NoDevice
 from ..devicelibs import lvm
+from .. import formats
 from .. import udev
 from .. import util
 from ..util import open  # pylint: disable=redefined-builtin
@@ -60,10 +62,8 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
     return ret
 
 
-class Populator(object):
-
-    def __init__(self, devicetree=None, conf=None, passphrase=None,
-                 luks_dict=None, iscsi=None, dasd=None):
+class PopulatorMixin(object):
+    def __init__(self, conf=None, passphrase=None, luks_dict=None, iscsi=None, dasd=None):
         """
             :keyword conf: storage discovery configuration
             :type conf: :class:`~.StorageDiscoveryConfig`
@@ -76,8 +76,9 @@ class Populator(object):
             :type dasd: :class:`~.dasd.DASD`
 
         """
-        self.devicetree = devicetree
+        self.reset(conf=conf, passphrase=passphrase, luks_dict=luks_dict, iscsi=iscsi, dasd=dasd)
 
+    def reset(self, conf=None, passphrase=None, luks_dict=None, iscsi=None, dasd=None):
         # indicates whether or not the tree has been fully populated
         self.populated = False
 
@@ -96,8 +97,6 @@ class Populator(object):
 
         # names of protected devices at the time of tree population
         self.protected_dev_names = []
-
-        self.unused_raid_members = []
 
         self.__passphrases = []
         if passphrase:
@@ -172,7 +171,7 @@ class Populator(object):
                 slave_dev = self.get_device_by_name(slave_name)
                 if slave_dev is None:
                     if udev.device_is_dm_lvm(info):
-                        if slave_name not in self.devicetree.lv_info:
+                        if slave_name not in self.lv_info:
                             # we do not expect hidden lvs to be in the tree
                             continue
 
@@ -197,9 +196,9 @@ class Populator(object):
 
         # make sure this device was not scheduled for removal and also has not
         # been hidden
-        removed = [a.device for a in self.devicetree.actions.find(action_type="destroy",
-                                                                  object_type="device")]
-        for ignored in removed + self.devicetree._hidden:
+        removed = [a.device for a in self.actions.find(action_type="destroy",
+                                                       object_type="device")]
+        for ignored in removed + self._hidden:
             if (sysfs_path and ignored.sysfs_path == sysfs_path) or \
                (uuid and uuid in (ignored.uuid, ignored.format.uuid)):
                 if ignored in removed:
@@ -249,8 +248,8 @@ class Populator(object):
         if device.format and device.format.type != "multipath_member":
             log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
             # remove children from tree so that we don't stumble upon them later
-            for child in self.devicetree.get_children(device):
-                self.devicetree.recursive_remove(child, actions=False)
+            for child in self.get_children(device):
+                self.recursive_remove(child, actions=False)
 
             device.format = None
 
@@ -277,10 +276,10 @@ class Populator(object):
         # we have to make sure all of its members are in the list too.
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
         if device.is_disk and isinstance(device, mdclasses):
-            if device.name in self.devicetree.exclusive_disks:
+            if device.name in self.exclusive_disks:
                 for parent in device.parents:
-                    if parent.name not in self.devicetree.exclusive_disks:
-                        self.devicetree.exclusive_disks.append(parent.name)
+                    if parent.name not in self.exclusive_disks:
+                        self.exclusive_disks.append(parent.name)
 
     def handle_device(self, info, update_orig_fmt=False):
         """
@@ -371,7 +370,7 @@ class Populator(object):
         self.handle_format(info, device)
 
     def _handle_inconsistencies(self):
-        for vg in [d for d in self.devicetree.devices if d.type == "lvmvg"]:
+        for vg in [d for d in self.devices if d.type == "lvmvg"]:
             if vg.complete:
                 continue
 
@@ -434,9 +433,9 @@ class Populator(object):
             except (ValueError, DeviceError) as e:
                 log.error("failed to set up disk image: %s", e)
             else:
-                self.devicetree._add_device(filedev)
-                self.devicetree._add_device(loopdev)
-                self.devicetree._add_device(dmdev)
+                self._add_device(filedev)
+                self._add_device(loopdev)
+                self._add_device(dmdev)
                 info = udev.get_device(dmdev.sysfs_path)
                 self.handle_device(info, update_orig_fmt=True)
 
@@ -479,6 +478,10 @@ class Populator(object):
             raise
         finally:
             parted.clear_exn_handler()
+            self._hide_ignored_disks()
+
+        if flags.installer_mode:
+            self.teardown_all()
 
     def _resolve_protected_device_specs(self):
         # resolve the protected device specs to device names
@@ -505,7 +508,7 @@ class Populator(object):
 
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
-                 self.devicetree.ignored_disks, self.devicetree.exclusive_disks)
+                 self.ignored_disks, self.exclusive_disks)
 
         self.drop_lvm_cache()
 
@@ -550,16 +553,6 @@ class Populator(object):
         self._handle_inconsistencies()
 
     @property
-    def names(self):
-        return self.devicetree.names
-
-    def get_device_by_name(self, *args, **kwargs):
-        return self.devicetree.get_device_by_name(*args, **kwargs)
-
-    def get_device_by_uuid(self, *args, **kwargs):
-        return self.devicetree.get_device_by_uuid(*args, **kwargs)
-
-    @property
     def pv_info(self):
         if self._pvs_cache is None:
             pvs = blockdev.lvm.pvs()
@@ -579,3 +572,32 @@ class Populator(object):
         """ Drop cached lvm information. """
         self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
         self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
+
+    def handle_nodev_filesystems(self):
+        for line in open("/proc/mounts").readlines():
+            try:
+                (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
+            except ValueError:
+                log.error("failed to parse /proc/mounts line: %s", line)
+                continue
+            if fstype in formats.fslib.nodev_filesystems:
+                if not flags.include_nodev:
+                    continue
+
+                log.info("found nodev %s filesystem mounted at %s",
+                         fstype, mountpoint)
+                # nodev filesystems require some special handling.
+                # For now, a lot of this is based on the idea that it's a losing
+                # battle to require the presence of an FS class for every type
+                # of nodev filesystem. Based on that idea, we just instantiate
+                # NoDevFS directly and then hack in the fstype as the device
+                # attribute.
+                fmt = formats.get_format("nodev")
+                fmt.device = fstype
+
+                # NoDevice also needs some special works since they don't have
+                # per-instance names in the kernel.
+                device = NoDevice(fmt=fmt)
+                n = len([d for d in self.devices if d.format.type == fstype])
+                device._name += ".%d" % n
+                self._add_device(device)

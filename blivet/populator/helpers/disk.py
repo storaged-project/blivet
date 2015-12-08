@@ -73,9 +73,9 @@ class DiskDevicePopulator(DevicePopulator):
         kwargs = self._get_kwargs()
         device = self._device_class(name, **kwargs)
         if self._device_class == DASDDevice:
-            self._populator.dasd.append(device)
+            self._devicetree.dasd.append(device)
 
-        self._populator.devicetree._add_device(device)
+        self._devicetree._add_device(device)
         return device
 
 
@@ -150,7 +150,7 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
         kwargs = super()._get_kwargs()
         parent_path = udev.device_get_md_container(self.data)
         parent_name = device_path_to_name(parent_path)
-        container = self._populator.devicetree.get_device_by_name(parent_name)
+        container = self._devicetree.get_device_by_name(parent_name)
 
         # FIXME: Move this whole block to an add_parent_devices method or similar
         if not container:
@@ -162,8 +162,8 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
                           parent_name, container_sysfs)
                 return
 
-            self._populator.handle_device(container_info)
-            container = self._populator.devicetree.get_device_by_name(parent_name)
+            self._devicetree.handle_device(container_info)
+            container = self._devicetree.get_device_by_name(parent_name)
             if not container:
                 log.error("failed to scan md container %s", parent_name)
                 return

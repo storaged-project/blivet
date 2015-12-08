@@ -41,18 +41,18 @@ class LoopDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
         backing_file = blockdev.loop.get_backing_file(name)
-        file_device = self._populator.devicetree.get_device_by_name(backing_file)
+        file_device = self._devicetree.get_device_by_name(backing_file)
         if not file_device:
             file_device = FileDevice(backing_file, exists=True)
-            self._populator.devicetree._add_device(file_device)
+            self._devicetree._add_device(file_device)
         device = LoopDevice(name,
                             parents=[file_device],
                             sysfs_path=sysfs_path,
                             exists=True)
-        if not self._populator._cleanup or file_device not in self._populator.disk_images.values():
+        if not self._devicetree._cleanup or file_device not in self._devicetree.disk_images.values():
             # don't allow manipulation of loop devices other than those
             # associated with disk images, and then only during cleanup
             file_device.controllable = False
             device.controllable = False
-        self._populator.devicetree._add_device(device)
+        self._devicetree._add_device(device)
         return device

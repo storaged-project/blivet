@@ -45,8 +45,8 @@ class DMDevicePopulator(DevicePopulator):
         name = udev.device_get_name(self.data)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
-        slave_devices = self._populator._add_slave_devices(self.data)
-        device = self._populator.devicetree.get_device_by_name(name)
+        slave_devices = self._devicetree._add_slave_devices(self.data)
+        device = self._devicetree.get_device_by_name(name)
 
         # create a device for the livecd OS image(s)
         if device is None and udev.device_is_dm_livecd(self.data):
@@ -55,7 +55,7 @@ class DMDevicePopulator(DevicePopulator):
                               parents=[slave_devices[0]])
             device.protected = True
             device.controllable = False
-            self._populator.devicetree._add_device(device)
+            self._devicetree._add_device(device)
 
         # if we get here, we found all of the slave devices and
         # something must be wrong -- if all of the slaves are in

@@ -42,5 +42,5 @@ class OpticalDevicePopulator(DevicePopulator):
                                sysfs_path=udev.device_get_sysfs_path(self.data),
                                vendor=udev.device_get_vendor(self.data),
                                model=udev.device_get_model(self.data))
-        self._populator.devicetree._add_device(device)
+        self._devicetree._add_device(device)
         return device

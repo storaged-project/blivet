@@ -47,7 +47,7 @@ class BTRFSFormatPopulator(FormatPopulator):
         uuid = udev.device_get_uuid(self.data)
 
         btrfs_dev = None
-        for d in self._populator.devicetree.devices:
+        for d in self._devicetree.devices:
             if isinstance(d, BTRFSVolumeDevice) and d.uuid == uuid:
                 btrfs_dev = d
                 break
@@ -60,7 +60,7 @@ class BTRFSFormatPopulator(FormatPopulator):
             log.info("creating btrfs volume btrfs.%s", label)
             btrfs_dev = BTRFSVolumeDevice(label, parents=[self.device], uuid=uuid,
                                           exists=True)
-            self._populator.devicetree._add_device(btrfs_dev)
+            self._devicetree._add_device(btrfs_dev)
 
         if not btrfs_dev.subvolumes:
             snapshots = btrfs_dev.list_subvolumes(snapshots_only=True)
@@ -101,4 +101,4 @@ class BTRFSFormatPopulator(FormatPopulator):
                                       fmt=fmt,
                                       parents=[parent],
                                       exists=True)
-                self._populator.devicetree._add_device(subvol)
+                self._devicetree._add_device(subvol)

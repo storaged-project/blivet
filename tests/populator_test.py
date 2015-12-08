@@ -16,7 +16,6 @@ from blivet.flags import flags
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
 from blivet.osinstall import storage_initialize
-from blivet.populator import Populator
 from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
 from blivet.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
 from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
@@ -132,7 +131,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(DMDevice, "status", return_value=True)
-    @patch.object(Populator, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_slave_devices")
     @patch("blivet.udev.device_is_dm_livecd", return_value=False)
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
@@ -141,35 +140,35 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_livecd = args[2]
         device_get_name = args[1]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
 
         # The general case for dm devices is that adding the slave/parent devices
         # will result in the dm device itself being in the tree.
         device = Mock()
-        populator.devicetree.get_device_by_name.return_value = device
+        devicetree.get_device_by_name.return_value = device
         data = {"DM_UUID": sentinel.dm_uuid}
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), device)
-        self.assertEqual(populator._add_slave_devices.call_count, 1)
-        self.assertEqual(populator.devicetree.get_device_by_name.call_count, 1)
+        self.assertEqual(devicetree._add_slave_devices.call_count, 1)
+        self.assertEqual(devicetree.get_device_by_name.call_count, 1)
         # since we faked the lookup as if the device was already in the tree
         # the helper should not have added it, meaning it shouldn't be there
-        self.assertFalse(device in populator.devicetree.devices)
+        self.assertFalse(device in devicetree.devices)
 
         # The other case is adding a live media image
         parent = Mock()
         parent.parents = []
-        populator._add_slave_devices.return_value = [parent]
-        populator.devicetree._add_device(parent)
-        populator.devicetree.get_device_by_name.return_value = None
+        devicetree._add_slave_devices.return_value = [parent]
+        devicetree._add_device(parent)
+        devicetree.get_device_by_name.return_value = None
         device_name = "livedevice"
         device_get_name.return_value = device_name
         device_is_dm_livecd.return_value = True
 
         device = helper.run()
         self.assertIsInstance(device, DMDevice)
-        self.assertTrue(device in populator.devicetree.devices)
+        self.assertTrue(device in devicetree.devices)
         self.assertEqual(device.dm_uuid, sentinel.dm_uuid)
         self.assertEqual(device.name, device_name)
         self.assertEqual(device.sysfs_path, sentinel.sysfs_path)
@@ -236,28 +235,28 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_name = args[1]
         get_backing_file = args[2]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = Mock()
 
         # Add backing file and loop device.
-        populator.devicetree.get_device_by_name.return_value = None
+        devicetree.get_device_by_name.return_value = None
         device_name = "loop3"
         device_get_name.return_value = device_name
         backing_file = "/some/file"
         get_backing_file.return_value = backing_file
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         device = helper.run()
 
         self.assertIsInstance(device, LoopDevice)
-        self.assertTrue(device in populator.devicetree.devices)
+        self.assertTrue(device in devicetree.devices)
         self.assertTrue(device.exists)
         self.assertEqual(device.name, device_name)
         self.assertIsInstance(device.parents[0], FileDevice)
         self.assertTrue(device.parents[0].exists)
 
-        self.assertEqual(populator.devicetree.get_device_by_name.call_count, 1)
-        populator.devicetree.get_device_by_name.assert_called_with(backing_file)
+        self.assertEqual(devicetree.get_device_by_name.call_count, 1)
+        devicetree.get_device_by_name.assert_called_with(backing_file)
 
 
 class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -292,7 +291,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # could be the first helper class checked.
 
     @patch.object(DeviceTree, "get_device_by_name")
-    @patch.object(Populator, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_slave_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_lv_vg_name")
     def test_run(self, *args):
@@ -301,12 +300,12 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_name = args[1]
         get_device_by_name = args[3]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = Mock()
 
         # Add slave/parent devices and then look up the device.
         device_get_name.return_value = sentinel.lv_name
-        populator.devicetree.get_device_by_name.return_value = None
+        devicetree.get_device_by_name.return_value = None
 
         # pylint: disable=unused-argument
         def _get_device_by_name(name, **kwargs):
@@ -315,10 +314,10 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         get_device_by_name.side_effect = _get_device_by_name
         device_get_lv_vg_name.return_value = sentinel.vg_name
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), sentinel.lv_device)
-        self.assertEqual(populator.devicetree.get_device_by_name.call_count, 3)
+        self.assertEqual(devicetree.get_device_by_name.call_count, 3)
         get_device_by_name.assert_has_calls(
             [call(sentinel.vg_name, hidden=True),
              call(sentinel.vg_name),
@@ -385,10 +384,10 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test optical device populator."""
         device_get_name = args[0]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = Mock()
 
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
         device_name = "sr0"
         device_get_name.return_value = device_name
 
@@ -396,7 +395,7 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertIsInstance(device, OpticalDevice)
         self.assertTrue(device.exists)
         self.assertEqual(device.name, device_name)
-        self.assertTrue(device in populator.devicetree.devices)
+        self.assertTrue(device in devicetree.devices)
 
 
 class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -462,7 +461,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_name = args[1]
         get_device_by_name = args[2]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = Mock()
 
         # for every case:
@@ -473,19 +472,19 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         # base case: disk is already in the tree, normal disk
         fmt = get_format("disklabel", exists=True, device="/dev/xyz")
         disk = DiskDevice("xyz", fmt=fmt, exists=True)
-        populator.devicetree._add_device(disk)
+        devicetree._add_device(disk)
 
         device_name = "xyz1"
         device_get_name.return_value = device_name
         device_get_partition_disk.return_value = "xyz"
         get_device_by_name.return_value = disk
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         device = helper.run()
         self.assertIsInstance(device, PartitionDevice)
         self.assertTrue(device.exists)
         self.assertEqual(device.name, device_name)
-        self.assertTrue(device in populator.devicetree.devices)
+        self.assertTrue(device in devicetree.devices)
 
         # TODO: disk not already in the tree
 
@@ -545,19 +544,19 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test disk device populator."""
         device_get_name = args[0]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = Mock()
 
         device_name = "nop"
         device_get_name.return_value = device_name
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         device = helper.run()
         self.assertIsInstance(device, DiskDevice)
         self.assertTrue(device.exists)
         self.assertTrue(device.is_disk)
         self.assertEqual(device.name, device_name)
-        self.assertTrue(device in populator.devicetree.devices)
+        self.assertTrue(device in devicetree.devices)
 
 
 class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -608,7 +607,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         # could be the first helper class checked.
 
     @patch.object(DeviceTree, "get_device_by_name")
-    @patch.object(Populator, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_slave_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_md_uuid")
     @patch("blivet.udev.device_get_md_name")
@@ -617,7 +616,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_md_name = args[0]
         get_device_by_name = args[4]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
 
         # base case: _add_slave_devices gets the array into the tree
         data = Mock()
@@ -627,7 +626,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_name = "mdtest"
         device_get_md_name.return_value = device_name
         get_device_by_name.return_value = device
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), device)
 
@@ -682,14 +681,14 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         # could be the first helper class checked.
 
     @patch("blivet.udev.device_get_sysfs_path")
-    @patch.object(Populator, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_slave_devices")
     @patch("blivet.udev.device_get_name")
     def test_run(self, *args):
         """Test multipath device populator."""
         device_get_name = args[0]
         add_slave_devices = args[1]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = {"DM_UUID": "1-2-3-4"}
 
         device_name = "mpathtest"
@@ -698,17 +697,17 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         slave_1.parents = []
         slave_2 = Mock()
         slave_2.parents = []
-        populator.devicetree._add_device(slave_1)
-        populator.devicetree._add_device(slave_2)
+        devicetree._add_device(slave_1)
+        devicetree._add_device(slave_2)
         add_slave_devices.return_value = [slave_1, slave_2]
 
-        helper = self.helper_class(populator, data)
+        helper = self.helper_class(devicetree, data)
 
         device = helper.run()
         self.assertIsInstance(device, MultipathDevice)
         self.assertTrue(device.exists)
         self.assertEqual(device.name, device_name)
-        self.assertTrue(device in populator.devicetree.devices)
+        self.assertTrue(device in devicetree.devices)
 
 
 class FormatPopulatorTestCase(PopulatorHelperTestCase):
@@ -752,12 +751,12 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
         if self.udev_type is None:
             return
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = dict()
         device = Mock()
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -863,12 +862,12 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         """Test lvm format populator."""
         get_device_by_uuid = args[0]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = dict()
         device = Mock()
         device.parents = []
         device.size = Size("10g")
-        populator.devicetree._add_device(device)
+        devicetree._add_device(device)
 
         # pylint: disable=attribute-defined-outside-init
         self._pvs = blockdev.lvm.pvs
@@ -877,7 +876,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         # base case: pv format with no vg
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -890,15 +889,15 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_uuid = sentinel.vg_uuid
         pv_info.pe_start = 0
 
-        populator._pvs_cache = dict()
-        populator._pvs_cache[sentinel.pv_path] = pv_info
+        devicetree._pvs_cache = dict()
+        devicetree._pvs_cache[sentinel.pv_path] = pv_info
         device.path = sentinel.pv_path
 
         vg_device = Mock()
         get_device_by_uuid.return_value = vg_device
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -920,7 +919,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_pv_count = 1
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -928,9 +927,9 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
             self.assertEqual(get_device_by_uuid.call_count, 1)
             get_device_by_uuid.assert_called_with(pv_info.vg_uuid, incomplete=True)
-            vg_device = populator.devicetree.get_device_by_name(pv_info.vg_name)
+            vg_device = devicetree.get_device_by_name(pv_info.vg_name)
             self.assertTrue(vg_device is not None)
-            populator.devicetree._remove_device(vg_device)
+            devicetree._remove_device(vg_device)
 
         get_device_by_uuid.reset_mock()
 
@@ -955,10 +954,10 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         lv_info = {lv1_name: lv1,
                    lv2_name: lv2}
-        populator._lvs_cache = lv_info
+        devicetree._lvs_cache = lv_info
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -969,12 +968,12 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
                                                  call(lv1.uuid),
                                                  call(lv2.uuid)],
                                                 any_order=True)
-            vg_device = populator.devicetree.get_device_by_name(pv_info.vg_name)
+            vg_device = devicetree.get_device_by_name(pv_info.vg_name)
             self.assertTrue(vg_device is not None)
 
-            lv1_device = populator.devicetree.get_device_by_name(lv1_name)
+            lv1_device = devicetree.get_device_by_name(lv1_name)
             self.assertEqual(lv1_device.uuid, lv1.uuid)
-            lv2_device = populator.devicetree.get_device_by_name(lv2_name)
+            lv2_device = devicetree.get_device_by_name(lv2_name)
             self.assertEqual(lv2_device.uuid, lv2.uuid)
 
 
@@ -998,13 +997,13 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         get_devices = args[1]
         device_is_md = args[2]
 
-        populator = Populator(devicetree=DeviceTree())
+        devicetree = DeviceTree()
         data = dict()
         device = Mock()
         device.name = sentinel.dev1_name
         device.parents = []
         device.size = Size("10g")
-        populator.devicetree._add_device(device)
+        devicetree._add_device(device)
 
         # pylint: disable=attribute-defined-outside-init
         self._examine = blockdev.md.examine
@@ -1020,7 +1019,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         get_device_by_uuid.return_value = md_device
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -1046,7 +1045,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         get_devices.return_value = [md_udev]
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device)
+            helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
                              self.blivet_type,
@@ -1054,15 +1053,15 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
 
             self.assertEqual(get_device_by_uuid.call_count, 1)
             get_device_by_uuid.assert_called_with(md_info.uuid, incomplete=True)
-            array = populator.devicetree.get_device_by_name(array_name)
+            array = devicetree.get_device_by_name(array_name)
             self.assertTrue(array is None)
-            array = populator.devicetree.get_device_by_name(array_name, incomplete=True)
+            array = devicetree.get_device_by_name(array_name, incomplete=True)
             self.assertTrue(array is not None)
             self.assertFalse(array.complete)
             self.assertEqual(array.name, array_name)
 
         get_device_by_uuid.reset_mock()
-        array = populator.devicetree.get_device_by_name(array_name, incomplete=True)
+        array = devicetree.get_device_by_name(array_name, incomplete=True)
         get_device_by_uuid.return_value = array
 
         # second of two members belonging to a valid array
@@ -1070,10 +1069,10 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         device2.name = sentinel.dev2_name
         device2.parents = []
         device2.size = Size("10g")
-        populator.devicetree._add_device(device2)
+        devicetree._add_device(device2)
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-            helper = self.helper_class(populator, data, device2)
+            helper = self.helper_class(devicetree, data, device2)
             helper.run()
             self.assertEqual(device2.format.type,
                              self.blivet_type,
@@ -1082,7 +1081,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
             self.assertEqual(get_device_by_uuid.call_count, 1)  # one for the array
             get_device_by_uuid.assert_called_with(md_info.uuid, incomplete=True)
 
-            array = populator.devicetree.get_device_by_name(array_name)
+            array = devicetree.get_device_by_name(array_name)
             self.assertTrue(array is not None)
             self.assertTrue(array.complete)
             self.assertEqual(array.name, array_name)
