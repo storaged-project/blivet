@@ -99,9 +99,6 @@ class DeviceTree(object):
 
         self._hidden = []
 
-        # initialize attributes that may later hold cached lvm info
-        self.drop_lvm_cache()
-
         lvm.lvm_cc_resetFilter()
 
         self.edd_dict = {}
@@ -339,7 +336,6 @@ class DeviceTree(object):
             process.
         """
         udev.settle()
-        self.drop_lvm_cache()
         try:
             self._populator.populate(cleanup_only=cleanup_only)
         except Exception:
@@ -1060,27 +1056,6 @@ class DeviceTree(object):
     #
     # Miscellaneous (global) data
     #
-    @property
-    def pv_info(self):
-        if self._pvs_cache is None:
-            pvs = blockdev.lvm.pvs()
-            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._pvs_cache
-
-    @property
-    def lv_info(self):
-        if self._lvs_cache is None:
-            lvs = blockdev.lvm.lvs()
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._lvs_cache
-
-    def drop_lvm_cache(self):
-        """ Drop cached lvm information. """
-        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
-        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
-
     @property
     def dasd(self):
         return self._populator.dasd

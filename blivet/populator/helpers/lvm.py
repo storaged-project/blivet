@@ -75,7 +75,7 @@ class LVMFormatPopulator(FormatPopulator):
     def _get_kwargs(self):
         kwargs = super()._get_kwargs()
 
-        pv_info = self._populator.devicetree.pv_info.get(self.device.path, None)
+        pv_info = self._populator.pv_info.get(self.device.path, None)
         name = udev.device_get_name(self.data)
         if pv_info:
             if pv_info.vg_name:
@@ -96,7 +96,7 @@ class LVMFormatPopulator(FormatPopulator):
     def _handle_vg_lvs(self, vg_device):
         """ Handle setup of the LV's in the vg_device. """
         vg_name = vg_device.name
-        lv_info = dict((k, v) for (k, v) in iter(self._populator.devicetree.lv_info.items())
+        lv_info = dict((k, v) for (k, v) in iter(self._populator.lv_info.items())
                        if v.vg_name == vg_name)
 
         self._populator.names.extend(n for n in lv_info.keys() if n not in self._populator.names)
@@ -308,7 +308,7 @@ class LVMFormatPopulator(FormatPopulator):
 
     def run(self):
         super().run()
-        pv_info = self._populator.devicetree.pv_info.get(self.device.path, None)
+        pv_info = self._populator.pv_info.get(self.device.path, None)
         if pv_info:
             vg_name = pv_info.vg_name
             vg_uuid = pv_info.vg_uuid

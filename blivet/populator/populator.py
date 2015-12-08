@@ -110,6 +110,9 @@ class Populator(object):
             self.__luks_devs = luks_dict
             self.__passphrases.extend([p for p in luks_dict.values() if p])
 
+        # initialize attributes that may later hold cached lvm info
+        self.drop_lvm_cache()
+ 
         self._cleanup = False
 
     def _is_ignored_disk(self, disk):
@@ -509,7 +512,7 @@ class Populator(object):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
                  self.ignored_disks, self.exclusive_disks)
 
-        self.devicetree.drop_lvm_cache()
+        self.drop_lvm_cache()
 
         if flags.installer_mode and not flags.image_install:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
@@ -560,3 +563,24 @@ class Populator(object):
 
     def get_device_by_uuid(self, *args, **kwargs):
         return self.devicetree.get_device_by_uuid(*args, **kwargs)
+
+    @property
+    def pv_info(self):
+        if self._pvs_cache is None:
+            pvs = blockdev.lvm.pvs()
+            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
+
+        return self._pvs_cache
+
+    @property
+    def lv_info(self):
+        if self._lvs_cache is None:
+            lvs = blockdev.lvm.lvs()
+            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
+
+        return self._lvs_cache
+
+    def drop_lvm_cache(self):
+        """ Drop cached lvm information. """
+        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init

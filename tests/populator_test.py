@@ -890,8 +890,8 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_uuid = sentinel.vg_uuid
         pv_info.pe_start = 0
 
-        populator.devicetree._pvs_cache = dict()
-        populator.devicetree._pvs_cache[sentinel.pv_path] = pv_info
+        populator._pvs_cache = dict()
+        populator._pvs_cache[sentinel.pv_path] = pv_info
         device.path = sentinel.pv_path
 
         vg_device = Mock()
@@ -955,7 +955,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         lv_info = {lv1_name: lv1,
                    lv2_name: lv2}
-        populator.devicetree._lvs_cache = lv_info
+        populator._lvs_cache = lv_info
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
             helper = self.helper_class(populator, data, device)
