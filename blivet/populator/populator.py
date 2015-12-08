@@ -81,8 +81,6 @@ class Populator(object):
         # indicates whether or not the tree has been fully populated
         self.populated = False
 
-        self.exclusive_disks = getattr(conf, "exclusive_disks", [])
-        self.ignored_disks = getattr(conf, "ignored_disks", [])
         self.iscsi = iscsi
         self.dasd = dasd
 
@@ -112,11 +110,8 @@ class Populator(object):
 
         # initialize attributes that may later hold cached lvm info
         self.drop_lvm_cache()
- 
-        self._cleanup = False
 
-    def _is_ignored_disk(self, disk):
-        return self.devicetree._is_ignored_disk(disk)
+        self._cleanup = False
 
     def _udev_device_is_disk(self, info):
         """ Return True if the udev device looks like a disk.
@@ -282,10 +277,10 @@ class Populator(object):
         # we have to make sure all of its members are in the list too.
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
         if device.is_disk and isinstance(device, mdclasses):
-            if device.name in self.exclusive_disks:
+            if device.name in self.devicetree.exclusive_disks:
                 for parent in device.parents:
-                    if parent.name not in self.exclusive_disks:
-                        self.exclusive_disks.append(parent.name)
+                    if parent.name not in self.devicetree.exclusive_disks:
+                        self.devicetree.exclusive_disks.append(parent.name)
 
     def handle_device(self, info, update_orig_fmt=False):
         """
@@ -510,7 +505,7 @@ class Populator(object):
 
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
-                 self.ignored_disks, self.exclusive_disks)
+                 self.devicetree.ignored_disks, self.devicetree.exclusive_disks)
 
         self.drop_lvm_cache()
 

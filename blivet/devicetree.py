@@ -101,6 +101,9 @@ class DeviceTree(object):
 
         lvm.lvm_cc_resetFilter()
 
+        self.exclusive_disks = getattr(conf, "exclusive_disks", [])
+        self.ignored_disks = getattr(conf, "ignored_disks", [])
+
         self.edd_dict = {}
 
         self._populator = Populator(self,
@@ -891,14 +894,6 @@ class DeviceTree(object):
     #
     # Disk filter
     #
-    @property
-    def exclusive_disks(self):
-        return self._populator.exclusive_disks
-
-    @property
-    def ignored_disks(self):
-        return self._populator.ignored_disks
-
     def hide(self, device):
         """ Hide the specified device.
 

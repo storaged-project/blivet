@@ -83,7 +83,7 @@ class PartitionDevicePopulator(DevicePopulator):
             if disk.partitionable and \
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
-               not self._populator._is_ignored_disk(disk):
+               not self._populator.devicetree._is_ignored_disk(disk):
                 if self.data.get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
                     cls = CorruptGPTError
