@@ -121,7 +121,7 @@ def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
             con_write.send((False, ex))
 
 
-class iscsi(object):
+class _iSCSI(object):
 
     """ iSCSI utility class.
 
@@ -542,6 +542,6 @@ class iscsi(object):
         return node_disks
 
 # Create iscsi singleton
-iscsi = iscsi()
+iscsi = _iSCSI()
 
 # vim:tw=78:ts=4:et:sw=4
