@@ -134,7 +134,6 @@ class Blivet(object):
         self.autopart_add_backup_passphrase = False
         self.autopart_requests = []
         self.edd_dict = {}
-        self.dasd = []
 
         self.__luks_devs = {}
         self.size_sets = []
@@ -152,8 +151,7 @@ class Blivet(object):
         self.devicetree = DeviceTree(conf=self.config,
                                      passphrase=self.encryption_passphrase,
                                      luks_dict=self.__luks_devs,
-                                     iscsi=self.iscsi,
-                                     dasd=self.dasd)
+                                     iscsi=self.iscsi)
         self.fsset = FSSet(self.devicetree)
         self.roots = []
         self.services = set()
@@ -272,17 +270,11 @@ class Blivet(object):
             self.iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
-            self.dasd = self.devicetree.make_dasd_list(self.dasd, self.devices)
-
-        if self.dasd:
-            # Reset the internal dasd list (823534)
-            self.dasd = []
 
         self.devicetree.reset(conf=self.config,
                               passphrase=self.encryption_passphrase,
                               luks_dict=self.__luks_devs,
-                              iscsi=self.iscsi,
-                              dasd=self.dasd)
+                              iscsi=self.iscsi)
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.fsset = FSSet(self.devicetree)
         self.edd_dict = get_edd_dict(self.partitioned)
@@ -1392,17 +1384,19 @@ class Blivet(object):
         self.iscsi.write(get_sysroot(), self)
         self.fcoe.write(get_sysroot())
         self.zfcp.write(get_sysroot())
-        self.write_dasd_conf(self.dasd, get_sysroot())
+        self.write_dasd_conf(get_sysroot())
 
-    def write_dasd_conf(self, disks, root):
+    def write_dasd_conf(self, root):
         """ Write /etc/dasd.conf to target system for all DASD devices
             configured during installation.
         """
-        if not (arch.is_s390() and disks):
+        dasds = self.devicetree.get_devices_by_type("dasd")
+        dasds.sort(key=lambda d: d.name)
+        if not (arch.is_s390() and dasds):
             return
 
         with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:
-            for dasd in sorted(disks, key=lambda d: d.name):
+            for dasd in dasds:
                 fields = [dasd.busid] + dasd.get_opts()
                 f.write("%s\n" % " ".join(fields),)
 

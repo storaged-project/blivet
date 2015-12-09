@@ -72,9 +72,6 @@ class DiskDevicePopulator(DevicePopulator):
 
         kwargs = self._get_kwargs()
         device = self._device_class(name, **kwargs)
-        if self._device_class == DASDDevice:
-            self._devicetree.dasd.append(device)
-
         self._devicetree._add_device(device)
         return device
 

@@ -31,9 +31,9 @@ from gi.repository import BlockDev as blockdev
 from .actionlist import ActionList
 from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
-from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
+from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
-from . import formats, arch
+from . import formats
 from .devicelibs import lvm
 from . import util
 from .populator import PopulatorMixin
@@ -719,45 +719,6 @@ class DeviceTreeBase(object):
         return device
 
     #
-    # DASD
-    #
-    def make_dasd_list(self, dasds, disks):
-        """ Create a list of DASDs recognized by the system
-
-            :param list dasds: a list of DASD devices
-            :param list disks: a list of disks on the system
-            :returns: a list of DASD devices identified on the system
-            :rtype: list of :class:
-        """
-        if not arch.is_s390():
-            return
-
-        log.info("Generating DASD list....")
-        for dev in (disk for disk in disks if disk.type == "dasd"):
-            if dev not in dasds:
-                dasds.append(dev)
-
-        return dasds
-
-    def make_unformatted_dasd_list(self, dasds):
-        """ Create a list of DASDs which are detected to require dasdfmt.
-
-            :param list dasds: a list of DASD devices
-            :returns: a list of DASDs which need dasdfmt in order to be used
-            :rtype: list of :class:
-        """
-        if not arch.is_s390():
-            return
-
-        unformatted = []
-
-        for dasd in dasds:
-            if blockdev.s390.dasd_needs_format(dasd.busid):
-                unformatted.append(dasd)
-
-        return unformatted
-
-    #
     # Conveniences
     #
     @property
@@ -885,10 +846,6 @@ class DeviceTreeBase(object):
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
-        if isinstance(device, DASDDevice):
-            # pylint: disable=no-member
-            self.dasd.remove(device)
-
         if device.name not in self.names:
             self.names.append(device.name)
 
@@ -917,9 +874,6 @@ class DeviceTreeBase(object):
                 self._devices.append(hidden)
                 hidden.add_hook(new=False)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
-                if isinstance(device, DASDDevice):
-                    # pylint: disable=no-member
-                    self.dasd.append(device)
 
     def _is_ignored_disk(self, disk):
         return ((self.ignored_disks and disk.name in self.ignored_disks) or
@@ -943,12 +897,12 @@ class DeviceTreeBase(object):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin):
-    def __init__(self, conf=None, passphrase=None, luks_dict=None, iscsi=None, dasd=None):
+    def __init__(self, conf=None, passphrase=None, luks_dict=None, iscsi=None):
         DeviceTreeBase.__init__(self, conf=conf)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, iscsi=iscsi, dasd=dasd)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, iscsi=iscsi)
 
     # pylint: disable=arguments-differ
-    def reset(self, conf=None, passphrase=None, luks_dict=None, iscsi=None, dasd=None):
+    def reset(self, conf=None, passphrase=None, luks_dict=None, iscsi=None):
         DeviceTreeBase.reset(self, conf=conf)
         PopulatorMixin.reset(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict,
-                             iscsi=iscsi, dasd=dasd)
+                             iscsi=iscsi)
