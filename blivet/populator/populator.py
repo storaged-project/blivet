@@ -75,9 +75,6 @@ class PopulatorMixin(object):
         self.reset(conf=conf, passphrase=passphrase, luks_dict=luks_dict)
 
     def reset(self, conf=None, passphrase=None, luks_dict=None):
-        # indicates whether or not the tree has been fully populated
-        self.populated = False
-
         self.disk_images = {}
         images = getattr(conf, "disk_images", {})
         if images:
@@ -510,10 +507,6 @@ class PopulatorMixin(object):
 
         self.setup_disk_images()
 
-        # mark the tree as unpopulated so exception handlers can tell the
-        # exception originated while finding storage devices
-        self.populated = False
-
         self._resolve_protected_device_specs()
         self._find_live_backing_device()
 
@@ -538,8 +531,6 @@ class PopulatorMixin(object):
             log.info("devices to scan: %s", [udev.device_get_name(d) for d in devices])
             for dev in devices:
                 self.handle_device(dev)
-
-        self.populated = True
 
         # After having the complete tree we make sure that the system
         # inconsistencies are ignored or resolved.
