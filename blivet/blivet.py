@@ -1506,7 +1506,7 @@ class Blivet(object):
 
         if (not fmt.mountable or not fmt.formattable or not fmt.supported or
                 not fmt.linux_native):
-            log.debug("invalid default fstype: %r", fmt)
+            log.debug("invalid default fstype (%s): %r", newtype, fmt)
             raise ValueError("new value %s is not valid as a default fs type" % newtype)
 
         self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init
