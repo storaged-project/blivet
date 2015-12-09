@@ -897,12 +897,11 @@ class DeviceTreeBase(object):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin):
-    def __init__(self, conf=None, passphrase=None, luks_dict=None, iscsi=None):
+    def __init__(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.__init__(self, conf=conf)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, iscsi=iscsi)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
 
     # pylint: disable=arguments-differ
-    def reset(self, conf=None, passphrase=None, luks_dict=None, iscsi=None):
+    def reset(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.reset(self, conf=conf)
-        PopulatorMixin.reset(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict,
-                             iscsi=iscsi)
+        PopulatorMixin.reset(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)

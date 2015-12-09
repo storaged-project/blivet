@@ -48,7 +48,7 @@ from .platform import platform as _platform
 from .formats import get_format
 from .osinstall import FSSet, find_existing_installations
 from . import arch
-from . import iscsi
+from .iscsi import iscsi
 from . import fcoe
 from . import zfcp
 from . import devicefactory
@@ -140,7 +140,6 @@ class Blivet(object):
         self.set_default_fstype(get_default_filesystem_type())
         self._default_boot_fstype = None
 
-        self.iscsi = iscsi.iscsi()
         self.fcoe = fcoe.fcoe()
         self.zfcp = zfcp.ZFCP()
 
@@ -150,8 +149,7 @@ class Blivet(object):
         # these will both be empty until our reset method gets called
         self.devicetree = DeviceTree(conf=self.config,
                                      passphrase=self.encryption_passphrase,
-                                     luks_dict=self.__luks_devs,
-                                     iscsi=self.iscsi)
+                                     luks_dict=self.__luks_devs)
         self.fsset = FSSet(self.devicetree)
         self.roots = []
         self.services = set()
@@ -267,14 +265,13 @@ class Blivet(object):
             self.config.update(self.ksdata)
 
         if flags.installer_mode and not flags.image_install:
-            self.iscsi.startup()
+            iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
 
         self.devicetree.reset(conf=self.config,
                               passphrase=self.encryption_passphrase,
-                              luks_dict=self.__luks_devs,
-                              iscsi=self.iscsi)
+                              luks_dict=self.__luks_devs)
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.fsset = FSSet(self.devicetree)
         self.edd_dict = get_edd_dict(self.partitioned)
@@ -1381,7 +1378,7 @@ class Blivet(object):
 
         self.fsset.write()
         self.make_mtab()
-        self.iscsi.write(get_sysroot(), self)
+        iscsi.write(get_sysroot(), self)
         self.fcoe.write(get_sysroot())
         self.zfcp.write(get_sysroot())
         self.write_dasd_conf(get_sysroot())

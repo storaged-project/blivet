@@ -63,24 +63,20 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
 
 
 class PopulatorMixin(object):
-    def __init__(self, conf=None, passphrase=None, luks_dict=None, iscsi=None):
+    def __init__(self, conf=None, passphrase=None, luks_dict=None):
         """
             :keyword conf: storage discovery configuration
             :type conf: :class:`~.StorageDiscoveryConfig`
             :keyword passphrase: default LUKS passphrase
             :keyword luks_dict: a dict with UUID keys and passphrase values
             :type luks_dict: dict
-            :keyword iscsi: ISCSI control object
-            :type iscsi: :class:`~.iscsi.iscsi`
 
         """
-        self.reset(conf=conf, passphrase=passphrase, luks_dict=luks_dict, iscsi=iscsi)
+        self.reset(conf=conf, passphrase=passphrase, luks_dict=luks_dict)
 
-    def reset(self, conf=None, passphrase=None, luks_dict=None, iscsi=None):
+    def reset(self, conf=None, passphrase=None, luks_dict=None):
         # indicates whether or not the tree has been fully populated
         self.populated = False
-
-        self.iscsi = iscsi
 
         self.disk_images = {}
         images = getattr(conf, "disk_images", {})
