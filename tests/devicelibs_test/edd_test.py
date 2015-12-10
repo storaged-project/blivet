@@ -6,7 +6,7 @@ import logging
 import copy
 
 from blivet.devicelibs import edd
-import lib
+from tests import lib
 
 
 class FakeDevice(object):
