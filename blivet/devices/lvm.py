@@ -718,7 +718,10 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def _get_name(self):
         """ This device's name. """
-        return "%s-%s" % (self.vg.name, self._name)
+        if self.vg is not None:
+            return "%s-%s" % (self.vg.name, self._name)
+        else:
+            return super()._get_name()
 
     @property
     def lvname(self):
