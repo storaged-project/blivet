@@ -88,7 +88,7 @@ class LUKSFormatPopulator(FormatPopulator):
                 luks_device.setup()
             except (LUKSError, blockdev.CryptoError, DeviceError) as e:
                 log.info("setup of %s failed: %s", self.device.format.map_name, e)
-                self.device.remove_child()
+                self.device.remove_child(luks_device)
             else:
                 luks_device.update_sysfs_path()
                 self._devicetree._add_device(luks_device)

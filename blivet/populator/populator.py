@@ -238,7 +238,7 @@ class PopulatorMixin(object):
         if device.format and device.format.type != "multipath_member":
             log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
             # remove children from tree so that we don't stumble upon them later
-            for child in self.get_children(device):
+            for child in device.children:
                 self.recursive_remove(child, actions=False)
 
             device.format = None
