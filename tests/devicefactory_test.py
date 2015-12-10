@@ -380,6 +380,16 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = self._factory_device(device_type, size, **kwargs)
         self._validate_factory_device(device, device_type, size, **kwargs)
 
+        # limit the vg to the first disk
+        kwargs["disks"] = self.b.disks[:1]
+        device = self._factory_device(device_type, size, **kwargs)
+        self._validate_factory_device(device, device_type, size, **kwargs)
+
+        # expand it back to all disks
+        kwargs["disks"] = self.b.disks
+        device = self._factory_device(device_type, size, **kwargs)
+        self._validate_factory_device(device, device_type, size, **kwargs)
+
     def _get_size_delta(self, devices=None):
         if not devices:
             delta = Size("2 MiB") * len(self.b.disks)
