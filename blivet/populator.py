@@ -232,7 +232,7 @@ class Populator(object):
     def _add_slave_devices(self, info):
         """ Add all slaves of a device, raising DeviceTreeError on failure.
 
-            :param :class:`pyudev.Device` info: the device's udev info
+            :param :class:`GUdev.Device` info: the device's udev info
             :raises: :class:`~.errors.DeviceTreeError if no slaves are found or
                      if we fail to add any slave
             :returns: a list of slave devices
@@ -322,7 +322,7 @@ class Populator(object):
 
         # create a device for the livecd OS image(s)
         if device is None and udev.device_is_dm_livecd(info):
-            device = DMDevice(name, dm_uuid=info.get('DM_UUID'),
+            device = DMDevice(name, dm_uuid=udev.device_to_dict(info).get('DM_UUID'),
                               sysfs_path=sysfs_path, exists=True,
                               parents=[slave_devices[0]])
             device.protected = True
@@ -347,7 +347,7 @@ class Populator(object):
         device = None
         if slave_devices:
             try:
-                serial = info["DM_UUID"].split("-", 1)[1]
+                serial = udev.device_to_dict(info)["DM_UUID"].split("-", 1)[1]
             except (IndexError, AttributeError):
                 log.error("multipath device %s has no DM_UUID", name)
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
@@ -369,9 +369,8 @@ class Populator(object):
         device = self.get_device_by_name(name, incomplete=flags.allow_imperfect_devices)
 
         if device is None:
-            try:
-                uuid = udev.device_get_md_uuid(info)
-            except KeyError:
+            uuid = udev.device_get_md_uuid(info)
+            if not uuid:
                 log.warning("failed to obtain uuid for mdraid device")
             else:
                 device = self.get_device_by_uuid(uuid, incomplete=flags.allow_imperfect_devices)
@@ -442,7 +441,7 @@ class Populator(object):
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
                not self._is_ignored_disk(disk):
-                if info.get("ID_PART_TABLE_TYPE") == "gpt":
+                if udev.device_to_dict(info).get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
                     cls = CorruptGPTError
                 else:
@@ -615,7 +614,7 @@ class Populator(object):
 
     def add_udev_device(self, info, update_orig_fmt=False):
         """
-            :param :class:`pyudev.Device` info: udev info for the device
+            :param :class:`GUdev.Device` info: udev info for the device
             :keyword bool update_orig_fmt: update original format unconditionally
 
             If a device is added to the tree based on info its original format
@@ -624,7 +623,7 @@ class Populator(object):
             will not be updated unless update_orig_fmt is True.
         """
         name = udev.device_get_name(info)
-        log_method_call(self, name=name, info=pprint.pformat(dict(info)))
+        log_method_call(self, name=name, info=pprint.pformat(udev.device_to_dict(info)))
         uuid = udev.device_get_uuid(info)
         sysfs_path = udev.device_get_sysfs_path(info)
 
@@ -1168,11 +1167,8 @@ class Populator(object):
                 if not udev.device_is_md(dev):
                     continue
 
-                try:
-                    dev_uuid = udev.device_get_md_uuid(dev)
-                    dev_level = udev.device_get_md_level(dev)
-                except KeyError:
-                    continue
+                dev_uuid = udev.device_get_md_uuid(dev)
+                dev_level = udev.device_get_md_level(dev)
 
                 if dev_uuid is None or dev_level is None:
                     continue
@@ -1400,11 +1396,12 @@ class Populator(object):
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udev_types:
             # mdraid
-            try:
-                # ID_FS_UUID contains the array UUID
-                kwargs["md_uuid"] = udev.device_get_uuid(info)
-            except KeyError:
+            # ID_FS_UUID contains the array UUID
+            uuid = udev.device_get_uuid(info)
+            if not uuid:
                 log.warning("mdraid member %s has no md uuid", name)
+            else:
+                kwargs["md_uuid"] = uuid
 
             # reset the uuid to the member-specific value
             # this will be None for members of v0 metadata arrays
@@ -1448,7 +1445,7 @@ class Populator(object):
         elif format_type == "btrfs":
             # the format's uuid attr will contain the UUID_SUB, while the
             # overarching volume UUID will be stored as vol_uuid
-            kwargs["uuid"] = info["ID_FS_UUID_SUB"]
+            kwargs["uuid"] = udev.device_to_dict(info)["ID_FS_UUID_SUB"]
             kwargs["vol_uuid"] = uuid
         elif format_type == "multipath_member":
             # blkid does not care that the UUID it sees on a multipath member is

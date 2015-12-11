@@ -22,7 +22,7 @@ class UdevTest(unittest.TestCase):
 
     def test_udev_get_device(self):
         import blivet.udev
-        devices = blivet.udev.global_udev.list_devices(subsystem="block")
+        devices = blivet.udev.global_udev_client.query_by_subsystem("block")
         for device in devices:
             self.assertNotEqual(blivet.udev.get_device(device.sys_path), None)
 

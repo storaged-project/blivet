@@ -29,7 +29,7 @@ Requires: python
 Requires: python-six
 Requires: python-kickstart >= %{pykickstartver}
 Requires: util-linux >= %{utillinuxver}
-Requires: python-pyudev
+Requires: libudev1
 Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
 Requires: dosfstools
@@ -59,7 +59,7 @@ Summary: A python3 package for examining and modifying storage configuration.
 Requires: python3
 Requires: python3-six
 Requires: python3-kickstart
-Requires: python3-pyudev
+Requires: libgudev1
 Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
