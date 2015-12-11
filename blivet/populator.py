@@ -232,7 +232,7 @@ class Populator(object):
     def _add_slave_devices(self, info):
         """ Add all slaves of a device, raising DeviceTreeError on failure.
 
-            :param :class:`pyudev.Device` info: the device's udev info
+            :param :class:`GUdev.Device` info: the device's udev info
             :raises: :class:`~.errors.DeviceTreeError if no slaves are found or
                      if we fail to add any slave
             :returns: a list of slave devices
@@ -369,9 +369,8 @@ class Populator(object):
         device = self.get_device_by_name(name, incomplete=flags.allow_imperfect_devices)
 
         if device is None:
-            try:
-                uuid = udev.device_get_md_uuid(info)
-            except KeyError:
+            uuid = udev.device_get_md_uuid(info)
+            if not uuid:
                 log.warning("failed to obtain uuid for mdraid device")
             else:
                 device = self.get_device_by_uuid(uuid, incomplete=flags.allow_imperfect_devices)
@@ -615,7 +614,7 @@ class Populator(object):
 
     def add_udev_device(self, info, update_orig_fmt=False):
         """
-            :param :class:`pyudev.Device` info: udev info for the device
+            :param :class:`GUdev.Device` info: udev info for the device
             :keyword bool update_orig_fmt: update original format unconditionally
 
             If a device is added to the tree based on info its original format
@@ -1168,11 +1167,8 @@ class Populator(object):
                 if not udev.device_is_md(dev):
                     continue
 
-                try:
-                    dev_uuid = udev.device_get_md_uuid(dev)
-                    dev_level = udev.device_get_md_level(dev)
-                except KeyError:
-                    continue
+                dev_uuid = udev.device_get_md_uuid(dev)
+                dev_level = udev.device_get_md_level(dev)
 
                 if dev_uuid is None or dev_level is None:
                     continue
@@ -1400,11 +1396,12 @@ class Populator(object):
             kwargs["name"] = "luks-%s" % uuid
         elif format_type in formats.mdraid.MDRaidMember._udev_types:
             # mdraid
-            try:
-                # ID_FS_UUID contains the array UUID
-                kwargs["md_uuid"] = udev.device_get_uuid(info)
-            except KeyError:
+            # ID_FS_UUID contains the array UUID
+            uuid = udev.device_get_uuid(info)
+            if not uuid:
                 log.warning("mdraid member %s has no md uuid", name)
+            else:
+                kwargs["md_uuid"] = uuid
 
             # reset the uuid to the member-specific value
             # this will be None for members of v0 metadata arrays

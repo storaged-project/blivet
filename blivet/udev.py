@@ -30,8 +30,11 @@ from .util import open  # pylint: disable=redefined-builtin
 from .size import Size
 from .flags import flags
 
-import pyudev
-global_udev = pyudev.Context()
+import gi
+gi.require_version("GUdev", "1.0")
+from gi.repository import GUdev
+
+global_udev_client = GUdev.Client()
 
 import logging
 log = logging.getLogger("blivet")
@@ -41,38 +44,24 @@ INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram')
 
 
 def get_device(sysfs_path):
-    try:
-        dev = pyudev.Device.from_sys_path(global_udev, sysfs_path)
-    except pyudev.DeviceNotFoundError as e:
-        log.error(e)
-        dev = None
-
-    return dev
+    return global_udev_client.query_by_sysfs_path(sysfs_path)
 
 def get_device_from_file(device_file):
-    try:
-        dev = pyudev.Device.from_device_file(global_udev, device_file)
-    # from_device_file does not process exceptions but just propagates
-    # any errors that are raised
-    except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError, OSError) as e:
-        log.error(e)
-        dev = None
-
-    return dev
+    return global_udev_client.query_by_device_file(device_file)
 
 def device_to_dict(devinfo):
     """Convert a udev device object to a dictionary.
 
-       :param :class:`pyudev.Device` devinfo: udev info convert
+       :param :class:`GUdev.Device` devinfo: udev info convert
        :returns: the udev device properties as a dictionary
        :rtype: dict
     """
-    return dict(devinfo)
+    return {k: devinfo.get_property(k) for k in devinfo.get_property_keys()}
 
 def get_devices(subsystem="block"):
     settle()
-    return [d for d in global_udev.list_devices(subsystem=subsystem)
-            if not __is_blacklisted_blockdev(d.sys_name)]
+    return [d for d in global_udev_client.query_by_subsystem(subsystem)
+            if not __is_blacklisted_blockdev(d.get_name())]
 
 
 def settle(quiet=False):
@@ -181,20 +170,20 @@ def __is_blacklisted_blockdev(dev_name):
 
 def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
-    if "DM_NAME" in udev_info:
-        name = udev_info["DM_NAME"]
-    elif "MD_DEVNAME" in udev_info and not device_is_partition(udev_info):
+    if udev_info.has_property("DM_NAME"):
+        name = udev_info.get_property("DM_NAME")
+    elif udev_info.has_property("MD_DEVNAME") and not device_is_partition(udev_info):
         # md partitions have MD_DEVNAME set to the partition's parent/disk
-        name = udev_info["MD_DEVNAME"]
+        name = udev_info.get_property("MD_DEVNAME")
     else:
-        name = udev_info.sys_name
+        name = udev_info.get_name()
 
     return name
 
 
 def device_get_format(udev_info):
     """ Return a device's format type as reported by udev. """
-    return udev_info.get("ID_FS_TYPE")
+    return udev_info.get_property("ID_FS_TYPE")
 
 
 def device_get_uuid(udev_info):
@@ -204,23 +193,23 @@ def device_get_uuid(udev_info):
         :returns: a UUID or None
         :rtype: str or NoneType
     """
-    return udev_info.get("ID_FS_UUID")
+    return udev_info.get_property("ID_FS_UUID")
 
 
 def device_get_label(udev_info):
     """ Get the label from the device's format as reported by udev. """
-    return udev_info.get("ID_FS_LABEL")
+    return udev_info.get_property("ID_FS_LABEL")
 
 
 def device_get_part_size(udev_info):
     """ Get size for specified partition as reported by udev. """
-    return udev_info.get("ID_PART_ENTRY_SIZE")
+    return udev_info.get_property("ID_PART_ENTRY_SIZE")
 
 
 def device_is_dm(info):
     """ Return True if the device is a device-mapper device. """
     dm_dir = os.path.join(device_get_sysfs_path(info), "dm")
-    return 'DM_NAME' in info or os.path.exists(dm_dir)
+    return info.has_property('DM_NAME') or os.path.exists(dm_dir)
 
 
 def device_is_md(info):
@@ -242,13 +231,13 @@ def device_is_cciss(info):
 
 def device_is_dasd(info):
     """ Return True if the device is a dasd device. """
-    devname = info.get("DEVNAME", '').split("/")[-1]
+    devname = (info.get_property("DEVNAME") or '').split("/")[-1]
     return devname.startswith("dasd")
 
 
 def device_is_zfcp(info):
     """ Return True if the device is a zfcp device. """
-    if info.get("DEVTYPE") != "disk":
+    if info.get_property("DEVTYPE") != "disk":
         return False
 
     subsystem = device_get_sysfs_path(info)
@@ -311,7 +300,7 @@ def device_is_cdrom(info):
     """ Return True if the device is an optical drive. """
     # FIXME: how can we differentiate USB drives from CD-ROM drives?
     #         -- USB drives also generate a sd_x device.
-    return info.get("ID_CDROM") == "1"
+    return info.get_property("ID_CDROM") == "1"
 
 
 def device_is_disk(info):
@@ -319,12 +308,12 @@ def device_is_disk(info):
     if device_is_cdrom(info):
         return False
     has_range = os.path.exists("%s/range" % device_get_sysfs_path(info))
-    return info.get("DEVTYPE") == "disk" or has_range
+    return info.get_property("DEVTYPE") == "disk" or has_range
 
 
 def device_is_partition(info):
     has_start = os.path.exists("%s/start" % device_get_sysfs_path(info))
-    return info.get("DEVTYPE") == "partition" or has_start
+    return info.get_property("DEVTYPE") == "partition" or has_start
 
 
 def device_is_loop(info):
@@ -335,7 +324,9 @@ def device_is_loop(info):
 
 def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
-    return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL", udev_info.get("ID_SERIAL_SHORT")))
+    return udev_info.get_property("ID_SERIAL_RAW") or \
+           udev_info.get_property("ID_SERIAL") or \
+           udev_info.get_property("ID_SERIAL_SHORT")
 
 
 def device_get_wwid(udev_info):
@@ -347,31 +338,33 @@ def device_get_wwid(udev_info):
 
 def device_get_vendor(udev_info):
     """ Get the vendor of the device as reported by udev. """
-    return udev_info.get("ID_VENDOR_FROM_DATABASE", udev_info.get("ID_VENDOR"))
+    return udev_info.get_property("ID_VENDOR_FROM_DATABASE") or \
+           udev_info.get_property("ID_VENDOR")
 
 
 def device_get_model(udev_info):
     """ Get the model of the device as reported by udev. """
-    return udev_info.get("ID_MODEL_FROM_DATABASE", udev_info.get("ID_MODEL"))
+    return udev_info.get_property("ID_MODEL_FROM_DATABASE") or \
+           udev_info.get_property("ID_MODEL")
 
 
 def device_get_bus(udev_info):
     """ Get the bus a device is connected to the system by. """
-    return udev_info.get("ID_BUS", "").upper()
+    return (udev_info.get_property("ID_BUS") or "").upper()
 
 
 def device_get_path(info):
-    return info["ID_PATH"]
+    return info.get_property("ID_PATH")
 
 
 def device_get_symlinks(info):
     """ Get an array of symbolic links for a device.
 
-        :param info: a :class:`pyudev.Device` instance
+        :param info: a :class:`GUdev.Device` instance
         :returns: list of symbolic links
         :rtype: list of str
     """
-    return info.get("DEVLINKS", "").split()
+    return (info.get_property("DEVLINKS") or "").split()
 
 
 def device_get_by_path(info):
@@ -383,32 +376,32 @@ def device_get_by_path(info):
 
 
 def device_get_sysfs_path(info):
-    return info.sys_path
+    return info.get_sysfs_path()
 
 
 def device_get_major(info):
-    return int(info["MAJOR"])
+    return int(info.get_property("MAJOR"))
 
 
 def device_get_minor(info):
-    return int(info["MINOR"])
+    return int(info.get_property("MINOR"))
 
 
 def device_get_devname(info):
-    return info.get('DEVNAME')
+    return info.get_property('DEVNAME')
 
 
 def device_get_md_level(info):
     """ Returns the RAID level of the array of which this device is a member.
 
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :returns: the RAID level of this device's md array
         :rtype: str or NoneType
     """
     # Value for MD_LEVEL known to be obtained from:
-    #  * pyudev/libudev
+    #  * libgudev/libudev
     #  * mdraid/mdadm (all numeric metadata versions and container default)
-    return info.get("MD_LEVEL")
+    return info.get_property("MD_LEVEL")
 
 
 def device_get_md_devices(info):
@@ -416,150 +409,149 @@ def device_get_md_devices(info):
 
         Active devices are devices that are not spares or failed.
 
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :returns: the number of devices belonging to this device's md array
         :rtype: int
-        :raises: KeyError, ValueError
+        :raises: ValueError
     """
     # Value for MD_DEVICES known to be obtained from:
-    #  * pyudev/libudev
+    #  * libgudev/libudev
     #  * mdraid/mdadm (all numeric metadata versions and container default)
-    return int(info["MD_DEVICES"])
+    return int(info.get_property("MD_DEVICES"))
 
 
 def device_get_md_uuid(info):
     """ Returns the uuid of the array of which this device is a member.
 
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :returns: the UUID of this device's md array
         :rtype: str
-        :raises: KeyError
     """
     # Value for MD_UUID known to be obtained from:
-    #  * pyudev/libudev
+    #  * libgudev/libudev
     #  * mdraid/mdadm (all numeric metadata versions and container default)
-    return util.canonicalize_UUID(info["MD_UUID"])
+    return util.canonicalize_UUID(info.get_property("MD_UUID"))
 
 
 def device_get_md_container(info):
     """
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :rtype: str or NoneType
     """
     # Value for MD_CONTAINER known to be obtained from:
     #  * None
-    return info.get("MD_CONTAINER")
+    return info.get_property("MD_CONTAINER")
 
 
 def device_get_md_name(info):
     """ Returns the name of the array of which this device is a member.
 
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :returns: the name of this device's md array
         :rtype: str or NoneType
     """
     # Value for MD_DEVNAME known to be obtained from:
-    #  * pyudev/libudev
+    #  * libgudev/libudev
     #  * No known metadata versions for mdraid/mdadm
-    return info.get("MD_DEVNAME")
+    return info.get_property("MD_DEVNAME")
 
 
 def device_get_md_metadata(info):
     """ Return the metadata version number.
 
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :returns: the metadata version number of the md array
         :rtype: str or NoneType
     """
     # Value for MD_METADATA known to be obtained from:
-    #  * pyudev/libudev
+    #  * libgudev/libudev
     #  * mdraid/mdadm (not version numbers < 1)
-    return info.get("MD_METADATA")
+    return info.get_property("MD_METADATA")
 
 
 def device_get_md_device_uuid(info):
     """ Returns the uuid of a device which is a member of an md array.
 
-        :param dict info: dictionary of name-value pairs as strings
+        :param :class:`GUdev.Device` info: udev device info object
         :returns: the uuid of this device (which is a member of an md array)
         :rtype: str or NoneType
     """
     # Value for MD_UUID known to be obtained from:
-    #  * pyudev/libudev
+    #  * libgudev/libudev
     #  * mdraid/mdadm (only 1.x metadata versions)
     # Value for ID_FS_UUID_SUB known to be obtained from:
-    #  * pyudev/libudev
-    md_device_uuid = info.get('ID_FS_UUID_SUB') or info.get('MD_DEV_UUID')
+    #  * libgudev/libudev
+    md_device_uuid = info.get_property('ID_FS_UUID_SUB') or info.get_property('MD_DEV_UUID')
     return util.canonicalize_UUID(md_device_uuid) if md_device_uuid else None
 
 
 def device_get_vg_name(info):
-    return info['LVM2_VG_NAME']
+    return info.get_property('LVM2_VG_NAME')
 
 
 def device_get_lv_vg_name(info):
-    return info['DM_VG_NAME']
+    return info.get_property('DM_VG_NAME')
 
 
 def device_get_vg_uuid(info):
-    return info['LVM2_VG_UUID']
+    return info.get_property('LVM2_VG_UUID')
 
 
 def device_get_vg_size(info):
     # lvm's decmial precision is not configurable, so we tell it to use
     # KB.
-    return Size("%s KiB" % info['LVM2_VG_SIZE'])
+    return Size("%s KiB" % info.get_property('LVM2_VG_SIZE'))
 
 
 def device_get_vg_free(info):
     # lvm's decmial precision is not configurable, so we tell it to use
     # KB.
-    return Size("%s KiB" % info['LVM2_VG_FREE'])
+    return Size("%s KiB" % info.get_property('LVM2_VG_FREE'))
 
 
 def device_get_vg_extent_size(info):
-    return Size("%s KiB" % info['LVM2_VG_EXTENT_SIZE'])
+    return Size("%s KiB" % info.get_property('LVM2_VG_EXTENT_SIZE'))
 
 
 def device_get_vg_extent_count(info):
-    return int(info['LVM2_VG_EXTENT_COUNT'])
+    return int(info.get_property('LVM2_VG_EXTENT_COUNT'))
 
 
 def device_get_vg_free_extents(info):
-    return int(info['LVM2_VG_FREE_COUNT'])
+    return int(info.get_property('LVM2_VG_FREE_COUNT'))
 
 
 def device_get_vg_pv_count(info):
-    return int(info['LVM2_PV_COUNT'])
+    return int(info.get_property('LVM2_PV_COUNT'))
 
 
 def device_get_pv_pe_start(info):
-    return Size("%s KiB" % info['LVM2_PE_START'])
+    return Size("%s KiB" % info.get_property('LVM2_PE_START'))
 
 
 def device_get_lv_name(info):
-    return info['LVM2_LV_NAME']
+    return info.get_property('LVM2_LV_NAME')
 
 
 def device_get_lv_uuid(info):
-    return info['LVM2_LV_UUID']
+    return info.get_property('LVM2_LV_UUID')
 
 
 def device_get_lv_size(info):
-    return Size("%s KiB" % info['LVM2_LV_SIZE'])
+    return Size("%s KiB" % info.get_property('LVM2_LV_SIZE'))
 
 
 def device_get_lv_attr(info):
-    return info['LVM2_LV_ATTR']
+    return info.get_property('LVM2_LV_ATTR')
 
 
 def device_get_lv_type(info):
-    return info['LVM2_SEGTYPE']
+    return info.get_property('LVM2_SEGTYPE')
 
 
 def device_dm_subsystem_match(info, subsystem):
     """ Return True if the device matches a given device-mapper subsystem. """
-    uuid = info.get("DM_UUID", "")
+    uuid = info.get_property("DM_UUID") or ""
     uuid_fields = uuid.split("-")
     _subsystem = uuid_fields[0]
     if _subsystem.lower().startswith("part") and len(uuid_fields) > 1:
@@ -587,7 +579,7 @@ def device_is_dm_luks(info):
     """ Return True if the device is a mapped LUKS device. """
     is_crypt = device_dm_subsystem_match(info, "crypt")
     try:
-        _type = info.get("DM_UUID", "").split("-")[1].lower()
+        _type = (info.get_property("DM_UUID") or "").split("-")[1].lower()
     except IndexError:
         _type = ""
 
@@ -625,10 +617,10 @@ def device_is_biosraid_member(info):
     # dmraid will be everything that is raid and not linux_raid_member
     from .formats.dmraid import DMRaidMember
     from .formats.mdraid import MDRaidMember
-    if 'ID_FS_TYPE' in info and \
-            (info["ID_FS_TYPE"] in DMRaidMember._udev_types or
-             info["ID_FS_TYPE"] in MDRaidMember._udev_types) and \
-            info["ID_FS_TYPE"] != "linux_raid_member":
+    if info.has_property('ID_FS_TYPE') and \
+            (info.get_property("ID_FS_TYPE") in DMRaidMember._udev_types or
+             info.get_property("ID_FS_TYPE") in MDRaidMember._udev_types) and \
+            info.get_property("ID_FS_TYPE") != "linux_raid_member":
         return True
 
     return False
@@ -639,11 +631,11 @@ def device_get_dm_partition_disk(info):
         return None
 
     disk = None
-    majorminor = info.get("ID_PART_ENTRY_DISK")
+    majorminor = info.get_property("ID_PART_ENTRY_DISK")
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
-            if device.get("MAJOR") == major and device.get("MINOR") == minor:
+            if device.get_property("MAJOR") == major and device.get_property("MINOR") == minor:
                 disk = device_get_name(device)
                 break
 
@@ -652,7 +644,7 @@ def device_get_dm_partition_disk(info):
 
 def device_is_dm_partition(info):
     return (device_is_dm(info) and
-            info.get("DM_UUID", "").split("-")[0].startswith("part"))
+            (info.get_property("DM_UUID") or "").split("-")[0].startswith("part"))
 
 
 def device_get_disklabel_type(info):
@@ -662,7 +654,7 @@ def device_get_disklabel_type(info):
         # partition's disk. It does not mean the partition contains a disklabel.
         return None
 
-    return info.get("ID_PART_TABLE_TYPE")
+    return info.get_property("ID_PART_TABLE_TYPE")
 
 # iscsi disks' ID_PATH form depends on the driver:
 # for software iscsi:
@@ -675,28 +667,28 @@ def device_get_disklabel_type(info):
 
 def device_is_sw_iscsi(info):
     # software iscsi
-    try:
-        path_components = device_get_path(info).split("-")
+    path = device_get_path(info)
 
-        if info["ID_BUS"] == "scsi" and len(path_components) >= 6 and \
+    if path:
+        path_components = path.split("-")
+
+        if info.get_property("ID_BUS") == "scsi" and len(path_components) >= 6 and \
                 path_components[0] == "ip" and path_components[2] == "iscsi":
             return True
-    except KeyError:
-        pass
 
     return False
 
 
 def device_is_partoff_iscsi(info):
     # partial offload iscsi
-    try:
-        path_components = device_get_path(info).split("-")
+    path = device_get_path(info)
 
-        if info["ID_BUS"] == "scsi" and len(path_components) >= 8 and \
+    if path:
+        path_components = path.split("-")
+
+        if info.get_property("ID_BUS") == "scsi" and len(path_components) >= 8 and \
                 path_components[2] == "ip" and path_components[4] == "iscsi":
             return True
-    except KeyError:
-        pass
 
     return False
 
@@ -818,10 +810,10 @@ def _detect_broadcom_fcoe(info):
 
 
 def device_is_fcoe(info):
-    if info.get("ID_BUS") != "scsi":
+    if info.get_property("ID_BUS") != "scsi":
         return False
 
-    path = info.get("ID_PATH", "")
+    path = info.get_property("ID_PATH") or ""
     path_components = path.split("-")
 
     if path.startswith("pci-eth") and len(path_components) >= 4 and \
@@ -838,7 +830,7 @@ def device_is_fcoe(info):
 
 
 def device_get_fcoe_nic(info):
-    path = info.get("ID_PATH", "")
+    path = info.get_property("ID_PATH") or ""
     path_components = path.split("-")
     sysfs_path = device_get_sysfs_path(info)
 
@@ -862,7 +854,7 @@ def device_get_fcoe_nic(info):
 
 
 def device_get_fcoe_identifier(info):
-    path = info.get("ID_PATH", "")
+    path = info.get_property("ID_PATH") or ""
     path_components = path.split("-")
 
     if path.startswith("pci-eth") and len(path_components) >= 4 and \
