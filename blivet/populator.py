@@ -322,7 +322,7 @@ class Populator(object):
 
         # create a device for the livecd OS image(s)
         if device is None and udev.device_is_dm_livecd(info):
-            device = DMDevice(name, dm_uuid=info.get('DM_UUID'),
+            device = DMDevice(name, dm_uuid=udev.device_to_dict(info).get('DM_UUID'),
                               sysfs_path=sysfs_path, exists=True,
                               parents=[slave_devices[0]])
             device.protected = True
@@ -347,7 +347,7 @@ class Populator(object):
         device = None
         if slave_devices:
             try:
-                serial = info["DM_UUID"].split("-", 1)[1]
+                serial = udev.device_to_dict(info)["DM_UUID"].split("-", 1)[1]
             except (IndexError, AttributeError):
                 log.error("multipath device %s has no DM_UUID", name)
                 raise DeviceTreeError("multipath %s has no DM_UUID" % name)
@@ -442,7 +442,7 @@ class Populator(object):
                disk.format.type != "iso9660" and \
                not disk.format.hidden and \
                not self._is_ignored_disk(disk):
-                if info.get("ID_PART_TABLE_TYPE") == "gpt":
+                if udev.device_to_dict(info).get("ID_PART_TABLE_TYPE") == "gpt":
                     msg = "corrupt gpt disklabel on disk %s" % disk.name
                     cls = CorruptGPTError
                 else:
@@ -624,7 +624,7 @@ class Populator(object):
             will not be updated unless update_orig_fmt is True.
         """
         name = udev.device_get_name(info)
-        log_method_call(self, name=name, info=pprint.pformat(dict(info)))
+        log_method_call(self, name=name, info=pprint.pformat(udev.device_to_dict(info)))
         uuid = udev.device_get_uuid(info)
         sysfs_path = udev.device_get_sysfs_path(info)
 
@@ -1448,7 +1448,7 @@ class Populator(object):
         elif format_type == "btrfs":
             # the format's uuid attr will contain the UUID_SUB, while the
             # overarching volume UUID will be stored as vol_uuid
-            kwargs["uuid"] = info["ID_FS_UUID_SUB"]
+            kwargs["uuid"] = udev.device_to_dict(info)["ID_FS_UUID_SUB"]
             kwargs["vol_uuid"] = uuid
         elif format_type == "multipath_member":
             # blkid does not care that the UUID it sees on a multipath member is

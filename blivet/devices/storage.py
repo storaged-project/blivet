@@ -22,7 +22,6 @@
 
 import os
 import copy
-import pyudev
 
 from .. import errors
 from .. import util
@@ -276,17 +275,11 @@ class StorageDevice(Device):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        try:
-            udev_device = pyudev.Device.from_device_file(udev.global_udev,
-                                                         self.path)
-
-        # from_device_file() does not process exceptions but just propagates
-        # any errors that are raised.
-        except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError, OSError) as e:
-            log.error("failed to update sysfs path for %s: %s", self.name, e)
-            self.sysfs_path = ''
+        udev_device = udev.get_device_from_file(self.path)
+        if not udev_device:
+            log.error("failed to update sysfs path for %s", self.name)
         else:
-            self.sysfs_path = udev_device.sys_path
+            self.sysfs_path = udev.device_get_sysfs_path(udev_device)
             log.debug("%s sysfs_path set to %s", self.name, self.sysfs_path)
 
     @property

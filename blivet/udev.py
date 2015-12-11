@@ -49,6 +49,25 @@ def get_device(sysfs_path):
 
     return dev
 
+def get_device_from_file(device_file):
+    try:
+        dev = pyudev.Device.from_device_file(global_udev, device_file)
+    # from_device_file does not process exceptions but just propagates
+    # any errors that are raised
+    except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError, OSError) as e:
+        log.error(e)
+        dev = None
+
+    return dev
+
+def device_to_dict(devinfo):
+    """Convert a udev device object to a dictionary.
+
+       :param :class:`pyudev.Device` devinfo: udev info convert
+       :returns: the udev device properties as a dictionary
+       :rtype: dict
+    """
+    return dict(devinfo)
 
 def get_devices(subsystem="block"):
     settle()
