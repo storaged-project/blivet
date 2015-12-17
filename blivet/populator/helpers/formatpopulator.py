@@ -78,14 +78,19 @@ class FormatPopulator(PopulatorHelper):
                   "exists": True}
         return kwargs
 
-    def run(self):
-        """ Create a format instance and associate it with the device instance. """
-        kwargs = self._get_kwargs()
+    @property
+    def type_spec(self):
         if self._type_specifier is not None:
             type_spec = self._type_specifier
         else:
-            type_spec = udev.device_get_format(self.data)
+            type_spec = udev.device_get_format(self.data) or None
 
+        return type_spec
+
+    def run(self):
+        """ Create a format instance and associate it with the device instance. """
+        kwargs = self._get_kwargs()
+        type_spec = self.type_spec
         try:
             log.info("type detected on '%s' is '%s'", self.device.name, type_spec)
             self.device.format = formats.get_format(type_spec, **kwargs)
