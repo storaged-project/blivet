@@ -205,3 +205,7 @@ class MDFormatPopulator(FormatPopulator):
                     return
 
                 self._devicetree.handle_device(array_info, update_orig_fmt=True)
+
+    def update(self):
+        # update array based on current md data
+        pass

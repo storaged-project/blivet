@@ -89,3 +89,7 @@ class FormatPopulator(PopulatorHelper):
                         type_spec, self.device.name)
             self.device.format = formats.DeviceFormat(device=self.device.path, exists=True)
             return
+
+    def update(self):
+        if hasattr(self.device.format, "label"):
+            self.device.format.label = udev.device_get_label(self.data)

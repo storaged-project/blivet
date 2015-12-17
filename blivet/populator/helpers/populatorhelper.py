@@ -58,3 +58,11 @@ class PopulatorHelper:
             perform all processing related to the device's formatting.
         """
         raise NotImplementedError()
+
+    def update(self):
+        """ Handle changes associated with an event.
+
+            This method should handle any changes to an existing format instance.
+            It should not handle reformatting.
+        """
+        pass
