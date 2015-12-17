@@ -338,7 +338,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             log.debug("no type or existing type for %s, bailing", name)
             return
 
-        helper_class = get_format_helper(info, device)
+        helper_class = get_format_helper(info, device=device)
         if helper_class is not None:
             helper_class(self, info, device).run()
 

@@ -34,16 +34,6 @@ class FormatPopulator(PopulatorHelper):
     priority = 0
     _type_specifier = None
 
-    def __init__(self, devicetree, data, device):
-        """
-            :param :class:`blivet.devicetree.DeviceTree` devicetree: the calling devicetree
-            :param :class:`pyudev.Device` data: udev data describing a device
-            :param device: device instance corresponding to the udev data
-            :type device: :class:`~.devices.StorageDevice`
-        """
-        super().__init__(devicetree, data)
-        self.device = device
-
     @classmethod
     def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
         """ Return True if this helper is appropriate for the given device.

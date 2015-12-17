@@ -27,13 +27,16 @@ class PopulatorHelper:
     priority = 100
     """ Higher priority value gets checked for match first. """
 
-    def __init__(self, devicetree, data):
+    def __init__(self, devicetree, data, device=None):
         """
             :param :class:`~.DeviceTree` devicetree: the calling devicetree
             :param :class:`pyudev.Device` data: udev data describing a device
+            :keyword device: device instance corresponding to the udev data
+            :type device: :class:`~.devices.StorageDevice`
         """
         self._devicetree = devicetree
         self.data = data
+        self.device = device
 
     @classmethod
     def match(cls, data):
