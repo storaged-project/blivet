@@ -37,7 +37,9 @@ import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
-from .lib import LINUX_SECTOR_SIZE
+from .lib import LINUX_SECTOR_SIZE, get_majors_by_device_type
+
+DM_MAJORS = get_majors_by_device_type("device-mapper")
 
 
 class DMDevice(StorageDevice):

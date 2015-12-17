@@ -42,6 +42,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
+from .lib import get_majors_by_device_type
+
+MD_MAJORS = get_majors_by_device_type("md")
 
 
 class MDRaidArrayDevice(ContainerDevice, RaidDevice):
