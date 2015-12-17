@@ -51,6 +51,11 @@ class DiskLabelFormatPopulator(FormatPopulator):
                 not is_multipath_member and
                 udev.device_get_format(data) != "iso9660")
 
+    def _get_kwargs(self):
+        kwargs = super()._get_kwargs()
+        kwargs["uuid"] = udev.device_get_disklabel_uuid(self.data)
+        return kwargs
+
     def run(self):
         disklabel_type = udev.device_get_disklabel_type(self.data)
         log_method_call(self, device=self.device.name, label_type=disklabel_type)
@@ -74,13 +79,12 @@ class DiskLabelFormatPopulator(FormatPopulator):
                                [self.device.name])
             return
 
+        kwargs = self._get_kwargs()
+
         # special handling for unsupported partitioned devices
         if not self.device.partitionable:
             try:
-                fmt = formats.get_format("disklabel",
-                                         device=self.device.path,
-                                         label_type=disklabel_type,
-                                         exists=True)
+                fmt = formats.get_format("disklabel", **kwargs)
             except InvalidDiskLabelError:
                 log.warning("disklabel detected but not usable on %s",
                             self.device.name)
@@ -89,10 +93,7 @@ class DiskLabelFormatPopulator(FormatPopulator):
             return
 
         try:
-            fmt = formats.get_format("disklabel",
-                                     device=self.device.path,
-                                     uuid=udev.device_get_disklabel_uuid(self.data),
-                                     exists=True)
+            fmt = formats.get_format("disklabel", **kwargs)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", self.device.name)
             if disklabel_type == "gpt":
