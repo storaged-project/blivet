@@ -204,11 +204,12 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                  dev.name,
                  dev.id)
 
-    def recursive_remove(self, device, actions=True):
+    def recursive_remove(self, device, actions=True, remove_device=True):
         """ Remove a device after removing its dependent devices.
 
             :param :class:`~.devices.StorageDevice` device: the device to remove
             :keyword bool actions: whether to schedule actions for the removal
+            :keyword bool remove_device: whether to remove the root device
 
             If the device is not a leaf, all of its dependents are removed
             recursively until it is a leaf device. At that point the device is
@@ -249,7 +250,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             else:
                 device.format = None
 
-        if not device.is_disk:
+        if remove_device and not device.is_disk:
             if actions:
                 self.actions.add(ActionDestroyDevice(device))
             else:

@@ -235,13 +235,10 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             return
 
         # newly added device (eg iSCSI) could make this one a multipath member
-        if device.format and device.format.type != "multipath_member":
+        if device.format.type != "multipath_member":
             log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
             # remove children from tree so that we don't stumble upon them later
-            for child in device.children:
-                self.recursive_remove(child, actions=False)
-
-            device.format = None
+            self.recursive_remove(device, actions=False, remove_device=False)
 
     def _mark_readonly_device(self, info, device):
         # If this device is read-only, mark it as such now.
