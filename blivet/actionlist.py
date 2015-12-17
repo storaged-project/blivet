@@ -21,6 +21,7 @@
 #
 
 import copy
+from functools import wraps
 
 from .deviceaction import ActionCreateDevice
 from .deviceaction import action_type_from_string, action_object_from_string
@@ -35,6 +36,22 @@ import logging
 log = logging.getLogger("blivet")
 
 
+def with_flag(flag_attr):
+    """ Decorator to set a flag attribute while running a method. """
+    def run_func_with_flag_attr_set(func):
+        @wraps(func)
+        def wrapped_func(obj, *args, **kwargs):
+            setattr(obj, flag_attr, True)
+            try:
+                return func(obj, *args, **kwargs)
+            finally:
+                setattr(obj, flag_attr, False)
+
+        return wrapped_func
+
+    return run_func_with_flag_attr_set
+
+
 class ActionList(object, metaclass=SynchronizedMeta):
     _unsynchronized_methods = ['process']
 
@@ -43,6 +60,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
         self._remove_func = removefunc
         self._actions = []
         self._completed_actions = []
+        self.processing = False
 
     def __iter__(self):
         return iter(self._actions)
@@ -278,6 +296,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
         devices = [a.name for a in active if any(d in disks for d in a.disks)]
         return devices
 
+    @with_flag("processing")
     def process(self, callbacks=None, devices=None, dry_run=None):
         """
         Execute all registered actions.
