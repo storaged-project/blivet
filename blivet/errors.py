@@ -276,3 +276,6 @@ class EventParamError(StorageError):
 class DependencyError(StorageError):
     """Raised when an external dependency is missing or not available"""
     pass
+
+class EventHandlingError(StorageError):
+    pass

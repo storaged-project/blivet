@@ -36,6 +36,7 @@ from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats
 from .devicelibs import lvm
+from .events.handler import EventHandlerMixin
 from . import util
 from .populator import PopulatorMixin
 from .storage_log import log_method_call, log_method_return
@@ -925,10 +926,11 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                     self.hide(disk)
 
 
-class DeviceTree(DeviceTreeBase, PopulatorMixin):
+class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.__init__(self, conf=conf)
         PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
+        EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
     def reset(self, conf=None, passphrase=None, luks_dict=None):
