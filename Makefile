@@ -155,7 +155,8 @@ scratch-bumpver: po-empty
 	if [ ! -z "$(BZDEBUG)" ]; then \
 		opts="$${opts} -d" ; \
 	fi ; \
-	( scripts/makebumpver $${opts} ) || exit 1 ;
+	( scripts/makebumpver $${opts} ) || exit 1 ; \
+	make -C po $(PKGNAME).pot
 
 scratch: po-empty
 	@rm -f ChangeLog
