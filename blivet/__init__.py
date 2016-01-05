@@ -2599,6 +2599,8 @@ class FSSet(object):
             devices.append(self.efivars)
         devices.sort(key=lambda d: getattr(d.format, "mountpoint", None))
 
+        netdevs = self.devicetree.getDevicesByInstance(NetworkStorageDevice)
+
         for device in devices:
             if not device.format.mountable or not device.format.mountpoint:
                 continue
@@ -2638,6 +2640,11 @@ class FSSet(object):
 
             if readOnly:
                 options = "%s,%s" % (options, readOnly)
+
+            for netdev in netdevs:
+                if device.dependsOn(netdev):
+                    options = options + ",_netdev"
+                    break
 
             try:
                 device.format.setup(options=options,
