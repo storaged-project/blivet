@@ -733,7 +733,7 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
         log_file = os.path.realpath(log_file)
         handler = logging.FileHandler(log_file)
         handler.setLevel(level)
-        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s/%(threadName)s: %(message)s")
         handler.setFormatter(formatter)
         return handler
 

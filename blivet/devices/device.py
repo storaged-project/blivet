@@ -24,6 +24,7 @@ import pprint
 
 from .. import util
 from ..storage_log import log_method_call
+from ..threads import SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -31,7 +32,7 @@ log = logging.getLogger("blivet")
 from .lib import ParentList
 
 
-class Device(util.ObjectID):
+class Device(util.ObjectID, metaclass=SynchronizedMeta):
 
     """ A generic device.
 

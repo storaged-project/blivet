@@ -20,9 +20,7 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-
 from . import util
-
 from . import udev
 from .util import get_current_entropy
 from .devices import StorageDevice
@@ -34,6 +32,7 @@ from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 from .callbacks import WaitForEntropyData, ReportProgressData
 from .size import Size
+from .threads import SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
@@ -100,7 +99,7 @@ def resize_type_from_string(type_string):
             return k
 
 
-class DeviceAction(util.ObjectID):
+class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
 
     """ An action that will be carried out in the future on a Device.
 
