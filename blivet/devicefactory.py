@@ -756,7 +756,8 @@ class DeviceFactory(object):
             self.storage.create_device(luks_device)
             self.device = luks_device
             if parent_container:
-                parent_container.parents.replace(orig_device, self.device)
+                parent_container.parents.append(self.device)
+                parent_container.parents.remove(orig_device)
 
     def _set_name(self):
         if not self.device_name:
@@ -1076,7 +1077,8 @@ class PartitionSetFactory(PartitionFactory):
                                            get_format(self.fstype))
                 members.append(member.slave)
                 if container:
-                    container.parents.replace(member, member.slave)
+                    container.parents.append(member.slave)
+                    container.parents.remove(member)
 
                 continue
 
@@ -1090,7 +1092,8 @@ class PartitionSetFactory(PartitionFactory):
                 self.storage.create_device(luks_member)
                 members.append(luks_member)
                 if container:
-                    container.parents.replace(member, luks_member)
+                    container.parents.append(luks_member)
+                    container.parents.remove(member)
 
                 continue
 

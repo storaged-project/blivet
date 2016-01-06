@@ -127,14 +127,14 @@ class DMDevice(StorageDevice):
         return blockdev.dm.node_from_name(self.name)
 
     def setup_partitions(self):
-        log_method_call(self, name=self.name, kids=self.kids)
+        log_method_call(self, name=self.name)
         rc = util.run_program(["kpartx", "-a", "-s", self.path])
         if rc:
             raise errors.DMError("partition activation failed for '%s'" % self.name)
         udev.settle()
 
     def teardown_partitions(self):
-        log_method_call(self, name=self.name, kids=self.kids)
+        log_method_call(self, name=self.name)
         rc = util.run_program(["kpartx", "-d", "-s", self.path])
         if rc:
             raise errors.DMError("partition deactivation failed for '%s'" % self.name)

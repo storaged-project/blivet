@@ -118,7 +118,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             # Could not set the level, so set loose the parents that were
             # added in superclass constructor.
             for dev in self.parents:
-                dev.remove_child()
+                dev.remove_child(self)
             raise e
 
         self.uuid = uuid

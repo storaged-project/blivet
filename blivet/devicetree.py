@@ -21,6 +21,7 @@
 #
 
 import os
+import pprint
 import re
 
 import gi
@@ -102,7 +103,7 @@ class DeviceTreeBase(object):
             if abbreviate_subtree:
                 s += "%s...\n" % ("  " * (depth + 1),)
             else:
-                for child in self.get_children(root):
+                for child in root.children:
                     s += show_subtree(child, depth + 1)
             return s
 
@@ -180,8 +181,12 @@ class DeviceTreeBase(object):
             raise ValueError("Device '%s' not in tree" % dev.name)
 
         if not dev.isleaf and not force:
-            log.debug("%s has %d kids", dev.name, dev.kids)
+            log.debug("%s has children %s", dev.name, pprint.pformat(c.name for c in dev.children))
             raise ValueError("Cannot remove non-leaf device '%s'" % dev.name)
+
+        # handle name registry first since removing an lv from the vg changes its name
+        if dev.name in self.names and getattr(dev, "complete", True):
+            self.names.remove(dev.name)
 
         dev.remove_hook(modparent=modparent)
         if modparent:
@@ -196,8 +201,6 @@ class DeviceTreeBase(object):
                         device.update_name()
 
         self._devices.remove(dev)
-        if dev.name in self.names and getattr(dev, "complete", True):
-            self.names.remove(dev.name)
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
                  dev.id)
@@ -329,10 +332,6 @@ class DeviceTreeBase(object):
     #
     # Device search by relation
     #
-    def get_children(self, device):
-        """ Return a list of a device's children. """
-        return [c for c in self._devices if device in c.parents]
-
     def get_dependent_devices(self, dep, hidden=False):
         """ Return a list of devices that depend on dep.
 
@@ -675,7 +674,7 @@ class DeviceTreeBase(object):
                     if crypt_tab_ent:
                         luks_dev = crypt_tab_ent['device']
                         try:
-                            device = self.get_children(luks_dev)[0]
+                            device = luks_dev.children[0]
                         except IndexError as e:
                             pass
                 elif device is None:
@@ -833,7 +832,7 @@ class DeviceTreeBase(object):
             for action in reversed(cancel):
                 self.actions.remove(action)
 
-        for d in self.get_children(device):
+        for d in device.children:
             self.hide(d)
 
         log.info("hiding device %s", device)

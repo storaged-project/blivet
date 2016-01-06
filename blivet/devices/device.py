@@ -77,7 +77,6 @@ class Device(util.ObjectID):
             :type parents: list of :class:`Device` instances
         """
         util.ObjectID.__init__(self)
-        self.kids = 0
 
         # Copy only the validity check from _set_name so we don't try to check a
         # bunch of inappropriate state properties during __init__ in subclasses
@@ -89,6 +88,7 @@ class Device(util.ObjectID):
             raise ValueError("parents must be a list of Device instances")
 
         self.parents = parents or []
+        self._children = []
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Device instance.
@@ -103,11 +103,13 @@ class Device(util.ObjectID):
     def __repr__(self):
         s = ("%(type)s instance (%(id)s) --\n"
              "  name = %(name)s  status = %(status)s"
-             "  kids = %(kids)s id = %(dev_id)s\n"
+             "  id = %(dev_id)s\n"
+             "  children = %(children)s\n"
              "  parents = %(parents)s\n" %
              {"type": self.__class__.__name__, "id": "%#x" % id(self),
-              "name": self.name, "kids": self.kids, "status": self.status,
+              "name": self.name, "status": self.status,
               "dev_id": self.id,
+              "children": pprint.pformat([str(c) for c in self.children]),
               "parents": pprint.pformat([str(p) for p in self.parents])})
         return s
 
@@ -127,14 +129,14 @@ class Device(util.ObjectID):
 
             See :attr:`~.ParentList.appendfunc`.
         """
-        parent.add_child()
+        parent.add_child(self)
 
     def _remove_parent(self, parent):
         """ Called before removing a parent from this device.
 
             See :attr:`~.ParentList.removefunc`.
         """
-        parent.remove_child()
+        parent.remove_child(self)
 
     def _init_parent_list(self):
         """ Initialize this instance's parent list. """
@@ -161,20 +163,28 @@ class Device(util.ObjectID):
                        doc="devices upon which this device is built")
 
     @property
+    def children(self):
+        """List of this device's immediate descendants."""
+        return self._children[:]
+
+    @property
     def dict(self):
         d = {"type": self.type, "name": self.name,
              "parents": [p.name for p in self.parents]}
         return d
 
-    def remove_child(self):
+    def remove_child(self, child):
         """ Decrement the child counter for this device. """
-        log_method_call(self, name=self.name, kids=self.kids)
-        self.kids -= 1
+        log_method_call(self, name=self.name, child=child._name, kids=len(self.children))
+        self._children.remove(child)
 
-    def add_child(self):
+    def add_child(self, child):
         """ Increment the child counter for this device. """
-        log_method_call(self, name=self.name, kids=self.kids)
-        self.kids += 1
+        log_method_call(self, name=self.name, child=child._name, kids=len(self.children))
+        if child in self._children:
+            raise ValueError("child is already accounted for")
+
+        self._children.append(child)
 
     def setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -198,7 +208,7 @@ class Device(util.ObjectID):
             :keyword orig: set up original format instead of current format
             :type orig: bool
         """
-        log_method_call(self, name=self.name, orig=orig, kids=self.kids)
+        log_method_call(self, name=self.name, orig=orig)
         for parent in self.parents:
             parent.setup(orig=orig)
 
@@ -256,7 +266,7 @@ class Device(util.ObjectID):
     @property
     def isleaf(self):
         """ True if no other device depends on this one. """
-        return self.kids == 0
+        return not bool(self.children)
 
     @property
     def type_description(self):

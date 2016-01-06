@@ -61,10 +61,10 @@ import logging
 log = logging.getLogger("blivet")
 
 
-def empty_device(device, devicetree):
+def empty_device(device):
     empty = True
     if device.partitioned:
-        partitions = devicetree.get_children(device)
+        partitions = device.children
         empty = all([p.is_magic for p in partitions])
     else:
         empty = (device.format.type is None)
@@ -539,7 +539,7 @@ class Blivet(object):
             if not self.config.initialize_disks or not device.is_disk:
                 return False
 
-            if not empty_device(device, self.devicetree):
+            if not empty_device(device):
                 return False
 
         if isinstance(device, PartitionDevice):
@@ -564,7 +564,7 @@ class Blivet(object):
                 # if clear_part_type is not CLEARPART_TYPE_ALL but we'll still be
                 # removing every partition from the disk, return True since we
                 # will want to be able to create a new disklabel on this disk
-                if not empty_device(device, self.devicetree):
+                if not empty_device(device):
                     return False
 
             # Never clear disks with hidden formats
@@ -577,7 +577,7 @@ class Blivet(object):
             # initialize disks as needed
             if (clear_part_type == CLEARPART_TYPE_LINUX and
                 not ((self.config.initialize_disks and
-                      empty_device(device, self.devicetree)) or
+                      empty_device(device)) or
                      (not device.partitioned and device.format.linux_native))):
                 return False
 
@@ -659,7 +659,7 @@ class Blivet(object):
             if magic:
                 expected = 1
                 # remove the magic partition
-                for part in self.devicetree.get_children(disk):
+                for part in disk.children:
                     if part.parted_partition.number == magic:
                         log.debug("removing %s", part.name)
                         # We can't schedule the magic partition for removal

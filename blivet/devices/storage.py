@@ -503,7 +503,7 @@ class StorageDevice(Device):
     #
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
-        log_method_call(self, name=self.name, orig=orig, kids=self.kids)
+        log_method_call(self, name=self.name, orig=orig)
         for parent in self.parents:
             parent.setup(orig=orig)
             if orig:
@@ -521,14 +521,14 @@ class StorageDevice(Device):
 
             :keyword bool modparent: whether to account for removal in parents
 
-            Parent child counts are adjusted regardless of modparent's value.
+            Parents' list of child devices is updated regardless of modparent.
             The intended use of modparent is to prevent doing things like
             removing a parted.Partition from the disk that contains it as part
             of msdos extended partition management. In general, you should not
             override the default value of modparent in new code.
         """
         for parent in self.parents:
-            parent.remove_child()
+            parent.remove_child(self)
 
     def add_hook(self, new=True):
         """ Perform actions related to adding a device to the devicetree.
@@ -541,7 +541,7 @@ class StorageDevice(Device):
         """
         if not new:
             for p in self.parents:
-                p.add_child()
+                p.add_child(self)
 
     #
     # size manipulations

@@ -197,7 +197,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             # Could not set the levels, so set loose the parents that were
             # added in superclass constructor.
             for dev in self.parents:
-                dev.remove_child()
+                dev.remove_child(self)
             raise e
 
         self.subvolumes = []
@@ -535,7 +535,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
-        log_method_call(self, name=self.name, orig=orig, kids=self.kids)
+        log_method_call(self, name=self.name, orig=orig)
         self.volume.setup(orig=orig)
 
     def _create(self):
