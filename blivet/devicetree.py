@@ -1,7 +1,7 @@
 # devicetree.py
 # Device management for anaconda's storage configuration module.
 #
-# Copyright (C) 2009-2014  Red Hat, Inc.
+# Copyright (C) 2009-2015  Red Hat, Inc.
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of
@@ -31,15 +31,12 @@ from gi.repository import BlockDev as blockdev
 from .actionlist import ActionList
 from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
-from .devices import BTRFSDevice, DASDDevice, NoDevice, PartitionDevice
+from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
-from . import formats, arch
+from . import formats
 from .devicelibs import lvm
-from . import udev
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
-from .flags import flags
-from .populator import Populator
+from .populator import PopulatorMixin
 from .storage_log import log_method_call, log_method_return
 
 import logging
@@ -48,7 +45,7 @@ log = logging.getLogger("blivet")
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 
-class DeviceTree(object):
+class DeviceTreeBase(object):
 
     """ A quasi-tree that represents the devices in the system.
 
@@ -69,25 +66,14 @@ class DeviceTree(object):
         for leaf devices, except for resize actions.
     """
 
-    def __init__(self, conf=None, passphrase=None, luks_dict=None,
-                 iscsi=None, dasd=None):
+    def __init__(self, conf=None):
         """
-
             :keyword conf: storage discovery configuration
             :type conf: :class:`~.StorageDiscoveryConfig`
-            :keyword passphrase: default LUKS passphrase
-            :keyword luks_dict: a dict with UUID keys and passphrase values
-            :type luks_dict: dict
-            :keyword iscsi: ISCSI control object
-            :type iscsi: :class:`~.iscsi.iscsi`
-            :keyword dasd: DASD control object
-            :type dasd: :class:`~.dasd.DASD`
-
         """
-        self.reset(conf, passphrase, luks_dict, iscsi, dasd)
+        self.reset(conf)
 
-    def reset(self, conf=None, passphrase=None, luks_dict=None,
-              iscsi=None, dasd=None):
+    def reset(self, conf=None):
         """ Reset the instance to its initial state. """
         # internal data members
         self._devices = []
@@ -99,19 +85,12 @@ class DeviceTree(object):
 
         self._hidden = []
 
-        # initialize attributes that may later hold cached lvm info
-        self.drop_lvm_cache()
-
         lvm.lvm_cc_resetFilter()
 
-        self.edd_dict = {}
+        self.exclusive_disks = getattr(conf, "exclusive_disks", [])
+        self.ignored_disks = getattr(conf, "ignored_disks", [])
 
-        self._populator = Populator(self,
-                                    conf=conf,
-                                    passphrase=passphrase,
-                                    luks_dict=luks_dict,
-                                    iscsi=iscsi,
-                                    dasd=dasd)
+        self.edd_dict = {}
 
     def __str__(self):
         done = []
@@ -324,63 +303,6 @@ class DeviceTree(object):
         elif action.is_destroy and action.is_device:
             # add the device back into the tree
             self._add_device(action.device, new=False)
-
-    #
-    # Device detection
-    #
-    def populate(self, cleanup_only=False):
-        """ Locate all storage devices.
-
-            Everything should already be active. We just go through and gather
-            details as needed and set up the relations between various devices.
-
-            Devices excluded via disk filtering (or because of disk images) are
-            scanned just the rest, but then they are hidden at the end of this
-            process.
-        """
-        udev.settle()
-        self.drop_lvm_cache()
-        try:
-            self._populator.populate(cleanup_only=cleanup_only)
-        except Exception:
-            raise
-        finally:
-            self._hide_ignored_disks()
-
-        if flags.installer_mode:
-            self.teardown_all()
-
-    def update_device_format(self, device):
-        return self._populator.update_device_format(device)
-
-    def handle_nodev_filesystems(self):
-        for line in open("/proc/mounts").readlines():
-            try:
-                (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
-            except ValueError:
-                log.error("failed to parse /proc/mounts line: %s", line)
-                continue
-            if fstype in formats.fslib.nodev_filesystems:
-                if not flags.include_nodev:
-                    continue
-
-                log.info("found nodev %s filesystem mounted at %s",
-                         fstype, mountpoint)
-                # nodev filesystems require some special handling.
-                # For now, a lot of this is based on the idea that it's a losing
-                # battle to require the presence of an FS class for every type
-                # of nodev filesystem. Based on that idea, we just instantiate
-                # NoDevFS directly and then hack in the fstype as the device
-                # attribute.
-                fmt = formats.get_format("nodev")
-                fmt.device = fstype
-
-                # NoDevice also needs some special works since they don't have
-                # per-instance names in the kernel.
-                device = NoDevice(fmt=fmt)
-                n = len([d for d in self.devices if d.format.type == fstype])
-                device._name += ".%d" % n
-                self._add_device(device)
 
     #
     # Device control
@@ -797,45 +719,6 @@ class DeviceTree(object):
         return device
 
     #
-    # DASD
-    #
-    def make_dasd_list(self, dasds, disks):
-        """ Create a list of DASDs recognized by the system
-
-            :param list dasds: a list of DASD devices
-            :param list disks: a list of disks on the system
-            :returns: a list of DASD devices identified on the system
-            :rtype: list of :class:
-        """
-        if not arch.is_s390():
-            return
-
-        log.info("Generating DASD list....")
-        for dev in (disk for disk in disks if disk.type == "dasd"):
-            if dev not in dasds:
-                dasds.append(dev)
-
-        return dasds
-
-    def make_unformatted_dasd_list(self, dasds):
-        """ Create a list of DASDs which are detected to require dasdfmt.
-
-            :param list dasds: a list of DASD devices
-            :returns: a list of DASDs which need dasdfmt in order to be used
-            :rtype: list of :class:
-        """
-        if not arch.is_s390():
-            return
-
-        unformatted = []
-
-        for dasd in dasds:
-            if blockdev.s390.dasd_needs_format(dasd.busid):
-                unformatted.append(dasd)
-
-        return unformatted
-
-    #
     # Conveniences
     #
     @property
@@ -895,14 +778,6 @@ class DeviceTree(object):
     #
     # Disk filter
     #
-    @property
-    def exclusive_disks(self):
-        return self._populator.exclusive_disks
-
-    @property
-    def ignored_disks(self):
-        return self._populator.ignored_disks
-
     def hide(self, device):
         """ Hide the specified device.
 
@@ -971,9 +846,6 @@ class DeviceTree(object):
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
-        if isinstance(device, DASDDevice):
-            self.dasd.remove(device)
-
         if device.name not in self.names:
             self.names.append(device.name)
 
@@ -1002,8 +874,6 @@ class DeviceTree(object):
                 self._devices.append(hidden)
                 hidden.add_hook(new=False)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
-                if isinstance(device, DASDDevice):
-                    self.dasd.append(device)
 
     def _is_ignored_disk(self, disk):
         return ((self.ignored_disks and disk.name in self.ignored_disks) or
@@ -1025,75 +895,13 @@ class DeviceTree(object):
                 if ignored:
                     self.hide(disk)
 
-    #
-    # Disk images
-    #
-    def set_disk_images(self, images):
-        """ Set the disk images and reflect them in exclusive_disks.
 
-            :param images: dict with image name keys and filename values
-            :type images: dict
+class DeviceTree(DeviceTreeBase, PopulatorMixin):
+    def __init__(self, conf=None, passphrase=None, luks_dict=None):
+        DeviceTreeBase.__init__(self, conf=conf)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
 
-            .. note::
-
-                Disk images are automatically exclusive. That means that, in the
-                presence of disk images, any local storage not associated with
-                the disk images is ignored.
-        """
-        self._populator.set_disk_images(images)
-
-    def setup_disk_images(self):
-        """ Set up devices to represent the disk image files. """
-        self._populator.setup_disk_images()
-
-    def teardown_disk_images(self):
-        """ Tear down any disk image stacks. """
-        # teardown all devices first so that there's nothing active running on
-        # top of disk images when we try to tear those down
-        self.teardown_all()
-        self._populator.teardown_disk_images()
-
-    @property
-    def disk_images(self):
-        return self._populator.disk_images
-
-    #
-    # Miscellaneous (global) data
-    #
-    @property
-    def pv_info(self):
-        if self._pvs_cache is None:
-            pvs = blockdev.lvm.pvs()
-            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._pvs_cache
-
-    @property
-    def lv_info(self):
-        if self._lvs_cache is None:
-            lvs = blockdev.lvm.lvs()
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._lvs_cache
-
-    def drop_lvm_cache(self):
-        """ Drop cached lvm information. """
-        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
-        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
-
-    @property
-    def dasd(self):
-        return self._populator.dasd
-
-    @dasd.setter
-    def dasd(self, dasd):
-        self._populator.dasd = dasd
-
-    @property
-    def protected_dev_names(self):
-        return self._populator.protected_dev_names
-
-    def save_luks_passphrase(self, device):
-        """ Save a device's LUKS passphrase in case of reset. """
-
-        self._populator.save_luks_passphrase(device)
+    # pylint: disable=arguments-differ
+    def reset(self, conf=None, passphrase=None, luks_dict=None):
+        DeviceTreeBase.reset(self, conf=conf)
+        PopulatorMixin.reset(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)

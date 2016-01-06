@@ -48,7 +48,7 @@ from .platform import platform as _platform
 from .formats import get_format
 from .osinstall import FSSet, find_existing_installations
 from . import arch
-from . import iscsi
+from .iscsi import iscsi
 from . import fcoe
 from . import zfcp
 from . import devicefactory
@@ -134,14 +134,12 @@ class Blivet(object):
         self.autopart_add_backup_passphrase = False
         self.autopart_requests = []
         self.edd_dict = {}
-        self.dasd = []
 
         self.__luks_devs = {}
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
         self._default_boot_fstype = None
 
-        self.iscsi = iscsi.iscsi()
         self.fcoe = fcoe.fcoe()
         self.zfcp = zfcp.ZFCP()
 
@@ -151,9 +149,7 @@ class Blivet(object):
         # these will both be empty until our reset method gets called
         self.devicetree = DeviceTree(conf=self.config,
                                      passphrase=self.encryption_passphrase,
-                                     luks_dict=self.__luks_devs,
-                                     iscsi=self.iscsi,
-                                     dasd=self.dasd)
+                                     luks_dict=self.__luks_devs)
         self.fsset = FSSet(self.devicetree)
         self.roots = []
         self.services = set()
@@ -269,20 +265,13 @@ class Blivet(object):
             self.config.update(self.ksdata)
 
         if flags.installer_mode and not flags.image_install:
-            self.iscsi.startup()
+            iscsi.startup()
             self.fcoe.startup()
             self.zfcp.startup()
-            self.dasd = self.devicetree.make_dasd_list(self.dasd, self.devices)
-
-        if self.dasd:
-            # Reset the internal dasd list (823534)
-            self.dasd = []
 
         self.devicetree.reset(conf=self.config,
                               passphrase=self.encryption_passphrase,
-                              luks_dict=self.__luks_devs,
-                              iscsi=self.iscsi,
-                              dasd=self.dasd)
+                              luks_dict=self.__luks_devs)
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.fsset = FSSet(self.devicetree)
         self.edd_dict = get_edd_dict(self.partitioned)
@@ -1389,20 +1378,22 @@ class Blivet(object):
 
         self.fsset.write()
         self.make_mtab()
-        self.iscsi.write(get_sysroot(), self)
+        iscsi.write(get_sysroot(), self)
         self.fcoe.write(get_sysroot())
         self.zfcp.write(get_sysroot())
-        self.write_dasd_conf(self.dasd, get_sysroot())
+        self.write_dasd_conf(get_sysroot())
 
-    def write_dasd_conf(self, disks, root):
+    def write_dasd_conf(self, root):
         """ Write /etc/dasd.conf to target system for all DASD devices
             configured during installation.
         """
-        if not (arch.is_s390() and disks):
+        dasds = self.devicetree.get_devices_by_type("dasd")
+        dasds.sort(key=lambda d: d.name)
+        if not (arch.is_s390() and dasds):
             return
 
         with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:
-            for dasd in sorted(disks, key=lambda d: d.name):
+            for dasd in dasds:
                 fields = [dasd.busid] + dasd.get_opts()
                 f.write("%s\n" % " ".join(fields),)
 
@@ -1515,7 +1506,7 @@ class Blivet(object):
 
         if (not fmt.mountable or not fmt.formattable or not fmt.supported or
                 not fmt.linux_native):
-            log.debug("invalid default fstype: %r", fmt)
+            log.debug("invalid default fstype (%s): %r", newtype, fmt)
             raise ValueError("new value %s is not valid as a default fs type" % newtype)
 
         self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init

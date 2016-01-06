@@ -31,7 +31,6 @@ from ..devicelibs import mdraid, raid
 
 from .. import errors
 from .. import util
-from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
@@ -137,12 +136,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         if self.parents and self.parents[0].type == "mdcontainer" and self.type != "mdbiosraidarray":
             raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
-
-        if self.exists and self.mdadm_format_uuid and not flags.testing:
-            # this is a hack to work around mdadm's insistence on giving
-            # really high minors to arrays it has no config entry for
-            with open("/etc/mdadm.conf", "a") as c:
-                c.write("ARRAY %s UUID=%s\n" % (self.path, self.mdadm_format_uuid))
 
     @property
     def mdadm_format_uuid(self):
