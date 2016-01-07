@@ -12,7 +12,9 @@ from blivet.devices import LVMThinPoolDevice
 from blivet.devices import LVMThinSnapShotDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices.lvm import LVMCacheRequest
+from blivet.devices.lvm import LVPVSpec
 from blivet.size import Size
+from blivet.devicelibs import raid
 
 DEVICE_CLASSES = [
     LVMLogicalVolumeDevice,
@@ -105,7 +107,9 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"),
                                     exists=False, cache_request=cache_req)
-        self.assertEqual(lv.vg_space_used, Size("512 MiB"))
+
+        # the cache reserves space for the 8MiB pmspare internal LV
+        self.assertEqual(lv.vg_space_used, Size("504 MiB"))
 
         # check that the LV behaves like a cached LV
         self.assertTrue(lv.cached)
@@ -113,9 +117,10 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertIsNotNone(cache)
 
         # check parameters reported by the (non-existing) cache
-        self.assertEqual(cache.size, Size("504 MiB"))
+        # 512 MiB - 8 MiB (metadata) - 8 MiB (pmspare)
+        self.assertEqual(cache.size, Size("496 MiB"))
         self.assertEqual(cache.md_size, Size("8 MiB"))
-        self.assertEqual(cache.vg_space_used, Size("512 MiB"))
+        self.assertEqual(cache.vg_space_used, Size("504 MiB"))
         self.assertIsInstance(cache.size, Size)
         self.assertIsInstance(cache.md_size, Size)
         self.assertIsInstance(cache.vg_space_used, Size)
@@ -125,6 +130,200 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertIsNone(cache.backing_device_name)
         self.assertIsNone(cache.cache_device_name)
         self.assertEqual(set(cache.fast_pvs), set([pv2]))
+
+    def test_lvmcached_two_logical_volume_init(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("512 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        cache_req = LVMCacheRequest(Size("256 MiB"), [pv2], "writethrough")
+        lv1 = LVMLogicalVolumeDevice("testlv", parents=[vg],
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, cache_request=cache_req)
+
+        cache_req = LVMCacheRequest(Size("256 MiB"), [pv2], "writethrough")
+        lv2 = LVMLogicalVolumeDevice("testlv", parents=[vg],
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, cache_request=cache_req)
+
+        cache = lv1.cache
+        self.assertIsNotNone(cache)
+        # 256 MiB - 8 MiB (metadata) - 8 MiB (pmspare)
+        self.assertEqual(cache.size, Size("240 MiB"))
+
+        cache = lv2.cache
+        self.assertIsNotNone(cache)
+        # already have pmspare space reserved for lv1's cache (and shared)
+        # 256 MiB - 8 MiB (metadata) [no pmspare]
+        self.assertEqual(cache.size, Size("248 MiB"))
+
+    def test_lvm_logical_volume_with_pvs_init(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("512 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        pv_spec = LVPVSpec(pv, Size("1 GiB"))
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, pvs=[pv_spec])
+
+        self.assertEqual([spec.pv for spec in lv._pv_specs], [pv])
+
+    def test_lvm_logical_volume_segtype_init(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        with self.assertRaises(ValueError):
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, seg_type="raid8", pvs=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="striped", pvs=[pv, pv2])
+
+        self.assertEqual(lv.seg_type, "striped")
+
+    def test_lvm_logical_volume_segtype_pv_free(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="striped", pvs=[pv, pv2])
+
+        self.assertEqual(lv.seg_type, "striped")
+        self.assertEqual(pv.format.free, Size("512 MiB"))
+        self.assertEqual(pv2.format.free, 0)
+
+    def test_lvm_logical_volume_pv_free_linear(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+        pv_spec = LVPVSpec(pv, Size("256 MiB"))
+        pv_spec2 = LVPVSpec(pv2, Size("256 MiB"))
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, pvs=[pv_spec, pv_spec2])
+        self.assertEqual(lv.seg_type, "linear")
+        self.assertEqual(pv.format.free, Size("768 MiB"))
+        self.assertEqual(pv2.format.free, Size("256 MiB"))
+
+    def test_lvm_logical_volume_raid_level(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="raid1", pvs=[pv, pv2])
+
+        self.assertEqual(lv.seg_type, "raid1")
+        # 512 MiB - 4 MiB (metadata)
+        self.assertEqual(lv.size, Size("508 MiB"))
+        self.assertEqual(lv._raid_level, raid.RAID1)
+        self.assertTrue(lv.is_raid_lv)
+        self.assertEqual(lv._num_raid_pvs, 2)
+
+    def test_lvm_logical_volume_mirror(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="mirror", pvs=[pv, pv2])
+
+        self.assertEqual(lv.seg_type, "mirror")
+        # 512 MiB - 4 MiB (metadata)
+        self.assertEqual(lv.size, Size("508 MiB"))
+        self.assertEqual(lv._raid_level, raid.RAID1)
+        self.assertTrue(lv.is_raid_lv)
+        self.assertEqual(lv._num_raid_pvs, 2)
+
+    def test_lvm_logical_volume_insuf_seg_type(self):
+        # pylint: disable=unused-variable
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        # pvs have to be specified for non-linear LVs
+        with self.assertRaises(ValueError):
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, seg_type="raid1")
+        with self.assertRaises(ValueError):
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, seg_type="striped")
+
+        # no or complete specification has to be given for linear LVs
+        with self.assertRaises(ValueError):
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, pvs=[pv])
+        with self.assertRaises(ValueError):
+            pv_spec = LVPVSpec(pv, Size("256 MiB"))
+            pv_spec2 = LVPVSpec(pv2, Size("250 MiB"))
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, pvs=[pv_spec, pv_spec2])
+
+        # no non-linear thin pools (yet)
+        with self.assertRaises(ValueError):
+            lv = LVMThinPoolDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                   fmt=blivet.formats.get_format("xfs"),
+                                   exists=False, seg_type="striped")
+
+    def test_lvm_logical_volume_metadata_size(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="raid1", pvs=[pv, pv2])
+        self.assertEqual(lv.metadata_size, Size("4 MiB"))
+        # two copies of metadata
+        self.assertEqual(lv.metadata_vg_space_used, Size("8 MiB"))
+
+    def test_lvm_logical_volume_pv_free_cached(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+        pv_spec = LVPVSpec(pv, Size("256 MiB"))
+        pv_spec2 = LVPVSpec(pv2, Size("256 MiB"))
+        cache_req = LVMCacheRequest(Size("512 MiB"), [pv], "writethrough")
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, cache_request=cache_req,
+                                    pvs=[pv_spec, pv_spec2])
+        self.assertEqual(lv.seg_type, "linear")
+        # 1024 MiB (free) - 256 MiB (LV part) - 504 MiB (cache shrank for pmspare space)
+        self.assertEqual(pv.format.free, Size("264 MiB"))
+        self.assertEqual(pv2.format.free, Size("256 MiB"))
 
     def test_target_size(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),

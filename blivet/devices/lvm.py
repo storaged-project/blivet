@@ -27,6 +27,8 @@ import pprint
 import re
 import os
 import time
+import itertools
+from collections import namedtuple
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -51,6 +53,7 @@ from .lib import LINUX_SECTOR_SIZE, ParentList
 from .device import Device
 from .storage import StorageDevice
 from .container import ContainerDevice
+from .raid import RaidDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
 from .cache import Cache, CacheStats, CacheRequest
@@ -71,6 +74,16 @@ def get_internal_lv_class(lv_attr):
             return cls
 
     return None
+
+
+class LVPVSpec(object):
+    """ Class for specifying how much space on a PV should be allocated for some LV """
+    def __init__(self, pv, size):
+        self.pv = pv
+        self.size = size
+
+PVFreeInfo = namedtuple("PVFreeInfo", ["pv", "size", "free"])
+""" A namedtuple class holding the information about PV's (usable) size and free space """
 
 
 class LVMVolumeGroupDevice(ContainerDevice):
@@ -124,21 +137,21 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.pv_count = util.numeric_type(pv_count)
         if exists and not pv_count:
             self._complete = True
+        self.pe_size = util.numeric_type(pe_size)
+        self.pe_count = util.numeric_type(pe_count)
+        self.pe_free = util.numeric_type(pe_free)
+
+        # TODO: validate pe_size if given
+        if not self.pe_size:
+            self.pe_size = lvm.LVM_PE_SIZE
 
         super(LVMVolumeGroupDevice, self).__init__(name, parents=parents,
                                                    uuid=uuid, size=size,
                                                    exists=exists, sysfs_path=sysfs_path)
 
         self.free = util.numeric_type(free)
-        self.pe_size = util.numeric_type(pe_size)
-        self.pe_count = util.numeric_type(pe_count)
-        self.pe_free = util.numeric_type(pe_free)
         self._reserved_percent = 0
         self._reserved_space = Size(0)
-
-        # TODO: validate pe_size if given
-        if not self.pe_size:
-            self.pe_size = lvm.LVM_PE_SIZE
 
         if not self.exists:
             self.pv_count = len(self.parents)
@@ -300,6 +313,21 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if origin:
             origin.snapshots.append(lv)
 
+        # PV space accounting
+        if not lv.exists:
+            # create a copy of the list so that we don't modify the origin below
+            pv_sizes = lv.pv_space_used[:]
+            if lv.cached:
+                pv_sizes.extend(lv.cache.pv_space_used)
+            if pv_sizes:
+                # check that we have enough space in the PVs for the LV and
+                # account for it
+                for size_spec in pv_sizes:
+                    if size_spec.pv.format.free < size_spec.size:
+                        msg = "not enough space in the '%s' PV for the '%s' LV's extents" % (size_spec.pv.name, lv.name)
+                        raise errors.DeviceError(msg)
+                    size_spec.pv.format.free -= size_spec.size
+
     def _remove_log_vol(self, lv):
         """ Remove an LV from this VG. """
         if lv not in self.lvs:
@@ -312,12 +340,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if origin:
             origin.snapshots.remove(lv)
 
+        # PV space accounting
+        pv_sizes = lv.pv_space_used[:]
+        if lv.cached:
+            pv_sizes.extend(lv.cache.pv_space_used)
+        if not lv.exists and pv_sizes:
+            for size_spec in pv_sizes:
+                size_spec.pv.format.free += size_spec.size
+
     def _add_parent(self, member):
         super(LVMVolumeGroupDevice, self)._add_parent(member)
 
         if (self.exists and member.format.exists and
                 len(self.parents) + 1 == self.pv_count):
             self._complete = True
+
+        # this PV object is just being added so it has all its space available
+        # (adding LVs will eat that space later)
+        if not member.format.exists:
+            member.format.free = self._get_pv_usable_space(member)
 
     def _remove_parent(self, member):
         # XXX It would be nice to raise an exception if removing this member
@@ -327,6 +368,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         #     Maybe remove_member could be a wrapper with the checks and the
         #     devicefactory could call the _ versions to bypass the checks.
         super(LVMVolumeGroupDevice, self)._remove_parent(member)
+        member.format.free = None
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -354,6 +396,12 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return self.align(reserved, roundup=True)
 
+    def _get_pv_usable_space(self, pv):
+        if isinstance(pv, MDRaidArrayDevice):
+            return self.align(pv.size - 2 * pv.format.pe_start)
+        else:
+            return self.align(pv.size - pv.format.pe_start)
+
     @property
     def lvm_metadata_space(self):
         """ The amount of the space LVM metadata cost us in this VG's PVs """
@@ -368,10 +416,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         #       class once it exists
         diff = Size(0)
         for pv in self.pvs:
-            if isinstance(pv, MDRaidArrayDevice):
-                diff += pv.size - self.align(pv.size - 2 * pv.format.pe_start)
-            else:
-                diff += pv.size - self.align(pv.size - pv.format.pe_start)
+            diff += pv.size - self._get_pv_usable_space(pv)
 
         return diff
 
@@ -417,6 +462,16 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ The number of free extents in this VG. """
         # TODO: just ask lvm if is_modified returns False
         return int(self.free_space / self.pe_size)
+
+    @property
+    def pv_free_info(self):
+        """
+        :returns: information about sizes and free space in this VG's PVs
+        :rtype: list of PVFreeInfo
+
+        """
+        return [PVFreeInfo(pv, self._get_pv_usable_space(pv.size), pv.format.free)
+                for pv in self.pvs]
 
     def align(self, size, roundup=False):
         """ Align a size to a multiple of physical extent size. """
@@ -502,7 +557,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return True
 
 
-class LVMLogicalVolumeDevice(DMDevice):
+class LVMLogicalVolumeDevice(DMDevice, RaidDevice):
 
     """ An LVM Logical Volume """
     _type = "lvmlv"
@@ -513,7 +568,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
-                 percent=None, cache_request=None):
+                 percent=None, cache_request=None, pvs=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -545,8 +600,24 @@ class LVMLogicalVolumeDevice(DMDevice):
             :type percent: int
             :keyword cache_request: parameters of requested cache (if any)
             :type cache_request: :class:`~.devices.lvm.LVMCacheRequest`
+            :keyword pvs: list of PVs to allocate extents from (size could be specified for each PV)
+            :type pvs: list of :class:`~.devices.StorageDevice` or :class:`LVPVSpec` objects (tuples)
 
         """
+
+        if not exists:
+            raid_level_names = list(itertools.chain.from_iterable([level.names for level in lvm.raid_levels]))
+            if seg_type not in [None, "linear"] + raid_level_names:
+                raise ValueError("Invalid or unsupported segment type: %s" % seg_type)
+            if seg_type and seg_type != "linear" and not pvs:
+                raise ValueError("List of PVs has to be given for every non-linear LV")
+            elif (not seg_type or seg_type == "linear") and pvs:
+                if not all(isinstance(pv, LVPVSpec) for pv in pvs):
+                    raise ValueError("Invalid specification of PVs for a linear LV: either no or complete "
+                                     "specification (with all space split into PVs has to be given")
+                elif sum(spec.size for spec in pvs) != size:
+                    raise ValueError("Invalid specification of PVs for a linear LV: the sum of space "
+                                     "assigned to PVs is not equal to the size of the LV")
 
         # When this device's format is set in the superclass constructor it will
         # try to access self.snapshots.
@@ -554,9 +625,17 @@ class LVMLogicalVolumeDevice(DMDevice):
         DMDevice.__init__(self, name, size=size, fmt=fmt,
                           sysfs_path=sysfs_path, parents=parents,
                           exists=exists)
+        RaidDevice.__init__(self, name, size=size, fmt=fmt,
+                            sysfs_path=sysfs_path, parents=parents,
+                            exists=exists)
 
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
+        self._raid_level = None
+        if self.seg_type in itertools.chain.from_iterable([level.names for level in lvm.raid_levels]):
+            self._raid_level = lvm.raid_levels.raid_level(self.seg_type)
+        else:
+            self._raid_level = lvm.raid_levels.raid_level("linear")
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -570,17 +649,49 @@ class LVMLogicalVolumeDevice(DMDevice):
             self.req_size = self._size
             self.req_percent = util.numeric_type(percent)
 
-        # check that we got parents as expected and add this device to them
-        self._check_parents()
-        self._add_to_parents()
-
-        self._metadata_size = Size(0)
+        if not self.exists and self.seg_type.startswith(("raid", "mirror")):
+            # RAID LVs create one extent big internal metadata LVs so make sure
+            # we reserve space for it
+            self._metadata_size = self.vg.pe_size
+            self._size -= self._metadata_size
+        else:
+            self._metadata_size = Size(0)
         self._internal_lvs = []
         self._cache = None
 
         if cache_request and not self.exists:
             self._cache = LVMCache(self, size=cache_request.size, exists=False,
-                                   fast_pvs=cache_request.fast_devs, mode=cache_request.mode)
+                                   pvs=cache_request.fast_devs, mode=cache_request.mode)
+
+        self._pv_specs = []
+        pvs = pvs or []
+        for pv_spec in pvs:
+            if isinstance(pv_spec, LVPVSpec):
+                self._pv_specs.append(pv_spec)
+            elif isinstance(pv_spec, StorageDevice):
+                self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
+            else:
+                raise ValueError("Invalid PV spec '%s' for the '%s' LV" % (pv_spec, self.name))
+        # Make sure any destination PVs are actually PVs in this VG
+        if not set(spec.pv for spec in self._pv_specs).issubset(set(self.vg.parents)):
+            missing = [r.name for r in
+                        set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
+            msg = "invalid destination PV(s) %s for LV %s" % (missing, self.name)
+            raise ValueError(msg)
+        if self._pv_specs:
+            self._assign_pv_space()
+
+        # check that we got parents as expected and add this device to them now
+        # that it is fully-initialized
+        self._check_parents()
+        self._add_to_parents()
+
+    def _assign_pv_space(self):
+        if not self.is_raid_lv:
+            # nothing to do for non-RAID (and thus non-striped) LVs here
+            return
+        for spec in self._pv_specs:
+            spec.size = self._raid_level.get_base_member_size(self.size + self._metadata_size, len(self._pv_specs))
 
     def _check_parents(self):
         """Check that this device has parents as expected"""
@@ -603,9 +714,20 @@ class LVMLogicalVolumeDevice(DMDevice):
         self._parents[0]._add_log_vol(self)
 
     @property
-    def copies(self):
-        image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
-        return len(image_lvs) or 1
+    def members(self):
+        return self.vg.pvs
+
+    @property
+    def is_raid_lv(self):
+        return self.seg_type != "linear" and self._raid_level.name != "linear"
+
+    @property
+    def _num_raid_pvs(self):
+        if self.exists:
+            image_lvs = [int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMImageLogicalVolumeDevice)]
+            return len(image_lvs) or 1
+        else:
+            return len(self._pv_specs)
 
     @property
     def log_size(self):
@@ -614,22 +736,23 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     @property
     def metadata_size(self):
-        if self._metadata_size:
-            return self._metadata_size
-        elif self.cached:
-            return self.cache.md_size
+        """ Size of the meta data space this LV has available (see also :property:`metadata_vg_space_used`) """
+        if self.exists:
+            md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
+            return Size(sum(lv.size for lv in md_lvs))
 
-        md_lvs = (int_lv for int_lv in self._internal_lvs if isinstance(int_lv, LVMMetadataLogicalVolumeDevice))
-        return Size(sum(lv.size for lv in md_lvs))
+        ret = self._metadata_size
+        if self.cached:
+            ret += self.cache.md_size
+        return ret
 
     def __repr__(self):
         s = DMDevice.__repr__(self)
         s += ("  VG device = %(vgdev)r\n"
               "  segment type = %(type)s percent = %(percent)s\n"
-              "  mirror copies = %(copies)d"
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
-               "copies": self.copies, "type": self.seg_type,
+               "type": self.seg_type,
                "vgspace": self.vg_space_used})
         return s
 
@@ -637,8 +760,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def dict(self):
         d = super(LVMLogicalVolumeDevice, self).dict
         if self.exists:
-            d.update({"copies": self.copies,
-                      "vgspace": self.vg_space_used})
+            d.update({"vgspace": self.vg_space_used})
         else:
             d.update({"percent": self.req_percent})
 
@@ -646,7 +768,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
     @property
     def mirrored(self):
-        return self.copies > 1
+        return self._raid_level and self._raid_level.has_redundancy()
 
     def _set_size(self, size):
         if not isinstance(size, Size):
@@ -675,14 +797,61 @@ class LVMLogicalVolumeDevice(DMDevice):
         return min(max_lv, max_format) if max_format else max_lv
 
     @property
+    def data_vg_space_used(self):
+        """ Space occupied by the data part of this LV, not including snapshots """
+        rounded_size = self.vg.align(self.size, roundup=True)
+        if self.is_raid_lv:
+            zero_superblock = lambda x: Size(0)
+            try:
+                return self._raid_level.get_space(rounded_size, self._num_raid_pvs,
+                                                  superblock_size_func=zero_superblock)
+            except errors.RaidError:
+                # Too few PVs for the segment type (RAID level), we must have
+                # incomplete information about the current LVM
+                # configuration. Let's just default to the basic size for
+                # now. Later calls to this property will provide better results.
+                # TODO: add pv_count field to blockdev.LVInfo and this class
+                return rounded_size
+        else:
+            return rounded_size
+
+    @property
+    def metadata_vg_space_used(self):
+        """ Space occupied by the metadata part(s) of this LV, not including snapshots """
+        non_raid_base = self.metadata_size + self.log_size
+        if non_raid_base and self.is_raid_lv:
+            zero_superblock = lambda x: Size(0)
+            try:
+                return self._raid_level.get_space(non_raid_base, self._num_raid_pvs,
+                                                  superblock_size_func=zero_superblock)
+            except errors.RaidError:
+                # Too few PVs for the segment type (RAID level), we must have
+                # incomplete information about the current LVM
+                # configuration. Let's just default to the basic size for
+                # now. Later calls to this property will provide better results.
+                # TODO: add pv_count field to blockdev.LVInfo and this class
+                return non_raid_base
+
+        return non_raid_base
+
+    @property
     def vg_space_used(self):
         """ Space occupied by this LV, not including snapshots. """
         if self.cached:
             cache_size = self.cache.size
         else:
             cache_size = Size(0)
-        return (self.vg.align(self.size, roundup=True) * self.copies
-                + self.log_size + self.metadata_size + cache_size)
+
+        return self.data_vg_space_used + self.metadata_vg_space_used + cache_size
+
+    @property
+    def pv_space_used(self):
+        """
+        :returns: space occupied by this LV on its VG's PVs (if we have and idea)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     def _set_format(self, fmt):
         super(LVMLogicalVolumeDevice, self)._set_format(fmt)
@@ -820,32 +989,49 @@ class LVMLogicalVolumeDevice(DMDevice):
         # should we use --zero for safety's sake?
         if not self.cache:
             # just a plain LV
-            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size)
+            # TODO: specify sizes together with PVs once LVM and libblockdev support it
+            pvs = [spec.pv.path for spec in self._pv_specs]
+            pvs = pvs or None
+
+            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
+                                  type=self.seg_type, pv_list=pvs)
         else:
             mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
-            # prepare the list of fast PV devices
-            fast_pvs = []
-            for pv_name in (pv.name for pv in self.cache.fast_pvs):
-                # make sure we have the full device paths
-                if not pv_name.startswith("/dev/"):
-                    fast_pvs.append("/dev/%s" % pv_name)
-                else:
-                    fast_pvs.append(pv_name)
+            fast_pvs = [pv.path for pv in self.cache.fast_pvs]
 
-            # get the list of all fast PV devices used in the VG so that we can
-            # consider the rest to be slow PVs and generate a list of them
-            all_fast_pvs_names = set()
-            for lv in self.vg.lvs:
-                if lv.cached and lv.cache.fast_pvs:
-                    all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
-            slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
+            if self._pv_specs:
+                # (slow) PVs specified for this LV
+                slow_pvs = [spec.pv.path for spec in self._pv_specs]
+            else:
+                # get the list of all fast PV devices used in the VG so that we can
+                # consider the rest to be slow PVs and generate a list of them
+                all_fast_pvs_names = set()
+                for lv in self.vg.lvs:
+                    if lv.cached and lv.cache.fast_pvs:
+                        all_fast_pvs_names |= set(pv.name for pv in lv.cache.fast_pvs)
+                slow_pvs = [pv.path for pv in self.vg.pvs if pv.name not in all_fast_pvs_names]
+
+            slow_pvs = util.dedup_list(slow_pvs)
 
             # VG name, LV name, data size, cache size, metadata size, mode, flags, slow PVs, fast PVs
-            # XXX: we need to pass slow_pvs+fast_pvs as slow PVs because parts
-            # of the fast PVs may be required for allocation of the LV (it may
-            # span over the slow PVs and parts of fast PVs)
+            # XXX: we need to pass slow_pvs+fast_pvs (without duplicates) as slow PVs because parts of the
+            # fast PVs may be required for allocation of the LV (it may span over the slow PVs and parts of
+            # fast PVs)
             blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
-                                                mode, 0, slow_pvs + fast_pvs, fast_pvs)
+                                                mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+
+    def _post_create(self):
+        super()._post_create()
+        # update the free space info of the PVs this LV could have taken space
+        # from (either specified or potentially all PVs from the VG)
+        if self._pv_specs:
+            used_pvs = [spec.pv for spec in self._pv_specs]
+        else:
+            used_pvs = self.vg.pvs
+        for pv in used_pvs:
+            # None means "not set" and triggers a dynamic fetch of the actual
+            # value when queried
+            pv.format.free = None
 
     def _pre_destroy(self):
         StorageDevice._pre_destroy(self)
@@ -1122,10 +1308,9 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
         s += ("  parent LV = %r\n" % self.parent_lv)
         s += ("  VG device = %(vgdev)r\n"
               "  segment type = %(type)s percent = %(percent)s\n"
-              "  mirror copies = %(copies)d"
               "  VG space used = %(vgspace)s" %
               {"vgdev": self.vg, "percent": self.req_percent,
-               "copies": self.copies, "type": self.seg_type,
+               "type": self.seg_type,
                "vgspace": self.vg_space_used})
         return s
 
@@ -1492,7 +1677,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
             :type sysfs_path: str
             :keyword uuid: the device UUID
             :type uuid: str
-            :keyword seg_type: segment type
+            :keyword seg_type: segment type (only "linear" supported for non-existing ThinPool LVs)
             :type seg_type: str
 
             For non-existent pools only:
@@ -1518,6 +1703,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         if chunksize is not None and \
            not blockdev.lvm.is_valid_thpool_chunk_size(chunksize):
             raise ValueError("invalid chunksize value")
+
+        if not exists and seg_type and seg_type != "linear":
+            raise ValueError("creation of non-linear thin pool LVs is not supported (yet)")
 
         super(LVMThinPoolDevice, self).__init__(name, parents=parents,
                                                 size=size, uuid=uuid,
@@ -1577,6 +1765,7 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         else:
             profile_name = None
         # TODO: chunk size, data/metadata split --> profile
+        # TODO: allow for specification of PVs
         blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
                                   md_size=self.metadata_size,
                                   chunk_size=self.chunk_size,
@@ -1749,7 +1938,7 @@ class LVMCache(Cache):
 
     """Class providing the cache-related functionality of a cached LV"""
 
-    def __init__(self, cached_lv, size=None, md_size=None, exists=False, fast_pvs=None, mode=None):
+    def __init__(self, cached_lv, size=None, md_size=None, exists=False, pvs=None, mode=None):
         """
         :param cached_lv: the LV the cache functionality of which to provide
         :type cached_lv: :class:`LVMLogicalVolumeDevice`
@@ -1761,8 +1950,8 @@ class LVMCache(Cache):
                         size dynamically) or None to use the default (see note below)
         :type md_size: :class:`~.size.Size` or NoneType
         :param bool exists: whether the cache exists or not
-        :param fast_pvs: PVs to allocate the cache on/from (ignored for existing)
-        :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
+        :param pvs: PVs to allocate the cache on/from (ignored for existing)
+        :type pvs: list of :class:`LVPVSpec`
         :param str mode: desired mode for non-existing cache (ignored for existing)
 
         .. note::
@@ -1776,17 +1965,44 @@ class LVMCache(Cache):
         if not exists and not md_size:
             default_md_size = Size(blockdev.lvm.cache_get_default_md_size(size))
             self._size = size - default_md_size
+            # if we are going to cause a pmspare LV allocation or growth, we
+            # should account for it
+            if cached_lv.vg.pmspare_size < default_md_size:
+                self._size -= default_md_size - cached_lv.vg.pmspare_size
+            self._size = cached_lv.vg.align(self._size)
             self._md_size = default_md_size
         else:
             self._size = size
             self._md_size = md_size
         self._exists = exists
+        self._mode = None
+        self._pv_specs = []
         if not exists:
             self._mode = mode or "writethrough"
-            self._fast_pvs = fast_pvs
-        else:
-            self._mode = None
-            self._fast_pvs = None
+            for pv_spec in pvs:
+                if isinstance(pv_spec, LVPVSpec):
+                    self._pv_specs.append(pv_spec)
+                elif isinstance(pv_spec, StorageDevice):
+                    self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
+            self._assign_pv_space()
+
+    def _assign_pv_space(self):
+        # calculate the size of space that we need to place somewhere
+        space_to_assign = self.size + self.md_size - sum(spec.size for spec in self._pv_specs)
+
+        # skip the PVs that already have some chunk of the space assigned
+        for spec in (spec for spec in self._pv_specs if not spec.size):
+            if spec.pv.format.free >= space_to_assign:
+                # enough space in this PV, put everything in there and quit
+                spec.size = space_to_assign
+                space_to_assign = Size(0)
+                break
+            elif spec.pv.format.free > 0:
+                # some space, let's use it and move on to another PV (if any)
+                spec.size = spec.pv.format.free
+                space_to_assign -= spec.pv.format.free
+        if space_to_assign > 0:
+            raise ValueError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
 
     @property
     def size(self):
@@ -1845,7 +2061,16 @@ class LVMCache(Cache):
 
     @property
     def fast_pvs(self):
-        return self._fast_pvs
+        return [spec.pv for spec in self._pv_specs]
+
+    @property
+    def pv_space_used(self):
+        """
+        :returns: space to be occupied by the cache on its LV's VG's PVs (one has to love LVM)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     def detach(self):
         vg_name = self._cached_lv.vg.name
@@ -1928,18 +2153,23 @@ class LVMCacheRequest(CacheRequest):
 
     """Class representing the LVM cache creation request"""
 
-    def __init__(self, size, fast_pvs, mode=None):
+    def __init__(self, size, pvs, mode=None):
         """
         :param size: requested size of the cache
         :type size: :class:`~.size.Size`
-        :param fast_pvs: PVs to allocate the cache on/from
-        :type fast_pvs: list of :class:`~.devices.storage.StorageDevice`
+        :param pvs: PVs to allocate the cache on/from
+        :type pvs: list of (:class:`~.devices.storage.StorageDevice` or :class:`LVPVSpec`)
         :param str mode: requested mode for the cache (``None`` means the default is used)
 
         """
         self._size = size
-        self._fast_pvs = fast_pvs
         self._mode = mode or "writethrough"
+        self._pv_specs = []
+        for pv_spec in pvs:
+            if isinstance(pv_spec, LVPVSpec):
+                self._pv_specs.append(pv_spec)
+            elif isinstance(pv_spec, StorageDevice):
+                self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
 
     @property
     def size(self):
@@ -1947,7 +2177,16 @@ class LVMCacheRequest(CacheRequest):
 
     @property
     def fast_devs(self):
-        return self._fast_pvs
+        return [spec.pv for spec in self._pv_specs]
+
+    @property
+    def pv_space_requests(self):
+        """
+        :returns: space to be occupied by the cache on its LV's VG's PVs (one has to love LVM)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     @property
     def mode(self):

@@ -151,17 +151,17 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
         for parent in list(self._parents):
             self._parents.remove(parent)
 
-    def _set_parent_list(self, parents):
+    @property
+    def parents(self):
+        """ Devices upon which this device is built """
+        return self._parents
+
+    @parents.setter
+    def parents(self, parents):
         """ Set this instance's parent list. """
         self._init_parent_list()
         for parent in parents:
             self._parents.append(parent)
-
-    def _get_parent_list(self):
-        return self._parents
-
-    parents = property(_get_parent_list, _set_parent_list,
-                       doc="devices upon which this device is built")
 
     @property
     def children(self):

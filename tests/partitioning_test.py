@@ -539,10 +539,9 @@ class PartitioningTestCase(unittest.TestCase):
     def test_vgchunk_with_cache(self):
         pv = StorageDevice("pv1", size=Size("40 GiB"),
                            fmt=get_format("lvmpv"))
-        # 1033 MiB so that the PV provides 1032 MiB of free space (see
-        # LVMVolumeGroupDevice.extents) -- 1024 MiB for caches, 8 MiB for the
-        # pmspare LV
-        pv2 = StorageDevice("pv2", size=Size("1033 MiB"),
+        # 1025 MiB so that the PV provides 1024 MiB of free space (see
+        # LVMVolumeGroupDevice.extents)
+        pv2 = StorageDevice("pv2", size=Size("1025 MiB"),
                             fmt=get_format("lvmpv"))
         vg = LVMVolumeGroupDevice("vg", parents=[pv, pv2])
 
@@ -583,11 +582,10 @@ class PartitioningTestCase(unittest.TestCase):
     def test_vgchunk_with_cache_pvfree(self):
         pv = StorageDevice("pv1", size=Size("40 GiB"),
                            fmt=get_format("lvmpv"))
-        # 1077 MiB so that the PV provides 1076 MiB of free space (see
+        # 1069 MiB so that the PV provides 1068 MiB of free space (see
         # LVMVolumeGroupDevice.extents) which is 44 MiB more than the caches
-        # need (including the 8MiB pmspare LV) and which should thus be split
-        # into the LVs
-        pv2 = StorageDevice("pv2", size=Size("1077 MiB"),
+        # need and which should thus be split into the LVs
+        pv2 = StorageDevice("pv2", size=Size("1069 MiB"),
                             fmt=get_format("lvmpv"))
         vg = LVMVolumeGroupDevice("vg", parents=[pv, pv2])
 

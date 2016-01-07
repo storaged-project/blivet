@@ -347,6 +347,10 @@ class ActionCreateDevice(DeviceAction):
             # is not taken by non-cached LVs
             if not self.device.cached and action.device.cached:
                 rc = True
+            # create non-linear LVs before linear LVs because the latter ones
+            # can be allocated anywhere
+            elif self.device.seg_type == "linear" and action.device.seg_type != "linear":
+                rc = True
         elif (action.is_add and action.container == self.container):
             rc = True
 
