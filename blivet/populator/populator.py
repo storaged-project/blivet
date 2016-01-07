@@ -43,6 +43,7 @@ from .. import util
 from ..util import open  # pylint: disable=redefined-builtin
 from ..flags import flags
 from ..storage_log import log_method_call
+from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
 
 import logging
@@ -62,7 +63,7 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
     return ret
 
 
-class PopulatorMixin(object):
+class PopulatorMixin(object, metaclass=SynchronizedMeta):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         """
             :keyword conf: storage discovery configuration
