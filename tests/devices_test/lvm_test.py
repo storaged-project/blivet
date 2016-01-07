@@ -140,13 +140,13 @@ class LVMDeviceTest(unittest.TestCase):
 
         cache_req = LVMCacheRequest(Size("256 MiB"), [pv2], "writethrough")
         lv1 = LVMLogicalVolumeDevice("testlv", parents=[vg],
-                                    fmt=blivet.formats.get_format("xfs"),
-                                    exists=False, cache_request=cache_req)
+                                     fmt=blivet.formats.get_format("xfs"),
+                                     exists=False, cache_request=cache_req)
 
         cache_req = LVMCacheRequest(Size("256 MiB"), [pv2], "writethrough")
         lv2 = LVMLogicalVolumeDevice("testlv", parents=[vg],
-                                    fmt=blivet.formats.get_format("xfs"),
-                                    exists=False, cache_request=cache_req)
+                                     fmt=blivet.formats.get_format("xfs"),
+                                     exists=False, cache_request=cache_req)
 
         cache = lv1.cache
         self.assertIsNotNone(cache)

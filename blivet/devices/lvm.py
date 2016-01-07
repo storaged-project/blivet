@@ -675,7 +675,7 @@ class LVMLogicalVolumeDevice(DMDevice, RaidDevice):
         # Make sure any destination PVs are actually PVs in this VG
         if not set(spec.pv for spec in self._pv_specs).issubset(set(self.vg.parents)):
             missing = [r.name for r in
-                        set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
+                       set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
             msg = "invalid destination PV(s) %s for LV %s" % (missing, self.name)
             raise ValueError(msg)
         if self._pv_specs:

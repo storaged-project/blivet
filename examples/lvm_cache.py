@@ -63,4 +63,3 @@ finally:
     b.devicetree.teardown_disk_images()
     os.unlink(disk1_file)
     os.unlink(disk2_file)
-
