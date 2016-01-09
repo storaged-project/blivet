@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.17
+Version: 1.18
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -107,6 +107,10 @@ popd
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jan 08 2016 Brian C. Lane <bcl@redhat.com> - 1.18-1
+- Add more class methods for better use of metadata (jkonecny)
+- Remove pocketlint from BuildRequires (bcl)
+
 * Wed Nov 18 2015 Brian C. Lane <bcl@redhat.com> - 1.17-1
 - Do not catch CryptoError when decrypting LUKS format (#1280239) (vtrefny)
 - Do not try to get LVM cache's size from stats for inactive LV (vpodzime)

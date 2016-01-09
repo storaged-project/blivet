@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-18 16:34-0800\n"
+"POT-Creation-Date: 2016-01-08 17:11-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/populator.py:810
-msgid "Invalid Disk Label"
+#: ../blivet/blivet.py:1197
+msgid "You must create a new filesystem on the root device."
 msgstr ""
 
 #: ../blivet/partitioning.py:423
@@ -82,8 +82,36 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:116
-msgid "FCoE not available"
+#: ../blivet/populator.py:810
+msgid "Invalid Disk Label"
+msgstr ""
+
+#: ../blivet/iscsi.py:175
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:177
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:334
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:336
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:467
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:487
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:490
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/zfcp.py:60
@@ -174,17 +202,66 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:273
-msgid "No big enough free space on disks for automatic partitioning"
+#: ../blivet/deviceaction.py:178
+#, python-format
+msgid "Executing %(action)s"
 msgstr ""
 
-#: ../blivet/autopart.py:436 ../blivet/autopart.py:487
-msgid "No usable disks selected"
+#: ../blivet/deviceaction.py:301
+msgid "create device"
 msgstr ""
 
-#: ../blivet/autopart.py:441 ../blivet/autopart.py:495
-msgid "Not enough free space on disks for automatic partitioning"
+#: ../blivet/deviceaction.py:355
+msgid "destroy device"
+msgstr ""
+
+#: ../blivet/deviceaction.py:429
+msgid "resize device"
+msgstr ""
+
+#: ../blivet/deviceaction.py:511
+msgid "create format"
+msgstr ""
+
+#: ../blivet/deviceaction.py:551
+#, python-format
+msgid "Creating %(type)s on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:577
+#, python-format
+msgid "Not enough entropy to create LUKS format. %d bits are needed."
+msgstr ""
+
+#: ../blivet/deviceaction.py:607
+#, python-format
+msgid "Created %(type)s on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:653
+msgid "destroy format"
+msgstr ""
+
+#: ../blivet/deviceaction.py:749
+msgid "resize format"
+msgstr ""
+
+#: ../blivet/deviceaction.py:785
+#, python-format
+msgid "Resizing filesystem on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:792
+#, python-format
+msgid "Resized filesystem on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:835
+msgid "add container member"
+msgstr ""
+
+#: ../blivet/deviceaction.py:899
+msgid "remove container member"
 msgstr ""
 
 #: ../blivet/size.py:45
@@ -327,6 +404,23 @@ msgstr ""
 msgid "Yi"
 msgstr ""
 
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:273
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:436 ../blivet/autopart.py:487
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:441 ../blivet/autopart.py:495
+msgid "Not enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/fcoe.py:116
+msgid "FCoE not available"
+msgstr ""
+
 #: ../blivet/osinstall.py:253
 #, python-format
 msgid "Linux on %s"
@@ -390,7 +484,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:229 ../blivet/formats/fs.py:883
+#: ../blivet/platform.py:229 ../blivet/formats/fs.py:934
 msgid "EFI System Partition"
 msgstr ""
 
@@ -452,100 +546,6 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/blivet.py:1197
-msgid "You must create a new filesystem on the root device."
-msgstr ""
-
-#: ../blivet/iscsi.py:175
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:177
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:334
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:336
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:467
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:487
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:490
-msgid "Could not log in to any of the discovered nodes"
-msgstr ""
-
-#: ../blivet/deviceaction.py:178
-#, python-format
-msgid "Executing %(action)s"
-msgstr ""
-
-#: ../blivet/deviceaction.py:301
-msgid "create device"
-msgstr ""
-
-#: ../blivet/deviceaction.py:355
-msgid "destroy device"
-msgstr ""
-
-#: ../blivet/deviceaction.py:429
-msgid "resize device"
-msgstr ""
-
-#: ../blivet/deviceaction.py:511
-msgid "create format"
-msgstr ""
-
-#: ../blivet/deviceaction.py:551
-#, python-format
-msgid "Creating %(type)s on %(device)s"
-msgstr ""
-
-#: ../blivet/deviceaction.py:577
-#, python-format
-msgid "Not enough entropy to create LUKS format. %d bits are needed."
-msgstr ""
-
-#: ../blivet/deviceaction.py:607
-#, python-format
-msgid "Created %(type)s on %(device)s"
-msgstr ""
-
-#: ../blivet/deviceaction.py:653
-msgid "destroy format"
-msgstr ""
-
-#: ../blivet/deviceaction.py:749
-msgid "resize format"
-msgstr ""
-
-#: ../blivet/deviceaction.py:785
-#, python-format
-msgid "Resizing filesystem on %(device)s"
-msgstr ""
-
-#: ../blivet/deviceaction.py:792
-#, python-format
-msgid "Resized filesystem on %(device)s"
-msgstr ""
-
-#: ../blivet/deviceaction.py:835
-msgid "add container member"
-msgstr ""
-
-#: ../blivet/deviceaction.py:899
-msgid "remove container member"
-msgstr ""
-
 #: ../blivet/devicelibs/lvm.py:55
 msgid "Generic"
 msgstr ""
@@ -565,11 +565,11 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1042
+#: ../blivet/formats/fs.py:1093
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1075
+#: ../blivet/formats/fs.py:1126
 msgid "Linux HFS+ ESP"
 msgstr ""
 
