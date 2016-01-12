@@ -50,7 +50,8 @@ def get_device(sysfs_path):
 
 
 def get_devices(subsystem="block"):
-    settle()
+    if not flags.uevents:
+        settle()
     return [d for d in global_udev.list_devices(subsystem=subsystem)
             if not __is_blacklisted_blockdev(d.sys_name)]
 
