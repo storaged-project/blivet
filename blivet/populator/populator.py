@@ -201,7 +201,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
     def _handle_degraded_md(self, info, device):
         if device is not None or not udev.device_is_md(info):
-            return
+            return device
 
         # If the md name is None, then some udev info is missing. Likely,
         # this is because the array is degraded, and mdadm has deactivated
