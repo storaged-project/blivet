@@ -13,49 +13,47 @@ Building Blocks
 ===============
 
 Individual block devices are represented by the various subclasses of
-:class:`~.devices.StorageDevice`, while the formatting of the data they contain
+:class:`~.devices.storage.StorageDevice`, while the formatting of the data they contain
 is represented by the various subclasses of :class:`~.formats.DeviceFormat`.
 The hierarchy of devices is represented by :class:`~.devicetree.DeviceTree`.
 
-:class:`~.devices.DiskDevice`, :class:`~.devices.PartitionDevice`,
-:class:`~.devices.LVMLogicalVolumeDevice`, and
-:class:`~.devices.MDRaidArrayDevice` are some of the most important examples of
-:class:`~.devices.StorageDevice` subclasses.
+:class:`~.devices.disk.DiskDevice`, :class:`~.devices.partition.PartitionDevice`,
+:class:`~.devices.lvm.LVMLogicalVolumeDevice`, and
+:class:`~.devices.md.MDRaidArrayDevice` are some of the most important examples of
+:class:`~.devices.storage.StorageDevice` subclasses.
 
 Some examples of :class:`~.formats.DeviceFormat` subclasses include
 :class:`~.formats.swap.SwapSpace`, :class:`~.formats.disklabel.DiskLabel`,
 and subclasses of :class:`~.formats.fs.FS` such as :class:`~.formats.fs.Ext4FS`
 and :class:`~.formats.fs.XFS`.
 
-Every :class:`~.devices.StorageDevice` instance has a :attr:`~.devices.StorageDevice.format` that contains an instance of some :class:`~.formats.DeviceFormat`
+Every :class:`~.devices.storage.StorageDevice` instance has a :attr:`~.devices.storage.StorageDevice.format` that contains an instance of some :class:`~.formats.DeviceFormat`
 subclass -- even if it is "blank" or "unformatted" (in which case it is an instance of :class:`~.formats.DeviceFormat` itself).
 
 Every :class:`~.formats.DeviceFormat` has a
 :attr:`~.formats.DeviceFormat.device` attribute that is a string representing
 the path to the device node for the block device containing the formatting.
-:class:`~.devices.StorageDevice` and :class:`~.formats.DeviceFormat` can
+:class:`~.devices.storage.StorageDevice` and :class:`~.formats.DeviceFormat` can
 represent either existent or non-existent devices and formatting.
 
-:class:`~.devices.StorageDevice` and :class:`~.formats.DeviceFormat` share a similar API, which consists of methods to control existing devices/formats
-(:meth:`~.devices.StorageDevice.setup`,
-:meth:`~.devices.StorageDevice.teardown`), methods to create or modify
-devices/formats (:meth:`~.devices.StorageDevice.create`,
-:meth:`~.devices.StorageDevice.destroy`, :meth:`~.devices.StorageDevice.resize`)
+:class:`~.devices.storage.StorageDevice` and :class:`~.formats.DeviceFormat` share a similar API, which consists of methods to control existing devices/formats
+(:meth:`~.devices.storage.StorageDevice.setup`,
+:meth:`~.devices.storage.StorageDevice.teardown`), methods to create or modify
+devices/formats (:meth:`~.devices.storage.StorageDevice.create`,
+:meth:`~.devices.storage.StorageDevice.destroy`, :meth:`~.devices.storage.StorageDevice.resize`)
 , and attributes to store critical data
-(:attr:`~.devices.StorageDevice.status`, :attr:`~.devices.StorageDevice.exists`)
-. Some useful attributes of :class:`~.devices.StorageDevice` that are not found
+(:attr:`~.devices.storage.StorageDevice.status`, :attr:`~.devices.storage.StorageDevice.exists`)
+. Some useful attributes of :class:`~.devices.storage.StorageDevice` that are not found
 in :class:`~.formats.DeviceFormat` include
-:attr:`~.devices.Device.parents`, :attr:`~.devices.Device.isleaf`,
-:attr:`~.devices.Device.ancestors`, and :attr:`~.devices.StorageDevice.disks`.
+:attr:`~.devices.device.Device.parents`, :attr:`~.devices.device.Device.isleaf`,
+:attr:`~.devices.device.Device.ancestors`, and :attr:`~.devices.storage.StorageDevice.disks`.
 
 :class:`~.devicetree.DeviceTree` provides
-:attr:`~.devicetree.DeviceTree.devices` which is a list of
-:class:`~.devices.StorageDevice` instances representing the current state of the
+:attr:`~.devicetree.DeviceTreeBase.devices` which is a list of
+:class:`~.devices.storage.StorageDevice` instances representing the current state of the
 system as configured within blivet. It also provides some methods for looking up
-devices (:meth:`~.devicetree.DeviceTree.getDeviceByName`), for listing devices
-that build upon a device (:meth:`~.devicetree.DeviceTree.getDependentDevices`),
-and for listing direct descendants of a given device
-(:meth:`~.devicetree.DeviceTree.getChildren`).
+devices (:meth:`~.devicetree.DeviceTreeBase.get_device_by_name`) and for listing devices
+that build upon a device (:meth:`~.devicetree.DeviceTreeBase.get_dependent_devices`).
 
 Getting Started
 ===============

@@ -42,7 +42,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Blivet'
-copyright = u'2013-2014, Red Hat, Inc.'     # pylint: disable=redefined-builtin
+copyright = u'2013-2016, Red Hat, Inc.'     # pylint: disable=redefined-builtin
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -292,7 +292,7 @@ epub_copyright = u'2013, David Lehman'
 #extensions.extend(('sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz'))
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/2': None}
+intersphinx_mapping = {'https://docs.python.org/3': None}
 
 # This was taken directly from here:
 # http://read-the-docs.readthedocs.org/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
