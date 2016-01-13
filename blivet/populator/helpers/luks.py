@@ -52,12 +52,12 @@ class LUKSFormatPopulator(FormatPopulator):
 
         # look up or create the mapped device
         if not self._devicetree.get_device_by_name(self.device.format.map_name):
-            passphrase = self._devicetree._Populator__luks_devs.get(self.device.format.uuid)
+            passphrase = self._devicetree._PopulatorMixin__luks_devs.get(self.device.format.uuid)
             if self.device.format.configured:
                 pass
             elif passphrase:
                 self.device.format.passphrase = passphrase
-            elif self.device.format.uuid in self._devicetree._Populator__luks_devs:
+            elif self.device.format.uuid in self._devicetree._PopulatorMixin__luks_devs:
                 log.info("skipping previously-skipped luks device %s",
                          self.device.name)
             elif self._devicetree._cleanup or flags.testing:
@@ -71,7 +71,7 @@ class LUKSFormatPopulator(FormatPopulator):
                 # passphrase has been set for a specific device without a full
                 # reset/populate, in which case the new passphrase would not be
                 # in self.__passphrases.
-                passphrases = self._devicetree._Populator__passphrases + list(self._devicetree._Populator__luks_devs.values())
+                passphrases = self._devicetree._PopulatorMixin__passphrases + list(self._devicetree._PopulatorMixin__luks_devs.values())
                 for passphrase in passphrases:
                     self.device.format.passphrase = passphrase
                     try:
