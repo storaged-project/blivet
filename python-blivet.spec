@@ -1,5 +1,5 @@
 Summary:  A python module for system storage configuration
-Name: python-blivet
+Name: python3-blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 2.0
 Release: 1%{?dist}
@@ -21,41 +21,9 @@ Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
 
 BuildArch: noarch
 BuildRequires: gettext
-BuildRequires: python2-devel python2-setuptools
 BuildRequires: python3-pocketlint >= %{pocketlintver}
 BuildRequires: python3-devel python3-setuptools
 
-Requires: python
-Requires: python-six
-Requires: python-kickstart >= %{pykickstartver}
-Requires: util-linux >= %{utillinuxver}
-Requires: python-pyudev
-Requires: parted >= %{partedver}
-Requires: pyparted >= %{pypartedver}
-Requires: dosfstools
-Requires: e2fsprogs >= %{e2fsver}
-Requires: lsof
-Requires: libselinux-python
-Requires: python2-blockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
-Requires: libselinux-python
-Requires: python-hawkey
-Requires: pygobject3-base
-Requires: %{realname}-data = %{epoch}:%{version}-%{release}
-
-%description
-The python-blivet package is a python module for examining and modifying
-storage configuration.
-
-%package -n %{realname}-data
-Summary: Data for the %{realname} python module.
-
-%description -n %{realname}-data
-The %{realname}-data package provides data files required by the %{realname}
-python module.
-
-%package -n python3-%{realname}
-Summary: A python3 package for examining and modifying storage configuration.
 Requires: python3
 Requires: python3-six
 Requires: python3-kickstart
@@ -73,9 +41,16 @@ Requires: python3-hawkey
 Requires: python3-gobject-base
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
-%description -n python3-%{realname}
-The python3-%{realname} is a python3 package for examining and modifying storage
-configuration.
+%description
+The python3-blivet package is a python module for examining and modifying
+storage configuration.
+
+%package -n %{realname}-data
+Summary: Data for the %{realname} python module.
+
+%description -n %{realname}-data
+The %{realname}-data package provides data files required by the %{realname}
+python module.
 
 %prep
 %setup -q -n %{realname}-%{version}
@@ -88,18 +63,8 @@ make
 
 %install
 rm -rf %{buildroot}
-make PYTHON=%{__python2} DESTDIR=%{buildroot} install
-%find_lang %{realname}
-
-pushd %{py3dir}
 make PYTHON=%{__python3} DESTDIR=%{buildroot} install
-popd
-
-%files
-%defattr(-,root,root,-)
-%license COPYING
-%doc README ChangeLog examples
-%{python2_sitelib}/*
+%find_lang %{realname}
 
 %files -n %{realname}-data -f %{realname}.lang
 
