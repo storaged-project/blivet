@@ -279,3 +279,8 @@ class DependencyError(StorageError):
 
 class EventHandlingError(StorageError):
     pass
+
+
+class ThreadError(StorageError):
+    """ An error occurred in a non-main thread. """
+    pass

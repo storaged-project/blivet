@@ -21,15 +21,17 @@
 #
 
 import abc
-from threading import RLock, Thread
+from threading import RLock, Thread, current_thread
 import pyudev
+import sys
 import time
+import traceback
 
+from .. import threads
 from .. import udev
 from .. import util
 from ..errors import EventManagerError, EventParamError
 from ..flags import flags
-from ..threads import blivet_lock
 
 import logging
 event_log = logging.getLogger("blivet.event")
@@ -99,15 +101,24 @@ class EventMask(util.ObjectID):
 # EventManager
 #
 class EventManager(object, metaclass=abc.ABCMeta):
-    def __init__(self, handler_cb=None, notify_cb=None):
+    def __init__(self, handler_cb=None, notify_cb=None, error_cb=None):
         self._handler_cb = None
+        """ event handler """
+
         self._notify_cb = None
+        """ notification callback """
+
+        self._error_cb = None
+        """ exception handler """
 
         if handler_cb is not None:
             self.handler_cb = handler_cb
 
         if notify_cb is not None:
             self.notify_cb = notify_cb
+
+        if error_cb is not None:
+            self.error_cb = error_cb
 
         self._mask_list = list()
         """List of masks specifying events that should be ignored."""
@@ -138,6 +149,18 @@ class EventManager(object, metaclass=abc.ABCMeta):
             raise EventParamError("callback function must accept at least one arg")
 
         self._notify_cb = cb
+
+    @property
+    def error_cb(self):
+        """ callback to run when an exception occurrs in a thread. """
+        return self._error_cb
+
+    @error_cb.setter
+    def error_cb(self, cb):
+        if not callable(cb) or cb.func_code.argcount < 1:
+            raise EventParamError("callback function must accept at least one arg")
+
+        self._error_cb = cb
 
     @abc.abstractproperty
     def enabled(self):
@@ -196,6 +219,18 @@ class EventManager(object, metaclass=abc.ABCMeta):
             Currently the handler is run in a separate thread. This removes any
             threading-related expectations about the behavior of whatever is
             telling us about the events.
+
+            Unhandled exceptions in event handler threads present a bit of a
+            challenge. Generally, an unhandled exception in an event handler
+            thread should be fatal because of the high likelihood that the
+            error left the :class:`~.DeviceTree` in an inconsistent state.
+            Since exceptions that occur in threads are not reported to the
+            main thread, we have to try to notify it ourselves. Ideally, the
+            calling application will have registered an :attr:`error_cb`,
+            which we can use to notify it of the exception. If no callback
+            has been set we can only wait until the next time the calling
+            application makes a call into blivet, at which point we can
+            raise the original exception.
         """
         event = self._create_event(*args, **kwargs)
         event_log.debug("new event: %s", event)
@@ -204,11 +239,26 @@ class EventManager(object, metaclass=abc.ABCMeta):
             event_log.debug("ignoring masked event %s", event)
             return
 
-        t = Thread(target=self.handler_cb,
+        t = Thread(target=self._run_event_handler,
                    name="event%d" % event.id,
                    kwargs={"event": event},
                    daemon=True)
         t.start()
+
+    def _run_event_handler(self, event):
+        """ Run the event handler and account for unhandled exceptions. """
+        if self.handler_cb is None:
+            return
+
+        try:
+            self.handler_cb(event)  # pylint: disable=not-callable
+        except Exception:  # pylint: disable=broad-except
+            event_log.error(traceback.format_exc())
+            exc_info = sys.exc_info()
+            if self.error_cb is not None:
+                self.error_cb(exc_info)  # pylint: disable=not-callable
+            else:
+                threads.save_thread_exception(current_thread(), exc_info)
 
 
 class UdevEventManager(EventManager):
@@ -229,7 +279,7 @@ class UdevEventManager(EventManager):
                                                        callback=self.handle_event,
                                                        name="monitor")
         self._pyudev_observer.start()
-        with blivet_lock:
+        with threads.blivet_lock:
             flags.uevents = True
 
     def disable(self):
@@ -239,7 +289,7 @@ class UdevEventManager(EventManager):
             self._pyudev_observer.stop()
 
         self._pyudev_observer = None
-        with blivet_lock:
+        with threads.blivet_lock:
             flags.uevents = False
 
     def __call__(self, *args, **kwargs):
