@@ -515,7 +515,6 @@ class FS(DeviceFormat):
 
         # XXX must be a smarter way to do this
         self._size = self.target_size
-        self.notify_kernel()
 
     def do_check(self):
         """ Run a filesystem check.
@@ -747,7 +746,6 @@ class FS(DeviceFormat):
             raise FSError("device does not exist")
 
         self._writelabel.do_task()
-        self.notify_kernel()
 
     @property
     def utils_available(self):
@@ -1229,10 +1227,6 @@ class NoDevFS(FS):
     @property
     def type(self):
         return self.device
-
-    def notify_kernel(self):
-        # NoDevFS should not need to tell the kernel anything.
-        pass
 
 register_device_format(NoDevFS)
 

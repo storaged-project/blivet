@@ -347,18 +347,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
         log.info("got format: %s", device.format)
 
-    def update_format(self, device):
-        log.info("updating format of device: %s", device)
-        try:
-            util.notify_kernel(device.sysfs_path)
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
-
-        udev.settle()
-        info = udev.get_device(device.sysfs_path)
-
-        self.handle_format(info, device)
-
     def _handle_inconsistencies(self):
         for vg in [d for d in self.devices if d.type == "lvmvg"]:
             if vg.complete:

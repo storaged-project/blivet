@@ -323,22 +323,6 @@ def total_memory():
 ##
 
 
-def notify_kernel(path, action="change"):
-    """ Signal the kernel that the specified device has changed.
-
-        Exceptions raised: ValueError, IOError
-    """
-    log.debug("notifying kernel of '%s' event on device %s", action, path)
-    path = os.path.join(path, "uevent")
-    if not path.startswith("/sys/") or not os.access(path, os.W_OK):
-        log.debug("sysfs path '%s' invalid", path)
-        raise ValueError("invalid sysfs path")
-
-    f = open(path, "a")
-    f.write("%s\n" % action)
-    f.close()
-
-
 def normalize_path_slashes(path):
     """ Normalize the slashes in a filesystem path.
         Does not actually examine the filesystme in any way.

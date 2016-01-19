@@ -29,7 +29,6 @@ from gi.repository import BlockDev as blockdev
 import os
 import importlib
 
-from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
 from ..util import ObjectID
@@ -353,33 +352,6 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
     def type(self):
         return self._type
 
-    def notify_kernel(self):
-        log_method_call(self, device=self.device,
-                        type=self.type)
-        if not self.device:
-            return
-
-        if self.device.startswith("/dev/mapper/"):
-            try:
-                name = blockdev.dm.node_from_name(os.path.basename(self.device))
-            except blockdev.DMError:
-                log.warning("failed to get dm node for %s", self.device)
-                return
-        elif self.device.startswith("/dev/md/"):
-            try:
-                name = blockdev.md.node_from_name(os.path.basename(self.device))
-            except blockdev.MDRaidError:
-                log.warning("failed to get md node for %s", self.device)
-                return
-        else:
-            name = self.device
-
-        path = get_sysfs_path_by_name(name)
-        try:
-            notify_kernel(path, action="change")
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
-
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
 
@@ -423,7 +395,6 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
     # pylint: disable=unused-argument
     def _post_create(self, **kwargs):
         self.exists = True
-        self.notify_kernel()
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
@@ -465,7 +436,6 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
     def _post_destroy(self, **kwargs):
         self.exists = False
-        self.notify_kernel()
 
     @property
     def destroyable(self):
