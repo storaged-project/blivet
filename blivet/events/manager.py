@@ -21,6 +21,7 @@
 #
 
 import abc
+import inspect
 from threading import current_thread, RLock, Thread
 import pyudev
 import sys
@@ -37,6 +38,32 @@ from .changes import data
 
 import logging
 event_log = logging.getLogger("blivet.event")
+
+
+def validate_cb(cb, kwargs=None, arg_count=None):
+    """ Validate signature of callback function, returning True on success. """
+    if not callable(cb):
+        return False
+
+    kwargs = kwargs or []
+    arg_count = arg_count or 0
+
+    params = inspect.signature(cb).parameters
+    if len(params) < arg_count:
+        return False
+
+    if not all(kw in params for kw in kwargs):
+        return False
+
+    for kw in kwargs:
+        if kw not in params:
+            return False
+
+        p = params[kw]
+        if p.kind not in (p.KEYWORD_ONLY, p.POSITIONAL_OR_KEYWORD):
+            return False
+
+    return True
 
 
 #
@@ -105,13 +132,13 @@ class EventMask(util.ObjectID):
 class EventManager(object, metaclass=abc.ABCMeta):
     def __init__(self, handler_cb=None, notify_cb=None, error_cb=None):
         self._handler_cb = None
-        """ event handler """
+        """ event handler (must accept 'event', 'notify_cb' kwargs """
 
         self._notify_cb = None
-        """ notification callback """
+        """ notification callback (must accept 'event', 'changes' kwargs) """
 
         self._error_cb = None
-        """ exception handler """
+        """ exception handler (must be callable with one argument) """
 
         if handler_cb is not None:
             self.handler_cb = handler_cb
@@ -135,8 +162,8 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
     @handler_cb.setter
     def handler_cb(self, cb):
-        if not callable(cb):
-            raise EventParamError("handler must be callable")
+        if not validate_cb(cb, kwargs=["event", "notify_cb"]):
+            raise EventParamError("invalid handler callback specified")
 
         self._handler_cb = cb
 
@@ -147,8 +174,8 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
     @notify_cb.setter
     def notify_cb(self, cb):
-        if not callable(cb) or cb.func_code.argcount < 1:
-            raise EventParamError("callback function must accept at least one arg")
+        if not validate_cb(cb, kwargs=["event", "changes"]):
+            raise EventParamError("invalid notification callback specified")
 
         self._notify_cb = cb
 
@@ -159,8 +186,8 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
     @error_cb.setter
     def error_cb(self, cb):
-        if not callable(cb) or cb.func_code.argcount < 1:
-            raise EventParamError("callback function must accept at least one arg")
+        if not validate_cb(cb, arg_count=1):
+            raise EventParamError("invalid error callback specified")
 
         self._error_cb = cb
 

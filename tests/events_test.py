@@ -1,6 +1,6 @@
 
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from blivet.events.manager import Event, EventManager
 
@@ -22,7 +22,8 @@ class FakeEventManager(EventManager):
 class EventManagerTest(TestCase):
     def testEventMask(self):
         handler_cb = Mock()
-        mgr = FakeEventManager(handler_cb=handler_cb)
+        with patch("blivet.events.manager.validate_cb", return_value=True):
+            mgr = FakeEventManager(handler_cb=handler_cb)
 
         device = "sdc"
         action = "add"
