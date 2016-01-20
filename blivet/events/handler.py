@@ -38,10 +38,11 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
     def __init__(self):
         event_manager.handler_cb = self.handle_event
 
-    def handle_event(self, event):
+    def handle_event(self, event, notify_cb):
         """ Handle an event on a block device.
 
             :param :class:`~.event.Event` event: information about the event
+            :param callable notify_cb: notification callback
 
             TODO: Rename all this stuff so it's explicit that it only handles uevents.
         """
@@ -53,6 +54,9 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
         handler = handlers.get(event.action)
         if handler is not None:
             handler(event)
+
+        if notify_cb is not None:
+            notify_cb(event=event, changes=event_data.changes)
 
     def _event_device_is_dm(self, event):
         """ Return True if event operand is a dm device.

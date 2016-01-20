@@ -256,7 +256,9 @@ class EventManager(object, metaclass=abc.ABCMeta):
             return
 
         try:
-            self.handler_cb(event)  # pylint: disable=not-callable
+            # Pass the notify callback to the handler so it can run the
+            # callback and pass thread-local data to it.
+            self.handler_cb(event=event, notify_cb=self.notify_cb)  # pylint: disable=not-callable
         except Exception:  # pylint: disable=broad-except
             event_log.error(traceback.format_exc())
             exc_info = sys.exc_info()
