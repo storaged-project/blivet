@@ -32,7 +32,7 @@ from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPA
 
 from .storage_log import log_method_call, log_exception_info
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice
-from .devices import LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice
+from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import MDRaidArrayDevice, PartitionDevice, TmpFSDevice, device_path_to_name
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
@@ -916,6 +916,11 @@ class Blivet(object, metaclass=SynchronizedMeta):
         else:
             vg = parent
 
+        if thin_volume:
+            kwargs["seg_type"] = "thin"
+        if thin_pool:
+            kwargs["seg_type"] = "thin-pool"
+
         mountpoint = kwargs.pop("mountpoint", None)
         if 'fmt_type' in kwargs:
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
@@ -956,14 +961,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             if cache_req:
                 raise ValueError("Creating cached thin volumes and pools is not supported")
 
-        if thin_pool:
-            device_class = LVMThinPoolDevice
-        elif thin_volume:
-            device_class = LVMThinLogicalVolumeDevice
-        else:
-            device_class = LVMLogicalVolumeDevice
-
-        return device_class(name, *args, **kwargs)
+        return LVMLogicalVolumeDevice(name, *args, **kwargs)
 
     def new_btrfs(self, *args, **kwargs):
         """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice.

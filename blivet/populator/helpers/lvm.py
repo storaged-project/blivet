@@ -27,9 +27,7 @@ from gi.repository import BlockDev as blockdev
 
 from ... import udev
 from ...devicelibs import lvm
-from ...devices import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMSnapShotDevice
-from ...devices import LVMThinPoolDevice, LVMThinSnapShotDevice, LVMThinLogicalVolumeDevice
-from ...devices.lvm import get_internal_lv_class
+from ...devices.lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMInternalLVtype
 from ...errors import DeviceTreeError, DuplicateVGError
 from ...flags import flags
 from ...size import Size
@@ -147,7 +145,6 @@ class LVMFormatPopulator(FormatPopulator):
             lv_size = Size(lv.size)
             lv_type = lv.segtype
 
-            lv_class = LVMLogicalVolumeDevice
             lv_parents = [vg_device]
             lv_kwargs = {}
             name = "%s-%s" % (vg_name, lv_name)
@@ -175,7 +172,6 @@ class LVMFormatPopulator(FormatPopulator):
                     origin = self._devicetree.get_device_by_name(origin_device_name)
 
                 lv_kwargs["origin"] = origin
-                lv_class = LVMSnapShotDevice
             elif lv_attr[0] == 'v':
                 # skip vorigins
                 return
@@ -187,7 +183,8 @@ class LVMFormatPopulator(FormatPopulator):
                 return
             elif lv_attr[0] == 't':
                 # thin pool
-                lv_class = LVMThinPoolDevice
+                # nothing to do here
+                pass
             elif lv_attr[0] == 'V':
                 # thin volume
                 pool_name = blockdev.lvm.thlvpoolname(vg_name, lv_name)
@@ -200,9 +197,6 @@ class LVMFormatPopulator(FormatPopulator):
                     add_required_lv(origin_device_name, "failed to locate origin lv")
                     origin = self._devicetree.get_device_by_name(origin_device_name)
                     lv_kwargs["origin"] = origin
-                    lv_class = LVMThinSnapShotDevice
-                else:
-                    lv_class = LVMThinLogicalVolumeDevice
 
                 lv_parents = [self._devicetree.get_device_by_name(pool_device_name)]
             elif lv_name.endswith(']'):
@@ -222,9 +216,9 @@ class LVMFormatPopulator(FormatPopulator):
 
             lv_dev = self._devicetree.get_device_by_uuid(lv_uuid)
             if lv_dev is None:
-                lv_device = lv_class(lv_name, parents=lv_parents,
-                                     uuid=lv_uuid, size=lv_size, seg_type=lv_type,
-                                     exists=True, **lv_kwargs)
+                lv_device = LVMLogicalVolumeDevice(lv_name, parents=lv_parents,
+                                                   uuid=lv_uuid, size=lv_size, seg_type=lv_type,
+                                                   exists=True, **lv_kwargs)
                 self._devicetree._add_device(lv_device)
                 if flags.installer_mode:
                     lv_device.setup()
@@ -249,17 +243,18 @@ class LVMFormatPopulator(FormatPopulator):
             lv_uuid = lv.uuid
             lv_attr = lv.attr
             lv_size = Size(lv.size)
-            lv_type = lv.segtype
+            seg_type = lv.segtype
 
-            matching_cls = get_internal_lv_class(lv_attr)
-            if matching_cls is None:
-                raise DeviceTreeError("No internal LV class supported for type '%s'" % lv_attr[0])
+            lv_type = LVMInternalLVtype.get_type(lv_attr, lv_name)
+            if lv_type is LVMInternalLVtype.unknown:
+                raise DeviceTreeError("Internal LVs of type '%s' are not supported" % lv_attr[0])
 
             # strip the "[]"s marking the LV as internal
             lv_name = lv_name.strip("[]")
 
             # don't know the parent LV yet, will be set later
-            new_lv = matching_cls(lv_name, vg_device, parent_lv=None, size=lv_size, uuid=lv_uuid, exists=True, seg_type=lv_type)
+            new_lv = LVMLogicalVolumeDevice(lv_name, vg_device, parent_lv=None, int_type=lv_type,
+                                            size=lv_size, uuid=lv_uuid, exists=True, seg_type=seg_type)
             if new_lv.status:
                 new_lv.update_sysfs_path()
                 new_lv.update_size()
@@ -299,8 +294,7 @@ class LVMFormatPopulator(FormatPopulator):
                 orphan_lvs[full_name] = new_lv
                 all_lvs.append(new_lv)
 
-        # assign parents to internal LVs (and vice versa, see
-        # :class:`~.devices.lvm.LVMInternalLogicalVolumeDevice`)
+        # assign parents to internal LVs (and vice versa)
         for lv in orphan_lvs.values():
             parent_lv = lvm.determine_parent_lv(vg_name, lv, all_lvs)
             if parent_lv:

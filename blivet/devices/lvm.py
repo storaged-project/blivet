@@ -995,6 +995,7 @@ class LVMInternalLogicalVolumeMixin(object):
         self._parent_lv = parent_lv
         if self._parent_lv:
             self._parent_lv.add_internal_lv(self)
+            self._vg = self._parent_lv.vg
 
     @property
     @util.requires_property("is_internal_lv")
