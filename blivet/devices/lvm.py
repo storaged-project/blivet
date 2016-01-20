@@ -1523,14 +1523,14 @@ class LVMSnapShotBase(object):
             fmt._chrooted_mountpoint = None
             fmt.device = self.path  # pylint: disable=no-member
 
-        super(LVMSnapShotBase, self)._set_format(fmt)
+        super(LVMSnapShotBase, self)._set_format(fmt)  # pylint: disable=no-member
 
     def _set_format(self, fmt):
         # If a snapshot exists it can have a format that is distinct from its
         # origin's. If it does not exist its format must be a copy of its
         # origin's.
         if self.exists:  # pylint: disable=no-member
-            super(LVMSnapShotBase, self)._set_format(fmt)
+            super(LVMSnapShotBase, self)._set_format(fmt)  # pylint: disable=no-member
         else:
             log.info("copying %s origin's format", self.name)  # pylint: disable=no-member
             self._update_format_from_origin()

@@ -150,8 +150,8 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), device)
-        self.assertEqual(devicetree._add_slave_devices.call_count, 1)
-        self.assertEqual(devicetree.get_device_by_name.call_count, 1)
+        self.assertEqual(devicetree._add_slave_devices.call_count, 1)  # pylint: disable=no-member
+        self.assertEqual(devicetree.get_device_by_name.call_count, 1)  # pylint: disable=no-member
         # since we faked the lookup as if the device was already in the tree
         # the helper should not have added it, meaning it shouldn't be there
         self.assertFalse(device in devicetree.devices)
@@ -255,8 +255,8 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertIsInstance(device.parents[0], FileDevice)
         self.assertTrue(device.parents[0].exists)
 
-        self.assertEqual(devicetree.get_device_by_name.call_count, 1)
-        devicetree.get_device_by_name.assert_called_with(backing_file)
+        self.assertEqual(devicetree.get_device_by_name.call_count, 1)  # pylint: disable=no-member
+        devicetree.get_device_by_name.assert_called_with(backing_file)  # pylint: disable=no-member
 
 
 class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -317,7 +317,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), sentinel.lv_device)
-        self.assertEqual(devicetree.get_device_by_name.call_count, 3)
+        self.assertEqual(devicetree.get_device_by_name.call_count, 3)  # pylint: disable=no-member
         get_device_by_name.assert_has_calls(
             [call(sentinel.vg_name, hidden=True),
              call(sentinel.vg_name),
@@ -906,7 +906,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
             self.assertEqual(get_device_by_uuid.call_count, 1)
             get_device_by_uuid.assert_called_with(pv_info.vg_uuid, incomplete=True)
-            vg_device.parents.append.assert_called_once_with(device)
+            vg_device.parents.append.assert_called_once_with(device)  # pylint: disable=no-member
 
         get_device_by_uuid.reset_mock()
         get_device_by_uuid.return_value = None
@@ -1028,7 +1028,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
 
             self.assertEqual(get_device_by_uuid.call_count, 1)
             get_device_by_uuid.assert_called_with(md_info.uuid, incomplete=True)
-            md_device.parents.append.assert_called_once_with(device)
+            md_device.parents.append.assert_called_once_with(device)  # pylint: disable=no-member
 
         get_device_by_uuid.reset_mock()
         get_device_by_uuid.return_value = None
