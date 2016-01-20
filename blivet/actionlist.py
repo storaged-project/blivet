@@ -28,6 +28,8 @@ from .deviceaction import action_type_from_string, action_object_from_string
 from .devicelibs import lvm
 from .devices import PartitionDevice
 from .errors import DiskLabelCommitError, StorageError
+from .events.changes import data as event_data
+from .events.changes import ActionCanceled
 from .flags import flags
 from . import tsort
 from .threads import blivet_lock, SynchronizedMeta
@@ -80,6 +82,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
 
         action.cancel()
         self._actions.remove(action)
+        event_data.changes.append(ActionCanceled(action=action))
         log.info("canceled action %s", action)
 
     def find(self, device=None, action_type=None, object_type=None,

@@ -25,6 +25,8 @@ from ..devices import DM_MAJORS, MD_MAJORS
 from .. import udev
 from ..threads import SynchronizedMeta
 
+from .changes import data as event_data
+from .changes import AttributeChanged, ParentRemoved
 from .manager import event_manager
 
 import logging
@@ -121,7 +123,12 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
         elif device is not None and device.exists:
             log.info("device %s was activated", device.name)
             # device was activated from outside, so update the sysfs path
-            device.sysfs_path = udev.device_get_sysfs_path(event.info)
+            sysfs_path = udev.device_get_sysfs_path(event.info)
+            if device.sysfs_path != sysfs_path:
+                old_sysfs_path = device.sysfs_path
+                device.sysfs_path = sysfs_path
+                event_data.changes.append(AttributeChanged(device=device, attr="sysfs_path",
+                                                           old=old_sysfs_path, new=sysfs_path))
 
     def _handle_format_change(self, event, device):
         helper_class = self._get_format_helper(event.info, device)  # pylint: disable=no-member
@@ -157,6 +164,8 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
                     log.error("error removing member %s from container %s: %s",
                               device.name, container.name, str(e))
                     raise EventHandlingError("reformatted container member")
+
+                event_data.changes.append(ParentRemoved(device=container, attr="parents", item=device))
 
         self.recursive_remove(device, actions=False, remove_device=False)
 
@@ -221,6 +230,10 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
             log.info("disk %s was removed", device.name)
             self._remove_device(device)
         else:
-            log.info("device %s was deactivated", device.name)
-            # device was deactivated from outside, so clear the sysfs path
-            device.sysfs_path = ''
+            if device.sysfs_path:
+                old_sysfs_path = device.sysfs_path
+                log.info("device %s was deactivated", device.name)
+                # device was deactivated from outside, so clear the sysfs path
+                device.sysfs_path = ''
+                event_data.changes.append(AttributeChanged(device=device, attr="sysfs_path",
+                                                           old=old_sysfs_path, new=''))

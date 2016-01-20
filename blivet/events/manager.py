@@ -21,7 +21,7 @@
 #
 
 import abc
-from threading import RLock, Thread, current_thread
+from threading import current_thread, RLock, Thread
 import pyudev
 import sys
 import time
@@ -32,6 +32,8 @@ from .. import udev
 from .. import util
 from ..errors import EventManagerError, EventParamError
 from ..flags import flags
+
+from .changes import data
 
 import logging
 event_log = logging.getLogger("blivet.event")
@@ -247,6 +249,9 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
     def _run_event_handler(self, event):
         """ Run the event handler and account for unhandled exceptions. """
+        # initialize thread-local data attribute for change accounting
+        data.changes = list()
+
         if self.handler_cb is None:
             return
 

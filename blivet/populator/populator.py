@@ -576,4 +576,3 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                 n = len([d for d in self.devices if d.format.type == fstype])
                 device._name += ".%d" % n
                 self._add_device(device)
-

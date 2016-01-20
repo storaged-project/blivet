@@ -20,6 +20,8 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+from ...events.changes import data as event_data
+from ...events.changes import AttributeChanged
 from ... import formats
 from ... import udev
 from ...errors import FSError
@@ -81,6 +83,7 @@ class FormatPopulator(PopulatorHelper):
         """ Create a format instance and associate it with the device instance. """
         kwargs = self._get_kwargs()
         type_spec = self.type_spec
+        old_fmt = self.device.format
         try:
             log.info("type detected on '%s' is '%s'", self.device.name, type_spec)
             self.device.format = formats.get_format(type_spec, **kwargs)
@@ -88,8 +91,15 @@ class FormatPopulator(PopulatorHelper):
             log.warning("type '%s' on '%s' invalid, assuming no format",
                         type_spec, self.device.name)
             self.device.format = formats.DeviceFormat(device=self.device.path, exists=True)
-            return
+
+        if old_fmt.type != self.device.format.type or old_fmt.uuid != self.device.format.uuid:
+            event_data.changes.append(AttributeChanged(device=self.device, attr="format",
+                                                       old=old_fmt, new=self.device.format))
 
     def update(self):
-        if hasattr(self.device.format, "label"):
-            self.device.format.label = udev.device_get_label(self.data)
+        label = udev.device_get_label(self.data)
+        if hasattr(self.device.format, "label") and self.device.format.label != label:
+            old_label = self.device.format.label
+            self.device.format.label = label
+            event_data.changes.append(AttributeChanged(device=self.device, fmt=self.device.format,
+                                                       attr="label", old=old_label, new=label))
