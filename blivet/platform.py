@@ -70,7 +70,7 @@ class Platform(object):
     def update_from_flags(self):
         if flags.gpt:
             if not self.set_default_disklabel_type("gpt"):
-                log.warn("GPT is not a supported disklabel on this platform. Using default "
+                log.warning("GPT is not a supported disklabel on this platform. Using default "
                          "disklabel %s instead.", self.default_disklabel_type)
 
     def __call__(self):

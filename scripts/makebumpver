@@ -104,8 +104,8 @@ class MakeBumpVer:
         proc = subprocess.Popen(['git', 'branch'],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
-        lines = filter(lambda x: x.startswith('*'),
-                       proc[0].strip('\n').split('\n'))
+        lines = [x for x in proc[0].strip('\n').split('\n')
+                 if x.startswith("*")]
 
         if lines == [] or len(lines) > 1:
             return False

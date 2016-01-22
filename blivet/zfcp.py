@@ -201,7 +201,7 @@ class ZFCPDevice:
                 udev.settle()
                 return
 
-        log.warn("no scsi device found to delete for zfcp %s %s %s",
+        log.warning("no scsi device found to delete for zfcp %s %s %s",
                  self.devnum, self.wwpn, self.fcplun)
 
     def offline_device(self):
@@ -328,7 +328,7 @@ class ZFCP:
                 wwpn = fields[2]
                 fcplun = fields[4]
             else:
-                log.warn("Invalid line found in %s: %s", zfcpconf, line)
+                log.warning("Invalid line found in %s: %s", zfcpconf, line)
                 continue
 
             try:
@@ -351,7 +351,7 @@ class ZFCP:
             try:
                 d.offline_device()
             except ValueError as e:
-                log.warn("%s", str(e))
+                log.warning("%s", str(e))
 
     def startup(self):
         if not self.down:
@@ -369,7 +369,7 @@ class ZFCP:
             try:
                 d.online_device()
             except ValueError as e:
-                log.warn("%s", str(e))
+                log.warning("%s", str(e))
 
     def write(self, root):
         if len(self.fcpdevs) == 0:
