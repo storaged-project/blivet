@@ -39,7 +39,7 @@ from ..size import Size, ROUND_DOWN, unit_str
 from ..threads import SynchronizedMeta
 from ..flags import flags
 
-from ..errors import FSError, FSResizeError #FIXME
+from ..errors import FSError, FSResizeError, LUKSError, FormatResizeError
 
 from ..tasks import fsinfo
 from ..tasks import fsresize
@@ -391,10 +391,10 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
             raise ValueError("new size must be of type Size")
 
         if not self.exists:
-            raise FSError("filesystem has not been created")
+            raise DeviceFormatError("format has not been created")
 
         if not self.resizable:
-            raise FSError("filesystem is not resizable")
+            raise DeviceFormatError("format is not resizable")
 
         if newsize < self.min_size:
             raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.min_size))
@@ -435,13 +435,13 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
     def do_resize(self):
         """ Resize this filesystem based on this instance's target_size attr.
 
-            :raises: FSResizeError, FSError
+            :raises: FSResizeError, FormatResizeError
         """
         if not self.exists:
-            raise FSResizeError("filesystem does not exist", self.device)
+            raise FormatResizeError("format does not exist", self.device)
 
         if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
+            raise FormatResizeError("format not resizable", self.device)
 
         if self.target_size == self.current_size:
             return
@@ -451,7 +451,7 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
         # tmpfs mounts don't need an existing device node
         if not self.device == "tmpfs" and not os.path.exists(self.device):
-            raise FSResizeError("device does not exist", self.device)
+            raise FormatResizeError("device does not exist", self.device)
 
         # The first minimum size can be incorrect if the fs was not
         # properly unmounted. After do_check the minimum size will be correct
@@ -461,7 +461,7 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
         # Check again if resizable is True, as update_size_info() can change that
         if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
+            raise FormatResizeError("format not resizable", self.device)
 
         if self.target_size < self.min_size:
             self.target_size = self.min_size
@@ -502,6 +502,8 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
             self._resize.do_task()
         except FSError as e:
             raise FSResizeError(e, self.device)
+        except LUKSError as e:
+            raise FormatResizeError(e, self.device)
 
         self._post_resize()
 
