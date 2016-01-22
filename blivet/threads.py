@@ -47,16 +47,15 @@ class SynchronizedMeta(type):
         to a class attribute called _unsynchronized_methods (list of str).
     """
     def __new__(cls, name, bases, dct):
-        wrapped = {}
+        new_dct = {}
         blacklist = dct.get('_unsynchronized_methods', [])
 
         for n in dct:
-            if n in blacklist:
-                continue
-
             obj = dct[n]
             # Do not decorate class or static methods.
-            if isinstance(obj, FunctionType):
+            if n in blacklist:
+                pass
+            elif isinstance(obj, FunctionType):
                 obj = exclusive(obj)
             elif isinstance(obj, property):
                 obj = property(fget=exclusive(obj.__get__),
@@ -64,9 +63,9 @@ class SynchronizedMeta(type):
                                fdel=exclusive(obj.__delattr__),
                                doc=obj.__doc__)
 
-            wrapped[n] = obj
+            new_dct[n] = obj
 
-        return super(SynchronizedMeta, cls).__new__(cls, name, bases, wrapped)
+        return super(SynchronizedMeta, cls).__new__(cls, name, bases, new_dct)
 
 
 class SynchronizedABCMeta(SynchronizedMeta, ABCMeta):
