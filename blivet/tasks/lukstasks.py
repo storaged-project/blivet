@@ -28,11 +28,42 @@ from .. import util
 
 from ..devicelibs import crypto
 from ..errors import LUKSError
-from ..size import Size
+from ..devices.lib import LINUX_SECTOR_SIZE
 
 from . import availability
 from . import task
 from . import dfresize
+
+
+class LUKSSize(task.BasicApplication):
+    """ Obtain information about the size of a LUKS format. """
+
+    ext = availability.BLOCKDEV_DM_PLUGIN
+
+    description = "size of a luks device"
+
+    def __init__(self, a_luks):
+        """ Initializer.
+
+            :param :class:`~.formats.luks.LUKS` a_luks: a LUKS format object
+        """
+        self.luks = a_luks
+
+    def do_task(self):
+        """ Returns the size of the luks format.
+
+            :returns: the size of the luks format
+            :rtype: :class:`~.size.Size`
+            :raises :class:`~.errors.LUKSError`: if size cannot be obtained
+        """
+
+        try:
+            dm_dev = blockdev.dm.node_from_name(self.luks.map_name)
+            blocks = int(util.get_sysfs_attr("/sys/block/%s" % dm_dev, "size") or "0")
+        except blockdev.DMError as e:
+            raise LUKSError(e)
+
+        return blocks * LINUX_SECTOR_SIZE
 
 
 class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
