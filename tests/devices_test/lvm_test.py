@@ -370,3 +370,135 @@ class LVMDeviceTest(unittest.TestCase):
         lv.target_size = orig_size
         self.assertEqual(lv.target_size, orig_size)
         self.assertEqual(lv.size, orig_size)
+
+
+class TypeSpecificCallsTest(unittest.TestCase):
+    def test_type_specific_calls(self):
+        class A(object):
+            def __init__(self, a):
+                self._a = a
+
+            @property
+            def is_a(self):
+                return self._a == "A"
+
+            def say_hello(self):
+                return "Hello from A"
+
+            @property
+            def greeting(self):
+                return self._greet or "Hi, this is A"
+
+            @greeting.setter
+            def greeting(self, val):
+                self._greet = "Set by A: %s" % val  # pylint: disable=attribute-defined-outside-init
+
+        class B(object):
+            def __init__(self, b):
+                self._b = b
+
+            @property
+            def is_b(self):
+                return self._b == "B"
+
+            def say_hello(self):
+                return "Hello from B"
+
+            @property
+            def greeting(self):
+                return self._greet or "Hi, this is B"
+
+            @greeting.setter
+            def greeting(self, val):
+                self._greet = "Set by B: %s" % val  # pylint: disable=attribute-defined-outside-init
+
+        class C(A, B):
+            def __init__(self, a, b):
+                A.__init__(self, a)
+                B.__init__(self, b)
+                self._greet = None
+
+            def _get_type_classes(self):
+                """Method to get type classes for this particular instance"""
+                ret = []
+                if self.is_a:
+                    ret.append(A)
+                if self.is_b:
+                    ret.append(B)
+                return ret
+
+            def _try_specific_call(self, method, *args, **kwargs):
+                """Try to call a type-specific method for this particular instance"""
+                clss = self._get_type_classes()
+                for cls in clss:
+                    if hasattr(cls, method):
+                        # found, get the specific property
+                        if isinstance(vars(cls)[method], property):
+                            if len(args) == 0 and len(kwargs.keys()) == 0:
+                                # this is how you call the getter method of the property object
+                                ret = getattr(cls, method).__get__(self)
+                            else:
+                                # this is how you call the setter method of the property object
+                                ret = getattr(cls, method).__set__(self, *args, **kwargs)
+                        else:
+                            # or call the type-specific method
+                            ret = getattr(cls, method)(self, *args, **kwargs)
+                        return (True, ret)
+                # not found, let the caller know
+                return (False, None)
+
+            # decorator
+            def type_specific(meth):  # pylint: disable=no-self-argument
+                """Decorator that makes sure the type-specific code is executed if available"""
+                def decorated(self, *args, **kwargs):
+                    found, ret = self._try_specific_call(meth.__name__, *args, **kwargs)  # pylint: disable=no-member
+                    if found:
+                        # nothing more to do here
+                        return ret
+                    else:
+                        return meth(self, *args, **kwargs)  # pylint: disable=not-callable
+
+                return decorated
+
+            @type_specific
+            def say_hello(self):
+                return "Hello from C"
+
+            @property
+            @type_specific
+            def greeting(self):
+                return self._greet or "Hi, this is C"
+
+            @greeting.setter
+            @type_specific
+            def greeting(self, val):  # pylint: disable=arguments-differ
+                self._greet = val  # pylint: disable=attribute-defined-outside-init
+
+        # a non-specific instance
+        c = C(a="x", b="y")
+        self.assertEqual(c.say_hello(), "Hello from C")
+        self.assertEqual(c.greeting, "Hi, this is C")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Welcome")
+
+        # an A-specific instance
+        c = C(a="A", b="y")
+        self.assertEqual(c.say_hello(), "Hello from A")
+        self.assertEqual(c.greeting, "Hi, this is A")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Set by A: Welcome")
+
+        # a B-specific instance
+        c = C(a="x", b="B")
+        self.assertEqual(c.say_hello(), "Hello from B")
+        self.assertEqual(c.greeting, "Hi, this is B")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Set by B: Welcome")
+
+        # both A-B-specific instance
+        # A is listed first so it should win
+        c = C(a="A", b="B")
+        self.assertEqual(c.say_hello(), "Hello from A")
+        self.assertEqual(c.greeting, "Hi, this is A")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Set by A: Welcome")
