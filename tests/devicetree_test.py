@@ -7,8 +7,8 @@ from blivet import devicelibs
 from blivet import devicefactory
 from blivet import util
 from blivet.udev import trigger
-from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
 from blivet.devices import StorageDevice
+from blivet.devices.lvm import LVMLogicalVolumeDevice
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
 
@@ -193,8 +193,8 @@ class LVMSnapShotTestCase(BlivetResetTestCase):
     def setUp(self):
         super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
         root = self.blivet.lvs[0]
-        snap = LVMSnapShotDevice("rootsnap1", parents=[root.vg], origin=root,
-                                 size=Size("768MiB"))
+        snap = LVMLogicalVolumeDevice("rootsnap1", parents=[root.vg], origin=root,
+                                      size=Size("768MiB"))
         self.blivet.create_device(snap)
         self.blivet.do_it()
 
@@ -227,8 +227,8 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
         super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
 
         root = self.blivet.thinlvs[0]
-        snap = LVMThinSnapShotDevice("rootsnap1", parents=[root.pool],
-                                     origin=root)
+        snap = LVMLogicalVolumeDevice("rootsnap1", parents=[root.pool],
+                                      origin=root)
         self.blivet.create_device(snap)
         self.blivet.do_it()
 

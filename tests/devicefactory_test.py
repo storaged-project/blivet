@@ -11,7 +11,6 @@ from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
 from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import LVMThinLogicalVolumeDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
 from blivet.errors import RaidError
@@ -422,7 +421,8 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
 
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
-    device_class = LVMThinLogicalVolumeDevice
+    # TODO: check that the LV we get is a thin pool
+    device_class = LVMLogicalVolumeDevice
     device_type = devicefactory.DEVICE_TYPE_LVM_THINP
     encryption_supported = False
 

@@ -6,10 +6,6 @@ import blivet
 
 from blivet.devices import StorageDevice
 from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import LVMSnapShotDevice
-from blivet.devices import LVMThinLogicalVolumeDevice
-from blivet.devices import LVMThinPoolDevice
-from blivet.devices import LVMThinSnapShotDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices.lvm import LVMCacheRequest
 from blivet.devices.lvm import LVPVSpec
@@ -18,10 +14,6 @@ from blivet.devicelibs import raid
 
 DEVICE_CLASSES = [
     LVMLogicalVolumeDevice,
-    LVMSnapShotDevice,
-    LVMThinLogicalVolumeDevice,
-    LVMThinPoolDevice,
-    LVMThinSnapShotDevice,
     LVMVolumeGroupDevice,
     StorageDevice
 ]
@@ -37,20 +29,17 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
 
-        with self.assertRaisesRegex(ValueError, "lvm snapshot devices require an origin lv"):
-            LVMSnapShotDevice("snap1", parents=[vg])
-
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
+            LVMLogicalVolumeDevice("snap1", parents=[vg], origin=lv)
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
-            LVMSnapShotDevice("snap1", parents=[vg], origin=pv)
+            LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
 
         with self.assertRaisesRegex(ValueError, "only existing vorigin snapshots are supported"):
-            LVMSnapShotDevice("snap1", parents=[vg], vorigin=True)
+            LVMLogicalVolumeDevice("snap1", parents=[vg], vorigin=True)
 
         lv.exists = True
-        snap1 = LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
+        snap1 = LVMLogicalVolumeDevice("snap1", parents=[vg], origin=lv)
 
         self.assertEqual(snap1.format.type, lv.format.type)
         lv.format = blivet.formats.get_format("DM_snapshot_cow", exists=True)
@@ -68,22 +57,18 @@ class LVMDeviceTest(unittest.TestCase):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
-        pool = LVMThinPoolDevice("pool1", parents=[vg], size=Size("500 MiB"))
-        thinlv = LVMThinLogicalVolumeDevice("thinlv", parents=[pool],
-                                            size=Size("200 MiB"))
-
-        with self.assertRaisesRegex(ValueError, "lvm thin snapshots require an origin"):
-            LVMThinSnapShotDevice("snap1", parents=[pool])
+        pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
+        thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
+            LVMLogicalVolumeDevice("snap1", parents=[pool], origin=thinlv, seg_type="thin")
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
-            LVMThinSnapShotDevice("snap1", parents=[pool], origin=pv)
+            LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
 
         # now make the constructor succeed so we can test some properties
         thinlv.exists = True
-        snap1 = LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
+        snap1 = LVMLogicalVolumeDevice("snap1", parents=[pool], origin=thinlv, seg_type="thin")
         self.assertEqual(snap1.isleaf, True)
         self.assertEqual(snap1.direct, True)
         self.assertEqual(thinlv.isleaf, True)
@@ -286,12 +271,6 @@ class LVMDeviceTest(unittest.TestCase):
             lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
                                         fmt=blivet.formats.get_format("xfs"),
                                         exists=False, pvs=[pv_spec, pv_spec2])
-
-        # no non-linear thin pools (yet)
-        with self.assertRaises(ValueError):
-            lv = LVMThinPoolDevice("testlv", parents=[vg], size=Size("512 MiB"),
-                                   fmt=blivet.formats.get_format("xfs"),
-                                   exists=False, seg_type="striped")
 
     def test_lvm_logical_volume_metadata_size(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
