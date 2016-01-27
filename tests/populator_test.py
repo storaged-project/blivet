@@ -131,6 +131,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(DMDevice, "status", return_value=True)
+    @patch.object(DMDevice, "update_sysfs_path")
     @patch.object(DeviceTree, "_add_slave_devices")
     @patch("blivet.udev.device_is_dm_livecd", return_value=False)
     @patch("blivet.udev.device_get_name")

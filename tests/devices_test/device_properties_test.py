@@ -696,7 +696,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         with self.assertRaisesRegex(ValueError, "btrfs snapshot source must be a btrfs subvolume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=parents[0])
 
-        parents2 = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
+        parents2 = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE, exists=True)]
         vol2 = BTRFSVolumeDevice("test2", parents=parents2, exists=True)
         with self.assertRaisesRegex(ValueError, ".*snapshot and source must be in the same volume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol2)
