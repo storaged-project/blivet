@@ -37,6 +37,7 @@ class DMDevicePopulator(DevicePopulator):
     def match(cls, data):
         return (udev.device_is_dm(data) and
                 not udev.device_is_dm_partition(data) and
+                not udev.device_is_dm_luks(data) and
                 not udev.device_is_dm_lvm(data) and
                 not udev.device_is_dm_mpath(data) and
                 not udev.device_is_dm_raid(data))
