@@ -119,6 +119,11 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
         if device is None:
             device = self.get_device_by_uuid(event.info.get("UUID_SUB", udev.device_get_uuid(event.info)),
                                              hidden=True)
+            if device is None and udev.device_is_dm_luks(event.info):
+                # Special case for first-time decrypted LUKS devices since we do not add a
+                # device for the decrypted/mapped device until it has been opened.
+                self.handle_device(event.info)
+                device = self.get_device_by_name(udev.device_get_name(event.info), hidden=True)
 
         # XXX Don't change anything (except simple attributes?) if actions are being executed.
         if device is None and self._event_device_is_physical_disk(event):
