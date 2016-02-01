@@ -268,6 +268,12 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                     if parent.name not in self.exclusive_disks:
                         self.exclusive_disks.append(parent.name)
 
+    def _get_format_helper(self, info, device=None):
+        return get_format_helper(info, device=device)
+
+    def _get_device_helper(self, info):
+        return get_device_helper(info)
+
     def handle_device(self, info, update_orig_fmt=False):
         """
             :param :class:`pyudev.Device` info: udev info for the device
@@ -300,7 +306,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         if device:
             device_added = False
         else:
-            helper_class = get_device_helper(info)
+            helper_class = self._get_device_helper(info)
 
         if helper_class is not None:
             device = helper_class(self, info).run()
@@ -338,7 +344,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             log.debug("no type or existing type for %s, bailing", name)
             return
 
-        helper_class = get_format_helper(info, device=device)
+        helper_class = self._get_format_helper(info, device=device)
         if helper_class is not None:
             helper_class(self, info, device).run()
 
