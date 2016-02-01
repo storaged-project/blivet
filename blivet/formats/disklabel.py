@@ -27,6 +27,7 @@ import parted
 import _ped
 from ..errors import DiskLabelCommitError, InvalidDiskLabelError, AlignmentError
 from .. import arch
+from ..events.manager import event_manager
 from .. import udev
 from .. import util
 from ..flags import flags
@@ -124,7 +125,10 @@ class DiskLabel(DeviceFormat):
     def update_parted_disk(self):
         """ re-read the disklabel from the device """
         self._parted_disk = None
+        mask = event_manager.add_mask(device=os.path.basename(self.device), partitions=True)
         self.update_orig_parted_disk()
+        udev.settle()
+        event_manager.remove_mask(mask)
 
     def update_orig_parted_disk(self):
         self._orig_parted_disk = self.parted_disk.duplicate()
