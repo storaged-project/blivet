@@ -325,7 +325,7 @@ class Size(Decimal):
         return Size(Decimal.__mul__(self, other))
     __rmul__ = __mul__
 
-    def __div__(self, other, context=None):
+    def __div__(self, other, context=None):             # pylint: disable=unused-argument
         if six.PY2:
             # This still needs to be ignored by pylint, because it will get
             # through the above guard.
