@@ -12,10 +12,14 @@ import tempfile
 import uuid
 import hashlib
 import warnings
+import abc
 from decimal import Decimal
 from contextlib import contextmanager
 from functools import wraps
 from collections import namedtuple
+from enum import Enum
+
+from .errors import DependencyError
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -1065,3 +1069,40 @@ def requires_property(prop_name, val=True):
                 raise ValueError("%s can only be accessed if %s evaluates to %s" % (fn.__name__, prop_name, val))
         return func
     return guard
+
+
+class EvalMode(Enum):
+    onetime = 1
+    always = 2
+    # TODO: no_sooner_than, if_changed,...
+
+
+class DependencyGuard(object, metaclass=abc.ABCMeta):
+    error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
+    def __init__(self, exn_cls=DependencyError):
+        self._exn_cls = exn_cls
+        self._avail = None
+
+    def check_avail(self, onetime=False):
+        if self._avail is None or not onetime:
+            self._avail = self._check_avail()
+        return self._avail
+
+    @abc.abstractmethod
+    def _check_avail(self):
+        raise NotImplementedError()
+
+    def __call__(self, critical=False, eval_mode=EvalMode.always):
+        def decorator(fn):
+            @wraps(fn)
+            def decorated(*args, **kwargs):
+                just_onetime = eval_mode == EvalMode.onetime
+                if self.check_avail(onetime=just_onetime):
+                    return fn(*args, **kwargs)
+                elif critical:
+                    raise self._exn_cls(self.error_msg)
+                else:
+                    log.warning("Failed to call the %s method: %s", fn.__name__, self.error_msg)
+                    return None
+            return decorated
+        return decorator
