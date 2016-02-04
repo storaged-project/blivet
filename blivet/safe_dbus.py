@@ -32,6 +32,7 @@ import os
 
 DEFAULT_DBUS_TIMEOUT = -1
 DBUS_PROPS_IFACE = "org.freedesktop.DBus.Properties"
+DBUS_INTRO_IFACE = "org.freedesktop.DBus.Introspectable"
 
 
 class SafeDBusError(Exception):
@@ -187,3 +188,14 @@ def get_property_sync(service, obj_path, iface, prop_name,
         raise DBusPropertyError(msg)
 
     return ret
+
+
+def check_object_available(service, obj_path, iface=None):
+    intro_data = call_sync(service, obj_path, DBUS_INTRO_IFACE, "Introspect", None)
+    node_info = Gio.DBusNodeInfo.new_for_xml(intro_data.unpack()[0])
+    if not iface:
+        # just check if any interface is available (there are none for
+        # non-existing objects)
+        return bool(node_info.interfaces)
+    else:
+        return any(intface.name == iface for intface in node_info.interfaces)
