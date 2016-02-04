@@ -806,8 +806,7 @@ class StorageDevice(Device):
         if data.mountpoint.endswith("."):
             data.mountpoint += str(self.id)
 
-    @classmethod
-    def is_name_valid(cls, name):
+    def is_name_valid(self, name):
         # This device corresponds to a file in /dev, so no /'s or nulls,
         # and the name cannot be . or ..
 
@@ -815,7 +814,7 @@ class StorageDevice(Device):
         # is an imperfect world of joy and sorrow mingled. For cciss, split
         # the path into its components and do the real check on each piece
         if name.startswith("cciss/"):
-            return all(cls.is_name_valid(n) for n in name.split('/'))
+            return all(self.is_name_valid(n) for n in name.split('/'))
 
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')

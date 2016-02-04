@@ -1082,3 +1082,23 @@ def default_namedtuple(name, fields, doc=""):
             return nt.__new__(cls, *args_list)
 
     return TheDefaultNamedTuple
+
+
+def requires_property(prop_name, val=True):
+    """
+    Function returning a decorator that can be used to guard methods and
+    properties with evaluation of the given property.
+
+    :param str prop_name: property to evaluate
+    :param val: guard value of the :param:`prop_name`
+    :type val: :class:`Object` (anything)
+    """
+    def guard(fn):
+        @wraps(fn)
+        def func(self, *args, **kwargs):
+            if getattr(self, prop_name) == val:
+                return fn(self, *args, **kwargs)
+            else:
+                raise ValueError("%s can only be accessed if %s evaluates to %s" % (fn.__name__, prop_name, val))
+        return func
+    return guard

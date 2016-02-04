@@ -56,3 +56,60 @@ class TestDefaultNamedtuple(unittest.TestCase):
 
         dnt = TestTuple()
         self.assertEqual(dnt, (None, None, 5, None))
+
+
+class Test(object):
+    def __init__(self, s):
+        self._s = s
+
+    @property
+    def s(self):
+        return self._s
+
+    @property
+    def ok(self):
+        return True
+
+    @property
+    def nok(self):
+        return False
+
+    @util.requires_property("s", "hi")
+    def say_hi(self):
+        return self.s + ", guys!"
+
+    @property
+    @util.requires_property("s", "hi")
+    def hi(self):
+        return self.s
+
+    @property
+    @util.requires_property("ok")
+    def good_news(self):
+        return "Everything okay!"
+
+    @property
+    @util.requires_property("nok")
+    def bad_news(self):
+        return "Nothing okay!"
+
+
+class TestRequiresProperty(unittest.TestCase):
+    def test_requires_property(self):
+        t = Test("hi")
+
+        self.assertEqual(t.s, "hi")
+        self.assertEqual(t.say_hi(), "hi, guys!")
+        self.assertEqual(t.hi, "hi")
+
+        t = Test("hello")
+        self.assertEqual(t.s, "hello")
+        with self.assertRaises(ValueError):
+            t.say_hi()
+        with self.assertRaises(ValueError):
+            t.hi()
+
+        self.assertEqual(t.good_news, "Everything okay!")
+
+        with self.assertRaises(ValueError):
+            t.bad_news

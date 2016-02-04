@@ -23,7 +23,7 @@
 from .storage_log import log_method_call
 from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
-from .devices import LUKSDevice, LVMLogicalVolumeDevice, LVMThinPoolDevice
+from .devices import LUKSDevice, LVMLogicalVolumeDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
 from .formats import get_format
 from .devicelibs import btrfs
@@ -70,7 +70,7 @@ def is_supported_device_type(device_type):
     elif device_type == DEVICE_TYPE_DISK:
         devices = [DiskDevice]
     elif device_type in (DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP):
-        devices = [LVMLogicalVolumeDevice, LVMThinPoolDevice]
+        devices = [LVMLogicalVolumeDevice]
     elif device_type == DEVICE_TYPE_PARTITION:
         devices = [PartitionDevice]
     elif device_type == DEVICE_TYPE_MD:

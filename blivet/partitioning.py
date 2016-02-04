@@ -1473,7 +1473,7 @@ class ThinPoolChunk(VGChunk):
     def __init__(self, pool, requests=None):
         """
             :param pool: the thin pool whose free space this chunk represents
-            :type pool: :class:`~.devices.LVMThinPoolDevice`
+            :type pool: :class:`~.devices.LVMLogicalVolumeDevice`
             :keyword requests: list of requests to add initially
             :type requests: list of :class:`LVRequest`
         """

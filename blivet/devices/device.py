@@ -301,8 +301,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
 
         return packages
 
-    @classmethod
-    def is_name_valid(cls, name):  # pylint: disable=unused-argument
+    def is_name_valid(self, name):  # pylint: disable=unused-argument
         """Is the device name valid for the device type?"""
 
         # By default anything goes

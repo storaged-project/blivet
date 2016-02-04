@@ -6,10 +6,6 @@ import blivet
 
 from blivet.devices import StorageDevice
 from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import LVMSnapShotDevice
-from blivet.devices import LVMThinLogicalVolumeDevice
-from blivet.devices import LVMThinPoolDevice
-from blivet.devices import LVMThinSnapShotDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices.lvm import LVMCacheRequest
 from blivet.devices.lvm import LVPVSpec
@@ -18,10 +14,6 @@ from blivet.devicelibs import raid
 
 DEVICE_CLASSES = [
     LVMLogicalVolumeDevice,
-    LVMSnapShotDevice,
-    LVMThinLogicalVolumeDevice,
-    LVMThinPoolDevice,
-    LVMThinSnapShotDevice,
     LVMVolumeGroupDevice,
     StorageDevice
 ]
@@ -37,20 +29,17 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
 
-        with self.assertRaisesRegex(ValueError, "lvm snapshot devices require an origin lv"):
-            LVMSnapShotDevice("snap1", parents=[vg])
-
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
+            LVMLogicalVolumeDevice("snap1", parents=[vg], origin=lv)
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
-            LVMSnapShotDevice("snap1", parents=[vg], origin=pv)
+            LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
 
         with self.assertRaisesRegex(ValueError, "only existing vorigin snapshots are supported"):
-            LVMSnapShotDevice("snap1", parents=[vg], vorigin=True)
+            LVMLogicalVolumeDevice("snap1", parents=[vg], vorigin=True)
 
         lv.exists = True
-        snap1 = LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
+        snap1 = LVMLogicalVolumeDevice("snap1", parents=[vg], origin=lv)
 
         self.assertEqual(snap1.format.type, lv.format.type)
         lv.format = blivet.formats.get_format("DM_snapshot_cow", exists=True)
@@ -68,22 +57,18 @@ class LVMDeviceTest(unittest.TestCase):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
-        pool = LVMThinPoolDevice("pool1", parents=[vg], size=Size("500 MiB"))
-        thinlv = LVMThinLogicalVolumeDevice("thinlv", parents=[pool],
-                                            size=Size("200 MiB"))
-
-        with self.assertRaisesRegex(ValueError, "lvm thin snapshots require an origin"):
-            LVMThinSnapShotDevice("snap1", parents=[pool])
+        pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
+        thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
+            LVMLogicalVolumeDevice("snap1", parents=[pool], origin=thinlv, seg_type="thin")
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
-            LVMThinSnapShotDevice("snap1", parents=[pool], origin=pv)
+            LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
 
         # now make the constructor succeed so we can test some properties
         thinlv.exists = True
-        snap1 = LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
+        snap1 = LVMLogicalVolumeDevice("snap1", parents=[pool], origin=thinlv, seg_type="thin")
         self.assertEqual(snap1.isleaf, True)
         self.assertEqual(snap1.direct, True)
         self.assertEqual(thinlv.isleaf, True)
@@ -287,12 +272,6 @@ class LVMDeviceTest(unittest.TestCase):
                                         fmt=blivet.formats.get_format("xfs"),
                                         exists=False, pvs=[pv_spec, pv_spec2])
 
-        # no non-linear thin pools (yet)
-        with self.assertRaises(ValueError):
-            lv = LVMThinPoolDevice("testlv", parents=[vg], size=Size("512 MiB"),
-                                   fmt=blivet.formats.get_format("xfs"),
-                                   exists=False, seg_type="striped")
-
     def test_lvm_logical_volume_metadata_size(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1025 MiB"))
@@ -370,3 +349,135 @@ class LVMDeviceTest(unittest.TestCase):
         lv.target_size = orig_size
         self.assertEqual(lv.target_size, orig_size)
         self.assertEqual(lv.size, orig_size)
+
+
+class TypeSpecificCallsTest(unittest.TestCase):
+    def test_type_specific_calls(self):
+        class A(object):
+            def __init__(self, a):
+                self._a = a
+
+            @property
+            def is_a(self):
+                return self._a == "A"
+
+            def say_hello(self):
+                return "Hello from A"
+
+            @property
+            def greeting(self):
+                return self._greet or "Hi, this is A"
+
+            @greeting.setter
+            def greeting(self, val):
+                self._greet = "Set by A: %s" % val  # pylint: disable=attribute-defined-outside-init
+
+        class B(object):
+            def __init__(self, b):
+                self._b = b
+
+            @property
+            def is_b(self):
+                return self._b == "B"
+
+            def say_hello(self):
+                return "Hello from B"
+
+            @property
+            def greeting(self):
+                return self._greet or "Hi, this is B"
+
+            @greeting.setter
+            def greeting(self, val):
+                self._greet = "Set by B: %s" % val  # pylint: disable=attribute-defined-outside-init
+
+        class C(A, B):
+            def __init__(self, a, b):
+                A.__init__(self, a)
+                B.__init__(self, b)
+                self._greet = None
+
+            def _get_type_classes(self):
+                """Method to get type classes for this particular instance"""
+                ret = []
+                if self.is_a:
+                    ret.append(A)
+                if self.is_b:
+                    ret.append(B)
+                return ret
+
+            def _try_specific_call(self, method, *args, **kwargs):
+                """Try to call a type-specific method for this particular instance"""
+                clss = self._get_type_classes()
+                for cls in clss:
+                    if hasattr(cls, method):
+                        # found, get the specific property
+                        if isinstance(vars(cls)[method], property):
+                            if len(args) == 0 and len(kwargs.keys()) == 0:
+                                # this is how you call the getter method of the property object
+                                ret = getattr(cls, method).__get__(self)
+                            else:
+                                # this is how you call the setter method of the property object
+                                ret = getattr(cls, method).__set__(self, *args, **kwargs)
+                        else:
+                            # or call the type-specific method
+                            ret = getattr(cls, method)(self, *args, **kwargs)
+                        return (True, ret)
+                # not found, let the caller know
+                return (False, None)
+
+            # decorator
+            def type_specific(meth):  # pylint: disable=no-self-argument
+                """Decorator that makes sure the type-specific code is executed if available"""
+                def decorated(self, *args, **kwargs):
+                    found, ret = self._try_specific_call(meth.__name__, *args, **kwargs)  # pylint: disable=no-member
+                    if found:
+                        # nothing more to do here
+                        return ret
+                    else:
+                        return meth(self, *args, **kwargs)  # pylint: disable=not-callable
+
+                return decorated
+
+            @type_specific
+            def say_hello(self):
+                return "Hello from C"
+
+            @property
+            @type_specific
+            def greeting(self):
+                return self._greet or "Hi, this is C"
+
+            @greeting.setter
+            @type_specific
+            def greeting(self, val):  # pylint: disable=arguments-differ
+                self._greet = val  # pylint: disable=attribute-defined-outside-init
+
+        # a non-specific instance
+        c = C(a="x", b="y")
+        self.assertEqual(c.say_hello(), "Hello from C")
+        self.assertEqual(c.greeting, "Hi, this is C")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Welcome")
+
+        # an A-specific instance
+        c = C(a="A", b="y")
+        self.assertEqual(c.say_hello(), "Hello from A")
+        self.assertEqual(c.greeting, "Hi, this is A")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Set by A: Welcome")
+
+        # a B-specific instance
+        c = C(a="x", b="B")
+        self.assertEqual(c.say_hello(), "Hello from B")
+        self.assertEqual(c.greeting, "Hi, this is B")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Set by B: Welcome")
+
+        # both A-B-specific instance
+        # A is listed first so it should win
+        c = C(a="A", b="B")
+        self.assertEqual(c.say_hello(), "Hello from A")
+        self.assertEqual(c.greeting, "Hi, this is A")
+        c.greeting = "Welcome"
+        self.assertEqual(c.greeting, "Set by A: Welcome")

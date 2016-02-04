@@ -24,6 +24,7 @@ import os
 import re
 
 from collections import namedtuple
+import itertools
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -50,6 +51,7 @@ LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 
 raid_levels = raid.RAIDLevels(["linear", "striped", "raid1", "raid4", "raid5", "raid6", "raid10"])
+raid_seg_types = list(itertools.chain.from_iterable([level.names for level in raid_levels if level.name != "linear"]))
 
 ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
 KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
