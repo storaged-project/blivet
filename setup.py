@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-# pylint: disable=interruptible-system-call
 
 from distutils.core import setup
 from distutils import filelist

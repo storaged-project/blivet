@@ -40,7 +40,6 @@ from ..devicelibs import lvm
 from .. import formats
 from .. import udev
 from .. import util
-from ..util import open  # pylint: disable=redefined-builtin
 from ..flags import flags
 from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta

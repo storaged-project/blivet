@@ -22,7 +22,6 @@
 from collections import defaultdict
 from .udev import resolve_devspec
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
 from .devicelibs import btrfs
 
 import logging

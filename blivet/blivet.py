@@ -53,7 +53,6 @@ from . import zfcp
 from . import devicefactory
 from . import get_bootloader, get_sysroot, short_product_name, __version__
 from .threads import SynchronizedMeta
-from .util import open  # pylint: disable=redefined-builtin
 
 from .i18n import _
 

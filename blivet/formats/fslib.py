@@ -21,8 +21,6 @@
 #                    David Cantrell <dcantrell@redhat.com>
 #                    Anne Mulhern <amulhern@redhat.com>
 
-from ..util import open  # pylint: disable=redefined-builtin
-
 kernel_filesystems = []
 nodev_filesystems = []
 

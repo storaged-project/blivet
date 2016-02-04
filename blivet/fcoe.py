@@ -20,7 +20,6 @@
 import os
 from . import udev
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
 import logging
 import time
 from .i18n import _
@@ -160,7 +159,7 @@ class fcoe(object):
             os.makedirs(root + "/etc/fcoe", 0o755)
 
         for nic, dcb, auto_vlan in self.nics:
-            fd = util.eintr_retry_call(os.open, root + "/etc/fcoe/cfg-" + nic,
+            fd = os.open( root + "/etc/fcoe/cfg-" + nic,
                                        os.O_RDWR | os.O_CREAT)
             config = '# Created by anaconda\n'
             config += '# Enable/Disable FCoE service at the Ethernet port\n'
@@ -176,8 +175,8 @@ class fcoe(object):
                 config += 'AUTO_VLAN="yes"\n'
             else:
                 config += 'AUTO_VLAN="no"\n'
-            util.eintr_retry_call(os.write, fd, config.encode('utf-8'))
-            util.eintr_ignore(os.close, fd)
+            os.write(fd, config.encode('utf-8'))
+            os.close(fd)
 
         return
 

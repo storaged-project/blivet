@@ -57,7 +57,7 @@ class OpticalDevice(StorageDevice):
             raise errors.DeviceError("device has not been created", self.name)
 
         try:
-            fd = util.eintr_retry_call(os.open, self.path, os.O_RDONLY)
+            fd = os.open(self.path, os.O_RDONLY)
         except OSError as e:
             # errno 123 = No medium found
             if e.errno == 123:
@@ -65,7 +65,7 @@ class OpticalDevice(StorageDevice):
             else:
                 return True
         else:
-            util.eintr_ignore(os.close, fd)
+            os.close(fd)
             return True
 
     def eject(self):

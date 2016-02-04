@@ -73,23 +73,23 @@ class PPCPRePBoot(DeviceFormat):
         """
         super(PPCPRePBoot, self)._create(**kwargs)
         try:
-            fd = util.eintr_retry_call(os.open, self.device, os.O_RDWR)
+            fd = os.open(self.device, os.O_RDWR)
             length = os.lseek(fd, 0, os.SEEK_END)
             os.lseek(fd, 0, os.SEEK_SET)
             buf = '\0' * 1024 * 1024
             while length > 0:
                 if length >= len(buf):
-                    util.eintr_retry_call(os.write, fd, buf.encode("utf-8"))
+                    os.write(fd, buf.encode("utf-8"))
                     length -= len(buf)
                 else:
                     buf = '\0' * length
-                    util.eintr_retry_call(os.write, fd, buf.encode("utf-8"))
+                    os.write(fd, buf.encode("utf-8"))
                     length = 0
         except OSError as e:
             log.error("error zeroing out %s: %s", self.device, e)
         finally:
             if fd:
-                util.eintr_retry_call(os.close, fd)
+                os.close(fd)
 
     @property
     def status(self):

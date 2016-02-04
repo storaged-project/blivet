@@ -26,7 +26,6 @@ import re
 import subprocess
 
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
 from .size import Size
 from .flags import flags
 

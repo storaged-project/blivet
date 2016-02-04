@@ -660,14 +660,14 @@ def collect_mbrs(devices, root=None):
     for dev in devices:
         try:
             path = util.Path("/dev", root=root) + dev.name
-            fd = util.eintr_retry_call(os.open, path.ondisk, os.O_RDONLY)
+            fd = os.open(path.ondisk, os.O_RDONLY)
             # The signature is the unsigned integer at byte 440:
             os.lseek(fd, 440, 0)
-            data = util.eintr_retry_call(os.read, fd, 4)
+            data = os.read(fd, 4)
             mbrsig = struct.unpack('I', data)
             sdata = struct.unpack("BBBB", data)
             sdata = "".join(["%02x" % (x,) for x in sdata])
-            util.eintr_ignore(os.close, fd)
+            os.close(fd)
             testdata_log.debug("device %s data[440:443] = %s", path, sdata)
         except OSError as e:
             testdata_log.debug("device %s data[440:443] raised %s", path, e)

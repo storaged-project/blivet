@@ -1,5 +1,4 @@
 import copy
-import errno
 import functools
 import glob
 import itertools
@@ -773,7 +772,7 @@ def create_sparse_tempfile(name, size):
         :returns: the path to the newly created file
     """
     (fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-%s" % name)
-    eintr_ignore(os.close, fd)
+    os.close(fd)
     create_sparse_file(path, size)
     return path
 
@@ -785,9 +784,9 @@ def create_sparse_file(path, size):
         :param :class:`~.size.Size` size: the size of the file
         :returns: None
     """
-    fd = eintr_retry_call(os.open, path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-    eintr_retry_call(os.ftruncate, fd, size)
-    eintr_ignore(os.close, fd)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+    os.ftruncate(fd, size)
+    os.close(fd)
 
 
 @contextmanager
@@ -876,42 +875,6 @@ def power_of_two(value):
         (q, r) = divmod(q, 2)
 
     return True
-
-# Copied from python's subprocess.py
-
-
-def eintr_retry_call(func, *args, **kwargs):
-    """Retry an interruptible system call if interrupted."""
-    while True:
-        try:
-            return func(*args, **kwargs)
-        except (OSError, IOError) as e:
-            if e.errno == errno.EINTR:
-                continue
-            raise
-
-
-def eintr_ignore(func, *args, **kwargs):
-    """Call a function and ignore EINTR.
-
-       This is useful for calls to close() and dup2(), which can return EINTR
-       but which should *not* be retried, since by the time they return the
-       file descriptor is already closed.
-    """
-    try:
-        return func(*args, **kwargs)
-    except (OSError, IOError) as e:
-        if e.errno == errno.EINTR:
-            pass
-        raise
-
-_open = open
-
-
-def open(*args, **kwargs):  # pylint: disable=redefined-builtin
-    """Open a file, and retry on EINTR."""
-    return eintr_retry_call(_open, *args, **kwargs)
-
 
 def indent(text, spaces=4):
     """ Indent text by a specified number of spaces.

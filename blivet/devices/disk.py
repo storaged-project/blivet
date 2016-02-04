@@ -34,7 +34,6 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
 from ..tasks import availability
-from ..util import open  # pylint: disable=redefined-builtin
 
 from ..fcoe import fcoe
 

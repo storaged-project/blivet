@@ -1342,7 +1342,7 @@ class TmpFS(NoDevFS):
             # When running with changeroot, such as during installation,
             # self.system_mountpoint is set to the full changeroot path once
             # mounted so even with changeroot, statvfs should still work fine.
-            st = util.eintr_retry_call(os.statvfs, self.system_mountpoint)
+            st = os.statvfs(self.system_mountpoint)
             free_space = Size(st.f_bavail * st.f_frsize)
         else:
             # Free might be called even if the tmpfs mount has not been
