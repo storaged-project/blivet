@@ -85,6 +85,24 @@ def _to_node_infos(variant):
     return ret
 
 
+class iSCSIDependencyGuard(util.DependencyGuard):
+    error_msg = "storaged iSCSI functionality not available"
+
+    def _check_avail(self):
+        if not safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE):
+            return False
+        try:
+            # storaged is modular and we need to make sure it has the iSCSI module
+            # loaded (this also autostarts storaged if it isn't running already)
+            safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE,
+                                "EnableModules", GLib.Variant("(b)", (True,)))
+        except safe_dbus.DBusCallError:
+            return False
+        return safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, INITIATOR_IFACE)
+
+storaged_iscsi_required = iSCSIDependencyGuard()
+
+
 class _iSCSI(object):
     """ iSCSI utility class.
 
@@ -116,11 +134,6 @@ class _iSCSI(object):
 
         self.__connection = None
 
-        # storaged is modular and we need to make sure it has the iSCSI module
-        # loaded (this also autostarts storaged if it isn't running already)
-        safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE,
-                            "EnableModules", GLib.Variant("(b)", (True,)), connection=self._connection)
-
         if flags.ibft:
             try:
                 initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
@@ -138,12 +151,18 @@ class _iSCSI(object):
         return self
 
     @property
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    def available(self):
+        return True
+
+    @property
     def _connection(self):
         if not self.__connection:
             self.__connection = safe_dbus.get_new_system_connection()
 
         return self.__connection
 
+    @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
     def _call_initiator_method(self, method, args=None):
         """Class a method of the ISCSI.Initiator DBus object
 
@@ -157,6 +176,7 @@ class _iSCSI(object):
                                    connection=self._connection)
 
     @property
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def initiator(self):
         if self._initiator != "":
             return self._initiator
@@ -164,6 +184,7 @@ class _iSCSI(object):
         return self._call_initiator_method("GetInitiatorName")[0]
 
     @initiator.setter
+    @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
     def initiator(self, val):
         if self.initiator_set and val != self._initiator:
             raise ValueError(_("Unable to change iSCSI initiator name once set"))
@@ -221,6 +242,7 @@ class _iSCSI(object):
         args = GLib.Variant("(sisisa{sv})", tuple(list(node_info) + [extra]))
         self._call_initiator_method("Login", args)
 
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def _start_ibft(self):
         if not flags.ibft:
             return
