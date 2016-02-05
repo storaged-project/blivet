@@ -20,11 +20,12 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from threading import RLock
+from threading import RLock, current_thread, main_thread
 from functools import wraps
 from types import FunctionType
 from abc import ABCMeta
 
+from .errors import ThreadError
 from .flags import flags
 
 blivet_lock = RLock(verbose=flags.debug_threads)
@@ -35,6 +36,12 @@ def exclusive(m):
     @wraps(m)
     def run_with_lock(*args, **kwargs):
         with blivet_lock:
+            if current_thread() == main_thread():
+                exn_info = get_thread_exception()
+                if exn_info[1]:
+                    clear_thread_exception()
+                    raise ThreadError("raising queued exception") from exn_info[1]
+
             return m(*args, **kwargs)
 
     return run_with_lock
@@ -70,3 +77,33 @@ class SynchronizedMeta(type):
 
 class SynchronizedABCMeta(SynchronizedMeta, ABCMeta):
     pass
+
+
+#
+# Facilities for storing/retrieving information about an unhandled exception in a thread.
+#
+_exception_thread = None
+_thread_exception = None
+
+
+def save_thread_exception(thread, exc_info):
+    global _exception_thread
+    global _thread_exception
+
+    if _exception_thread is None or _thread_exception is None:
+        return
+
+    _exception_thread = thread
+    _thread_exception = exc_info
+
+
+def clear_thread_exception():
+    global _exception_thread
+    global _thread_exception
+
+    _exception_thread = None
+    _thread_exception = None
+
+
+def get_thread_exception():
+    return (_exception_thread, _thread_exception)

@@ -36,6 +36,9 @@ from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats
 from .devicelibs import lvm
+from .events.changes import data as event_data
+from .events.changes import AttributeChanged, DeviceAdded, DeviceRemoved
+from .events.handler import EventHandlerMixin
 from . import util
 from .populator import PopulatorMixin
 from .storage_log import log_method_call, log_method_return
@@ -158,6 +161,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 newdev.type != "btrfs volume" and
                 newdev.name not in self.names):
             self.names.append(newdev.name)
+        event_data.changes.append(DeviceAdded(device=newdev))
         log.info("added %s %s (id %d) to device tree", newdev.type,
                  newdev.name,
                  newdev.id)
@@ -200,15 +204,18 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                         device.update_name()
 
         self._devices.remove(dev)
+        event_data.changes.append(DeviceRemoved(device=dev))
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
                  dev.id)
 
-    def recursive_remove(self, device, actions=True):
+    def recursive_remove(self, device, actions=True, remove_device=True, modparent=True):
         """ Remove a device after removing its dependent devices.
 
             :param :class:`~.devices.StorageDevice` device: the device to remove
             :keyword bool actions: whether to schedule actions for the removal
+            :keyword bool modparent: whether to update parent device upon removal
+            :keyword bool remove_device: whether to remove the root device
 
             If the device is not a leaf, all of its dependents are removed
             recursively until it is a leaf device. At that point the device is
@@ -239,21 +246,26 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 else:
                     if not leaf.format_immutable:
                         leaf.format = None
-                    self._remove_device(leaf)
+                    self._remove_device(leaf, modparent=modparent)
 
                 devices.remove(leaf)
 
         if not device.format_immutable:
+            old_fmt = device.format
             if actions:
                 self.actions.add(ActionDestroyFormat(device))
             else:
                 device.format = None
 
-        if not device.is_disk:
+            if old_fmt.type and (not remove_device or device.is_disk):
+                event_data.changes.append(AttributeChanged(device=device, attr="format",
+                                                           old=old_fmt, new=device.format))
+
+        if remove_device and not device.is_disk:
             if actions:
                 self.actions.add(ActionDestroyDevice(device))
             else:
-                self._remove_device(device)
+                self._remove_device(device, modparent=modparent)
 
     #
     # Actions
@@ -374,6 +386,45 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         """
         return set(d for dep in self.get_dependent_devices(disk, hidden=True)
                    for d in dep.disks)
+
+    def get_disk_actions(self, disks):
+        """ Return a list of actions related to the specified disk.
+
+            :param disks: list of disks
+            :type disk: list of :class:`~.devices.StorageDevices`
+            :returns: list of related actions
+            :rtype: list of :class:`~.deviceaction.DeviceAction`
+
+            This includes all actions on the specified disks, plus all actions
+            on disks that are in any way connected to the specified disk via
+            container devices.
+        """
+        # This is different from get_related_disks in that we are finding disks
+        # related by any action -- not just the current state of the devicetree.
+        related_disks = set()
+        for action in self.actions:
+            if any(action.device.depends_on(d) for d in disks):
+                related_disks.update(action.device.disks)
+
+        # now related_disks could be a superset of disks, so go through and
+        # build a list of actions related to any disk in related_disks
+        # Note that this list preserves the ordering of the action list.
+        related_actions = [a for a in self.actions
+                           if set(a.device.disks).intersection(related_disks)]
+        return related_actions
+
+    def cancel_disk_actions(self, disks):
+        """ Cancel all actions related to the specified disk.
+
+            :param disks: list of disks
+            :type disk: list of :class:`~.devices.StorageDevices`
+
+            This includes actions related directly and indirectly (via container
+            membership, for example).
+        """
+        actions = self.get_disk_actions(disks)
+        for action in reversed(actions):
+            self.actions.remove(action)
 
     #
     # Device search by property
@@ -819,17 +870,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         if device.is_disk:
             # Cancel all actions on this disk and any disk related by way of an
             # aggregate/container device (eg: lvm volume group).
-            disks = [device]
-            related_actions = [a for a in self._actions
-                               if a.device.depends_on(device)]
-            for related_device in (a.device for a in related_actions):
-                disks.extend(related_device.disks)
-
-            disks = set(disks)
-            cancel = [a for a in self._actions
-                      if set(a.device.disks).intersection(disks)]
-            for action in reversed(cancel):
-                self.actions.remove(action)
+            self.cancel_disk_actions(device)
 
         for d in device.children:
             self.hide(d)
@@ -894,10 +935,11 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                     self.hide(disk)
 
 
-class DeviceTree(DeviceTreeBase, PopulatorMixin):
+class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.__init__(self, conf=conf)
         PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
+        EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
     def reset(self, conf=None, passphrase=None, luks_dict=None):

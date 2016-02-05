@@ -239,6 +239,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def _post_create(self):
         self._complete = True
         super(LVMVolumeGroupDevice, self)._post_create()
+        self.format.exists = True
 
     def _pre_destroy(self):
         StorageDevice._pre_destroy(self)

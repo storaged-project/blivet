@@ -261,6 +261,13 @@ class DeviceFactoryError(StorageError):
 class AvailabilityError(StorageError):
 
     """ Raised if problem determining availability of external resource. """
+
+
+class EventManagerError(StorageError):
+    pass
+
+
+class EventParamError(StorageError):
     pass
 
 # external dependencies
@@ -268,4 +275,12 @@ class AvailabilityError(StorageError):
 
 class DependencyError(StorageError):
     """Raised when an external dependency is missing or not available"""
+    pass
+
+class EventHandlingError(StorageError):
+    pass
+
+
+class ThreadError(StorageError):
+    """ An error occurred in a non-main thread. """
     pass

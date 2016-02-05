@@ -42,6 +42,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
+from .lib import get_majors_by_device_type
+
+MD_MAJORS = get_majors_by_device_type("md")
 
 
 class MDRaidArrayDevice(ContainerDevice, RaidDevice):
@@ -234,12 +237,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         return size
 
-    def update_size(self):
+    def update_size(self, newsize=None):
         # container size is determined by the member disks, so there is nothing
         # to update in that case
         if self.type != "mdcontainer":
             # pylint: disable=bad-super-call
-            super(ContainerDevice, self).update_size()
+            super(ContainerDevice, self).update_size(newsize=newsize)
 
     @property
     def description(self):

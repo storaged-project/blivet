@@ -29,10 +29,26 @@ from ... import udev
 from ...devices import LUKSDevice
 from ...errors import DeviceError, LUKSError
 from ...flags import flags
+from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
 import logging
 log = logging.getLogger("blivet")
+
+
+class LUKSDevicePopulator(DevicePopulator):
+    @classmethod
+    def match(cls, data):
+        return udev.device_is_dm_luks(data)
+
+    def run(self):
+        parents = self._devicetree._add_slave_devices(self.data)
+        device = LUKSDevice(udev.device_get_name(self.data),
+                            sysfs_path=udev.device_get_sysfs_path(self.data),
+                            parents=parents,
+                            exists=True)
+        self._devicetree._add_device(device)
+        return device
 
 
 class LUKSFormatPopulator(FormatPopulator):

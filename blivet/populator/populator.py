@@ -235,13 +235,10 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             return
 
         # newly added device (eg iSCSI) could make this one a multipath member
-        if device.format and device.format.type != "multipath_member":
+        if device.format.type != "multipath_member":
             log.debug("%s newly detected as multipath member, dropping old format and removing kids", device.name)
             # remove children from tree so that we don't stumble upon them later
-            for child in device.children:
-                self.recursive_remove(child, actions=False)
-
-            device.format = None
+            self.recursive_remove(device, actions=False, remove_device=False)
 
     def _mark_readonly_device(self, info, device):
         # If this device is read-only, mark it as such now.
@@ -270,6 +267,12 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                 for parent in device.parents:
                     if parent.name not in self.exclusive_disks:
                         self.exclusive_disks.append(parent.name)
+
+    def _get_format_helper(self, info, device=None):
+        return get_format_helper(info, device=device)
+
+    def _get_device_helper(self, info):
+        return get_device_helper(info)
 
     def handle_device(self, info, update_orig_fmt=False):
         """
@@ -303,7 +306,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         if device:
             device_added = False
         else:
-            helper_class = get_device_helper(info)
+            helper_class = self._get_device_helper(info)
 
         if helper_class is not None:
             device = helper_class(self, info).run()
@@ -341,23 +344,11 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             log.debug("no type or existing type for %s, bailing", name)
             return
 
-        helper_class = get_format_helper(info, device)
+        helper_class = self._get_format_helper(info, device=device)
         if helper_class is not None:
             helper_class(self, info, device).run()
 
         log.info("got format: %s", device.format)
-
-    def update_format(self, device):
-        log.info("updating format of device: %s", device)
-        try:
-            util.notify_kernel(device.sysfs_path)
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
-
-        udev.settle()
-        info = udev.get_device(device.sysfs_path)
-
-        self.handle_format(info, device)
 
     def _handle_inconsistencies(self):
         for vg in [d for d in self.devices if d.type == "lvmvg"]:

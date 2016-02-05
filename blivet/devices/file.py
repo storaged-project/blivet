@@ -83,8 +83,8 @@ class FileDevice(StorageDevice):
 
         return os.path.normpath("%s%s" % (root, self.name))
 
-    def _get_size(self):
-        size = self._size
+    def read_current_size(self):
+        size = Size(0)
         if self.exists and os.path.exists(self.path):
             st = os.stat(self.path)
             size = Size(st[stat.ST_SIZE])

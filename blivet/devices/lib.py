@@ -27,19 +27,52 @@ from ..size import Size
 LINUX_SECTOR_SIZE = Size(512)
 
 
-def get_device_majors():
-    majors = {}
+def _collect_device_major_data():
+    by_major = {}
+    by_device = {}
     for line in open("/proc/devices").readlines():
         try:
             (major, device) = line.split()
         except ValueError:
             continue
         try:
-            majors[int(major)] = device
+            by_major[int(major)] = device
+            if device not in by_device:
+                by_device[device] = []
+
+            by_device[device].append(int(major))
         except ValueError:
             continue
-    return majors
-device_majors = get_device_majors()
+    return (by_major, by_device)
+_devices_by_major, _majors_by_device = _collect_device_major_data()
+
+
+def get_majors_by_device_type(device_type):
+    """ Return a list of major numbers for the given device type.
+
+        :param str device_type: device type string (eg: 'device-mapper', 'md')
+        :rtype: list of int
+
+        .. note::
+
+            Type strings are taken directly from /proc/devices.
+
+    """
+    return _majors_by_device.get(device_type, [])
+
+
+def get_device_type_by_major(major):
+    """ Return a device-type string for the given major number.
+
+        :param int major: major number
+        :rtype: str
+
+        .. note::
+
+            Type strings are taken directly from /proc/devices.
+
+    """
+    return _devices_by_major.get(major)
 
 
 def device_path_to_name(device_path):

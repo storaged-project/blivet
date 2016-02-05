@@ -21,6 +21,7 @@
 #
 
 from .populatorhelper import PopulatorHelper
+from ... import udev
 
 
 # pylint: disable=abstract-method
@@ -33,3 +34,19 @@ class DevicePopulator(PopulatorHelper):
     @classmethod
     def match(cls, data):
         return False
+
+    def _handle_rename(self):
+        name = udev.device_get_name(self.data)
+        if self.device.name != name:
+            self.device.name = name
+        # TODO: update name registry -- better yet, generate the name list on demand
+
+    def _handle_resize(self):
+        old_size = self.device.current_size
+        self.device.update_size()
+        if old_size != self.device.current_size:
+            self._devicetree.cancel_disk_actions(self.device.disks)
+
+    def update(self):
+        self._handle_rename()
+        self._handle_resize()

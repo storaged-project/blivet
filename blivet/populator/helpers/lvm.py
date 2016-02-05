@@ -29,6 +29,8 @@ from ... import udev
 from ...devicelibs import lvm
 from ...devices.lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMInternalLVtype
 from ...errors import DeviceTreeError, DuplicateVGError
+from ...events.changes import data as event_data
+from ...events.changes import AttributeChanged, ParentAdded, ParentRemoved
 from ...flags import flags
 from ...size import Size
 from ...storage_log import log_method_call
@@ -65,6 +67,17 @@ class LVMDevicePopulator(DevicePopulator):
 
         return self._devicetree.get_device_by_name(name)
 
+    def _handle_rename(self):
+        name = self.data.get("DM_LV_NAME")
+        if not name:
+            return
+
+        # device.name is of the form "%s-%s" % (vg_name, lv_name), while
+        # device.lvname is the name of the lv without the vg name.
+        if self.device.lvname != name:
+            self.device.name = name
+        # TODO: update name registry
+
 
 class LVMFormatPopulator(FormatPopulator):
     priority = 100
@@ -93,13 +106,29 @@ class LVMFormatPopulator(FormatPopulator):
 
         return kwargs
 
-    def _handle_vg_lvs(self, vg_device):
-        """ Handle setup of the LV's in the vg_device. """
+    def _get_vg_device(self):
+        return self._devicetree.get_device_by_uuid(self.device.format.container_uuid, incomplete=True)
+
+    def _update_lvs(self):
+        """ Handle setup of the LVs in the vg_device. """
+        log_method_call(self, pv=self.device.name)
+        vg_device = self._get_vg_device()
+        if vg_device is None:
+            # orphan pv
+            return
+
         vg_name = vg_device.name
         lv_info = dict((k, v) for (k, v) in iter(self._devicetree.lv_info.items())
                        if v.vg_name == vg_name)
 
+        # FIXME: This should account for added/removed LVs.
         self._devicetree.names.extend(n for n in lv_info.keys() if n not in self._devicetree.names)
+
+        for lv_device in vg_device.lvs[:]:
+            if lv_device.name not in lv_info:
+                log.info("lv %s was removed", lv_device.name)
+                self._devicetree.cancel_disk_actions(vg_device.disks)
+                self._devicetree.recursive_remove(lv_device, actions=False)
 
         if not vg_device.complete:
             log.warning("Skipping LVs for incomplete VG %s", vg_name)
@@ -149,9 +178,20 @@ class LVMFormatPopulator(FormatPopulator):
             lv_kwargs = {}
             name = "%s-%s" % (vg_name, lv_name)
 
-            if self._devicetree.get_device_by_name(name):
+            lv_device = self._devicetree.get_device_by_name(name)
+            if lv_device is not None:
                 # some lvs may have been added on demand below
                 log.debug("already added %s", name)
+                if lv_size != lv_device.current_size:
+                    # lvresize can operate on an inactive lv, in which case
+                    # the only notification we will receive is a change uevent
+                    # for the pv(s)
+                    old_size = lv_device._size
+                    lv_device.update_size(newsize=lv_size)
+                    event_data.changes.append(AttributeChanged(device=lv_device, attr="size",
+                                                               old=old_size, new=lv_size))
+                    self._devicetree.cancel_disk_actions(vg_device.disks)
+
                 return
 
             if lv_attr[0] in 'Ss':
@@ -302,8 +342,7 @@ class LVMFormatPopulator(FormatPopulator):
             else:
                 log.warning("Failed to determine parent LV for an internal LV '%s'", lv.name)
 
-    def run(self):
-        super().run()
+    def _add_vg_device(self):
         pv_info = self._devicetree.pv_info.get(self.device.path, None)
         if pv_info:
             vg_name = pv_info.vg_name
@@ -317,9 +356,10 @@ class LVMFormatPopulator(FormatPopulator):
             return
 
         vg_device = self._devicetree.get_device_by_uuid(vg_uuid, incomplete=True)
-        if vg_device:
+        if vg_device and self.device not in vg_device.parents:
             vg_device.parents.append(self.device)
-        else:
+            event_data.changes.append(ParentAdded(device=vg_device, item=self.device))
+        elif vg_device is None:
             same_name = self._devicetree.get_device_by_name(vg_name)
             if isinstance(same_name, LVMVolumeGroupDevice):
                 raise DuplicateVGError("multiple LVM volume groups with the same name (%s)" % vg_name)
@@ -347,4 +387,62 @@ class LVMFormatPopulator(FormatPopulator):
                                              exists=True)
             self._devicetree._add_device(vg_device)
 
-        self._handle_vg_lvs(vg_device)
+    def run(self):
+        log_method_call(self, pv=self.device.name)
+        super().run()
+        self._add_vg_device()
+        self._update_lvs()
+
+    def _handle_vg_rename(self):
+        vg_device = self._get_vg_device()
+        if vg_device is None:
+            return
+
+        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        if not pv_info or not pv_info.vg_name:
+            return
+
+        vg_name = pv_info.vg_name
+        if vg_device.name != vg_name:
+            vg_device.name = vg_name
+        # TODO: update name registry
+
+    def _update_pv_format(self):
+        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        if not pv_info:
+            return
+
+        self.device.format.vg_name = pv_info.vg_name
+        self.device.format.vg_uuid = pv_info.vg_uuid
+        self.device.format.pe_start = Size(pv_info.pe_start)
+        self.device.format.pe_free = Size(pv_info.pv_free)
+
+    def update(self):
+        self._devicetree.drop_lvm_cache()
+        self._update_pv_format()
+        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        vg_device = self._get_vg_device()
+        if vg_device is None:
+            # The VG device isn't in the tree. The PV might have just been
+            # added to a VG.
+            if pv_info and pv_info.vg_name:
+                # Handle adding orphan pv to a vg.
+                self._add_vg_device()
+            elif self.device.children:
+                # The PV was removed from its VG or the VG was removed.
+                vg_device = self.device.children[0]
+                if len(vg_device.parents) > 1:
+                    vg_device.parents.remove(self.device)
+                    event_data.changes.append(ParentRemoved(device=vg_device, item=self.device))
+                else:
+                    self._devicetree.recursive_remove(vg_device, actions=False)
+                return
+        else:
+            # The VG device is in the tree. Check if the PV still belongs to it.
+            if pv_info and pv_info.vg_name:
+                # This is the "normal" case: the pv is still part of the
+                # vg it was part of last time we looked.
+                self._handle_vg_rename()
+
+        # handles vg rename, lv add, lv remove, lv resize (inactive lv)
+        self._update_lvs()

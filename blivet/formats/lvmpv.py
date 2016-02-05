@@ -117,12 +117,6 @@ class LVMPhysicalVolume(DeviceFormat):
 
         # Consider use of -Z|--zero
         # -f|--force or -y|--yes may be required
-
-        # lvm has issues with persistence of metadata, so here comes the
-        # hammer...
-        # XXX This format doesn't exist yet, so bypass the precondition checking
-        #     for destroy by calling _destroy directly.
-        DeviceFormat._destroy(self, **kwargs)
         blockdev.lvm.pvscan(self.device)
         blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment)
         blockdev.lvm.pvscan(self.device)
@@ -164,5 +158,13 @@ class LVMPhysicalVolume(DeviceFormat):
     @free.setter
     def free(self, value):
         self._free = value
+
+    @property
+    def container_uuid(self):
+        return self.vg_uuid
+
+    @container_uuid.setter
+    def container_uuid(self, uuid):
+        self.vg_uuid = uuid
 
 register_device_format(LVMPhysicalVolume)

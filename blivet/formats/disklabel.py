@@ -27,6 +27,7 @@ import parted
 import _ped
 from ..errors import DiskLabelCommitError, InvalidDiskLabelError, AlignmentError
 from .. import arch
+from ..events.manager import event_manager
 from .. import udev
 from .. import util
 from ..flags import flags
@@ -49,6 +50,7 @@ class DiskLabel(DeviceFormat):
         """
             :keyword device: full path to the block device node
             :type device: str
+            :keyword str uuid: disklabel UUID
             :keyword label_type: type of disklabel to create
             :type label_type: str
             :keyword exists: whether the formatting exists
@@ -119,6 +121,14 @@ class DiskLabel(DeviceFormat):
                   "offset": self.get_alignment().offset,
                   "grain_size": self.get_alignment().grainSize})
         return d
+
+    def update_parted_disk(self):
+        """ re-read the disklabel from the device """
+        self._parted_disk = None
+        mask = event_manager.add_mask(device=os.path.basename(self.device), partitions=True)
+        self.update_orig_parted_disk()
+        udev.settle()
+        event_manager.remove_mask(mask)
 
     def update_orig_parted_disk(self):
         self._orig_parted_disk = self.parted_disk.duplicate()
@@ -242,12 +252,6 @@ class DiskLabel(DeviceFormat):
         # None right before calling self.commit(), but that might hide
         # other problems.
         self.commit()
-
-    def _destroy(self, **kwargs):
-        """ Wipe the disklabel from the device. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        self.parted_device.clobber()
 
     def commit(self):
         """ Commit the current partition table to disk and notify the OS. """

@@ -140,8 +140,10 @@ class StorageDevice(Device):
 
         self.device_links = []
 
-        if self.exists and self.status:
-            self.update_size()
+        if self.exists:
+            self.update_sysfs_path()
+            if self.status:
+                self.update_size()
 
     def __str__(self):
         exist = "existing"
@@ -299,23 +301,6 @@ class StorageDevice(Device):
         return (self._resizable and self.exists and
                 (self.format.type is None or self.format.resizable or
                  not self.format.exists))
-
-    def notify_kernel(self):
-        """ Send a 'change' uevent to the kernel for this device. """
-        log_method_call(self, self.name, status=self.status)
-        if not self.exists:
-            log.debug("not sending change uevent for non-existent device")
-            return
-
-        if not self.status:
-            log.debug("not sending change uevent for inactive device")
-            return
-
-        path = os.path.normpath(self.sysfs_path)
-        try:
-            util.notify_kernel(path, action="change")
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
 
     @property
     def fstab_spec(self):
@@ -605,9 +590,24 @@ class StorageDevice(Device):
             self._current_size = self.read_current_size()
         return self._current_size
 
-    def update_size(self):
-        """ Update size, current_size, and target_size to actual size. """
-        self._current_size = Size(0)
+    def update_size(self, newsize=None):
+        """ Update size, current_size, and target_size to actual size.
+
+            :keyword :class:`~.size.Size` newsize: new size for device
+
+            .. note::
+
+                Most callers will not pass a new size. It is for special cases
+                like outside resize of inactive LVs, which precludes updating
+                the size from /sys.
+        """
+        if newsize is None:
+            self._currentSize = Size(0)
+        elif isinstance(newsize, Size):
+            self._currentSize = newsize
+        else:
+            raise ValueError("new size must be an instance of class Size")
+
         new_size = self.current_size
         self._size = new_size
         self._target_size = new_size  # bypass setter checks

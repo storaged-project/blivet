@@ -642,18 +642,19 @@ class DeviceFactory(object):
             raise
 
         self.storage.create_device(device)
-        e = None
+        err = None
         try:
             self._post_create()
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
+            err = str(e)
         else:
             if not device.size:
-                e = StorageError("failed to create device")
+                err = "failed to create device"
 
-        if e:
+        if err:
             self.storage.destroy_device(device)
-            raise StorageError(e)
+            raise StorageError(err)
 
         ret = device
         if self.encrypted:

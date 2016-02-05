@@ -515,7 +515,6 @@ class FS(DeviceFormat):
 
         # XXX must be a smarter way to do this
         self._size = self.target_size
-        self.notify_kernel()
 
     def do_check(self):
         """ Run a filesystem check.
@@ -747,7 +746,6 @@ class FS(DeviceFormat):
             raise FSError("device does not exist")
 
         self._writelabel.do_task()
-        self.notify_kernel()
 
     @property
     def utils_available(self):
@@ -987,6 +985,14 @@ class BTRFS(FS):
         # Since btrfs vols have subvols the format setup is automatic.
         # Don't try to mount it if there's no mountpoint.
         return bool(self.mountpoint or kwargs.get("mountpoint"))
+
+    @property
+    def container_uuid(self):
+        return self.vol_uuid
+
+    @container_uuid.setter
+    def container_uuid(self, uuid):
+        self.vol_uuid = uuid
 
 register_device_format(BTRFS)
 
@@ -1229,10 +1235,6 @@ class NoDevFS(FS):
     @property
     def type(self):
         return self.device
-
-    def notify_kernel(self):
-        # NoDevFS should not need to tell the kernel anything.
-        pass
 
 register_device_format(NoDevFS)
 
