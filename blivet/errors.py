@@ -262,3 +262,10 @@ class AvailabilityError(StorageError):
 
     """ Raised if problem determining availability of external resource. """
     pass
+
+# external dependencies
+
+
+class DependencyError(StorageError):
+    """Raised when an external dependency is missing or not available"""
+    pass

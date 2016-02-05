@@ -23,25 +23,31 @@ from . import util
 from .flags import flags
 from .i18n import _
 from .storage_log import log_exception_info
-from multiprocessing import Process, Pipe
+from . import safe_dbus
 import os
-import logging
 import shutil
 import time
 import itertools
-log = logging.getLogger("blivet")
+from collections import namedtuple
 
-has_libiscsi = True
-try:
-    import libiscsi
-except ImportError:
-    has_libiscsi = False
+import gi
+gi.require_version("GLib", "2.0")
+from gi.repository import GLib
+
+import logging
+log = logging.getLogger("blivet")
 
 # Note that stage2 copies all files under /sbin to /usr/sbin
 ISCSID = ""
 INITIATOR_FILE = "/etc/iscsi/initiatorname.iscsi"
 
 ISCSI_MODULES = ['cxgb3i', 'bnx2i', 'be2iscsi']
+
+
+STORAGED_SERVICE = "org.storaged.Storaged"
+STORAGED_MANAGER_PATH = "/org/storaged/Storaged/Manager"
+MANAGER_IFACE = "org.storaged.Storaged.Manager"
+INITIATOR_IFACE = MANAGER_IFACE + ".ISCSI.Initiator"
 
 
 def has_iscsi():
@@ -60,69 +66,44 @@ def has_iscsi():
     return True
 
 
-def _call_discover_targets(con_write, con_recv, ipaddr, port, authinfo):
-    """ Function to separate iscsi :py:func:`libiscsi.discover_sendtargets` call to it's own process.
+NodeInfo = namedtuple("NodeInfo", ["name", "tpgt", "address", "port", "iface"])
+TargetInfo = namedtuple("TargetInfo", ["ipaddr", "port"])
 
-        The call must be started on special process because the :py:mod:`libiscsi`
-        library is not thread safe. When thread is used or it's called on
-        main thread the main thread will freeze.
 
-        Also the discover is about four times slower (only for timeout)
-        this is caused by signals which are delivered to bad (python)
-        thread instead of C library thread.
+class LoginInfo(object):
+    def __init__(self, node, logged_in):
+        self.node = node
+        self.logged_in = logged_in
 
-        .. note::
 
-            To transfer data to main process ``con_write`` (write only) is used.
-            Pipe returns tuple (ok, data).
+def _to_node_infos(variant):
+    """Transforms an 'a(sisis)' GLib.Variant into a list of NodeInfo objects"""
 
-            ``con_recv`` should be immediately closed so that the reading end
-            of the pipe is not used in the child process.
+    ret = []
+    for info in variant:
+        ret.append(NodeInfo(*info))
+    return ret
 
-            * ``ok``: True if everything was ok
-            * ``data``: Dictionary with :py:func:`libiscsi.node` parameters if ``ok`` was True.
-              Exception if ``ok`` was False
 
-        :param con_write: Pipe to the main process (write only)
-        :type con_write: :py:func:`multiprocessing.Pipe`
-        :param con_recv: Reading end of pipe from main process (close only)
-        :type con_recv: :py:func:`multiprocessing.Pipe`
-        :param str ipaddr: target IP address
-        :param str port: target port
-        :param authinfo: CHAP authentication data for node login
-        :type authinfo: Object returned by :py:func:`libiscsi.chapAuthInfo` or None
-    """
+class iSCSIDependencyGuard(util.DependencyGuard):
+    error_msg = "storaged iSCSI functionality not available"
 
-    # Close the reading end of the pipe in the child process
-    con_recv.close()
-
-    with con_write:
+    def _check_avail(self):
+        if not safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE):
+            return False
         try:
-            found_nodes = libiscsi.discover_sendtargets(address=ipaddr,
-                                                        port=int(port),
-                                                        authinfo=authinfo)
-            if found_nodes is None:
-                found_nodes = []
+            # storaged is modular and we need to make sure it has the iSCSI module
+            # loaded (this also autostarts storaged if it isn't running already)
+            safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE,
+                                "EnableModules", GLib.Variant("(b)", (True,)))
+        except safe_dbus.DBusCallError:
+            return False
+        return safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, INITIATOR_IFACE)
 
-            nodes = []
-
-            # the node object is not pickable so it can't be send with pipe
-            # TODO: change libiscsi.node to pickable object
-            for node in found_nodes:
-                nodes.append({'name': node.name,
-                              'tpgt': node.tpgt,
-                              'address': node.address,
-                              'port': node.port,
-                              'iface': node.iface})
-
-            con_write.send((True, nodes))
-
-        except Exception as ex:  # pylint: disable=broad-except
-            con_write.send((False, ex))
+storaged_iscsi_required = iSCSIDependencyGuard()
 
 
 class _iSCSI(object):
-
     """ iSCSI utility class.
 
         This class will automatically discover and login to iBFT (or
@@ -141,8 +122,8 @@ class _iSCSI(object):
     """
 
     def __init__(self):
-        # Dictionary of discovered targets containing list of (node,
-        # logged_in) tuples.
+        # Dictionary mapping discovered TargetInfo data to lists of LoginInfo
+        # data.
         self.discovered_targets = {}
         # This list contains nodes discovered through iBFT (or other firmware)
         self.ibft_nodes = []
@@ -151,9 +132,11 @@ class _iSCSI(object):
         self.started = False
         self.ifaces = {}
 
+        self.__connection = None
+
         if flags.ibft:
             try:
-                initiatorname = libiscsi.get_firmware_initiator_name()
+                initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
                 self._initiator = initiatorname
                 self.initiator_set = True
             except Exception:  # pylint: disable=broad-except
@@ -167,33 +150,63 @@ class _iSCSI(object):
         # pylint: disable=unused-argument
         return self
 
-    def _get_initiator(self):
+    @property
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    def available(self):
+        return True
+
+    @property
+    def _connection(self):
+        if not self.__connection:
+            self.__connection = safe_dbus.get_new_system_connection()
+
+        return self.__connection
+
+    @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
+    def _call_initiator_method(self, method, args=None):
+        """Class a method of the ISCSI.Initiator DBus object
+
+        :param str method: name of the method to call
+        :param params: arguments to pass to the method
+        :type params: GLib.Variant
+
+        """
+        return safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH,
+                                   INITIATOR_IFACE, method, args,
+                                   connection=self._connection)
+
+    @property
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    def initiator(self):
         if self._initiator != "":
             return self._initiator
 
-        return util.capture_output(["iscsi-iname"]).strip()
+        return self._call_initiator_method("GetInitiatorName")[0]
 
-    def _set_initiator(self, val):
+    @initiator.setter
+    @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
+    def initiator(self, val):
         if self.initiator_set and val != self._initiator:
             raise ValueError(_("Unable to change iSCSI initiator name once set"))
         if len(val) == 0:
             raise ValueError(_("Must provide an iSCSI initiator name"))
-        self._initiator = val
 
-    initiator = property(_get_initiator, _set_initiator)
+        log.info("Setting up iSCSI initiator name %s", self.initiator)
+        args = GLib.Variant("(sa{sv})", (val, None))
+        self._call_initiator_method("SetInitiatorName", args)
+        self._initiator = val
 
     def active_nodes(self, target=None):
         """Nodes logged in to"""
         if target:
-            return [node for (node, logged_in) in
-                    self.discovered_targets.get(target, [])
-                    if logged_in]
+            return [info.node for info in self.discovered_targets.get(target, [])
+                    if info.logged_in]
         else:
-            return [node for (node, logged_in) in
-                    itertools.chain(*list(self.discovered_targets.values()))
-                    if logged_in] + self.ibft_nodes
+            return [info.node for info in itertools.chain(*list(self.discovered_targets.values()))
+                    if info.logged_in] + self.ibft_nodes
 
-    def _get_mode(self):
+    @property
+    def mode(self):
         if not self.active_nodes():
             return "none"
         if self.ifaces:
@@ -201,38 +214,55 @@ class _iSCSI(object):
         else:
             return "default"
 
-    mode = property(_get_mode)
-
     def _mark_node_active(self, node, active=True):
         """Mark node as one logged in to
 
            Returns False if not found
         """
-        for target_nodes in self.discovered_targets.values():
-            for nodeinfo in target_nodes:
-                if nodeinfo[0] is node:
-                    nodeinfo[1] = active
+        for login_infos in self.discovered_targets.values():
+            for info in login_infos:
+                if info.node is node:
+                    info.logged_in = active
                     return True
         return False
 
+    def _login(self, node_info, extra=None):
+        """Try to login to the iSCSI node
+
+        :type node_info: :class:`NodeInfo`
+        :param dict extra: extra configuration for the node (e.g. authentication info)
+        :raises :class:`~.safe_dbus.DBusCallError`: if login fails
+
+        """
+
+        if extra is None:
+            extra = dict()
+        extra["node.startup"] = GLib.Variant("s", "automatic")
+
+        args = GLib.Variant("(sisisa{sv})", tuple(list(node_info) + [extra]))
+        self._call_initiator_method("Login", args)
+
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def _start_ibft(self):
         if not flags.ibft:
             return
 
+        args = GLib.Variant("(a{sv})", ([], ))
         try:
-            found_nodes = libiscsi.discover_firmware()
-        except Exception:  # pylint: disable=broad-except
+            found_nodes, _n_nodes = self._call_initiator_method("DiscoverFirmware", args)
+        except safe_dbus.DBusCallError:
             log_exception_info(log.info, "iscsi: No IBFT info found.")
             # an exception here means there is no ibft firmware, just return
             return
 
+        found_nodes = _to_node_infos(found_nodes)
         for node in found_nodes:
             try:
-                node.login()
+                self._login(node)
                 log.info("iscsi IBFT: logged into %s at %s:%s through %s",
                          node.name, node.address, node.port, node.iface)
                 self.ibft_nodes.append(node)
-            except IOError as e:
+            except safe_dbus.DBusCallError as e:
                 log.error("Could not log into ibft iscsi target %s: %s",
                           node.name, str(e))
 
@@ -280,18 +310,6 @@ class _iSCSI(object):
             log.info("no initiator set")
             return
 
-        log.debug("Setting up %s", INITIATOR_FILE)
-        log.info("iSCSI initiator name %s", self.initiator)
-        if os.path.exists(INITIATOR_FILE):
-            os.unlink(INITIATOR_FILE)
-        if not os.path.isdir("/etc/iscsi"):
-            os.makedirs("/etc/iscsi", 0o755)
-        fd = os.open(INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
-        initiator_name = "InitiatorName=%s\n" % self.initiator
-        os.write(fd, initiator_name.encode("utf-8"))
-        os.close(fd)
-        self.initiator_set = True
-
         for fulldir in (os.path.join("/var/lib/iscsi", d) for d in
                         ['ifaces', 'isns', 'nodes', 'send_targets', 'slp', 'static']):
             if not os.path.isdir(fulldir):
@@ -330,95 +348,73 @@ class _iSCSI(object):
 
         Returns list of nodes user can log in.
         """
-        authinfo = None
 
         if not has_iscsi():
             raise IOError(_("iSCSI not available"))
         if self._initiator == "":
             raise ValueError(_("No initiator name set"))
 
-        if self.active_nodes((ipaddr, port)):
+        if self.active_nodes(TargetInfo(ipaddr, port)):
             log.debug("iSCSI: skipping discovery of %s:%s due to active nodes",
                       ipaddr, port)
         else:
-            if username or password or r_username or r_password:
-                # Note may raise a ValueError
-                authinfo = libiscsi.chapAuthInfo(username=username,
-                                                 password=password,
-                                                 reverse_username=r_username,
-                                                 reverse_password=r_password)
             self.startup()
+            auth_info = dict()
+            if username:
+                auth_info["username"] = GLib.Variant("s", username)
+            if password:
+                auth_info["password"] = GLib.Variant("s", password)
+            if r_username:
+                auth_info["r_username"] = GLib.Variant("s", r_username)
+            if r_password:
+                auth_info["r_password"] = GLib.Variant("s", r_password)
 
-            # start libiscsi discover_sendtargets in a new process
-            # threads can't be used here because the libiscsi library
-            # using signals internally which are send to bad thread
-            (con_recv, con_write) = Pipe(False)
-            p = Process(target=_call_discover_targets, args=(con_write,
-                                                             con_recv,
-                                                             ipaddr,
-                                                             port,
-                                                             authinfo, ))
-            p.start()
+            args = GLib.Variant("(sqa{sv}", ipaddr, port, auth_info)
+            nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", args)
 
-            # Close the writing end of the pipe in the parent
-            con_write.close()
-
-            with con_recv:
-                try:
-                    (ok, data) = con_recv.recv()
-                    if not ok:
-                        log.debug("iSCSI: exception raised when "
-                                  "discover_sendtargets process called: %s",
-                                  str(data))
-                except EOFError:
-                    ok = False
-                    log.error("iSCSI: can't receive response from "
-                              "_call_discover_targets")
-
-            p.join()
-
-            # convert dictionary back to iscsi nodes object
-            if ok:
-                found_nodes = []
-                for node in data:
-                    found_nodes.append(libiscsi.node(**node))
-            else:
-                return []
-
-            self.discovered_targets[(ipaddr, port)] = []
+            found_nodes = _to_node_infos(nodes)
+            t_info = TargetInfo(ipaddr, port)
+            self.discovered_targets[t_info] = []
             for node in found_nodes:
-                self.discovered_targets[(ipaddr, port)].append([node, False])
+                self.discovered_targets[t_info].append(LoginInfo(node, False))
                 log.debug("discovered iSCSI node: %s", node.name)
 
         # only return the nodes we are not logged into yet
-        return [node for (node, logged_in) in
-                self.discovered_targets[(ipaddr, port)]
-                if not logged_in]
+        return [info.node for info in self.discovered_targets[TargetInfo(ipaddr, port)]
+                if not info.logged_in]
 
     def log_into_node(self, node, username=None, password=None,
                       r_username=None, r_password=None):
         """
-        Raises IOError.
+        :param node: node to log into
+        :type node: :class:`NodeInfo`
+        :param str username: username to use when logging in
+        :param str password: password to use when logging in
+        :param str r_username: r_username to use when logging in
+        :param str r_password: r_password to use when logging in
         """
+
         rc = False  # assume failure
         msg = ""
 
+        auth_info = dict()
+        if username:
+            auth_info["username"] = GLib.Variant("s", username)
+        if password:
+            auth_info["password"] = GLib.Variant("s", password)
+        if r_username:
+            auth_info["r_username"] = GLib.Variant("s", r_username)
+        if r_password:
+            auth_info["r_password"] = GLib.Variant("s", r_password)
+
         try:
-            authinfo = None
-            if username or password or r_username or r_password:
-                # may raise a ValueError
-                authinfo = libiscsi.chapAuthInfo(username=username,
-                                                 password=password,
-                                                 reverse_username=r_username,
-                                                 reverse_password=r_password)
-            node.set_auth(authinfo)
-            node.login()
+            self._login(node, auth_info)
             rc = True
             log.info("iSCSI: logged into %s at %s:%s through %s",
                      node.name, node.address, node.port, node.iface)
             if not self._mark_node_active(node):
                 log.error("iSCSI: node not found among discovered")
-        except (IOError, ValueError) as e:
+        except safe_dbus.DBusCallError as e:
             msg = str(e)
             log.warning("iSCSI: could not log into %s: %s", node.name, msg)
 
@@ -493,29 +489,9 @@ class _iSCSI(object):
 
         self.stabilize()
 
-    def write(self, root, storage):
+    def write(self, root, storage):  # pylint: disable=unused-argument
         if not self.initiator_set:
             return
-
-        # set iscsi nodes to autostart
-        rootdev = storage.root_device
-        for node in self.active_nodes():
-            autostart = True
-            disks = self.get_node_disks(node, storage)
-            for disk in disks:
-                # nodes used for root get started by the initrd
-                if rootdev.depends_on(disk):
-                    autostart = False
-
-            if autostart:
-                node.set_parameter("node.startup", "automatic")
-
-        if not os.path.isdir(root + "/etc/iscsi"):
-            os.makedirs(root + "/etc/iscsi", 0o755)
-        fd = os.open(root + INITIATOR_FILE, os.O_RDWR | os.O_CREAT)
-        initiator_name = "InitiatorName=%s\n" % self.initiator
-        os.write(fd, initiator_name.encode("utf-8"))
-        os.close(fd)
 
         # copy "db" files.  *sigh*
         if os.path.isdir(root + "/var/lib/iscsi"):
