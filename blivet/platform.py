@@ -71,7 +71,7 @@ class Platform(object):
         if flags.gpt:
             if not self.set_default_disklabel_type("gpt"):
                 log.warning("GPT is not a supported disklabel on this platform. Using default "
-                         "disklabel %s instead.", self.default_disklabel_type)
+                            "disklabel %s instead.", self.default_disklabel_type)
 
     def __call__(self):
         return self

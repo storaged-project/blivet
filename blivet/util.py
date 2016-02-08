@@ -881,6 +881,7 @@ def power_of_two(value):
 
     return True
 
+
 def indent(text, spaces=4):
     """ Indent text by a specified number of spaces.
 
@@ -1079,7 +1080,9 @@ class EvalMode(Enum):
 
 
 class DependencyGuard(object, metaclass=abc.ABCMeta):
+
     error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
+
     def __init__(self, exn_cls=DependencyError):
         self._exn_cls = exn_cls
         self._avail = None

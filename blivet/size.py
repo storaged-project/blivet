@@ -52,82 +52,82 @@ B = _Prefix(1, "", "")
 KB = _Prefix(_DECIMAL_FACTOR ** 1,
              N_("kilo"),
              # TRANSLATORS: "k" for "kilo-" (x 10^3)
-             N_("k") )
+             N_("k"))
 
 MB = _Prefix(_DECIMAL_FACTOR ** 2,
              N_("mega"),
              # TRANSLATORS: "M" for "mega-" (x 10^6)
-             N_("M") )
+             N_("M"))
 
 GB = _Prefix(_DECIMAL_FACTOR ** 3,
              N_("giga"),
              # TRANSLATORS: "G" for "giga-" (x 10^9)
-             N_("G") )
+             N_("G"))
 
 TB = _Prefix(_DECIMAL_FACTOR ** 4,
              N_("tera"),
              # TRANSLATORS: "T" for "tera-" (x 10^12)
-             N_("T") )
+             N_("T"))
 
 PB = _Prefix(_DECIMAL_FACTOR ** 5,
              N_("peta"),
              # TRANSLATORS: "P" for "peta-" (x 10^15)
-             N_("P") )
+             N_("P"))
 
 EB = _Prefix(_DECIMAL_FACTOR ** 6,
              N_("exa"),
              # TRANSLATORS: "E" for "exa-"  (x 10^18)
-             N_("E") )
+             N_("E"))
 
 ZB = _Prefix(_DECIMAL_FACTOR ** 7,
              N_("zetta"),
              # TRANSLATORS: "Z" for "zetta-" (x 10^21)
-             N_("Z") )
+             N_("Z"))
 
 YB = _Prefix(_DECIMAL_FACTOR ** 8,
              N_("yotta"),
              # TRANSLATORS: "Y" for "yotta-" (x 10^24)
-             N_("Y") )
+             N_("Y"))
 
 KiB = _Prefix(_BINARY_FACTOR ** 1,
               N_("kibi"),
               # TRANSLATORS: "Ki" for "kibi-" (x 2^10)
-              N_("Ki") )
+              N_("Ki"))
 
 MiB = _Prefix(_BINARY_FACTOR ** 2,
               N_("mebi"),
               # TRANSLATORS: "Mi" for "mebi-" (x 2^20)
-              N_("Mi") )
+              N_("Mi"))
 
 GiB = _Prefix(_BINARY_FACTOR ** 3,
               N_("gibi"),
               # TRANSLATORS: "Gi" for "gibi-" (x 2^30)
-              N_("Gi") )
+              N_("Gi"))
 
 TiB = _Prefix(_BINARY_FACTOR ** 4,
               N_("tebi"),
               # TRANSLATORS: "Ti" for "tebi-" (x 2^40)
-              N_("Ti") )
+              N_("Ti"))
 
 PiB = _Prefix(_BINARY_FACTOR ** 5,
               N_("pebi"),
               # TRANSLATORS: "Pi" for "pebi-" (x 2^50)
-              N_("Pi") )
+              N_("Pi"))
 
 EiB = _Prefix(_BINARY_FACTOR ** 6,
               N_("exbi"),
               # TRANSLATORS: "Ei" for "exbi-" (x 2^60)
-              N_("Ei") )
+              N_("Ei"))
 
 ZiB = _Prefix(_BINARY_FACTOR ** 7,
               N_("zebi"),
               # TRANSLATORS: "Zi" for "zebi-" (x 2^70)
-              N_("Zi") )
+              N_("Zi"))
 
 YiB = _Prefix(_BINARY_FACTOR ** 8,
               N_("yobi"),
               # TRANSLATORS: "Yi" for "yobi-" (x 2^80)
-              N_("Yi") )
+              N_("Yi"))
 
 # Categories of symbolic constants
 _DECIMAL_PREFIXES = [KB, MB, GB, TB, PB, EB, ZB, YB]
