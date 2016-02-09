@@ -1,6 +1,40 @@
 2.0
 ====
 
+* `PEP8 compatibility`_
+* `LVM RAID`_
+* `Thread safety`_
+* `Handling of external storage events`_
+* `A single class for all LVs`_
+* `Revamped code to populate the device tree`_
+* `Moved`_
+
+
+Moved
+------
+
+* ``DeviceTree.register_action`` (use ``DeviceTree.actions.add``)
+* ``DeviceTree.cancel_action`` (use ``DeviceTree.actions.remove``)
+* ``DeviceTree.find_actions`` (use ``DeviceTree.actions.find``)
+* ``DeviceTree.prune_actions`` (use ``DeviceTree.actions.prune``)
+* ``DeviceTree.sort_actions`` (use ``DeviceTree.actions.sort``)
+* ``DeviceTree.process_actions`` (use ``DeviceTree.actions.process``)
+* ``DeviceTree.get_children`` (use ``Device.children``)
+
+
+Handling of external storage events
+------------------------------------
+
+Blivet now has the ability to listen for uevents on block devices and adjust to
+externally-initiated changes. Event handling is not enabled by default. For an
+example of how to enable this feature, see ``examples/uevents.py``. Most of the
+code related to event handling is in the new ``blivet.events`` package. The
+main pieces are ``blivet.events.manager.event_manager`` (an instance of
+``blivet.events.manager.UdevEventManager``), ``blivet.events.manager.Event``,
+and ``blivet.events.handler.EventHandlerMixin`` (a mixin class that augments
+``DeviceTree``).
+
+
 A single class for all LVs
 ---------------------------
 
@@ -44,6 +78,21 @@ live in the (ultimate) ``LVMLogicalVolumeDevice`` class' methods decorated with
 the ``@type_specific`` decorator.
 
 
+Devices know their children
+----------------------------
+
+Instances of ``blivet.device.Device`` now have a list of their direct
+descendants: ``Device.children``. Accordingly, ``DeviceTree.get_children`` has
+been removed.
+
+
+Thread safety
+--------------
+
+Blivet now uses a global reentrant lock to ensure thread-safety within the
+``Blivet``, ``DeviceTree``, ``Device``, and ``DeviceFormat`` classes.
+
+
 LVM RAID
 ---------
 
@@ -75,3 +124,23 @@ Removed properties:
 * ``LVMLogicalVolumeDevice``
 
   - ``copies``
+
+
+Revamped code to populate the device tree
+------------------------------------------
+
+``blivet.populator.Populator`` has been rewritten to improve maintainability.
+Most of the code that does type-specific handling for devices or formatting has
+been moved into individual helper classes under ``blivet.populator.helpers``.
+The populator class itself has been rewritten as a mixin
+(``blivet.populator.PopulatorMixin``) that augments ``DeviceTree``.
+
+
+PEP8 compatibility
+-------------------
+
+All code in blivet now conforms to
+`PEP8 <https://www.python.org/dev/peps/pep-0008/>`_. As a result, all non-class
+names in the ``camelCase`` style have been renamed to the
+``lower_case_with_underscores`` style. This applies to methods within classes,
+but not to the names of the classes themselves -- they still use ``CamelCase``.
