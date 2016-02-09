@@ -34,7 +34,7 @@ from . import util
 from . import get_sysroot, get_target_physical_root, error_handler, ERROR_RAISE
 
 from .storage_log import log_exception_info
-from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
+from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice, MDRaidArrayDevice
 from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
 from .formats import get_format
@@ -734,7 +734,7 @@ class FSSet(object):
             open(mdadm_path, "w").write(mdadm_conf)
 
         # /etc/multipath.conf
-        if self.devicetree.get_devices_by_type("dm-multipath"):
+        if any(d for d in self.devices if d.type == "dm-multipath"):
             util.copy_to_system("/etc/multipath.conf")
             util.copy_to_system("/etc/multipath/wwids")
             util.copy_to_system("/etc/multipath/bindings")
@@ -768,9 +768,7 @@ class FSSet(object):
 
     def mdadm_conf(self):
         """ Return the contents of mdadm.conf. """
-        arrays = self.devicetree.get_devices_by_type("mdarray")
-        arrays.extend(self.devicetree.get_devices_by_type("mdbiosraidarray"))
-        arrays.extend(self.devicetree.get_devices_by_type("mdcontainer"))
+        arrays = [d for d in self.devices if isinstance(d, MDRaidArrayDevice)]
         # Sort it, this not only looks nicer, but this will also put
         # containers (which get md0, md1, etc.) before their members
         # (which get md127, md126, etc.). and lame as it is mdadm will not
@@ -814,7 +812,7 @@ class FSSet(object):
         else:
             devices += self.swap_devices
 
-        netdevs = self.devicetree.get_devices_by_instance(NetworkStorageDevice)
+        netdevs = [d for d in self.devices if isinstance(d, NetworkStorageDevice)]
 
         rootdev = devices[0]
         root_on_netdev = any(rootdev.depends_on(netdev) for netdev in netdevs)

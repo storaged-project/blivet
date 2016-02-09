@@ -510,7 +510,7 @@ class _iSCSI(object):
 
     def get_node_disks(self, node, storage):
         node_disks = []
-        iscsi_disks = storage.devicetree.get_devices_by_type("iscsi")
+        iscsi_disks = (d for d in storage.devices if d.type == "iscsi")
         for disk in iscsi_disks:
             if disk.node == node:
                 node_disks.append(disk)

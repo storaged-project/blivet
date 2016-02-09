@@ -7,7 +7,31 @@
 * `Handling of external storage events`_
 * `A single class for all LVs`_
 * `Revamped code to populate the device tree`_
+* `Removed`_
 * `Moved`_
+
+
+Removed
+--------
+
+The following were deprecated and have been removed.
+
+* ``DeviceTree.get_devices_by_serial`` (use a list comprehension)
+
+    For example, this::
+
+        devs = devicetree.get_devices_by_serial(serial)
+
+    could be accomplished like this::
+
+        devs = [d for d in devicetree.devices if d.serial == serial]
+
+
+* ``DeviceTree.get_devices_by_type`` (use a list comprehension)
+* ``DeviceTree.get_devices_by_instance`` (use a list comprehension)
+* ``BTRFSVolumeDevice.create_subvolumes``
+* ``MDRaidArrayDevice.devices`` (use ``MDRaidArrayDevice.members``)
+* ``MDBiosRaidArrayDevice.devices`` (use ``MDBiosRaidArrayDevice.members``)
 
 
 Moved

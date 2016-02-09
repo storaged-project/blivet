@@ -354,13 +354,6 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         return subvols
 
-    @util.deprecated('1.16', '')
-    def create_subvolumes(self):
-        for _name, subvol in self.subvolumes:
-            if subvol.exists:
-                continue
-            subvol.create()
-
     def remove_subvolume(self, name):
         raise NotImplementedError()
 
