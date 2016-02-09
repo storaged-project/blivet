@@ -22,7 +22,6 @@
 
 from ..size import Size
 from .. import platform
-from .. import util
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
 from parted import PARTITION_PREP
