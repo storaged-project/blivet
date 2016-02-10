@@ -85,7 +85,12 @@ canary: check-requires po-fallback
 	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translatable po/blivet.pot
 	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translated .
 
-check: pylint pep8 canary
+check:
+	@status=0; \
+	$(MAKE) pylint || status=1; \
+	$(MAKE) pep8 || status=1; \
+	$(MAKE) canary || status=1; \
+	exit $$status
 
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
