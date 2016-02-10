@@ -76,7 +76,7 @@ class blivet_sdist(sdist):
 
         # Run translation-canary in release mode to remove any bad translations
         sys.path.append('translation-canary')
-        from translation_canary.translated import testSourceTree
+        from translation_canary.translated import testSourceTree  # pylint: disable=import-error
         testSourceTree(base_dir, releaseMode=True)
 
 data_files = []
