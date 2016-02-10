@@ -481,28 +481,6 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         log_method_return(self, result)
         return result
 
-    @util.deprecated('1.7', '')
-    def get_devices_by_serial(self, serial, incomplete=False, hidden=False):
-        """ Return a list of devices with a matching serial.
-
-            :param str serial: the serial to match
-            :param bool incomplete: include incomplete devices in search
-            :param bool hidden: include hidden devices in search
-            :returns: all matching devices found
-            :rtype: list of :class:`~.devices.Device`
-        """
-        log_method_call(self, serial=serial, incomplete=incomplete, hidden=hidden)
-        devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-        retval = []
-        for device in devices:
-            if not hasattr(device, "serial"):
-                log.warning("device %s has no serial attr", device.name)
-                continue
-            if device.serial == serial:
-                retval.append(device)
-        log_method_return(self, [r.name for r in retval])
-        return retval
-
     def get_device_by_label(self, label, incomplete=False, hidden=False):
         """ Return a device with a matching filesystem label.
 
@@ -564,38 +542,6 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                           None)
 
         log_method_return(self, result)
-        return result
-
-    @util.deprecated('1.7', '')
-    def get_devices_by_type(self, device_type, incomplete=False, hidden=False):
-        """ Return a list of devices with a matching device type.
-
-            :param str device_type: the type to match
-            :param bool incomplete: include incomplete devices in search
-            :param bool hidden: include hidden devices in search
-            :returns: all matching device found
-            :rtype: list of :class:`~.devices.Device`
-        """
-        log_method_call(self, device_type=device_type, incomplete=incomplete, hidden=hidden)
-        devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-        result = [d for d in devices if d.type == device_type]
-        log_method_return(self, [r.name for r in result])
-        return result
-
-    @util.deprecated('1.7', '')
-    def get_devices_by_instance(self, device_class, incomplete=False, hidden=False):
-        """ Return a list of devices with a matching device class.
-
-            :param class device_class: the device class to match
-            :param bool incomplete: include incomplete devices in search
-            :param bool hidden: include hidden devices in search
-            :returns: all matching device found
-            :rtype: list of :class:`~.devices.Device`
-        """
-        log_method_call(self, device_class=device_class, incomplete=incomplete, hidden=hidden)
-        devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-        result = [d for d in devices if isinstance(d, device_class)]
-        log_method_return(self, [r.name for r in result])
         return result
 
     def get_device_by_id(self, id_num, incomplete=False, hidden=False):

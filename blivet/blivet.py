@@ -377,7 +377,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        partitions = self.devicetree.get_devices_by_instance(PartitionDevice)
+        partitions = [d for d in self.devices if isinstance(d, PartitionDevice)]
         partitions.sort(key=lambda d: d.name)
         return partitions
 
@@ -389,7 +389,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        vgs = self.devicetree.get_devices_by_type("lvmvg")
+        vgs = [d for d in self.devices if d.type == "lvmvg"]
         vgs.sort(key=lambda d: d.name)
         return vgs
 
@@ -412,7 +412,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        thin = self.devicetree.get_devices_by_type("lvmthinlv")
+        thin = [d for d in self.devices if d.type == "lvmthinlv"]
         thin.sort(key=lambda d: d.name)
         return thin
 
@@ -424,7 +424,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        pools = self.devicetree.get_devices_by_type("lvmthinpool")
+        pools = [d for d in self.devices if d.type == "lvmthinpool"]
         pools.sort(key=lambda d: d.name)
         return pools
 
@@ -449,14 +449,14 @@ class Blivet(object, metaclass=SynchronizedMeta):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        arrays = self.devicetree.get_devices_by_type("mdarray")
+        arrays = [d for d in self.devices if d.type == "mdarray"]
         arrays.sort(key=lambda d: d.name)
         return arrays
 
     @property
     def mdcontainers(self):
         """ A list of the MD containers in the device tree. """
-        arrays = self.devicetree.get_devices_by_type("mdcontainer")
+        arrays = [d for d in self.devices if d.type == "mdcontainer"]
         arrays.sort(key=lambda d: d.name)
         return arrays
 
@@ -481,7 +481,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             does not necessarily reflect the actual on-disk state of the
             system's disks.
         """
-        return sorted(self.devicetree.get_devices_by_type("btrfs volume"),
+        return sorted((d for d in self.devices if d.type == "btrfs volume"),
                       key=lambda d: d.name)
 
     @property
@@ -1384,7 +1384,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         """ Write /etc/dasd.conf to target system for all DASD devices
             configured during installation.
         """
-        dasds = self.devicetree.get_devices_by_type("dasd")
+        dasds = [d for d in self.devices if d.type == "dasd"]
         dasds.sort(key=lambda d: d.name)
         if not (arch.is_s390() and dasds):
             return

@@ -128,9 +128,9 @@ class DeviceActionTestCase(StorageTestCase):
 
         # clear the disks
         self.destroy_all_devices()
-        self.assertEqual(devicetree.get_devices_by_type("lvmlv"), [])
-        self.assertEqual(devicetree.get_devices_by_type("lvmvg"), [])
-        self.assertEqual(devicetree.get_devices_by_type("partition"), [])
+        self.assertEqual([d for d in devicetree.devices if d.type == "lvmlv"], [])
+        self.assertEqual(self.storage.vgs, [])
+        self.assertEqual(self.storage.partitions, [])
 
         sda = devicetree.get_device_by_name("sda")
         self.assertNotEqual(sda, None, "failed to find disk 'sda'")
