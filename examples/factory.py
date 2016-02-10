@@ -35,7 +35,7 @@ try:
                               device=device)
     print(b.devicetree)
 
-    b.devicetree.process_actions()
+    b.do_it()
     print(b.devicetree)
 finally:
     b.devicetree.teardown_disk_images()
