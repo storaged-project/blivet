@@ -22,6 +22,9 @@
 # device backend modules
 from ..devicelibs import crypto
 
+from ..storage_log import log_method_call
+from ..size import Size
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -33,6 +36,7 @@ class LUKSDevice(DMCryptDevice):
 
     """ A mapped LUKS device. """
     _type = "luks/dm-crypt"
+    _resizable = True
     _packages = ["cryptsetup"]
 
     def __init__(self, name, fmt=None, size=None, uuid=None,
@@ -65,9 +69,55 @@ class LUKSDevice(DMCryptDevice):
     def size(self):
         if not self.exists:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
+        elif self.resizable and self.target_size != Size(0):
+            size = self.target_size
         else:
             size = self.current_size
         return size
+
+    def _set_target_size(self, newsize):
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must be of type Size")
+
+        if self.max_size and newsize > self.max_size:
+            log.error("requested size %s is larger than maximum %s",
+                      newsize, self.max_size)
+            raise ValueError("size is larger than the maximum for this device")
+        elif self.min_size and newsize < self.min_size:
+            log.error("requested size %s is smaller than minimum %s",
+                      newsize, self.min_size)
+            raise ValueError("size is smaller than the minimum for this device")
+
+        # don't allow larger luks than size (or target size) of backing device
+        if newsize > (self.slave.size - crypto.LUKS_METADATA_SIZE):
+            log.error("requested size %s is larger than size of the backing device %s",
+                      newsize, self.slave.size)
+            raise ValueError("size is larger than the size of the backing device")
+
+        if self.align_target_size(newsize) != newsize:
+            raise ValueError("new size would violate alignment requirements")
+
+    def _get_target_size(self):
+        return self.slave.format.target_size
+
+    @property
+    def max_size(self):
+        """ The maximum size this luks device can be. Maximum is based on the
+            maximum size of the backing device. """
+        max_luks = self.slave.max_size - crypto.LUKS_METADATA_SIZE
+        max_format = self.format.max_size
+        return min(max_luks, max_format) if max_format else max_luks
+
+    @property
+    def resizable(self):
+        """ Can this device be resized? """
+        return (self._resizable and self.exists and self.format.resizable and
+                self.slave.resizable)
+
+    def resize(self):
+        # size of LUKSDevice depends on size of the LUKS format on backing
+        # device; to resize it, resize the format
+        log_method_call(self, self.name, status=self.status)
 
     def _post_create(self):
         self.name = self.slave.format.map_name
