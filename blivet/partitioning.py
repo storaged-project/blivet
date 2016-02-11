@@ -1936,7 +1936,7 @@ def _apply_chunk_growth(chunk):
         size = chunk.length_to_size(req.base + req.growth)
 
         # reduce the size of thin pools by the pad size
-        if hasattr(req.device, "lvs"):
+        if req.device.is_thin_pool:
             size -= Size(blockdev.lvm.get_thpool_padding(size, req.device.vg.pe_size, included=True))
 
         # Base is pe, which means potentially rounded up by as much as
