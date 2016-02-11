@@ -664,9 +664,6 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        if not self.isleaf and not self.is_extended:
-            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
-
         self.teardown()
 
         if not self.sysfs_path:
