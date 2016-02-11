@@ -29,11 +29,12 @@ from ..import util
 
 from . import availability
 from . import task
+from . import fstask
 from . import dfresize
 
 
 @add_metaclass(abc.ABCMeta)
-class FSResizeTask(dfresize.DFResizeTask):
+class FSResizeTask(fstask.FSTask):
     """ The abstract properties that any resize task must have. """
 
     size_fmt = abc.abstractproperty(doc="Size format string.")

@@ -19,6 +19,9 @@
 #
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
+import gi
+gi.require_version("BlockDev", "1.0")
+
 from gi.repository import BlockDev as blockdev
 
 from .. import util
@@ -30,6 +33,7 @@ from ..size import Size
 from . import availability
 from . import task
 from . import dfresize
+
 
 class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
     """ Handle resize of LUKS device. """
@@ -48,9 +52,9 @@ class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
         """
         self.luks = a_luks
 
-    def doTask(self):
+    def do_task(self):
         """ Resizes the LUKS format. """
         try:
-            blockdev.crypto.luks_resize(self.luks.mapName, self.luks.targetSize.convertTo(self.unit))
+            blockdev.crypto.luks_resize(self.luks.map_name, self.luks.target_size.convert_to(self.unit))
         except blockdev.CryptoError as e:
             raise LUKSError(e)
