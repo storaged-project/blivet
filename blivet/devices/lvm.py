@@ -1196,7 +1196,7 @@ class LVMSnapshotMixin(object):
             if self.is_thin_lv:
                 raise NotTypeSpecific()
             else:
-                return getattr(self, meth)(*args, **kwargs)
+                return meth(self, *args, **kwargs)
         return decorated
 
     @util.requires_property("is_snapshot_lv")
@@ -1342,6 +1342,14 @@ class LVMThinPoolMixin(object):
     @property
     def is_thin_pool(self):
         return self.seg_type == "thin-pool"
+
+    @property
+    def profile(self):
+        return self._profile
+
+    @property
+    def chunk_size(self):
+        return self._chunk_size
 
     @property
     def type(self):
