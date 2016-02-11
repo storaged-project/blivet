@@ -168,3 +168,8 @@ All code in blivet now conforms to
 names in the ``camelCase`` style have been renamed to the
 ``lower_case_with_underscores`` style. This applies to methods within classes,
 but not to the names of the classes themselves -- they still use ``CamelCase``.
+
+LUKS resize support
+-------------------
+
+Blivet now supports shrinking and growing existing LUKS encrypted devices.
