@@ -30,7 +30,7 @@ import os
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
 from ..devicelibs import lvm
-from ..tasks import availability
+from ..tasks import availability, pvtask
 from ..i18n import N_
 from ..size import Size
 from ..errors import PhysicalVolumeError
@@ -54,6 +54,8 @@ class LVMPhysicalVolume(DeviceFormat):
     _packages = ["lvm2"]                # required packages
     _ks_mountpoint = "pv."
     _plugin = availability.BLOCKDEV_LVM_PLUGIN
+
+    _size_info_class = pvtask.PVSize
 
     def __init__(self, **kwargs):
         """
@@ -80,6 +82,9 @@ class LVMPhysicalVolume(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
+
+        self._size_info = self._size_info_class(self)
+
         self.vg_name = kwargs.get("vg_name")
         self.vg_uuid = kwargs.get("vg_uuid")
         self.pe_start = kwargs.get("pe_start", lvm.LVM_PE_START)
@@ -140,6 +145,17 @@ class LVMPhysicalVolume(DeviceFormat):
         # XXX hack
         return (self.exists and self.vg_name and
                 os.path.isdir("/dev/%s" % self.vg_name))
+
+    def update_size_info(self):
+        """ Update this format's current size. """
+
+        if not self.status:
+            return
+
+        try:
+            self._size = self._size_info.do_task()
+        except PhysicalVolumeError as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
 
     @property
     def free(self):
