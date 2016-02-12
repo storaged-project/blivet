@@ -1,13 +1,17 @@
 Summary:  A python module for system storage configuration
 Name: python3-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.0
-Release: 1%{?dist}
+Version: 2.0.0
+
+#%%define prerelease .a1
+# prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
+Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
 %define realname blivet
-Source0: http://github.com/dwlehman/blivet/archive/%{realname}-%{version}.tar.gz
+%define realversion %{version}%{?prerelease}
+Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -53,7 +57,7 @@ The %{realname}-data package provides data files required by the %{realname}
 python module.
 
 %prep
-%setup -q -n %{realname}-%{version}
+%setup -q -n %{realname}-%{realversion}
 
 rm -rf %{py3dir}
 cp -a . %{py3dir}
