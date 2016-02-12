@@ -664,10 +664,11 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        if not self.isleaf and not self.is_extended:
-            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
-
-        self.teardown()
+        # don't teardown when resizing luks
+        if self.format.type == "luks" and self.children:
+            self.children[0].format.teardown()
+        else:
+            self.teardown()
 
         if not self.sysfs_path:
             return

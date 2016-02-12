@@ -35,7 +35,7 @@ from . import get_sysroot, get_target_physical_root, error_handler, ERROR_RAISE
 
 from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice, MDRaidArrayDevice
-from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, UnknownSourceDeviceError
+from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, FormatResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
 from .formats import get_format
 from .flags import flags
@@ -1109,7 +1109,7 @@ def turn_on_filesystems(storage, mount_only=False, callbacks=None):
 
         try:
             storage.do_it(callbacks)
-        except FSResizeError as e:
+        except (FSResizeError, FormatResizeError) as e:
             if error_handler.cb(e) == ERROR_RAISE:
                 raise
         except Exception as e:

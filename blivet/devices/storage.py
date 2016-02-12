@@ -38,6 +38,7 @@ log = logging.getLogger("blivet")
 from .device import Device
 from .network import NetworkStorageDevice
 from .lib import LINUX_SECTOR_SIZE
+from ..devicelibs.crypto import LUKS_METADATA_SIZE
 
 
 class StorageDevice(Device):
@@ -616,7 +617,15 @@ class StorageDevice(Device):
     @property
     def min_size(self):
         """ The minimum size this device can be. """
-        return self.align_target_size(self.format.min_size) if self.resizable else self.current_size
+        if self.format.type == "luks" and self.children:
+            if self.resizable:
+                min_size = self.children[0].min_size + LUKS_METADATA_SIZE
+            else:
+                min_size = self.current_size
+        else:
+            min_size = self.align_target_size(self.format.min_size) if self.resizable else self.current_size
+
+        return min_size
 
     @property
     def max_size(self):

@@ -86,6 +86,13 @@ class FormatTeardownError(DeviceFormatError):
     pass
 
 
+class FormatResizeError(DeviceFormatError):
+
+    def __init__(self, message, details):
+        DeviceFormatError.__init__(self, message)
+        self.details = details
+
+
 class DMRaidMemberError(DeviceFormatError):
     pass
 

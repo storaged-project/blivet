@@ -38,6 +38,7 @@ from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyD
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .devicelibs.edd import get_edd_dict
 from .devicelibs.btrfs import MAIN_VOLUME_ID
+from .devicelibs.crypto import LUKS_METADATA_SIZE
 from .errors import StorageError
 from .size import Size
 from .devicetree import DeviceTree
@@ -1135,22 +1136,36 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if device.protected:
             raise ValueError("cannot modify protected device")
 
-        classes = []
+        actions = []
+
         if device.resizable:
-            classes.append(ActionResizeDevice)
+            actions.append(ActionResizeDevice(device, new_size))
 
         if device.format.resizable:
-            classes.append(ActionResizeFormat)
+            if device.format.type == "luks" and device.children:
+                # resize the luks format
+                actions.append(ActionResizeFormat(device, new_size - LUKS_METADATA_SIZE))
 
-        if not classes:
+                luks_dev = device.children[0]
+                if luks_dev.resizable:
+                    # resize the luks device
+                    actions.append(ActionResizeDevice(luks_dev, new_size - LUKS_METADATA_SIZE))
+
+                if luks_dev.format.resizable:
+                    # resize the format on the luks device
+                    actions.append(ActionResizeFormat(luks_dev, new_size - LUKS_METADATA_SIZE))
+            else:
+                actions.append(ActionResizeFormat(device, new_size))
+
+        if not actions:
             raise ValueError("device cannot be resized")
 
         # if this is a shrink, schedule the format resize first
         if new_size < device.size:
-            classes.reverse()
+            actions.reverse()
 
-        for action_class in classes:
-            self.devicetree.actions.add(action_class(device, new_size))
+        for action in actions:
+            self.devicetree.actions.add(action)
 
     def format_by_default(self, device):
         """Return whether the device should be reformatted by default."""

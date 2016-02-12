@@ -33,7 +33,8 @@ from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import _, N_
-from ..tasks import availability
+from ..tasks import availability, lukstasks
+from ..size import Size
 
 import logging
 log = logging.getLogger("blivet")
@@ -50,7 +51,12 @@ class LUKS(DeviceFormat):
     _linux_native = True                 # for clearpart
     _packages = ["cryptsetup"]          # required packages
     _min_size = crypto.LUKS_METADATA_SIZE
+    _max_size = Size("16 EiB")
     _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
+
+    _size_info_class = lukstasks.LUKSSize
+    _resize_class = lukstasks.LUKSResize
+    _resizable = True
 
     def __init__(self, **kwargs):
         """
@@ -85,6 +91,10 @@ class LUKS(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
+
+        self._size_info = self._size_info_class(self)
+        self._resize = self._resize_class(self)
+
         self.cipher = kwargs.get("cipher")
         self.key_size = kwargs.get("key_size")
         self.map_name = kwargs.get("name")
@@ -110,6 +120,10 @@ class LUKS(DeviceFormat):
             self.map_name = "luks-%s" % self.uuid
         elif not self.map_name and self.device:
             self.map_name = "luks-%s" % os.path.basename(self.device)
+
+        if flags.installer_mode and self._resize.available:
+            # if you want current/min size you have to call update_size_info
+            self.update_size_info()
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -178,6 +192,21 @@ class LUKS(DeviceFormat):
         if not self.exists or not self.map_name:
             return False
         return os.path.exists("/dev/mapper/%s" % self.map_name)
+
+    def update_size_info(self):
+        """ Update this format's current size. """
+
+        self._resizable = False
+
+        if not self.status:
+            return
+
+        try:
+            self._size = self._size_info.do_task()
+        except LUKSError as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+        else:
+            self._resizable = True
 
     def _pre_setup(self, **kwargs):
         if not self.configured:
