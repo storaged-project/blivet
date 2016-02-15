@@ -78,7 +78,7 @@ pylint: check-requires
 
 pep8: check-requires
 	@echo "*** Running pep8 compliance check ***"
-	$(PEP8) --ignore=E501 blivet/ tests/ examples/
+	$(PEP8) --ignore=E501,E402,E731 blivet/ tests/ examples/
 
 canary: check-requires po-fallback
 	@echo "*** Running translation-canary tests ***"
