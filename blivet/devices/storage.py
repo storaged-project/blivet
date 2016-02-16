@@ -603,9 +603,9 @@ class StorageDevice(Device):
                 the size from /sys.
         """
         if newsize is None:
-            self._currentSize = Size(0)
+            self._current_size = Size(0)
         elif isinstance(newsize, Size):
-            self._currentSize = newsize
+            self._current_size = newsize
         else:
             raise ValueError("new size must be an instance of class Size")
 
