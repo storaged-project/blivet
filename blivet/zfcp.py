@@ -201,7 +201,7 @@ class ZFCPDevice:
                 return
 
         log.warning("no scsi device found to delete for zfcp %s %s %s",
-                 self.devnum, self.wwpn, self.fcplun)
+                    self.devnum, self.wwpn, self.fcplun)
 
     def offline_device(self):
         offline = "%s/%s/online" % (zfcpsysfs, self.devnum)

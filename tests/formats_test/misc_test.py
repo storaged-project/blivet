@@ -4,6 +4,7 @@ from decimal import Decimal
 from blivet.formats.fs import FS, Ext2FS, Ext3FS, Ext4FS, BTRFS, FATFS
 from blivet.size import Size
 
+
 class FSOverheadTestCase(unittest.TestCase):
 
     def test_required_size_FS(self):
@@ -24,4 +25,3 @@ class FSOverheadTestCase(unittest.TestCase):
                 pass
 
             FS.biggest_overhead_FS([Dummy])
-

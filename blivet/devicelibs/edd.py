@@ -363,8 +363,8 @@ class EddMatcher(object):
         retries = []
 
         def match_port(components, ata_port, ata_port_idx, path, link):
-            fn = util.Path(util.join_paths(components[0:6]
-                                           + ['ata_port', ata_port]), root=self.root)
+            fn = util.Path(util.join_paths(components[0:6] +
+                                           ['ata_port', ata_port]), root=self.root)
             port_no = int(util.get_sysfs_attr(fn, 'port_no'))
 
             if self.edd.type == "ATA":
