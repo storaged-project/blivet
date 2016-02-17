@@ -422,6 +422,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
     def teardown_disk_images(self):
         """ Tear down any disk image stacks. """
+        self.teardown_all()
         for (name, _path) in self.disk_images.items():
             dm_device = self.get_device_by_name(name)
             if not dm_device:
