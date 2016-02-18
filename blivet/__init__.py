@@ -2007,7 +2007,10 @@ class Blivet(object):
                  BTRFSDevice: ("BTRFSData", "btrfs")}
 
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
+        bootLoaderDevices = []
+        if self.bootLoaderDevice is not None:
+            bootLoaderDevices.append(self.bootLoaderDevice)
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootLoaderDevices
                                 for a in d.ancestors))
 
         # devices which share information with their distinct raw device
