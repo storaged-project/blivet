@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.18
+Version: 1.19
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -107,6 +107,17 @@ popd
 %{python3_sitelib}/*
 
 %changelog
+* Fri Feb 19 2016 Brian C. Lane <bcl@redhat.com> - 1.19-1
+- Ignore _setFormat no-member pylint error on LVMSnapShotBase (bcl)
+- Include python3-bugzilla when running tests (bcl)
+- Cleanup wildcard import in misc_test.py (bcl)
+- Make sure filter is a list in makebumpver (bcl)
+- Don't warn on unused-argument in __div__ (bcl)
+- Ignore pylint false positive assertRaisesRegex deprecation (bcl)
+- Change log.warn to log.warning (bcl)
+- Remove references to the interruptible-system-call check (dshea)
+- Add tests for FS overhead methods (jkonecny)
+
 * Fri Jan 08 2016 Brian C. Lane <bcl@redhat.com> - 1.18-1
 - Add more class methods for better use of metadata (jkonecny)
 - Remove pocketlint from BuildRequires (bcl)
