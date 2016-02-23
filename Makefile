@@ -192,7 +192,5 @@ rc-release: scratch-bumpver scratch
 	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
 
 ci: check coverage
-	@mkdir -p repo
-	@mv *rpm repo
 
 .PHONY: check clean pylint pep8 install tag archive local
