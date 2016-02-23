@@ -552,6 +552,8 @@ class ActionCreateFormat(DeviceAction):
             callbacks.create_format_pre(CreateFormatPreData(msg))
 
         if isinstance(self.device, PartitionDevice):
+            # update partedPartition to point to the partition on the disklabel
+            self.device.partedPartition = self.device.disk.format.partedDisk.getPartitionByPath(self.device.path)
             for flag in partitionFlag.keys():
                 # Keep the LBA flag on pre-existing partitions
                 if flag in [ PARTITION_LBA, self.format.partedFlag ]:
