@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 4
 
    intro
+   api
    blivet/modules
    tests/modules
 
