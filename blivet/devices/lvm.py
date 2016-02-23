@@ -1199,7 +1199,7 @@ class LVMSnapshotMixin(object):
             if self.is_thin_lv:
                 raise NotTypeSpecific()
             else:
-                return meth(self, *args, **kwargs)
+                return meth(self, *args, **kwargs)  # pylint: disable=not-callable
         return decorated
 
     @util.requires_property("is_snapshot_lv")

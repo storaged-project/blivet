@@ -1,9 +1,10 @@
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
-VERSION=$(shell awk '/Version:/ { print $$2 }' $(SPECFILE))
-RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g')
+VERSION=$(shell python3 setup.py --version)
+RPMVERSION=$(shell rpmspec -q --queryformat "%{version}\n" $(SPECFILE) | head -1)
+RPMRELEASE=$(shell rpmspec --undefine '%dist' -q --queryformat "%{release}\n" $(SPECFILE) | head -1)
 RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
-RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
+RELEASE_TAG=$(PKGNAME)-$(RPMVERSION)-$(RPMRELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 PYTHON=python3
@@ -105,7 +106,9 @@ ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
 
 tag:
-	@if test $(RELEASE) = "1" ; then \
+	@if test $(VERSION) != $(RPMVERSION) ; then \
+	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
+	elif test $(RPMRELEASE) = "1" ; then \
 	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
 	else \
 	  tags='$(RELEASE_TAG)' ; \
@@ -138,7 +141,7 @@ rpmlog:
 	@echo
 
 bumpver: po-pull
-	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RELEASE)" ; \
+	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RPMRELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
 		opts="$${opts} -i $(IGNORE)" ; \
 	fi ; \
@@ -156,7 +159,7 @@ bumpver: po-pull
 	zanata push $(ZANATA_PUSH_ARGS)
 
 scratch-bumpver: po-empty
-	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RELEASE) --newrelease $(RC_RELEASE)" ; \
+	@opts="-n $(PKGNAME) -v $(RPMVERSION) -r $(RPMRELEASE) --newrelease $(RC_RELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
 		opts="$${opts} -i $(IGNORE)" ; \
 	fi ; \
@@ -178,7 +181,7 @@ scratch: po-empty
 	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
 	@rm -rf /tmp/$(PKGNAME)-$(VERSION) /tmp/$(PKGNAME)
 	@dir=$$PWD; cp -a $$dir /tmp/$(PKGNAME)-$(VERSION)
-	@cd /tmp/$(PKGNAME)-$(VERSION) ; python setup.py -q sdist
+	@cd /tmp/$(PKGNAME)-$(VERSION) ; $(PYTHON) setup.py -q sdist
 	@cp /tmp/$(PKGNAME)-$(VERSION)/dist/$(PKGNAME)-$(VERSION).tar.gz .
 	@rm -rf /tmp/$(PKGNAME)-$(VERSION)
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"

@@ -1,7 +1,5 @@
 import os
 
-from examples.common import print_devices
-
 import blivet
 from blivet.size import Size
 from blivet.util import set_up_logging, create_sparse_tempfile
@@ -45,11 +43,11 @@ try:
 
     # allocate the growable lvs
     blivet.partitioning.grow_lvm(b)
-    print_devices(b)
+    print(b.devicetree)
 
     # write the new partitions to disk and format them as specified
     b.do_it()
-    print_devices(b)
+    print(b.devicetree)
 finally:
     b.devicetree.teardown_disk_images()
     os.unlink(disk1_file)

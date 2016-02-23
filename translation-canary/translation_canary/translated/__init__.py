@@ -40,7 +40,7 @@ for finder, mod_name, _ispkg in pkgutil.iter_modules(__path__):
         continue
 
     # Load the module
-    module = finder.find_module(mod_name).load_module()
+    module = finder.find_module(mod_name).load_module(mod_name)
 
     # Look for attributes that start with 'test_' and add them to the test list
     for attrname, attr in module.__dict__.items():
