@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-23 11:33-0500\n"
+"POT-Creation-Date: 2016-02-24 13:59-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,6 +80,34 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1964
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/iscsi.py:190
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:192
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:353
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:355
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:465
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:485
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:488
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -463,34 +491,6 @@ msgstr ""
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
-msgstr ""
-
-#: ../blivet/iscsi.py:190
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:192
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:353
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:355
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:465
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:485
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:488
-msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/deviceaction.py:182
