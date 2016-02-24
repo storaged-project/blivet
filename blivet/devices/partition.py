@@ -416,11 +416,6 @@ class PartitionDevice(StorageDevice):
         """ Is this device directly accessible? """
         return self.isleaf and not self.isExtended
 
-    def _setFormat(self, fmt):
-        """ Set the Device's format. """
-        log_method_call(self, self.name)
-        StorageDevice._setFormat(self, fmt)
-
     def _setBootable(self, bootable):
         """ Set the bootable flag for this partition. """
         if self.partedPartition:
