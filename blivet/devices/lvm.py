@@ -457,7 +457,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         :rtype: list of PVFreeInfo
 
         """
-        return [PVFreeInfo(pv, self._get_pv_usable_space(pv.size), pv.format.free)
+        return [PVFreeInfo(pv, self._get_pv_usable_space(pv), pv.format.free)
                 for pv in self.pvs]
 
     def align(self, size, roundup=False):
