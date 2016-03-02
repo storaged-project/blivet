@@ -131,10 +131,6 @@ Start out as before::
     b.reset()
     sda3 = b.devicetree.get_device_by_name("sda3")
 
-Now we're going to wipe the existing formatting from sda3::
-
-    b.destroy_format(sda3)
-
 Now let's assume sda3 is larger than 10GiB and resize it to that size::
 
     b.resize_device(sda3, Size("10 GiB"))
