@@ -9,7 +9,7 @@ class FSOverheadTestCase(unittest.TestCase):
     def testRequiredSizeFS(self):
         # FS is abstract parent which doesn't have metadata
         self.assertEqual(FS.getRequiredSize(Size("100 MiB")), Size("100 MiB"))
-        self.assertEqual(Ext2FS.getRequiredSize(Size("100 MiB")), Size(Decimal(Size("100 MiB")) / Decimal(0.93)))
+        self.assertEqual(Ext2FS.getRequiredSize(Size("100 MiB")), Size("100 MiB") / Decimal(0.93))
 
     def testBiggestOverheadFS(self):
         self.assertTrue(FS.biggestOverheadFS() is BTRFS)
