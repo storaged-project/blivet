@@ -210,7 +210,7 @@ class FS(DeviceFormat):
         # usable_size = device_size * _MetadataSizeFactor
         # we can change this to get device size with required usable_size
         # device_size = usable_size / _MetadataSizeFactor
-        return Size(Decimal(free_space) / Decimal(cls._MetadataSizeFactor))
+        return Size(Decimal(int(free_space)) / Decimal(cls._MetadataSizeFactor))
 
     @classmethod
     def biggestOverheadFS(cls, fs_list=None):
