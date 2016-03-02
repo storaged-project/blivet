@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.37
+Version: 0.61.15.38
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Mar 01 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.38-1
+- Switch to using rd.iscsi.initiator (bcl)
+  Resolves: rhbz#1268315
+- Use _netdev mount option as needed. (dlehman)
+  Resolves: rhbz#1290046
+- Fix the changelog message for udev deadlock fix. (bcl)
+  Related: rhbz#1272113
+
 * Fri Oct 16 2015 Brian C. Lane <bcl@redhat.com> - 0.61.15.37-1
 - Bypass util.run_program to avoid logging deadlock.
   Resolves: rhbz#1272113
