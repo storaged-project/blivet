@@ -1402,7 +1402,6 @@ class LVMThinPoolMixin(object):
     def vg_space_used(self):
         # TODO: what about cached thin pools?
         space = self.data_vg_space_used + self.metadata_vg_space_used
-        space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
         return space
 
     def _create(self):
