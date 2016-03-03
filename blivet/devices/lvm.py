@@ -738,6 +738,13 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def metadata_vg_space_used(self):
         """ Space occupied by the metadata part(s) of this LV, not including snapshots """
+        if self.exists:
+            # for existing LVs we can just recursively go through all internal
+            # LVs and count all the metadata ones in
+            md_lvs = (int_lv for int_lv in util.walk(self, "_internal_lvs")
+                      if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.meta)
+            return Size(sum(lv.size for lv in md_lvs))
+
         non_raid_base = self.metadata_size + self.log_size
         if non_raid_base and self.is_raid_lv:
             zero_superblock = lambda x: Size(0)

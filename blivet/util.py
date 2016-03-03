@@ -882,6 +882,22 @@ def power_of_two(value):
     return True
 
 
+def walk(root, desc_attr):
+    """
+    Recursively walk the object tree from root in a depth-first manner.
+
+    :param object root: root object to start the recursive walk from
+    :param str desc_attr: the attribute to use for descending in the tree
+                          (i.e. to get child nodes)
+    :returns: generator of walked nodes
+    """
+    yield root
+    children = getattr(root, desc_attr)
+    for child in children:
+        for obj in walk(child, desc_attr):
+            yield obj
+
+
 def indent(text, spaces=4):
     """ Indent text by a specified number of spaces.
 
