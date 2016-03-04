@@ -9,13 +9,13 @@ Welcome to Blivet's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    intro
    api
    testing
-   blivet/modules
-   tests/modules
+   blivet/blivet
+   tests/tests
 
 Indices and tables
 ==================
