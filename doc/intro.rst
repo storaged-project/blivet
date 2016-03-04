@@ -10,7 +10,7 @@ each (within the :class:`~.devicetree.DeviceTree` instance) as it is scheduled.
 Nothing is written to disk, however, until you execute the actions.
 
 Building Blocks
-===============
+---------------
 
 Individual block devices are represented by the various subclasses of
 :class:`~.devices.storage.StorageDevice`, while the formatting of the data they contain
@@ -56,10 +56,10 @@ devices (:meth:`~.devicetree.DeviceTreeBase.get_device_by_name`) and for listing
 that build upon a device (:meth:`~.devicetree.DeviceTreeBase.get_dependent_devices`).
 
 Getting Started
-===============
+---------------
 
 First Steps
------------
+^^^^^^^^^^^
 
 First, create an instance of the :class:`~.Blivet` class::
 
@@ -121,7 +121,7 @@ Here's the Blivet approach again for comparison::
 
 
 Scheduling a Series of Actions
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Start out as before::
 
@@ -158,7 +158,7 @@ Once you're finished, unmount it as follows::
 
 
 Disk Partitions
----------------
+^^^^^^^^^^^^^^^
 
 Disk partitions are a little bit tricky in that they require an extra step to
 actually allocate the partitions from free space on the disk(s). What that
