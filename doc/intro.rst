@@ -195,5 +195,3 @@ from which to allocate the partition::
     new_part = b.new_partition(start=2048, end=204802048, parents=[sdb])
 
 All the rest is the same as the previous partitioning example.
-
-.. include:: ../tests/README.rst

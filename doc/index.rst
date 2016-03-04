@@ -13,6 +13,7 @@ Contents:
 
    intro
    api
+   testing
    blivet/modules
    tests/modules
 
