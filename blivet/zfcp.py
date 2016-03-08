@@ -274,7 +274,7 @@ class ZFCPDevice:
         return True
 
 
-class ZFCP:
+class zFCP:
 
     """ ZFCP utility class.
 
@@ -383,6 +383,6 @@ class ZFCP:
         f.close()
 
 # Create ZFCP singleton
-ZFCP = ZFCP()
+zfcp = zFCP()
 
 # vim:tw=78:ts=4:et:sw=4

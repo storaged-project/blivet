@@ -103,7 +103,7 @@ class iSCSIDependencyGuard(util.DependencyGuard):
 storaged_iscsi_required = iSCSIDependencyGuard()
 
 
-class _iSCSI(object):
+class iSCSI(object):
     """ iSCSI utility class.
 
         This class will automatically discover and login to iBFT (or
@@ -518,6 +518,7 @@ class _iSCSI(object):
         return node_disks
 
 # Create iscsi singleton
-iscsi = _iSCSI()
+iscsi = iSCSI()
+""" An instance of :class:`iSCSI` """
 
 # vim:tw=78:ts=4:et:sw=4
