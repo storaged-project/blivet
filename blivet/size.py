@@ -59,14 +59,25 @@ _binaryPrefixes = [_Prefix(1024, N_(b"kibi"), N_(b"Ki")),
                    _Prefix(1024**7, N_(b"zebi"), N_(b"Zi")),
                    _Prefix(1024**8, N_(b"yobi"), N_(b"Yi"))]
 
-_bytes = [N_(b'B'), N_(b'b'), N_(b'byte'), N_(b'bytes')]
+# Handle 'B' separately so that it can be localized without translating
+# both 'B' and 'b'
+_bytes_letter = N_(b'B')
+_bytes_words = [N_(b'byte'), N_(b'bytes')]
 _prefixes = _binaryPrefixes + _decimalPrefixes
+
+_ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)
+def _lowerASCII(s):
+    """Convert a string to lowercase using only ASCII character definitions."""
+    return string.translate(s, _ASCIIlower_table)
+
+_bytes = [_bytes_letter + _lowerASCII(_bytes_letter)] + _bytes_words
 
 # Translated versions of the byte and prefix arrays
 # All strings are decoded as utf-8 so that locale-specific upper/lower functions work
 def _xlated_bytes():
     """Return a translated version of the bytes list as a list of unicode strings"""
-    return [_(b).decode("utf-8") for b in _bytes]
+    return [_(_bytes_letter).decode("utf-8") + _(_bytes_letter).decode("utf-8").lower()] + \
+            [_(b).decode("utf-8") for b in _bytes_words]
 
 def _xlated_binary_prefixes():
     return (_Prefix(p.factor, _(p.prefix).decode("utf-8"), _(p.abbr).decode("utf-8")) \
@@ -79,11 +90,6 @@ def _xlated_prefixes():
                       for p in _decimalPrefixes]
 
     return xlated_binary + xlated_decimal
-
-_ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)
-def _lowerASCII(s):
-    """Convert a string to lowercase using only ASCII character definitions."""
-    return string.translate(s, _ASCIIlower_table)
 
 def _makeSpecs(prefix, abbr, xlate):
     """ Internal method used to generate a list of specifiers. """
@@ -99,10 +105,10 @@ def _makeSpecs(prefix, abbr, xlate):
 
     if abbr:
         if xlate:
-            specs.append(abbr.lower() + _(b"b").decode("utf-8"))
+            specs.append(abbr.lower() + _(_bytes_letter).decode("utf-8").lower())
             specs.append(abbr.lower())
         else:
-            specs.append(_lowerASCII(abbr) + "b")
+            specs.append(_lowerASCII(abbr) + _lowerASCII(_bytes_letter))
             specs.append(_lowerASCII(abbr))
 
     return specs
@@ -280,7 +286,7 @@ class Size(Decimal):
 
         in_bytes = int(Decimal(self))
         if abs(in_bytes) < 1000:
-            return "%d %s" % (in_bytes, _("B"))
+            return "%d %s" % (in_bytes, _(_bytes_letter))
 
         prev_prefix = None
         for prefix_item in _xlated_prefixes():
@@ -293,7 +299,7 @@ class Size(Decimal):
             prev_prefix = prefix_item
         else:
             # no nice value found, just return size in bytes
-            return "%s %s" % (in_bytes, _("B"))
+            return "%s %s" % (in_bytes, _(_bytes_letter))
 
         if abs(newcheck) < 10:
             if prev_prefix is not None:
@@ -301,7 +307,7 @@ class Size(Decimal):
                 newcheck = super(Size, self).__div__(Decimal(factor))
             else:
                 # less than 10 KiB
-                return "%s %s" % (in_bytes, _("B"))
+                return "%s %s" % (in_bytes, _(_bytes_letter))
 
         retval = newcheck
         if places is not None:
@@ -330,7 +336,7 @@ class Size(Decimal):
         # str.
         # pylint: disable=undefined-loop-variable
         if abbr:
-            return retval_str + " " + abbr.encode("utf-8") + _("B")
+            return retval_str + " " + abbr.encode("utf-8") + _(_bytes_letter)
         else:
             return retval_str + " " + prefix.encode("utf-8") + P_("byte", "bytes", newcheck)
 
