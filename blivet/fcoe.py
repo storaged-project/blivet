@@ -40,7 +40,7 @@ def has_fcoe():
     return os.access("/sys/module/fcoe", os.X_OK)
 
 
-class fcoe(object):
+class FCoE(object):
 
     """ FCoE utility class.
 
@@ -181,6 +181,6 @@ class fcoe(object):
         return
 
 # Create FCoE singleton
-fcoe = fcoe()
+fcoe = FCoE()
 
 # vim:tw=78:ts=4:et:sw=4

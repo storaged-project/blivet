@@ -246,12 +246,6 @@ class UnrecognizedFSTabEntryError(StorageError):
 class FSTabTypeMismatchError(StorageError):
     pass
 
-# size
-
-
-class SizePlacesError(StorageError):
-    pass
-
 # probing
 
 
