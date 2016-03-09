@@ -22,6 +22,7 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}
 %define e2fsver 1.41.0
 %define utillinuxver 2.15.1
 %define libblockdevver 1.4
+%define libbytesizever 0.3
 
 BuildArch: noarch
 BuildRequires: gettext
@@ -37,6 +38,7 @@ Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: python3-blockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
+Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: dosfstools
 Requires: e2fsprogs >= %{e2fsver}

@@ -49,8 +49,8 @@ from .formats import get_format
 from .osinstall import FSSet, find_existing_installations
 from . import arch
 from .iscsi import iscsi
-from . import fcoe
-from . import zfcp
+from .fcoe import fcoe
+from .zfcp import zfcp
 from . import devicefactory
 from . import get_bootloader, get_sysroot, short_product_name, __version__
 from .threads import SynchronizedMeta
@@ -139,9 +139,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
         self._default_boot_fstype = None
-
-        self.fcoe = fcoe.fcoe()
-        self.zfcp = zfcp.ZFCP()
 
         self._next_id = 0
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
@@ -266,8 +263,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         if flags.installer_mode and not flags.image_install:
             iscsi.startup()
-            self.fcoe.startup()
-            self.zfcp.startup()
+            fcoe.startup()
+            zfcp.startup()
 
         self.devicetree.reset(conf=self.config,
                               passphrase=self.encryption_passphrase,
@@ -1391,8 +1388,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.fsset.write()
         self.make_mtab()
         iscsi.write(get_sysroot(), self)
-        self.fcoe.write(get_sysroot())
-        self.zfcp.write(get_sysroot())
+        fcoe.write(get_sysroot())
+        zfcp.write(get_sysroot())
         self.write_dasd_conf(get_sysroot())
 
     def write_dasd_conf(self, root):
