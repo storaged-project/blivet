@@ -356,6 +356,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         #     devicefactory could call the _ versions to bypass the checks.
         super(LVMVolumeGroupDevice, self)._remove_parent(member)
         member.format.free = None
+        member.format.container_uuid = None
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -457,7 +458,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         :rtype: list of PVFreeInfo
 
         """
-        return [PVFreeInfo(pv, self._get_pv_usable_space(pv.size), pv.format.free)
+        return [PVFreeInfo(pv, self._get_pv_usable_space(pv), pv.format.free)
                 for pv in self.pvs]
 
     def align(self, size, roundup=False):
