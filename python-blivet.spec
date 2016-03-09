@@ -3,7 +3,7 @@ Name: python3-blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 2.0.0
 
-%define prerelease .a1
+%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
 Release: 0.1%{?prerelease}%{?dist}
 Epoch: 1
@@ -80,6 +80,22 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Wed Mar 09 2016 David Lehman <dlehman@redhat.com> - 2.0.0-0.1.b1
+- Make sure we use the Size class properly (vpodzime)
+- Don't store size as int in SameSizeSet (vpodzime)
+- Use libbytesize's Size class as a base for our Size class (vpodzime)
+- Remove the second section about LUKS resize from release notes (vpodzime)
+- Streamline the TOC to only include top-level sections. (dlehman)
+- Adjust section hierarchy in intro doc. (dlehman)
+- Move testing docs into a file of their own. (dlehman)
+- Add an api specification to the docs. (dlehman)
+- Add luks resize and API stability efforts to release notes. (dlehman)
+- Clean up some of the singleton usage. (dlehman)
+- Drop sphinx mocking. (dlehman)
+- Reset container_uuid when removing PV from a VG (vtrefny)
+- Remove "destroy_format" method from docs (vtrefny)
+- Fix AttributeError in pv_free_info (vtrefny)
+
 * Wed Feb 24 2016 David Lehman <dlehman@redhat.com> - 2.0.0-0.1.a1
 - Update zanata config for 2.0 branches. (dlehman)
 - Remove cleanup of rc-release relics from ci target. (dlehman)
