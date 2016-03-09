@@ -8,6 +8,7 @@
 * `LUKS resize`_
 * `A single class for all LVs`_
 * `Revamped code to populate the device tree`_
+* `Changed Size implementation`_
 * `API Stability`_
 * `Removed`_
 * `Moved`_
@@ -189,3 +190,13 @@ All code in blivet now conforms to
 names in the ``camelCase`` style have been renamed to the
 ``lower_case_with_underscores`` style. This applies to methods within classes,
 but not to the names of the classes themselves -- they still use ``CamelCase``.
+
+
+Changed Size implementation
+---------------------------
+
+The ``Size`` class now inherits from the ``bytesize.Size`` class provided by the
+*libbytesize* library. There should be no difference in behaviour except for
+potential speed-up and the ``human_readable()`` method having different
+parameters. It now accepts the ``min_unit``, ``max_places`` and ``xlate``
+parameters described in the documentation.

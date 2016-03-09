@@ -624,7 +624,7 @@ class PartitionDevice(StorageDevice):
         # compute new size for partition
         current_geom = partition.geometry
         current_dev = current_geom.device
-        new_len = int(newsize // Size(current_dev.sectorSize))
+        new_len = int(Size(newsize) // Size(current_dev.sectorSize))
         new_geometry = parted.Geometry(device=current_dev,
                                        start=current_geom.start,
                                        length=new_len)
