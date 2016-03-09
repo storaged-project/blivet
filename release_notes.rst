@@ -1,12 +1,14 @@
-2.0
-====
+2.0.0
+======
 
 * `PEP8 compatibility`_
 * `LVM RAID`_
 * `Thread safety`_
 * `Handling of external storage events`_
+* `LUKS resize`_
 * `A single class for all LVs`_
 * `Revamped code to populate the device tree`_
+* `API Stability`_
 * `Removed`_
 * `Moved`_
 
@@ -44,6 +46,25 @@ Moved
 * ``DeviceTree.sort_actions`` (use ``DeviceTree.actions.sort``)
 * ``DeviceTree.process_actions`` (use ``DeviceTree.actions.process``)
 * ``DeviceTree.get_children`` (use ``Device.children``)
+
+
+API Stability
+--------------
+
+A complete public API specification can be found in the documentation,
+which is available in the source tree at ``doc/api.rst`` and ``doc/api/``.
+
+Beginning with version 2.0.0 the blivet project will be using semantic
+versioning -- actually, we will be using a variation developed by the
+OpenStack project which incorporates support for Python PEP440:
+http://docs.openstack.org/developer/pbr/semver.html
+
+
+LUKS resize
+------------
+
+Blivet now supports resize of block devices encrypted using LUKS, including
+the ``Blivet.resize_device`` method.
 
 
 Handling of external storage events
