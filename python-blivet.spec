@@ -3,9 +3,9 @@ Name: python3-blivet
 Url: http://fedoraproject.org/wiki/blivet
 Version: 2.0.0
 
-%define prerelease .b1
+#%%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 0.1%{?prerelease}%{?dist}
+Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -80,6 +80,9 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Wed Mar 09 2016 David Lehman <dlehman@redhat.com> - 2.0.0-1
+- Bump version to 2.0.0
+
 * Wed Mar 09 2016 David Lehman <dlehman@redhat.com> - 2.0.0-0.1.b1
 - Make sure we use the Size class properly (vpodzime)
 - Don't store size as int in SameSizeSet (vpodzime)
