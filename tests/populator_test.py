@@ -857,6 +857,8 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
     def _clean_up(self):
         blockdev.lvm.pvs = self._pvs
+        blockdev.lvm.vgs = self._vgs
+        blockdev.lvm.lvs = self._lvs
 
     @patch("blivet.udev.device_get_name")
     @patch.object(DeviceFormat, "_device_check", return_value=None)
@@ -874,7 +876,11 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         # pylint: disable=attribute-defined-outside-init
         self._pvs = blockdev.lvm.pvs
-        blockdev.lvm.pvs = Mock(return_value={})
+        self._vgs = blockdev.lvm.vgs
+        self._lvs = blockdev.lvm.lvs
+        blockdev.lvm.pvs = Mock(return_value=[])
+        blockdev.lvm.vgs = Mock(return_value=[])
+        blockdev.lvm.lvs = Mock(return_value=[])
         self.addCleanup(self._clean_up)
 
         # base case: pv format with no vg
