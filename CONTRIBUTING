@@ -134,9 +134,6 @@ to visually filter a list of pull requests. Labels that we use include:
       appropriate RHEL branch label (e.g. rhel6-branch, rhel7-branch)
     * fXY-branch -- Any Fedora pull requests should be tagged with the
       appropriate Fedora branch label (e.g. f22-branch)
-    * Python 3 check -- If a pull request introduces changes which need to be
-      verified as Python 3 compatible, set this label. (Or someone who reviews
-      your pull request might set this.)
     * ACK -- Once somebody has reviewed your pull request, they will set the ACK
       label if your patch is approved.
     * NACK -- If somebody has reviewed your pull request and disapproves with
