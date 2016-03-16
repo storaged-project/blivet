@@ -94,7 +94,7 @@ def mdadm(args, capture=False):
     if capture:
         return out
 
-def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False):
+def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False, chunkSize=MD_CHUNK_SIZE):
     """ Create an mdarray from a list of devices.
 
         :param str device: the path for the array
@@ -105,6 +105,8 @@ def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False):
         :param int spares: the number of spares in the array
         :param str metadataVer: one of the mdadm metadata versions
         :param bool bitmap: whether to create an internal bitmap on the device
+        :param chunkSize: chunk size for the array
+        :type chunkSize: :class:`~.size.Size`
 
         Note that if the level is specified as a string, rather than by means
         of a RAIDLevel object, it is not checked for validity. It is the
@@ -114,6 +116,8 @@ def mdcreate(device, level, disks, spares=0, metadataVer=None, bitmap=False):
     argv = ["--create", device, "--run", "--level=%s" % level]
     raid_devs = len(disks) - spares
     argv.append("--raid-devices=%d" % raid_devs)
+    if chunkSize:
+        argv.append("--chunk=%d" % int(chunkSize.convertTo("KiB")))
     if spares:
         argv.append("--spare-devices=%d" % spares)
     if metadataVer:
