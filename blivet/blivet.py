@@ -104,7 +104,7 @@ class StorageDiscoveryConfig(object):
         self.clear_part_type = ksdata.clearpart.type
         self.clear_part_disks = ksdata.clearpart.drives[:]
         self.clear_part_devices = ksdata.clearpart.devices[:]
-        self.initialize_disks = ksdata.clearpart.init_all
+        self.initialize_disks = ksdata.clearpart.initAll
         self.zero_mbr = ksdata.zerombr.zerombr
 
 
@@ -170,7 +170,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             if self.bootloader.stage2_bootable:
                 boot = self.boot_device
             else:
-                boot = self.boot_loader_device
+                boot = self.bootloader_device
 
             if boot.type == "mdarray":
                 boot_devs = boot.parents
@@ -286,7 +286,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if not flags.installer_mode:
             self.devicetree.handle_nodev_filesystems()
 
-        self.update_boot_loader_disk_list()
+        self.update_bootloader_disk_list()
 
     @property
     def unused_devices(self):
@@ -634,7 +634,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 log.debug("clearpart: initializing %s", disk.name)
                 self.initialize_disk(disk)
 
-        self.update_boot_loader_disk_list()
+        self.update_bootloader_disk_list()
 
     def initialize_disk(self, disk):
         """ (Re)initialize a disk by creating a disklabel on it.
@@ -1432,7 +1432,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return self._bootloader
 
-    def update_boot_loader_disk_list(self):
+    def update_bootloader_disk_list(self):
         if not self.bootloader:
             return
 
@@ -1440,7 +1440,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         boot_disks.sort(key=self.compare_disks_key)
         self.bootloader.set_disk_list(boot_disks)
 
-    def set_up_boot_loader(self, early=False):
+    def set_up_bootloader(self, early=False):
         """ Propagate ksdata into BootLoader.
 
             :keyword bool early: Set to True to skip stage1_device setup
@@ -1482,7 +1482,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         return dev
 
     @property
-    def boot_loader_device(self):
+    def bootloader_device(self):
         return getattr(self.bootloader, "stage1_device", None)
 
     @property
@@ -1763,7 +1763,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.ksdata.clearpart.type = self.config.clear_part_type
         self.ksdata.clearpart.drives = self.config.clear_part_disks[:]
         self.ksdata.clearpart.devices = self.config.clear_part_devices[:]
-        self.ksdata.clearpart.init_all = self.config.initialize_disks
+        self.ksdata.clearpart.initAll = self.config.initialize_disks
         if self.ksdata.clearpart.type == CLEARPART_TYPE_NONE:
             # Make a list of initialized disks and of removed partitions. If any
             # partitions were removed from disks that were not completely
