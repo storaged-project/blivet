@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.38
+Version: 0.61.15.39
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Mar 18 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.39-1
+- Fix the parsing of translated sizes. (dshea)
+  Resolves: rhbz#1314301
+
 * Tue Mar 01 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.38-1
 - Switch to using rd.iscsi.initiator (bcl)
   Resolves: rhbz#1268315
