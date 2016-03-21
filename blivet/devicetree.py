@@ -884,7 +884,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.__init__(self, conf=conf)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
+        PopulatorMixin.__init__(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
