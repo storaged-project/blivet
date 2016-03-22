@@ -76,3 +76,10 @@ class AttributeChanged(_AttributeChanged):
                                                                   " format" if self.fmt else "",
                                                                   str(self.old),
                                                                   str(self.new))
+
+
+def record_change(change):
+    if not hasattr(data, "changes"):
+        data.changes = list()
+
+    data.changes.append(change)
