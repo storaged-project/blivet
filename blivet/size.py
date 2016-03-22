@@ -70,7 +70,7 @@ def _lowerASCII(s):
     """Convert a string to lowercase using only ASCII character definitions."""
     return string.translate(s, _ASCIIlower_table)
 
-_bytes = [_bytes_letter + _lowerASCII(_bytes_letter)] + _bytes_words
+_bytes = [_bytes_letter, _lowerASCII(_bytes_letter)] + _bytes_words
 
 # Translated versions of the byte and prefix arrays
 # All strings are decoded as utf-8 so that locale-specific upper/lower functions work
