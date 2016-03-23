@@ -356,7 +356,7 @@ class EddMatcher(object):
 
     def __init__(self, edd_entry, root=None):
         self.edd = edd_entry
-        self.root = root
+        self.root = root or ""
 
     def devname_from_ata_pci_dev(self):
         pattern = util.Path('/sys/block/*', root=self.root)
