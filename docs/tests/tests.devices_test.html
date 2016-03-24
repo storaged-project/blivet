@@ -1,0 +1,546 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tests.devices_test package &mdash; Blivet 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Blivet 2.0.0 documentation" href="../index.html" />
+    <link rel="up" title="tests package" href="tests.html" />
+    <link rel="next" title="tests.formats_test package" href="tests.formats_test.html" />
+    <link rel="prev" title="tests.devicelibs_test package" href="tests.devicelibs_test.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tests-devices-test-package">
+<h1>tests.devices_test package<a class="headerlink" href="#tests-devices-test-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tests.devices_test.dependencies_test">
+<span id="tests-devices-test-dependencies-test-module"></span><h2>tests.devices_test.dependencies_test module<a class="headerlink" href="#module-tests.devices_test.dependencies_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.dependencies_test.DeviceDependenciesTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.dependencies_test.</code><code class="descname">DeviceDependenciesTestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.DeviceDependenciesTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Test external device dependencies.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.dependencies_test.DeviceDependenciesTestCase.test_dependencies">
+<code class="descname">test_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.DeviceDependenciesTestCase.test_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.dependencies_test.</code><code class="descname">MockingDeviceDependenciesTestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Test availability of external device dependencies.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase.tearDown">
+<code class="descname">tearDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase.test_availability_mdraidplugin">
+<code class="descname">test_availability_mdraidplugin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase.test_availability_mdraidplugin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.device_names_test">
+<span id="tests-devices-test-device-names-test-module"></span><h2>tests.devices_test.device_names_test module<a class="headerlink" href="#module-tests.devices_test.device_names_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.device_names_test.DeviceNameTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.device_names_test.</code><code class="descname">DeviceNameTestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_names_test.DeviceNameTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Test device name validation</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.device_names_test.DeviceNameTestCase.test_logical_volume">
+<code class="descname">test_logical_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_names_test.DeviceNameTestCase.test_logical_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_names_test.DeviceNameTestCase.test_storage_device">
+<code class="descname">test_storage_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_names_test.DeviceNameTestCase.test_storage_device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_names_test.DeviceNameTestCase.test_volume_group">
+<code class="descname">test_volume_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_names_test.DeviceNameTestCase.test_volume_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.device_packages_test">
+<span id="tests-devices-test-device-packages-test-module"></span><h2>tests.devices_test.device_packages_test module<a class="headerlink" href="#module-tests.devices_test.device_packages_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.device_packages_test.DevicePackagesTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.device_packages_test.</code><code class="descname">DevicePackagesTestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_packages_test.DevicePackagesTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Test device name validation</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.device_packages_test.DevicePackagesTestCase.test_packages">
+<code class="descname">test_packages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_packages_test.DevicePackagesTestCase.test_packages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.device_properties_test">
+<span id="tests-devices-test-device-properties-test-module"></span><h2>tests.devices_test.device_properties_test module<a class="headerlink" href="#module-tests.devices_test.device_properties_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.device_properties_test.BTRFSDeviceTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.device_properties_test.</code><code class="descname">BTRFSDeviceTestCase</code><span class="sig-paren">(</span><em>methodName='run_test'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.BTRFSDeviceTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.devices_test.device_properties_test.DeviceStateTestCase" title="tests.devices_test.device_properties_test.DeviceStateTestCase"><code class="xref py py-class docutils literal"><span class="pre">tests.devices_test.device_properties_test.DeviceStateTestCase</span></code></a></p>
+<p>Note that these tests postdate the code that they test.
+Therefore, they capture the behavior of the code as it is now,
+not necessarily its intended or correct behavior. See the initial
+commit message for this file for further details.</p>
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.BTRFSDeviceTestCase.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.BTRFSDeviceTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.BTRFSDeviceTestCase.test_btrfsdevice_init">
+<code class="descname">test_btrfsdevice_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.BTRFSDeviceTestCase.test_btrfsdevice_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the state of a BTRFSDevice after initialization.
+For some combinations of arguments the initializer will throw
+an exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.BTRFSDeviceTestCase.test_btrfsdevice_methods">
+<code class="descname">test_btrfsdevice_methods</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.BTRFSDeviceTestCase.test_btrfsdevice_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for method calls on initialized BTRFS Devices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.BTRFSDeviceTestCase.test_btrfssnap_shot_device_init">
+<code class="descname">test_btrfssnap_shot_device_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.BTRFSDeviceTestCase.test_btrfssnap_shot_device_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tests.devices_test.device_properties_test.DeviceStateTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.device_properties_test.</code><code class="descname">DeviceStateTestCase</code><span class="sig-paren">(</span><em>methodName='run_test'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.DeviceStateTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>A class which implements a simple method of checking the state
+of a device object.</p>
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.DeviceStateTestCase.state_check">
+<code class="descname">state_check</code><span class="sig-paren">(</span><em>device</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.DeviceStateTestCase.state_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the current state of a device by means of its
+fields or properties.</p>
+<p>Every kwarg should be a key which is a field or property
+of a Device and a value which is a function of
+two parameters and should call the appropriate assert* functions.
+These values override those in the state_functions dict.</p>
+<p>If the value is None, then the test starts the debugger instead.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.device_properties_test.</code><code class="descname">LVMLogicalVolumeDeviceTestCase</code><span class="sig-paren">(</span><em>methodName='run_test'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.devices_test.device_properties_test.DeviceStateTestCase" title="tests.devices_test.device_properties_test.DeviceStateTestCase"><code class="xref py py-class docutils literal"><span class="pre">tests.devices_test.device_properties_test.DeviceStateTestCase</span></code></a></p>
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase.test_lvmlogical_volume_device_init">
+<code class="descname">test_lvmlogical_volume_device_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase.test_lvmlogical_volume_device_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase.test_lvmlogical_volume_device_init_cached">
+<code class="descname">test_lvmlogical_volume_device_init_cached</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.LVMLogicalVolumeDeviceTestCase.test_lvmlogical_volume_device_init_cached" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.device_properties_test.</code><code class="descname">MDRaidArrayDeviceTestCase</code><span class="sig-paren">(</span><em>methodName='run_test'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.devices_test.device_properties_test.DeviceStateTestCase" title="tests.devices_test.device_properties_test.DeviceStateTestCase"><code class="xref py py-class docutils literal"><span class="pre">tests.devices_test.device_properties_test.DeviceStateTestCase</span></code></a></p>
+<p>Note that these tests postdate the code that they test.
+Therefore, they capture the behavior of the code as it is now,
+not necessarily its intended or correct behavior. See the initial
+commit message for this file for further details.</p>
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.tearDown">
+<code class="descname">tearDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.test_mdraid_array_device_init">
+<code class="descname">test_mdraid_array_device_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.test_mdraid_array_device_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the state of a MDRaidArrayDevice after initialization.
+For some combinations of arguments the initializer will throw
+an exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.test_mdraid_array_device_methods">
+<code class="descname">test_mdraid_array_device_methods</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.MDRaidArrayDeviceTestCase.test_mdraid_array_device_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for method calls on initialized MDRaidDevices.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tests.devices_test.device_properties_test.xform">
+<code class="descclassname">tests.devices_test.device_properties_test.</code><code class="descname">xform</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_properties_test.xform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple wrapper function that transforms a function that takes
+a precalculated value and a message to a function that takes
+a device and an attribute name, evaluates the attribute, and
+passes the value and the attribute name as the message to the
+original function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>func</strong> (<em>(object * str) -&gt; None</em>) &#8211; The function to be transformed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a function that gets the attribute and passes it to func</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(object * str) -&gt; None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.lvm_test">
+<span id="tests-devices-test-lvm-test-module"></span><h2>tests.devices_test.lvm_test module<a class="headerlink" href="#module-tests.devices_test.lvm_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest">
+<em class="property">class </em><code class="descclassname">tests.devices_test.lvm_test.</code><code class="descname">LVMDeviceTest</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_insuf_seg_type">
+<code class="descname">test_lvm_logical_volume_insuf_seg_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_insuf_seg_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_metadata_size">
+<code class="descname">test_lvm_logical_volume_metadata_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_metadata_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_mirror">
+<code class="descname">test_lvm_logical_volume_mirror</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_mirror" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_pv_free_cached">
+<code class="descname">test_lvm_logical_volume_pv_free_cached</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_pv_free_cached" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_pv_free_linear">
+<code class="descname">test_lvm_logical_volume_pv_free_linear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_pv_free_linear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_raid_level">
+<code class="descname">test_lvm_logical_volume_raid_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_raid_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_segtype_init">
+<code class="descname">test_lvm_logical_volume_segtype_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_segtype_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_segtype_pv_free">
+<code class="descname">test_lvm_logical_volume_segtype_pv_free</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_segtype_pv_free" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_with_pvs_init">
+<code class="descname">test_lvm_logical_volume_with_pvs_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvm_logical_volume_with_pvs_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvmcached_logical_volume_init">
+<code class="descname">test_lvmcached_logical_volume_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvmcached_logical_volume_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvmcached_two_logical_volume_init">
+<code class="descname">test_lvmcached_two_logical_volume_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvmcached_two_logical_volume_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvmsnap_shot_device_init">
+<code class="descname">test_lvmsnap_shot_device_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvmsnap_shot_device_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_lvmthin_snap_shot_device_init">
+<code class="descname">test_lvmthin_snap_shot_device_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_lvmthin_snap_shot_device_init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.LVMDeviceTest.test_target_size">
+<code class="descname">test_target_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.LVMDeviceTest.test_target_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tests.devices_test.lvm_test.TypeSpecificCallsTest">
+<em class="property">class </em><code class="descclassname">tests.devices_test.lvm_test.</code><code class="descname">TypeSpecificCallsTest</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.TypeSpecificCallsTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.lvm_test.TypeSpecificCallsTest.test_type_specific_calls">
+<code class="descname">test_type_specific_calls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.lvm_test.TypeSpecificCallsTest.test_type_specific_calls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.network_test">
+<span id="tests-devices-test-network-test-module"></span><h2>tests.devices_test.network_test module<a class="headerlink" href="#module-tests.devices_test.network_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.network_test.FakeNetDev">
+<em class="property">class </em><code class="descclassname">tests.devices_test.network_test.</code><code class="descname">FakeNetDev</code><span class="sig-paren">(</span><em>name</em>, <em>fmt=None</em>, <em>uuid=None</em>, <em>size=None</em>, <em>major=None</em>, <em>minor=None</em>, <em>sysfs_path=''</em>, <em>parents=None</em>, <em>exists=False</em>, <em>serial=None</em>, <em>vendor=''</em>, <em>model=''</em>, <em>bus=''</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.FakeNetDev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a>, <a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal"><span class="pre">blivet.devices.network.NetworkStorageDevice</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; the device name (generally a device node&#8217;s basename)</li>
+<li><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)"><em>bool</em></a>) &#8211; does this device exist?</li>
+<li><strong>size</strong> (<a class="reference internal" href="../blivet/blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; the device&#8217;s size</li>
+<li><strong>parents</strong> (list of <code class="xref py py-class docutils literal"><span class="pre">StorageDevice</span></code>) &#8211; a list of parent devices</li>
+<li><strong>fmt</strong> (<a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) &#8211; this device&#8217;s formatting</li>
+<li><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; universally unique identifier (device &#8211; not fs)</li>
+<li><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; sysfs device path</li>
+<li><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the device major</li>
+<li><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the device minor</li>
+<li><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; the ID_SERIAL_SHORT for this device</li>
+<li><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; the manufacturer of this Device</li>
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; manufacturer&#8217;s device model string</li>
+<li><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; the interconnect this device uses</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="tests.devices_test.network_test.NetDevMountOptionTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.network_test.</code><code class="descname">NetDevMountOptionTestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_setting">
+<code class="descname">test_net_dev_setting</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_setting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify netdev mount option setting after format assignment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_update">
+<code class="descname">test_net_dev_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify netdev mount option setting after device creation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.partition_test">
+<span id="tests-devices-test-partition-test-module"></span><h2>tests.devices_test.partition_test module<a class="headerlink" href="#module-tests.devices_test.partition_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.partition_test.PartitionDeviceTestCase">
+<em class="property">class </em><code class="descclassname">tests.devices_test.partition_test.</code><code class="descname">PartitionDeviceTestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.partition_test.PartitionDeviceTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.partition_test.PartitionDeviceTestCase.test_extended_min_size">
+<code class="descname">test_extended_min_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.partition_test.PartitionDeviceTestCase.test_extended_min_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.partition_test.PartitionDeviceTestCase.test_min_max_size_alignment">
+<code class="descname">test_min_max_size_alignment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.partition_test.PartitionDeviceTestCase.test_min_max_size_alignment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.partition_test.PartitionDeviceTestCase.test_target_size">
+<code class="descname">test_target_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.partition_test.PartitionDeviceTestCase.test_target_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test.size_test">
+<span id="tests-devices-test-size-test-module"></span><h2>tests.devices_test.size_test module<a class="headerlink" href="#module-tests.devices_test.size_test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tests.devices_test.size_test.StorageDeviceSizeTest">
+<em class="property">class </em><code class="descclassname">tests.devices_test.size_test.</code><code class="descname">StorageDeviceSizeTest</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="tests.devices_test.size_test.StorageDeviceSizeTest.test_size_getter">
+<code class="descname">test_size_getter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest.test_size_getter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests.devices_test.size_test.StorageDeviceSizeTest.test_size_setter">
+<code class="descname">test_size_setter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest.test_size_setter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.devices_test">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tests.devices_test" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">tests.devices_test package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.dependencies_test">tests.devices_test.dependencies_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.device_names_test">tests.devices_test.device_names_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.device_packages_test">tests.devices_test.device_packages_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.device_properties_test">tests.devices_test.device_properties_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.lvm_test">tests.devices_test.lvm_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.network_test">tests.devices_test.network_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.partition_test">tests.devices_test.partition_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test.size_test">tests.devices_test.size_test module</a></li>
+<li><a class="reference internal" href="#module-tests.devices_test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="tests.html">tests package</a><ul>
+      <li>Previous: <a href="tests.devicelibs_test.html" title="previous chapter">tests.devicelibs_test package</a></li>
+      <li>Next: <a href="tests.formats_test.html" title="next chapter">tests.formats_test package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tests/tests.devices_test.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2013-2016, Red Hat, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/tests/tests.devices_test.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

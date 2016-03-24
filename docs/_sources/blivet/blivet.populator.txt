@@ -1,0 +1,29 @@
+blivet.populator package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    blivet.populator.helpers
+
+Submodules
+----------
+
+blivet.populator.populator module
+---------------------------------
+
+.. automodule:: blivet.populator.populator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: blivet.populator
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,38 @@
+blivet.events package
+=====================
+
+Submodules
+----------
+
+blivet.events.changes module
+----------------------------
+
+.. automodule:: blivet.events.changes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.events.handler module
+----------------------------
+
+.. automodule:: blivet.events.handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.events.manager module
+----------------------------
+
+.. automodule:: blivet.events.manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: blivet.events
+    :members:
+    :undoc-members:
+    :show-inheritance:

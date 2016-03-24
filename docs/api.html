@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Public API &mdash; Blivet 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Blivet 2.0.0 documentation" href="index.html" />
+    <link rel="next" title="blivet" href="api/blivet.html" />
+    <link rel="prev" title="Introduction to Blivet" href="intro.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="public-api">
+<h1>Public API<a class="headerlink" href="#public-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="api-specification">
+<h2>API Specification<a class="headerlink" href="#api-specification" title="Permalink to this headline">¶</a></h2>
+<p>This should be considered an exhaustive listing of blivet&#8217;s public API.
+Anything not listed should be considered unstable and subject to change
+between minor releases.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/blivet.html">blivet package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/devices.html">devices package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/events.html">events package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/formats.html">formats package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="explanation">
+<h3>Explanation<a class="headerlink" href="#explanation" title="Permalink to this headline">¶</a></h3>
+<p>In general, anything listed is public and anything not listed is not public.
+There are a couple of strange situations that deserve explanation:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="blivet/blivet.html#module-blivet.devicetree" title="blivet.devicetree"><code class="xref py py-mod docutils literal"><span class="pre">blivet.devicetree</span></code></a></dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal"><span class="pre">DeviceTree</span></code></a></dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.actions" title="blivet.devicetree.DeviceTreeBase.actions"><code class="xref py py-attr docutils literal"><span class="pre">actions</span></code></a></dt>
+<dd><ul class="first last simple">
+<li><a class="reference internal" href="blivet/blivet.html#blivet.actionlist.ActionList.add" title="blivet.actionlist.ActionList.add"><code class="xref py py-meth docutils literal"><span class="pre">add()</span></code></a></li>
+<li><a class="reference internal" href="blivet/blivet.html#blivet.actionlist.ActionList.find" title="blivet.actionlist.ActionList.find"><code class="xref py py-meth docutils literal"><span class="pre">find()</span></code></a></li>
+<li><a class="reference internal" href="blivet/blivet.html#blivet.actionlist.ActionList.prune" title="blivet.actionlist.ActionList.prune"><code class="xref py py-meth docutils literal"><span class="pre">prune()</span></code></a></li>
+<li><a class="reference internal" href="blivet/blivet.html#blivet.actionlist.ActionList.remove" title="blivet.actionlist.ActionList.remove"><code class="xref py py-meth docutils literal"><span class="pre">remove()</span></code></a></li>
+<li><a class="reference internal" href="blivet/blivet.html#blivet.actionlist.ActionList.sort" title="blivet.actionlist.ActionList.sort"><code class="xref py py-meth docutils literal"><span class="pre">sort()</span></code></a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.cancel_disk_actions" title="blivet.devicetree.DeviceTreeBase.cancel_disk_actions"><code class="xref py py-meth docutils literal"><span class="pre">cancel_disk_actions()</span></code></a></p>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ol class="arabic simple">
+<li>The class DeviceTree itself is listed, which means the constructor
+interface is considered to be stable.</li>
+<li>DeviceTree has an &#8216;actions&#8217; attribute that is an instance of class
+ActionList. ActionList&#8217;s constructor isn&#8217;t public, but the methods and
+attributes listed under the &#8216;actions&#8217; attribute are.</li>
+<li>DeviceTree has a &#8216;cancel_disk_actions&#8217; method which is public.</li>
+</ol>
+<ul>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="blivet/blivet.html#module-blivet.iscsi" title="blivet.iscsi"><code class="xref py py-mod docutils literal"><span class="pre">blivet.iscsi</span></code></a></dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="blivet/blivet.html#blivet.iscsi.iscsi" title="blivet.iscsi.iscsi"><code class="xref py py-data docutils literal"><span class="pre">iscsi</span></code></a></dt>
+<dd><ul class="first last simple">
+<li><a class="reference internal" href="blivet/blivet.html#blivet.iscsi.iSCSI.available" title="blivet.iscsi.iSCSI.available"><code class="xref py py-meth docutils literal"><span class="pre">available()</span></code></a></li>
+<li><a class="reference internal" href="blivet/blivet.html#blivet.iscsi.iSCSI.create_interfaces" title="blivet.iscsi.iSCSI.create_interfaces"><code class="xref py py-meth docutils literal"><span class="pre">create_interfaces()</span></code></a></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ol class="arabic simple">
+<li>The module blivet.iscsi contains a module-level &#8216;iscsi&#8217; attribute, which
+is public.</li>
+<li>The class iSCSI is not public. You shouldn&#8217;t create instances of it.
+Instead, you should use the existing instance at blivet.iscsi.iscsi.</li>
+<li>The &#8216;available&#8217; and &#8216;create_interfaces&#8217; methods of the iSCSI class are
+public. The above example is incomplete, but if it were complete it would
+mean that the only public members of the iSCSI class are the &#8216;available&#8217;
+and &#8216;create_interfaces&#8217; methods.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Public API</a><ul>
+<li><a class="reference internal" href="#api-specification">API Specification</a><ul>
+<li><a class="reference internal" href="#explanation">Explanation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Introduction to Blivet</a></li>
+      <li>Next: <a href="api/blivet.html" title="next chapter">blivet</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2013-2016, Red Hat, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/api.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

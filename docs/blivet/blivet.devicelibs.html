@@ -1,0 +1,1087 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>blivet.devicelibs package &mdash; Blivet 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Blivet 2.0.0 documentation" href="../index.html" />
+    <link rel="up" title="blivet package" href="blivet.html" />
+    <link rel="next" title="blivet.devices package" href="blivet.devices.html" />
+    <link rel="prev" title="blivet package" href="blivet.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="blivet-devicelibs-package">
+<h1>blivet.devicelibs package<a class="headerlink" href="#blivet-devicelibs-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-blivet.devicelibs.btrfs">
+<span id="blivet-devicelibs-btrfs-module"></span><h2>blivet.devicelibs.btrfs module<a class="headerlink" href="#module-blivet.devicelibs.btrfs" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-blivet.devicelibs.crypto">
+<span id="blivet-devicelibs-crypto-module"></span><h2>blivet.devicelibs.crypto module<a class="headerlink" href="#module-blivet.devicelibs.crypto" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-blivet.devicelibs.edd">
+<span id="blivet-devicelibs-edd-module"></span><h2>blivet.devicelibs.edd module<a class="headerlink" href="#module-blivet.devicelibs.edd" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.devicelibs.edd.EddEntry">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.edd.</code><code class="descname">EddEntry</code><span class="sig-paren">(</span><em>sysfspath</em>, <em>root=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This object merely collects what the /sys/firmware/edd/* entries can
+provide.</p>
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.ata_device">
+<code class="descname">ata_device</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.ata_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>The device number from edd/int13_devXX/interface when self.type
+is ATA or SATA (because Linux treats these the same.)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.ata_pmp">
+<code class="descname">ata_pmp</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.ata_pmp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ATA port multiplier ID from edd/int13_devXX/interface when
+self.type is SATA.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.atapi_device">
+<code class="descname">atapi_device</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.atapi_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>The device number of the ATAPI device from
+edd/int13_devXX/interface when self.type is ATAPI.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.atapi_lun">
+<code class="descname">atapi_lun</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.atapi_lun" title="Permalink to this definition">¶</a></dt>
+<dd><p>The LUN of the ATAPI device from edd/int13_devXX/interface when
+self.type is ATAPI.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.bios_device_number">
+<code class="descname">bios_device_number</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.bios_device_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The device number from the EDD path</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.channel">
+<code class="descname">channel</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The host bus device&#8217;s channel number edd/int13_devXX/host_bus.
+The spec says:</p>
+<blockquote>
+<div><p>Channel number. If more than one interface of the same type is
+accessed through a single Bus, Slot, Function, then the channel
+number shall identify each interface. If there is only one
+interface, the content of this field shall be cleared to zero. If
+there are two interfaces, such as an ATA Primary and Secondary
+interface, the primary interface shall be zero, and the secondary
+interface shall be one.</p>
+<p>Values 00h through FEh shall represent a valid Channel Number.</p>
+<p>Value FFh shall indicate that this field is not used.</p>
+<p>If the device is connected to a SATA controller functioning in
+non-PATA emulation mode, this byte shall be FFh.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.fibre_lun">
+<code class="descname">fibre_lun</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.fibre_lun" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FibreChannel LUN from edd/int13_devXX/interface when
+self.type is FIBRE.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.fibre_wwid">
+<code class="descname">fibre_wwid</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.fibre_wwid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FibreChannel WWID from edd/int13_devXX/interface when
+self.type is FIBRE.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.host_bus">
+<code class="descname">host_bus</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.host_bus" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ID string for the host bus type, from
+edd/int13_devXX/host_bus.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.i2o_identity">
+<code class="descname">i2o_identity</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.i2o_identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>The I2O Identity from edd/int13_devXX/interface when self.type
+is I2O.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.ieee1394_eui64">
+<code class="descname">ieee1394_eui64</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.ieee1394_eui64" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Firewire/IEEE-1394 EUI-64 ID from edd/int13_devXX/interface
+when self.type is 1394.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.interface">
+<code class="descname">interface</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>interface is the actual contents of the interface file,
+preserved for logging later.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddEntry.load">
+<code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.mbr_sig">
+<code class="descname">mbr_sig</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.mbr_sig" title="Permalink to this definition">¶</a></dt>
+<dd><p>The MBR signature data from edd/int13_devXX/mbr_signature</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.pci_dev">
+<code class="descname">pci_dev</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.pci_dev" title="Permalink to this definition">¶</a></dt>
+<dd><p>The host bus bus:device.function, from edd/int13_devXX/host_bus.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.sas_address">
+<code class="descname">sas_address</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.sas_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SAS Address from edd/int13_devXX/interface when self.type
+is SAS.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.sas_lun">
+<code class="descname">sas_lun</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.sas_lun" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SAS LUN from edd/int13_devXX/interface when self.type is SAS.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.scsi_id">
+<code class="descname">scsi_id</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.scsi_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SCSI device ID from edd/int13_devXX/interface when
+self.type is SCSI</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.scsi_lun">
+<code class="descname">scsi_lun</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.scsi_lun" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SCSI device LUN from edd/int13_devXX/interface when
+self.type is SCSI</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.sectors">
+<code class="descname">sectors</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.sectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of sectors on the device from edd/int13_devXX/sectors</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.sysfslink">
+<code class="descname">sysfslink</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.sysfslink" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path /sys/block/BLAH is a symlink link to once we&#8217;ve resolved
+that this is a particular device.  Used for logging later.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.sysfspath">
+<code class="descname">sysfspath</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.sysfspath" title="Permalink to this definition">¶</a></dt>
+<dd><p>sysfspath is the path we&#8217;re probing</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.type">
+<code class="descname">type</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The device type from edd/int13_devXX/interface.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.usb_serial">
+<code class="descname">usb_serial</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.usb_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>The USB storage device&#8217;s serial number from
+edd/int13_devXX/interface when self.type is USB.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.edd.EddEntry.version">
+<code class="descname">version</code><em class="property"> = None</em><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>The edd version this entry claims conformance with, from
+/sys/firmware/edd/int13_devXX/version</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="blivet.devicelibs.edd.EddMatcher">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.edd.</code><code class="descname">EddMatcher</code><span class="sig-paren">(</span><em>edd_entry</em>, <em>root=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This object tries to match given entry to a disk device name.</p>
+<p>Assuming, heuristic analysis and guessing hapens here.</p>
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddMatcher.devname_from_ata_pci_dev">
+<code class="descname">devname_from_ata_pci_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher.devname_from_ata_pci_dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddMatcher.devname_from_pci_dev">
+<code class="descname">devname_from_pci_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher.devname_from_pci_dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddMatcher.devname_from_scsi_pci_dev">
+<code class="descname">devname_from_scsi_pci_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher.devname_from_scsi_pci_dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddMatcher.devname_from_virt_pci_dev">
+<code class="descname">devname_from_virt_pci_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher.devname_from_virt_pci_dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddMatcher.devname_from_virtio_scsi_pci_dev">
+<code class="descname">devname_from_virtio_scsi_pci_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher.devname_from_virtio_scsi_pci_dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.edd.EddMatcher.match_via_mbrsigs">
+<code class="descname">match_via_mbrsigs</code><span class="sig-paren">(</span><em>mbr_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher.match_via_mbrsigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to match the edd entry based on its mbr signature.</p>
+<p>This will obviously fail for a fresh drive/image, but in extreme
+cases can also show false positives for randomly matching data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.edd.collect_edd_data">
+<code class="descclassname">blivet.devicelibs.edd.</code><code class="descname">collect_edd_data</code><span class="sig-paren">(</span><em>root=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.collect_edd_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.edd.collect_mbrs">
+<code class="descclassname">blivet.devicelibs.edd.</code><code class="descname">collect_mbrs</code><span class="sig-paren">(</span><em>devices</em>, <em>root=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.collect_mbrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read MBR signatures from devices.</p>
+<p>Returns a dict mapping device names to their MBR signatures. It is not
+guaranteed this will succeed, with a new disk for instance.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.edd.get_edd_dict">
+<code class="descclassname">blivet.devicelibs.edd.</code><code class="descname">get_edd_dict</code><span class="sig-paren">(</span><em>devices</em>, <em>root=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.get_edd_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the &#8216;device name&#8217; -&gt; &#8216;edd number&#8217; mapping.</p>
+<p>The EDD kernel module that exposes /sys/firmware/edd is thoroughly
+broken, the information there is incomplete and sometimes downright
+wrong. So after we mine out all useful information that the files under
+/sys/firmware/edd/int13_*/ can provide, we resort to heuristics and
+guessing. Our first attempt is, by looking at the device type int
+&#8216;interface&#8217;, attempting to map pci device number, channel number etc. to
+a sysfs path, check that the path really exists, then read the device
+name (e.g &#8216;sda&#8217;) from there. Should this fail we try to match contents
+of &#8216;mbr_signature&#8217; to a real MBR signature found on the existing block
+devices.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-blivet.devicelibs.lvm">
+<span id="blivet-devicelibs-lvm-module"></span><h2>blivet.devicelibs.lvm module<a class="headerlink" href="#module-blivet.devicelibs.lvm" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.devicelibs.lvm.ThPoolProfile">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">ThPoolProfile</code><span class="sig-paren">(</span><em>name</em>, <em>desc</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.ThPoolProfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></a></p>
+<dl class="attribute">
+<dt id="blivet.devicelibs.lvm.ThPoolProfile.desc">
+<code class="descname">desc</code><a class="headerlink" href="#blivet.devicelibs.lvm.ThPoolProfile.desc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.lvm.ThPoolProfile.name">
+<code class="descname">name</code><a class="headerlink" href="#blivet.devicelibs.lvm.ThPoolProfile.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.lvm.determine_parent_lv">
+<code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">determine_parent_lv</code><span class="sig-paren">(</span><em>vg_name</em>, <em>internal_lv</em>, <em>lvs</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.determine_parent_lv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to determine which of the lvs is the parent of the internal_lv</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vg_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; name of the VG the internal_lv and lvs belong to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.lvm.lvm_cc_addFilterRejectRegexp">
+<code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">lvm_cc_addFilterRejectRegexp</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.lvm_cc_addFilterRejectRegexp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.lvm.lvm_cc_removeFilterRejectRegexp">
+<code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">lvm_cc_removeFilterRejectRegexp</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.lvm_cc_removeFilterRejectRegexp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.lvm.lvm_cc_resetFilter">
+<code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">lvm_cc_resetFilter</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.lvm_cc_resetFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.lvm.lvmetad_socket_exists">
+<code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">lvmetad_socket_exists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.lvmetad_socket_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.lvm.needs_config_refresh">
+<code class="descclassname">blivet.devicelibs.lvm.</code><code class="descname">needs_config_refresh</code><span class="sig-paren">(</span><em>fn</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.needs_config_refresh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-blivet.devicelibs.mdraid">
+<span id="blivet-devicelibs-mdraid-module"></span><h2>blivet.devicelibs.mdraid module<a class="headerlink" href="#module-blivet.devicelibs.mdraid" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.devicelibs.mdraid.MDRaidLevels">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.mdraid.</code><code class="descname">MDRaidLevels</code><span class="sig-paren">(</span><em>levels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.mdraid.MDRaidLevels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devicelibs.raid.RAIDLevels" title="blivet.devicelibs.raid.RAIDLevels"><code class="xref py py-class docutils literal"><span class="pre">blivet.devicelibs.raid.RAIDLevels</span></code></a></p>
+<p>Add the specified standard levels to the levels in this object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>levels</strong> (<em>list of valid RAID level descriptors</em>) &#8211; the levels to be added to this object</td>
+</tr>
+</tbody>
+</table>
+<p>If levels is True, add all standard levels. Else, levels
+must be a list of valid level descriptors of standard levels.
+Duplicate descriptors are ignored.</p>
+<dl class="classmethod">
+<dt id="blivet.devicelibs.mdraid.MDRaidLevels.is_raid_level">
+<em class="property">classmethod </em><code class="descname">is_raid_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.mdraid.MDRaidLevels.is_raid_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-blivet.devicelibs.raid">
+<span id="blivet-devicelibs-raid-module"></span><h2>blivet.devicelibs.raid module<a class="headerlink" href="#module-blivet.devicelibs.raid" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.devicelibs.raid.ErsatzRAID">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.raid.</code><code class="descname">ErsatzRAID</code><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devicelibs.raid.RAIDLevel" title="blivet.devicelibs.raid.RAIDLevel"><code class="xref py py-class docutils literal"><span class="pre">blivet.devicelibs.raid.RAIDLevel</span></code></a></p>
+<p>A superclass for a raid level which is not really a raid level at
+all, just a bunch of block devices of possibly differing sizes
+thrown together. This concept has different names depending on where
+it crops up. btrfs&#8217;s name is single, lvm&#8217;s is linear. Consequently,
+this abstract class implements all the functionality, but there are
+distinct subclasses which have different names.</p>
+<dl class="method">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.get_max_spares">
+<code class="descname">get_max_spares</code><span class="sig-paren">(</span><em>member_count</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.get_max_spares" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.get_recommended_stride">
+<code class="descname">get_recommended_stride</code><span class="sig-paren">(</span><em>member_count</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.get_recommended_stride" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.get_size">
+<code class="descname">get_size</code><span class="sig-paren">(</span><em>member_sizes</em>, <em>num_members=None</em>, <em>chunk_size=None</em>, <em>superblock_size_func=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.get_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.get_space">
+<code class="descname">get_space</code><span class="sig-paren">(</span><em>size</em>, <em>num_members</em>, <em>chunk_size=None</em>, <em>superblock_size_func=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.get_space" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.has_redundancy">
+<code class="descname">has_redundancy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.has_redundancy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.is_uniform">
+<code class="descname">is_uniform</code><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.is_uniform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.ErsatzRAID.min_members">
+<code class="descname">min_members</code><em class="property"> = 1</em><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.min_members" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="blivet.devicelibs.raid.RAIDLevel">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.raid.</code><code class="descname">RAIDLevel</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>An abstract class which is the parent of all classes which represent
+a RAID level.</p>
+<p>It ensures that RAIDLevel objects will really be singleton objects
+by overriding copy methods.</p>
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDLevel.has_redundancy">
+<code class="descname">has_redundancy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.has_redundancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether this RAID level incorporates inherent redundancy.</p>
+<p>Note that for some RAID levels, the notion of redundancy is
+meaningless.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">boolean</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if this RAID level has inherent redundancy</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDLevel.is_uniform">
+<code class="descname">is_uniform</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.is_uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator indicating abstract properties.</p>
+<p>Requires that the metaclass is ABCMeta or derived from it.  A
+class that has a metaclass derived from ABCMeta cannot be
+instantiated unless all of its abstract properties are overridden.
+The abstract properties can be called using any of the normal
+&#8216;super&#8217; call mechanisms.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd><p class="first">&#64;abstractproperty
+def my_abstract_property(self):</p>
+<blockquote class="last">
+<div>...</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>This defines a read-only property; you can also define a read-write
+abstract property using the &#8216;long&#8217; form of property declaration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd>def getx(self): ...
+def setx(self, value): ...
+x = abstractproperty(getx, setx)</dd>
+</dl>
+</div></blockquote>
+<p>&#8216;abstractproperty&#8217; is deprecated. Use &#8216;property&#8217; with &#8216;abstractmethod&#8217;
+instead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDLevel.min_members">
+<code class="descname">min_members</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.min_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator indicating abstract properties.</p>
+<p>Requires that the metaclass is ABCMeta or derived from it.  A
+class that has a metaclass derived from ABCMeta cannot be
+instantiated unless all of its abstract properties are overridden.
+The abstract properties can be called using any of the normal
+&#8216;super&#8217; call mechanisms.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd><p class="first">&#64;abstractproperty
+def my_abstract_property(self):</p>
+<blockquote class="last">
+<div>...</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>This defines a read-only property; you can also define a read-write
+abstract property using the &#8216;long&#8217; form of property declaration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd>def getx(self): ...
+def setx(self, value): ...
+x = abstractproperty(getx, setx)</dd>
+</dl>
+</div></blockquote>
+<p>&#8216;abstractproperty&#8217; is deprecated. Use &#8216;property&#8217; with &#8216;abstractmethod&#8217;
+instead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDLevel.name">
+<code class="descname">name</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator indicating abstract properties.</p>
+<p>Requires that the metaclass is ABCMeta or derived from it.  A
+class that has a metaclass derived from ABCMeta cannot be
+instantiated unless all of its abstract properties are overridden.
+The abstract properties can be called using any of the normal
+&#8216;super&#8217; call mechanisms.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd><p class="first">&#64;abstractproperty
+def my_abstract_property(self):</p>
+<blockquote class="last">
+<div>...</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>This defines a read-only property; you can also define a read-write
+abstract property using the &#8216;long&#8217; form of property declaration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd>def getx(self): ...
+def setx(self, value): ...
+x = abstractproperty(getx, setx)</dd>
+</dl>
+</div></blockquote>
+<p>&#8216;abstractproperty&#8217; is deprecated. Use &#8216;property&#8217; with &#8216;abstractmethod&#8217;
+instead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDLevel.names">
+<code class="descname">names</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator indicating abstract properties.</p>
+<p>Requires that the metaclass is ABCMeta or derived from it.  A
+class that has a metaclass derived from ABCMeta cannot be
+instantiated unless all of its abstract properties are overridden.
+The abstract properties can be called using any of the normal
+&#8216;super&#8217; call mechanisms.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd><p class="first">&#64;abstractproperty
+def my_abstract_property(self):</p>
+<blockquote class="last">
+<div>...</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>This defines a read-only property; you can also define a read-write
+abstract property using the &#8216;long&#8217; form of property declaration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd>def getx(self): ...
+def setx(self, value): ...
+x = abstractproperty(getx, setx)</dd>
+</dl>
+</div></blockquote>
+<p>&#8216;abstractproperty&#8217; is deprecated. Use &#8216;property&#8217; with &#8216;abstractmethod&#8217;
+instead.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="blivet.devicelibs.raid.RAIDLevels">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.raid.</code><code class="descname">RAIDLevels</code><span class="sig-paren">(</span><em>levels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A class which keeps track of registered RAID levels. This class
+may be extended, overriding the is_raid method to include any
+additional properties that a client of this package may require
+for its RAID levels.</p>
+<p>Add the specified standard levels to the levels in this object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>levels</strong> (<em>list of valid RAID level descriptors</em>) &#8211; the levels to be added to this object</td>
+</tr>
+</tbody>
+</table>
+<p>If levels is True, add all standard levels. Else, levels
+must be a list of valid level descriptors of standard levels.
+Duplicate descriptors are ignored.</p>
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDLevels.add_raid_level">
+<code class="descname">add_raid_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevels.add_raid_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds level to levels if it is not already there.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><em>object</em></a>) &#8211; an object representing a RAID level</td>
+</tr>
+</tbody>
+</table>
+<p>Raises a RaidError if level is not valid.</p>
+<p>Does not allow duplicate level objects.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="blivet.devicelibs.raid.RAIDLevels.is_raid_level">
+<em class="property">classmethod </em><code class="descname">is_raid_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevels.is_raid_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return False if level does not satisfy minimum requirements for
+a RAID level, otherwise return True.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><em>object</em></a>) &#8211; an object representing a RAID level</td>
+</tr>
+</tbody>
+</table>
+<p>There must be at least one element in the names list, or the level
+will be impossible to look up by any string.</p>
+<p>The name property must be defined; it should be one of the
+elements in the names list.</p>
+<p>All RAID objects that extend RAIDlevel are guaranteed to pass these
+minimum requirements.</p>
+<p>This method should not be overridden in any subclass so that it
+is so restrictive that a RAIDlevel object does not satisfy it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDLevels.raid_level">
+<code class="descname">raid_level</code><span class="sig-paren">(</span><em>descriptor</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevels.raid_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return RAID object corresponding to descriptor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><em>object</em></a>) &#8211; a RAID level descriptor</td>
+</tr>
+</tbody>
+</table>
+<p>Note that descriptor may be any object that identifies a
+RAID level, including the RAID object itself.</p>
+<p>Raises a RaidError if no RAID object can be found for this
+descriptor.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="blivet.devicelibs.raid.RAIDn">
+<em class="property">class </em><code class="descclassname">blivet.devicelibs.raid.</code><code class="descname">RAIDn</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devicelibs.raid.RAIDLevel" title="blivet.devicelibs.raid.RAIDLevel"><code class="xref py py-class docutils literal"><span class="pre">blivet.devicelibs.raid.RAIDLevel</span></code></a></p>
+<p>An abstract class which is the parent of classes which represent a
+numeric RAID level. A better word would be classification, since &#8216;level&#8217;
+implies an ordering, but level is the canonical word.</p>
+<p>The abstract properties of the class are:</p>
+<ul class="simple">
+<li>level: A string containing the number that designates this level</li>
+<li>nick: A single nickname for this level, may be None</li>
+</ul>
+<blockquote>
+<div><p>All methods in this class fall into these categories:</p>
+<ol class="arabic simple">
+<li>May not be overrridden in any subclass.</li>
+<li>Are private abstract methods.</li>
+<li>Are special Python methods, e.g., __str__</li>
+</ol>
+<p>Note that each subclass in this file is instantiated immediately after
+it is defined and using the same name, effectively yielding a
+singleton object of the class.</p>
+</div></blockquote>
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.alt_synth_names">
+<code class="descname">alt_synth_names</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.alt_synth_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>names that can be synthesized from level but are not name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDn.get_base_member_size">
+<code class="descname">get_base_member_size</code><span class="sig-paren">(</span><em>size</em>, <em>member_count</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.get_base_member_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The required size for each member of the array for
+storing only data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; size of data to be stored</li>
+<li><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; number of members in this array</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Raises a RaidError if member_count is fewer than the minimum
+number of members required for this array or if size is less
+than 0.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDn.get_max_spares">
+<code class="descname">get_max_spares</code><span class="sig-paren">(</span><em>member_count</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.get_max_spares" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum number of spares for this level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the number of members belonging to the array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)">int</a></td>
+</tr>
+</tbody>
+</table>
+<p>Raiess a RaidError if member_count is fewer than the minimum
+number of members required for this level.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDn.get_net_array_size">
+<code class="descname">get_net_array_size</code><span class="sig-paren">(</span><em>member_count</em>, <em>smallest_member_size</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.get_net_array_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the space, essentially the number of bits available
+for storage. This value is generally a function of the
+smallest member size. If the smallest member size represents
+the amount of data that can be stored on the smallest member,
+then the result will represent the amount of data that can be
+stored on the array. If the smallest member size represents
+both data and metadata, then the result will represent the
+available space in the array for both data and metadata.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the number of members in the array</li>
+<li><strong>smallest_member_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; the size of the smallest
+member of this array</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the array size</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Raises a RaidError if member_count is fewer than the minimum
+number of members required for this array or if size is less
+than 0.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDn.get_recommended_stride">
+<code class="descname">get_recommended_stride</code><span class="sig-paren">(</span><em>member_count</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.get_recommended_stride" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a recommended stride size in blocks.</p>
+<p>Returns None if there is no recommended size.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the number of members in the array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int or None</td>
+</tr>
+</tbody>
+</table>
+<p>Raises a RaidError if member_count is fewer than the
+minimum number of members required for this level</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDn.get_size">
+<code class="descname">get_size</code><span class="sig-paren">(</span><em>member_sizes</em>, <em>num_members=None</em>, <em>chunk_size=None</em>, <em>superblock_size_func=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.get_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the amount of data that can be stored on this array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>member_size</strong> (list of <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; a list of the sizes of members of this array</li>
+<li><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the number of members in the array</li>
+<li><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; the smallest unit of size read or written</li>
+<li><strong>superblock_size_func</strong> (a function from <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a> to
+<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; a function that estimates the
+superblock size for this array</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">an estimate of the amount of data that can be stored on
+this array</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the number of members in the array may not be the same
+as the length of member_sizes if the array is still
+under construction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.devicelibs.raid.RAIDn.get_space">
+<code class="descname">get_space</code><span class="sig-paren">(</span><em>size</em>, <em>num_members</em>, <em>chunk_size=None</em>, <em>superblock_size_func=None</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.get_space" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the amount of memory required by this array, including
+memory allocated for metadata.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; the amount of data on this array</li>
+<li><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the number of members in the array</li>
+<li><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; the smallest unit of size read or written</li>
+<li><strong>superblock_size_func</strong> (a function from <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a> to
+<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a>) &#8211; a function that estimates the
+superblock size for this array</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">an estimate of the memory required, including metadata</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal"><span class="pre">Size</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.is_uniform">
+<code class="descname">is_uniform</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.is_uniform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.level">
+<code class="descname">level</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.level" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator indicating abstract properties.</p>
+<p>Requires that the metaclass is ABCMeta or derived from it.  A
+class that has a metaclass derived from ABCMeta cannot be
+instantiated unless all of its abstract properties are overridden.
+The abstract properties can be called using any of the normal
+&#8216;super&#8217; call mechanisms.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd><p class="first">&#64;abstractproperty
+def my_abstract_property(self):</p>
+<blockquote class="last">
+<div>...</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>This defines a read-only property; you can also define a read-write
+abstract property using the &#8216;long&#8217; form of property declaration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd>def getx(self): ...
+def setx(self, value): ...
+x = abstractproperty(getx, setx)</dd>
+</dl>
+</div></blockquote>
+<p>&#8216;abstractproperty&#8217; is deprecated. Use &#8216;property&#8217; with &#8216;abstractmethod&#8217;
+instead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.name">
+<code class="descname">name</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The canonical name for this level</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.names">
+<code class="descname">names</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>all valid names for this level</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.nick">
+<code class="descname">nick</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.nick" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator indicating abstract properties.</p>
+<p>Requires that the metaclass is ABCMeta or derived from it.  A
+class that has a metaclass derived from ABCMeta cannot be
+instantiated unless all of its abstract properties are overridden.
+The abstract properties can be called using any of the normal
+&#8216;super&#8217; call mechanisms.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd><p class="first">&#64;abstractproperty
+def my_abstract_property(self):</p>
+<blockquote class="last">
+<div>...</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+<p>This defines a read-only property; you can also define a read-write
+abstract property using the &#8216;long&#8217; form of property declaration:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class C(metaclass=ABCMeta):</dt>
+<dd>def getx(self): ...
+def setx(self, value): ...
+x = abstractproperty(getx, setx)</dd>
+</dl>
+</div></blockquote>
+<p>&#8216;abstractproperty&#8217; is deprecated. Use &#8216;property&#8217; with &#8216;abstractmethod&#8217;
+instead.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.devicelibs.raid.RAIDn.number">
+<code class="descname">number</code><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.number" title="Permalink to this definition">¶</a></dt>
+<dd><p>A numeric code for this level</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.raid.div_up">
+<code class="descclassname">blivet.devicelibs.raid.</code><code class="descname">div_up</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.div_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rounds up integer division.  For example, div_up(3, 2) is 2.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the dividend</li>
+<li><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; the divisor</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="blivet.devicelibs.raid.get_raid_level">
+<code class="descclassname">blivet.devicelibs.raid.</code><code class="descname">get_raid_level</code><span class="sig-paren">(</span><em>descriptor</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.get_raid_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to return a RAID level for the descriptor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><em>object</em></a>) &#8211; a RAID level descriptor</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#blivet.devicelibs.raid.RAIDLevel" title="blivet.devicelibs.raid.RAIDLevel">RAIDLevel</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The RAIDLevel object for this descriptor</td>
+</tr>
+</tbody>
+</table>
+<p>Note that descriptor may be any object that identifies a
+RAID level, including the RAID object itself.</p>
+<p>Raises a RaidError is there is no RAID object for the descriptor.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-blivet.devicelibs">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.devicelibs" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">blivet.devicelibs package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.btrfs">blivet.devicelibs.btrfs module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.crypto">blivet.devicelibs.crypto module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.edd">blivet.devicelibs.edd module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.lvm">blivet.devicelibs.lvm module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.mdraid">blivet.devicelibs.mdraid module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.raid">blivet.devicelibs.raid module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="blivet.html">blivet package</a><ul>
+      <li>Previous: <a href="blivet.html" title="previous chapter">blivet package</a></li>
+      <li>Next: <a href="blivet.devices.html" title="next chapter">blivet.devices package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/blivet/blivet.devicelibs.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2013-2016, Red Hat, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/blivet/blivet.devicelibs.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

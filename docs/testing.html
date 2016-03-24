@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Testing Blivet &mdash; Blivet 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Blivet 2.0.0 documentation" href="index.html" />
+    <link rel="next" title="blivet package" href="blivet/blivet.html" />
+    <link rel="prev" title="formats" href="api/formats.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="testing-blivet">
+<h1>Testing Blivet<a class="headerlink" href="#testing-blivet" title="Permalink to this headline">¶</a></h1>
+<p>Note: The test suite documented here is available only from the git repository
+not as part of any installable packages.</p>
+<p>In order to execute blivet&#8217;s test suite from inside the source directory execute
+the command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>make test
+</pre></div>
+</div>
+<p>Tests descending from <a class="reference internal" href="tests/tests.html#tests.imagebackedtestcase.ImageBackedTestCase" title="tests.imagebackedtestcase.ImageBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">ImageBackedTestCase</span></code></a> or
+<a class="reference internal" href="tests/tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">LoopBackedTestCase</span></code></a> require root access on the
+system and will be skipped if you&#8217;re running as non-root user.
+Tests descending from <a class="reference internal" href="tests/tests.html#tests.imagebackedtestcase.ImageBackedTestCase" title="tests.imagebackedtestcase.ImageBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">ImageBackedTestCase</span></code></a> will
+also be skipped if the environment variable JENKINS_HOME is not defined. If
+you&#8217;d like to execute them use the following commands (as root):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># export JENKINS_HOME=`pwd`</span>
+<span class="c1"># make test</span>
+</pre></div>
+</div>
+<p>To execute the Pylint code analysis tool run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>make check
+</pre></div>
+</div>
+<p>Running Pylint doesn&#8217;t require root privileges but requires Python3 due to usage
+of pocket-lint.</p>
+<p>It is also possible to generate test coverage reports using the Python coverage
+tool. To do that execute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>make coverage
+</pre></div>
+</div>
+<p>It is also possible to check all external links in the documentation for
+integrity. To do this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd doc/
+make linkcheck
+</pre></div>
+</div>
+<div class="section" id="test-suite-architecture">
+<h2>Test Suite Architecture<a class="headerlink" href="#test-suite-architecture" title="Permalink to this headline">¶</a></h2>
+<p>Blivet&#8217;s test suite relies on several base classes listed below. All test cases
+inherit from them.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://docs.python.org/3/library/unittest.html#unittest.TestCase" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">unittest.TestCase</span></code></a> - the standard unit test class in Python.
+Used for tests which don&#8217;t touch disk space;</li>
+<li><a class="reference internal" href="tests/tests.html#tests.storagetestcase.StorageTestCase" title="tests.storagetestcase.StorageTestCase"><code class="xref py py-class docutils literal"><span class="pre">StorageTestCase</span></code></a> - intended as a base class for
+higher-level tests. Most of what it does is stub out operations that touch
+disks. Currently it is only used in
+<a class="reference internal" href="tests/tests.html#tests.action_test.DeviceActionTestCase" title="tests.action_test.DeviceActionTestCase"><code class="xref py py-class docutils literal"><span class="pre">DeviceActionTestCase</span></code></a>;</li>
+<li><a class="reference internal" href="tests/tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">LoopBackedTestCase</span></code></a> and
+<a class="reference internal" href="tests/tests.html#tests.imagebackedtestcase.ImageBackedTestCase" title="tests.imagebackedtestcase.ImageBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">ImageBackedTestCase</span></code></a> - both classes
+represent actual storage space.
+<a class="reference internal" href="tests/tests.html#tests.imagebackedtestcase.ImageBackedTestCase" title="tests.imagebackedtestcase.ImageBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">ImageBackedTestCase</span></code></a> uses the same stacks
+as anaconda disk image installations. These mimic normal disks more closely
+than using loop devices directly. Usually
+<a class="reference internal" href="tests/tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">LoopBackedTestCase</span></code></a> is used for stacks of
+limited depth (eg: md array with two loop members) and
+<a class="reference internal" href="tests/tests.html#tests.imagebackedtestcase.ImageBackedTestCase" title="tests.imagebackedtestcase.ImageBackedTestCase"><code class="xref py py-class docutils literal"><span class="pre">ImageBackedTestCase</span></code></a> for stacks of greater
+or arbitrary depth.</li>
+</ul>
+<p>In order to get a high level view of how test classes inherit from each other
+you can generate an inheritance diagram:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>PYTHONPATH=.:tests/ python3-pyreverse -p &quot;Blivet_Tests&quot; -o svg -SkAmy tests/
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Testing Blivet</a><ul>
+<li><a class="reference internal" href="#test-suite-architecture">Test Suite Architecture</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="api/formats.html" title="previous chapter">formats</a></li>
+      <li>Next: <a href="blivet/blivet.html" title="next chapter">blivet package</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/testing.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2013-2016, Red Hat, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/testing.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
