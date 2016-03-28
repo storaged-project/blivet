@@ -63,23 +63,23 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
 
 
 class PopulatorMixin(object, metaclass=SynchronizedMeta):
-    def __init__(self, conf=None, passphrase=None, luks_dict=None):
+    def __init__(self, passphrase=None, luks_dict=None, disk_images=None):
         """
-            :keyword conf: storage discovery configuration
-            :type conf: :class:`~.StorageDiscoveryConfig`
             :keyword passphrase: default LUKS passphrase
             :keyword luks_dict: a dict with UUID keys and passphrase values
             :type luks_dict: dict
+            :keyword disk_images: dictoinary of disk images
+            :type list: dict
 
         """
-        self.reset(conf=conf, passphrase=passphrase, luks_dict=luks_dict)
+        self.reset(passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
 
     def reset(self, conf=None, passphrase=None, luks_dict=None):
+    def reset(self, passphrase=None, luks_dict=None, disk_images=None):
         self.disk_images = {}
-        images = getattr(conf, "disk_images", {})
-        if images:
+        if disk_images:
             # this will overwrite self.exclusive_disks
-            self.set_disk_images(images)
+            self.set_disk_images(disk_images)
 
         # protected device specs as provided by the user
         self.protected_dev_specs = getattr(conf, "protected_dev_specs", [])
