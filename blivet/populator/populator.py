@@ -74,19 +74,11 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         """
         self.reset(passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
 
-    def reset(self, conf=None, passphrase=None, luks_dict=None):
     def reset(self, passphrase=None, luks_dict=None, disk_images=None):
         self.disk_images = {}
         if disk_images:
             # this will overwrite self.exclusive_disks
             self.set_disk_images(disk_images)
-
-        # protected device specs as provided by the user
-        self.protected_dev_specs = getattr(conf, "protected_dev_specs", [])
-        self.live_backing_device = None
-
-        # names of protected devices at the time of tree population
-        self.protected_dev_names = []
 
         self.__passphrases = []
         if passphrase:
@@ -246,18 +238,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                 util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
             device.readonly = True
 
-    def _mark_protected_device(self, device):
-        # If this device is protected, mark it as such now. Once the tree
-        # has been populated, devices' protected attribute is how we will
-        # identify protected devices.
-        if device.name in self.protected_dev_names:
-            device.protected = True
-            # if this is the live backing device we want to mark its parents
-            # as protected also
-            if device.name == self.live_backing_device:
-                for parent in device.parents:
-                    parent.protected = True
-
     def _update_exclusive_disks(self, device):
         # If we just added a multipath or fwraid disk that is in exclusive_disks
         # we have to make sure all of its members are in the list too.
@@ -317,7 +297,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
         log.info("got device: %r", device)
         self._mark_readonly_device(info, device)
-        self._mark_protected_device(device)
         self._update_exclusive_disks(device)
 
         # now handle the device's formatting
@@ -465,29 +444,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         if flags.installer_mode:
             self.teardown_all()
 
-    def _resolve_protected_device_specs(self):
-        # resolve the protected device specs to device names
-        for spec in self.protected_dev_specs:
-            name = udev.resolve_devspec(spec)
-            log.debug("protected device spec %s resolved to %s", spec, name)
-            if name:
-                self.protected_dev_names.append(name)
-
-    def _find_live_backing_device(self):
-        # FIXME: the backing dev for the live image can't be used as an
-        # install target.  note that this is a little bit of a hack
-        # since we're assuming that /run/initramfs/live will exist
-        for mnt in open("/proc/mounts").readlines():
-            if " /run/initramfs/live " not in mnt:
-                continue
-
-            live_device_name = mnt.split()[0].split("/")[-1]
-            log.info("%s looks to be the live device; marking as protected",
-                     live_device_name)
-            self.protected_dev_names.append(live_device_name)
-            self.live_backing_device = live_device_name
-            break
-
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
                  self.ignored_disks, self.exclusive_disks)
@@ -498,9 +454,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
         self.setup_disk_images()
-
-        self._resolve_protected_device_specs()
-        self._find_live_backing_device()
 
         old_devices = {}
 
