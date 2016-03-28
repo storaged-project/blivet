@@ -69,15 +69,23 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
-    def __init__(self, conf=None):
+    def __init__(self, ignored_disks=None, exclusive_disks=None):
         """
-            :keyword conf: storage discovery configuration
-            :type conf: :class:`~.StorageDiscoveryConfig`
+            :keyword ignored_disks: ignored disks
+            :type ignored_disks: list
+            :keyword exclusive_disks: exclusive didks
+            :type exclusive_disks: list
         """
-        self.reset(conf)
+        self.reset(ignored_disks, exclusive_disks)
 
-    def reset(self, conf=None):
-        """ Reset the instance to its initial state. """
+    def reset(self, ignored_disks=None, exclusive_disks=None):
+        """ Reset the instance to its initial state.
+
+            :keyword ignored_disks: ignored disks
+            :type ignored_disks: list
+            :keyword exclusive_disks: exclusive didks
+            :type exclusive_disks: list
+        """
         # internal data members
         self._devices = []
         self._actions = ActionList(addfunc=self._register_action,
@@ -90,8 +98,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         lvm.lvm_cc_resetFilter()
 
-        self.exclusive_disks = getattr(conf, "exclusive_disks", [])
-        self.ignored_disks = getattr(conf, "ignored_disks", [])
+        self.exclusive_disks = exclusive_disks
+        self.ignored_disks = ignored_disks
 
         self.edd_dict = {}
 
@@ -882,12 +890,12 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
-    def __init__(self, conf=None, passphrase=None, luks_dict=None):
-        DeviceTreeBase.__init__(self, conf=conf)
-        PopulatorMixin.__init__(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)
+    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+        DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
-    def reset(self, conf=None, passphrase=None, luks_dict=None):
-        DeviceTreeBase.reset(self, conf=conf)
-        PopulatorMixin.reset(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)
+    def reset(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+        DeviceTreeBase.reset(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
+        PopulatorMixin.reset(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
