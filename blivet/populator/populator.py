@@ -63,7 +63,7 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
 
 
 class PopulatorMixin(object, metaclass=SynchronizedMeta):
-    def __init__(self, passphrase=None, luks_dict=None, disk_images=None):
+    def __init__(self, passphrase=None, luks_dict=None, disk_images=None, protected_dev_specs=None):
         """
             :keyword passphrase: default LUKS passphrase
             :keyword luks_dict: a dict with UUID keys and passphrase values
@@ -72,17 +72,16 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             :type list: dict
 
         """
-        self.reset(passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
+        self.reset(passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images, protected_dev_specs=protected_dev_specs)
 
-    def reset(self, conf=None, passphrase=None, luks_dict=None):
-    def reset(self, passphrase=None, luks_dict=None, disk_images=None):
+    def reset(self, passphrase=None, luks_dict=None, disk_images=None, protected_dev_specs=None):
         self.disk_images = {}
         if disk_images:
             # this will overwrite self.exclusive_disks
             self.set_disk_images(disk_images)
 
         # protected device specs as provided by the user
-        self.protected_dev_specs = getattr(conf, "protected_dev_specs", [])
+        self.protected_dev_specs = protected_dev_specs
         self.live_backing_device = None
 
         # names of protected devices at the time of tree population

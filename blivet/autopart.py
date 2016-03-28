@@ -110,8 +110,8 @@ def _get_candidate_disks(storage):
         for a default-sized (500MiB) partition. They must also be in
         :attr:`StorageDiscoveryConfig.clear_part_disks` if it is non-empty.
 
-        :param storage: a Blivet instance
-        :type storage: :class:`~.Blivet`
+        :param storage: an InstallerStorageConfig instance
+        :type storage: :class:`~.osinstall.InstallerStorageConfig`
         :returns: a list of partitioned disks with at least 500MiB of free space
         :rtype: list of :class:`~.devices.StorageDevice`
     """

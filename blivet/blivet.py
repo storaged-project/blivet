@@ -27,8 +27,6 @@ import contextlib
 import time
 import functools
 
-from pykickstart.constants import AUTOPART_TYPE_LVM
-
 from .storage_log import log_method_call, log_exception_info
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
@@ -45,11 +43,7 @@ from .formats import get_default_filesystem_type
 from .flags import flags
 from .platform import platform as _platform
 from .formats import get_format
-from .osinstall import StorageDiscoveryConfig find_existing_installations
 from . import arch
-from .iscsi import iscsi
-from .fcoe import fcoe
-from .zfcp import zfcp
 from . import devicefactory
 from . import get_bootloader, get_sysroot, short_product_name, __version__
 from .threads import SynchronizedMeta
@@ -70,13 +64,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.ksdata = ksdata
         self._bootloader = None
 
-        self.config = StorageDiscoveryConfig()
-
         # storage configuration variables
         self.do_autopart = False
         self.clear_part_choice = None
         self.encrypted_autopart = False
-        self.autopart_type = AUTOPART_TYPE_LVM
         self.encryption_passphrase = None
         self.encryption_cipher = None
         self.escrow_certificates = {}
@@ -105,7 +96,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
                                      disk_images=self.disk_images)
         self.roots = []
         self.services = set()
-        self._free_space_snapshot = None
 
     def do_it(self, callbacks=None):
         """
@@ -148,20 +138,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             about the cleanup_only keyword argument.
         """
         log.info("resetting Blivet (version %s) instance %s", __version__, self)
-        if flags.installer_mode:
-            # save passphrases for luks devices so we don't have to reprompt
-            self.encryption_passphrase = None
-            for device in self.devices:
-                if device.format.type == "luks" and device.format.exists:
-                    self.save_passphrase(device)
-
-        if self.ksdata:
-            self.config.update(self.ksdata)
-
-        if flags.installer_mode and not flags.image_install:
-            iscsi.startup()
-            fcoe.startup()
-            zfcp.startup()
 
         self.devicetree.reset(passphrase=self.encryption_passphrase,
                               luks_dict=self.__luks_devs,
@@ -175,14 +151,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             # clear out bootloader attributes that refer to devices that are
             # no longer in the tree
             self.bootloader.reset()
-
-        self.roots = []
-        if flags.installer_mode:
-            self.roots = find_existing_installations(self.devicetree)
-            self.dump_state("initial")
-
-        if not flags.installer_mode:
-            self.devicetree.handle_nodev_filesystems()
 
         self.update_bootloader_disk_list()
 
@@ -434,23 +402,20 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 extended = self.devicetree.get_device_by_name(extended_name)
                 self.destroy_device(extended)
 
-    def get_free_space(self, disks=None, clear_part_type=None):
+    def get_free_space(self, disks=None, partitions=None):
         """ Return a dict with free space info for each disk.
 
             The dict values are 2-tuples: (disk_free, fs_free). fs_free is
             space available by shrinking filesystems. disk_free is space not
             allocated to any partition.
 
-            disks and clear_part_type allow specifying a set of disks other than
-            self.disks and a clear_part_type value other than
-            self.config.clear_part_type.
+            disks and partitions allow specifying a set of disks other than
+            self.disks and partition values other than self.parttions.
 
             :keyword disks: overrides :attr:`disks`
             :type disks: list
-            :keyword clear_part_type: overrides :attr:`self.config.clear_part_type`
-            :type clear_part_type: int
-            :returns: dict with disk name keys and tuple (disk, fs) free values
-            :rtype: dict
+            :keyword partitions: overrides :attr:`partitions`
+            :type partitions: list
 
             .. note::
 
@@ -460,31 +425,17 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if disks is None:
             disks = self.disks
 
-        if clear_part_type is None:
-            clear_part_type = self.config.clear_part_type
+        if partitions is None:
+            partitions = self.partitions
 
         free = {}
         for disk in disks:
-            should_clear = self.should_clear(disk, clear_part_type=clear_part_type,
-                                             clear_part_disks=[disk.name])
-            if should_clear:
-                free[disk.name] = (disk.size, Size(0))
-                continue
-
             disk_free = Size(0)
             fs_free = Size(0)
             if disk.partitioned:
                 disk_free = disk.format.free
-                for partition in [p for p in self.partitions if p.disk == disk]:
-                    # only check actual filesystems since lvm &c require a bunch of
-                    # operations to translate free filesystem space into free disk
-                    # space
-                    should_clear = self.should_clear(partition,
-                                                     clear_part_type=clear_part_type,
-                                                     clear_part_disks=[disk.name])
-                    if should_clear:
-                        disk_free += partition.size
-                    elif hasattr(partition.format, "free"):
+                for partition in [p for p in partitions if p.disk == disk]:
+                    if hasattr(partition.format, "free"):
                         fs_free += partition.format.free
             elif hasattr(disk.format, "free"):
                 fs_free = disk.format.free
@@ -1064,9 +1015,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if not os.path.isdir("%s/etc" % get_sysroot()):
             os.mkdir("%s/etc" % get_sysroot())
 
-        iscsi.write(get_sysroot(), self)
-        fcoe.write(get_sysroot())
-        zfcp.write(get_sysroot())
         self.write_dasd_conf(get_sysroot())
 
     def write_dasd_conf(self, root):
@@ -1366,15 +1314,3 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         log.debug("finished Blivet copy")
         return new
-
-    @property
-    def free_space_snapshot(self):
-        # if no snapshot is available, do it now and return it
-        self._free_space_snapshot = self._free_space_snapshot or self.get_free_space()
-
-        return self._free_space_snapshot
-
-    def create_free_space_snapshot(self):
-        self._free_space_snapshot = self.get_free_space()
-
-        return self._free_space_snapshot

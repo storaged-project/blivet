@@ -899,12 +899,12 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
-    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None, protected_dev_specs=None):
         DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images, protected_dev_specs=protected_dev_specs)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
-    def reset(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+    def reset(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None, protected_dev_specs=None):
         DeviceTreeBase.reset(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
-        PopulatorMixin.reset(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
+        PopulatorMixin.reset(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images, protected_dev_specs=protected_dev_specs)

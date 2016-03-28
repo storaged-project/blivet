@@ -31,9 +31,9 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
-from pykickstart.constants import CLEARPART_TYPE_NONE, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LIST
+from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_NONE, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LIST
 
-from . import util
+from . import util, __version__
 from . import get_sysroot, get_target_physical_root, error_handler, ERROR_RAISE
 
 from .blivet import Blivet
@@ -41,10 +41,15 @@ from .storage_log import log_exception_info
 from .devices import FileDevice, NFSDevice, NoDevice, OpticalDevice, NetworkStorageDevice, DirectoryDevice
 from .devices import PartitionDevice, BTRFSSubVolumeDevice, TmpFSDevice, LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import MDRaidArrayDevice, BTRFSDevice
+from .devicelibs.edd import get_edd_dict
+from .devicetree import DeviceTree
 from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, StorageError, FSResizeError, FormatResizeError, UnknownSourceDeviceError
 from .formats import get_device_format_class
 from .formats import get_format
 from .flags import flags
+from .iscsi import iscsi
+from .fcoe import fcoe
+from .zfcp import zfcp
 from .platform import platform as _platform
 from .platform import EFI
 from .size import Size
@@ -313,7 +318,7 @@ class StorageDiscoveryConfig(object):
         self.clear_part_type = ksdata.clearpart.type
         self.clear_part_disks = ksdata.clearpart.drives[:]
         self.clear_part_devices = ksdata.clearpart.devices[:]
-        self.initialize_disks = ksdata.clearpart.init_all
+        self.initialize_disks = ksdata.clearpart.initAll
         self.zero_mbr = ksdata.zerombr.zerombr
 
 
@@ -1232,7 +1237,7 @@ class InstallerStorageConfig(Blivet):
             # no longer in the tree
             self.bootloader.reset()
         if self.ksdata:
-             self.config.updates(self.ksdata)
+            self.config.update(self.ksdata)
         self.roots = []
         if flags.installer_mode:
             self.roots = find_existing_installations(self.devicetree)
@@ -1465,176 +1470,22 @@ class InstallerStorageConfig(Blivet):
             parent = getattr(self.ksdata, list_attr)
             parent.dataList().append(data)
 
+        self.config = StorageDiscoveryConfig()
+        self.autopart_type = AUTOPART_TYPE_LVM
+
+        self.__luks_devs = {}
+
+        # these will both be empty until our reset method gets called
+        # instantiate our own devicetree here to override the default created
+        # in Blivet so that protected_dev_specs gets handled
+        self.devicetree = DeviceTree(passphrase=self.encryption_passphrase,
+                                     luks_dict=self.__luks_devs,
+                                     ignored_disks=self.ignored_disks,
+                                     exclusive_disks=self.exclusive_disks,
+                                     disk_images=self.disk_images,
+                                     protected_dev_specs=self.config.protected_dev_specs)
         self.fsset = FSSet(self.devicetree)
-
-    def reset(self, cleanup_only=False):
-        Blivet.reset(self, cleanup_only)
-
-        self.fsset = FSSet(self.devicetree)
-
-    def write(self):
-        Blivet.write(self)
-
-        self.fsset.write()
-        self.make_mtab()
-
-    @property
-    def boot_device(self):
-        dev = None
-        if self.fsset:
-            dev = self.mountpoints.get("/boot", self.root_device)
-        return dev
-
-    @property
-    def mountpoints(self):
-        return self.fsset.mountpoints
-
-    @property
-    def root_device(self):
-        return self.fsset.root_device
-
-    @property
-    def file_system_free_space(self):
-        """ Combined free space in / and /usr as :class:`~.size.Size`. """
-        mountpoints = ["/", "/usr"]
-        free = Size(0)
-        btrfs_volumes = []
-        for mountpoint in mountpoints:
-            device = self.mountpoints.get(mountpoint)
-            if not device:
-                continue
-
-            # don't count the size of btrfs volumes repeatedly when multiple
-            # subvolumes are present
-            if isinstance(device, BTRFSSubVolumeDevice):
-                if device.volume in btrfs_volumes:
-                    continue
-                else:
-                    btrfs_volumes.append(device.volume)
-
-            if device.format.exists:
-                free += device.format.free
-            else:
-                free += device.format.free_space_estimate(device.size)
-
-        return free
-    def update_ksdata(self):
-        """ Update ksdata to reflect the settings of this Blivet instance. """
-        if not self.ksdata or not self.mountpoints:
-            return
-
-        # clear out whatever was there before
-        self.ksdata.partition.partitions = []
-        self.ksdata.logvol.lvList = []
-        self.ksdata.raid.raidList = []
-        self.ksdata.volgroup.vgList = []
-        self.ksdata.btrfs.btrfsList = []
-
-        # iscsi?
-        # fcoe?
-        # zfcp?
-        # dmraid?
-
-        # bootloader
-
-        # ignoredisk
-        if self.ignored_disks:
-            self.ksdata.ignoredisk.drives = self.ignored_disks[:]
-        elif self.exclusive_disks:
-            self.ksdata.ignoredisk.onlyuse = self.exclusive_disks[:]
-
-        # autopart
-        self.ksdata.autopart.autopart = self.do_autopart
-        self.ksdata.autopart.type = self.autopart_type
-        self.ksdata.autopart.encrypted = self.encrypted_autopart
-
-        # clearpart
-        self.ksdata.clearpart.type = self.config.clear_part_type
-        self.ksdata.clearpart.drives = self.config.clear_part_disks[:]
-        self.ksdata.clearpart.devices = self.config.clear_part_devices[:]
-        self.ksdata.clearpart.initAll = self.config.initialize_disks
-        if self.ksdata.clearpart.type == CLEARPART_TYPE_NONE:
-            # Make a list of initialized disks and of removed partitions. If any
-            # partitions were removed from disks that were not completely
-            # cleared we'll have to use CLEARPART_TYPE_LIST and provide a list
-            # of all removed partitions. If no partitions were removed from a
-            # disk that was not cleared/reinitialized we can use
-            # CLEARPART_TYPE_ALL.
-            self.ksdata.clearpart.devices = []
-            self.ksdata.clearpart.drives = []
-            fresh_disks = [d.name for d in self.disks if d.partitioned and
-                           not d.format.exists]
-
-            destroy_actions = self.devicetree.actions.find(action_type="destroy",
-                                                           object_type="device")
-
-            cleared_partitions = []
-            partial = False
-            for action in destroy_actions:
-                if action.device.type == "partition":
-                    if action.device.disk.name not in fresh_disks:
-                        partial = True
-
-                    cleared_partitions.append(action.device.name)
-
-            if not destroy_actions:
-                pass
-            elif partial:
-                # make a list of removed partitions
-                self.ksdata.clearpart.type = CLEARPART_TYPE_LIST
-                self.ksdata.clearpart.devices = cleared_partitions
-            else:
-                # if they didn't partially clear any disks, use the shorthand
-                self.ksdata.clearpart.type = CLEARPART_TYPE_ALL
-                self.ksdata.clearpart.drives = fresh_disks
-
-        if self.do_autopart:
-            return
-
-        self._update_custom_storage_ksdata()
-
-    def _update_custom_storage_ksdata(self):
-        """ Update KSData for custom storage. """
-
-        # custom storage
-        ks_map = {PartitionDevice: ("PartData", "partition"),
-                  TmpFSDevice: ("PartData", "partition"),
-                  LVMLogicalVolumeDevice: ("LogVolData", "logvol"),
-                  LVMVolumeGroupDevice: ("VolGroupData", "volgroup"),
-                  MDRaidArrayDevice: ("RaidData", "raid"),
-                  BTRFSDevice: ("BTRFSData", "btrfs")}
-
-        # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
-                           for a in d.ancestors))
-
-        # devices which share information with their distinct raw device
-        complementary_devices = [d for d in devices if d.raw_device is not d]
-
-        devices.sort(key=lambda d: len(d.ancestors))
-        for device in devices:
-            cls = next((c for c in ks_map if isinstance(device, c)), None)
-            if cls is None:
-                log.info("omitting ksdata: %s", device)
-                continue
-
-            class_attr, list_attr = ks_map[cls]
-
-            cls = getattr(self.ksdata, class_attr)
-            data = cls()    # all defaults
-
-            complements = [d for d in complementary_devices if d.raw_device is device]
-
-            if len(complements) > 1:
-                log.warning("omitting ksdata for %s, found too many (%d) complementary devices", device, len(complements))
-                continue
-
-            device = complements[0] if complements else device
-
-            device.populate_ksdata(data)
-
-            parent = getattr(self.ksdata, list_attr)
-            parent.dataList().append(data)
+        self._free_space_snapshot = None
 
     def empty_device(self, device):
         empty = True
@@ -1874,6 +1725,18 @@ class InstallerStorageConfig(Blivet):
             os.unlink(path)
 
         os.symlink(target, path)
+
+    @property
+    def free_space_snapshot(self):
+        # if no snapshot is available, do it now and return it
+        self._free_space_snapshot = self._free_space_snapshot or self.get_free_space()
+
+        return self._free_space_snapshot
+
+    def create_free_space_snapshot(self):
+        self._free_space_snapshot = self.get_free_space()
+
+        return self._free_space_snapshot
 
     def add_fstab_swap(self, device):
         """
