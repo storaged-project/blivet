@@ -36,7 +36,7 @@ from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats
 from .devicelibs import lvm
-from .events.changes import data as event_data
+from .events.changes import record_change
 from .events.changes import AttributeChanged, DeviceAdded, DeviceRemoved
 from .events.handler import EventHandlerMixin
 from . import util
@@ -161,7 +161,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 newdev.type != "btrfs volume" and
                 newdev.name not in self.names):
             self.names.append(newdev.name)
-        event_data.changes.append(DeviceAdded(device=newdev))
+        record_change(DeviceAdded(device=newdev))
         log.info("added %s %s (id %d) to device tree", newdev.type,
                  newdev.name,
                  newdev.id)
@@ -204,7 +204,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                         device.update_name()
 
         self._devices.remove(dev)
-        event_data.changes.append(DeviceRemoved(device=dev))
+        record_change(DeviceRemoved(device=dev))
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
                  dev.id)
@@ -258,8 +258,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 device.format = None
 
             if old_fmt.type and (not remove_device or device.is_disk):
-                event_data.changes.append(AttributeChanged(device=device, attr="format",
-                                                           old=old_fmt, new=device.format))
+                record_change(AttributeChanged(device=device, attr="format",
+                                               old=old_fmt, new=device.format))
 
         if remove_device and not device.is_disk:
             if actions:
@@ -884,7 +884,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         DeviceTreeBase.__init__(self, conf=conf)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict)
+        PopulatorMixin.__init__(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ

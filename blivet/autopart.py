@@ -206,7 +206,7 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
 
     # basis for requests with required_space is the sum of the sizes of the
     # two largest free regions
-    all_free = (Size(reg.get_length(unit="B")) for reg in get_free_regions(disks))
+    all_free = (Size(reg.getLength(unit="B")) for reg in get_free_regions(disks))
     all_free = sorted(all_free, reverse=True)
     if not all_free:
         # this should never happen since we've already filtered the disks
@@ -382,7 +382,7 @@ def _schedule_volumes(storage, devs):
         btr = storage.autopart_type == AUTOPART_TYPE_BTRFS and request.btr
         lv = (storage.autopart_type in (AUTOPART_TYPE_LVM,
                                         AUTOPART_TYPE_LVM_THINP) and request.lv)
-        thinlv = (storage.auto_part_type == AUTOPART_TYPE_LVM_THINP and
+        thinlv = (storage.autopart_type == AUTOPART_TYPE_LVM_THINP and
                   request.lv and request.thin)
         if thinlv and pool is None:
             # create a single thin pool in the vg
@@ -511,7 +511,7 @@ def do_autopart(storage, data, min_luks_entropy=0):
     # grow LVs
     grow_lvm(storage)
 
-    storage.set_up_boot_loader()
+    storage.set_up_bootloader()
 
     # only newly added swaps should appear in the fstab
     new_swaps = (dev for dev in storage.swaps if not dev.format.exists)

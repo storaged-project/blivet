@@ -20,7 +20,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from ...events.changes import data as event_data
+from ...events.changes import record_change
 from ...events.changes import AttributeChanged
 from ... import formats
 from ... import udev
@@ -93,13 +93,13 @@ class FormatPopulator(PopulatorHelper):
             self.device.format = formats.DeviceFormat(device=self.device.path, exists=True)
 
         if old_fmt.type != self.device.format.type or old_fmt.uuid != self.device.format.uuid:
-            event_data.changes.append(AttributeChanged(device=self.device, attr="format",
-                                                       old=old_fmt, new=self.device.format))
+            record_change(AttributeChanged(device=self.device, attr="format",
+                                           old=old_fmt, new=self.device.format))
 
     def update(self):
         label = udev.device_get_label(self.data)
         if hasattr(self.device.format, "label") and self.device.format.label != label:
             old_label = self.device.format.label
             self.device.format.label = label
-            event_data.changes.append(AttributeChanged(device=self.device, fmt=self.device.format,
-                                                       attr="label", old=old_label, new=label))
+            record_change(AttributeChanged(device=self.device, fmt=self.device.format,
+                                           attr="label", old=old_label, new=label))

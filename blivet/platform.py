@@ -184,7 +184,7 @@ class Platform(object):
             return 0
 
     @property
-    def stage1MissingError(self):
+    def stage1_missing_error(self):
         """A platform-specific error message to be shown if stage1 target
            selection fails."""
         return self._boot_stage1_missing_error
