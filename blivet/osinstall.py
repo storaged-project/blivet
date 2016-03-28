@@ -278,6 +278,37 @@ def _find_existing_installations(devicetree):
     return roots
 
 
+class StorageDiscoveryConfig(object):
+
+    """ Class to encapsulate various detection/initialization parameters. """
+
+    def __init__(self):
+        # storage configuration variables
+        self.ignore_disk_interactive = False
+        self.clear_part_type = None
+        self.clear_part_disks = []
+        self.clear_part_devices = []
+        self.initialize_disks = False
+        self.protected_dev_specs = []
+        self.zero_mbr = False
+
+        # Whether clear_partitions removes scheduled/non-existent devices and
+        # disklabels depends on this flag.
+        self.clear_non_existent = False
+
+    def update(self, ksdata):
+        """ Update configuration from ksdata source.
+
+            :param ksdata: kickstart data used as data source
+            :type ksdata: :class:`pykickstart.Handler`
+        """
+        self.clear_part_type = ksdata.clearpart.type
+        self.clear_part_disks = ksdata.clearpart.drives[:]
+        self.clear_part_devices = ksdata.clearpart.devices[:]
+        self.initialize_disks = ksdata.clearpart.init_all
+        self.zero_mbr = ksdata.zerombr.zerombr
+
+
 class FSSet(object):
 
     """ A class to represent a set of filesystems. """

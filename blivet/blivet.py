@@ -46,7 +46,7 @@ from .formats import get_default_filesystem_type
 from .flags import flags
 from .platform import platform as _platform
 from .formats import get_format
-from .osinstall import FSSet, find_existing_installations
+from .osinstall import FSSet, StorageDiscoveryConfig find_existing_installations
 from . import arch
 from .iscsi import iscsi
 from .fcoe import fcoe
@@ -70,37 +70,6 @@ def empty_device(device):
         empty = (device.format.type is None)
 
     return empty
-
-
-class StorageDiscoveryConfig(object):
-
-    """ Class to encapsulate various detection/initialization parameters. """
-
-    def __init__(self):
-        # storage configuration variables
-        self.ignore_disk_interactive = False
-        self.clear_part_type = None
-        self.clear_part_disks = []
-        self.clear_part_devices = []
-        self.initialize_disks = False
-        self.protected_dev_specs = []
-        self.zero_mbr = False
-
-        # Whether clear_partitions removes scheduled/non-existent devices and
-        # disklabels depends on this flag.
-        self.clear_non_existent = False
-
-    def update(self, ksdata):
-        """ Update configuration from ksdata source.
-
-            :param ksdata: kickstart data used as data source
-            :type ksdata: :class:`pykickstart.Handler`
-        """
-        self.clear_part_type = ksdata.clearpart.type
-        self.clear_part_disks = ksdata.clearpart.drives[:]
-        self.clear_part_devices = ksdata.clearpart.devices[:]
-        self.initialize_disks = ksdata.clearpart.initAll
-        self.zero_mbr = ksdata.zerombr.zerombr
 
 
 class Blivet(object, metaclass=SynchronizedMeta):
