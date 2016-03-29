@@ -993,7 +993,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
                                      msg="Wrong format type after FormatPopulator.run on %s" % self.udev_type)
 
                     self.assertEqual(get_device_by_uuid.call_count, 4,
-                                    get_device_by_uuid.mock_calls)  # two for vg and one for each lv
+                                     get_device_by_uuid.mock_calls)  # two for vg and one for each lv
                     get_device_by_uuid.assert_has_calls([call(pv_info.vg_uuid, incomplete=True),
                                                         call(lv1.uuid),
                                                         call(lv2.uuid)],
