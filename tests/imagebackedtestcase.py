@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from blivet import Blivet
+from blivet.osinstall import InstallerStorageConfig
 from blivet import util
 from blivet.size import Size
 from blivet.flags import flags
@@ -44,7 +44,7 @@ class ImageBackedTestCase(unittest.TestCase):
         """
         for (name, size) in iter(self.disks.items()):
             path = util.create_sparse_tempfile(name, size)
-            self.blivet.config.disk_images[name] = path
+            self.blivet.disk_images[name] = path
 
         #
         # set up the disk images with a disklabel
@@ -95,7 +95,7 @@ class ImageBackedTestCase(unittest.TestCase):
     def setUp(self):
         """ Do any setup required prior to running a test. """
         flags.image_install = True
-        self.blivet = Blivet()
+        self.blivet = InstallerStorageConfig()
 
         self.addCleanup(self._clean_up)
         self.set_up_storage()
@@ -104,7 +104,7 @@ class ImageBackedTestCase(unittest.TestCase):
         """ Clean up any resources that may have been set up for a test. """
         self.blivet.reset()
         self.blivet.devicetree.teardown_disk_images()
-        for fn in self.blivet.config.disk_images.values():
+        for fn in self.blivet.disk_images.values():
             if os.path.exists(fn):
                 os.unlink(fn)
 

@@ -20,7 +20,7 @@ class ClearPartTestCase(unittest.TestCase):
 
     def test_should_clear(self):
         """ Test the Blivet.should_clear method. """
-        b = blivet.Blivet()
+        b = blivet.osinstall.InstallerStorageConfig()
 
         DiskDevice = blivet.devices.DiskDevice
         PartitionDevice = blivet.devices.PartitionDevice
