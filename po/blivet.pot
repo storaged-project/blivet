@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-23 11:33-0500\n"
+"POT-Creation-Date: 2016-03-08 23:41-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/blivet.py:1204
+#: ../blivet/blivet.py:1201
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
@@ -177,163 +177,6 @@ msgstr ""
 
 #: ../blivet/autopart.py:447 ../blivet/autopart.py:502
 msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
-#. TRANSLATORS: 'B' for "Bytes"
-#: ../blivet/size.py:46
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "bytes"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "kilo"
-msgstr ""
-
-#. TRANSLATORS: "k" for "kilo-" (x 10^3)
-#: ../blivet/size.py:55
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "mega"
-msgstr ""
-
-#. TRANSLATORS: "M" for "mega-" (x 10^6)
-#: ../blivet/size.py:60
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:63
-msgid "giga"
-msgstr ""
-
-#. TRANSLATORS: "G" for "giga-" (x 10^9)
-#: ../blivet/size.py:65
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:68
-msgid "tera"
-msgstr ""
-
-#. TRANSLATORS: "T" for "tera-" (x 10^12)
-#: ../blivet/size.py:70
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:73
-msgid "peta"
-msgstr ""
-
-#. TRANSLATORS: "P" for "peta-" (x 10^15)
-#: ../blivet/size.py:75
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:78
-msgid "exa"
-msgstr ""
-
-#. TRANSLATORS: "E" for "exa-"  (x 10^18)
-#: ../blivet/size.py:80
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:83
-msgid "zetta"
-msgstr ""
-
-#. TRANSLATORS: "Z" for "zetta-" (x 10^21)
-#: ../blivet/size.py:85
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:88
-msgid "yotta"
-msgstr ""
-
-#. TRANSLATORS: "Y" for "yotta-" (x 10^24)
-#: ../blivet/size.py:90
-msgid "Y"
-msgstr ""
-
-#: ../blivet/size.py:93
-msgid "kibi"
-msgstr ""
-
-#. TRANSLATORS: "Ki" for "kibi-" (x 2^10)
-#: ../blivet/size.py:95
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:98
-msgid "mebi"
-msgstr ""
-
-#. TRANSLATORS: "Mi" for "mebi-" (x 2^20)
-#: ../blivet/size.py:100
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:103
-msgid "gibi"
-msgstr ""
-
-#. TRANSLATORS: "Gi" for "gibi-" (x 2^30)
-#: ../blivet/size.py:105
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:108
-msgid "tebi"
-msgstr ""
-
-#. TRANSLATORS: "Ti" for "tebi-" (x 2^40)
-#: ../blivet/size.py:110
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:113
-msgid "pebi"
-msgstr ""
-
-#. TRANSLATORS: "Pi" for "pebi-" (x 2^50)
-#: ../blivet/size.py:115
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:118
-msgid "exbi"
-msgstr ""
-
-#. TRANSLATORS: "Ei" for "exbi-" (x 2^60)
-#: ../blivet/size.py:120
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:123
-msgid "zebi"
-msgstr ""
-
-#. TRANSLATORS: "Zi" for "zebi-" (x 2^70)
-#: ../blivet/size.py:125
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:128
-msgid "yobi"
-msgstr ""
-
-#. TRANSLATORS: "Yi" for "yobi-" (x 2^80)
-#: ../blivet/size.py:130
-msgid "Yi"
 msgstr ""
 
 #: ../blivet/fcoe.py:118
