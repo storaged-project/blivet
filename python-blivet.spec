@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
-Name: python3-blivet
+Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.0.0
+Version: 2.0.1
 
 #%%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -48,7 +48,7 @@ Requires: python3-gobject-base
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 %description
-The python3-blivet package is a python module for examining and modifying
+The python-blivet package is a python module for examining and modifying
 storage configuration.
 
 %package -n %{realname}-data
@@ -57,6 +57,12 @@ Summary: Data for the %{realname} python module.
 %description -n %{realname}-data
 The %{realname}-data package provides data files required by the %{realname}
 python module.
+
+%package -n python3-%{realname}
+Summary: A python3 package for examining and modifying storage configuration.
+%description -n python3-%{realname}
+The python3-%{realname} is a python3 package for examining and modifying storage
+configuration.
 
 %prep
 %setup -q -n %{realname}-%{realversion}
@@ -80,6 +86,13 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Mar 29 2016 David Lehman <dlehman@redhat.com> - 2.0.1-1
+- Make sure EddMatcher.root is a string. (dlehman)
+- Move per-thread change accounting to a function. (dlehman)
+- Add missing conf kwarg in call to PopulatorMixin ctor. (dlehman)
+- Fixes found while porting anaconda to blivet-2.0 (dlehman)
+- Mock all blockdev's listing functions for populator tests (vpodzime)
+
 * Wed Mar 09 2016 David Lehman <dlehman@redhat.com> - 2.0.0-1
 - Bump version to 2.0.0
 

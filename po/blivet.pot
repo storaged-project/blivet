@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-08 23:41-0500\n"
+"POT-Creation-Date: 2016-03-29 11:50-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,6 +80,23 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1964
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:118
+msgid "FCoE not available"
+msgstr ""
+
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:277
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:442 ../blivet/autopart.py:494
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:447 ../blivet/autopart.py:502
+msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -164,23 +181,6 @@ msgstr ""
 #: ../blivet/zfcp.py:270
 #, python-format
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
-msgstr ""
-
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:277
-msgid "No big enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/autopart.py:442 ../blivet/autopart.py:494
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/autopart.py:447 ../blivet/autopart.py:502
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/fcoe.py:118
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/osinstall.py:258
@@ -417,6 +417,10 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
+#: ../blivet/formats/__init__.py:170
+msgid "Unknown"
+msgstr ""
+
 #: ../blivet/formats/fs.py:973
 msgid "Apple Bootstrap"
 msgstr ""
@@ -435,10 +439,6 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:48
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:170
-msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:35

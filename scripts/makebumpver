@@ -387,8 +387,8 @@ class MakeBumpVer:
 
         self._replaceString(l, "Version: %s\n" % (self.version),
                                "Version: %s\n" % (newVersion))
-        self._replaceString(l, "Release: %s\n" % (self.release+r"%{\?dist}"),
-                               "Release: %s\n" % (self.new_release+r"%{?dist}"))
+        self._replaceString(l, "Release: %s\n" % (self.release+r"%{\?prerelease}%{\?dist}"),
+                               "Release: %s\n" % (self.new_release+r"%{?prerelease}%{?dist}"))
 
         i = l.index('%changelog\n')
         top = l[:i]
