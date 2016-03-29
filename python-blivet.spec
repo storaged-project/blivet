@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python3-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.0.0
+Version: 2.0.1
 
 #%%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -80,6 +80,13 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Mar 29 2016 David Lehman <dlehman@redhat.com> - 2.0.1-1
+- Make sure EddMatcher.root is a string. (dlehman)
+- Move per-thread change accounting to a function. (dlehman)
+- Add missing conf kwarg in call to PopulatorMixin ctor. (dlehman)
+- Fixes found while porting anaconda to blivet-2.0 (dlehman)
+- Mock all blockdev's listing functions for populator tests (vpodzime)
+
 * Wed Mar 09 2016 David Lehman <dlehman@redhat.com> - 2.0.0-1
 - Bump version to 2.0.0
 
