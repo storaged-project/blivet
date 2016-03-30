@@ -1976,6 +1976,7 @@ def grow_lvm(storage):
             if lv in vg.thinpools:
                 # make sure the pool's base size is at least the sum of its lvs'
                 lv.req_size = max(lv.req_size, lv.used_space)
+                lv.size = lv.req_size
 
                 # add the required padding to the requested pool size
                 lv.req_size += Size(blockdev.lvm.get_thpool_padding(lv.req_size, vg.pe_size))
