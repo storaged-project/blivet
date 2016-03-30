@@ -29,6 +29,19 @@ BuildRequires: gettext
 BuildRequires: python3-pocketlint >= %{pocketlintver}
 BuildRequires: python3-devel python3-setuptools
 
+%description
+The python-blivet package is a python module for examining and modifying
+storage configuration.
+
+%package -n %{realname}-data
+Summary: Data for the %{realname} python module.
+
+%description -n %{realname}-data
+The %{realname}-data package provides data files required by the %{realname}
+python module.
+
+%package -n python3-%{realname}
+Summary: A python3 package for examining and modifying storage configuration.
 Requires: python3
 Requires: python3-six
 Requires: python3-kickstart
@@ -47,19 +60,6 @@ Requires: python3-hawkey
 Requires: python3-gobject-base
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
-%description
-The python-blivet package is a python module for examining and modifying
-storage configuration.
-
-%package -n %{realname}-data
-Summary: Data for the %{realname} python module.
-
-%description -n %{realname}-data
-The %{realname}-data package provides data files required by the %{realname}
-python module.
-
-%package -n python3-%{realname}
-Summary: A python3 package for examining and modifying storage configuration.
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
 configuration.
