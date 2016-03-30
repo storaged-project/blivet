@@ -90,8 +90,10 @@ class FCoE(object):
             log.info("No FCoE EDD info found: %s", buf.rstrip())
             return
 
-        log.info("FCoE NIC found in EDD: %s", val)
-        self.add_san(val, dcb=True, auto_vlan=True)
+        dcb = self._iface_driver(val) not in ("bnx2x", "bnx2fc")
+
+        log.info("FCoE NIC found in EDD: %s, using dcb: %s", val, dcb)
+        self.add_san(val, dcb=dcb, auto_vlan=True)
 
     def startup(self):
         if self.started:
@@ -147,31 +149,15 @@ class FCoE(object):
                 if timeout <= 0:
                     break
 
-            time.sleep(1)
-
             if rc == 0:
-                self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
-                rc, out = util.run_program_and_capture_output(
-                    ["systemctl", "restart", "fcoe.service"])
+                time.sleep(1)
             else:
                 log.info("Timed out when %s", timeout_msg)
 
-        else:
-            dpath = os.readlink("/sys/class/net/%s/device/driver" % nic)
-            driver = os.path.basename(dpath)
-            if driver == "bnx2x":
-                util.run_program(["ip", "link", "set", nic, "up"])
-                util.run_program(["modprobe", "8021q"])
-                udev.settle()
-                # Sleep for 3 s to allow dcb negotiation (#813057)
-                time.sleep(3)
-                rc, out = util.run_program_and_capture_output(
-                    ["fipvlan", '-c', '-s', '-f', '-fcoe', nic],
-                    stderr_to_stdout=True)
-            else:
-                self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
-                rc, out = util.run_program_and_capture_output(
-                    ["systemctl", "restart", "fcoe.service"])
+        if rc == 0:
+            self.write_nic_fcoe_cfg(nic, dcb=dcb, auto_vlan=auto_vlan)
+            rc, out = util.run_program_and_capture_output(
+                ["systemctl", "restart", "fcoe.service"])
 
         if rc == 0:
             self._stabilize()
@@ -181,6 +167,16 @@ class FCoE(object):
             error_msg = out
 
         return error_msg
+
+    def _iface_driver(self, nic):
+        try:
+            dpath = os.readlink("/sys/class/net/%s/device/driver" % nic)
+        except OSError as e:
+            log.debug("Can't find driver of device %s, %s", nic, e)
+            driver = ""
+        else:
+            driver = os.path.basename(dpath)
+        return driver
 
     def write(self, root):
         if not self.nics:
