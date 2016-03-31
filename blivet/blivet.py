@@ -25,13 +25,10 @@ import re
 import shelve
 import contextlib
 import time
-import parted
 import functools
 
-from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
-
 from .storage_log import log_method_call, log_exception_info
-from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice
+from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import MDRaidArrayDevice, PartitionDevice, TmpFSDevice, device_path_to_name
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice
@@ -46,66 +43,13 @@ from .formats import get_default_filesystem_type
 from .flags import flags
 from .platform import platform as _platform
 from .formats import get_format
-from .osinstall import FSSet, find_existing_installations
 from . import arch
-from .iscsi import iscsi
-from .fcoe import fcoe
-from .zfcp import zfcp
 from . import devicefactory
 from . import get_bootloader, get_sysroot, short_product_name, __version__
 from .threads import SynchronizedMeta
 
-from .i18n import _
-
 import logging
 log = logging.getLogger("blivet")
-
-
-def empty_device(device):
-    empty = True
-    if device.partitioned:
-        partitions = device.children
-        empty = all([p.is_magic for p in partitions])
-    else:
-        empty = (device.format.type is None)
-
-    return empty
-
-
-class StorageDiscoveryConfig(object):
-
-    """ Class to encapsulate various detection/initialization parameters. """
-
-    def __init__(self):
-        # storage configuration variables
-        self.ignore_disk_interactive = False
-        self.ignored_disks = []
-        self.exclusive_disks = []
-        self.clear_part_type = None
-        self.clear_part_disks = []
-        self.clear_part_devices = []
-        self.initialize_disks = False
-        self.protected_dev_specs = []
-        self.disk_images = {}
-        self.zero_mbr = False
-
-        # Whether clear_partitions removes scheduled/non-existent devices and
-        # disklabels depends on this flag.
-        self.clear_non_existent = False
-
-    def update(self, ksdata):
-        """ Update configuration from ksdata source.
-
-            :param ksdata: kickstart data used as data source
-            :type ksdata: :class:`pykickstart.Handler`
-        """
-        self.ignored_disks = ksdata.ignoredisk.ignoredisk[:]
-        self.exclusive_disks = ksdata.ignoredisk.onlyuse[:]
-        self.clear_part_type = ksdata.clearpart.type
-        self.clear_part_disks = ksdata.clearpart.drives[:]
-        self.clear_part_devices = ksdata.clearpart.devices[:]
-        self.initialize_disks = ksdata.clearpart.initAll
-        self.zero_mbr = ksdata.zerombr.zerombr
 
 
 class Blivet(object, metaclass=SynchronizedMeta):
@@ -120,13 +64,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.ksdata = ksdata
         self._bootloader = None
 
-        self.config = StorageDiscoveryConfig()
-
         # storage configuration variables
         self.do_autopart = False
         self.clear_part_choice = None
         self.encrypted_autopart = False
-        self.autopart_type = AUTOPART_TYPE_LVM
         self.encryption_passphrase = None
         self.encryption_cipher = None
         self.escrow_certificates = {}
@@ -134,6 +75,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.autopart_add_backup_passphrase = False
         self.autopart_requests = []
         self.edd_dict = {}
+
+        self.ignored_disks = []
+        self.exclusive_disks = []
+        self.disk_images = {}
 
         self.__luks_devs = {}
         self.size_sets = []
@@ -144,13 +89,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
 
         # these will both be empty until our reset method gets called
-        self.devicetree = DeviceTree(conf=self.config,
-                                     passphrase=self.encryption_passphrase,
-                                     luks_dict=self.__luks_devs)
-        self.fsset = FSSet(self.devicetree)
+        self.devicetree = DeviceTree(passphrase=self.encryption_passphrase,
+                                     luks_dict=self.__luks_devs,
+                                     ignored_disks=self.ignored_disks,
+                                     exclusive_disks=self.exclusive_disks,
+                                     disk_images=self.disk_images)
         self.roots = []
         self.services = set()
-        self._free_space_snapshot = None
 
     def do_it(self, callbacks=None):
         """
@@ -162,64 +107,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         """
 
         self.devicetree.actions.process(callbacks=callbacks, devices=self.devices)
-        if not flags.installer_mode:
-            return
-
-        # now set the boot partition's flag
-        if self.bootloader and not self.bootloader.skip_bootloader:
-            if self.bootloader.stage2_bootable:
-                boot = self.boot_device
-            else:
-                boot = self.bootloader_device
-
-            if boot.type == "mdarray":
-                boot_devs = boot.parents
-            else:
-                boot_devs = [boot]
-
-            for dev in boot_devs:
-                if not hasattr(dev, "bootable"):
-                    log.info("Skipping %s, not bootable", dev)
-                    continue
-
-                # Dos labels can only have one partition marked as active
-                # and unmarking ie the windows partition is not a good idea
-                skip = False
-                if dev.disk.format.parted_disk.type == "msdos":
-                    for p in dev.disk.format.parted_disk.partitions:
-                        if p.type == parted.PARTITION_NORMAL and \
-                           p.getFlag(parted.PARTITION_BOOT):
-                            skip = True
-                            break
-
-                # GPT labeled disks should only have bootable set on the
-                # EFI system partition (parted sets the EFI System GUID on
-                # GPT partitions with the boot flag)
-                if dev.disk.format.label_type == "gpt" and \
-                   dev.format.type not in ["efi", "macefi"]:
-                    skip = True
-
-                if skip:
-                    log.info("Skipping %s", dev.name)
-                    continue
-
-                # hfs+ partitions on gpt can't be marked bootable via parted
-                if dev.disk.format.parted_disk.type != "gpt" or \
-                        dev.format.type not in ["hfs+", "macefi"]:
-                    log.info("setting boot flag on %s", dev.name)
-                    dev.bootable = True
-
-                # Set the boot partition's name on disk labels that support it
-                if dev.parted_partition.disk.supportsFeature(parted.DISK_TYPE_PARTITION_NAME):
-                    ped_partition = dev.parted_partition.getPedPartition()
-                    ped_partition.setName(dev.format.name)
-                    log.info("Setting label on %s to '%s'", dev, dev.format.name)
-
-                dev.disk.setup()
-                dev.disk.format.commit_to_disk()
-
-        if flags.installer_mode:
-            self.dump_state("final")
 
     @property
     def next_id(self):
@@ -251,26 +138,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
             about the cleanup_only keyword argument.
         """
         log.info("resetting Blivet (version %s) instance %s", __version__, self)
-        if flags.installer_mode:
-            # save passphrases for luks devices so we don't have to reprompt
-            self.encryption_passphrase = None
-            for device in self.devices:
-                if device.format.type == "luks" and device.format.exists:
-                    self.save_passphrase(device)
 
-        if self.ksdata:
-            self.config.update(self.ksdata)
-
-        if flags.installer_mode and not flags.image_install:
-            iscsi.startup()
-            fcoe.startup()
-            zfcp.startup()
-
-        self.devicetree.reset(conf=self.config,
-                              passphrase=self.encryption_passphrase,
-                              luks_dict=self.__luks_devs)
+        self.devicetree.reset(passphrase=self.encryption_passphrase,
+                              luks_dict=self.__luks_devs,
+                              ignored_disks=self.ignored_disks,
+                              exclusive_disks=self.exclusive_disks,
+                              disk_images=self.disk_images)
         self.devicetree.populate(cleanup_only=cleanup_only)
-        self.fsset = FSSet(self.devicetree)
         self.edd_dict = get_edd_dict(self.partitioned)
         self.devicetree.edd_dict = self.edd_dict
         if self.bootloader:
@@ -278,40 +152,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             # no longer in the tree
             self.bootloader.reset()
 
-        self.roots = []
-        if flags.installer_mode:
-            self.roots = find_existing_installations(self.devicetree)
-            self.dump_state("initial")
-
-        if not flags.installer_mode:
-            self.devicetree.handle_nodev_filesystems()
-
         self.update_bootloader_disk_list()
-
-    @property
-    def unused_devices(self):
-        used_devices = []
-        for root in self.roots:
-            for device in list(root.mounts.values()) + root.swaps:
-                if device not in self.devices:
-                    continue
-
-                used_devices.extend(device.ancestors)
-
-        for new in [d for d in self.devicetree.leaves if not d.format.exists]:
-            if new.format.mountable and not new.format.mountpoint:
-                continue
-
-            used_devices.extend(new.ancestors)
-
-        for device in self.partitions:
-            if getattr(device, "is_logical", False):
-                extended = device.disk.format.extended_partition.path
-                used_devices.append(self.devicetree.get_device_by_path(extended))
-
-        used = set(used_devices)
-        _all = set(self.devices)
-        return list(_all.difference(used))
 
     @property
     def devices(self):
@@ -495,100 +336,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         swaps.sort(key=lambda d: d.name)
         return swaps
 
-    def should_clear(self, device, **kwargs):
-        """ Return True if a clearpart settings say a device should be cleared.
-
-            :param device: the device (required)
-            :type device: :class:`~.devices.StorageDevice`
-            :keyword clear_part_type: overrides :attr:`self.config.clear_part_type`
-            :type clear_part_type: int
-            :keyword clear_part_disks: overrides
-                                     :attr:`self.config.clear_part_disks`
-            :type clear_part_disks: list
-            :keyword clear_part_devices: overrides
-                                       :attr:`self.config.clear_part_devices`
-            :type clear_part_devices: list
-            :returns: whether or not clear_partitions should remove this device
-            :rtype: bool
-        """
-        clear_part_type = kwargs.get("clear_part_type", self.config.clear_part_type)
-        clear_part_disks = kwargs.get("clear_part_disks",
-                                      self.config.clear_part_disks)
-        clear_part_devices = kwargs.get("clear_part_devices",
-                                        self.config.clear_part_devices)
-
-        for disk in device.disks:
-            # this will not include disks with hidden formats like multipath
-            # and firmware raid member disks
-            if clear_part_disks and disk.name not in clear_part_disks:
-                return False
-
-        if not self.config.clear_non_existent:
-            if (device.is_disk and not device.format.exists) or \
-               (not device.is_disk and not device.exists):
-                return False
-
-        # the only devices we want to clear when clear_part_type is
-        # CLEARPART_TYPE_NONE are uninitialized disks, or disks with no
-        # partitions, in clear_part_disks, and then only when we have been asked
-        # to initialize disks as needed
-        if clear_part_type in [CLEARPART_TYPE_NONE, None]:
-            if not self.config.initialize_disks or not device.is_disk:
-                return False
-
-            if not empty_device(device):
-                return False
-
-        if isinstance(device, PartitionDevice):
-            # Never clear the special first partition on a Mac disk label, as
-            # that holds the partition table itself.
-            # Something similar for the third partition on a Sun disklabel.
-            if device.is_magic:
-                return False
-
-            # We don't want to fool with extended partitions, freespace, &c
-            if not device.is_primary and not device.is_logical:
-                return False
-
-            if clear_part_type == CLEARPART_TYPE_LINUX and \
-               not device.format.linux_native and \
-               not device.get_flag(parted.PARTITION_LVM) and \
-               not device.get_flag(parted.PARTITION_RAID) and \
-               not device.get_flag(parted.PARTITION_SWAP):
-                return False
-        elif device.is_disk:
-            if device.partitioned and clear_part_type != CLEARPART_TYPE_ALL:
-                # if clear_part_type is not CLEARPART_TYPE_ALL but we'll still be
-                # removing every partition from the disk, return True since we
-                # will want to be able to create a new disklabel on this disk
-                if not empty_device(device):
-                    return False
-
-            # Never clear disks with hidden formats
-            if device.format.hidden:
-                return False
-
-            # When clear_part_type is CLEARPART_TYPE_LINUX and a disk has non-
-            # linux whole-disk formatting, do not clear it. The exception is
-            # the case of an uninitialized disk when we've been asked to
-            # initialize disks as needed
-            if (clear_part_type == CLEARPART_TYPE_LINUX and
-                not ((self.config.initialize_disks and
-                      empty_device(device)) or
-                     (not device.partitioned and device.format.linux_native))):
-                return False
-
-        # Don't clear devices holding install media.
-        descendants = self.devicetree.get_dependent_devices(device)
-        if device.protected or any(d.protected for d in descendants):
-            return False
-
-        if clear_part_type == CLEARPART_TYPE_LIST and \
-           device.name not in clear_part_devices:
-            return False
-
-        return True
-
     def recursive_remove(self, device):
         """ Remove a device after removing its dependent devices.
 
@@ -599,42 +346,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             disk device.
         """
         self.devicetree.recursive_remove(device)
-
-    def clear_partitions(self):
-        """ Clear partitions and dependent devices from disks.
-
-            This is also where zerombr is handled.
-        """
-        # Sort partitions by descending partition number to minimize confusing
-        # things like multiple "destroy sda5" actions due to parted renumbering
-        # partitions. This can still happen through the UI but it makes sense to
-        # avoid it where possible.
-        partitions = sorted(self.partitions,
-                            key=lambda p: p.parted_partition.number,
-                            reverse=True)
-        for part in partitions:
-            log.debug("clearpart: looking at %s", part.name)
-            if not self.should_clear(part):
-                continue
-
-            self.recursive_remove(part)
-            log.debug("partitions: %s", [p.getDeviceNodeName() for p in part.parted_partition.disk.partitions])
-
-        # now remove any empty extended partitions
-        self.remove_empty_extended_partitions()
-
-        # ensure all disks have appropriate disklabels
-        for disk in self.disks:
-            zerombr = (self.config.zero_mbr and disk.format.type is None)
-            should_clear = self.should_clear(disk)
-            if should_clear:
-                self.recursive_remove(disk)
-
-            if zerombr or should_clear:
-                log.debug("clearpart: initializing %s", disk.name)
-                self.initialize_disk(disk)
-
-        self.update_bootloader_disk_list()
 
     def initialize_disk(self, disk):
         """ (Re)initialize a disk by creating a disklabel on it.
@@ -691,23 +402,20 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 extended = self.devicetree.get_device_by_name(extended_name)
                 self.destroy_device(extended)
 
-    def get_free_space(self, disks=None, clear_part_type=None):
+    def get_free_space(self, disks=None, partitions=None):
         """ Return a dict with free space info for each disk.
 
             The dict values are 2-tuples: (disk_free, fs_free). fs_free is
             space available by shrinking filesystems. disk_free is space not
             allocated to any partition.
 
-            disks and clear_part_type allow specifying a set of disks other than
-            self.disks and a clear_part_type value other than
-            self.config.clear_part_type.
+            disks and partitions allow specifying a set of disks other than
+            self.disks and partition values other than self.parttions.
 
             :keyword disks: overrides :attr:`disks`
             :type disks: list
-            :keyword clear_part_type: overrides :attr:`self.config.clear_part_type`
-            :type clear_part_type: int
-            :returns: dict with disk name keys and tuple (disk, fs) free values
-            :rtype: dict
+            :keyword partitions: overrides :attr:`partitions`
+            :type partitions: list
 
             .. note::
 
@@ -717,31 +425,17 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if disks is None:
             disks = self.disks
 
-        if clear_part_type is None:
-            clear_part_type = self.config.clear_part_type
+        if partitions is None:
+            partitions = self.partitions
 
         free = {}
         for disk in disks:
-            should_clear = self.should_clear(disk, clear_part_type=clear_part_type,
-                                             clear_part_disks=[disk.name])
-            if should_clear:
-                free[disk.name] = (disk.size, Size(0))
-                continue
-
             disk_free = Size(0)
             fs_free = Size(0)
             if disk.partitioned:
                 disk_free = disk.format.free
-                for partition in [p for p in self.partitions if p.disk == disk]:
-                    # only check actual filesystems since lvm &c require a bunch of
-                    # operations to translate free filesystem space into free disk
-                    # space
-                    should_clear = self.should_clear(partition,
-                                                     clear_part_type=clear_part_type,
-                                                     clear_part_disks=[disk.name])
-                    if should_clear:
-                        disk_free += partition.size
-                    elif hasattr(partition.format, "free"):
+                for partition in (p for p in partitions if p.disk == disk):
+                    if hasattr(partition.format, "free"):
                         fs_free += partition.format.free
             elif hasattr(disk.format, "free"):
                 fs_free = disk.format.free
@@ -1164,44 +858,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         for action in actions:
             self.devicetree.actions.add(action)
 
-    def format_by_default(self, device):
-        """Return whether the device should be reformatted by default."""
-        formatlist = ['/boot', '/var', '/tmp', '/usr']
-        exceptlist = ['/home', '/usr/local', '/opt', '/var/www']
-
-        if not device.format.linux_native:
-            return False
-
-        if device.format.mountable:
-            if not device.format.mountpoint:
-                return False
-
-            if device.format.mountpoint == "/" or \
-               device.format.mountpoint in formatlist:
-                return True
-
-            for p in formatlist:
-                if device.format.mountpoint.startswith(p):
-                    for q in exceptlist:
-                        if device.format.mountpoint.startswith(q):
-                            return False
-                    return True
-        elif device.format.type == "swap":
-            return True
-
-        # be safe for anything else and default to off
-        return False
-
-    def must_format(self, device):
-        """ Return a string explaining why the device must be reformatted.
-
-            Return None if the device need not be reformatted.
-        """
-        if device.format.mountable and device.format.mountpoint == "/":
-            return _("You must create a new filesystem on the root device.")
-
-        return None
-
     def safe_device_name(self, name):
         """ Convert a device name to something safe and return that.
 
@@ -1330,34 +986,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
             self.devicetree.save_luks_passphrase(device)
 
     def setup_disk_images(self):
-        self.devicetree.set_disk_images(self.config.disk_images)
+        self.devicetree.set_disk_images(self.disk_images)
         self.devicetree.setup_disk_images()
-
-    @property
-    def file_system_free_space(self):
-        """ Combined free space in / and /usr as :class:`~.size.Size`. """
-        mountpoints = ["/", "/usr"]
-        free = Size(0)
-        btrfs_volumes = []
-        for mountpoint in mountpoints:
-            device = self.mountpoints.get(mountpoint)
-            if not device:
-                continue
-
-            # don't count the size of btrfs volumes repeatedly when multiple
-            # subvolumes are present
-            if isinstance(device, BTRFSSubVolumeDevice):
-                if device.volume in btrfs_volumes:
-                    continue
-                else:
-                    btrfs_volumes.append(device.volume)
-
-            if device.format.exists:
-                free += device.format.free
-            else:
-                free += device.format.free_space_estimate(device.size)
-
-        return free
 
     def dump_state(self, suffix):
         """ Dump the current device list to the storage shelf. """
@@ -1385,11 +1015,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if not os.path.isdir("%s/etc" % get_sysroot()):
             os.mkdir("%s/etc" % get_sysroot())
 
-        self.fsset.write()
-        self.make_mtab()
-        iscsi.write(get_sysroot(), self)
-        fcoe.write(get_sysroot())
-        zfcp.write(get_sysroot())
         self.write_dasd_conf(get_sysroot())
 
     def write_dasd_conf(self, root):
@@ -1406,24 +1031,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 fields = [dasd.busid] + dasd.get_opts()
                 f.write("%s\n" % " ".join(fields),)
 
-    def turn_on_swap(self):
-        self.fsset.turn_on_swap(root_path=get_sysroot())
+    @property
+    def boot_device(self):
+        dev = None
+        root_device = self.mountpoints.get("/")
 
-    def mount_filesystems(self, read_only=None, skip_root=False):
-        self.fsset.mount_filesystems(root_path=get_sysroot(),
-                                     read_only=read_only, skip_root=skip_root)
-
-    def umount_filesystems(self, swapoff=True):
-        self.fsset.umount_filesystems(swapoff=swapoff)
-
-    def parse_fstab(self, chroot=None):
-        self.fsset.parse_fstab(chroot=chroot)
-
-    def mk_dev_root(self):
-        self.fsset.mk_dev_root()
-
-    def create_swap_file(self, device, size):
-        self.fsset.create_swap_file(device, size)
+        dev = self.mountpoints.get("/boot", root_device)
+        return dev
 
     @property
     def bootloader(self):
@@ -1473,13 +1087,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             spec = self.ksdata.bootloader.bootDrive
             disk = self.devicetree.resolve_device(spec)
         return disk
-
-    @property
-    def boot_device(self):
-        dev = None
-        if self.fsset:
-            dev = self.mountpoints.get("/boot", self.root_device)
-        return dev
 
     @property
     def bootloader_device(self):
@@ -1546,28 +1153,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     @property
     def mountpoints(self):
-        return self.fsset.mountpoints
-
-    @property
-    def root_device(self):
-        return self.fsset.root_device
-
-    def make_mtab(self):
-        path = "/etc/mtab"
-        target = "/proc/self/mounts"
-        path = os.path.normpath("%s/%s" % (get_sysroot(), path))
-
-        if os.path.islink(path):
-            # return early if the mtab symlink is already how we like it
-            current_target = os.path.normpath(os.path.dirname(path) +
-                                              "/" + os.readlink(path))
-            if current_target == target:
-                return
-
-        if os.path.exists(path):
-            os.unlink(path)
-
-        os.symlink(target, path)
+        return self.devicetree.mountpoints
 
     def compare_disks(self, first, second):
         if not isinstance(first, str):
@@ -1728,167 +1314,3 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         log.debug("finished Blivet copy")
         return new
-
-    def update_ksdata(self):
-        """ Update ksdata to reflect the settings of this Blivet instance. """
-        if not self.ksdata or not self.mountpoints:
-            return
-
-        # clear out whatever was there before
-        self.ksdata.partition.partitions = []
-        self.ksdata.logvol.lvList = []
-        self.ksdata.raid.raidList = []
-        self.ksdata.volgroup.vgList = []
-        self.ksdata.btrfs.btrfsList = []
-
-        # iscsi?
-        # fcoe?
-        # zfcp?
-        # dmraid?
-
-        # bootloader
-
-        # ignoredisk
-        if self.config.ignored_disks:
-            self.ksdata.ignoredisk.drives = self.config.ignored_disks[:]
-        elif self.config.exclusive_disks:
-            self.ksdata.ignoredisk.onlyuse = self.config.exclusive_disks[:]
-
-        # autopart
-        self.ksdata.autopart.autopart = self.do_autopart
-        self.ksdata.autopart.type = self.autopart_type
-        self.ksdata.autopart.encrypted = self.encrypted_autopart
-
-        # clearpart
-        self.ksdata.clearpart.type = self.config.clear_part_type
-        self.ksdata.clearpart.drives = self.config.clear_part_disks[:]
-        self.ksdata.clearpart.devices = self.config.clear_part_devices[:]
-        self.ksdata.clearpart.initAll = self.config.initialize_disks
-        if self.ksdata.clearpart.type == CLEARPART_TYPE_NONE:
-            # Make a list of initialized disks and of removed partitions. If any
-            # partitions were removed from disks that were not completely
-            # cleared we'll have to use CLEARPART_TYPE_LIST and provide a list
-            # of all removed partitions. If no partitions were removed from a
-            # disk that was not cleared/reinitialized we can use
-            # CLEARPART_TYPE_ALL.
-            self.ksdata.clearpart.devices = []
-            self.ksdata.clearpart.drives = []
-            fresh_disks = [d.name for d in self.disks if d.partitioned and
-                           not d.format.exists]
-
-            destroy_actions = self.devicetree.actions.find(action_type="destroy",
-                                                           object_type="device")
-
-            cleared_partitions = []
-            partial = False
-            for action in destroy_actions:
-                if action.device.type == "partition":
-                    if action.device.disk.name not in fresh_disks:
-                        partial = True
-
-                    cleared_partitions.append(action.device.name)
-
-            if not destroy_actions:
-                pass
-            elif partial:
-                # make a list of removed partitions
-                self.ksdata.clearpart.type = CLEARPART_TYPE_LIST
-                self.ksdata.clearpart.devices = cleared_partitions
-            else:
-                # if they didn't partially clear any disks, use the shorthand
-                self.ksdata.clearpart.type = CLEARPART_TYPE_ALL
-                self.ksdata.clearpart.drives = fresh_disks
-
-        if self.do_autopart:
-            return
-
-        self._update_custom_storage_ksdata()
-
-    def _update_custom_storage_ksdata(self):
-        """ Update KSData for custom storage. """
-
-        # custom storage
-        ks_map = {PartitionDevice: ("PartData", "partition"),
-                  TmpFSDevice: ("PartData", "partition"),
-                  LVMLogicalVolumeDevice: ("LogVolData", "logvol"),
-                  LVMVolumeGroupDevice: ("VolGroupData", "volgroup"),
-                  MDRaidArrayDevice: ("RaidData", "raid"),
-                  BTRFSDevice: ("BTRFSData", "btrfs")}
-
-        # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
-                           for a in d.ancestors))
-
-        # devices which share information with their distinct raw device
-        complementary_devices = [d for d in devices if d.raw_device is not d]
-
-        devices.sort(key=lambda d: len(d.ancestors))
-        for device in devices:
-            cls = next((c for c in ks_map if isinstance(device, c)), None)
-            if cls is None:
-                log.info("omitting ksdata: %s", device)
-                continue
-
-            class_attr, list_attr = ks_map[cls]
-
-            cls = getattr(self.ksdata, class_attr)
-            data = cls()    # all defaults
-
-            complements = [d for d in complementary_devices if d.raw_device is device]
-
-            if len(complements) > 1:
-                log.warning("omitting ksdata for %s, found too many (%d) complementary devices", device, len(complements))
-                continue
-
-            device = complements[0] if complements else device
-
-            device.populate_ksdata(data)
-
-            parent = getattr(self.ksdata, list_attr)
-            parent.dataList().append(data)
-
-    @property
-    def free_space_snapshot(self):
-        # if no snapshot is available, do it now and return it
-        self._free_space_snapshot = self._free_space_snapshot or self.get_free_space()
-
-        return self._free_space_snapshot
-
-    def create_free_space_snapshot(self):
-        self._free_space_snapshot = self.get_free_space()
-
-        return self._free_space_snapshot
-
-    def add_fstab_swap(self, device):
-        """
-        Add swap device to the list of swaps that should appear in the fstab.
-
-        :param device: swap device that should be added to the list
-        :type device: blivet.devices.StorageDevice instance holding a swap format
-
-        """
-
-        self.fsset.add_fstab_swap(device)
-
-    def remove_fstab_swap(self, device):
-        """
-        Remove swap device from the list of swaps that should appear in the fstab.
-
-        :param device: swap device that should be removed from the list
-        :type device: blivet.devices.StorageDevice instance holding a swap format
-
-        """
-
-        self.fsset.remove_fstab_swap(device)
-
-    def set_fstab_swaps(self, devices):
-        """
-        Set swap devices that should appear in the fstab.
-
-        :param devices: iterable providing devices that should appear in the fstab
-        :type devices: iterable providing blivet.devices.StorageDevice instances holding
-                       a swap format
-
-        """
-
-        self.fsset.set_fstab_swaps(devices)
