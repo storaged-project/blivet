@@ -330,8 +330,10 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         log_method_call(self, name=getattr(device, "name", None))
 
         if not info:
-            log.debug("no information for device %s", device.name)
-            return
+            info = udev.get_device(device.sysfs_path)
+            if not info:
+                log.debug("no information for device %s", device.name)
+                return
         if not device.media_present:
             log.debug("no media present for device %s", device.name)
             return
