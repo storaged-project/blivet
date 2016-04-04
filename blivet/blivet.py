@@ -212,7 +212,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 # Set the boot partition's name on disk labels that support it
                 if dev.parted_partition.disk.supportsFeature(parted.DISK_TYPE_PARTITION_NAME):
                     ped_partition = dev.parted_partition.getPedPartition()
-                    ped_partition.setName(dev.format.name)
+                    ped_partition.set_name(dev.format.name)
                     log.info("Setting label on %s to '%s'", dev, dev.format.name)
 
                 dev.disk.setup()
