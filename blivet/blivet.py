@@ -79,14 +79,11 @@ class StorageDiscoveryConfig(object):
     def __init__(self):
         # storage configuration variables
         self.ignore_disk_interactive = False
-        self.ignored_disks = []
-        self.exclusive_disks = []
         self.clear_part_type = None
         self.clear_part_disks = []
         self.clear_part_devices = []
         self.initialize_disks = False
         self.protected_dev_specs = []
-        self.disk_images = {}
         self.zero_mbr = False
 
         # Whether clear_partitions removes scheduled/non-existent devices and
@@ -99,8 +96,6 @@ class StorageDiscoveryConfig(object):
             :param ksdata: kickstart data used as data source
             :type ksdata: :class:`pykickstart.Handler`
         """
-        self.ignored_disks = ksdata.ignoredisk.ignoredisk[:]
-        self.exclusive_disks = ksdata.ignoredisk.onlyuse[:]
         self.clear_part_type = ksdata.clearpart.type
         self.clear_part_disks = ksdata.clearpart.drives[:]
         self.clear_part_devices = ksdata.clearpart.devices[:]
@@ -135,6 +130,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.autopart_requests = []
         self.edd_dict = {}
 
+        self.ignored_disks = []
+        self.exclusive_disks = []
+        self.disk_images = {}
+
         self.__luks_devs = {}
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
@@ -144,9 +143,11 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
 
         # these will both be empty until our reset method gets called
-        self.devicetree = DeviceTree(conf=self.config,
-                                     passphrase=self.encryption_passphrase,
-                                     luks_dict=self.__luks_devs)
+        self.devicetree = DeviceTree(passphrase=self.encryption_passphrase,
+                                     luks_dict=self.__luks_devs,
+                                     ignored_disks=self.ignored_disks,
+                                     exclusive_disks=self.exclusive_disks,
+                                     disk_images=self.disk_images)
         self.fsset = FSSet(self.devicetree)
         self.roots = []
         self.services = set()
@@ -266,9 +267,11 @@ class Blivet(object, metaclass=SynchronizedMeta):
             fcoe.startup()
             zfcp.startup()
 
-        self.devicetree.reset(conf=self.config,
-                              passphrase=self.encryption_passphrase,
-                              luks_dict=self.__luks_devs)
+        self.devicetree.reset(passphrase=self.encryption_passphrase,
+                              luks_dict=self.__luks_devs,
+                              ignored_disks=self.ignored_disks,
+                              exclusive_disks=self.exclusive_disks,
+                              disk_images=self.disk_images)
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.fsset = FSSet(self.devicetree)
         self.edd_dict = get_edd_dict(self.partitioned)
@@ -1330,7 +1333,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             self.devicetree.save_luks_passphrase(device)
 
     def setup_disk_images(self):
-        self.devicetree.set_disk_images(self.config.disk_images)
+        self.devicetree.set_disk_images(self.disk_images)
         self.devicetree.setup_disk_images()
 
     @property
@@ -1749,10 +1752,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         # bootloader
 
         # ignoredisk
-        if self.config.ignored_disks:
-            self.ksdata.ignoredisk.drives = self.config.ignored_disks[:]
-        elif self.config.exclusive_disks:
-            self.ksdata.ignoredisk.onlyuse = self.config.exclusive_disks[:]
+        if self.ignored_disks:
+            self.ksdata.ignoredisk.drives = self.ignored_disks[:]
+        elif self.exclusive_disks:
+            self.ksdata.ignoredisk.onlyuse = self.exclusive_disks[:]
 
         # autopart
         self.ksdata.autopart.autopart = self.do_autopart
