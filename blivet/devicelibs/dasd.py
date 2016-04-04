@@ -295,6 +295,13 @@ def write_dasd_conf(disks, root):
 
     # check for hyper PAV aliases; they need to get added to dasd.conf as well
     sysfs = "/sys/bus/ccw/drivers/dasd-eckd"
+
+    # in the case that someone is installing with *only* FBA DASDs,the above
+    # sysfs path will not exist; so check for it and just bail out of here if
+    # that's the case
+    if not os.path.exists(sysfs):
+        return
+
     # this does catch every DASD, even non-aliases, but we're only going to be
     # checking for a very specific flag, so there won't be any duplicate entries
     # in dasd.conf
