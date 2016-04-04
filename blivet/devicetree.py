@@ -778,6 +778,15 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         return labels
 
+    @property
+    def mountpoints(self):
+        """ Dict with mountpoint keys and Device values. """
+        filesystems = {}
+        for device in self.devices:
+            if device.format.mountable and device.format.mountpoint:
+                filesystems[device.format.mountpoint] = device
+        return filesystems
+
     #
     # Disk filter
     #
