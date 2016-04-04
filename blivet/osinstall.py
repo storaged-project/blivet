@@ -43,6 +43,9 @@ from .errors import FSTabTypeMismatchError, UnrecognizedFSTabEntryError, Storage
 from .formats import get_device_format_class
 from .formats import get_format
 from .flags import flags
+from .iscsi import iscsi
+from .fcoe import fcoe
+from .zfcp import zfcp
 from .platform import platform as _platform
 from .platform import EFI
 from .size import Size
@@ -1111,6 +1114,7 @@ class InstallerStorage(Blivet):
         self.__luks_devs = {}
         self.fsset = FSSet(self.devicetree)
         self._free_space_snapshot = None
+        self.live_backing_device = None
 
     def do_it(self, callbacks=None):
         """
@@ -1186,6 +1190,9 @@ class InstallerStorage(Blivet):
 
         self.make_mtab()
         self.fsset.write()
+        iscsi.write(get_sysroot(), self)
+        fcoe.write(get_sysroot())
+        zfcp.write(get_sysroot())
 
     def mountpoints(self):
         return self.fsset.mountpoints
@@ -1219,6 +1226,18 @@ class InstallerStorage(Blivet):
                 free += device.format.free_space_estimate(device.size)
 
         return free
+
+    @property
+    def free_space_snapshot(self):
+        # if no snapshot is available, do it now and return it
+        self._free_space_snapshot = self._free_space_snapshot or self.get_free_space()
+
+        return self._free_space_snapshot
+
+    def create_free_space_snapshot(self):
+        self._free_space_snapshot = self.get_free_space()
+
+        return self._free_space_snapshot
 
     def update_ksdata(self):
         """ Update ksdata to reflect the settings of this Blivet instance. """
@@ -1341,9 +1360,88 @@ class InstallerStorage(Blivet):
         self.fsset = FSSet(self.devicetree)
 
     def reset(self, cleanup_only=False):
+        """ Reset storage configuration to reflect actual system state.
+
+            This will cancel any queued actions and rescan from scratch but not
+            clobber user-obtained information like passphrases, iscsi config, &c
+
+            :keyword cleanup_only: prepare the tree only to deactivate devices
+            :type cleanup_only: bool
+
+            See :meth:`devicetree.Devicetree.populate` for more information
+            about the cleanup_only keyword argument.
+        """
+        if flags.installer_mode:
+            # save passphrases for luks devices so we don't have to reprompt
+            self.encryption_passphrase = None
+            for device in self.devices:
+                if device.format.type == "luks" and device.format.exists:
+                    self.save_passphrase(device)
+
+        if self.ksdata:
+            self.config.update(self.ksdata)
+
+        if flags.installer_mode and not flags.image_install:
+            iscsi.startup()
+            fcoe.startup()
+            zfcp.startup()
+
         super().reset(cleanup_only=cleanup_only)
 
         self.fsset = FSSet(self.devicetree)
+
+        # protected device handling
+        self.protected_dev_names = []
+        self._resolve_protected_device_specs()
+        self._find_live_backing_device()
+        for devname in self.protected_dev_names:
+            dev = self.devicetree.get_device_by_name(devname)
+            self._mark_protected_device(dev)
+
+        self.roots = []
+        if flags.installer_mode:
+            self.roots = find_existing_installations(self.devicetree)
+            self.dump_state("initial")
+
+    def _resolve_protected_device_specs(self):
+        """ Resolve the protected device specs to device names. """
+        for spec in self.config.protected_dev_specs:
+            name = self.devicetree.resolve_device(spec)
+            log.debug("protected device spec %s resolved to %s", spec, name)
+            if name:
+                self.protected_dev_names.append(name)
+
+    def _find_live_backing_device(self):
+        # FIXME: the backing dev for the live image can't be used as an
+        # install target.  note that this is a little bit of a hack
+        # since we're assuming that /run/initramfs/live will exist
+        for mnt in open("/proc/mounts").readlines():
+            if " /run/initramfs/live " not in mnt:
+                continue
+
+            live_device_name = mnt.split()[0].split("/")[-1]
+            log.info("%s looks to be the live device; marking as protected",
+                     live_device_name)
+            self.protected_dev_names.append(live_device_name)
+            self.live_backing_device = live_device_name
+            break
+
+    def _mark_protected_device(self, device):
+        """
+          If this device is protected, mark it as such now. Once the tree
+          has been populated, devices' protected attribute is how we will
+          identify protected devices.
+
+         :param :class: `blivet.devices.storage.StorageDevice` device: device to
+          mark as protected
+        """
+        if device.name in self.protected_dev_names:
+            device.protected = True
+            # if this is the live backing device we want to mark its parents
+            # as protected also
+            if device.name == self.live_backing_device:
+                for parent in device.parents:
+                    parent.protected = True
 
     def empty_device(self, device):
         empty = True
