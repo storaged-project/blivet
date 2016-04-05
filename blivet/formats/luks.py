@@ -35,6 +35,7 @@ from ..flags import flags
 from ..i18n import _, N_
 from ..tasks import availability, lukstasks
 from ..size import Size
+from ..static_data import luks_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -77,9 +78,6 @@ class LUKS(DeviceFormat):
             :type escrow_cert: str
             :keyword add_backup_passphrase: generate a backup passphrase?
             :type add_backup_passphrase: bool.
-            :keyword min_luks_entropy: minimum entropy in bits required for
-                                       format creation
-            :type min_luks_entropy: int
 
             .. note::
 
@@ -110,11 +108,7 @@ class LUKS(DeviceFormat):
         self._key_file = kwargs.get("key_file")
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
-        self.min_luks_entropy = kwargs.get("min_luks_entropy", 0)
-
-        if self.min_luks_entropy < 0:
-            msg = "Invalid value for minimum required entropy: %s" % self.min_luks_entropy
-            raise ValueError(msg)
+        luks_data.min_entropy = kwargs.get("min_luks_entropy", 0)
 
         if not self.map_name and self.exists and self.uuid:
             self.map_name = "luks-%s" % self.uuid
@@ -245,7 +239,7 @@ class LUKS(DeviceFormat):
                                     key_file=self._key_file,
                                     cipher=self.cipher,
                                     key_size=self.key_size,
-                                    min_entropy=self.min_luks_entropy)
+                                    min_entropy=luks_data.min_entropy)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
