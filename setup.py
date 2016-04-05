@@ -93,4 +93,4 @@ setup(name='blivet', version='2.0.1',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',
       data_files=data_files,
-      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.tasks', 'blivet.populator.helpers'])
+      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.staticdata', 'blivet.tasks', 'blivet.populator.helpers'])
