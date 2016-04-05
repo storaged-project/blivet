@@ -22,8 +22,6 @@ blivet
 * :mod:`blivet.blivet`
     * :class:`~blivet.blivet.Blivet`
         * :attr:`~blivet.blivet.Blivet.btrfs_volumes`
-        * :meth:`~blivet.blivet.Blivet.clear_partitions`
-        * :attr:`~blivet.blivet.Blivet.config`
         * :meth:`~blivet.blivet.Blivet.copy`
         * :meth:`~blivet.blivet.Blivet.create_device`
         * :meth:`~blivet.blivet.Blivet.default_fstype`
@@ -67,7 +65,6 @@ blivet
         * :attr:`~blivet.blivet.Blivet.swaps`
         * :attr:`~blivet.blivet.Blivet.thinlvs`
         * :attr:`~blivet.blivet.Blivet.thinpools`
-        * :meth:`~blivet.blivet.Blivet.update_ksdata`
         * :attr:`~blivet.blivet.Blivet.vgs`
 
 * :mod:`blivet.deviceaction`
@@ -120,6 +117,7 @@ blivet
         * :meth:`~blivet.devicetree.DeviceTreeBase.hide`
         * :attr:`~blivet.devicetree.DeviceTreeBase.labels`
         * :attr:`~blivet.devicetree.DeviceTreeBase.leaves`
+        * :attr:`~blivet.devicetree.DeviceTreeBase.mountpoints`
         * :meth:`~blivet.populator.populator.PopulatorMixin.populate`
         * :meth:`~blivet.devicetree.DeviceTreeBase.recursive_remove`
         * :meth:`~blivet.devicetree.DeviceTreeBase.resolve_device`
