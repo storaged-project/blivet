@@ -1219,11 +1219,6 @@ class LVMFactory(DeviceFactory):
                    len(self.container.parents))
                 log.debug("size cut to %s to omit old device space", size)
 
-        if self.container_raid_level:
-            # add five extents per disk to account for md metadata
-            # (it was originally one per disk but that wasn't enough for raid5)
-            size += lvm.LVM_PE_SIZE * len(self.disks) * 5
-
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
             size += lvm.LVM_PE_SIZE * len(self.disks)

@@ -338,12 +338,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ The size of this VG """
         # TODO: just ask lvm if isModified returns False
 
-        # sum up the sizes of the PVs and align to pesize
-        size = 0
+        # sum up the sizes of the PVs, subtract the unusable (meta data) space
+        # and align to pesize
+        # NOTE: we either specify data alignment in a PV or the default is used
+        #       which is both handled by pv.format.peStart, but LVM takes into
+        #       account also the underlying block device which means that e.g.
+        #       for an MD RAID device, it tries to align everything also to chunk
+        #       size and alignment offset of such device which may result in up
+        #       to a twice as big non-data area
+        # TODO: move this to either LVMPhysicalVolume's peStart property once
+        #       formats know about their devices or to a new LVMPhysicalVolumeDevice
+        #       class once it exists
+        avail = Size(0)
         for pv in self.pvs:
-            size += max(0, self.align(pv.size - pv.format.peStart))
+            if isinstance(pv, MDRaidArrayDevice):
+                avail += self.align(pv.size - 2 * pv.format.peStart)
+            else:
+                avail += self.align(pv.size - pv.format.peStart)
 
-        return size
+        return avail
 
     @property
     def extents(self):
@@ -366,11 +379,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
         used = sum(lv.vgSpaceUsed for lv in self.lvs)
-        if not self.exists and raid_disks:
-            # (only) we allocate (5 * num_disks) extra extents for LV metadata
-            # on RAID (see the devicefactory.LVMFactory._get_total_space method)
-            new_lvs = [lv for lv in self.lvs if not lv.exists]
-            used += len(new_lvs) * 5 * raid_disks * self.peSize
         used += self.reservedSpace
         used += self.poolMetaData
         free = self.size - used
