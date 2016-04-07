@@ -429,6 +429,13 @@ class Populator(object):
                 lvm.lvm_cc_addFilterRejectRegexp(name)
                 return
 
+        # If this is the live device protect the whole disk
+        if self.liveBackingDevice == name and not disk.protected \
+           and disk.name not in self.protectedDevNames:
+            log.info("Protecting %s, parent of live device %s", disk.name, name)
+            disk.protected = True
+            self.protectedDevNames.append(disk.name)
+
         if not disk.partitioned:
             # Ignore partitions on:
             #  - devices we do not support partitioning of, like logical volumes
