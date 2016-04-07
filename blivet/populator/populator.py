@@ -30,7 +30,7 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
-from ..errors import DeviceError, DeviceTreeError
+from ..errors import DeviceError, DeviceTreeError, NoSlavesError
 from ..devices import DMLinearDevice, DMRaidArrayDevice
 from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
@@ -142,7 +142,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         slave_devices = []
         if not slave_names:
             log.error("no slaves found for %s", name)
-            raise DeviceTreeError("no slaves found for device %s" % name)
+            raise NoSlavesError("no slaves found for device %s" % name)
 
         for slave_name in slave_names:
             path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
