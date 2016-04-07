@@ -747,6 +747,14 @@ class Populator(object):
                 for parent in device.parents:
                     parent.protected = True
 
+        # When an iso9660 is written to a USB the child partitions are not added to the
+        # devicetree (addUdevPartitionDevice skips them) so the block above will not
+        # protect the parent device. Check for this and add it to the protected list
+        if self.liveBackingDevice and self.liveBackingDevice.startswith(device.name):
+            log.info("Protecting %s, parent of live device %s", device.name, self.liveBackingDevice)
+            device.protected = True
+            self.protectedDevNames.append(device.name)
+
         # If we just added a multipath or fwraid disk that is in exclusiveDisks
         # we have to make sure all of its members are in the list too.
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
