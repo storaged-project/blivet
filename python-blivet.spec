@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.0.1
+Version: 2.0.2
 
 #%%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -86,6 +86,13 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Mon Apr 04 2016 David Lehman <dlehman@redhat.com> - 2.0.2-1
+- Fix mistake from PEP8 conversion. (#1323012) (dlehman)
+- Set both req_size and size of thin pool when growing LVM (vpodzime)
+- Retrieve udev info as needed in handle_format. (#1322943) (dlehman)
+- Fix requires after subpackage switcharoo. (dlehman)
+- Fix package naming in spec file. (dlehman)
+
 * Tue Mar 29 2016 David Lehman <dlehman@redhat.com> - 2.0.1-1
 - Make sure EddMatcher.root is a string. (dlehman)
 - Move per-thread change accounting to a function. (dlehman)
