@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.40
+Version: 0.61.15.41
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Apr 08 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.41-1
+- Account for bigger LVM meta data due to alignment on MD RAID (vpodzime)
+  Related: rhbz#1284660
+- Calculate the MD RAID superblock size from the right size (vpodzime)
+  Related: rhbz#1284660
+- Do not reserve extra space for metadata in a VG with RAID PVs (vpodzime)
+  Resolves: rhbz#1284660
+
 * Fri Apr 01 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.40-1
 - Fix the _bytes string list (dshea)
   Related: rhbz#1314301
