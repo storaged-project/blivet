@@ -218,7 +218,7 @@ class LVMFormatPopulator(FormatPopulator):
             elif lv_attr[0] == 'v':
                 # skip vorigins
                 return
-            elif lv_attr[0] in 'IielTCo' and lv_name.endswith(']'):
+            elif lv_attr[0] in 'IrielTCo' and lv_name.endswith(']'):
                 # an internal LV, add the an instance of the appropriate class
                 # to internal_lvs for later processing when non-internal LVs are
                 # processed
