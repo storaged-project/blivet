@@ -59,9 +59,11 @@ class blivet_sdist(sdist):
         from translation_canary.translated import testSourceTree  # pylint: disable=import-error
         testSourceTree(base_dir, releaseMode=True)
 
-setup(name='blivet', version='2.0.2',
+setup(name='blivet',
+      version='2.0.2',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
-      url='http://fedoraproject.org/wiki/blivet',
-      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'])
+      url='https://github.com/rhinstaller/blivet/wiki',
+      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers']
+)
