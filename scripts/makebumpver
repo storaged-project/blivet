@@ -232,13 +232,10 @@ class MakeBumpVer:
 
     def _rpmLog(self, fixedIn):
         git_range = "%s-%s-%s.." % (self.name, self.version, self.release)
-        proc = subprocess.Popen(['git', 'log', '--pretty=oneline', git_range],
+        proc = subprocess.Popen(['git', 'log', '--pretty=oneline', '--no-merges', git_range],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
-        lines = filter(lambda x: x.find('l10n: ') != 41 and \
-                                 x.find('Merge commit') != 41 and \
-                                 x.find('Merge branch') != 41,
-                       proc[0].strip('\n').split('\n'))
+        lines = proc[0].strip('\n').split('\n')
 
         if self.ignore:
             ignore_commits = self.ignore.split(',')
