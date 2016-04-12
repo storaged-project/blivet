@@ -135,6 +135,9 @@ class BTRFSValueError(BTRFSError, ValueError):
 class DeviceTreeError(StorageError):
     pass
 
+class NoSlavesError(DeviceTreeError):
+    pass
+
 class DeviceNotFoundError(StorageError):
     pass
 
