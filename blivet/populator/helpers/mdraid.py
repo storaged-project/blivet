@@ -31,7 +31,7 @@ from ... import udev
 from ...devicelibs import raid
 from ...devices import MDRaidArrayDevice, MDContainerDevice
 from ...devices import device_path_to_name
-from ...errors import DeviceError
+from ...errors import DeviceError, NoSlavesError
 from ...flags import flags
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
@@ -51,7 +51,11 @@ class MDDevicePopulator(DevicePopulator):
         name = udev.device_get_md_name(self.data)
         log_method_call(self, name=name)
 
-        self._devicetree._add_slave_devices(self.data)
+        try:
+            self._devicetree._add_slave_devices(self.data)
+        except NoSlavesError:
+            log.error("no slaves found for mdarray %s, skipping", name)
+            return None
 
         # try to get the device again now that we've got all the slaves
         device = self._devicetree.get_device_by_name(name, incomplete=flags.allow_imperfect_devices)
