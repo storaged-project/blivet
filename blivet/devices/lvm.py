@@ -958,6 +958,18 @@ class LVMInternalLVtype(Enum):
             else:
                 return cls.data
 
+        if lv_attr[0] == "r":
+            # internal LV which is at the same time a RAID LV
+            if lv_attr[6] == "C":
+                # part of the cache -> cache origin
+                # (cache pool cannot be a RAID LV, cache pool's data LV would
+                # have lv_attr[0] == "C", metadata LV would have
+                # lv_attr[0] == "e" even if they were RAID LVs)
+                return cls.origin
+            elif lv_attr[6] == "r":
+                # a data LV (metadata LV would have lv_attr[0] == "e")
+                return cls.data
+
         for lv_type, letters in attr_letters.items():
             if lv_attr[0] in letters:
                 return lv_type
