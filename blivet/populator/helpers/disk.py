@@ -77,18 +77,18 @@ class DiskDevicePopulator(DevicePopulator):
 
 
 class iScsiDevicePopulator(DiskDevicePopulator):
-    from ...iscsi import iscsi as _iscsi
-
     priority = 20
     _device_class = iScsiDiskDevice
 
     @classmethod
     def match(cls, data):
+        from ...iscsi import iscsi
         return (super().match(data) and
-                udev.device_is_iscsi(data) and cls._iscsi.initiator and
-                cls._iscsi.initiator == udev.device_get_iscsi_initiator(data))
+                udev.device_is_iscsi(data) and iscsi.initiator and
+                iscsi.initiator == udev.device_get_iscsi_initiator(data))
 
     def _get_kwargs(self):
+        from ...iscsi import iscsi
         kwargs = super()._get_kwargs()
         name = udev.device_get_name(self.data)
         initiator = udev.device_get_iscsi_initiator(self.data)
@@ -97,11 +97,11 @@ class iScsiDevicePopulator(DiskDevicePopulator):
         port = udev.device_get_iscsi_port(self.data)
         nic = udev.device_get_iscsi_nic(self.data)
         kwargs["initiator"] = initiator
-        if initiator == self._iscsi.initiator:
-            node = self._iscsi.get_node(target, address, port, nic)
+        if initiator == iscsi.initiator:
+            node = iscsi.get_node(target, address, port, nic)
             kwargs["node"] = node
-            kwargs["ibft"] = node in self._iscsi.ibft_nodes
-            kwargs["nic"] = self._iscsi.ifaces.get(node.iface, node.iface)
+            kwargs["ibft"] = node in iscsi.ibft_nodes
+            kwargs["nic"] = iscsi.ifaces.get(node.iface, node.iface)
         else:
             # qla4xxx partial offload
             kwargs["node"] = None
