@@ -1,11 +1,14 @@
 #!/usr/bin/python
 import unittest
+import glob
 
 import blivet.devicelibs.lvm as lvm
 from blivet.size import Size
 from blivet.errors import LVMError
 
 from tests import loopbackedtestcase
+
+# TODO: test cases for lvorigin, lvsnapshot*, thin*
 
 class LVMTestCase(unittest.TestCase):
 
@@ -30,11 +33,11 @@ class LVMTestCase(unittest.TestCase):
 # call if the device is non-existant, and usually that exception is caught and
 # an LVMError is then raised, but not always.
 
-class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
+class LVMAsRootTestCaseBase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='runTest'):
         """Set up the structure of the volume group."""
-        super(LVMAsRootTestCase, self).__init__(methodName=methodName)
+        super(LVMAsRootTestCaseBase, self).__init__(methodName=methodName)
         self._vg_name = "test-vg"
         self._lv_name = "test-lv"
 
@@ -57,14 +60,43 @@ class LVMAsRootTestCase(loopbackedtestcase.LoopBackedTestCase):
         except LVMError:
             pass
 
-        try:
-            for dev in self.loopDevices:
+        for dev in self.loopDevices:
+            try:
                 lvm.pvremove(dev)
-        except LVMError:
-            pass
+            except LVMError:
+                pass
 
-        super(LVMAsRootTestCase, self).tearDown()
+        super(LVMAsRootTestCaseBase, self).tearDown()
 
+class LVM_Metadata_Backup_TestCase(LVMAsRootTestCaseBase):
+    def _list_backups(self):
+        return set(glob.glob("/etc/lvm/archive/%s_*" % self._vg_name))
+
+    def setUp(self):
+        super(LVM_Metadata_Backup_TestCase, self).setUp()
+        self._old_backups = self._list_backups()
+        for dev in self.loopDevices:
+            lvm.pvcreate(dev)
+
+    def test_backup_enabled(self):
+        lvm.flags.lvm_metadata_backup = True
+        lvm.vgcreate(self._vg_name, self.loopDevices, Size("4MiB"))
+
+        current_backups = self._list_backups()
+        self.assertTrue(current_backups.issuperset(self._old_backups),
+                        "old backups disappeared??")
+        self.assertTrue(current_backups.difference(self._old_backups),
+                        "lvm_metadata_backup enabled but no backups created")
+
+    def test_backup_disabled(self):
+        lvm.flags.lvm_metadata_backup = False
+        lvm.vgcreate(self._vg_name, self.loopDevices, Size("4MiB"))
+
+        self.assertEqual(self._old_backups, self._list_backups(),
+                         "lvm_metadata_backup disabled but backups created")
+
+
+class LVMAsRootTestCase(LVMAsRootTestCaseBase):
     def testLVM(self):
         _LOOP_DEV0 = self.loopDevices[0]
         _LOOP_DEV1 = self.loopDevices[1]
