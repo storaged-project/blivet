@@ -32,7 +32,7 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
-from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError
+from .errors import CorruptGPTError, DeviceError, DeviceTreeError, DiskLabelScanError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError, NoSlavesError
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -242,7 +242,7 @@ class Populator(object):
         slave_devices = []
         if not slave_names:
             log.error("no slaves found for %s", name)
-            raise DeviceTreeError("no slaves found for device %s" % name)
+            raise NoSlavesError("no slaves found for device %s" % name)
 
         for slave_name in slave_names:
             path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
@@ -360,7 +360,11 @@ class Populator(object):
         name = udev.device_get_md_name(info)
         log_method_call(self, name=name)
 
-        self._addSlaveDevices(info)
+        try:
+            self._addSlaveDevices(info)
+        except NoSlavesError:
+            log.error("no slaves found for mdarray %s, skipping", name)
+            return None
 
         # try to get the device again now that we've got all the slaves
         device = self.getDeviceByName(name, incomplete=flags.allow_imperfect_devices)
