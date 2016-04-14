@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-08 17:41-0700\n"
+"POT-Creation-Date: 2016-04-14 16:56-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -249,6 +249,10 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
+#: ../blivet/devicetree.py:1332
+msgid "Invalid Disk Label"
+msgstr ""
+
 #: ../blivet/errors.py:166
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
@@ -268,10 +272,6 @@ msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
-#: ../blivet/devicetree.py:1332
-msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/fcoe.py:109
@@ -624,19 +624,6 @@ msgstr ""
 msgid "software RAID"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:56
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:57
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:441
-#, python-format
-msgid "vginfo failed for %s"
-msgstr ""
-
 #: ../blivet/devicelibs/dasd.py:268
 #, python-format
 msgid "DASD device %s not found, not even in device ignore list."
@@ -650,4 +637,17 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:281
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:57
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:58
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:444
+#, python-format
+msgid "vginfo failed for %s"
 msgstr ""

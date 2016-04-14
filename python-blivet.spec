@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.41
+Version: 0.61.15.42
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,23 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Apr 14 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.42-1
+- iscsi: allow installing bootloader on offload iscsi disks (qla4xxx)
+  (rvykydal)
+  Related: rhbz#1325134
+- Fix traceback when writing dasd.conf (sbueno+anaconda)
+  Resolves: rhbz#1031589
+- Disable LVM autobackup when doing image installs (wwoods)
+  Resolves: rhbz#1269144
+- Add attribute 'flags.lvm_metadata_backup' (wwoods)
+  Related: rhbz#1269144
+- devicelibs.lvm: refactor _getConfigArgs()/lvm() (wwoods)
+  Related: rhbz#1269144
+- lvm_test: refactoring + minor fix (wwoods)
+  Related: rhbz#1269144
+- devicelibs.lvm: fix pvmove(src, dest=DESTPATH) (wwoods)
+  Related: rhbz#1269144
+
 * Fri Apr 08 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.41-1
 - Account for bigger LVM meta data due to alignment on MD RAID (vpodzime)
   Related: rhbz#1284660
