@@ -1194,6 +1194,7 @@ class InstallerStorage(Blivet):
         fcoe.write(get_sysroot())
         zfcp.write(get_sysroot())
 
+    @property
     def mountpoints(self):
         return self.fsset.mountpoints
 
@@ -1238,6 +1239,68 @@ class InstallerStorage(Blivet):
         self._free_space_snapshot = self.get_free_space()
 
         return self._free_space_snapshot
+
+    def get_free_space(self, disks=None, clear_part_type=None):
+        """ Return a dict with free space info for each disk.
+
+             The dict values are 2-tuples: (disk_free, fs_free). fs_free is
+             space available by shrinking filesystems. disk_free is space not
+             allocated to any partition.
+
+             disks and clear_part_type allow specifying a set of disks other than
+             self.disks and a clear_part_type value other than
+             self.config.clear_part_type.
+
+             :keyword disks: overrides :attr:`disks`
+             :type disks: list
+             :keyword clear_part_type: overrides :attr:`self.config.clear_part_type`
+             :type clear_part_type: int
+             :returns: dict with disk name keys and tuple (disk, fs) free values
+             :rtype: dict
+
+            .. note::
+
+                The free space values are :class:`~.size.Size` instances.
+
+        """
+
+        if disks is None:
+            disks = self.disks
+
+        if clear_part_type is None:
+            clear_part_type = self.config.clear_part_type
+
+        free = {}
+        for disk in disks:
+            should_clear = self.should_clear(disk, clear_part_type=clear_part_type,
+                                             clear_part_disks=[disk.name])
+            if should_clear:
+                free[disk.name] = (disk.size, Size(0))
+                continue
+
+            disk_free = Size(0)
+            fs_free = Size(0)
+            if disk.partitioned:
+                disk_free = disk.format.free
+                for partition in (p for p in self.partitions if p.disk == disk):
+                    # only check actual filesystems since lvm &c require a bunch of
+                    # operations to translate free filesystem space into free disk
+                    # space
+                    should_clear = self.should_clear(partition,
+                                                     clear_part_type=clear_part_type,
+                                                     clear_part_disks=[disk.name])
+                    if should_clear:
+                        disk_free += partition.size
+                    elif hasattr(partition.format, "free"):
+                        fs_free += partition.format.free
+            elif hasattr(disk.format, "free"):
+                fs_free = disk.format.free
+            elif disk.format.type is None:
+                disk_free = disk.size
+
+            free[disk.name] = (disk_free, fs_free)
+
+        return free
 
     def update_ksdata(self):
         """ Update ksdata to reflect the settings of this Blivet instance. """
@@ -1406,10 +1469,10 @@ class InstallerStorage(Blivet):
     def _resolve_protected_device_specs(self):
         """ Resolve the protected device specs to device names. """
         for spec in self.config.protected_dev_specs:
-            name = self.devicetree.resolve_device(spec)
-            log.debug("protected device spec %s resolved to %s", spec, name)
-            if name:
-                self.protected_dev_names.append(name)
+            dev = self.devicetree.resolve_device(spec)
+            if dev is not None:
+                log.debug("protected device spec %s resolved to %s", spec, dev.name)
+                self.protected_dev_names.append(dev.name)
 
     def _find_live_backing_device(self):
         # FIXME: the backing dev for the live image can't be used as an
