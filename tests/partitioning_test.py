@@ -24,6 +24,7 @@ from blivet.devices import PartitionDevice
 from blivet.devices.lvm import LVMCacheRequest
 
 from tests.imagebackedtestcase import ImageBackedTestCase
+from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
 from blivet.formats import get_format
 from blivet.size import Size
@@ -331,7 +332,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(len(free), 1,
                              "free region count %d not expected" % len(free))
 
-            b = Mock()
+            b = Mock(spec=Blivet)
             allocate_partitions(b, disks, partitions, free)
 
             requests = [PartitionRequest(p) for p in partitions]
@@ -394,7 +395,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(len(free), 1,
                              "free region count %d not expected" % len(free))
 
-            b = Mock()
+            b = Mock(spec=Blivet)
             allocate_partitions(b, disks, partitions, free)
 
             requests = [PartitionRequest(p) for p in partitions]
