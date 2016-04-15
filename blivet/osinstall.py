@@ -34,7 +34,7 @@ from gi.repository import BlockDev as blockdev
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_NONE, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LIST
 
 from . import util
-from . import get_sysroot, get_target_physical_root, error_handler, ERROR_RAISE
+from . import get_sysroot, get_target_physical_root, get_bootloader, error_handler, ERROR_RAISE
 
 from .blivet import Blivet
 from .storage_log import log_exception_info
@@ -1108,6 +1108,7 @@ class InstallerStorage(Blivet):
         """
         super().__init__(ksdata=ksdata)
 
+        self._bootloader = None
         self.config = StorageDiscoveryConfig()
         self.autopart_type = AUTOPART_TYPE_LVM
 
@@ -1193,6 +1194,105 @@ class InstallerStorage(Blivet):
         iscsi.write(get_sysroot(), self)
         fcoe.write(get_sysroot())
         zfcp.write(get_sysroot())
+
+    @property
+    def bootloader(self):
+        if self._bootloader is None and flags.installer_mode:
+            self._bootloader = get_bootloader()
+
+        return self._bootloader
+
+    def update_bootloader_disk_list(self):
+        if not self.bootloader:
+            return
+
+        boot_disks = [d for d in self.disks if d.partitioned]
+        boot_disks.sort(key=self.compare_disks_key)
+        self.bootloader.set_disk_list(boot_disks)
+
+    @property
+    def boot_device(self):
+        dev = None
+        root_device = self.mountpoints.get("/")
+
+        dev = self.mountpoints.get("/boot", root_device)
+        return dev
+
+    @property
+    def default_boot_fstype(self):
+        """The default filesystem type for the boot partition."""
+        if self._default_boot_fstype:
+            return self._default_boot_fstype
+
+        fstype = None
+        if self.bootloader:
+            fstype = self.boot_fstypes[0]
+        return fstype
+
+    def set_default_boot_fstype(self, newtype):
+        """ Set the default /boot fstype for this instance.
+
+            Raise ValueError on invalid input.
+        """
+        log.debug("trying to set new default /boot fstype to '%s'", newtype)
+        # This will raise ValueError if it isn't valid
+        self._check_valid_fstype(newtype)
+        self._default_boot_fstype = newtype
+
+    def set_up_bootloader(self, early=False):
+        """ Propagate ksdata into BootLoader.
+
+            :keyword bool early: Set to True to skip stage1_device setup
+
+            :raises BootloaderError: if stage1 setup fails
+
+            If this needs to be run early, eg. to setup stage1_disk but
+            not stage1_device 'early' should be set True to prevent
+            it from raising BootloaderError
+        """
+        if not self.bootloader or not self.ksdata:
+            log.warning("either ksdata or bootloader data missing")
+            return
+
+        if self.bootloader.skip_bootloader:
+            log.info("user specified that bootloader install be skipped")
+            return
+
+        # Need to make sure bootDrive has been setup from the latest information
+        self.ksdata.bootloader.execute(self, self.ksdata, None)
+        self.bootloader.stage1_disk = self.devicetree.resolve_device(self.ksdata.bootloader.bootDrive)
+        self.bootloader.stage2_device = self.boot_device
+        if not early:
+            self.bootloader.set_stage1_device(self.devices)
+
+    @property
+    def boot_disk(self):
+        disk = None
+        if self.ksdata:
+            spec = self.ksdata.bootloader.bootDrive
+            disk = self.devicetree.resolve_device(spec)
+        return disk
+
+    @property
+    def bootloader_device(self):
+        return getattr(self.bootloader, "stage1_device", None)
+
+    @property
+    def boot_fstypes(self):
+        """A list of all valid filesystem types for the boot partition."""
+        fstypes = []
+        if self.bootloader:
+            fstypes = self.bootloader.stage2_format_types
+        return fstypes
+
+    def get_fstype(self, mountpoint=None):
+        """ Return the default filesystem type based on mountpoint. """
+        fstype = super().get_fstype(mountpoint=mountpoint)
+
+        if mountpoint == "/boot":
+            fstype = self.default_boot_fstype
+
+        return fstype
 
     @property
     def mountpoints(self):
@@ -1452,6 +1552,13 @@ class InstallerStorage(Blivet):
         super().reset(cleanup_only=cleanup_only)
 
         self.fsset = FSSet(self.devicetree)
+
+        if self.bootloader:
+            # clear out bootloader attributes that refer to devices that are
+            # no longer in the tree
+            self.bootloader.reset()
+
+        self.update_bootloader_disk_list()
 
         # protected device handling
         self.protected_dev_names = []

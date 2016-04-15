@@ -45,7 +45,7 @@ from .platform import platform as _platform
 from .formats import get_format
 from . import arch
 from . import devicefactory
-from . import get_bootloader, get_sysroot, short_product_name, __version__
+from . import get_sysroot, short_product_name, __version__
 from .threads import SynchronizedMeta
 
 import logging
@@ -62,7 +62,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             :type ksdata: :class:`pykickstart.Handler`
         """
         self.ksdata = ksdata
-        self._bootloader = None
 
         # storage configuration variables
         self.do_autopart = False
@@ -147,12 +146,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.edd_dict = get_edd_dict(self.partitioned)
         self.devicetree.edd_dict = self.edd_dict
-        if self.bootloader:
-            # clear out bootloader attributes that refer to devices that are
-            # no longer in the tree
-            self.bootloader.reset()
-
-        self.update_bootloader_disk_list()
 
         if not flags.installer_mode:
             self.devicetree.handle_nodev_filesystems()
@@ -1061,86 +1054,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 if alias == "1":
                     f.write("%s\n" % d)
 
-    @property
-    def bootloader(self):
-        if self._bootloader is None and flags.installer_mode:
-            self._bootloader = get_bootloader()
-
-        return self._bootloader
-
-    def update_bootloader_disk_list(self):
-        if not self.bootloader:
-            return
-
-        boot_disks = [d for d in self.disks if d.partitioned]
-        boot_disks.sort(key=self.compare_disks_key)
-        self.bootloader.set_disk_list(boot_disks)
-
-    def set_up_bootloader(self, early=False):
-        """ Propagate ksdata into BootLoader.
-
-            :keyword bool early: Set to True to skip stage1_device setup
-
-            :raises BootloaderError: if stage1 setup fails
-
-            If this needs to be run early, eg. to setup stage1_disk but
-            not stage1_device 'early' should be set True to prevent
-            it from raising BootloaderError
-        """
-        if not self.bootloader or not self.ksdata:
-            log.warning("either ksdata or bootloader data missing")
-            return
-
-        if self.bootloader.skip_bootloader:
-            log.info("user specified that bootloader install be skipped")
-            return
-
-        # Need to make sure bootDrive has been setup from the latest information
-        self.ksdata.bootloader.execute(self, self.ksdata, None)
-        self.bootloader.stage1_disk = self.devicetree.resolve_device(self.ksdata.bootloader.bootDrive)
-        self.bootloader.stage2_device = self.boot_device
-        if not early:
-            self.bootloader.set_stage1_device(self.devices)
-
-    @property
-    def boot_disk(self):
-        disk = None
-        if self.ksdata:
-            spec = self.ksdata.bootloader.bootDrive
-            disk = self.devicetree.resolve_device(spec)
-        return disk
-
-    @property
-    def boot_device(self):
-        dev = None
-        root_device = self.mountpoints.get("/")
-
-        dev = self.mountpoints.get("/boot", root_device)
-        return dev
-
-    @property
-    def bootloader_device(self):
-        return getattr(self.bootloader, "stage1_device", None)
-
-    @property
-    def boot_fstypes(self):
-        """A list of all valid filesystem types for the boot partition."""
-        fstypes = []
-        if self.bootloader:
-            fstypes = self.bootloader.stage2_format_types
-        return fstypes
-
-    @property
-    def default_boot_fstype(self):
-        """The default filesystem type for the boot partition."""
-        if self._default_boot_fstype:
-            return self._default_boot_fstype
-
-        fstype = None
-        if self.bootloader:
-            fstype = self.boot_fstypes[0]
-        return fstype
-
     def _check_valid_fstype(self, newtype):
         """ Check the fstype to see if it is valid
 
@@ -1156,16 +1069,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             raise ValueError("new value %s is not valid as a default fs type" % newtype)
 
         self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init
-
-    def set_default_boot_fstype(self, newtype):
-        """ Set the default /boot fstype for this instance.
-
-            Raise ValueError on invalid input.
-        """
-        log.debug("trying to set new default /boot fstype to '%s'", newtype)
-        # This will raise ValueError if it isn't valid
-        self._check_valid_fstype(newtype)
-        self._default_boot_fstype = newtype
 
     @property
     def default_fstype(self):
@@ -1255,8 +1158,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             pass
         elif mountpoint.lower() in ("swap", "biosboot", "prepboot"):
             fstype = mountpoint.lower()
-        elif mountpoint == "/boot":
-            fstype = self.default_boot_fstype
         elif mountpoint == "/boot/efi":
             if arch.is_mactel():
                 fstype = "macefi"

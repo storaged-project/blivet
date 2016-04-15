@@ -531,7 +531,7 @@ def update_extended_partitions(storage, disks):
         storage.devicetree._add_device(device)
 
 
-def do_partitioning(storage):
+def do_partitioning(storage, boot_disk=None):
     """ Allocate and grow partitions.
 
         When this function returns without error, all PartitionDevice
@@ -542,6 +542,8 @@ def do_partitioning(storage):
 
         :param storage: Blivet instance
         :type storage: :class:`~.Blivet`
+        :param boot_disk: optional parameter, the disk the bootloader is on
+        :type boot_device: :class:`~.devices.StorageDevice`
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
     """
@@ -564,22 +566,26 @@ def do_partitioning(storage):
             storage.devicetree._remove_device(partition, modparent=False, force=True)
 
     partitions = storage.partitions[:]
-    for part in storage.partitions:
-        part.req_bootable = False
-        if not part.exists:
-            # start over with flexible-size requests
-            part.req_size = part.req_base_size
 
-    try:
-        storage.boot_device.req_bootable = True
-    except AttributeError:
-        # there's no stage2 device. hopefully it's temporary.
-        pass
+    if boot_disk:
+        # set the boot flag on boot device
+        for part in storage.partitions:
+            part.req_bootable = False
+            if not part.exists:
+                # start over with flexible-size requests
+                part.req_size = part.req_base_size
+
+        boot_device = storage.mountpoints.get("/boot", storage.mountpoints.get("/"))
+        try:
+            boot_device.req_bootable = True
+        except AttributeError:
+            # there's no stage2 device. hopefully it's temporary.
+            pass
 
     remove_new_partitions(disks, partitions, partitions)
     free = get_free_regions(disks)
     try:
-        allocate_partitions(storage, disks, partitions, free)
+        allocate_partitions(storage, disks, partitions, free, boot_disk=boot_disk)
         grow_partitions(disks, partitions, free, size_sets=storage.size_sets)
     except Exception:
         raise
@@ -626,7 +632,7 @@ def align_size_for_disklabel(size, disklabel):
     return (grains * grain_size) + (grain_size if rem else Size(0))
 
 
-def allocate_partitions(storage, disks, partitions, freespace):
+def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
     """ Allocate partitions based on requested features.
 
         :param storage: a Blivet instance
@@ -637,6 +643,8 @@ def allocate_partitions(storage, disks, partitions, freespace):
         :type partitions: list of :class:`~.devices.PartitionDevice`
         :param freespace: list of free regions on disks
         :type freespace: list of :class:`parted.Geometry`
+        :param boot_disk: optional parameter, the disk the bootloader is on
+        :type boot_device: :class:`~.devices.StorageDevice`
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
 
@@ -681,12 +689,13 @@ def allocate_partitions(storage, disks, partitions, freespace):
             # no disks specified means any disk will do
             req_disks = disks
 
-        # sort the disks, making sure the boot disk is first
         req_disks.sort(key=storage.compare_disks_key)
-        for disk in req_disks:
-            if storage.boot_disk and disk == storage.boot_disk:
-                boot_index = req_disks.index(disk)
-                req_disks.insert(0, req_disks.pop(boot_index))
+        # make sure the boot disk is at the beginning of the disk list
+        if boot_disk:
+            for disk in req_disks[:]:
+                if disk == boot_disk:
+                    boot_index = req_disks.index(disk)
+                    req_disks.insert(0, req_disks.pop(boot_index))
 
         boot = _part.req_base_weight > 1000
 
