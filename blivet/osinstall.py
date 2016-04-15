@@ -1389,7 +1389,11 @@ class InstallerStorage(Blivet):
                   BTRFSDevice: ("BTRFSData", "btrfs")}
 
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
+        bootloader_devices = []
+        if self.bootloader_device is not None:
+            bootloader_devices.append(self.bootloader_device)
+
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootloader_devices
                            for a in d.ancestors))
 
         # devices which share information with their distinct raw device
