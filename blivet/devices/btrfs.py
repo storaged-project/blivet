@@ -498,7 +498,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         # propagate mount options specified for members via kickstart
         opts = "subvol=%s" % self.name
         if self.volume.format.mountopts:
-            opts = "%s,%s" % (self.volume.format.mountopts, opts)
+            for opt in self.volume.format.mountopts.split(","):
+                # do not add members subvol spec
+                if not opt.startswith("subvol"):
+                    opts += ",%s" % opt
 
         self.format.mountopts = opts
 
