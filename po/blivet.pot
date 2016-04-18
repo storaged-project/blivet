@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-19 17:00-0800\n"
+"POT-Creation-Date: 2016-04-18 15:45-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,36 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/blivet.py:1197
-msgid "You must create a new filesystem on the root device."
+#: ../blivet/iscsi.py:175
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:177
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:334
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:336
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:467
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:487
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:490
+msgid "Could not log in to any of the discovered nodes"
+msgstr ""
+
+#: ../blivet/populator.py:821
+msgid "Invalid Disk Label"
 msgstr ""
 
 #: ../blivet/partitioning.py:423
@@ -80,38 +108,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1927
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/populator.py:810
-msgid "Invalid Disk Label"
-msgstr ""
-
-#: ../blivet/iscsi.py:175
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:177
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:334
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:336
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:467
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:487
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:490
-msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/zfcp.py:60
@@ -355,10 +351,6 @@ msgstr ""
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/fcoe.py:116
-msgid "FCoE not available"
-msgstr ""
-
 #: ../blivet/osinstall.py:253
 #, python-format
 msgid "Linux on %s"
@@ -378,21 +370,21 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/errors.py:146
+#: ../blivet/errors.py:149
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
 "kernel is reporting partitions on. It is unclear what the exact problem is. "
 "Please file a bug at http://bugzilla.redhat.com"
 msgstr ""
 
-#: ../blivet/errors.py:152
+#: ../blivet/errors.py:155
 msgid ""
 "Either restore the disklabel to a completely working state or remove it "
 "completely.\n"
 "Hint: parted can restore it or wipefs can remove it."
 msgstr ""
 
-#: ../blivet/errors.py:157
+#: ../blivet/errors.py:160
 msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
@@ -482,6 +474,14 @@ msgstr ""
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
+msgstr ""
+
+#: ../blivet/blivet.py:1197
+msgid "You must create a new filesystem on the root device."
+msgstr ""
+
+#: ../blivet/fcoe.py:116
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/deviceaction.py:178
@@ -577,16 +577,16 @@ msgstr ""
 msgid "PPC PReP Boot"
 msgstr ""
 
+#: ../blivet/formats/mdraid.py:42
+msgid "software RAID"
+msgstr ""
+
 #: ../blivet/formats/luks.py:45
 msgid "LUKS"
 msgstr ""
 
 #: ../blivet/formats/luks.py:46
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:152
-msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:33
@@ -597,12 +597,12 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/disklabel.py:44
-msgid "partition table"
+#: ../blivet/formats/__init__.py:152
+msgid "Unknown"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:42
-msgid "software RAID"
+#: ../blivet/formats/disklabel.py:44
+msgid "partition table"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:38
