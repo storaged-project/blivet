@@ -27,6 +27,7 @@ TEST_DEPENDENCIES += python-coverage python3-coverage
 TEST_DEPENDENCIES += xfsprogs hfsplus-tools
 TEST_DEPENDENCIES += python3-pocketlint python3-bugzilla
 TEST_DEPENDENCIES += python3-pep8
+TEST_DEPENDENCIES += python3-kickstart
 TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
 
 all:
