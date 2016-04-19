@@ -165,7 +165,7 @@ class Platform(object):
 
     def set_platform_boot_partition(self):
         """Return the default /boot partition for this platform."""
-        return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
+        return [PartSpec(mountpoint="/boot", size=Size("1GiB"),
                          weight=self.weight(mountpoint="/boot"))]
 
     def set_default_partitioning(self):
@@ -360,7 +360,7 @@ class S390(Platform):
 
     def set_platform_boot_partition(self):
         """Return the default platform-specific partitioning information."""
-        return [PartSpec(mountpoint="/boot", size=Size("500MiB"),
+        return [PartSpec(mountpoint="/boot", size=Size("1GiB"),
                          weight=self.weight(mountpoint="/boot"), lv=False)]
 
     def required_disklabel_type(self, device_type):
