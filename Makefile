@@ -19,7 +19,7 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
-TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
+TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires 2> /dev/null | cut -d' ' -f1 | grep -v ^blivet)
 TEST_DEPENDENCIES += python-mock python3-mock
 TEST_DEPENDENCIES += cryptsetup-python cryptsetup-python3
 TEST_DEPENDENCIES += python3-gobject
@@ -47,7 +47,13 @@ po-empty:
 po-fallback:
 	$(MAKE) po-pull || $(MAKE) po-empty
 
-check-requires:
+check-rpm-build:
+	@if rpm -q rpm-build | grep -q "not installed" ; then \
+	    echo "*** All requirements validation and installation require the rpm-build package"; \
+	    exit 1; \
+	fi
+
+check-requires: check-rpm-build
 	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
 	@status=0 ; \
 	for pkg in $(TEST_DEPENDENCIES) ; do \
@@ -59,7 +65,7 @@ check-requires:
 	done ; \
 	exit $$status
 
-install-requires:
+install-requires: check-rpm-build
 	@echo "*** Installing the dependencies required for testing and analysis ***"
 	dnf install -y $(TEST_DEPENDENCIES)
 
