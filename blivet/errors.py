@@ -197,6 +197,10 @@ class UnusableConfigurationError(StorageError):
     """ User has an unusable initial storage configuration. """
     suggestion = ""
 
+    def __init__(self, message, dev_name=None):
+        super().__init__(message)
+        self.dev_name = dev_name
+
 
 class DiskLabelScanError(UnusableConfigurationError):
     suggestion = N_("For some reason we were unable to locate a disklabel on a "
