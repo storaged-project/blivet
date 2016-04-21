@@ -113,3 +113,18 @@ class TestRequiresProperty(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             t.bad_news
+
+
+class Node(object):
+    def __init__(self, children, id):
+        self.children = children
+        self.id = id
+
+
+class TestWalk(unittest.TestCase):
+    def test_walk(self):
+        root = Node([Node([], 1), Node([Node([Node([], 4)], 3)], 2), Node([], 5)], 0)
+
+        lst = [item.id for item in util.walk(root, "children")]
+        self.assertEqual(lst, sorted(lst))
+        self.assertEqual(len(lst), 6)
