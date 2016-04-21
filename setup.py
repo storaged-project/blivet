@@ -5,9 +5,7 @@ from distutils import filelist
 from distutils.command.sdist import sdist
 import subprocess
 import sys
-import glob
 import os
-import re
 
 # this is copied straight from distutils.filelist.findall , but with os.stat()
 # replaced with os.lstat(), so S_ISLNK() can actually tell us something.
@@ -43,24 +41,6 @@ def findall(dirname=os.curdir):
 
 filelist.findall = findall
 
-AM_RE = r'(^.. automodule::.+?(?P<mo>^\s+?:member-order:.+?\n)?.+?:\n)\n(?(mo)NEVER)'
-
-
-def generate_api_docs():
-    if subprocess.call(["sphinx-apidoc", "-o", "doc", "blivet"]):
-        sys.stderr.write("failed to generate API docs")
-
-
-def add_member_order_option(files):
-    """ Add an automodule option to preserve source code member order. """
-    for fn in files:
-        buf = open(fn).read()
-        amended = re.sub(AM_RE,
-                         r'\1    :member-order: bysource\n\n',
-                         buf,
-                         flags=re.DOTALL | re.MULTILINE)
-        open(fn, "w").write(amended)
-
 # Extend the sdist command
 class blivet_sdist(sdist):
     def run(self):
@@ -79,18 +59,21 @@ class blivet_sdist(sdist):
         from translation_canary.translated import testSourceTree  # pylint: disable=import-error
         testSourceTree(base_dir, releaseMode=True)
 
-data_files = []
-if os.environ.get("READTHEDOCS", False):
-    generate_api_docs()
-    rst_files = glob.glob("doc/*.rst")
-    add_member_order_option(rst_files)
-    api_doc_files = rst_files + ["doc/conf.py"]
-    data_files.append(("docs/blivet", api_doc_files))
 
-setup(name='blivet', version='2.0.2',
+data_files = [
+    ('/etc/dbus-1/system.d', ['dbus/blivet.conf']),
+    ('/usr/share/dbus-1/system-services', ['dbus/com.redhat.Blivet1.service']),
+    ('/usr/libexec', ['dbus/blivetd']),
+    ('/usr/lib/systemd/system', ['dbus/blivet.service'])
+]
+
+
+setup(name='blivet',
+      version='2.0.2',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
-      url='http://fedoraproject.org/wiki/blivet',
+      url='https://github.com/rhinstaller/blivet/wiki',
       data_files=data_files,
-      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'])
+      packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers']
+)

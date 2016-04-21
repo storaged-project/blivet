@@ -76,6 +76,10 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %license COPYING
 %doc README ChangeLog examples
 %{python3_sitelib}/*
+%{_sysconfdir}/dbus-1/system.d/*
+%{_datadir}/dbus-1/system-services/*
+%{_libexecdir}/*
+/usr/lib/systemd/system/*
 
 %changelog
 * Mon Apr 04 2016 David Lehman <dlehman@redhat.com> - 2.0.2-1
