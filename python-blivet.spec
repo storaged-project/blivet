@@ -33,13 +33,6 @@ BuildRequires: python3-devel python3-setuptools
 The python-blivet package is a python module for examining and modifying
 storage configuration.
 
-%package -n %{realname}-data
-Summary: Data for the %{realname} python module.
-
-%description -n %{realname}-data
-The %{realname}-data package provides data files required by the %{realname}
-python module.
-
 %package -n python3-%{realname}
 Summary: A python3 package for examining and modifying storage configuration.
 Requires: python3
@@ -58,7 +51,8 @@ Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
 Requires: python3-gobject-base
-Requires: %{realname}-data = %{epoch}:%{version}-%{release}
+Obsoletes: blivet-data < 1:2.0.3
+Obsoletes: python-blivet < 1:2.0.3
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
@@ -78,9 +72,7 @@ rm -rf %{buildroot}
 make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %find_lang %{realname}
 
-%files -n %{realname}-data -f %{realname}.lang
-
-%files -n python3-%{realname}
+%files -n python3-%{realname} -f %{realname}.lang
 %license COPYING
 %doc README ChangeLog examples
 %{python3_sitelib}/*
