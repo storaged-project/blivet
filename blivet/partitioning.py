@@ -1025,9 +1025,10 @@ class PartitionRequest(Request):
         sector_size = Size(partition.parted_partition.disk.device.sectorSize)
 
         if partition.req_grow:
-            limits = [l for l in [size_to_sectors(partition.req_max_size, sector_size),
-                                  size_to_sectors(partition.format.max_size, sector_size),
-                                  partition.parted_partition.disk.maxPartitionLength] if l > 0]
+            req_format_max_size = min((size for size in (partition.req_max_size, partition.format.max_size)
+                                       if size > 0), default=Size(0))
+            limits = [l for l in (size_to_sectors(req_format_max_size, sector_size),
+                                  partition.parted_partition.disk.maxPartitionLength) if l > 0]
 
             if limits:
                 max_sectors = min(limits)
