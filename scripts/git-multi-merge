@@ -29,7 +29,14 @@ for dest in $@; do
     src=$dest
 done
 
-echo "Will do the following push:"
+echo "Will push the following changes:"
+echo
+for dest in $@; do
+    echo "On branch $dest:"
+    git log --oneline $origin/$dest..$dest
+    echo "-------------------------------"
+done
+echo
 git push -n $origin $@
 echo -n "Is this okay? [y/N] "
 read answ
