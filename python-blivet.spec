@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.42
+Version: 0.61.15.43
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Apr 21 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.43-1
+- Increase the default size of /boot to 1 GB. (clumens)
+  Resolves: rhbz#1270883
+
 * Thu Apr 14 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.42-1
 - iscsi: allow installing bootloader on offload iscsi disks (qla4xxx)
   (rvykydal)
