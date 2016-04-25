@@ -91,7 +91,7 @@ class PartitionDevicePopulator(DevicePopulator):
                     msg = "failed to scan disk %s" % disk.name
                     cls = DiskLabelScanError
 
-                raise cls(msg)
+                raise cls(msg, disk.name)
 
             # there's no need to filter partitions on members of multipaths or
             # fwraid members from lvm since multipath and dmraid are already
