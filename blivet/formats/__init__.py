@@ -62,7 +62,7 @@ def register_device_format(fmt_class):
     log.debug("registered device format class %s as %s", fmt_class.__name__,
               fmt_class._type)
 
-default_fstypes = ("ext4", "ext3", "ext2")
+default_fstypes = ("ext4", "xfs", "ext3", "ext2")
 
 
 def get_default_filesystem_type():
