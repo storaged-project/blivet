@@ -23,6 +23,7 @@
 import copy
 from functools import wraps
 
+from .callbacks import callbacks as _callbacks
 from .deviceaction import ActionCreateDevice
 from .deviceaction import action_type_from_string, action_object_from_string
 from .devicelibs import lvm
@@ -74,6 +75,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
         # apply the action before adding it in case apply raises an exception
         action.apply()
         self._actions.append(action)
+        _callbacks.action_added(action=action)
         log.info("registered action: %s", action)
 
     def remove(self, action):
@@ -83,6 +85,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
         action.cancel()
         self._actions.remove(action)
         record_change(ActionCanceled(action=action))
+        _callbacks.action_removed(action=action)
         log.info("canceled action %s", action)
 
     def find(self, device=None, action_type=None, object_type=None,
@@ -338,5 +341,6 @@ class ActionList(object, metaclass=SynchronizedMeta):
                         device.format.device = device.path
 
                 self._completed_actions.append(self._actions.pop(0))
+                _callbacks.action_executed(action=action)
 
         self._post_process(devices=devices)

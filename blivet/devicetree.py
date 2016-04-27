@@ -30,6 +30,7 @@ gi.require_version("BlockDev", "1.0")
 from gi.repository import BlockDev as blockdev
 
 from .actionlist import ActionList
+from .callbacks import callbacks
 from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, NoDevice, PartitionDevice
@@ -162,6 +163,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 newdev.name not in self.names):
             self.names.append(newdev.name)
         record_change(DeviceAdded(device=newdev))
+        callbacks.device_added(device=newdev)
         log.info("added %s %s (id %d) to device tree", newdev.type,
                  newdev.name,
                  newdev.id)
@@ -205,6 +207,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         self._devices.remove(dev)
         record_change(DeviceRemoved(device=dev))
+        callbacks.device_removed(device=dev)
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
                  dev.id)
