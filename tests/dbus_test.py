@@ -13,6 +13,7 @@ from blivet.dbus.constants import BLIVET_INTERFACE, DEVICE_INTERFACE
 
 class UDevBlivetTestCase(TestCase):
     @patch.object(DBusObject, '__init__', return_value=None)
+    @patch("blivet.dbus.blivet.callbacks")
     def setUp(self, *args):  # pylint: disable=unused-argument
         self.dbus_object = DBusBlivet(Mock(name="ObjectManager"))
         self.dbus_object._blivet = Mock(spec=Blivet)

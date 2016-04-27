@@ -22,6 +22,7 @@ import sys
 import dbus
 
 from blivet import Blivet
+from blivet.callbacks import callbacks
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH
 from .device import DBusDevice
 from .object import DBusObject
@@ -38,6 +39,11 @@ class DBusBlivet(DBusObject):
         self._dbus_devices = list()
         self._manager = manager  # provides ObjectManager interface
         self._blivet = Blivet()
+        self._set_up_callbacks()
+
+    def _set_up_callbacks(self):
+        callbacks.device_added.add(self._device_added)
+        callbacks.device_removed.add(self._device_removed)
 
     @property
     def object_path(self):
@@ -65,16 +71,19 @@ class DBusBlivet(DBusObject):
         self._dbus_devices.append(added)
         self._manager.add_object(added)
 
+    def _get_device_by_object_path(self, object_path):
+        """ Return the :class:`blivet.dbus.device.DBusDevice` at the given path. """
+        # FIXME: This is inefficient. Implement an object_path->dbus_device dictionary.
+        return next(d._device for d in self._dbus_devices if d.object_path == object_path)
+
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
     def Reset(self):
         """ Reset the Blivet instance and populate the device tree. """
         old_devices = self._blivet.devices[:]
-        self._blivet.reset()
         for removed in old_devices:
-            self._device_removed(removed)
+            self._device_removed(device=removed)
 
-        for added in self._blivet.devices:
-            self._device_added(added)
+        self._blivet.reset()
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
     def Exit(self):
@@ -95,3 +104,9 @@ class DBusBlivet(DBusObject):
             dbus_device = next(d for d in self._dbus_devices if d._device == device)
             object_path = dbus_device.object_path
         return object_path
+
+    @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='o')
+    def RemoveDevice(self, object_path):
+        """ Remove a device and all devices built on it. """
+        device = self._get_device_by_object_path(object_path)
+        self._blivet.devicetree.recursive_remove(device)
