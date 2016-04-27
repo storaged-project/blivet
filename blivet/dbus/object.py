@@ -21,7 +21,7 @@
 import dbus
 import dbus.service
 
-BUS_NAME = "com.redhat.Blivet1"
+from .constants import BUS_NAME
 
 
 class DBusObject(dbus.service.Object):

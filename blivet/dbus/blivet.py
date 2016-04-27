@@ -22,10 +22,8 @@ import sys
 import dbus
 
 from blivet import Blivet
+from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH
 from .object import DBusObject
-
-BLIVET_OBJECT_PATH = "/com/redhat/Blivet"
-BLIVET_INTERFACE = "com.redhat.Blivet1"
 
 
 class DBusBlivet(DBusObject):
