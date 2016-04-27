@@ -18,6 +18,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import dbus
 import dbus.service
 
 BUS_NAME = "com.redhat.Blivet1"

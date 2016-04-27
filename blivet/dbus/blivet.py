@@ -19,7 +19,7 @@
 #
 import sys
 
-import dbus.service
+import dbus
 
 from blivet import Blivet
 from .object import DBusObject
