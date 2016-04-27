@@ -48,13 +48,33 @@ class DBusObject(dbus.service.Object):
     @dbus.service.method(dbus_interface=dbus.PROPERTIES_IFACE, in_signature='s', out_signature='a{sv}')
     def GetAll(self, interface_name):
         if interface_name != self.interface:
-            raise dbus.exceptions.DBusException(
-                'com.redhat.Blivet1.UnknownInterface',
-                'The %s object does not implement the %s interface'
-                % (self.__class__.__name__, interface_name))
+            raise dbus.exceptions.DBusException('%s.UnknownInterface' % BUS_NAME,
+                                                'The %s object does not implement the %s interface'
+                                                % (self.__class__.__name__, interface_name))
 
         return self.properties
 
     @dbus.service.method(dbus_interface=dbus.PROPERTIES_IFACE, in_signature='ss', out_signature='v')
     def Get(self, interface_name, property_name):
         return self.GetAll(interface_name)[property_name]
+
+    @dbus.service.method(dbus_interface=dbus.PROPERTIES_IFACE, in_signature='ssv')
+    def Set(self, interface_name, property_name, new_value):
+        if interface_name != self.interface:
+            raise dbus.exceptions.DBusException('%s.UnknownInterface' % BUS_NAME,
+                                                'The %s object does not implement the %s interface'
+                                                % (self.__class__.__name__, interface_name))
+
+        if property_name in self.properties:
+            raise dbus.exceptions.DBusException('%s.ReadOnlyProperty' % BUS_NAME,
+                                                'The %s property is read-only' % property_name)
+        else:
+            raise dbus.exceptions.DBusException('%s.UnknownProperty' % BUS_NAME,
+                                                'The %s interface does not have %s property'
+                                                % (interface_name, property_name))
+
+        self.PropertiesChanged(interface_name, {property_name: new_value}, [])
+
+    @dbus.service.signal(dbus_interface=dbus.PROPERTIES_IFACE, signature='sa{sv}as')
+    def PropertiesChanged(self, interface_name, changed_properties, invalidated_properties):
+        pass
