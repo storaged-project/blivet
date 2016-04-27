@@ -40,13 +40,16 @@ class DBusBlivet(DBusObject):
         super().__init__()
         self._blivet = Blivet()
 
-    def _get_object_path(self):
+    @property
+    def object_path(self):
         return BLIVET_OBJECT_PATH
 
-    def _get_interface(self):
+    @property
+    def interface(self):
         return BLIVET_INTERFACE
 
-    def _get_properties(self):
+    @property
+    def properties(self):
         props = {"devices": self.listDevices()}
         return props
 
