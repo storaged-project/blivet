@@ -19,5 +19,9 @@
 #
 
 BUS_NAME = "com.redhat.Blivet1"
-BLIVET_OBJECT_PATH = "/com/redhat/Blivet1"
-BLIVET_INTERFACE = "com.redhat.Blivet1"
+BASE_OBJECT_PATH = "/com/redhat/Blivet1"
+BLIVET_INTERFACE = "%s.Blivet" % BUS_NAME
+BLIVET_OBJECT_PATH = "%s/Blivet" % BASE_OBJECT_PATH
+
+OBJECT_MANAGER_PATH = BASE_OBJECT_PATH
+OBJECT_MANAGER_INTERFACE = "org.freedesktop.DBus.ObjectManager"
