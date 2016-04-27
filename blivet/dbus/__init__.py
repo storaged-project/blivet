@@ -17,8 +17,3 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
-
-from .object import DBusObject
-from .blivet import DBusBlivet
-
-__all__ = ["DBusObject", "DBusBlivet"]
