@@ -3025,7 +3025,10 @@ def _findExistingInstallations(devicetree):
         util.makedirs(getTargetPhysicalRoot())
 
     roots = []
-    for device in devicetree.leaves:
+
+    direct_devices = (dev for dev in devicetree.devices if dev.direct)
+
+    for device in direct_devices:
         if not device.format.linuxNative or not device.format.mountable or \
            not device.controllable:
             continue

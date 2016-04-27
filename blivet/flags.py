@@ -29,6 +29,7 @@ class Flags(object):
         #
         self.testing = False
         self.installer_mode = False
+        self.rescue_mode = False
 
         #
         # minor modes (installer-specific)
@@ -90,6 +91,7 @@ class Flags(object):
 
     def update_from_anaconda_flags(self, anaconda_flags):
         self.installer_mode = True
+        self.rescue_mode = anaconda_flags.rescue_mode
         self.testing = anaconda_flags.testing
         self.automated_install = anaconda_flags.automatedInstall
         self.live_install = anaconda_flags.livecdInstall
