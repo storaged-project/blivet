@@ -48,25 +48,25 @@ class DBusBlivet(DBusObject):
 
     @property
     def properties(self):
-        props = {"devices": self.listDevices()}
+        props = {"Devices": self.ListDevices()}
         return props
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
-    def reset(self):
+    def Reset(self):
         """ Reset the Blivet instance and populate the device tree. """
         self._blivet.reset()
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
-    def exit(self):
+    def Exit(self):
         """ Stop the blivet service. """
         sys.exit(0)
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, out_signature='as')
-    def listDevices(self):
+    def ListDevices(self):
         """ Return a list of strings describing the devices in this system. """
         return dbus.Array([str(d) for d in self._blivet.devices], signature='s')
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='s', out_signature='s')
-    def resolveDevice(self, spec):
+    def ResolveDevice(self, spec):
         """ Return a string describing the device the given specifier resolves to. """
         return str(self._blivet.devicetree.resolve_device(spec) or "")
