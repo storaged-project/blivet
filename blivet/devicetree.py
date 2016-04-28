@@ -37,8 +37,6 @@ from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats
 from .devicelibs import lvm
-from .events.changes import record_change
-from .events.changes import AttributeChanged, DeviceAdded, DeviceRemoved
 from .events.handler import EventHandlerMixin
 from . import util
 from .populator import PopulatorMixin
@@ -162,7 +160,6 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 newdev.type != "btrfs volume" and
                 newdev.name not in self.names):
             self.names.append(newdev.name)
-        record_change(DeviceAdded(device=newdev))
         callbacks.device_added(device=newdev)
         log.info("added %s %s (id %d) to device tree", newdev.type,
                  newdev.name,
@@ -206,7 +203,6 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                         device.update_name()
 
         self._devices.remove(dev)
-        record_change(DeviceRemoved(device=dev))
         callbacks.device_removed(device=dev)
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
@@ -254,15 +250,10 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 devices.remove(leaf)
 
         if not device.format_immutable:
-            old_fmt = device.format
             if actions:
                 self.actions.add(ActionDestroyFormat(device))
             else:
                 device.format = None
-
-            if old_fmt.type and (not remove_device or device.is_disk):
-                record_change(AttributeChanged(device=device, attr="format",
-                                               old=old_fmt, new=device.format))
 
         if remove_device and not device.is_disk:
             if actions:
