@@ -23,7 +23,7 @@ import dbus
 
 from blivet import Blivet
 from blivet.callbacks import callbacks
-from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH
+from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
 from .device import DBusDevice
 from .object import DBusObject
 
@@ -100,9 +100,13 @@ class DBusBlivet(DBusObject):
         """ Return a string describing the device the given specifier resolves to. """
         device = self._blivet.devicetree.resolve_device(spec)
         object_path = ""
-        if device is not None:
-            dbus_device = next(d for d in self._dbus_devices if d._device == device)
-            object_path = dbus_device.object_path
+        if device is None:
+            raise dbus.exceptions.DBusException('%s.DeviceLookupFailed' % BUS_NAME,
+                                                'No device was found that matches the device '
+                                                'descriptor "%s".' % spec)
+
+        dbus_device = next(d for d in self._dbus_devices if d._device == device)
+        object_path = dbus_device.object_path
         return object_path
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='o')
