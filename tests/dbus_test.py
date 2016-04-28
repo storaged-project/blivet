@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import random
 from unittest import TestCase
 from unittest.mock import Mock, patch, sentinel
@@ -25,7 +26,7 @@ class UDevBlivetTestCase(TestCase):
             dbus object path of each device in the DBusBlivet.
         """
         object_paths = dbus.Array([sentinel.dev1, sentinel.dev2, sentinel.dev3], signature='o')
-        dbus_devices = [Mock(object_path=p) for p in object_paths]
+        dbus_devices = OrderedDict((p, Mock(object_path=p)) for p in object_paths)
         self.dbus_object._dbus_devices = dbus_devices
         self.assertEqual(self.dbus_object.ListDevices(), object_paths)
 
