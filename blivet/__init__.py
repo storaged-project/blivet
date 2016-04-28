@@ -2106,7 +2106,7 @@ def mountExistingSystem(fsset, rootDevice,
         rootDevice.setup()
         rootDevice.format.mount(chroot=rootPath,
                                 mountpoint="/",
-                                options=readOnly)
+                                options="%s,%s" % (rootDevice.format.options, readOnly))
 
     fsset.parseFSTab()
 
