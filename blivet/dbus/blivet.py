@@ -109,3 +109,10 @@ class DBusBlivet(DBusObject):
         """ Remove a device and all devices built on it. """
         device = self._dbus_devices[object_path]
         self._blivet.devicetree.recursive_remove(device)
+
+    @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='o')
+    def InitializeDisk(self, object_path):
+        """ Clear a disk and create a disklabel on it. """
+        self.RemoveDevice(object_path)
+        device = self._dbus_devices[object_path]
+        self._blivet.initialize_disk(device)
