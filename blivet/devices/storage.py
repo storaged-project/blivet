@@ -701,9 +701,6 @@ class StorageDevice(Device):
 
         log_method_call(self, self.name, type=fmt.type,
                         current=getattr(self._format, "type", None))
-        if self._format and self._format.status:
-            # FIXME: self.format.status doesn't mean much
-            raise errors.DeviceError("cannot replace active format", self.name)
 
         # check device size against format limits
         if not fmt.exists:
