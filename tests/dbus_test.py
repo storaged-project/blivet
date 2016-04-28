@@ -17,7 +17,7 @@ class UDevBlivetTestCase(TestCase):
     @patch("blivet.dbus.blivet.callbacks")
     def setUp(self, *args):  # pylint: disable=unused-argument
         self.dbus_object = DBusBlivet(Mock(name="ObjectManager"))
-        self.dbus_object._blivet = Mock(spec=Blivet)
+        self.dbus_object._blivet = Mock()
 
     def test_ListDevices(self):
         """ Verify that ListDevices returns what it should.
@@ -41,6 +41,17 @@ class UDevBlivetTestCase(TestCase):
         self.dbus_object._blivet.devices = []
         self.dbus_object.Reset()
         self.dbus_object._blivet.reset.assert_called_once_with()
+        self.dbus_object._blivet.reset_mock()
+
+    def test_RemoveDevice(self):
+        self.dbus_object._blivet.reset_mock()
+        object_path = '/com/redhat/Blivet1/Devices/23'
+        device_mock = Mock("device 23")
+        with patch.object(self.dbus_object, '_dbus_devices', new=dict()):
+            self.dbus_object._dbus_devices[object_path] = device_mock
+            self.dbus_object.RemoveDevice(object_path)
+
+        self.dbus_object._blivet.devicetree.recursive_remove.assert_called_once_with(device_mock)
         self.dbus_object._blivet.reset_mock()
 
 
