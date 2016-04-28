@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.43
+Version: 0.61.15.44
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Apr 27 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.44-1
+- Ignore unused memo_dict arguments in __deepcopy__ methods. (clumens)
+  Related: rhbz#1267944
+- Do not create a copy of singleton objects (vpodzime)
+  Related: rhbz#1267944
+
 * Thu Apr 21 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.43-1
 - Increase the default size of /boot to 1 GB. (clumens)
   Resolves: rhbz#1270883
