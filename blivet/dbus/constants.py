@@ -17,3 +17,13 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
+
+BUS_NAME = "com.redhat.Blivet1"
+BASE_OBJECT_PATH = "/com/redhat/Blivet1"
+BLIVET_INTERFACE = "%s.Blivet" % BUS_NAME
+BLIVET_OBJECT_PATH = "%s/Blivet" % BASE_OBJECT_PATH
+DEVICE_INTERFACE = "%s.Device" % BUS_NAME
+DEVICE_OBJECT_PATH_BASE = "%s/Devices" % BASE_OBJECT_PATH
+
+OBJECT_MANAGER_PATH = BASE_OBJECT_PATH
+OBJECT_MANAGER_INTERFACE = "org.freedesktop.DBus.ObjectManager"

@@ -20,14 +20,13 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+from ..callbacks import callbacks
 from ..errors import DeviceError, EventHandlingError
 from ..devices import DM_MAJORS, MD_MAJORS
 from .. import udev
 from ..threads import SynchronizedMeta
 
 from .changes import data as event_data
-from .changes import record_change
-from .changes import AttributeChanged, ParentRemoved
 from .manager import event_manager
 
 import logging
@@ -137,8 +136,8 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
             if device.sysfs_path != sysfs_path:
                 old_sysfs_path = device.sysfs_path
                 device.sysfs_path = sysfs_path
-                record_change(AttributeChanged(device=device, attr="sysfs_path",
-                                               old=old_sysfs_path, new=sysfs_path))
+                callbacks.attribute_changed(device=device, attr="sysfs_path",
+                                            old=old_sysfs_path, new=sysfs_path)
 
     def _handle_format_change(self, event, device):
         helper_class = self._get_format_helper(event.info, device)  # pylint: disable=no-member
@@ -175,7 +174,7 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
                               device.name, container.name, str(e))
                     raise EventHandlingError("reformatted container member")
 
-                record_change(ParentRemoved(device=container, attr="parents", item=device))
+                callbacks.parent_removed(device=container, parent=device)
 
         self.recursive_remove(device, actions=False, remove_device=False)
 
@@ -245,5 +244,5 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
                 log.info("device %s was deactivated", device.name)
                 # device was deactivated from outside, so clear the sysfs path
                 device.sysfs_path = ''
-                record_change(AttributeChanged(device=device, attr="sysfs_path",
-                                               old=old_sysfs_path, new=''))
+                callbacks.attribute_changed(device=device, attr="sysfs_path",
+                                            old=old_sysfs_path, new='')

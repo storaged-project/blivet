@@ -18,39 +18,63 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import dbus
 import dbus.service
 
-BUS_NAME = "com.redhat.Blivet1"
+from .constants import BUS_NAME
 
 
 class DBusObject(dbus.service.Object):
     """ Base class for dbus objects. """
     def __init__(self):
         super().__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
-                         object_path=self._get_object_path())
+                         object_path=self.object_path)
 
-    def _get_object_path(self):
-        """ Return the dbus object path for this instance. """
+    @property
+    def object_path(self):
+        """ The dbus object path for this instance. """
         raise NotImplementedError()
 
-    def _get_interface(self):
-        """ Return the interface implemented by this class. """
+    @property
+    def interface(self):
+        """ The interface implemented by this class. """
         raise NotImplementedError()
 
-    def _get_properties(self):
-        """ Return a dict of property key/value pairs to export via dbus. """
+    @property
+    def properties(self):
+        """ dict of property key/value pairs to export via dbus. """
         raise NotImplementedError()
 
     @dbus.service.method(dbus_interface=dbus.PROPERTIES_IFACE, in_signature='s', out_signature='a{sv}')
     def GetAll(self, interface_name):
-        if interface_name != self._get_interface():
-            raise dbus.exceptions.DBusException(
-                'com.redhat.Blivet1.UnknownInterface',
-                'The %s object does not implement the %s interface'
-                % (self.__class__.__name__, interface_name))
+        if interface_name != self.interface:
+            raise dbus.exceptions.DBusException('%s.UnknownInterface' % BUS_NAME,
+                                                'The %s object does not implement the %s interface'
+                                                % (self.__class__.__name__, interface_name))
 
-        return self._get_properties()
+        return self.properties
 
     @dbus.service.method(dbus_interface=dbus.PROPERTIES_IFACE, in_signature='ss', out_signature='v')
     def Get(self, interface_name, property_name):
         return self.GetAll(interface_name)[property_name]
+
+    @dbus.service.method(dbus_interface=dbus.PROPERTIES_IFACE, in_signature='ssv')
+    def Set(self, interface_name, property_name, new_value):
+        if interface_name != self.interface:
+            raise dbus.exceptions.DBusException('%s.UnknownInterface' % BUS_NAME,
+                                                'The %s object does not implement the %s interface'
+                                                % (self.__class__.__name__, interface_name))
+
+        if property_name in self.properties:
+            raise dbus.exceptions.DBusException('%s.ReadOnlyProperty' % BUS_NAME,
+                                                'The %s property is read-only' % property_name)
+        else:
+            raise dbus.exceptions.DBusException('%s.UnknownProperty' % BUS_NAME,
+                                                'The %s interface does not have %s property'
+                                                % (interface_name, property_name))
+
+        self.PropertiesChanged(interface_name, {property_name: new_value}, [])
+
+    @dbus.service.signal(dbus_interface=dbus.PROPERTIES_IFACE, signature='sa{sv}as')
+    def PropertiesChanged(self, interface_name, changed_properties, invalidated_properties):
+        pass
