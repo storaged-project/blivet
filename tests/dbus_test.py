@@ -45,6 +45,7 @@ class UDevBlivetTestCase(TestCase):
 
 class DBusObjectTestCase(TestCase):
     @patch.object(DBusObject, '__init__', return_value=None)
+    @patch("blivet.dbus.blivet.callbacks")
     def setUp(self, *args):  # pylint: disable=unused-argument
         self.obj = DBusObject()
 
@@ -61,6 +62,7 @@ class DBusObjectTestCase(TestCase):
 
 class DBusDeviceTestCase(DBusObjectTestCase):
     @patch.object(DBusObject, '__init__', return_value=None)
+    @patch("blivet.dbus.blivet.callbacks")
     def setUp(self, *args):
         self._device_id = random.randint(0, 500)
         self.obj = DBusDevice(Mock(name="StorageDevice", id=self._device_id,
