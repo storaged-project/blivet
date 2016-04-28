@@ -17,6 +17,7 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
+from collections import OrderedDict
 import sys
 
 import dbus
@@ -36,7 +37,7 @@ class DBusBlivet(DBusObject):
     """
     def __init__(self, manager):
         super().__init__()
-        self._dbus_devices = list()
+        self._dbus_devices = OrderedDict()
         self._manager = manager  # provides ObjectManager interface
         self._blivet = Blivet()
         self._set_up_callbacks()
@@ -61,20 +62,15 @@ class DBusBlivet(DBusObject):
     def _device_removed(self, device):
         """ Update ObjectManager interface after a device is removed. """
         removed_object_path = DBusDevice.get_object_path_by_id(device.id)
-        removed = next((d for d in self._dbus_devices if d.object_path == removed_object_path))
+        removed = self._dbus_devices[removed_object_path]
         self._manager.remove_object(removed)
-        self._dbus_devices.remove(removed)
+        del self._dbus_devices[removed_object_path]
 
     def _device_added(self, device):
         """ Update ObjectManager interface after a device is added. """
         added = DBusDevice(device)
-        self._dbus_devices.append(added)
+        self._dbus_devices[added.object_path] = added
         self._manager.add_object(added)
-
-    def _get_device_by_object_path(self, object_path):
-        """ Return the :class:`blivet.dbus.device.DBusDevice` at the given path. """
-        # FIXME: This is inefficient. Implement an object_path->dbus_device dictionary.
-        return next(d._device for d in self._dbus_devices if d.object_path == object_path)
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
     def Reset(self):
@@ -93,7 +89,7 @@ class DBusBlivet(DBusObject):
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, out_signature='ao')
     def ListDevices(self):
         """ Return a list of strings describing the devices in this system. """
-        return dbus.Array([d.object_path for d in self._dbus_devices], signature='o')
+        return dbus.Array(list(self._dbus_devices.keys()), signature='o')
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='s', out_signature='o')
     def ResolveDevice(self, spec):
@@ -105,12 +101,11 @@ class DBusBlivet(DBusObject):
                                                 'No device was found that matches the device '
                                                 'descriptor "%s".' % spec)
 
-        dbus_device = next(d for d in self._dbus_devices if d._device == device)
-        object_path = dbus_device.object_path
+        object_path = next(p for (p, d) in self._dbus_devices.items() if d._device == device)
         return object_path
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='o')
     def RemoveDevice(self, object_path):
         """ Remove a device and all devices built on it. """
-        device = self._get_device_by_object_path(object_path)
+        device = self._dbus_devices[object_path]
         self._blivet.devicetree.recursive_remove(device)
