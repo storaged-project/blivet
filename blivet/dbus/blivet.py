@@ -24,6 +24,7 @@ import dbus
 
 from blivet import Blivet
 from blivet.callbacks import callbacks
+from .action import DBusAction
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
 from .device import DBusDevice
 from .format import DBusFormat
@@ -38,6 +39,7 @@ class DBusBlivet(DBusObject):
     """
     def __init__(self, manager):
         super().__init__()
+        self._dbus_actions = OrderedDict()
         self._dbus_devices = OrderedDict()
         self._dbus_formats = OrderedDict()
         self._manager = manager  # provides ObjectManager interface
@@ -49,6 +51,9 @@ class DBusBlivet(DBusObject):
         callbacks.device_removed.add(self._device_removed)
         callbacks.format_added.add(self._format_added)
         callbacks.format_removed.add(self._format_removed)
+        callbacks.action_added.add(self._action_added)
+        callbacks.action_removed.add(self._action_removed)
+        callbacks.action_executed.add(self._action_executed)
 
     @property
     def object_path(self):
@@ -91,6 +96,26 @@ class DBusBlivet(DBusObject):
         added = DBusFormat(fmt)
         self._dbus_formats[added.object_path] = added
         self._manager.add_object(added)
+
+    def _action_removed(self, action):
+        removed_object_path = DBusAction.get_object_path_by_id(action.id)
+        removed = self._dbus_actions[removed_object_path]
+        self._manager.remove_object(removed)
+        del self._dbus_actions[removed_object_path]
+
+    def _action_added(self, action):
+        added = DBusAction(action)
+        self._dbus_actions[added.object_path] = added
+        self._manager.add_object(added)
+
+    def _action_executed(self, action):
+        if action.is_destroy:
+            if action.is_device:
+                self._device_removed(action.device)
+            elif action.is_format:
+                self._format_removed(action.device, action.format)
+
+        self._action_removed(action)
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
     def Reset(self):
