@@ -30,6 +30,10 @@ class DBusFormat(DBusObject):
         super().__init__()
 
     @property
+    def id(self):
+        return self._format.id
+
+    @property
     def object_path(self):
         return self._object_path
 

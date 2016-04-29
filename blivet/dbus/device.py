@@ -30,6 +30,10 @@ class DBusDevice(DBusObject):
         self._object_path = self.get_object_path_by_id(self._device.id)
         super().__init__()
 
+    @property
+    def id(self):
+        return self._device.id
+
     @staticmethod
     def get_object_path_by_id(object_id):
         return "%s/%d" % (DEVICE_OBJECT_PATH_BASE, object_id)
