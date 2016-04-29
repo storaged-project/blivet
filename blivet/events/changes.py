@@ -22,6 +22,7 @@
 
 from threading import local
 
+from ..callbacks import callbacks
 from .. import util
 
 
@@ -83,3 +84,44 @@ def record_change(change):
         data.changes = list()
 
     data.changes.append(change)
+
+
+def device_added_cb(device):
+    record_change(DeviceAdded(device))
+
+
+def device_removed_cb(device):
+    record_change(DeviceRemoved(device))
+
+
+def action_removed_cb(action):
+    record_change(ActionCanceled(action))
+
+
+def parent_added_cb(device, parent):
+    record_change(ParentAdded(parent, device))
+
+
+def parent_removed_cb(device, parent):
+    record_change(ParentRemoved(parent, device))
+
+
+def attribute_changed_cb(device, attr, old, new, fmt=None):
+    record_change(AttributeChanged(device, fmt, attr, old, new))
+
+
+def _control_callbacks(meth):
+    getattr(callbacks.device_added, meth)(device_added_cb)
+    getattr(callbacks.device_removed, meth)(device_removed_cb)
+    getattr(callbacks.action_removed, meth)(action_removed_cb)
+    getattr(callbacks.parent_added, meth)(parent_added_cb)
+    getattr(callbacks.parent_removed, meth)(parent_removed_cb)
+    getattr(callbacks.attribute_changed, meth)(attribute_changed_cb)
+
+
+def enable_callbacks():
+    _control_callbacks("add")
+
+
+def disable_callbacks():
+    _control_callbacks("remove")
