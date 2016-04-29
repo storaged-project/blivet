@@ -31,6 +31,8 @@ class ObjectManager(dbus.service.Object):
     """
     def __init__(self):
         self._objects = list()
+        self._by_id = dict()
+        self._by_path = dict()
         super().__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
                          object_path=OBJECT_MANAGER_PATH)
 
@@ -40,11 +42,25 @@ class ObjectManager(dbus.service.Object):
 
     def remove_object(self, obj):
         self._objects.remove(obj)
+        del self._by_id[obj.id]
+        del self._by_path[obj.object_path]
         self.InterfacesRemoved(obj.object_path, obj.interface)
 
     def add_object(self, obj):
         self._objects.append(obj)
+        self._by_id[obj.id] = obj
+        self._by_path[obj.object_path] = obj
         self.InterfacesAdded(obj.object_path, {obj.interface: obj.properties})
+
+    @property
+    def objects(self):
+        return self._objects
+
+    def get_object_by_id(self, obj_id):
+        return self._by_id.get(obj_id)
+
+    def get_object_by_path(self, obj_path):
+        return self._by_path.get(obj_path)
 
     @dbus.service.signal(dbus_interface=OBJECT_MANAGER_INTERFACE, signature='oa{sa{sv}}')
     def InterfacesAdded(self, object_path, ifaces_props_dict):
