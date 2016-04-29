@@ -75,34 +75,62 @@ class DBusBlivet(DBusObject):
         props = {"Devices": self.ListDevices()}
         return props
 
-    def _device_removed(self, device):
+    def _device_removed(self, device, keep=True):
         """ Update ObjectManager interface after a device is removed. """
-        removed = self._manager.get_object_by_id(device.id)
         # Make sure the format gets removed in case the device was removed w/o
         # removing the format first.
         removed_fmt = self._manager.get_object_by_id(device.format.id)
-        if removed_fmt and removed_fmt in self._manager.objects:
-            self._format_removed(device.format)
+        if removed_fmt and removed_fmt.present:
+            self._format_removed(device, device.format, keep=keep)
+        elif removed_fmt and not keep:
+            self._format_removed(device, device.format, keep=False)
+
+        removed = self._manager.get_object_by_id(device.id)
         self._manager.remove_object(removed)
-        removed.remove_from_connection()
+        if keep:
+            removed.present = False
+            self._manager.add_object(removed)
+        else:
+            removed.remove_from_connection()
 
     def _device_added(self, device):
         """ Update ObjectManager interface after a device is added. """
-        added = DBusDevice(device, self._manager)
+        added = self._manager.get_object_by_id(device.id)
+        if added:
+            # This device was previously removed. Restore it.
+            added.present = True
+        else:
+            added = DBusDevice(device, self._manager)
+
         self._manager.add_object(added)
 
-    def _format_removed(self, fmt):
+    def _format_removed(self, device, fmt, keep=True):  # pylint: disable=unused-argument
         removed = self._manager.get_object_by_id(fmt.id)
+        if removed is None:
+            return
+
+        # We have to remove the object either way since its path will change.
         self._manager.remove_object(removed)
-        removed.remove_from_connection()
+        if keep:
+            removed.present = False
+            self._manager.add_object(removed)
+        else:
+            removed.remove_from_connection()
 
     def _format_added(self, device, fmt):  # pylint: disable=unused-argument
-        added = DBusFormat(fmt, self._manager)
+        added = self._manager.get_object_by_id(fmt.id)
+        if added:
+            # This format was previously removed. Restore it.
+            added.present = True
+        else:
+            added = DBusFormat(fmt, self._manager)
+
         self._manager.add_object(added)
 
     def _action_removed(self, action):
         removed = self._manager.get_object_by_id(action.id)
         self._manager.remove_object(removed)
+        removed.remove_from_connection()
 
     def _action_added(self, action):
         added = DBusAction(action, self._manager)
@@ -111,22 +139,28 @@ class DBusBlivet(DBusObject):
     def _action_executed(self, action):
         if action.is_destroy:
             if action.is_device:
-                self._device_removed(action.device)
+                self._device_removed(action.device, keep=False)
             elif action.is_format:
-                self._format_removed(action.device, action.format)
+                self._format_removed(action.device, action.format, keep=False)
 
         self._action_removed(action)
 
-    def _list_dbus_devices(self):
-        return [d for d in self._manager.objects if isinstance(d, DBusDevice)]
+    def _list_dbus_devices(self, removed=False):
+        dbus_devices = (d for d in self._manager.objects if isinstance(d, DBusDevice))
+        return [d for d in dbus_devices if removed or d.present]
 
-    def _get_device_by_object_path(self, object_path):
+    def _get_device_by_object_path(self, object_path, removed=False):
         """ Return the StorageDevice corresponding to an object path. """
         dbus_device = self._manager.get_object_by_path(object_path)
         if dbus_device is None or not isinstance(dbus_device, DBusDevice):
             raise dbus.exceptions.DBusException('%s.DeviceNotFound' % BUS_NAME,
                                                 'No device found with object path "%s".'
                                                 % object_path)
+
+        if not dbus_device.present and not removed:
+            raise dbus.exceptions.DBusException('%s.DeviceNotFound' % BUS_NAME,
+                                                'Device with object path "%s" has already been '
+                                                'removed.' % object_path)
 
         return dbus_device._device
 
@@ -135,7 +169,7 @@ class DBusBlivet(DBusObject):
         """ Reset the Blivet instance and populate the device tree. """
         old_devices = self._blivet.devices[:]
         for removed in old_devices:
-            self._device_removed(device=removed)
+            self._device_removed(device=removed, keep=False)
 
         self._blivet.reset()
 

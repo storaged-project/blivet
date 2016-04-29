@@ -19,14 +19,13 @@
 #
 import dbus
 
-from .constants import FORMAT_INTERFACE, FORMAT_OBJECT_PATH_BASE
+from .constants import FORMAT_INTERFACE, FORMAT_OBJECT_PATH_BASE, FORMAT_REMOVED_OBJECT_PATH_BASE
 from .object import DBusObject
 
 
 class DBusFormat(DBusObject):
     def __init__(self, fmt, manager):
         self._format = fmt
-        self._manager = manager
         super().__init__(manager)
 
     @property
@@ -35,7 +34,12 @@ class DBusFormat(DBusObject):
 
     @property
     def object_path(self):
-        return "%s/%d" % (FORMAT_OBJECT_PATH_BASE, self.id)
+        if self.present:
+            base = FORMAT_OBJECT_PATH_BASE
+        else:
+            base = FORMAT_REMOVED_OBJECT_PATH_BASE
+
+        return "%s/%s" % (base, self.id)
 
     @property
     def interface(self):

@@ -12,6 +12,8 @@ from blivet.dbus.format import DBusFormat
 from blivet.dbus.object import DBusObject
 from blivet.dbus.constants import ACTION_INTERFACE, BLIVET_INTERFACE, DEVICE_INTERFACE, FORMAT_INTERFACE
 from blivet.dbus.constants import ACTION_OBJECT_PATH_BASE
+from blivet.dbus.constants import DEVICE_OBJECT_PATH_BASE, DEVICE_REMOVED_OBJECT_PATH_BASE
+from blivet.dbus.constants import FORMAT_OBJECT_PATH_BASE, FORMAT_REMOVED_OBJECT_PATH_BASE
 
 
 class UDevBlivetTestCase(TestCase):
@@ -103,6 +105,10 @@ class DBusDeviceTestCase(DBusObjectTestCase):
         self.assertTrue(isinstance(self.obj.properties, dict))
         self.assertEqual(self.obj.interface, DEVICE_INTERFACE)
         self.assertEqual(self.obj.object_path, "%s/%d" % (DEVICE_OBJECT_PATH_BASE, self._device_id))
+        self.obj.removed = True
+        self.assertEqual(self.obj.object_path, "%s/%d" % (DEVICE_REMOVED_OBJECT_PATH_BASE, self._device_id))
+        self.obj.removed = False
+        self.assertEqual(self.obj.object_path, "%s/%d" % (DEVICE_OBJECT_PATH_BASE, self._device_id))
 
 
 class DBusFormatTestCase(DBusObjectTestCase):
@@ -117,6 +123,10 @@ class DBusFormatTestCase(DBusObjectTestCase):
     def test_properties(self, *args):  # pylint: disable=unused-argument
         self.assertTrue(isinstance(self.obj.properties, dict))
         self.assertEqual(self.obj.interface, FORMAT_INTERFACE)
+        self.assertEqual(self.obj.object_path, "%s/%d" % (FORMAT_OBJECT_PATH_BASE, self._format_id))
+        self.obj.removed = True
+        self.assertEqual(self.obj.object_path, "%s/%d" % (FORMAT_REMOVED_OBJECT_PATH_BASE, self._format_id))
+        self.obj.removed = False
         self.assertEqual(self.obj.object_path, "%s/%d" % (FORMAT_OBJECT_PATH_BASE, self._format_id))
 
 

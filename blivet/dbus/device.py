@@ -19,7 +19,7 @@
 #
 import dbus
 
-from .constants import DEVICE_INTERFACE, DEVICE_OBJECT_PATH_BASE
+from .constants import DEVICE_INTERFACE, DEVICE_OBJECT_PATH_BASE, DEVICE_REMOVED_OBJECT_PATH_BASE
 from .object import DBusObject
 
 
@@ -34,7 +34,12 @@ class DBusDevice(DBusObject):
 
     @property
     def object_path(self):
-        return "%s/%d" % (DEVICE_OBJECT_PATH_BASE, self.id)
+        if self.present:
+            base = DEVICE_OBJECT_PATH_BASE
+        else:
+            base = DEVICE_REMOVED_OBJECT_PATH_BASE
+
+        return "%s/%s" % (base, self.id)
 
     @property
     def interface(self):
