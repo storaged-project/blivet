@@ -24,6 +24,7 @@ import os
 import copy
 import pyudev
 
+from ..callbacks import callbacks
 from .. import errors
 from .. import util
 from ..flags import flags
@@ -701,9 +702,6 @@ class StorageDevice(Device):
 
         log_method_call(self, self.name, type=fmt.type,
                         current=getattr(self._format, "type", None))
-        if self._format and self._format.status:
-            # FIXME: self.format.status doesn't mean much
-            raise errors.DeviceError("cannot replace active format", self.name)
 
         # check device size against format limits
         if not fmt.exists:
@@ -712,9 +710,11 @@ class StorageDevice(Device):
             elif fmt.min_size and fmt.min_size > self.size:
                 raise errors.DeviceError("device is too small for new format")
 
+        callbacks.format_removed(device=self, fmt=self._format)
         self._format = fmt
         self._format.device = self.path
         self._update_netdev_mount_option()
+        callbacks.format_added(device=self, fmt=self._format)
 
     def _update_netdev_mount_option(self):
         """ Fix mount options to include or exclude _netdev as appropriate. """
