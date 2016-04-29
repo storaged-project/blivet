@@ -24,10 +24,10 @@ from .object import DBusObject
 
 
 class DBusFormat(DBusObject):
-    def __init__(self, fmt):
+    def __init__(self, fmt, manager):
         self._format = fmt
-        self._object_path = self.get_object_path_by_id(self._format.id)
-        super().__init__()
+        self._manager = manager
+        super().__init__(manager)
 
     @property
     def id(self):
@@ -35,11 +35,7 @@ class DBusFormat(DBusObject):
 
     @property
     def object_path(self):
-        return self._object_path
-
-    @staticmethod
-    def get_object_path_by_id(object_id):
-        return "%s/%d" % (FORMAT_OBJECT_PATH_BASE, object_id)
+        return "%s/%d" % (FORMAT_OBJECT_PATH_BASE, self.id)
 
     @property
     def interface(self):

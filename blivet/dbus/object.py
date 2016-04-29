@@ -26,7 +26,15 @@ from .constants import BUS_NAME
 
 class DBusObject(dbus.service.Object):
     """ Base class for dbus objects. """
-    def __init__(self):
+    def __init__(self, manager):
+        # pylint: disable=super-init-not-called
+        self._init_dbus_object()
+        self._manager = manager  # provides ObjectManager interface
+
+    # This is here to make it easier to prevent the dbus.service.Object
+    # constructor from running during unit testing.
+    def _init_dbus_object(self):
+        """ Initialize superclass. """
         super().__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
                          object_path=self.object_path)
 
