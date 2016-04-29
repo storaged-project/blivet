@@ -31,6 +31,11 @@ class DBusObject(dbus.service.Object):
                          object_path=self.object_path)
 
     @property
+    def id(self):
+        """ The unique id of this instance. """
+        raise NotImplementedError()
+
+    @property
     def object_path(self):
         """ The dbus object path for this instance. """
         raise NotImplementedError()

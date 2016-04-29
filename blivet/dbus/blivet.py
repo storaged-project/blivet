@@ -24,6 +24,7 @@ import dbus
 
 from blivet import Blivet
 from blivet.callbacks import callbacks
+from blivet.util import ObjectID
 from .action import DBusAction
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
 from .device import DBusDevice
@@ -45,6 +46,7 @@ class DBusBlivet(DBusObject):
         self._manager = manager  # provides ObjectManager interface
         self._blivet = Blivet()
         self._set_up_callbacks()
+        self._id = ObjectID().id
 
     def _set_up_callbacks(self):
         callbacks.device_added.add(self._device_added)
@@ -54,6 +56,10 @@ class DBusBlivet(DBusObject):
         callbacks.action_added.add(self._action_added)
         callbacks.action_removed.add(self._action_removed)
         callbacks.action_executed.add(self._action_executed)
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def object_path(self):
