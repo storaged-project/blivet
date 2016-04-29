@@ -20,16 +20,13 @@
 import dbus
 
 from .constants import ACTION_INTERFACE, ACTION_OBJECT_PATH_BASE
-from .device import DBusDevice
-from .format import DBusFormat
 from .object import DBusObject
 
 
 class DBusAction(DBusObject):
-    def __init__(self, action):
+    def __init__(self, action, manager):
         self._action = action
-        self._object_path = self.get_object_path_by_id(self._action.id)
-        super().__init__()
+        super().__init__(manager)
 
     @property
     def id(self):
@@ -37,11 +34,7 @@ class DBusAction(DBusObject):
 
     @property
     def object_path(self):
-        return self._object_path
-
-    @staticmethod
-    def get_object_path_by_id(object_id):
-        return "%s/%d" % (ACTION_OBJECT_PATH_BASE, object_id)
+        return "%s/%d" % (ACTION_OBJECT_PATH_BASE, self.id)
 
     @property
     def interface(self):
@@ -50,8 +43,8 @@ class DBusAction(DBusObject):
     @property
     def properties(self):
         props = {"Description": str(self._action),
-                 "Device": dbus.ObjectPath(DBusDevice.get_object_path_by_id(self._action.device.id),
-                 "Format": dbus.ObjectPath(DBusDevice.get_object_path_by_id(self._action.format.id),
+                 "Device": dbus.ObjectPath(self._manager.get_object_by_id(self._action.device.id).object_path),
+                 "Format": dbus.ObjectPath(self._manager.get_object_by_id(self._action.format.id).object_path),
                  "Type": "%s %s" % (self._action.type_string, self._action.object_string),
                  "ID": self._action.id}
         return props
