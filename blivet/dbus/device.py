@@ -20,6 +20,7 @@
 import dbus
 
 from .constants import DEVICE_INTERFACE, DEVICE_OBJECT_PATH_BASE
+from .format import DBusFormat
 from .object import DBusObject
 
 
@@ -53,11 +54,7 @@ class DBusDevice(DBusObject):
                  "RaidLevel": self._get_raid_level(),
                  "Parents": dbus.Array((self.get_object_path_by_id(d.id) for d in self._device.parents), signature='o'),
                  "Children": dbus.Array((self.get_object_path_by_id(d.id) for d in self._device.children), signature='o'),
-                 "FormatType": self._device.format.type or "",
-                 "FormatUUID": self._device.format.uuid or "",
-                 "FormatMountpoint": getattr(self._device.format, "mountpoint", "") or "",
-                 "FormatLabel": getattr(self._device.format, "label", "") or "",
-                 "FormatID": self._device.format.id,
+                 "Format": dbus.ObjectPath(DBusFormat.get_object_path_by_id(self._device.format.id))
                  }
 
         return props

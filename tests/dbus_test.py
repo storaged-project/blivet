@@ -5,11 +5,11 @@ from unittest.mock import Mock, patch, sentinel
 
 import dbus
 
-from blivet import Blivet
 from blivet.dbus.blivet import DBusBlivet
 from blivet.dbus.device import DBusDevice
+from blivet.dbus.format import DBusFormat
 from blivet.dbus.object import DBusObject
-from blivet.dbus.constants import BLIVET_INTERFACE, DEVICE_INTERFACE
+from blivet.dbus.constants import BLIVET_INTERFACE, DEVICE_INTERFACE, FORMAT_INTERFACE
 
 
 class UDevBlivetTestCase(TestCase):
@@ -89,8 +89,9 @@ class DBusDeviceTestCase(DBusObjectTestCase):
     @patch("blivet.dbus.blivet.callbacks")
     def setUp(self, *args):
         self._device_id = random.randint(0, 500)
+        self._format_id = random.randint(501, 1000)
         self.obj = DBusDevice(Mock(name="StorageDevice", id=self._device_id,
-                                   parents=[], children=[]))
+                                   parents=[], children=[], format=Mock(id=self._format_id)))
 
     @patch('dbus.UInt64')
     def test_properties(self, *args):  # pylint: disable=unused-argument
@@ -98,3 +99,17 @@ class DBusDeviceTestCase(DBusObjectTestCase):
         self.assertEqual(self.obj.interface, DEVICE_INTERFACE)
         self.assertEqual(self.obj.object_path,
                          self.obj.get_object_path_by_id(self._device_id))
+
+
+class DBusFormatTestCase(DBusObjectTestCase):
+    @patch.object(DBusObject, '__init__', return_value=None)
+    @patch("blivet.dbus.blivet.callbacks")
+    def setUp(self, *args):
+        self._format_id = random.randint(0, 500)
+        self.obj = DBusFormat(Mock(name="DeviceFormat", id=self._format_id))
+
+    def test_properties(self, *args):  # pylint: disable=unused-argument
+        self.assertTrue(isinstance(self.obj.properties, dict))
+        self.assertEqual(self.obj.interface, FORMAT_INTERFACE)
+        self.assertEqual(self.obj.object_path,
+                         self.obj.get_object_path_by_id(self._format_id))
