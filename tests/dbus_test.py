@@ -5,11 +5,12 @@ from unittest.mock import Mock, patch, sentinel
 
 import dbus
 
+from blivet.dbus.action import DBusAction
 from blivet.dbus.blivet import DBusBlivet
 from blivet.dbus.device import DBusDevice
 from blivet.dbus.format import DBusFormat
 from blivet.dbus.object import DBusObject
-from blivet.dbus.constants import BLIVET_INTERFACE, DEVICE_INTERFACE, FORMAT_INTERFACE
+from blivet.dbus.constants import ACTION_INTERFACE, BLIVET_INTERFACE, DEVICE_INTERFACE, FORMAT_INTERFACE
 
 
 class UDevBlivetTestCase(TestCase):
@@ -113,3 +114,17 @@ class DBusFormatTestCase(DBusObjectTestCase):
         self.assertEqual(self.obj.interface, FORMAT_INTERFACE)
         self.assertEqual(self.obj.object_path,
                          self.obj.get_object_path_by_id(self._format_id))
+
+
+class DBusActionTestCase(DBusObjectTestCase):
+    @patch.object(DBusObject, '__init__', return_value=None)
+    @patch("blivet.dbus.blivet.callbacks")
+    def setUp(self, *args):
+        self._id = random.randint(0, 500)
+        self.obj = DBusAction(Mock(name="DeviceAction", id=self._id)
+
+    def test_properties(self, *args):  # pylint: disable=unused-argument
+        self.assertTrue(isinstance(self.obj.properties, dict))
+        self.assertEqual(self.obj.interface, ACTION_INTERFACE)
+        self.assertEqual(self.obj.object_path,
+                         self.obj.get_object_path_by_id(self._id))
