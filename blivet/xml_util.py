@@ -25,6 +25,9 @@ def create_basics():
     super_elems.append(ET.SubElement(root_elem, "InternalDevices"))
     super_elems.append(ET.SubElement(root_elem, "Actions"))
     super_elems.append(ET.SubElement(root_elem, "AlteredDevices"))
+    super_elems[-1].set("Count", str(0))
+    super_elems.append(ET.SubElement(root_elem, "AlteredFormats"))
+    super_elems[-1].set("Count", str(0))
     return (root_elem, super_elems)
 
 def save_file(root_elem, dump_device=None, custom_name=None, rec_bool=False):
@@ -67,6 +70,7 @@ def export_iterate(device_list, action_list, super_elems, master_root_elem):
     disk_elems = []
     action_elems = []
     dev_counter = 0
+    act_counter = 0
 
     for dev in device_list:
         if hasattr(dev, "to_xml"):
@@ -85,9 +89,19 @@ def export_iterate(device_list, action_list, super_elems, master_root_elem):
         action_elems[-1].set("type", act_name)
         action_elems[-1].set("ObjectID", str(getattr(action, "id")))
         # Special occasion - we know that actions don't have to_xml
+        tmp_obj = XMLUtils()
+        tmp_obj._to_xml_init(master_root_elem, devices_list=action_elems,
+                             object_override=action, parent_override="action_elems")
+        act_counter = act_counter + 1
+        tmp_obj.to_xml()
+    super_elems[3].set("Count", str(act_counter))
+
 ################################################################################
 ##### BASIC DEFINITION
 class XMLUtils(util.ObjectID):
+    def __init__(self):
+        self.xml_root_elem = None
+
     def _to_xml_init(self, root_elem, devices_list=None, object_override=None,
                      parent_override=None, xml_done_ids=set()):
         """
@@ -103,14 +117,22 @@ class XMLUtils(util.ObjectID):
         self.intern_elems = self.xml_root_elem[2]
         self.action_elems = self.xml_root_elem[3]
         self.altdev_elems = self.xml_root_elem[4]
+        self.altfor_elems = self.xml_root_elem[5]
         self.xml_iterables = {list, tuple, dict, "collections.OrderedDict",
                               "blivet.devices.lib.ParentList"}
 
-#        par_override_dict = {"device_elems": self.device_elems[-1],
-#                             "format_elems": self.format_elems[-1],
-#                             "intern_elems": self.intern_elems[-1],
-#                             "action_elems": self.action_elems[-1],
-#                             "altdev_elems": self.altdev_elems[-1]}
+        self.xml_elems_list = [] # Elements will be stored here
+        self.xml_attrs_done = set() # To prevent duplicates in xml_elems_list
+        self.xml_done_ids = xml_done_ids # As above, but for ids
+
+        self.parent_override = parent_override
+        self.par_override_dict = {"device_elems": self.device_elems,
+                                  "format_elems": self.format_elems,
+                                  "intern_elems": self.intern_elems,
+                                  "action_elems": self.action_elems,
+                                  "altdev_elems": self.altdev_elems,
+                                  "altfor_elems": self.altfor_elems,
+                                  "elems_list": self.xml_elems_list}
 
         # Determine, what object to parse
         if object_override is None:
@@ -119,13 +141,12 @@ class XMLUtils(util.ObjectID):
             self.xml_object = object_override
 
         # Determine where to store new elements
-        self.xml_parent_elem = parent_override
+        self.xml_parent_elem = self.par_override_dict.get(self.parent_override)
         if self.xml_parent_elem is None:
             self.xml_parent_elem = self.device_elems[-1]
-
-        self.xml_elems_list = [] # Elements will be stored here
-        self.xml_attrs_done = set() # To prevent duplicates in xml_elems_list
-        self.xml_done_ids = xml_done_ids # As above, but for ids
+        # Check, if the list is empty so we can continue
+        if len(self.xml_parent_elem) != 0:
+            self.xml_parent_elem = self.xml_parent_elem[-1]
 
         self.xml_attr_list = dir(self.xml_object) # List of attrs to gather
 
@@ -235,11 +256,17 @@ class XMLUtils(util.ObjectID):
             DeviceFormat = getattr(importlib.import_module("blivet.formats"), "DeviceFormat")
             Device = getattr(importlib.import_module("blivet.devices"), "Device")
             # For DeviceFormat
-            if isinstance(self.xml_tmp_obj, DeviceFormat):
+            if isinstance(self.xml_tmp_obj, DeviceFormat) and (self.parent_override != "altdev_elems" or self.parent_override is None):
                 self._to_xml_parse_format()
+            # Deleted / Altered DeviceFormat - separately
+            elif isinstance(self.xml_tmp_obj, DeviceFormat) and self.parent_override == "altdev_elems":
+                self._to_xml_parse_format(parent_override="altfor_elems")
             # For Device
-            elif isinstance(self.xml_tmp_obj, Device):
+            elif isinstance(self.xml_tmp_obj, Device) and self.parent_override != "action_elems":
                 return
+            elif isinstance(self.xml_tmp_obj, Device) and self.parent_override == "action_elems":
+                self.xml_tmp_str_type = str(type(self.xml_tmp_obj)).split("'")[1]
+                self._to_xml_parse_device(parent_override = "altdev_elems")
             # Anything else
             else:
                 self._to_xml_parse_object()
@@ -247,7 +274,7 @@ class XMLUtils(util.ObjectID):
         else:
             pass
 
-    def _to_xml_parse_object(self):
+    def _to_xml_parse_object(self, parent_override="elems_list"):
         """
             Similar to format, this does the same like parse_format, but for devices.
         """
@@ -258,62 +285,67 @@ class XMLUtils(util.ObjectID):
         new_obj_init = getattr(self.xml_tmp_obj, "_to_xml_init")
         new_obj_init = new_obj_init(self.xml_root_elem,
                                         object_override=self.xml_tmp_obj,
-                                        parent_override=self.xml_elems_list[-1],
+                                        parent_override=parent_override,
                                         xml_done_ids=self.xml_done_ids)
         # Finally, start parsing
         getattr(self.xml_tmp_obj, "to_xml")()
 
-    def _to_xml_parse_format(self):
+    def _to_xml_parse_format(self, parent_override="format_elems"):
         """
             Special section for DeviceFormat
         """
+
+        self.parent_elem = self.par_override_dict.get(parent_override)
         # Just a small tweak, count it
-        tmp_count = self.format_elems.attrib.get("Count")
+        tmp_count = self.parent_elem.attrib.get("Count")
         if tmp_count is not None:
             tmp_count = int(tmp_count) + 1
         else:
             tmp_count = 1
-        self.format_elems.set("Count", str(tmp_count))
+        self.parent_elem.set("Count", str(tmp_count))
         # Start adding elements to format section
-        self.xml_elems_list.append(ET.SubElement(self.format_elems,
+
+        self.xml_elems_list.append(ET.SubElement(self.parent_elem,
                                                  self.tmp_full_name.split(".")[-1]))
         self.xml_elems_list[-1].set("type", self.tmp_full_name)
         self.xml_elems_list[-1].set("ObjectID", str(self.tmp_id))
 
         new_obj_init = getattr(self.xml_tmp_obj, "_to_xml_init")
         new_obj_init = new_obj_init(self.xml_root_elem,
-                                    parent_override=self.format_elems[-1],
+                                    parent_override=parent_override,
                                     xml_done_ids=self.xml_done_ids)
         # Finally, start parsing
         getattr(self.xml_tmp_obj, "to_xml")()
 
 ################################################################################
 ########### Special occasion of sub-to_xml
-    def _to_xml_parse_device(self):
+    def _to_xml_parse_device(self, parent_override = "intern_elems"):
         """
             Special section for any other device, that is not in blivet.devices
         """
         # Get basic data and ID
         self.xml_tmp_id = getattr(self.xml_tmp_obj, "id")
-        if self.xml_tmp_id in self.xml_done_ids:
+        if self.xml_tmp_id in self.xml_done_ids and parent_override != "altdev_elems":
             return
 
+        self.parent_elem = self.par_override_dict.get(parent_override)
+
         # Just a small tweak, count it
-        tmp_count = self.intern_elems.attrib.get("Count")
+        tmp_count = self.parent_elem.attrib.get("Count")
         if tmp_count is not None:
             tmp_count = int(tmp_count) + 1
         else:
             tmp_count = 1
-        self.intern_elems.set("Count", str(tmp_count))
+        self.parent_elem.set("Count", str(tmp_count))
         # Finally, start preparing
         self.xml_done_ids.add(self.xml_tmp_id)
-        self.xml_elems_list.append(ET.SubElement(self.intern_elems, self.xml_tmp_str_type.split(".")[-1]))
+        self.xml_elems_list.append(ET.SubElement(self.parent_elem, self.xml_tmp_str_type.split(".")[-1]))
         self.xml_elems_list[-1].set("type", self.xml_tmp_str_type)
         self.xml_elems_list[-1].set("ObjectID", str(self.xml_tmp_id))
 
         new_obj_init = getattr(self.xml_tmp_obj, "_to_xml_init")
         new_obj_init = new_obj_init(self.xml_root_elem,
-                                    parent_override=self.intern_elems[-1],
+                                    parent_override=parent_override,
                                     object_override=self.xml_tmp_obj,
                                     devices_list=self.xml_devices_list,
                                     xml_done_ids=self.xml_done_ids)
@@ -481,6 +513,8 @@ class FromXML(object):
         self.fxml_tree_formats = self.fxml_tree_root.find("./Formats")
         self.fxml_tree_interns = self.fxml_tree_root.find("./InternalDevices")
         self.fxml_tree_actions = self.fxml_tree_root.find("./Actions")
+        self.fxml_tree_altdevs = self.fxml_tree_root.find(".AlteredDevices")
+        self.fxml_tree_altfmts = self.fxml_tree_root.find("./AlteredFormats")
         # Lists to store devices to - Preparation
 
         # Pouzit ids_done jako kontrolu proti rekurzi
