@@ -32,7 +32,10 @@ from six.moves import cPickle  # pylint: disable=import-error
 
 from decimal import Decimal
 
-from blivet.i18n import _
+# use libbytesize's translations for Size instances
+import gettext
+_BS = lambda x: gettext.translation("libbytesize", fallback=True).gettext(x) if x != "" else ""
+
 from blivet import size
 from blivet.size import Size
 from blivet.size import B, KiB, MiB, GiB, TiB
@@ -244,22 +247,22 @@ class TranslationTestCase(unittest.TestCase):
             self.assertEqual(s, Size("56.19 MiB"))
 
             # Check native parsing
-            self.assertEqual(s, Size("56.19 %s%s" % (_("Mi"), _("B"))))
+            self.assertEqual(s, Size("56.19 %s" % (_BS("MiB"))))
 
             # Check native parsing, all lowercase
-            self.assertEqual(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).lower()))
+            self.assertEqual(s, Size(("56.19 %s" % (_BS("MiB"))).lower()))
 
             # Check native parsing, all uppercase
-            self.assertEqual(s, Size(("56.19 %s%s" % (_("Mi"), _("B"))).upper()))
+            self.assertEqual(s, Size(("56.19 %s" % (_BS("MiB"))).upper()))
 
             # If the radix separator is not a period, repeat the tests with the
             # native separator
             radix = locale.nl_langinfo(locale.RADIXCHAR)
             if radix != '.':
                 self.assertEqual(s, Size("56%s19 MiB" % radix))
-                self.assertEqual(s, Size("56%s19 %s%s" % (radix, _("Mi"), _("B"))))
-                self.assertEqual(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).lower()))
-                self.assertEqual(s, Size(("56%s19 %s%s" % (radix, _("Mi"), _("B"))).upper()))
+                self.assertEqual(s, Size("56%s19 %s" % (radix, _BS("MiB"))))
+                self.assertEqual(s, Size(("56%s19 %s" % (radix, _BS("MiB"))).lower()))
+                self.assertEqual(s, Size(("56%s19 %s" % (radix, _BS("MiB"))).upper()))
 
     def test_human_readable_translation(self):
         s = Size("56.19 MiB")
@@ -268,11 +271,11 @@ class TranslationTestCase(unittest.TestCase):
 
             os.environ['LANG'] = lang
             locale.setlocale(locale.LC_ALL, '')
-            self.assertTrue(s.human_readable().endswith("%s%s" % (_("Mi"), _("B"))))
+            self.assertTrue(s.human_readable().endswith("%s" % (_BS("MiB"))))
             self.assertEqual(s.human_readable(xlate=False), size_str)
 
     def test_round_to_nearest(self):
-        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_UP)
+        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_HALF_UP)
 
         s = Size("10.3 GiB")
         self.assertEqual(s.round_to_nearest(GiB), Size("10 GiB"))
