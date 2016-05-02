@@ -26,8 +26,6 @@ from bytesize import bytesize
 from bytesize.bytesize import B, KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB, KB, MB, GB, TB, PB, EB, ZB, YB
 from bytesize.bytesize import ROUND_UP, ROUND_DOWN, ROUND_HALF_UP
 
-ROUND_DEFAULT = ROUND_HALF_UP
-
 
 def unit_str(unit, xlate=False):
     """ Return a string representation of unit.
@@ -137,21 +135,19 @@ class Size(bytesize.Size):
             max_places = -1
         return bytesize.Size.human_readable(self, min_unit, max_places, xlate)
 
-    def round_to_nearest(self, size, rounding=ROUND_DEFAULT):
+    def round_to_nearest(self, size, rounding):
         """ Rounds to nearest unit specified as a named constant or a Size.
 
             :param size: a size specifier
             :type size: a named constant like KiB, or any non-negative Size
             :keyword rounding: which direction to round
-            :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_DEFAULT
+            :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_HALF_UP
             :returns: Size rounded to nearest whole specified unit
             :rtype: :class:`Size`
 
-            .. warning:: Always think about the rounding mode and specify it!
-
             If size is Size(0), returns Size(0).
         """
-        if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_DEFAULT):
+        if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_HALF_UP):
             raise ValueError("invalid rounding specifier")
 
         if isinstance(size, Size):
