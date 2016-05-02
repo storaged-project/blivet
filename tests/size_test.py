@@ -275,7 +275,7 @@ class TranslationTestCase(unittest.TestCase):
             self.assertEqual(s.human_readable(xlate=False), size_str)
 
     def test_round_to_nearest(self):
-        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_UP)
+        self.assertEqual(size.ROUND_DEFAULT, size.ROUND_HALF_UP)
 
         s = Size("10.3 GiB")
         self.assertEqual(s.round_to_nearest(GiB), Size("10 GiB"))
