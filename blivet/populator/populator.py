@@ -44,7 +44,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
-from ..static_data import lvs_info, pvs_info
+from ..static_data import lvs_info, pvs_info, luks_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -73,6 +73,9 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             :type luks_dict: dict
 
         """
+
+        luks_data.luks_dict = luks_dict
+
         self.reset(conf=conf, passphrase=passphrase, luks_dict=luks_dict)
 
     def reset(self, conf=None, passphrase=None, luks_dict=None):
@@ -89,14 +92,13 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         # names of protected devices at the time of tree population
         self.protected_dev_names = []
 
-        self.__passphrases = []
-        if passphrase:
-            self.__passphrases.append(passphrase)
+        luks_data.clear_passphrases()
+        luks_data.add_passphrase(passphrase)
 
-        self.__luks_devs = {}
+        luks_data.devs = {}
         if luks_dict and isinstance(luks_dict, dict):
-            self.__luks_devs = luks_dict
-            self.__passphrases.extend([p for p in luks_dict.values() if p])
+            luks_data.devs = luks_dict
+            luks_data.add_passphrases([p for p in luks_data.devs.values() if p])
 
         # initialize attributes that may later hold cached lvm info
         self.drop_lvm_cache()
@@ -437,11 +439,9 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
     def save_luks_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
+        # Method is here for compatibility with blivet 1.x
+        luks_data.save_passphrase(device)
 
-        passphrase = device.format._LUKS__passphrase
-        if passphrase:
-            self.__luks_devs[device.format.uuid] = passphrase
-            self.__passphrases.append(passphrase)
 
     def populate(self, cleanup_only=False):
         """ Locate all storage devices.

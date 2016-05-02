@@ -34,6 +34,7 @@ from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
 from .size import Size
+from .static_data import luks_data
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -336,7 +337,7 @@ class DeviceFactory(object):
 
         self.child_factory = None
         self.parent_factory = None
-        self.min_luks_entropy = min_luks_entropy
+        luks_data.min_entropy = min_luks_entropy
 
         # used for error recovery
         self.__devices = []
@@ -661,7 +662,7 @@ class DeviceFactory(object):
 
             fmt = get_format(self.fstype,
                              mountpoint=self.mountpoint,
-                             min_luks_entropy=self.min_luks_entropy,
+                             min_luks_entropy=luks_data.min_entropy,
                              **fmt_args)
             luks_device = LUKSDevice("luks-" + device.name,
                                      parents=[device], fmt=fmt)
@@ -747,7 +748,7 @@ class DeviceFactory(object):
             orig_device = self.device
             leaf_format = self.device.format
             self.storage.format_device(self.device, get_format("luks",
-                                                               min_luks_entropy=self.min_luks_entropy))
+                                                               min_luks_entropy=luks_data.min_entropy))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -1083,7 +1084,7 @@ class PartitionSetFactory(PartitionFactory):
             if not member_encrypted and self.encrypted:
                 members.remove(member)
                 self.storage.format_device(member, get_format("luks",
-                                                              min_luks_entropy=self.min_luks_entropy))
+                                                              min_luks_entropy=luks_data.min_entropy))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
