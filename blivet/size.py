@@ -24,9 +24,9 @@ from bytesize import bytesize
 # we just need to make these objects available here
 # pylint: disable=unused-import
 from bytesize.bytesize import B, KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB, KB, MB, GB, TB, PB, EB, ZB, YB
-from bytesize.bytesize import ROUND_UP, ROUND_DOWN
+from bytesize.bytesize import ROUND_UP, ROUND_DOWN, ROUND_HALF_UP
 
-ROUND_DEFAULT = ROUND_UP
+ROUND_DEFAULT = ROUND_HALF_UP
 
 
 def unit_str(unit, xlate=False):
@@ -146,6 +146,8 @@ class Size(bytesize.Size):
             :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_DEFAULT
             :returns: Size rounded to nearest whole specified unit
             :rtype: :class:`Size`
+
+            .. warning:: Always think about the rounding mode and specify it!
 
             If size is Size(0), returns Size(0).
         """
