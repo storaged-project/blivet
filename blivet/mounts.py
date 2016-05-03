@@ -151,7 +151,8 @@ class MountsCache(object):
                     continue
 
                 # use the canonical device path (if available)
-                devspec = resolve_devspec(devspec, sysname=True) or devspec
+                if devspec.startswith("/dev"):
+                    devspec = resolve_devspec(devspec, sysname=True) or devspec
 
                 if fstype == "btrfs":
                     root = mountinfo.get_root(devspec, mountpoint)
