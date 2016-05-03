@@ -44,7 +44,7 @@ class DBusFormat(DBusObject):
     @property
     def properties(self):
         props = {"Device": self._format.device,
-                 "Type": self._format.type,
+                 "Type": self._format.type or "Unknown",
                  "ID": self._format.id,
                  "UUID": self._format.uuid or "",
                  "Label": getattr(self._format, "label", "") or "",
