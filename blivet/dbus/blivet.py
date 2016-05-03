@@ -26,6 +26,7 @@ from blivet import Blivet
 from blivet.callbacks import callbacks
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
 from .device import DBusDevice
+from .format import DBusFormat
 from .object import DBusObject
 
 
@@ -38,6 +39,7 @@ class DBusBlivet(DBusObject):
     def __init__(self, manager):
         super().__init__()
         self._dbus_devices = OrderedDict()
+        self._dbus_formats = OrderedDict()
         self._manager = manager  # provides ObjectManager interface
         self._blivet = Blivet()
         self._set_up_callbacks()
@@ -45,6 +47,8 @@ class DBusBlivet(DBusObject):
     def _set_up_callbacks(self):
         callbacks.device_added.add(self._device_added)
         callbacks.device_removed.add(self._device_removed)
+        callbacks.format_added.add(self._format_added)
+        callbacks.format_removed.add(self._format_removed)
 
     @property
     def object_path(self):
@@ -63,6 +67,11 @@ class DBusBlivet(DBusObject):
         """ Update ObjectManager interface after a device is removed. """
         removed_object_path = DBusDevice.get_object_path_by_id(device.id)
         removed = self._dbus_devices[removed_object_path]
+        fmt_object_path = DBusFormat.get_object_path_by_id(device.format.id)
+        # Make sure the format gets removed in case the device was removed w/o
+        # removing the format first.
+        if fmt_object_path in self._dbus_formats:
+            self._format_removed(device.format)
         self._manager.remove_object(removed)
         del self._dbus_devices[removed_object_path]
 
@@ -70,6 +79,17 @@ class DBusBlivet(DBusObject):
         """ Update ObjectManager interface after a device is added. """
         added = DBusDevice(device)
         self._dbus_devices[added.object_path] = added
+        self._manager.add_object(added)
+
+    def _format_removed(self, fmt):
+        removed_object_path = DBusFormat.get_object_path_by_id(fmt.id)
+        removed = self._dbus_formats[removed_object_path]
+        self._manager.remove_object(removed)
+        del self._dbus_formats[removed_object_path]
+
+    def _format_added(self, fmt):
+        added = DBusFormat(fmt)
+        self._dbus_formats[added.object_path] = added
         self._manager.add_object(added)
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
