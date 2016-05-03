@@ -50,7 +50,6 @@ from ..tasks import fsminsize
 import logging
 log = logging.getLogger("blivet")
 
-
 device_formats = {}
 
 
@@ -110,28 +109,6 @@ def get_format(fmt_type, *args, **kwargs):
     return fmt
 
 
-def collect_device_format_classes():
-    """ Pick up all device format classes from this directory.
-
-        .. note::
-
-            Modules must call :func:`register_device_format` to make format
-            classes available to :func:`getFormat`.
-    """
-    mydir = os.path.dirname(__file__)
-    myfile = os.path.basename(__file__)
-    (myfile_name, _ext) = os.path.splitext(myfile)
-    for module_file in os.listdir(mydir):
-        (mod_name, ext) = os.path.splitext(module_file)
-        if ext == ".py" and mod_name != myfile_name and not mod_name.startswith("."):
-            try:
-                globals()[mod_name] = importlib.import_module("." + mod_name, package=__package__)
-            except ImportError:
-                log.error("import of device format module '%s' failed", mod_name)
-                from traceback import format_exc
-                log.debug("%s", format_exc())
-
-
 def get_device_format_class(fmt_type):
     """ Return an appropriate format class.
 
@@ -142,9 +119,6 @@ def get_device_format_class(fmt_type):
 
         Returns None if no class is found for fmt_type.
     """
-    if not device_formats:
-        collect_device_format_classes()
-
     fmt = device_formats.get(fmt_type)
     if not fmt:
         for fmt_class in device_formats.values():
@@ -758,4 +732,5 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
 register_device_format(DeviceFormat)
 
-collect_device_format_classes()
+# import the format modules (which register their device formats)
+from . import biosboot, disklabel, dmraid, fslib, fs, luks, lvmpv, mdraid, multipath, prepboot, swap
