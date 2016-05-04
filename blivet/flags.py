@@ -75,6 +75,9 @@ class Flags(object):
         # is ordinary not necessary
         self.selinux_reset_fcon = False
 
+        # set to True since we want to keep these around by default
+        self.keep_empty_ext_partitions = True
+
         # set to False to suppress the default LVM behavior of saving
         # backup metadata in /etc/lvm/{archive,backup}
         self.lvm_metadata_backup = True
@@ -139,5 +142,6 @@ class Flags(object):
 
         self.auto_dev_updates = True
         self.selinux_reset_fcon = True
+        self.keep_empty_ext_partitions = False
 
 flags = Flags()
