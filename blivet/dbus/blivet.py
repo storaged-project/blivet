@@ -23,6 +23,7 @@ import dbus
 
 from blivet import Blivet
 from blivet.callbacks import callbacks
+from blivet.errors import StorageError
 from blivet.util import ObjectID
 from .action import DBusAction
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
@@ -207,3 +208,13 @@ class DBusBlivet(DBusObject):
         self.RemoveDevice(object_path)
         device = self._get_device_by_object_path(object_path)
         self._blivet.initialize_disk(device)
+
+    @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
+    def Commit(self):
+        """ Commit pending changes to disk. """
+        try:
+            self._blivet.do_it()
+        except StorageError as e:
+            raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
+                                                "An error occured while committing the "
+                                                "changes to disk: %s" % str(e))
