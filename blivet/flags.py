@@ -109,37 +109,4 @@ class Flags(object):
         if "noiswmd" in self.boot_cmdline:
             self.noiswmd = True
 
-    def update_from_anaconda_flags(self, anaconda_flags):
-        # always enable the debug mode when in the installer mode so that we
-        # have more data in the logs for rare cases that are hard to reproduce
-        self.debug = True
-        self.testing = anaconda_flags.testing
-        self.automated_install = anaconda_flags.automatedInstall
-        self.live_install = anaconda_flags.livecdInstall
-        self.image_install = anaconda_flags.imageInstall
-
-        self.selinux = anaconda_flags.selinux
-
-        self.gfs2 = "gfs2" in self.boot_cmdline
-        self.jfs = "jfs" in self.boot_cmdline
-        self.reiserfs = "reiserfs" in self.boot_cmdline
-
-        self.arm_platform = anaconda_flags.armPlatform
-        self.gpt = anaconda_flags.gpt
-
-        self.multipath_friendly_names = anaconda_flags.mpathFriendlyNames
-        self.allow_imperfect_devices = anaconda_flags.rescue_mode
-
-        self.ibft = anaconda_flags.ibft
-        self.dmraid = anaconda_flags.dmraid
-
-        # We don't want image installs writing backups of the *image* metadata
-        # into the *host's* /etc/lvm. This can get real messy on build systems.
-        if self.image_install:
-            self.lvm_metadata_backup = False
-
-        self.auto_dev_updates = True
-        self.selinux_reset_fcon = True
-        self.keep_empty_ext_partitions = False
-
 flags = Flags()
