@@ -25,6 +25,7 @@ import os
 import stat
 import time
 import parted
+import shutil
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -54,6 +55,20 @@ from .i18n import _
 
 import logging
 log = logging.getLogger("blivet")
+
+
+def copy_to_system(source):
+    if not os.access(source, os.R_OK):
+        log.info("copy_to_system: source '%s' does not exist.", source)
+        return False
+
+    target = get_sysroot() + source
+    target_dir = os.path.dirname(target)
+    log.debug("copy_to_system: '%s' -> '%s'.", source, target)
+    if not os.path.isdir(target_dir):
+        os.makedirs(target_dir)
+    shutil.copy(source, target)
+    return True
 
 
 def release_from_redhat_release(fn):
@@ -765,9 +780,9 @@ class FSSet(object):
 
         # /etc/multipath.conf
         if any(d for d in self.devices if d.type == "dm-multipath"):
-            util.copy_to_system("/etc/multipath.conf")
-            util.copy_to_system("/etc/multipath/wwids")
-            util.copy_to_system("/etc/multipath/bindings")
+            copy_to_system("/etc/multipath.conf")
+            copy_to_system("/etc/multipath/wwids")
+            copy_to_system("/etc/multipath/bindings")
         else:
             log.info("not writing out mpath configuration")
 
