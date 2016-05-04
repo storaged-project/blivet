@@ -62,14 +62,20 @@ class Flags(object):
 
         self.gpt = False
 
+        # for this flag to take effect,
+        # blockdev.mpath.set_friendly_names(flags.multipath_friendly_names) must
+        # be called prior to calling Blivet.reset() or DeviceTree.populate()
         self.multipath_friendly_names = True
+
+        # set to False since automatic updates of a device's information
+        # or state should not be necessary by default
+        self.auto_dev_updates = False
 
         # set to False to suppress the default LVM behavior of saving
         # backup metadata in /etc/lvm/{archive,backup}
         self.lvm_metadata_backup = True
 
-        # whether to include nodev filesystems in the devicetree (only
-        # meaningful when flags.installer_mode is False)
+        # whether to include nodev filesystems in the devicetree
         self.include_nodev = False
 
         self.boot_cmdline = {}
@@ -126,5 +132,7 @@ class Flags(object):
         # into the *host's* /etc/lvm. This can get real messy on build systems.
         if self.image_install:
             self.lvm_metadata_backup = False
+
+        self.auto_dev_updates = True
 
 flags = Flags()

@@ -119,7 +119,7 @@ class FS(DeviceFormat):
         self.label = kwargs.get("label")
         self.fsprofile = kwargs.get("fsprofile")
 
-        if flags.installer_mode and self._resize.available:
+        if flags.auto_dev_updates and self._resize.available:
             # if you want current/min size you have to call update_size_info
             try:
                 self.update_size_info()
