@@ -30,7 +30,6 @@ class Flags(object):
         # mode of operation
         #
         self.testing = False
-        self.installer_mode = False
         self.debug = False
 
         #
@@ -111,7 +110,6 @@ class Flags(object):
             self.noiswmd = True
 
     def update_from_anaconda_flags(self, anaconda_flags):
-        self.installer_mode = True
         # always enable the debug mode when in the installer mode so that we
         # have more data in the logs for rare cases that are hard to reproduce
         self.debug = True

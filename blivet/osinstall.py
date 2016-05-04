@@ -586,9 +586,6 @@ class FSSet(object):
 
     def turn_on_swap(self, root_path=""):
         """ Activate the system's swap space. """
-        if not flags.installer_mode:
-            return
-
         for device in self.swap_devices:
             if isinstance(device, FileDevice):
                 # set up FileDevices' parents now that they are accessible
@@ -621,9 +618,6 @@ class FSSet(object):
             :type read_only: str or None
             :param bool skip_root: whether to skip mounting the root filesystem
         """
-        if not flags.installer_mode:
-            return
-
         devices = list(self.mountpoints.values()) + self.swap_devices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.selinux, self.usb, self.run])
@@ -842,11 +836,7 @@ class FSSet(object):
                          key=lambda d: d.format.mountpoint)
 
         # filter swaps only in installer mode
-        if flags.installer_mode:
-            devices += [dev for dev in self.swap_devices
-                        if dev in self._fstab_swaps]
-        else:
-            devices += self.swap_devices
+        devices += [dev for dev in self.swap_devices if dev in self._fstab_swaps]
 
         netdevs = [d for d in self.devices if isinstance(d, NetworkStorageDevice)]
 
@@ -1127,9 +1117,6 @@ class InstallerStorage(Blivet):
         """
         super().do_it(callbacks=callbacks)
 
-        if not flags.installer_mode:
-            return
-
         # now set the boot partition's flag
         if self.bootloader and not self.bootloader.skip_bootloader:
             if self.bootloader.stage2_bootable:
@@ -1183,8 +1170,7 @@ class InstallerStorage(Blivet):
                 dev.disk.setup()
                 dev.disk.format.commit_to_disk()
 
-        if flags.installer_mode:
-            self.dump_state("final")
+        self.dump_state("final")
 
     def write(self):
         Blivet.write(self)
@@ -1197,7 +1183,7 @@ class InstallerStorage(Blivet):
 
     @property
     def bootloader(self):
-        if self._bootloader is None and flags.installer_mode:
+        if self._bootloader is None:
             self._bootloader = get_bootloader()
 
         return self._bootloader
@@ -1522,6 +1508,13 @@ class InstallerStorage(Blivet):
 
         self.fsset = FSSet(self.devicetree)
 
+    def shutdown(self):
+        """ Deactivate all devices. """
+        try:
+            self.devicetree.teardown_all()
+        except Exception:  # pylint: disable=broad-except
+            log_exception_info(log.error, "failure tearing down device tree")
+
     def reset(self, cleanup_only=False):
         """ Reset storage configuration to reflect actual system state.
 
@@ -1534,17 +1527,16 @@ class InstallerStorage(Blivet):
             See :meth:`devicetree.Devicetree.populate` for more information
             about the cleanup_only keyword argument.
         """
-        if flags.installer_mode:
-            # save passphrases for luks devices so we don't have to reprompt
-            self.encryption_passphrase = None
-            for device in self.devices:
-                if device.format.type == "luks" and device.format.exists:
-                    self.save_passphrase(device)
+        # save passphrases for luks devices so we don't have to reprompt
+        self.encryption_passphrase = None
+        for device in self.devices:
+            if device.format.type == "luks" and device.format.exists:
+                self.save_passphrase(device)
 
         if self.ksdata:
             self.config.update(self.ksdata)
 
-        if flags.installer_mode and not flags.image_install:
+        if not flags.image_install:
             iscsi.startup()
             fcoe.startup()
             zfcp.startup()
@@ -1569,9 +1561,8 @@ class InstallerStorage(Blivet):
             self._mark_protected_device(dev)
 
         self.roots = []
-        if flags.installer_mode:
-            self.roots = find_existing_installations(self.devicetree)
-            self.dump_state("initial")
+        self.roots = find_existing_installations(self.devicetree)
+        self.dump_state("initial")
 
     def _resolve_protected_device_specs(self):
         """ Resolve the protected device specs to device names. """
@@ -1920,10 +1911,6 @@ def turn_on_filesystems(storage, mount_only=False, callbacks=None):
     :type callbacks: return value of the :func:`~.callbacks.create_new_callbacks_register`
 
     """
-
-    if not flags.installer_mode:
-        return
-
     if not mount_only:
         if (flags.live_install and not flags.image_install and not storage.fsset.active):
             # turn off any swaps that we didn't turn on

@@ -55,7 +55,7 @@ import sys
 import importlib
 import warnings
 
-from . import util, arch
+from . import util, arch, udev
 from .flags import flags
 
 import logging
@@ -127,7 +127,7 @@ def enable_installer_mode():
     from pyanaconda.anaconda_log import program_log_lock
     util.program_log_lock = program_log_lock
 
-    flags.installer_mode = True
+    udev.device_name_blacklist = [r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram']
 
 
 def get_sysroot():

@@ -114,16 +114,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self._next_id += 1
         return newid
 
-    def shutdown(self):
-        """ Deactivate all devices (installer_mode only). """
-        if not flags.installer_mode:
-            return
-
-        try:
-            self.devicetree.teardown_all()
-        except Exception:  # pylint: disable=broad-except
-            log_exception_info(log.error, "failure tearing down device tree")
-
     def reset(self, cleanup_only=False):
         """ Reset storage configuration to reflect actual system state.
 
@@ -147,7 +137,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.edd_dict = get_edd_dict(self.partitioned)
         self.devicetree.edd_dict = self.edd_dict
 
-        if not flags.installer_mode:
+        if flags.include_nodev:
             self.devicetree.handle_nodev_filesystems()
 
     @property
