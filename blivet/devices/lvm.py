@@ -1092,7 +1092,7 @@ class LVMInternalLogicalVolumeMixin(object):
             raise ValueError("new size must of type Size")
 
         if not self.takes_extra_space:
-            if size <= self.parent_lv.size:
+            if size <= self.parent_lv.size:  # pylint: disable=no-member
                 self._size = size  # pylint: disable=attribute-defined-outside-init
             else:
                 raise ValueError("Internal LV cannot be bigger than its parent LV")
