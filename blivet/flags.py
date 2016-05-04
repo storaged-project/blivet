@@ -71,6 +71,10 @@ class Flags(object):
         # or state should not be necessary by default
         self.auto_dev_updates = False
 
+        # set to False by default since a forced reset for file contexts
+        # is ordinary not necessary
+        self.selinux_reset_fcon = False
+
         # set to False to suppress the default LVM behavior of saving
         # backup metadata in /etc/lvm/{archive,backup}
         self.lvm_metadata_backup = True
@@ -134,5 +138,6 @@ class Flags(object):
             self.lvm_metadata_backup = False
 
         self.auto_dev_updates = True
+        self.selinux_reset_fcon = True
 
 flags = Flags()

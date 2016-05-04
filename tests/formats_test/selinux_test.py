@@ -19,13 +19,13 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         super(SELinuxContextTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
 
     def setUp(self):
-        self.installer_mode = blivet.flags.installer_mode
+        self.selinux_reset_fcon = blivet.flags.selinux_reset_fcon
         super(SELinuxContextTestCase, self).setUp()
 
     def test_mounting_ext2fs(self):
         """ Test that lost+found directory gets assigned correct SELinux
-            context if installer_mode is True, and retains some random old
-            context if installer_mode is False.
+            context if selinux_set_fcon is True, and retains some random old
+            context if selinux_set_fcon is False.
         """
         LOST_AND_FOUND_CONTEXT = 'system_u:object_r:lost_found_t:s0'
         an_fs = fs.Ext2FS(device=self.loop_devices[0], label="test")
@@ -35,7 +35,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertIsNone(an_fs.create())
 
-        blivet.flags.installer_mode = False
+        blivet.flags.selinux_reset_fcon = False
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -49,7 +49,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertNotEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
 
-        blivet.flags.installer_mode = True
+        blivet.flags.selinux_reset_fcon = True
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -72,7 +72,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertIsNone(an_fs.create())
 
-        blivet.flags.installer_mode = False
+        blivet.flags.selinux_reset_fcon = False
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -82,7 +82,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         an_fs.unmount()
         os.rmdir(mountpoint)
 
-        blivet.flags.installer_mode = True
+        blivet.flags.selinux_reset_fcon = True
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -94,4 +94,4 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def tearDown(self):
         super(SELinuxContextTestCase, self).tearDown()
-        blivet.flags.installer_mode = self.installer_mode
+        blivet.flags.selinux_reset_fcon = self.selinux_reset_fcon

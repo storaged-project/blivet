@@ -514,7 +514,7 @@ class FS(DeviceFormat):
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
-        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.installer_mode:
+        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
