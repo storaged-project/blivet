@@ -262,7 +262,7 @@ class LVMFormatPopulator(FormatPopulator):
                                                    uuid=lv_uuid, size=lv_size, seg_type=lv_type,
                                                    exists=True, **lv_kwargs)
                 self._devicetree._add_device(lv_device)
-                if flags.installer_mode:
+                if flags.auto_dev_updates:
                     lv_device.setup()
 
                 if lv_device.status:

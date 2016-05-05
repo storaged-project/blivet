@@ -700,9 +700,9 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
         self.blivet.do_it()
 
     def test_implicit_extended_partitions_installer_mode(self):
-        flags.installer_mode = True
+        flags.keep_empty_ext_partitions = False
         self.test_implicit_extended_partitions()
-        flags.installer_mode = False
+        flags.keep_empty_ext_partitions = True
 
     def test_explicit_extended_partitions(self):
         """ Verify that explicitly requested extended partitions work. """

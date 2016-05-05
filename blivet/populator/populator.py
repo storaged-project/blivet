@@ -444,7 +444,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             parted.clear_exn_handler()
             self._hide_ignored_disks()
 
-        if flags.installer_mode:
+        if flags.auto_dev_updates:
             self.teardown_all()
 
     def _populate(self):
@@ -453,7 +453,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
         self.drop_lvm_cache()
 
-        if flags.installer_mode and not flags.image_install:
+        if flags.auto_dev_updates and not flags.image_install:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
         self.setup_disk_images()
