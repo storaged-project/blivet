@@ -334,7 +334,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
     def list_subvolumes(self, snapshots_only=False):
         subvols = []
-        if flags.installer_mode:
+        if flags.auto_dev_updates:
             self.setup(orig=True)
         elif not self.original_format.status:
             return subvols

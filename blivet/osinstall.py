@@ -20,11 +20,31 @@
 
 """This module provides functions related to OS installation."""
 
+##
+# Default stub values for installer-specific stuff that gets set up in
+# enable_installer_mode.  These constants are only for use inside this file.
+# For use in other blivet files, they must either be passed to the function
+# in question or care must be taken so they are imported only after
+# enable_installer_mode is called.
+##
+iutil = None
+ERROR_RAISE = 0
+ROOT_PATH = "/"
+_storage_root = ROOT_PATH
+_sysroot = ROOT_PATH
+
+get_bootloader = lambda: None
+
+##
+# end installer stubs
+##
+
 import shlex
 import os
 import stat
 import time
 import parted
+import shutil
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -32,9 +52,10 @@ gi.require_version("BlockDev", "1.0")
 from gi.repository import BlockDev as blockdev
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_NONE, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LIST
+from pyanaconda.constants import shortProductName
+from pyanaconda.errors import errorHandler as error_handler
 
-from . import util
-from . import get_sysroot, get_target_physical_root, get_bootloader, error_handler, ERROR_RAISE
+from . import util, udev
 
 from .blivet import Blivet
 from .storage_log import log_exception_info
@@ -54,6 +75,124 @@ from .i18n import _
 
 import logging
 log = logging.getLogger("blivet")
+
+
+def get_sysroot():
+    """Returns the path to the target OS installation.
+
+    For traditional installations, this is the same as the physical
+    storage root.
+    """
+    return _sysroot
+
+
+def set_sysroot(storage_root, sysroot=None):
+    """Change the OS root path.
+       :param storage_root: The root of physical storage
+       :param sysroot: An optional chroot subdirectory of storage_root
+    """
+    global _storage_root
+    global _sysroot
+    _storage_root = _sysroot = storage_root
+    if sysroot is not None:
+        _sysroot = sysroot
+
+
+def get_target_physical_root():
+    """Returns the path to the "physical" storage root.
+
+    This may be distinct from the sysroot, which could be a
+    chroot-type subdirectory of the physical root.  This is used for
+    example by all OSTree-based installations.
+    """
+    return _storage_root
+
+
+def enable_installer_mode():
+    """ Configure the module for use by anaconda (OS installer). """
+    global iutil
+    global ROOT_PATH
+    global _storage_root
+    global _sysroot
+    global get_bootloader
+    global ERROR_RAISE
+
+    from pyanaconda import iutil  # pylint: disable=redefined-outer-name
+    from pyanaconda.errors import ERROR_RAISE  # pylint: disable=redefined-outer-name
+    from pyanaconda.bootloader import get_bootloader  # pylint: disable=redefined-outer-name
+
+    if hasattr(iutil, 'getTargetPhysicalRoot'):
+        # For anaconda versions > 21.43
+        _storage_root = iutil.getTargetPhysicalRoot()  # pylint: disable=no-name-in-module
+        _sysroot = iutil.getSysroot()
+    else:
+        # For prior anaconda versions
+        from pyanaconda.constants import ROOT_PATH  # pylint: disable=redefined-outer-name,no-name-in-module
+        _storage_root = _sysroot = ROOT_PATH
+
+    from pyanaconda.anaconda_log import program_log_lock
+    util.program_log_lock = program_log_lock
+
+    # always enable the debug mode when in the installer mode so that we
+    # have more data in the logs for rare cases that are hard to reproduce
+    flags.debug = True
+
+    flags.gfs2 = "gfs2" in flags.boot_cmdline
+    flags.jfs = "jfs" in flags.boot_cmdline
+    flags.reiserfs = "reiserfs" in flags.boot_cmdline
+
+    # We don't want image installs writing backups of the *image* metadata
+    # into the *host's* /etc/lvm. This can get real messy on build systems.
+    if flags.image_install:
+        flags.lvm_metadata_backup = False
+
+    flags.auto_dev_updates = True
+    flags.selinux_reset_fcon = True
+    flags.keep_empty_ext_partitions = False
+
+    udev.device_name_blacklist = [r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram']
+
+
+def copy_to_system(source):
+    if not os.access(source, os.R_OK):
+        log.info("copy_to_system: source '%s' does not exist.", source)
+        return False
+
+    target = get_sysroot() + source
+    target_dir = os.path.dirname(target)
+    log.debug("copy_to_system: '%s' -> '%s'.", source, target)
+    if not os.path.isdir(target_dir):
+        os.makedirs(target_dir)
+    shutil.copy(source, target)
+    return True
+
+
+def update_from_anaconda_flags(blivet_flags, anaconda_flags):
+    """
+    Set installer-specific flags. This changes blivet default flags by
+    either flipping the original value, or it assigns the flag value
+    based on anaconda settings that are passed in.
+
+    :param blivet_flags: Blivet flags
+    :type flags: :class:`blivet.flags.Flags`
+    :param anaconda_flags: anaconda flags
+    :type anaconda_flags: :class:`pyanaconda.flags.Flags`
+    """
+    blivet_flags.testing = anaconda_flags.testing
+    blivet_flags.automated_install = anaconda_flags.automatedInstall
+    blivet_flags.live_install = anaconda_flags.livecdInstall
+    blivet_flags.image_install = anaconda_flags.imageInstall
+
+    blivet_flags.selinux = anaconda_flags.selinux
+
+    blivet_flags.arm_platform = anaconda_flags.armPlatform
+    blivet_flags.gpt = anaconda_flags.gpt
+
+    blivet_flags.multipath_friendly_names = anaconda_flags.mpathFriendlyNames
+    blivet_flags.allow_imperfect_devices = anaconda_flags.rescue_mode
+
+    blivet_flags.ibft = anaconda_flags.ibft
+    blivet_flags.dmraid = anaconda_flags.dmraid
 
 
 def release_from_redhat_release(fn):
@@ -586,9 +725,6 @@ class FSSet(object):
 
     def turn_on_swap(self, root_path=""):
         """ Activate the system's swap space. """
-        if not flags.installer_mode:
-            return
-
         for device in self.swap_devices:
             if isinstance(device, FileDevice):
                 # set up FileDevices' parents now that they are accessible
@@ -621,9 +757,6 @@ class FSSet(object):
             :type read_only: str or None
             :param bool skip_root: whether to skip mounting the root filesystem
         """
-        if not flags.installer_mode:
-            return
-
         devices = list(self.mountpoints.values()) + self.swap_devices
         devices.extend([self.dev, self.devshm, self.devpts, self.sysfs,
                         self.proc, self.selinux, self.usb, self.run])
@@ -771,9 +904,9 @@ class FSSet(object):
 
         # /etc/multipath.conf
         if any(d for d in self.devices if d.type == "dm-multipath"):
-            util.copy_to_system("/etc/multipath.conf")
-            util.copy_to_system("/etc/multipath/wwids")
-            util.copy_to_system("/etc/multipath/bindings")
+            copy_to_system("/etc/multipath.conf")
+            copy_to_system("/etc/multipath/wwids")
+            copy_to_system("/etc/multipath/bindings")
         else:
             log.info("not writing out mpath configuration")
 
@@ -842,11 +975,7 @@ class FSSet(object):
                          key=lambda d: d.format.mountpoint)
 
         # filter swaps only in installer mode
-        if flags.installer_mode:
-            devices += [dev for dev in self.swap_devices
-                        if dev in self._fstab_swaps]
-        else:
-            devices += self.swap_devices
+        devices += [dev for dev in self.swap_devices if dev in self._fstab_swaps]
 
         netdevs = [d for d in self.devices if isinstance(d, NetworkStorageDevice)]
 
@@ -1117,6 +1246,14 @@ class InstallerStorage(Blivet):
         self._free_space_snapshot = None
         self.live_backing_device = None
 
+        self._short_product_name = shortProductName
+        # if the following two values have been set (e.g. enable_installer_mode
+        # was called), override the default values here
+        if _sysroot:
+            self._sysroot = _sysroot
+        if _storage_root:
+            self._storag_root = _storage_root
+
     def do_it(self, callbacks=None):
         """
         Commit queued changes to disk.
@@ -1126,9 +1263,6 @@ class InstallerStorage(Blivet):
 
         """
         super().do_it(callbacks=callbacks)
-
-        if not flags.installer_mode:
-            return
 
         # now set the boot partition's flag
         if self.bootloader and not self.bootloader.skip_bootloader:
@@ -1183,21 +1317,20 @@ class InstallerStorage(Blivet):
                 dev.disk.setup()
                 dev.disk.format.commit_to_disk()
 
-        if flags.installer_mode:
-            self.dump_state("final")
+        self.dump_state("final")
 
     def write(self):
-        Blivet.write(self)
+        super().write()
 
         self.make_mtab()
         self.fsset.write()
-        iscsi.write(get_sysroot(), self)
-        fcoe.write(get_sysroot())
-        zfcp.write(get_sysroot())
+        iscsi.write(self.sysroot, self)
+        fcoe.write(self.sysroot)
+        zfcp.write(self.sysroot)
 
     @property
     def bootloader(self):
-        if self._bootloader is None and flags.installer_mode:
+        if self._bootloader is None:
             self._bootloader = get_bootloader()
 
         return self._bootloader
@@ -1522,6 +1655,13 @@ class InstallerStorage(Blivet):
 
         self.fsset = FSSet(self.devicetree)
 
+    def shutdown(self):
+        """ Deactivate all devices. """
+        try:
+            self.devicetree.teardown_all()
+        except Exception:  # pylint: disable=broad-except
+            log_exception_info(log.error, "failure tearing down device tree")
+
     def reset(self, cleanup_only=False):
         """ Reset storage configuration to reflect actual system state.
 
@@ -1534,17 +1674,16 @@ class InstallerStorage(Blivet):
             See :meth:`devicetree.Devicetree.populate` for more information
             about the cleanup_only keyword argument.
         """
-        if flags.installer_mode:
-            # save passphrases for luks devices so we don't have to reprompt
-            self.encryption_passphrase = None
-            for device in self.devices:
-                if device.format.type == "luks" and device.format.exists:
-                    self.save_passphrase(device)
+        # save passphrases for luks devices so we don't have to reprompt
+        self.encryption_passphrase = None
+        for device in self.devices:
+            if device.format.type == "luks" and device.format.exists:
+                self.save_passphrase(device)
 
         if self.ksdata:
             self.config.update(self.ksdata)
 
-        if flags.installer_mode and not flags.image_install:
+        if not flags.image_install:
             iscsi.startup()
             fcoe.startup()
             zfcp.startup()
@@ -1569,9 +1708,8 @@ class InstallerStorage(Blivet):
             self._mark_protected_device(dev)
 
         self.roots = []
-        if flags.installer_mode:
-            self.roots = find_existing_installations(self.devicetree)
-            self.dump_state("initial")
+        self.roots = find_existing_installations(self.devicetree)
+        self.dump_state("initial")
 
     def _resolve_protected_device_specs(self):
         """ Resolve the protected device specs to device names. """
@@ -1817,10 +1955,10 @@ class InstallerStorage(Blivet):
         return None
 
     def turn_on_swap(self):
-        self.fsset.turn_on_swap(root_path=get_sysroot())
+        self.fsset.turn_on_swap(root_path=self.sysroot)
 
     def mount_filesystems(self, read_only=None, skip_root=False):
-        self.fsset.mount_filesystems(root_path=get_sysroot(),
+        self.fsset.mount_filesystems(root_path=self.sysroot,
                                      read_only=read_only, skip_root=skip_root)
 
     def umount_filesystems(self, swapoff=True):
@@ -1838,7 +1976,7 @@ class InstallerStorage(Blivet):
     def make_mtab(self):
         path = "/etc/mtab"
         target = "/proc/self/mounts"
-        path = os.path.normpath("%s/%s" % (get_sysroot(), path))
+        path = os.path.normpath("%s/%s" % (self.sysroot, path))
 
         if os.path.islink(path):
             # return early if the mtab symlink is already how we like it
@@ -1920,10 +2058,6 @@ def turn_on_filesystems(storage, mount_only=False, callbacks=None):
     :type callbacks: return value of the :func:`~.callbacks.create_new_callbacks_register`
 
     """
-
-    if not flags.installer_mode:
-        return
-
     if not mount_only:
         if (flags.live_install and not flags.image_install and not storage.fsset.active):
             # turn off any swaps that we didn't turn on
@@ -1978,7 +2112,7 @@ def write_escrow_packets(storage):
 def storage_initialize(storage, ksdata, protected):
     """ Perform installer-specific storage initialization. """
     from pyanaconda.flags import flags as anaconda_flags
-    flags.update_from_anaconda_flags(anaconda_flags)
+    update_from_anaconda_flags(flags, anaconda_flags)
 
     # Platform class setup depends on flags, re-initialize it.
     _platform.update_from_flags()

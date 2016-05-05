@@ -35,8 +35,8 @@ global_udev = pyudev.Context()
 import logging
 log = logging.getLogger("blivet")
 
-INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram')
-""" device name regexes to ignore when flags.installer_mode is True """
+device_name_blacklist = []
+""" device name regexes to ignore; this should be empty by default """
 
 
 def get_device(sysfs_path):
@@ -143,8 +143,8 @@ def __is_blacklisted_blockdev(dev_name):
     if dev_name.startswith("ram") or dev_name.startswith("fd"):
         return True
 
-    if flags.installer_mode:
-        if any(re.search(expr, dev_name) for expr in INSTALLER_BLACKLIST):
+    if device_name_blacklist:
+        if any(re.search(expr, dev_name) for expr in device_name_blacklist):
             return True
 
     if os.path.exists("/sys/class/block/%s/device/model" % (dev_name,)):

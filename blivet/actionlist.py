@@ -199,7 +199,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
 
         problematic = self._find_active_devices_on_action_disks(devices=devices)
         if problematic:
-            if flags.installer_mode:
+            if flags.auto_dev_updates:
                 for device in devices:
                     if device.protected:
                         continue

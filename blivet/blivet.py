@@ -45,7 +45,7 @@ from .platform import platform as _platform
 from .formats import get_format
 from . import arch
 from . import devicefactory
-from . import get_sysroot, short_product_name, __version__
+from . import __version__
 from .threads import SynchronizedMeta
 
 import logging
@@ -84,6 +84,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.set_default_fstype(get_default_filesystem_type())
         self._default_boot_fstype = None
 
+        self._short_product_name = 'blivet'
+        self._sysroot = '/'
+        self._storage_root = '/'
+
         self._next_id = 0
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
 
@@ -95,6 +99,36 @@ class Blivet(object, metaclass=SynchronizedMeta):
                                      disk_images=self.disk_images)
         self.roots = []
         self.services = set()
+
+    @property
+    def short_product_name(self):
+        return self._short_product_name
+
+    @short_product_name.setter
+    def short_product_name(self, name):
+        """ Change the (short) product name.
+        :param name: The product name.
+        :type name: string
+        """
+        log.debug("new short product name: %s", name)
+        self._short_product_name = name
+
+    @property
+    def sysroot(self):
+        return self._sysroot
+
+    @sysroot.setter
+    def sysroot(self, storage_root, sysroot):
+        """ Change the OS root path.
+        :param storage_root: The root of physical storage
+        :type storage_root: string
+        :param sysroot: An optional chroot subdirectory of storage_root
+        :type sysroot: string
+        """
+        self._storage_root = self._sysroot = storage_root
+        if sysroot is not None:
+            log.debug("new sysroot: %s", sysroot)
+            self._sysroot = sysroot
 
     def do_it(self, callbacks=None):
         """
@@ -113,16 +147,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         newid = self._next_id
         self._next_id += 1
         return newid
-
-    def shutdown(self):
-        """ Deactivate all devices (installer_mode only). """
-        if not flags.installer_mode:
-            return
-
-        try:
-            self.devicetree.teardown_all()
-        except Exception:  # pylint: disable=broad-except
-            log_exception_info(log.error, "failure tearing down device tree")
 
     def reset(self, cleanup_only=False):
         """ Reset storage configuration to reflect actual system state.
@@ -147,7 +171,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.edd_dict = get_edd_dict(self.partitioned)
         self.devicetree.edd_dict = self.edd_dict
 
-        if not flags.installer_mode:
+        if flags.include_nodev:
             self.devicetree.handle_nodev_filesystems()
 
     @property
@@ -527,7 +551,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         else:
             swap = getattr(kwargs.get("fmt"), "type", None) == "swap"
             mountpoint = getattr(kwargs.get("fmt"), "mountpoint", None)
-            name = self.suggest_device_name(prefix=short_product_name,
+            name = self.suggest_device_name(prefix=self.short_product_name,
                                             swap=swap,
                                             mountpoint=mountpoint)
 
@@ -890,7 +914,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             :rtype: str
         """
         if not prefix:
-            prefix = short_product_name
+            prefix = self.short_product_name
 
         # try to create a device name incorporating the hostname
         if hostname not in (None, "", 'localhost', 'localhost.localdomain'):
@@ -1010,10 +1034,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     def write(self):
         """ Write out all storage-related configuration files. """
-        if not os.path.isdir("%s/etc" % get_sysroot()):
-            os.mkdir("%s/etc" % get_sysroot())
+        if not os.path.isdir("%s/etc" % self.sysroot):
+            os.mkdir("%s/etc" % self.sysroot)
 
-        self.write_dasd_conf(get_sysroot())
+        self.write_dasd_conf(self.sysroot)
 
     def write_dasd_conf(self, root):
         """ Write /etc/dasd.conf to target system for all DASD devices

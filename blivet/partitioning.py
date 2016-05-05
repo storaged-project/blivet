@@ -350,7 +350,7 @@ def remove_new_partitions(disks, remove, all_partitions):
         # remove empty extended so it doesn't interfere
         extended = disk.format.extended_partition
         if extended and not disk.format.logical_partitions and \
-           (flags.installer_mode or
+           (not flags.keep_empty_ext_partitions or
                 extended not in (p.parted_partition for p in all_partitions)):
             log.debug("removing empty extended partition from %s", disk.name)
             disk.format.parted_disk.removePartition(extended)

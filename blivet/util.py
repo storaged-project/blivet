@@ -3,7 +3,6 @@ import functools
 import glob
 import itertools
 import os
-import shutil
 import selinux
 import subprocess
 import re
@@ -508,23 +507,6 @@ def find_program_in_path(prog, raise_on_error=False):
 def makedirs(path):
     if not os.path.isdir(path):
         os.makedirs(path, 0o755)
-
-
-def copy_to_system(source):
-    # do the import now because enable_installer_mode() has finally been called.
-    from . import get_sysroot
-
-    if not os.access(source, os.R_OK):
-        log.info("copy_to_system: source '%s' does not exist.", source)
-        return False
-
-    target = get_sysroot() + source
-    target_dir = os.path.dirname(target)
-    log.debug("copy_to_system: '%s' -> '%s'.", source, target)
-    if not os.path.isdir(target_dir):
-        os.makedirs(target_dir)
-    shutil.copy(source, target)
-    return True
 
 
 def lsmod():
