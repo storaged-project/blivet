@@ -325,7 +325,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
 
     def listSubVolumes(self, snapshotsOnly=False):
         subvols = []
-        if flags.installer_mode:
+        if flags.installer_mode or flags.rescue_mode:
             self.setup(orig=True)
 
             try:
@@ -346,7 +346,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
         else:
             self._getDefaultSubVolumeID(mountpoint)
         finally:
-            if flags.installer_mode:
+            if flags.installer_mode or flags.rescue_mode:
                 self._undo_temp_mount()
 
         return subvols
