@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-27 17:18-0700\n"
+"POT-Creation-Date: 2016-05-06 17:31-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,16 +21,16 @@ msgstr ""
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3054
+#: ../blivet/__init__.py:3057
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3059
+#: ../blivet/__init__.py:3062
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3061
+#: ../blivet/__init__.py:3064
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -249,6 +249,10 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
+#: ../blivet/fcoe.py:117
+msgid "FCoE not available"
+msgstr ""
+
 #: ../blivet/errors.py:166
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
@@ -272,10 +276,6 @@ msgstr ""
 
 #: ../blivet/devicetree.py:1332
 msgid "Invalid Disk Label"
-msgstr ""
-
-#: ../blivet/fcoe.py:117
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:51
@@ -592,12 +592,16 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
+#: ../blivet/formats/lvmpv.py:39
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:147
 msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -614,10 +618,6 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:47
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/lvmpv.py:39
-msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/mdraid.py:40

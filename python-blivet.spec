@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.44
+Version: 0.61.15.45
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri May 06 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.45-1
+- Use device's mount options when mounting existing systems (vtrefny)
+  Related: rhbz#1250011
+- Fix root detection on btrfs in rescue mode (vtrefny)
+  Resolves: rhbz#1250011
+
 * Wed Apr 27 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.44-1
 - Ignore unused memo_dict arguments in __deepcopy__ methods. (clumens)
   Related: rhbz#1267944
