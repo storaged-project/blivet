@@ -2165,7 +2165,7 @@ def mount_existing_system(fsset, root_device, read_only=None):
         root_device.setup()
         root_device.format.mount(chroot=root_path,
                                  mountpoint="/",
-                                 options=read_only)
+                                 options="%s,%s" % (root_device.format.options, read_only))
 
     fsset.parse_fstab()
     fsset.mount_filesystems(root_path=root_path, read_only=read_only, skip_root=True)
