@@ -119,6 +119,13 @@ def resolve_devspec(devspec, sysname=False):
 
 
 def resolve_glob(glob):
+    """
+    :param str glob: glob to match device *names* against
+    :returns: list of udev info objects matching :param:`glob`
+
+    .. note:: This function matches device *names* ("sda"), not paths ("/dev/sda").
+
+    """
     import fnmatch
     ret = []
 
