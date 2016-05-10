@@ -20,6 +20,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import copy
 import os
 
 import gi
@@ -29,7 +30,8 @@ from gi.repository import BlockDev as blockdev
 from ... import udev
 from ...devicelibs import lvm
 from ...devices import PartitionDevice
-from ...errors import CorruptGPTError, DeviceError, DiskLabelScanError
+from ...errors import DeviceError
+from ...formats import get_format
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
 
@@ -74,35 +76,29 @@ class PartitionDevicePopulator(DevicePopulator):
                 lvm.lvm_cc_addFilterRejectRegexp(name)
                 return
 
-        if not disk.partitioned:
+        if not disk.partitioned or not disk.format.supported:
             # Ignore partitions on:
             #  - devices we do not support partitioning of, like logical volumes
-            #  - devices that do not have a usable disklabel
             #  - devices that contain disklabels made by isohybrid
             #
-            if disk.partitionable and \
-               disk.format.type != "iso9660" and \
-               not disk.format.hidden and \
-               not self._devicetree._is_ignored_disk(disk):
-                if self.data.get("ID_PART_TABLE_TYPE") == "gpt":
-                    msg = "corrupt gpt disklabel on disk %s" % disk.name
-                    cls = CorruptGPTError
-                else:
-                    msg = "failed to scan disk %s" % disk.name
-                    cls = DiskLabelScanError
+            # For partitions on disklabels parted cannot make sense of, go ahead
+            # and instantiate a PartitionDevice so our view of the layout is
+            # complete.
+            if not disk.partitionable or disk.format.type == "iso9660" or disk.format.hidden:
+                # there's no need to filter partitions on members of multipaths or
+                # fwraid members from lvm since multipath and dmraid are already
+                # active and lvm should therefore know to ignore them
+                if not disk.format.hidden:
+                    lvm.lvm_cc_addFilterRejectRegexp(name)
 
-                raise cls(msg)
+                log.debug("ignoring partition %s on %s", name, disk.format.type)
+                return
 
-            # there's no need to filter partitions on members of multipaths or
-            # fwraid members from lvm since multipath and dmraid are already
-            # active and lvm should therefore know to ignore them
-            if not disk.format.hidden:
-                lvm.lvm_cc_addFilterRejectRegexp(name)
+            if not disk.partitioned:
+                log.info("ignoring '%s' format on disk that contains '%s'", disk.format.type, name)
+                disk.format = get_format("disklabel", exists=True, device=disk.path)
+                disk.original_format = copy.deepcopy(disk.format)
 
-            log.debug("ignoring partition %s on %s", name, disk.format.type)
-            return
-
-        device = None
         try:
             device = PartitionDevice(name, sysfs_path=sysfs_path,
                                      uuid=udev.device_get_partition_uuid(self.data),
@@ -110,11 +106,7 @@ class PartitionDevicePopulator(DevicePopulator):
                                      minor=udev.device_get_minor(self.data),
                                      exists=True, parents=[disk])
         except DeviceError as e:
-            # corner case sometime the kernel accepts a partition table
-            # which gets rejected by parted, in this case we will
-            # prompt to re-initialize the disk, so simply skip the
-            # faulty partitions.
-            # XXX not sure about this
+            # This should only happen for the magic whole-disk partition on a sun disklabel.
             log.error("Failed to instantiate PartitionDevice: %s", e)
             return
 
