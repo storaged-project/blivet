@@ -84,7 +84,6 @@ pep8: check-requires
 canary: check-requires po-fallback
 	@echo "*** Running translation-canary tests ***"
 	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translatable po/blivet.pot
-	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translated .
 
 check:
 	@status=0; \
