@@ -693,8 +693,6 @@ class FS(DeviceFormat):
         mountpoint = kwargs.get("mountpoint") or self.systemMountpoint
         rc = util.umount(mountpoint)
         if rc:
-            # try and catch whatever is causing the umount problem
-            util.run_program(["lsof", mountpoint])
             raise FSError("umount of %s failed (%d)" % (mountpoint, rc))
 
         if mountpoint == self._chrootedMountpoint:
