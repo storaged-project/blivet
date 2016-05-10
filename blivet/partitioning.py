@@ -52,6 +52,9 @@ def _getCandidateDisks(storage):
     """
     disks = []
     for disk in storage.partitioned:
+        if not disk.format.supported:
+            continue
+
         if storage.config.clearPartDisks and \
            (disk.name not in storage.config.clearPartDisks):
             continue
@@ -369,7 +372,7 @@ def doReqPartition(storage, requests):
                         or `~.storage.autoPartitionRequests` by default
        :type requests: list of :class:`~.partspec.PartSpec` instances
     """
-    if not storage.partitioned:
+    if not any(d.format.supported for d in storage.partitioned):
         raise NoDisksError(_("No usable disks selected"))
 
     disks = _getCandidateDisks(storage)
@@ -410,7 +413,7 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
     log.debug("clearPartDisks: %s", storage.config.clearPartDisks)
     log.debug("autoPartitionRequests:\n%s", "".join([str(p) for p in storage.autoPartitionRequests]))
     log.debug("storage.disks: %s", [d.name for d in storage.disks])
-    log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned])
+    log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned if d.format.supported])
     log.debug("all names: %s", [d.name for d in storage.devices])
     log.debug("boot disk: %s", getattr(storage.bootDisk, "name", None))
 
@@ -420,7 +423,7 @@ def doAutoPartition(storage, data, min_luks_entropy=0):
     if not storage.doAutoPart:
         return
 
-    if not storage.partitioned:
+    if not any(d.format.supported for d in storage.partitioned):
         raise NoDisksError(_("No usable disks selected"))
 
     disks = _getCandidateDisks(storage)
@@ -917,7 +920,7 @@ def doPartitioning(storage):
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
     """
-    disks = [d for d in storage.partitioned if not d.protected]
+    disks = [d for d in storage.partitioned if d.format.supported and not d.protected]
     for disk in disks:
         try:
             disk.setup()

@@ -847,7 +847,7 @@ class Blivet(object):
         # partitions. This can still happen through the UI but it makes sense to
         # avoid it where possible.
         partitions = sorted(self.partitions,
-                            key=lambda p: p.partedPartition.number,
+                            key=lambda p: getattr(p.partedPartition, "number", 1),
                             reverse=True)
         for part in partitions:
             log.debug("clearpart: looking at %s", part.name)
@@ -855,7 +855,7 @@ class Blivet(object):
                 continue
 
             self.recursiveRemove(part)
-            log.debug("partitions: %s", [p.getDeviceNodeName() for p in part.partedPartition.disk.partitions])
+            log.debug("partitions: %s", [p.name for p in self.devicetree.getChildren(part.disk)])
 
         # now remove any empty extended partitions
         self.removeEmptyExtendedPartitions()

@@ -28,7 +28,7 @@ import pprint
 import copy
 import parted
 
-from .errors import CorruptGPTError, CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DiskLabelScanError, DMError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -54,7 +54,6 @@ from .platform import platform
 from . import tsort
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
-from .i18n import _
 from .size import Size
 
 import logging
@@ -276,10 +275,11 @@ class DeviceTree(object):
 
         log.info("resetting parted disks...")
         for device in self.devices:
-            if device.partitioned:
+            if device.partitioned and device.format.supported:
                 device.format.resetPartedDisk()
 
             if device.originalFormat.type == "disklabel" and \
+               device.originalFormat.supported and \
                device.originalFormat != device.format:
                 device.originalFormat.resetPartedDisk()
 
@@ -327,7 +327,7 @@ class DeviceTree(object):
         """ Clean up relics from action queue execution. """
         # removal of partitions makes use of originalFormat, so it has to stay
         # up to date in case of multiple passes through this method
-        for disk in (d for d in self.devices if d.partitioned):
+        for disk in (d for d in self.devices if d.partitioned and d.format.supported):
             disk.format.updateOrigPartedDisk()
             disk.originalFormat = copy.deepcopy(disk.format)
 
@@ -390,6 +390,12 @@ class DeviceTree(object):
                 for device in self._devices:
                     # make sure we catch any renumbering parted does
                     if device.exists and isinstance(device, PartitionDevice):
+                        # also update existence for partitions on unsupported disklabels
+                        if not device.disklabelSupported and \
+                           action.isDestroy and action.isFormat and action.device == device.disk:
+                            device.exists = False
+                            continue
+
                         device.updateName()
                         device.format.device = device.path
 
@@ -949,46 +955,36 @@ class DeviceTree(object):
                 lvm.lvm_cc_addFilterRejectRegexp(name)
                 return
 
-        if not disk.partitioned:
+        if not disk.partitioned or not disk.format.supported:
             # Ignore partitions on:
             #  - devices we do not support partitioning of, like logical volumes
-            #  - devices that do not have a usable disklabel
             #  - devices that contain disklabels made by isohybrid
             #
-            if disk.partitionable and \
-               disk.format.type != "iso9660" and \
-               not disk.format.hidden and \
-               not self._isIgnoredDisk(disk):
-                if info.get("ID_PART_TABLE_TYPE") == "gpt":
-                    msg = "corrupt gpt disklabel on disk %s" % disk.name
-                    cls = CorruptGPTError
-                else:
-                    msg = "failed to scan disk %s" % disk.name
-                    cls = DiskLabelScanError
+            # For partitions on disklabels parted cannot make sense of, go ahead
+            # and instantiate a PartitionDevice so our view of the layout is
+            # complete.
+            if not disk.partitionable or disk.format.type == "iso9660" or disk.format.hidden:
+                # there's no need to filter partitions on members of multipaths or
+                # fwraid members from lvm since multipath and dmraid are already
+                # active and lvm should therefore know to ignore them
+                if disk.format.hidden:
+                    lvm.lvm_cc_addFilterRejectRegexp(name)
 
-                raise cls(msg)
+                log.debug("ignoring partition %s on %s", name, disk.format.type)
+                return
 
-            # there's no need to filter partitions on members of multipaths or
-            # fwraid members from lvm since multipath and dmraid are already
-            # active and lvm should therefore know to ignore them
-            if not disk.format.hidden:
-                lvm.lvm_cc_addFilterRejectRegexp(name)
+            if not disk.partitioned:
+                log.info("ignoring '%s' format on disk that contains '%s'", disk.format.type, name)
+                disk.format = getFormat("disklabel", exists=True, device=disk.path)
+                disk.originalFormat = copy.deepcopy(disk.format)
 
-            log.debug("ignoring partition %s on %s", name, disk.format.type)
-            return
-
-        device = None
         try:
             device = PartitionDevice(name, sysfsPath=sysfs_path,
                                      major=udev.device_get_major(info),
                                      minor=udev.device_get_minor(info),
                                      exists=True, parents=[disk])
         except DeviceError as e:
-            # corner case sometime the kernel accepts a partition table
-            # which gets rejected by parted, in this case we will
-            # prompt to re-initialize the disk, so simply skip the
-            # faulty partitions.
-            # XXX not sure about this
+            # This should only happen for the magic whole-disk partition on a sun disklabel.
             log.error("Failed to instantiate PartitionDevice: %s", e)
             return
 
@@ -1327,9 +1323,7 @@ class DeviceTree(object):
             fmt = getFormat("disklabel", device=device.path, labelType=labelType, exists=True)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", device.name)
-            if disklabel_type == "gpt":
-                log.debug(e)
-                device.format = getFormat(_("Invalid Disk Label"))
+            log.debug(e)
         else:
             device.format = fmt
 
