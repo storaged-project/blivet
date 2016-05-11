@@ -17,19 +17,34 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
+import dbus
 
-BUS_NAME = "com.redhat.Blivet1"
-BASE_OBJECT_PATH = "/com/redhat/Blivet1"
-BLIVET_INTERFACE = "%s.Blivet" % BUS_NAME
-BLIVET_OBJECT_PATH = "%s/Blivet" % BASE_OBJECT_PATH
-DEVICE_INTERFACE = "%s.Device" % BUS_NAME
-DEVICE_OBJECT_PATH_BASE = "%s/Devices" % BASE_OBJECT_PATH
-DEVICE_REMOVED_OBJECT_PATH_BASE = "%s/RemovedDevices" % BASE_OBJECT_PATH
-FORMAT_INTERFACE = "%s.Format" % BUS_NAME
-FORMAT_OBJECT_PATH_BASE = "%s/Formats" % BASE_OBJECT_PATH
-FORMAT_REMOVED_OBJECT_PATH_BASE = "%s/RemovedFormats" % BASE_OBJECT_PATH
-ACTION_INTERFACE = "%s.Action" % BUS_NAME
-ACTION_OBJECT_PATH_BASE = "%s/Actions" % BASE_OBJECT_PATH
+from .constants import ACTION_INTERFACE, ACTION_OBJECT_PATH_BASE
+from .object import DBusObject
 
-OBJECT_MANAGER_PATH = BASE_OBJECT_PATH
-OBJECT_MANAGER_INTERFACE = "org.freedesktop.DBus.ObjectManager"
+
+class DBusAction(DBusObject):
+    def __init__(self, action, manager):
+        self._action = action
+        super().__init__(manager)
+
+    @property
+    def id(self):
+        return self._action.id
+
+    @property
+    def object_path(self):
+        return "%s/%d" % (ACTION_OBJECT_PATH_BASE, self.id)
+
+    @property
+    def interface(self):
+        return ACTION_INTERFACE
+
+    @property
+    def properties(self):
+        props = {"Description": str(self._action),
+                 "Device": dbus.ObjectPath(self._manager.get_object_by_id(self._action.device.id).object_path),
+                 "Format": dbus.ObjectPath(self._manager.get_object_by_id(self._action.format.id).object_path),
+                 "Type": "%s %s" % (self._action.type_string, self._action.object_string),
+                 "ID": self._action.id}
+        return props
