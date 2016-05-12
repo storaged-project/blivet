@@ -30,7 +30,7 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
-from ..errors import DeviceError, DeviceTreeError
+from ..errors import DeviceError, DeviceTreeError, NoSlavesError
 from ..devices import DMLinearDevice, DMRaidArrayDevice
 from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
@@ -44,6 +44,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
+from ..static_data import lvs_info, pvs_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -142,7 +143,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         slave_devices = []
         if not slave_names:
             log.error("no slaves found for %s", name)
-            raise DeviceTreeError("no slaves found for device %s" % name)
+            raise NoSlavesError("no slaves found for device %s" % name)
 
         for slave_name in slave_names:
             path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
@@ -161,7 +162,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                 slave_dev = self.get_device_by_name(slave_name)
                 if slave_dev is None:
                     if udev.device_is_dm_lvm(info):
-                        if slave_name not in self.lv_info:
+                        if slave_name not in lvs_info.cache:
                             # we do not expect hidden lvs to be in the tree
                             continue
 
@@ -330,8 +331,10 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         log_method_call(self, name=getattr(device, "name", None))
 
         if not info:
-            log.debug("no information for device %s", device.name)
-            return
+            info = udev.get_device(device.sysfs_path)
+            if not info:
+                log.debug("no information for device %s", device.name)
+                return
         if not device.media_present:
             log.debug("no media present for device %s", device.name)
             return
@@ -528,26 +531,10 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         # inconsistencies are ignored or resolved.
         self._handle_inconsistencies()
 
-    @property
-    def pv_info(self):
-        if self._pvs_cache is None:
-            pvs = blockdev.lvm.pvs()
-            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._pvs_cache
-
-    @property
-    def lv_info(self):
-        if self._lvs_cache is None:
-            lvs = blockdev.lvm.lvs()
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
-
-        return self._lvs_cache
-
     def drop_lvm_cache(self):
         """ Drop cached lvm information. """
-        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
-        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        lvs_info.drop_cache()
+        pvs_info.drop_cache()
 
     def handle_nodev_filesystems(self):
         for line in open("/proc/mounts").readlines():

@@ -37,6 +37,8 @@ from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
+from ...static_data import lvs_info, pvs_info
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -86,7 +88,8 @@ class LVMFormatPopulator(FormatPopulator):
     def _get_kwargs(self):
         kwargs = super()._get_kwargs()
 
-        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        pv_info = pvs_info.cache.get(self.device.path, None)
+
         name = udev.device_get_name(self.data)
         if pv_info:
             if pv_info.vg_name:
@@ -118,7 +121,7 @@ class LVMFormatPopulator(FormatPopulator):
             return
 
         vg_name = vg_device.name
-        lv_info = dict((k, v) for (k, v) in iter(self._devicetree.lv_info.items())
+        lv_info = dict((k, v) for (k, v) in iter(lvs_info.cache.items())
                        if v.vg_name == vg_name)
 
         # FIXME: This should account for added/removed LVs.
@@ -215,7 +218,7 @@ class LVMFormatPopulator(FormatPopulator):
             elif lv_attr[0] == 'v':
                 # skip vorigins
                 return
-            elif lv_attr[0] in 'IielTCo' and lv_name.endswith(']'):
+            elif lv_attr[0] in 'IrielTCo' and lv_name.endswith(']'):
                 # an internal LV, add the an instance of the appropriate class
                 # to internal_lvs for later processing when non-internal LVs are
                 # processed
@@ -343,7 +346,7 @@ class LVMFormatPopulator(FormatPopulator):
                 log.warning("Failed to determine parent LV for an internal LV '%s'", lv.name)
 
     def _add_vg_device(self):
-        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        pv_info = pvs_info.cache.get(self.device.path, None)
         if pv_info:
             vg_name = pv_info.vg_name
             vg_uuid = pv_info.vg_uuid
@@ -398,7 +401,7 @@ class LVMFormatPopulator(FormatPopulator):
         if vg_device is None:
             return
 
-        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        pv_info = pvs_info.cache.get(self.device.path, None)
         if not pv_info or not pv_info.vg_name:
             return
 
@@ -408,7 +411,7 @@ class LVMFormatPopulator(FormatPopulator):
         # TODO: update name registry
 
     def _update_pv_format(self):
-        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        pv_info = pvs_info.cache.get(self.device.path, None)
         if not pv_info:
             return
 
@@ -420,7 +423,7 @@ class LVMFormatPopulator(FormatPopulator):
     def update(self):
         self._devicetree.drop_lvm_cache()
         self._update_pv_format()
-        pv_info = self._devicetree.pv_info.get(self.device.path, None)
+        pv_info = pvs_info.cache.get(self.device.path, None)
         vg_device = self._get_vg_device()
         if vg_device is None:
             # The VG device isn't in the tree. The PV might have just been

@@ -87,10 +87,10 @@ if os.environ.get("READTHEDOCS", False):
     api_doc_files = rst_files + ["doc/conf.py"]
     data_files.append(("docs/blivet", api_doc_files))
 
-setup(name='blivet', version='2.0.1',
+setup(name='blivet', version='2.0.2',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://fedoraproject.org/wiki/blivet',
       data_files=data_files,
-      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.tasks', 'blivet.populator.helpers'])
+      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'])

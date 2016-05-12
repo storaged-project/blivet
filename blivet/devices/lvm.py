@@ -958,6 +958,18 @@ class LVMInternalLVtype(Enum):
             else:
                 return cls.data
 
+        if lv_attr[0] == "r":
+            # internal LV which is at the same time a RAID LV
+            if lv_attr[6] == "C":
+                # part of the cache -> cache origin
+                # (cache pool cannot be a RAID LV, cache pool's data LV would
+                # have lv_attr[0] == "C", metadata LV would have
+                # lv_attr[0] == "e" even if they were RAID LVs)
+                return cls.origin
+            elif lv_attr[6] == "r":
+                # a data LV (metadata LV would have lv_attr[0] == "e")
+                return cls.data
+
         for lv_type, letters in attr_letters.items():
             if lv_attr[0] in letters:
                 return lv_type
@@ -1080,7 +1092,7 @@ class LVMInternalLogicalVolumeMixin(object):
             raise ValueError("new size must of type Size")
 
         if not self.takes_extra_space:
-            if size <= self.parent_lv.size:
+            if size <= self.parent_lv.size:  # pylint: disable=no-member
                 self._size = size  # pylint: disable=attribute-defined-outside-init
             else:
                 raise ValueError("Internal LV cannot be bigger than its parent LV")

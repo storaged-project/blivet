@@ -1016,9 +1016,10 @@ class PartitionRequest(Request):
         sector_size = Size(partition.parted_partition.disk.device.sectorSize)
 
         if partition.req_grow:
-            limits = [l for l in [size_to_sectors(partition.req_max_size, sector_size),
-                                  size_to_sectors(partition.format.max_size, sector_size),
-                                  partition.parted_partition.disk.maxPartitionLength] if l > 0]
+            req_format_max_size = min((size for size in (partition.req_max_size, partition.format.max_size)
+                                       if size > 0), default=Size(0))
+            limits = [l for l in (size_to_sectors(req_format_max_size, sector_size),
+                                  partition.parted_partition.disk.maxPartitionLength) if l > 0]
 
             if limits:
                 max_sectors = min(limits)
@@ -1976,6 +1977,7 @@ def grow_lvm(storage):
             if lv in vg.thinpools:
                 # make sure the pool's base size is at least the sum of its lvs'
                 lv.req_size = max(lv.req_size, lv.used_space)
+                lv.size = lv.req_size
 
                 # add the required padding to the requested pool size
                 lv.req_size += Size(blockdev.lvm.get_thpool_padding(lv.req_size, vg.pe_size))

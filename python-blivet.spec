@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.0.1
+Version: 2.0.2
 
 #%%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -29,6 +29,12 @@ BuildRequires: gettext
 BuildRequires: python3-pocketlint >= %{pocketlintver}
 BuildRequires: python3-devel python3-setuptools
 
+%description
+The python-blivet package is a python module for examining and modifying
+storage configuration.
+
+%package -n python3-%{realname}
+Summary: A python3 package for examining and modifying storage configuration.
 Requires: python3
 Requires: python3-six
 Requires: python3-kickstart
@@ -45,21 +51,9 @@ Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
 Requires: python3-gobject-base
-Requires: %{realname}-data = %{epoch}:%{version}-%{release}
+Obsoletes: blivet-data < 1:2.0.3
+Obsoletes: python-blivet < 1:2.0.3
 
-%description
-The python-blivet package is a python module for examining and modifying
-storage configuration.
-
-%package -n %{realname}-data
-Summary: Data for the %{realname} python module.
-
-%description -n %{realname}-data
-The %{realname}-data package provides data files required by the %{realname}
-python module.
-
-%package -n python3-%{realname}
-Summary: A python3 package for examining and modifying storage configuration.
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
 configuration.
@@ -78,14 +72,19 @@ rm -rf %{buildroot}
 make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %find_lang %{realname}
 
-%files -n %{realname}-data -f %{realname}.lang
-
-%files -n python3-%{realname}
+%files -n python3-%{realname} -f %{realname}.lang
 %license COPYING
 %doc README ChangeLog examples
 %{python3_sitelib}/*
 
 %changelog
+* Mon Apr 04 2016 David Lehman <dlehman@redhat.com> - 2.0.2-1
+- Fix mistake from PEP8 conversion. (#1323012) (dlehman)
+- Set both req_size and size of thin pool when growing LVM (vpodzime)
+- Retrieve udev info as needed in handle_format. (#1322943) (dlehman)
+- Fix requires after subpackage switcharoo. (dlehman)
+- Fix package naming in spec file. (dlehman)
+
 * Tue Mar 29 2016 David Lehman <dlehman@redhat.com> - 2.0.1-1
 - Make sure EddMatcher.root is a string. (dlehman)
 - Move per-thread change accounting to a function. (dlehman)

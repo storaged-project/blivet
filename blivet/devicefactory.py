@@ -642,19 +642,16 @@ class DeviceFactory(object):
             raise
 
         self.storage.create_device(device)
-        err = None
         try:
             self._post_create()
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
-            err = str(e)
+            self.storage.destroy_device(device)
+            raise StorageError from e
         else:
             if not device.size:
-                err = "failed to create device"
-
-        if err:
-            self.storage.destroy_device(device)
-            raise StorageError(err)
+                self.storage.destroy_device(device)
+                raise StorageError("failed to create device")
 
         ret = device
         if self.encrypted:
@@ -828,9 +825,9 @@ class DeviceFactory(object):
                 self._revert_devicetree()
 
             if not isinstance(e, (StorageError, OverflowError)):
-                e = DeviceFactoryError(str(e))
+                raise DeviceFactoryError from e
 
-            raise(e)
+            raise
 
     def _configure(self):
         self._set_container()
