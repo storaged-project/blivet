@@ -660,6 +660,20 @@ class PartitionDevice(StorageDevice):
         self.disk.format.commit()
         self.update_size()
 
+    @property
+    def protected(self):
+        protected = super().protected
+
+        # extended partition is protected also when one of its logical partitions is protected
+        if self.is_extended:
+            return protected or any(part.protected for part in self.disk.children if part.is_logical)
+        else:
+            return protected
+
+    @protected.setter
+    def protected(self, value):
+        self._protected = value
+
     def _pre_resize(self):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
