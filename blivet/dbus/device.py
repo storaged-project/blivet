@@ -19,24 +19,27 @@
 #
 import dbus
 
-from .constants import DEVICE_INTERFACE, DEVICE_OBJECT_PATH_BASE
-from .format import DBusFormat
+from .constants import DEVICE_INTERFACE, DEVICE_OBJECT_PATH_BASE, DEVICE_REMOVED_OBJECT_PATH_BASE
 from .object import DBusObject
 
 
 class DBusDevice(DBusObject):
-    def __init__(self, device):
+    def __init__(self, device, manager):
         self._device = device
-        self._object_path = self.get_object_path_by_id(self._device.id)
-        super().__init__()
+        super().__init__(manager)
 
-    @staticmethod
-    def get_object_path_by_id(object_id):
-        return "%s/%d" % (DEVICE_OBJECT_PATH_BASE, object_id)
+    @property
+    def id(self):
+        return self._device.id
 
     @property
     def object_path(self):
-        return self._object_path
+        if self.present:
+            base = DEVICE_OBJECT_PATH_BASE
+        else:
+            base = DEVICE_REMOVED_OBJECT_PATH_BASE
+
+        return "%s/%s" % (base, self.id)
 
     @property
     def interface(self):
@@ -44,6 +47,9 @@ class DBusDevice(DBusObject):
 
     @property
     def properties(self):
+        parents = (self._manager.get_object_by_id(d.id).object_path for d in self._device.parents)
+        children = (self._manager.get_object_by_id(d.id).object_path for d in self._device.children)
+        fmt = self._manager.get_object_by_id(self._device.format.id).object_path
         props = {"Name": self._device.name,
                  "Path": self._device.path,
                  "Type": self._device.type,
@@ -52,9 +58,9 @@ class DBusDevice(DBusObject):
                  "UUID": self._device.uuid or "",
                  "Status": self._device.status or False,
                  "RaidLevel": self._get_raid_level(),
-                 "Parents": dbus.Array((self.get_object_path_by_id(d.id) for d in self._device.parents), signature='o'),
-                 "Children": dbus.Array((self.get_object_path_by_id(d.id) for d in self._device.children), signature='o'),
-                 "Format": dbus.ObjectPath(DBusFormat.get_object_path_by_id(self._device.format.id))
+                 "Parents": dbus.Array(parents, signature='o'),
+                 "Children": dbus.Array(children, signature='o'),
+                 "Format": dbus.ObjectPath(fmt)
                  }
 
         return props

@@ -375,7 +375,8 @@ def _find_existing_installations(devicetree):
         util.makedirs(get_target_physical_root())
 
     roots = []
-    for device in devicetree.leaves:
+    direct_devices = (dev for dev in devicetree.devices if dev.direct)
+    for device in direct_devices:
         if not device.format.linux_native or not device.format.mountable or \
            not device.controllable:
             continue
@@ -2165,7 +2166,7 @@ def mount_existing_system(fsset, root_device, read_only=None):
         root_device.setup()
         root_device.format.mount(chroot=root_path,
                                  mountpoint="/",
-                                 options=read_only)
+                                 options="%s,%s" % (root_device.format.options, read_only))
 
     fsset.parse_fstab()
     fsset.mount_filesystems(root_path=root_path, read_only=read_only, skip_root=True)
