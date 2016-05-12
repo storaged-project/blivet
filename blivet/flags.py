@@ -31,6 +31,7 @@ class Flags(object):
         #
         self.testing = False
         self.installer_mode = False
+        self.rescue_mode = False
         self.debug = False
 
         #
@@ -102,6 +103,7 @@ class Flags(object):
         # always enable the debug mode when in the installer mode so that we
         # have more data in the logs for rare cases that are hard to reproduce
         self.debug = True
+        self.rescue_mode = anaconda_flags.rescue_mode
         self.testing = anaconda_flags.testing
         self.automated_install = anaconda_flags.automatedInstall
         self.live_install = anaconda_flags.livecdInstall
