@@ -71,6 +71,7 @@ from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPA
 
 from .storage_log import log_exception_info, log_method_call
 from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError
+from .errors import UnknownSwapError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, DirectoryDevice, FileDevice, LVMLogicalVolumeDevice, LVMThinLogicalVolumeDevice, LVMThinPoolDevice, LVMVolumeGroupDevice, MDRaidArrayDevice, NetworkStorageDevice, NFSDevice, NoDevice, OpticalDevice, PartitionDevice, TmpFSDevice, devicePathToName
 from .devicetree import DeviceTree
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice, ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
@@ -2581,6 +2582,9 @@ class FSSet(object):
                 try:
                     device.setup()
                     device.format.setup()
+                except UnknownSwapError as e:
+                    log.warn("Failed to activate swap on %s, skipping it.", device.path)
+                    break
                 except StorageError as e:
                     if errorHandler.cb(e) == ERROR_RAISE:
                         raise
