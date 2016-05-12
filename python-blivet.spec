@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.0.3
+Version: 2.1.0
 
 #%%define prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -78,6 +78,13 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 12 2016 David Lehman <dlehman@redhat.com> - 2.1.0-1
+- Add name of problematic device to UnusableConfigurationError (vtrefny)
+- LVM data are now global (japokorn)
+- Allow custom chunk size specification for MDRaidArrayDevice (vtrefny)
+- Mock all blockdev's listing functions for populator tests (vpodzime)
+- Add zanata-python-client to TEST_DEPENDENCIES (bcl)
+
 * Thu May 12 2016 David Lehman <dlehman@redhat.com> - 2.0.3-1
 - Fix protected status for extended partitions (vtrefny)
 - Improve documentation of the udev.resolve_glob() function (vpodzime)
