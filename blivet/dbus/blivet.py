@@ -23,7 +23,10 @@ import dbus
 
 from blivet import Blivet
 from blivet.callbacks import callbacks
+from blivet.devicefactory import DEVICE_TYPE_PARTITION, DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP
+from blivet.devicefactory import DEVICE_TYPE_MD, DEVICE_TYPE_BTRFS
 from blivet.errors import StorageError
+from blivet.size import Size
 from blivet.util import ObjectID
 from .action import DBusAction
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
@@ -73,7 +76,12 @@ class DBusBlivet(DBusObject):
 
     @property
     def properties(self):
-        props = {"Devices": self.ListDevices()}
+        props = {"Devices": self.ListDevices(),
+                 "DEVICE_TYPE_LVM": DEVICE_TYPE_LVM,
+                 "DEVICE_TYPE_LVM_THINP": DEVICE_TYPE_LVM_THINP,
+                 "DEVICE_TYPE_PARTITION": DEVICE_TYPE_PARTITION,
+                 "DEVICE_TYPE_MD": DEVICE_TYPE_MD,
+                 "DEVICE_TYPE_BTRFS": DEVICE_TYPE_BTRFS}
         return props
 
     def _device_removed(self, device, keep=True):
@@ -218,3 +226,27 @@ class DBusBlivet(DBusObject):
             raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
                                                 "An error occured while committing the "
                                                 "changes to disk: %s" % str(e))
+
+    @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='ita{sv}', out_signature='o')
+    def Factory(self, device_type, size, kwargs):
+        disks = [self._get_device_by_object_path(p) for p in kwargs.pop("disks", [])]
+        kwargs["disks"] = disks
+
+        dbus_device = kwargs.pop("device", None)
+        if dbus_device:
+            device = self._get_device_by_object_path(dbus_device)
+            kwargs["device"] = device
+
+        try:
+            device = self._blivet.factory_device(device_type, Size(size), **kwargs)
+        except StorageError as e:
+            raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
+                                                "An error occured while configuring the "
+                                                "device: %s" % str(e))
+
+        if device is None:
+            object_path = '/'
+        else:
+            object_path = self._manager.get_object_by_id(device.id).object_path
+
+        return object_path

@@ -83,6 +83,20 @@ class DBusBlivetTestCase(TestCase):
         self.dbus_object._blivet.do_it.assert_called_once_with()
         self.dbus_object._blivet.reset_mock()
 
+    def test_Factory(self):
+        self.dbus_object._blivet.reset_mock()
+        device_type = 1
+        disks = ["/com/redhat/Blivet1/Devices/1", "/com/redhat/Blivet1/Devices/22"]
+        size = 10 * 1024**3
+        kwargs = {"disks": disks,
+                  "fstype": "xfs",
+                  "name": "testdevice",
+                  "raid_level": "raid0"}
+        with patch("blivet.dbus.blivet.isinstance", return_value=True):
+            self.dbus_object.Factory(device_type, size, kwargs)
+        self.dbus_object._blivet.factory_device.assert_called_once_with(device_type, size, **kwargs)
+        self.dbus_object._blivet.reset_mock()
+
 
 @patch.object(DBusObject, 'connection')
 class DBusObjectTestCase(TestCase):
