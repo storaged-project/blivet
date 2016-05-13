@@ -6,12 +6,14 @@ import os
 import shutil
 import selinux
 import subprocess
+from subprocess import CalledProcessError
 import re
 import sys
 import tempfile
 import uuid
 import hashlib
 import warnings
+from time import sleep
 from decimal import Decimal
 from contextlib import contextmanager
 from functools import wraps
@@ -116,12 +118,39 @@ def mount(device, mountpoint, fstype, options=None):
 
     return rc
 
-def umount(mountpoint):
-    try:
-        rc = run_program(["umount", mountpoint])
-    except OSError:
-        raise
+def umount(mountpoint, lazy=False, maxtry=3, retrysleep=1.0):
+    """ Unmount the given mountpoint.
 
+        :param str mountpoint: Path to unmount
+        :param bool lazy: When True do a lazy (-l) umount
+        :param int maxtry: Number of times to try the umount
+        :param float retrysleep: Seconds to sleep between retries
+        :returns: rc of last umount attempt
+        :rtype: int
+        :raises CalledProcessError: if all the retries fail
+        :raises OSError: if command cannot be executed
+    """
+    cmd = ["umount"]
+    if lazy: cmd.append("-l")
+    cmd.append(mountpoint)
+    count = 0
+    while True:
+        try:
+            rc = run_program(cmd)
+        except CalledProcessError:
+            count += 1
+            if count >= maxtry:
+                raise
+            log.warning("failed to unmount %s. retrying (%d/%d)...",
+                        mountpoint, count, maxtry)
+            if log.getEffectiveLevel() <= logging.DEBUG:
+                # try and catch whatever is causing the umount problem
+                run_program(["lsof", mountpoint])
+            sleep(retrysleep)
+        except OSError:
+            raise
+        else:
+            break
     return rc
 
 def get_mount_paths(dev):
