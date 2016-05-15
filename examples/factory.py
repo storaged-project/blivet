@@ -9,9 +9,9 @@ b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
 disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
-b.config.disk_images["disk1"] = disk1_file
+b.disk_images["disk1"] = disk1_file
 disk2_file = create_sparse_tempfile("disk2", Size("100GiB"))
-b.config.disk_images["disk2"] = disk2_file
+b.disk_images["disk2"] = disk2_file
 
 b.reset()
 

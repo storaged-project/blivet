@@ -25,12 +25,11 @@ gi.require_version("BlockDev", "1.0")
 
 from gi.repository import BlockDev as blockdev
 
+from ...callbacks import callbacks
 from ... import udev
 from ...devicelibs import lvm
 from ...devices.lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMInternalLVtype
 from ...errors import DeviceTreeError, DuplicateVGError
-from ...events.changes import record_change
-from ...events.changes import AttributeChanged, ParentAdded, ParentRemoved
 from ...flags import flags
 from ...size import Size
 from ...storage_log import log_method_call
@@ -191,8 +190,8 @@ class LVMFormatPopulator(FormatPopulator):
                     # for the pv(s)
                     old_size = lv_device._size
                     lv_device.update_size(newsize=lv_size)
-                    record_change(AttributeChanged(device=lv_device, attr="size",
-                                                   old=old_size, new=lv_size))
+                    callbacks.attribute_changed(device=lv_device, attr="size",
+                                                old=old_size, new=lv_size)
                     self._devicetree.cancel_disk_actions(vg_device.disks)
 
                 return
@@ -263,7 +262,7 @@ class LVMFormatPopulator(FormatPopulator):
                                                    uuid=lv_uuid, size=lv_size, seg_type=lv_type,
                                                    exists=True, **lv_kwargs)
                 self._devicetree._add_device(lv_device)
-                if flags.installer_mode:
+                if flags.auto_dev_updates:
                     lv_device.setup()
 
                 if lv_device.status:
@@ -361,7 +360,7 @@ class LVMFormatPopulator(FormatPopulator):
         vg_device = self._devicetree.get_device_by_uuid(vg_uuid, incomplete=True)
         if vg_device and self.device not in vg_device.parents:
             vg_device.parents.append(self.device)
-            record_change(ParentAdded(device=vg_device, item=self.device))
+            callbacks.parent_added(device=vg_device, parent=self.device)
         elif vg_device is None:
             same_name = self._devicetree.get_device_by_name(vg_name)
             if isinstance(same_name, LVMVolumeGroupDevice):
@@ -436,7 +435,7 @@ class LVMFormatPopulator(FormatPopulator):
                 vg_device = self.device.children[0]
                 if len(vg_device.parents) > 1:
                     vg_device.parents.remove(self.device)
-                    record_change(ParentRemoved(device=vg_device, item=self.device))
+                    callbacks.parent_removed(device=vg_device, parent=self.device)
                 else:
                     self._devicetree.recursive_remove(vg_device, actions=False)
                 return

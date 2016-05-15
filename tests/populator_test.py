@@ -48,7 +48,7 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
         # anaconda first configures disk images
         for (name, size) in iter(self.disks.items()):
             path = util.create_sparse_tempfile(name, size)
-            self.blivet.config.disk_images[name] = path
+            self.blivet.disk_images[name] = path
 
         # at this point the DMLinearDevice has correct size
         self.blivet.setup_disk_images()
@@ -67,7 +67,7 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
     def tearDown(self):
         self.blivet.reset()
         self.blivet.devicetree.teardown_disk_images()
-        for fn in self.blivet.config.disk_images.values():
+        for fn in self.blivet.disk_images.values():
             if os.path.exists(fn):
                 os.unlink(fn)
 

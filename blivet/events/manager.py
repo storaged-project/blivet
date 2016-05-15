@@ -34,6 +34,8 @@ from .. import util
 from ..errors import EventManagerError, EventParamError
 from ..flags import flags
 
+from .changes import disable_callbacks, enable_callbacks
+
 import logging
 event_log = logging.getLogger("blivet.event")
 
@@ -203,11 +205,13 @@ class EventManager(object, metaclass=abc.ABCMeta):
             raise EventManagerError("cannot enable handler with no callback")
 
         event_log.info("enabling event handling")
+        enable_callbacks()
 
     @abc.abstractmethod
     def disable(self):
         """ Disable monitoring and handling of events. """
         event_log.info("disabling event handling")
+        disable_callbacks()
 
     def _mask_event(self, event):
         """ Return True if this event should be ignored """

@@ -121,7 +121,7 @@ class LUKS(DeviceFormat):
         elif not self.map_name and self.device:
             self.map_name = "luks-%s" % os.path.basename(self.device)
 
-        if flags.installer_mode and self._resize.available:
+        if flags.auto_dev_updates and self._resize.available:
             # if you want current/min size you have to call update_size_info
             self.update_size_info()
 
@@ -233,6 +233,7 @@ class LUKS(DeviceFormat):
 
     def _pre_create(self, **kwargs):
         super(LUKS, self)._pre_create(**kwargs)
+        self.map_name = None
         if not self.has_key:
             raise LUKSError("luks device has no key/passphrase")
 
@@ -250,7 +251,7 @@ class LUKS(DeviceFormat):
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
         self.uuid = blockdev.crypto.luks_uuid(self.device)
-        if flags.installer_mode or not self.map_name:
+        if not self.map_name:
             self.map_name = "luks-%s" % self.uuid
 
     @property

@@ -30,14 +30,13 @@ gi.require_version("BlockDev", "1.0")
 from gi.repository import BlockDev as blockdev
 
 from .actionlist import ActionList
+from .callbacks import callbacks
 from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from . import formats
 from .devicelibs import lvm
-from .events.changes import record_change
-from .events.changes import AttributeChanged, DeviceAdded, DeviceRemoved
 from .events.handler import EventHandlerMixin
 from . import util
 from .populator import PopulatorMixin
@@ -69,15 +68,23 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
-    def __init__(self, conf=None):
+    def __init__(self, ignored_disks=None, exclusive_disks=None):
         """
-            :keyword conf: storage discovery configuration
-            :type conf: :class:`~.StorageDiscoveryConfig`
+            :keyword ignored_disks: ignored disks
+            :type ignored_disks: list
+            :keyword exclusive_disks: exclusive didks
+            :type exclusive_disks: list
         """
-        self.reset(conf)
+        self.reset(ignored_disks, exclusive_disks)
 
-    def reset(self, conf=None):
-        """ Reset the instance to its initial state. """
+    def reset(self, ignored_disks=None, exclusive_disks=None):
+        """ Reset the instance to its initial state.
+
+            :keyword ignored_disks: ignored disks
+            :type ignored_disks: list
+            :keyword exclusive_disks: exclusive didks
+            :type exclusive_disks: list
+        """
         # internal data members
         self._devices = []
         self._actions = ActionList(addfunc=self._register_action,
@@ -90,8 +97,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         lvm.lvm_cc_resetFilter()
 
-        self.exclusive_disks = getattr(conf, "exclusive_disks", [])
-        self.ignored_disks = getattr(conf, "ignored_disks", [])
+        self.exclusive_disks = exclusive_disks
+        self.ignored_disks = ignored_disks
 
         self.edd_dict = {}
 
@@ -161,7 +168,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 newdev.type != "btrfs volume" and
                 newdev.name not in self.names):
             self.names.append(newdev.name)
-        record_change(DeviceAdded(device=newdev))
+        callbacks.device_added(device=newdev)
         log.info("added %s %s (id %d) to device tree", newdev.type,
                  newdev.name,
                  newdev.id)
@@ -204,7 +211,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                         device.update_name()
 
         self._devices.remove(dev)
-        record_change(DeviceRemoved(device=dev))
+        callbacks.device_removed(device=dev)
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
                  dev.id)
@@ -251,15 +258,10 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 devices.remove(leaf)
 
         if not device.format_immutable:
-            old_fmt = device.format
             if actions:
                 self.actions.add(ActionDestroyFormat(device))
             else:
                 device.format = None
-
-            if old_fmt.type and (not remove_device or device.is_disk):
-                record_change(AttributeChanged(device=device, attr="format",
-                                               old=old_fmt, new=device.format))
 
         if remove_device and not device.is_disk:
             if actions:
@@ -770,6 +772,15 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         return labels
 
+    @property
+    def mountpoints(self):
+        """ Dict with mountpoint keys and Device values. """
+        filesystems = {}
+        for device in self.devices:
+            if device.format.mountable and device.format.mountpoint:
+                filesystems[device.format.mountpoint] = device
+        return filesystems
+
     #
     # Disk filter
     #
@@ -882,12 +893,12 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
-    def __init__(self, conf=None, passphrase=None, luks_dict=None):
-        DeviceTreeBase.__init__(self, conf=conf)
-        PopulatorMixin.__init__(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)
+    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+        DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
-    def reset(self, conf=None, passphrase=None, luks_dict=None):
-        DeviceTreeBase.reset(self, conf=conf)
-        PopulatorMixin.reset(self, conf=conf, passphrase=passphrase, luks_dict=luks_dict)
+    def reset(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+        DeviceTreeBase.reset(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
+        PopulatorMixin.reset(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)

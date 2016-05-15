@@ -24,6 +24,7 @@ from blivet.devices import PartitionDevice
 from blivet.devices.lvm import LVMCacheRequest
 
 from tests.imagebackedtestcase import ImageBackedTestCase
+from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
 from blivet.formats import get_format
 from blivet.size import Size
@@ -331,7 +332,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(len(free), 1,
                              "free region count %d not expected" % len(free))
 
-            b = Mock()
+            b = Mock(spec=Blivet)
             allocate_partitions(b, disks, partitions, free)
 
             requests = [PartitionRequest(p) for p in partitions]
@@ -394,7 +395,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(len(free), 1,
                              "free region count %d not expected" % len(free))
 
-            b = Mock()
+            b = Mock(spec=Blivet)
             allocate_partitions(b, disks, partitions, free)
 
             requests = [PartitionRequest(p) for p in partitions]
@@ -699,9 +700,9 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
         self.blivet.do_it()
 
     def test_implicit_extended_partitions_installer_mode(self):
-        flags.installer_mode = True
+        flags.keep_empty_ext_partitions = False
         self.test_implicit_extended_partitions()
-        flags.installer_mode = False
+        flags.keep_empty_ext_partitions = True
 
     def test_explicit_extended_partitions(self):
         """ Verify that explicitly requested extended partitions work. """
