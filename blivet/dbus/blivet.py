@@ -99,8 +99,6 @@ class DBusBlivet(DBusObject):
         if keep:
             removed.present = False
             self._manager.add_object(removed)
-        else:
-            removed.remove_from_connection()
 
     def _device_added(self, device):
         """ Update ObjectManager interface after a device is added. """
@@ -123,8 +121,6 @@ class DBusBlivet(DBusObject):
         if keep:
             removed.present = False
             self._manager.add_object(removed)
-        else:
-            removed.remove_from_connection()
 
     def _format_added(self, device, fmt):  # pylint: disable=unused-argument
         added = self._manager.get_object_by_id(fmt.id)
@@ -139,7 +135,6 @@ class DBusBlivet(DBusObject):
     def _action_removed(self, action):
         removed = self._manager.get_object_by_id(action.id)
         self._manager.remove_object(removed)
-        removed.remove_from_connection()
 
     def _action_added(self, action):
         added = DBusAction(action, self._manager)
