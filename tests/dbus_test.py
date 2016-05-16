@@ -52,6 +52,7 @@ class DBusBlivetTestCase(TestCase):
         """ Verify that Reset calls the underlying Blivet's reset method. """
         self.dbus_object._blivet.reset_mock()
         self.dbus_object._blivet.devices = []
+        self.dbus_object._blivet.devicetree.actions = []
         self.dbus_object.Reset()
         self.dbus_object._blivet.reset.assert_called_once_with()
         self.dbus_object._blivet.reset_mock()

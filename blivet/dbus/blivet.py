@@ -175,6 +175,9 @@ class DBusBlivet(DBusObject):
         for removed in old_devices:
             self._device_removed(device=removed, keep=False)
 
+        for action in self._blivet.devicetree.actions:
+            self._action_removed(action)
+
         self._blivet.reset()
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
