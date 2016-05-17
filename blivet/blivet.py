@@ -47,6 +47,7 @@ from . import arch
 from . import devicefactory
 from . import __version__
 from .threads import SynchronizedMeta
+from .static_data import luks_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -68,6 +69,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.clear_part_choice = None
         self.encrypted_autopart = False
         self.encryption_passphrase = None
+        self.autopart_type = AUTOPART_TYPE_LVM
         self.encryption_cipher = None
         self.escrow_certificates = {}
         self.autopart_escrow_cert = None
@@ -92,8 +94,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
 
         # these will both be empty until our reset method gets called
-        self.devicetree = DeviceTree(passphrase=self.encryption_passphrase,
-                                     luks_dict=self.__luks_devs,
+        self.devicetree = DeviceTree(passphrase=luks_data.encryption_passphrase,
+                                     luks_dict=None,
                                      ignored_disks=self.ignored_disks,
                                      exclusive_disks=self.exclusive_disks,
                                      disk_images=self.disk_images)
@@ -162,8 +164,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
         """
         log.info("resetting Blivet (version %s) instance %s", __version__, self)
 
-        self.devicetree.reset(passphrase=self.encryption_passphrase,
-                              luks_dict=self.__luks_devs,
+        self.devicetree.reset(passphrase=luks_data.encryption_passphrase,
+                              luks_dict=luks_data.luks_devs,
                               ignored_disks=self.ignored_disks,
                               exclusive_disks=self.exclusive_disks,
                               disk_images=self.disk_images)
@@ -355,6 +357,17 @@ class Blivet(object, metaclass=SynchronizedMeta):
         swaps = [d for d in devices if d.format.type == "swap"]
         swaps.sort(key=lambda d: d.name)
         return swaps
+
+    @property
+    def encryption_passphrase(self):
+        return luks_data.encryption_passphrase
+
+    @encryption_passphrase.setter
+    def encryption_passphrase(self, value):
+        luks_data.encryption_passphrase = value
+
+    def save_passphrase(self, device):
+        luks_data.save_passphrase(device)
 
     def recursive_remove(self, device):
         """ Remove a device after removing its dependent devices.
@@ -999,13 +1012,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 raise RuntimeError("unable to find suitable device name")
 
         return name
-
-    def save_passphrase(self, device):
-        """ Save a device's LUKS passphrase in case of reset. """
-        passphrase = device.format._LUKS__passphrase
-        if passphrase:
-            self.__luks_devs[device.format.uuid] = passphrase
-            self.devicetree.save_luks_passphrase(device)
 
     def setup_disk_images(self):
         self.devicetree.set_disk_images(self.disk_images)

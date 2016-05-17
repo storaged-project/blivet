@@ -112,10 +112,6 @@ class LUKS(DeviceFormat):
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
         self.min_luks_entropy = kwargs.get("min_luks_entropy", 0)
 
-        if self.min_luks_entropy < 0:
-            msg = "Invalid value for minimum required entropy: %s" % self.min_luks_entropy
-            raise ValueError(msg)
-
         if not self.map_name and self.exists and self.uuid:
             self.map_name = "luks-%s" % self.uuid
         elif not self.map_name and self.device:
