@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.20.2
+Version: 1.20.3
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -107,6 +107,9 @@ popd
 %{python3_sitelib}/*
 
 %changelog
+* Tue May 17 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.20.3-1
+- ARM platforms: support both msdos and gpt partitions (pbrobinson)
+
 * Fri May 13 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.20.2-1
 - Retry umount and log output of lsof if it fails (bcl)
 
