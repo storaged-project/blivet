@@ -33,6 +33,7 @@ from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 from .callbacks import WaitForEntropyData, ReportProgressData
 from .size import Size
 from .threads import SynchronizedMeta
+from .static_data import luks_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -580,8 +581,12 @@ class ActionCreateFormat(DeviceAction):
             udev.settle()
 
         if isinstance(self.device.format, luks.LUKS):
+            if self.device.format.min_luks_entropy is None:
+                min_required_entropy = luks_data.min_entropy
+            else:
+                min_required_entropy = self.device.format.min_luks_entropy
+
             # LUKS needs to wait for random data entropy if it is too low
-            min_required_entropy = self.device.format.min_luks_entropy
             current_entropy = get_current_entropy()
             if current_entropy < min_required_entropy:
                 force_cont = False
@@ -595,7 +600,7 @@ class ActionCreateFormat(DeviceAction):
                     log.warning("Forcing LUKS creation regardless of enough "
                                 "random data entropy (%d/%d)",
                                 get_current_entropy(), min_required_entropy)
-                    self.device.format.min_luks_entropy = 0
+                    luks_data.min_entropy = 0
 
         self.device.setup()
         self.device.format.create(device=self.device.path,
