@@ -274,6 +274,7 @@ class MacEFI(EFI):
 
 class Aarch64EFI(EFI):
     _non_linux_format_types = ["vfat", "ntfs"]
+    _disklabel_types = ["msdos", "gpt"]
 
 
 class PPC(Platform):
@@ -378,7 +379,7 @@ class ARM(Platform):
     _boot_descriptions = {"disk": _boot_mbr_description,
                           "partition": Platform._boot_partition_description}
 
-    _disklabel_types = ["msdos"]
+    _disklabel_types = ["msdos", "gpt"]
     _boot_stage1_missing_error = N_("You must include at least one MBR-formatted "
                                     "disk as an install target.")
 
