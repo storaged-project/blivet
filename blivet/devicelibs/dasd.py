@@ -131,7 +131,7 @@ def is_ldl_dasd(device):
         return False
 
     # check we're not on an FBA DASD, since dasdfmt can't run on them
-    if arg.type[0:2] == 'FBA':
+    if arg.type.startswith('FBA'):
         return False
 
     # check DASD volume label; "VOL1" is CDL formatted DASD, won't
