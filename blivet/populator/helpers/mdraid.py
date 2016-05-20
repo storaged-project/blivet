@@ -113,7 +113,12 @@ class MDFormatPopulator(FormatPopulator):
 
     def run(self):
         super().run()
-        md_info = blockdev.md.examine(self.device.path)
+        try:
+            md_info = blockdev.md.examine(self.device.path)
+        except blockdev.MDRaidError as e:
+            # This could just mean the member is not part of any array.
+            log.debug("blockdev.md.examine error: %s", str(e))
+            return
 
         # Use mdadm info if udev info is missing
         md_uuid = md_info.uuid
