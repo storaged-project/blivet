@@ -2006,9 +2006,15 @@ class Blivet(object):
                  MDRaidArrayDevice: ("RaidData", "raid"),
                  BTRFSDevice: ("BTRFSData", "btrfs")}
 
+        # list comprehension that builds device ancestors should not get None as a member
+        # when searching for bootloader devices
+        bootLoaderDevices = []
+        if self.bootLoaderDevice is not None:
+            bootLoaderDevices.append(self.bootLoaderDevice)
+
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
-                                for a in d.ancestors))
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootLoaderDevices
+                           for a in d.ancestors))
 
         # devices which share information with their distinct raw device
         complementary_devices = [d for d in devices if d.raw_device is not d]
