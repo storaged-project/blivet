@@ -20,9 +20,8 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-from . import util
+from . import xml_util
 from . import udev
-from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice, LVMLogicalVolumeDevice
 from .formats import get_format, luks
@@ -100,7 +99,7 @@ def resize_type_from_string(type_string):
             return k
 
 
-class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
+class DeviceAction(xml_util.XMLUtils, metaclass=SynchronizedMeta):
 
     """ An action that will be carried out in the future on a Device.
 
@@ -150,7 +149,7 @@ class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
     type_desc_str = ""
 
     def __init__(self, device):
-        util.ObjectID.__init__(self)
+        xml_util.util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
 
@@ -277,10 +276,10 @@ class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
         return s
 
     def __str__(self):
-        return util.stringize(self._to_string())
+        return xml_util.util.stringize(self._to_string())
 
     def __unicode__(self):
-        return util.unicodeize(self._to_string())
+        return xml_util.util.unicodeize(self._to_string())
 
     def requires(self, action):
         """ Return True if self requires action. """
@@ -587,7 +586,10 @@ class ActionCreateFormat(DeviceAction):
                 min_required_entropy = self.device.format.min_luks_entropy
 
             # LUKS needs to wait for random data entropy if it is too low
-            current_entropy = get_current_entropy()
+
+            current_entropy = xml_util.util.get_current_entropy()
+
+
             if current_entropy < min_required_entropy:
                 force_cont = False
                 if callbacks and callbacks.wait_for_entropy:

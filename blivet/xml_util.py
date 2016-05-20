@@ -24,10 +24,8 @@ def create_basics():
     super_elems.append(ET.SubElement(root_elem, "Formats"))
     super_elems.append(ET.SubElement(root_elem, "InternalDevices"))
     super_elems.append(ET.SubElement(root_elem, "Actions"))
-    super_elems.append(ET.SubElement(root_elem, "AlteredDevices"))
-    super_elems[-1].set("Count", str(0))
-    super_elems.append(ET.SubElement(root_elem, "AlteredFormats"))
-    super_elems[-1].set("Count", str(0))
+    super_elems.append(ET.SubElement(root_elem, "DestroyedDevices"))
+    super_elems.append(ET.SubElement(root_elem, "DestroyedFormats"))
     return (root_elem, super_elems)
 
 def save_file(root_elem, dump_device=None, custom_name=None, rec_bool=False):
@@ -88,22 +86,18 @@ def export_iterate(device_list, action_list, super_elems, master_root_elem):
         action_elems.append(ET.SubElement(super_elems[3], act_name.split(".")[-1]))
         action_elems[-1].set("type", act_name)
         action_elems[-1].set("ObjectID", str(getattr(action, "id")))
-        # Special occasion - we know that actions don't have to_xml
-        tmp_obj = XMLUtils()
-        tmp_obj._to_xml_init(master_root_elem, devices_list=action_elems,
-                             object_override=action, parent_override="action_elems")
+        action._to_xml_init(master_root_elem, action_list=action_list, act_override=True, parent_override=action_elems[-1])
+        action.to_xml()
         act_counter = act_counter + 1
-        tmp_obj.to_xml()
     super_elems[3].set("Count", str(act_counter))
+
+
 
 ################################################################################
 ##### BASIC DEFINITION
 class XMLUtils(util.ObjectID):
-    def __init__(self):
-        self.xml_root_elem = None
-
-    def _to_xml_init(self, root_elem, devices_list=None, object_override=None,
-                     parent_override=None, xml_done_ids=set()):
+    def _to_xml_init(self, root_elem, devices_list=None, action_list=None, act_override=False,
+                     object_override=None, parent_override=None, xml_done_ids=set(), xml_act_ids=set()):
         """
             :param ET.Element root_elem: Root element of the XML file
             or not.
@@ -112,27 +106,19 @@ class XMLUtils(util.ObjectID):
         """
         self.xml_root_elem = root_elem
         self.xml_devices_list = devices_list
+        self.actions_list = action_list
+        self.act_override = act_override
+
         self.device_elems = self.xml_root_elem[0]
         self.format_elems = self.xml_root_elem[1]
         self.intern_elems = self.xml_root_elem[2]
+
+        # Action specific
         self.action_elems = self.xml_root_elem[3]
-        self.altdev_elems = self.xml_root_elem[4]
-        self.altfor_elems = self.xml_root_elem[5]
+        self.desdev_elems = self.xml_root_elem[4]
+        self.desfmt_elems = self.xml_root_elem[5]
         self.xml_iterables = {list, tuple, dict, "collections.OrderedDict",
                               "blivet.devices.lib.ParentList"}
-
-        self.xml_elems_list = [] # Elements will be stored here
-        self.xml_attrs_done = set() # To prevent duplicates in xml_elems_list
-        self.xml_done_ids = xml_done_ids # As above, but for ids
-
-        self.parent_override = parent_override
-        self.par_override_dict = {"device_elems": self.device_elems,
-                                  "format_elems": self.format_elems,
-                                  "intern_elems": self.intern_elems,
-                                  "action_elems": self.action_elems,
-                                  "altdev_elems": self.altdev_elems,
-                                  "altfor_elems": self.altfor_elems,
-                                  "elems_list": self.xml_elems_list}
 
         # Determine, what object to parse
         if object_override is None:
@@ -141,12 +127,14 @@ class XMLUtils(util.ObjectID):
             self.xml_object = object_override
 
         # Determine where to store new elements
-        self.xml_parent_elem = self.par_override_dict.get(self.parent_override)
+        self.xml_parent_elem = parent_override
         if self.xml_parent_elem is None:
             self.xml_parent_elem = self.device_elems[-1]
-        # Check, if the list is empty so we can continue
-        if len(self.xml_parent_elem) != 0:
-            self.xml_parent_elem = self.xml_parent_elem[-1]
+
+        self.xml_elems_list = [] # Elements will be stored here
+        self.xml_attrs_done = set() # To prevent duplicates in xml_elems_list
+        self.xml_done_ids = xml_done_ids # As above, but for ids
+        self.xml_act_ids = xml_act_ids
 
         self.xml_attr_list = dir(self.xml_object) # List of attrs to gather
 
@@ -249,24 +237,26 @@ class XMLUtils(util.ObjectID):
         self._to_xml_set_value(self.xml_elems_list[-1])
         self.tmp_full_name = str(type(self.xml_tmp_obj)).split("'")[1]
 
-        if self.tmp_id not in self.xml_done_ids:
-            self.xml_done_ids.add(self.tmp_id)
+        if self.act_override:
+            ids_done = self.xml_act_ids
+        else:
+            ids_done = self.xml_done_ids
+
+        if self.tmp_id not in ids_done:
+            ids_done.add(self.tmp_id)
 
             # Import all required
             DeviceFormat = getattr(importlib.import_module("blivet.formats"), "DeviceFormat")
             Device = getattr(importlib.import_module("blivet.devices"), "Device")
             # For DeviceFormat
-            if isinstance(self.xml_tmp_obj, DeviceFormat) and (self.parent_override != "altdev_elems" or self.parent_override is None):
-                self._to_xml_parse_format()
-            # Deleted / Altered DeviceFormat - separately
-            elif isinstance(self.xml_tmp_obj, DeviceFormat) and self.parent_override == "altdev_elems":
-                self._to_xml_parse_format(parent_override="altfor_elems")
-            # For Device
-            elif isinstance(self.xml_tmp_obj, Device) and self.parent_override != "action_elems":
+            if isinstance(self.xml_tmp_obj, DeviceFormat):
+                self._to_xml_parse_format(act_override = self.act_override)
+            # For Destroyed Device
+            elif isinstance(self.xml_tmp_obj, Device) and self.act_override:
+            # Device
+                self._to_xml_parse_device(act_override=self.act_override)
+            elif isinstance(self.xml_tmp_obj, Device) and not self.act_override:
                 return
-            elif isinstance(self.xml_tmp_obj, Device) and self.parent_override == "action_elems":
-                self.xml_tmp_str_type = str(type(self.xml_tmp_obj)).split("'")[1]
-                self._to_xml_parse_device(parent_override = "altdev_elems")
             # Anything else
             else:
                 self._to_xml_parse_object()
@@ -274,7 +264,7 @@ class XMLUtils(util.ObjectID):
         else:
             pass
 
-    def _to_xml_parse_object(self, parent_override="elems_list"):
+    def _to_xml_parse_object(self):
         """
             Similar to format, this does the same like parse_format, but for devices.
         """
@@ -285,70 +275,79 @@ class XMLUtils(util.ObjectID):
         new_obj_init = getattr(self.xml_tmp_obj, "_to_xml_init")
         new_obj_init = new_obj_init(self.xml_root_elem,
                                         object_override=self.xml_tmp_obj,
-                                        parent_override=parent_override,
+                                        parent_override=self.xml_elems_list[-1],
                                         xml_done_ids=self.xml_done_ids)
         # Finally, start parsing
         getattr(self.xml_tmp_obj, "to_xml")()
 
-    def _to_xml_parse_format(self, parent_override="format_elems"):
+    def _to_xml_parse_format(self, parent_override = None, act_override=False):
         """
             Special section for DeviceFormat
         """
+        # Determine parent
+        if not act_override:
+            parent_elem = self.format_elems
+        else:
+            parent_elem = self.desfmt_elems
 
-        self.parent_elem = self.par_override_dict.get(parent_override)
         # Just a small tweak, count it
-        tmp_count = self.parent_elem.attrib.get("Count")
+        tmp_count = parent_elem.attrib.get("Count")
         if tmp_count is not None:
             tmp_count = int(tmp_count) + 1
         else:
             tmp_count = 1
-        self.parent_elem.set("Count", str(tmp_count))
-        # Start adding elements to format section
 
-        self.xml_elems_list.append(ET.SubElement(self.parent_elem,
+        parent_elem.set("Count", str(tmp_count))
+        # Start adding elements to format section
+        self.xml_elems_list.append(ET.SubElement(parent_elem,
                                                  self.tmp_full_name.split(".")[-1]))
         self.xml_elems_list[-1].set("type", self.tmp_full_name)
         self.xml_elems_list[-1].set("ObjectID", str(self.tmp_id))
 
         new_obj_init = getattr(self.xml_tmp_obj, "_to_xml_init")
         new_obj_init = new_obj_init(self.xml_root_elem,
-                                    parent_override=parent_override,
-                                    xml_done_ids=self.xml_done_ids)
+                                    parent_override=parent_elem[-1],
+                                    xml_done_ids=self.xml_done_ids,
+                                    act_override=act_override)
         # Finally, start parsing
         getattr(self.xml_tmp_obj, "to_xml")()
 
 ################################################################################
 ########### Special occasion of sub-to_xml
-    def _to_xml_parse_device(self, parent_override = "intern_elems"):
+    def _to_xml_parse_device(self, act_override=False):
         """
             Special section for any other device, that is not in blivet.devices
         """
         # Get basic data and ID
         self.xml_tmp_id = getattr(self.xml_tmp_obj, "id")
-        if self.xml_tmp_id in self.xml_done_ids and parent_override != "altdev_elems":
+        if self.xml_tmp_id in self.xml_done_ids:
             return
 
-        self.parent_elem = self.par_override_dict.get(parent_override)
+        if not act_override:
+            parent_elem = self.intern_elems
+        else:
+            parent_elem = self.desdev_elems
 
         # Just a small tweak, count it
-        tmp_count = self.parent_elem.attrib.get("Count")
+        tmp_count = parent_elem.attrib.get("Count")
         if tmp_count is not None:
             tmp_count = int(tmp_count) + 1
         else:
             tmp_count = 1
-        self.parent_elem.set("Count", str(tmp_count))
+        parent_elem.set("Count", str(tmp_count))
         # Finally, start preparing
         self.xml_done_ids.add(self.xml_tmp_id)
-        self.xml_elems_list.append(ET.SubElement(self.parent_elem, self.xml_tmp_str_type.split(".")[-1]))
+        self.xml_elems_list.append(ET.SubElement(parent_elem, self.xml_tmp_str_type.split(".")[-1]))
         self.xml_elems_list[-1].set("type", self.xml_tmp_str_type)
         self.xml_elems_list[-1].set("ObjectID", str(self.xml_tmp_id))
 
         new_obj_init = getattr(self.xml_tmp_obj, "_to_xml_init")
         new_obj_init = new_obj_init(self.xml_root_elem,
-                                    parent_override=parent_override,
+                                    parent_override=parent_elem[-1],
                                     object_override=self.xml_tmp_obj,
                                     devices_list=self.xml_devices_list,
-                                    xml_done_ids=self.xml_done_ids)
+                                    xml_done_ids=self.xml_done_ids,
+                                    act_override=act_override)
         # Finally, start parsing
         getattr(self.xml_tmp_obj, "to_xml")()
 
@@ -406,11 +405,9 @@ class XMLUtils(util.ObjectID):
 
 ################################################################################
 ##### Base element appending
-    def _to_xml_base_elem(self, in_attrib, orig_attrib=None):
+    def _to_xml_base_elem(self, in_attrib):
         self.xml_elems_list.append(ET.SubElement(self.xml_parent_elem, "prop"))
         self.xml_elems_list[-1].set("attr", in_attrib)
-        if orig_attrib is not None:
-            self.xml_elems_list[-1].set("orig_attr", orig_attrib)
 
 ################################################################################
 ##### EXPORT FUNCTION
@@ -421,7 +418,6 @@ class XMLUtils(util.ObjectID):
         """
         for attr in self.xml_attr_list:
             try:
-                orig_attr = None
                 # Temporaily get str_type
                 tmp_obj = getattr(self.xml_object, attr)
                 self.xml_tmp_str_type = str(type(tmp_obj)).split("'")[-2]
@@ -430,14 +426,13 @@ class XMLUtils(util.ObjectID):
                     continue
                 # Basic fix - replace all underscore attrs with non-underscore
                 if attr.startswith("_") and hasattr(self.xml_object, attr[1:]):
-                    orig_attr = attr
                     attr = attr[1:]
                 # Add to completed attributes, so we can avoid duplicates. Also add ids
                 self.xml_attrs_done.add(attr)
                 # Temporaily get object
                 self._to_xml_get_data(attr)
                 # Create basic element
-                self._to_xml_base_elem(attr, orig_attr)
+                self._to_xml_base_elem(attr)
                 # Set basic data to element
                 self._to_xml_set_data_type(self.xml_elems_list[-1])
 
@@ -513,8 +508,6 @@ class FromXML(object):
         self.fxml_tree_formats = self.fxml_tree_root.find("./Formats")
         self.fxml_tree_interns = self.fxml_tree_root.find("./InternalDevices")
         self.fxml_tree_actions = self.fxml_tree_root.find("./Actions")
-        self.fxml_tree_altdevs = self.fxml_tree_root.find(".AlteredDevices")
-        self.fxml_tree_altfmts = self.fxml_tree_root.find("./AlteredFormats")
         # Lists to store devices to - Preparation
 
         # Pouzit ids_done jako kontrolu proti rekurzi
@@ -542,11 +535,11 @@ class FromXML(object):
             dev_id = dev_elem.attrib.get("ObjectID")
             if self.ids_done.get(dev_id) is not None:
                 continue
-            self.from_xml_internal(dev_elem, ret_val="obj",
+            self.from_xml_internal(dev_elem, debug=False,
                                    ign_atts=ign_atts, postprocess_attrs=postprocess_attrs)
 
     def from_xml_internal(self, dev_elem, id_list=list(),
-                          ret_val="obj", ign_atts=None, postprocess_attrs=None):
+                          debug=False, ign_atts=None, postprocess_attrs=None):
         """
             This loop function basically creates all of the information - Gets
             class of the device and also it's ID and then processes all attributes
@@ -560,32 +553,27 @@ class FromXML(object):
         dev_dict = {"class": self._fxml_process_module(dev_str_type), "XMLID": dev_id}
         # We don't want these attributes to be processed, because they are processed automatically
         if ign_atts is None:
-            ign_atts = {"children", "ancestors", "lvs", "thinpools", "thinlvs", "_internal_lvs", "cached_lvs"}
+            ign_atts = {"children", "ancestors", "lvs", "thinpools", "thinlvs"}
 
+        # TODO: dokoncit cached_lvs, _internal_lvs
         if postprocess_attrs is None:
-            postprocess_attrs = {"cache"}
+            postprocess_attrs = {"cached_lvs", "_internal_lvs", "cached_lv"}
 
         # Append ID to control list so we can skip it if we'll find it somewhere else
         id_list.append(dev_id)
 
         for attr_elem in dev_elem:
-            # Get attribute to compare with ignored and post_process
             tmp_attr = attr_elem.attrib.get("attr")
             if tmp_attr in ign_atts:
                 continue
-            # If it is attribute that needs parent that is being processed NOW
-            if tmp_attr in postprocess_attrs and attr_elem.attrib.get("type") != "NoneType":
-                self.post_process_list.append(FXMLPostProcess(tmp_attr, dev_elem, attr_elem))
+            if tmp_attr in postprocess_attrs:
+                self.post_process_list.append(FXMLPostProcess(tmp_attr, dev_elem, attr_elem, id_list[-1]))
                 continue
             self._fxml_determine_type(attr_elem, in_dict=dev_dict, id_list=id_list)
 
-        if ret_val == "obj":
-            final_obj = self._fxml_finalize_object(dev_dict)
+        if not debug:
             del id_list[-1]
-            # Finally, return the object if needed
-            return final_obj
-        elif ret_val == "dict":
-            return dev_dict
+            return self._fxml_finalize_object(dev_dict)
         else:
             print (dev_dict)
 
@@ -594,19 +582,26 @@ class FromXML(object):
             Based on stacked data, performs post-import processing to import and
             process data we were unable to process in normal import
         """
-        # Process mainly cache object
-        for fxml_proc in self.post_process_list:
-            elem = fxml_proc.elem
-            tmp_obj = self.ids_done.get(fxml_proc.dev_id)
-            tmp_value = self.from_xml_internal(elem, postprocess_attrs=set())
-            setattr(tmp_obj, "_cache", tmp_value)
-
         self.from_xml(in_list=self.fxml_tree_interns, ign_atts={"ancestors", "parents", "_internal_lvs"})
+
+        for dev_cls in self.post_process_list:
+            elem = dev_cls.elem
+            tmp_obj = self.ids_done.get(dev_cls.cur_id)
+            if elem.attrib.get("type") == "list":
+                tmp_value = []
+                for attr_elem in elem:
+                    tmp_value.append(self.ids_done.get(attr_elem.text))
+            else:
+                tmp_value = self.ids_done.get(elem.text)
+
+            if dev_cls.tmp_attr == "cached_lvs":
+                dev_cls.tmp_attr = "_cached_lvs"
+            setattr(tmp_obj, dev_cls.tmp_attr, tmp_value)
 
 ################################################################################
 ####################### Tooling functions ######################################
     def _fxml_determine_type(self, in_elem, in_dict=None,
-                             in_attr=None, id_list=None):
+                             in_attr=None, id_list=None, debug=False):
         """
             This determines between basic simple type (iterables and simple) and
             complex, like attributes containing a dot and ObjectID, which we
@@ -820,10 +815,10 @@ class FXMLPostProcess(object):
     """
         Defines a simple class to assist postprocess
     """
-    def __init__(self, attr, dev_elem, cur_elem):
+    def __init__(self, attr, dev_elem, cur_elem, in_id):
         super(FXMLPostProcess, self).__init__()
-        self.attr = attr
+        self.tmp_attr = attr
+        self.cur_id = in_id
         self.elem = cur_elem
         self.dev_elem = dev_elem
-        self.dev_id = dev_elem.attrib.get("ObjectID")
-        self.elem_id = cur_elem.attrib.get("ObjectID")
+        self.tmp_id = dev_elem.attrib.get("ObjectID")
