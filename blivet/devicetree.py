@@ -381,7 +381,8 @@ class DeviceTree(object):
                     # include deps no longer in the tree due to pending removal
                     devs = self._devices + [a.device for a in self._actions]
                     for dep in set(devs):
-                        if dep.exists and dep.dependsOn(action.device.disk):
+                        if dep.exists and \
+                           any(dep.dependsOn(disk) for disk in action.device.disks):
                             dep.teardown(recursive=True)
 
                     action.execute(callbacks)
