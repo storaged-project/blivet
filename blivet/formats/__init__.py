@@ -67,9 +67,9 @@ default_fstypes = ("ext4", "xfs", "ext3", "ext2")
 def get_default_filesystem_type():
     for fstype in default_fstypes:
         try:
-            supported = get_device_format_class(fstype).supported
+            supported = get_format(fstype).supported
         except AttributeError:
-            supported = None
+            supported = False
 
         if supported:
             return fstype
