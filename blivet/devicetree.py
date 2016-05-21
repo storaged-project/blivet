@@ -176,7 +176,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                  newdev.name,
                  newdev.id)
 
-    def _remove_device(self, dev, force=None, modparent=True):
+    def _remove_device(self, dev, force=None, modparent=True, xml_import=False):
         """ Remove a device from the tree.
 
             :param dev: the device to remove
@@ -190,7 +190,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
                 Only leaves may be removed.
         """
-        if dev not in self._devices:
+        if dev not in self._devices and not xml_import:
             raise ValueError("Device '%s' not in tree" % dev.name)
 
         if not dev.isleaf and not force:
@@ -213,7 +213,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                        device.disk == dev.disk:
                         device.update_name()
 
-        self._devices.remove(dev)
+        if not xml_import:
+            self._devices.remove(dev)
         callbacks.device_removed(device=dev)
         log.info("removed %s %s (id %d) from device tree", dev.type,
                  dev.name,
@@ -279,7 +280,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
     def actions(self):
         return self._actions
 
-    def _register_action(self, action):
+    def _register_action(self, action, xml_import=False):
         """ Register an action to be performed at a later time.
 
             :param action: the action
@@ -289,16 +290,16 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             get here.
         """
         if not (action.is_create and action.is_device) and \
-           action.device not in self._devices:
+           action.device not in self._devices and not xml_import:
             raise DeviceTreeError("device is not in the tree")
         elif (action.is_create and action.is_device):
-            if action.device in self._devices:
+            if action.device in self._devices and not xml_import:
                 raise DeviceTreeError("device is already in the tree")
 
         if action.is_create and action.is_device:
             self._add_device(action.device)
         elif action.is_destroy and action.is_device:
-            self._remove_device(action.device)
+            self._remove_device(action.device, xml_import=xml_import)
         elif action.is_create and action.is_format:
             if isinstance(action.device.format, formats.fs.FS) and \
                action.device.format.mountpoint in self.filesystems:
@@ -907,7 +908,7 @@ class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
             self.luks_dict_passed = luks_dict
 
         DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks, xml_file=xml_file)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict_passed, disk_images=disk_images, xml_file=xml_file)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=self.luks_dict_passed, disk_images=disk_images, xml_file=xml_file)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ

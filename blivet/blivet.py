@@ -49,6 +49,8 @@ from . import __version__
 from .threads import SynchronizedMeta
 from .static_data import luks_data
 
+from pykickstart.commands.autopart import AUTOPART_TYPE_LVM
+
 from . import xml_util
 
 import logging

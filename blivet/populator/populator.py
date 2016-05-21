@@ -441,8 +441,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                 XMLImporter = xml_util.FromXML(self.xml_file, self)
                 XMLImporter.from_xml()
                 XMLImporter.from_xml_postprocess()
-                # Temporaily disable action import
-                #XMLImporter.from_xml_post_actions()
             else:
                 self._populate()
         except Exception:

@@ -56,7 +56,7 @@ def with_flag(flag_attr):
 class ActionList(object, metaclass=SynchronizedMeta):
     _unsynchronized_methods = ['process']
 
-    def __init__(self, addfunc=None, removefunc=None):
+    def __init__(self, addfunc=None, removefunc=None, xml_import = False):
         self._add_func = addfunc
         self._remove_func = removefunc
         self._actions = []
@@ -66,9 +66,9 @@ class ActionList(object, metaclass=SynchronizedMeta):
     def __iter__(self):
         return iter(self._actions)
 
-    def add(self, action):
+    def add(self, action, xml_import=False):
         if self._add_func is not None:
-            self._add_func(action)
+            self._add_func(action, xml_import=xml_import)
 
         # apply the action before adding it in case apply raises an exception
         action.apply()

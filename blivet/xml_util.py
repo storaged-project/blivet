@@ -336,7 +336,11 @@ class XMLUtils(util.ObjectID):
             tmp_count = 1
         parent_elem.set("Count", str(tmp_count))
         # Finally, start preparing
-        self.xml_done_ids.add(self.xml_tmp_id)
+        if act_override:
+            self.xml_act_ids.add(self.xml_tmp_id)
+            self.xml_tmp_str_type = str(type(self.xml_tmp_obj)).split("'")[1]
+        else:
+            self.xml_done_ids.add(self.xml_tmp_id)
         self.xml_elems_list.append(ET.SubElement(parent_elem, self.xml_tmp_str_type.split(".")[-1]))
         self.xml_elems_list[-1].set("type", self.xml_tmp_str_type)
         self.xml_elems_list[-1].set("ObjectID", str(self.xml_tmp_id))
@@ -513,7 +517,7 @@ class FromXML(object):
         self.fxml_tree_desfmts = self.fxml_tree_root.find("./DestroyedFormats")
         # Lists to store devices to - Preparation
 
-        # Pouzit ids_done jako kontrolu proti rekurzi
+        self.act_override = False
         self.ids_done = {}
         # Little optimalization: use dict to get object if its imported already
         self.fulltypes_stack = {}
@@ -584,21 +588,6 @@ class FromXML(object):
         else:
             print (dev_dict)
 
-    def from_xml_internal_actions(self, dev_elem, ign_atts=set(), id_list=list()):
-        """
-            Processes actions because the characteristic of actions is different
-        """
-        dev_str_type = dev_elem.attrib.get("type")
-        dev_id = dev_elem.attrib.get("ObjectID")
-        dev_dict = {"class": self._fxml_process_module(dev_str_type), "XMLID": dev_id}
-
-        for act_elem in dev_elem:
-            tmp_attr = act_elem.attrib.get("attr")
-            if tmp_attr in ign_atts:
-                continue
-            self._fxml_determine_type(act_elem, in_dict=dev_dict, id_list=id_list)
-
-
     def from_xml_postprocess(self):
         """
             Based on stacked data, performs post-import processing to import and
@@ -620,9 +609,32 @@ class FromXML(object):
                 dev_cls.tmp_attr = "_cached_lvs"
             setattr(tmp_obj, dev_cls.tmp_attr, tmp_value)
 
-    def from_xml_post_actions(self):
-        self.from_xml(in_list = self.fxml_tree_actions,
-                      ign_atts={"action_list"}, action_bool=True)
+        self.act_override = True
+        self.from_xml(in_list=self.fxml_tree_actions, ign_atts={"actions_list"}, action_bool=True)
+        self.act_override = False
+
+
+    def from_xml_internal_actions(self, act_elem, ign_atts=set(), id_list=list(), debug=False):
+        """
+            Docstring
+        """
+
+        act_str_type = act_elem.attrib.get("type")
+        act_id = act_elem.attrib.get("ObjectID")
+        act_dict = {"class": self._fxml_process_module(act_str_type), "XMLID": act_id}
+
+        for attr_elem in act_elem:
+            # Get attribute
+            tmp_attr = attr_elem.attrib.get("attr")
+            if tmp_attr == "actions_list":
+                continue
+            self._fxml_determine_type(attr_elem, in_dict=act_dict, id_list=id_list)
+
+        if not debug:
+            action = self._fxml_finalize_object(act_dict)
+            self.devicetree.actions.add(action, xml_import=True)
+        else:
+            print (act_dict)
 
 
 ################################################################################
@@ -705,9 +717,11 @@ class FromXML(object):
         """
         process_id = in_elem.text
         tmp_element = self.fxml_tree_root.find(".//*[@ObjectID='%s']" % (process_id))
+        if self.act_override:
+            print ("element", tmp_element, "id", process_id)
         # Check for devicetree, if it already exists so we can skip it
         dev_tree_name = tmp_element.find("./*[@attr='name']").text
-        if self.devicetree.get_device_by_name(dev_tree_name) is not None:
+        if self.devicetree.get_device_by_name(dev_tree_name) is not None and not self.act_override:
             return self.devicetree.get_device_by_name(dev_tree_name)
         else:
             return self.from_xml_internal(tmp_element, id_list)

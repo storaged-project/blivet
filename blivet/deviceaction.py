@@ -148,6 +148,37 @@ class DeviceAction(xml_util.XMLUtils, metaclass=SynchronizedMeta):
     obj = ACTION_OBJECT_NONE
     type_desc_str = ""
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = DeviceAction(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, device):
         xml_util.util.ObjectID.__init__(self)
         if not isinstance(device, StorageDevice):
@@ -305,6 +336,37 @@ class ActionCreateDevice(DeviceAction):
     obj = ACTION_OBJECT_DEVICE
     type_desc_str = N_("create device")
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionCreateDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, device):
         if device.exists:
             raise ValueError("device already exists")
@@ -363,6 +425,37 @@ class ActionDestroyDevice(DeviceAction):
     type = ACTION_TYPE_DESTROY
     obj = ACTION_OBJECT_DEVICE
     type_desc_str = N_("destroy device")
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionDestroyDevice(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, device):
         # XXX should we insist that device.fs be None?
@@ -438,6 +531,37 @@ class ActionResizeDevice(DeviceAction):
     type = ACTION_TYPE_RESIZE
     obj = ACTION_OBJECT_DEVICE
     type_desc_str = N_("resize device")
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device", "newsize"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = DeviceAction(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, device, newsize):
         if not device.resizable:
@@ -521,6 +645,37 @@ class ActionCreateFormat(DeviceAction):
     type = ACTION_TYPE_CREATE
     obj = ACTION_OBJECT_FORMAT
     type_desc_str = N_("create format")
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device", "fmt"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionCreateFormat(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, device, fmt=None):
         """
@@ -672,6 +827,37 @@ class ActionDestroyFormat(DeviceAction):
     obj = ACTION_OBJECT_FORMAT
     type_desc_str = N_("destroy format")
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionDestroyFormat(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, device):
         if device.format_immutable:
             raise ValueError("this device's formatting cannot be modified")
@@ -770,6 +956,37 @@ class ActionResizeFormat(DeviceAction):
     obj = ACTION_OBJECT_FORMAT
     type_desc_str = N_("resize format")
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device", "newsize"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionResizeFormat(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, device, newsize):
         if device.format_immutable:
             raise ValueError("this device's formatting cannot be modified")
@@ -857,6 +1074,37 @@ class ActionAddMember(DeviceAction):
     obj = ACTION_OBJECT_CONTAINER
     type_desc_str = N_("add container member")
 
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device", "container"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionAddMember(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
+
     def __init__(self, container, device):
         super(ActionAddMember, self).__init__(device)
         self.container = container
@@ -921,6 +1169,37 @@ class ActionRemoveMember(DeviceAction):
     type = ACTION_TYPE_REMOVE
     obj = ACTION_OBJECT_CONTAINER
     type_desc_str = N_("remove container member")
+
+    def __init_xml__(xml_dict):
+        """
+            Gets attributes from XML dictionary and sets them as object
+            attributes
+        """
+        # First, specify args
+        init_args = ["device", "container"]
+        ignored_attrs = {"class", "XMLID"}
+        init_dict = {}
+
+        # Fill the init dictionary with data and clean them afterwards
+        for arg in init_args:
+            if arg == "fmt":
+                init_dict["fmt"] = xml_dict.get("format")
+                ignored_attrs.add("format")
+            else:
+                init_dict[arg] = xml_dict.get(arg)
+                ignored_attrs.add(arg)
+
+        cls_instance = ActionRemoveMember(**init_dict)
+        # Now, set all attributes we can set.
+        for attr in xml_dict:
+            try:
+                if attr in ignored_attrs:
+                    continue
+                setattr(cls_instance, attr, xml_dict.get(attr))
+            except:
+                continue
+
+        return cls_instance
 
     def __init__(self, container, device):
         super(ActionRemoveMember, self).__init__(device)
