@@ -507,7 +507,10 @@ class FromXML(object):
         self.fxml_tree_devices = self.fxml_tree_root.find("./Devices")
         self.fxml_tree_formats = self.fxml_tree_root.find("./Formats")
         self.fxml_tree_interns = self.fxml_tree_root.find("./InternalDevices")
+        # Action specific
         self.fxml_tree_actions = self.fxml_tree_root.find("./Actions")
+        self.fxml_tree_desdevs = self.fxml_tree_root.find("./DestroyedDevices")
+        self.fxml_tree_desfmts = self.fxml_tree_root.find("./DestroyedFormats")
         # Lists to store devices to - Preparation
 
         # Pouzit ids_done jako kontrolu proti rekurzi
@@ -521,7 +524,8 @@ class FromXML(object):
 
 ################################################################################
 ####################### Iteration ##############################################
-    def from_xml(self, in_list=None, ign_atts=None, postprocess_attrs=None):
+    def from_xml(self, in_list=None, ign_atts=None,
+                 postprocess_attrs=None, debug=False, action_bool=False):
         """
             Walks through tree_devices
         """
@@ -535,8 +539,11 @@ class FromXML(object):
             dev_id = dev_elem.attrib.get("ObjectID")
             if self.ids_done.get(dev_id) is not None:
                 continue
-            self.from_xml_internal(dev_elem, debug=False,
-                                   ign_atts=ign_atts, postprocess_attrs=postprocess_attrs)
+            if not action_bool:
+                self.from_xml_internal(dev_elem, debug=debug,
+                                       ign_atts=ign_atts, postprocess_attrs=postprocess_attrs)
+            else:
+                self.from_xml_internal_actions(dev_elem, ign_atts=ign_atts)
 
     def from_xml_internal(self, dev_elem, id_list=list(),
                           debug=False, ign_atts=None, postprocess_attrs=None):
@@ -551,11 +558,11 @@ class FromXML(object):
         dev_str_type = dev_elem.attrib.get("type")
         dev_id = dev_elem.attrib.get("ObjectID")
         dev_dict = {"class": self._fxml_process_module(dev_str_type), "XMLID": dev_id}
+
         # We don't want these attributes to be processed, because they are processed automatically
         if ign_atts is None:
             ign_atts = {"children", "ancestors", "lvs", "thinpools", "thinlvs"}
 
-        # TODO: dokoncit cached_lvs, _internal_lvs
         if postprocess_attrs is None:
             postprocess_attrs = {"cached_lvs", "_internal_lvs", "cached_lv"}
 
@@ -577,6 +584,21 @@ class FromXML(object):
         else:
             print (dev_dict)
 
+    def from_xml_internal_actions(self, dev_elem, ign_atts=set(), id_list=list()):
+        """
+            Processes actions because the characteristic of actions is different
+        """
+        dev_str_type = dev_elem.attrib.get("type")
+        dev_id = dev_elem.attrib.get("ObjectID")
+        dev_dict = {"class": self._fxml_process_module(dev_str_type), "XMLID": dev_id}
+
+        for act_elem in dev_elem:
+            tmp_attr = act_elem.attrib.get("attr")
+            if tmp_attr in ign_atts:
+                continue
+            self._fxml_determine_type(act_elem, in_dict=dev_dict, id_list=id_list)
+
+
     def from_xml_postprocess(self):
         """
             Based on stacked data, performs post-import processing to import and
@@ -597,6 +619,11 @@ class FromXML(object):
             if dev_cls.tmp_attr == "cached_lvs":
                 dev_cls.tmp_attr = "_cached_lvs"
             setattr(tmp_obj, dev_cls.tmp_attr, tmp_value)
+
+    def from_xml_post_actions(self):
+        self.from_xml(in_list = self.fxml_tree_actions,
+                      ign_atts={"action_list"}, action_bool=True)
+
 
 ################################################################################
 ####################### Tooling functions ######################################
