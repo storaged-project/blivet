@@ -21,7 +21,6 @@
 #
 
 import copy
-import os
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -57,24 +56,23 @@ class PartitionDevicePopulator(DevicePopulator):
             if device:
                 return device
 
-        disk_name = udev.device_get_partition_disk(self.data)
-        if disk_name.startswith("md"):
-            disk_name = blockdev.md.name_from_node(disk_name)
-        disk = self._devicetree.get_device_by_name(disk_name)
+        disk = None
+        sys_name = udev.device_get_partition_disk(self.data)
+        if sys_name:
+            disk_name = udev.resolve_devspec(sys_name)
+            disk = self._devicetree.get_device_by_name(disk_name)
+            if disk is None:
+                # create a device instance for the disk
+                disk_info = next((i for i in udev.get_devices() if i.sys_name == sys_name), None)
+                if disk_info is not None:
+                    self._devicetree.handle_device(disk_info)
+                    disk = self._devicetree.get_device_by_name(disk_name)
 
         if disk is None:
-            # create a device instance for the disk
-            new_info = udev.get_device(os.path.dirname(sysfs_path))
-            if new_info:
-                self._devicetree.handle_device(new_info)
-                disk = self._devicetree.get_device_by_name(disk_name)
-
-            if disk is None:
-                # if the current device is still not in
-                # the tree, something has gone wrong
-                log.error("failure scanning device %s", disk_name)
-                lvm.lvm_cc_addFilterRejectRegexp(name)
-                return
+            # if the disk is still not in the tree something has gone wrong
+            log.error("failure finding disk for %s", name)
+            lvm.lvm_cc_addFilterRejectRegexp(name)
+            return
 
         if not disk.partitioned or not disk.format.supported:
             # Ignore partitions on:
