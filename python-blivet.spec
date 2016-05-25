@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.45
+Version: 0.61.15.46
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed May 25 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.46-1
+- Fix a typo when checking whether we're using an FBA DASD. (sbueno+anaconda)
+  Resolves: rhbz#1233438
+- Add xfs to default filesystem types (rmarshall)
+  Related: rhbz#1242666
+- Fix blivet constructor fs support check (rmarshall)
+  Related: rhbz#1242666
+- Kickstart missing bootloader partitions (rmarshall)
+  Resolves: rhbz#1242666
+
 * Fri May 06 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.45-1
 - Use device's mount options when mounting existing systems (vtrefny)
   Related: rhbz#1250011
