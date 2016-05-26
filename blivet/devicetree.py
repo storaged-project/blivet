@@ -933,27 +933,28 @@ class DeviceTree(object):
             if device:
                 return device
 
-        if disk is None:
-            disk_name = os.path.basename(os.path.dirname(sysfs_path))
-            disk_name = disk_name.replace('!','/')
+        disk = None
+        disk_name = udev.device_get_partition_disk(info)
+        if disk_name:
             if disk_name.startswith("md"):
-                disk_name = mdraid.name_from_md_node(disk_name)
+                lookup_name = mdraid.name_from_md_node(name)
+            else:
+                lookup_name = disk_name
 
-            disk = self.getDeviceByName(disk_name)
+            disk = self.getDeviceByName(lookup_name)
+            if disk is None:
+                # create a device instance for the disk
+                disk_info = next((i for i in udev.get_devices() if udev.device_get_name(i) == disk_name),
+                                 None)
+                if disk_info is not None:
+                    self.addUdevDevice(disk_info)
+                    disk = self.getDeviceByName(lookup_name)
 
         if disk is None:
-            # create a device instance for the disk
-            new_info = udev.get_device(os.path.dirname(sysfs_path))
-            if new_info:
-                self.addUdevDevice(new_info)
-                disk = self.getDeviceByName(disk_name)
-
-            if disk is None:
-                # if the current device is still not in
-                # the tree, something has gone wrong
-                log.error("failure scanning device %s", disk_name)
-                lvm.lvm_cc_addFilterRejectRegexp(name)
-                return
+            # if the disk is still not in the tree something has gone wrong
+            log.error("failure finding disk for %s", name)
+            lvm.lvm_cc_addFilterRejectRegexp(name)
+            return
 
         if not disk.partitioned or not disk.format.supported:
             # Ignore partitions on:
