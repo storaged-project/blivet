@@ -781,7 +781,7 @@ class DeviceTree(object):
             device = self.getDeviceByName(name)
 
             if device is None and udev.device_is_dm_partition(info):
-                diskname = udev.device_get_dm_partition_disk(info)
+                diskname = udev.device_get_partition_disk(info)
                 disk = self.getDeviceByName(diskname)
                 return self.addUdevPartitionDevice(info, disk=disk)
 

@@ -537,8 +537,8 @@ def device_is_biosraid_member(info):
 
     return False
 
-def device_get_dm_partition_disk(info):
-    if not device_is_dm_partition(info):
+def device_get_partition_disk(info):
+    if not (device_is_partition(info) or device_is_dm_partition(info)):
         return None
 
     disk = None
