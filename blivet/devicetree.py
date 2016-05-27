@@ -1474,8 +1474,12 @@ class DeviceTree(object):
                 # mirror image
                 rname = re.sub(r'_[rm]image.+', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, rname)
-                addRequiredLV(name, "failed to look up raid lv")
-                raid[name]["copies"] += 1
+                if name in self.lvInfo:
+                    # There doesn't necessarily have to be an LV named 'name'
+                    # (it could e.g. be '[name]' because the the LV is internal).
+                    # But we don't (have to) care about such LVs.
+                    addRequiredLV(name, "failed to look up raid lv")
+                    raid[name]["copies"] += 1
                 return
             elif lv_attr[0] == 'e':
                 if lv_name.endswith("_pmspare]"):
@@ -1488,15 +1492,23 @@ class DeviceTree(object):
                 # raid metadata volume
                 lv_name = re.sub(r'_[tr]meta.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, lv_name)
-                addRequiredLV(name, "failed to look up raid lv")
-                raid[name]["meta"] += lv_size
+                if name in self.lvInfo:
+                    # There doesn't necessarily have to be an LV named 'name'
+                    # (it could e.g. be '[name]' because the the LV is internal).
+                    # But we don't (have to) care about such LVs.
+                    addRequiredLV(name, "failed to look up raid lv")
+                    raid[name]["meta"] += lv_size
                 return
             elif lv_attr[0] == 'l':
                 # log volume
                 rname = re.sub(r'_mlog.*', '', lv_name[1:-1])
                 name = "%s-%s" % (vg_name, rname)
-                addRequiredLV(name, "failed to look up log lv")
-                raid[name]["log"] = lv_size
+                if name in self.lvInfo:
+                    # There doesn't necessarily have to be an LV named 'name'
+                    # (it could e.g. be '[name]' because the the LV is internal).
+                    # But we don't (have to) care about such LVs.
+                    addRequiredLV(name, "failed to look up log lv")
+                    raid[name]["log"] = lv_size
                 return
             elif lv_attr[0] == 't':
                 # thin pool
