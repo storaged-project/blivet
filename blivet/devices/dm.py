@@ -100,7 +100,8 @@ class DMDevice(StorageDevice):
     def status(self):
         match = next((m for m in block.dm.maps() if m.name == self.mapName),
            None)
-        return (match.live_table and not match.suspended) if match else False
+        return super(DMDevice, self).status and \
+               (match.live_table and not match.suspended) if match else False
 
     #def getTargetType(self):
     #    return dm.getDmTarget(name=self.name)
