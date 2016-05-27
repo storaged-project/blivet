@@ -716,6 +716,11 @@ class DeviceTree(object):
         device = self.getDeviceByName(vg_name)
         if not device:
             log.error("failed to find vg '%s' after scanning pvs", vg_name)
+            # There seem to be no PVs for the VG vg_name, but it must have
+            # (somehow) exist(ed) because udev has its name. We need to remember
+            # the name so that we don't attempt to create a new VG with the same
+            # name which could fail because LVM probably knows about the VG too.
+            self.names.append(vg_name)
 
         # Don't return the device like we do in the other addUdevFooDevice
         # methods. The device we have here is a vg, not an lv.
