@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.46
+Version: 0.61.15.47
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri May 27 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.47-1
+- Remember VG name even if it seems to have no PVs (vpodzime)
+  Resolves: rhbz#1245038
+- Do not try to add internal LVs (vpodzime)
+  Resolves: rhbz#1271665
+
 * Wed May 25 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.46-1
 - Fix a typo when checking whether we're using an FBA DASD. (sbueno+anaconda)
   Resolves: rhbz#1233438
