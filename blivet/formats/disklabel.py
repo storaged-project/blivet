@@ -69,10 +69,16 @@ class DiskLabel(DeviceFormat):
         self._origPartedDisk = None
         self._alignment = None
         self._endAlignment = None
+        self._supported = True
 
         if self.partedDevice:
-            # set up the parted objects and raise exception on failure
-            self.updateOrigPartedDisk()
+            # set up the parted objects
+            try:
+                self.updateOrigPartedDisk()
+            except Exception as e:  # pylint: disable=broad-except
+                self._supported = False
+                self._labelType = kwargs.get("labelType") or ""
+                log.warning("error setting up disklabel object on %s: %s", self.device, str(e))
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Disklabel instance.
@@ -118,6 +124,10 @@ class DiskLabel(DeviceFormat):
                   "grainSize": self.alignment.grainSize})
         return d
 
+    @property
+    def supported(self):
+        return self._supported
+
     def updateOrigPartedDisk(self):
         self._origPartedDisk = self.partedDisk.duplicate()
 
@@ -133,13 +143,13 @@ class DiskLabel(DeviceFormat):
 
     @property
     def partedDisk(self):
-        if not self._partedDisk:
+        if not self._partedDisk and self.supported:
             if self.exists:
                 try:
                     self._partedDisk = parted.Disk(device=self.partedDevice)
-                except (_ped.DiskLabelException, _ped.IOException,
-                        NotImplementedError) as e:
-                    raise InvalidDiskLabelError(e)
+                except (_ped.DiskLabelException, _ped.IOException, NotImplementedError):
+                    self._supported = False
+                    return None
 
                 if self._partedDisk.type == "loop":
                     # When the device has no partition table but it has a FS,
@@ -170,7 +180,7 @@ class DiskLabel(DeviceFormat):
             else:
                 log.debug("Did not change pmbr_boot on %s", self._partedDisk)
 
-        udev.settle(quiet=True)
+            udev.settle(quiet=True)
         return self._partedDisk
 
     @property
@@ -195,6 +205,9 @@ class DiskLabel(DeviceFormat):
     @property
     def labelType(self):
         """ The disklabel type (eg: 'gpt', 'msdos') """
+        if not self.supported:
+            return self._labelType
+
         try:
             lt = self.partedDisk.type
         except Exception: # pylint: disable=broad-except
@@ -212,7 +225,12 @@ class DiskLabel(DeviceFormat):
 
     @property
     def name(self):
-        return "%s (%s)" % (_(self._name), self.labelType.upper())
+        if self.supported:
+            _str = "%(name)s (%(type)s)"
+        else:
+            _str = _("Unsupported %(name)s")
+
+        return _str % {"name": _(self._name), "type": self.labelType.upper()}
 
     @property
     def size(self):
@@ -373,7 +391,7 @@ class DiskLabel(DeviceFormat):
         if not self._alignment:
             try:
                 disklabel_alignment = self.partedDisk.partitionAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 disklabel_alignment = parted.Alignment(offset=0, grainSize=1)
 
             try:
@@ -409,30 +427,15 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        def read_int_from_sys(path):
-            return int(open(path).readline().strip())
+        if not self.supported:
+            return Size(0)
 
         try:
             free = sum(Size(f.getLength(unit="B"))
                         for f in self.partedDisk.getFreeSpacePartitions())
         except Exception: # pylint: disable=broad-except
             log_exception_info()
-            sys_block_root = "/sys/class/block/"
-
-            # FIXME: /dev/mapper/foo won't work without massaging
-            disk_name = self.device.split("/")[-1]
-
-            disk_root = sys_block_root + disk_name
-            disk_length = read_int_from_sys("%s/size" % disk_root)
-            sector_size = read_int_from_sys("%s/queue/logical_block_size" % disk_root)
-            partition_names = [n for n in os.listdir(disk_root) if n.startswith(disk_name)]
-            used_sectors = 0
-            for partition_name in partition_names:
-                partition_root = sys_block_root + partition_name
-                partition_length = read_int_from_sys("%s/size" % partition_root)
-                used_sectors += partition_length
-
-            free = Size((disk_length - used_sectors) * sector_size)
+            free = Size(0)
 
         return free
 

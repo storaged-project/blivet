@@ -76,12 +76,14 @@ def trigger(subsystem=None, action="add", name=None):
     util.run_program(["udevadm"] + argv)
     settle()
 
-def resolve_devspec(devspec):
+def resolve_devspec(devspec, sysname=False):
     if not devspec:
         return None
 
     # import devices locally to avoid cyclic import (devices <-> udev)
     from . import devices
+
+    devname = devices.devicePathToName(devspec)
 
     ret = None
     for dev in get_devices():
@@ -93,7 +95,7 @@ def resolve_devspec(devspec):
             if device_get_uuid(dev) == devspec[5:]:
                 ret = dev
                 break
-        elif device_get_name(dev) == devices.devicePathToName(devspec):
+        elif device_get_name(dev) == devname or dev.sys_name == devname:
             ret = dev
             break
         else:
@@ -107,7 +109,7 @@ def resolve_devspec(devspec):
                     break
 
     if ret:
-        return device_get_name(ret)
+        return ret.sys_name if sysname else device_get_name(ret)
 
 def resolve_glob(glob):
     import fnmatch
@@ -537,18 +539,29 @@ def device_is_biosraid_member(info):
 
     return False
 
-def device_get_dm_partition_disk(info):
-    if not device_is_dm_partition(info):
+def device_get_partition_disk(info):
+    if not (device_is_partition(info) or device_is_dm_partition(info)):
         return None
 
     disk = None
+    sysfs_path = device_get_sysfs_path(info)
     majorminor = info.get("ID_PART_ENTRY_DISK")
+    slaves_dir = "%s/slaves" % sysfs_path
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
             if device.get("MAJOR") == major and device.get("MINOR") == minor:
                 disk = device_get_name(device)
                 break
+    elif device_is_dm_partition(info):
+        if os.path.isdir(slaves_dir):
+            parents = os.listdir(slaves_dir)
+            if len(parents) == 1:
+                disk = resolve_devspec(parents[0].replace('!', '/'))
+    else:
+        _disk = os.path.basename(os.path.dirname(sysfs_path).replace('!', '/'))
+        if info.sys_name.startswith(_disk):
+            disk = resolve_devspec(_disk)
 
     return disk
 
