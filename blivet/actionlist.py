@@ -215,7 +215,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
 
         log.info("resetting parted disks...")
         for device in devices:
-            if device.partitioned:
+            if device.partitioned and device.format.supported:
                 device.format.reset_parted_disk()
 
             if device.original_format.type == "disklabel" and \
@@ -263,7 +263,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
         devices = devices or []
         # removal of partitions makes use of original_format, so it has to stay
         # up to date in case of multiple passes through this method
-        for disk in (d for d in devices if d.partitioned):
+        for disk in (d for d in devices if d.partitioned and d.format.supported):
             disk.format.update_orig_parted_disk()
             disk.original_format = copy.deepcopy(disk.format)
 
@@ -335,6 +335,12 @@ class ActionList(object, metaclass=SynchronizedMeta):
                 for device in devices:
                     # make sure we catch any renumbering parted does
                     if device.exists and isinstance(device, PartitionDevice):
+                        # also update existence for partitions on unsupported disklabels
+                        if not device.disklabel_supported and \
+                           action.is_destroy and action.is_format and action.device == device.disk:
+                            device.exists = False
+                            continue
+
                         device.update_name()
                         device.format.device = device.path
 

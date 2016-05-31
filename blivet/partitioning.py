@@ -545,7 +545,7 @@ def do_partitioning(storage):
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
     """
-    disks = [d for d in storage.partitioned if not d.protected]
+    disks = [d for d in storage.partitioned if d.format.supported and not d.protected]
     for disk in disks:
         try:
             disk.setup()

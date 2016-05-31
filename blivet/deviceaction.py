@@ -388,8 +388,8 @@ class ActionDestroyDevice(DeviceAction):
         if action.device.depends_on(self.device) and action.is_destroy:
             rc = True
         elif (action.is_destroy and action.is_device and
-              isinstance(self.device, PartitionDevice) and
-              isinstance(action.device, PartitionDevice) and
+              isinstance(self.device, PartitionDevice) and self.device.disklabel_supported and
+              isinstance(action.device, PartitionDevice) and action.device.disklabel_supported and
               self.device.disk == action.device.disk):
             # remove partitions in descending numerical order
             self_num = self.device.parted_partition.number
@@ -564,7 +564,7 @@ class ActionCreateFormat(DeviceAction):
             msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_pre(CreateFormatPreData(msg))
 
-        if isinstance(self.device, PartitionDevice):
+        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
             for flag in partitionFlag.keys():
                 # Keep the LBA flag on pre-existing partitions
                 if flag in [PARTITION_LBA, self.format.parted_flag]:
