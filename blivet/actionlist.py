@@ -326,7 +326,8 @@ class ActionList(object, metaclass=SynchronizedMeta):
                     # include deps no longer in the tree due to pending removal
                     devs = devices + [a.device for a in self._actions]
                     for dep in set(devs):
-                        if dep.exists and dep.depends_on(action.device.disk):
+                        if dep.exists and \
+                           any(dep.depends_on(disk) for disk in action.device.disks):
                             dep.teardown(recursive=True)
 
                     action.execute(callbacks)
