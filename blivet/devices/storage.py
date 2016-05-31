@@ -434,9 +434,7 @@ class StorageDevice(Device):
             raise errors.DeviceError("device has not been created", self.name)
 
         if not self.status or not self.controllable:
-            # nothing to do for this particular device, but we need to continue
-            # with the teardown if recursive is 'True' (to tear down parents)
-            return bool(recursive)
+            return False
 
         if self.originalFormat.exists:
             self.originalFormat.teardown()
@@ -454,6 +452,8 @@ class StorageDevice(Device):
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
         if not self._preTeardown(recursive=recursive):
+            if recursive:
+                self.teardownParents(recursive=recursive)
             return
 
         self._teardown(recursive=recursive)

@@ -381,7 +381,8 @@ class DeviceTree(object):
                     # include deps no longer in the tree due to pending removal
                     devs = self._devices + [a.device for a in self._actions]
                     for dep in set(devs):
-                        if dep.exists and dep.dependsOn(action.device.disk):
+                        if dep.exists and \
+                           any(dep.dependsOn(disk) for disk in action.device.disks):
                             dep.teardown(recursive=True)
 
                     action.execute(callbacks)
@@ -1648,7 +1649,12 @@ class DeviceTree(object):
     def handleUdevMDMemberFormat(self, info, device):
         # pylint: disable=unused-argument
         log_method_call(self, name=device.name, type=device.format.type)
-        md_info = mdraid.mdexamine(device.path)
+        try:
+            md_info = mdraid.mdexamine(device.path)
+        except MDRaidError as e:
+            # This could just mean the member is not part of any array.
+            log.debug(str(e))
+            return
 
         try:
             md_uuid = udev.device_get_md_uuid(md_info)
