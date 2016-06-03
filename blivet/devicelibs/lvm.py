@@ -94,7 +94,7 @@ def _set_global_config():
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
     if flags.debug:
-        config_string += "log {level=7 file=/tmp/lvm.log}"
+        config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
 
     blockdev.lvm.set_global_config(config_string)
 

@@ -15,4 +15,5 @@ object_manager = bus.get_object('com.redhat.Blivet1', '/com/redhat/Blivet1')
 objects = object_manager.GetManagedObjects()
 for object_path in blivet.ListDevices():
     device = objects[object_path]['com.redhat.Blivet1.Device']
-    print(device['Name'], device['Type'], device['Size'], device['FormatType'])
+    fmt = objects[device['Format']]['com.redhat.Blivet1.Format']
+    print(device['Name'], device['Type'], device['Size'], fmt['Type'])

@@ -30,7 +30,7 @@ SRCFILES 	= $(PYSRC)
 all::  update-po $(MOFILES)
 
 $(POTFILE): $(SRCFILES)
-	$(XGETTEXT) -L Python --keyword=_ --keyword=N_ $(SRCFILES)
+	$(XGETTEXT) -L Python --keyword=_ --keyword=N_ --keyword=P_:1,2 $(SRCFILES)
 	@if cmp -s $(NLSPACKAGE).po $(POTFILE); then \
 	    rm -f $(NLSPACKAGE).po; \
 	else \

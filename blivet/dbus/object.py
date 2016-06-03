@@ -28,9 +28,9 @@ class DBusObject(dbus.service.Object):
     """ Base class for dbus objects. """
     def __init__(self, manager):
         # pylint: disable=super-init-not-called
+        self._present = True
         self._init_dbus_object()
         self._manager = manager  # provides ObjectManager interface
-        self._present = True
 
     # This is here to make it easier to prevent the dbus.service.Object
     # constructor from running during unit testing.
@@ -47,10 +47,7 @@ class DBusObject(dbus.service.Object):
     @present.setter
     def present(self, state):
         """ Indicate whether the object is in blivet's current view. """
-        conn = self.connection
-        self.remove_from_connection()
         self._present = state
-        self.add_to_connection(conn, self.object_path)
 
     def remove_from_connection(self, connection=None, path=None):
         super().remove_from_connection(connection=connection, path=path)
