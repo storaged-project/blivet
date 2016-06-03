@@ -118,6 +118,9 @@ def _get_candidate_disks(storage):
     """
     disks = []
     for disk in storage.partitioned:
+        if not disk.format.supported:
+            continue
+
         if storage.config.clear_part_disks and \
            (disk.name not in storage.config.clear_part_disks):
             continue
@@ -433,7 +436,7 @@ def do_reqpart(storage, requests):
                         or `~.storage.autopart_requests` by default
        :type requests: list of :class:`~.partspec.PartSpec` instances
     """
-    if not storage.partitioned:
+    if not any(d.format.supported for d in storage.partitioned):
         raise NoDisksError(_("No usable disks selected"))
 
     disks = _get_candidate_disks(storage)
@@ -475,7 +478,7 @@ def do_autopart(storage, data, min_luks_entropy=None):
     log.debug("clear_part_disks: %s", storage.config.clear_part_disks)
     log.debug("autopart_requests:\n%s", "".join([str(p) for p in storage.autopart_requests]))
     log.debug("storage.disks: %s", [d.name for d in storage.disks])
-    log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned])
+    log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned if d.format.supported])
     log.debug("all names: %s", [d.name for d in storage.devices])
     log.debug("boot disk: %s", getattr(storage.boot_disk, "name", None))
 
@@ -485,7 +488,7 @@ def do_autopart(storage, data, min_luks_entropy=None):
     if not storage.do_autopart:
         return
 
-    if not storage.partitioned:
+    if not any(d.format.supported for d in storage.partitioned):
         raise NoDisksError(_("No usable disks selected"))
 
     if min_luks_entropy is not None:
