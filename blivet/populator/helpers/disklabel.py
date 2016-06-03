@@ -29,7 +29,6 @@ from gi.repository import BlockDev as blockdev
 from ... import formats
 from ... import udev
 from ...errors import InvalidDiskLabelError
-from ...i18n import _
 from ...storage_log import log_exception_info, log_method_call
 from .formatpopulator import FormatPopulator
 
@@ -94,9 +93,7 @@ class DiskLabelFormatPopulator(FormatPopulator):
             fmt = formats.get_format("disklabel", **kwargs)
         except InvalidDiskLabelError as e:
             log.info("no usable disklabel on %s", self.device.name)
-            if disklabel_type == "gpt":
-                log.debug(e)
-                self.device.format = formats.get_format(_("Invalid Disk Label"))
+            log.debug(e)
         else:
             self.device.format = fmt
 

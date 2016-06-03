@@ -710,11 +710,12 @@ class StorageDevice(Device):
             elif fmt.min_size and fmt.min_size > self.size:
                 raise errors.DeviceError("device is too small for new format")
 
-        callbacks.format_removed(device=self, fmt=self._format)
-        self._format = fmt
-        self._format.device = self.path
-        self._update_netdev_mount_option()
-        callbacks.format_added(device=self, fmt=self._format)
+        if self._format != fmt:
+            callbacks.format_removed(device=self, fmt=self._format)
+            self._format = fmt
+            self._format.device = self.path
+            self._update_netdev_mount_option()
+            callbacks.format_added(device=self, fmt=self._format)
 
     def _update_netdev_mount_option(self):
         """ Fix mount options to include or exclude _netdev as appropriate. """

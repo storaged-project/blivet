@@ -44,7 +44,8 @@ class ObjectManager(dbus.service.Object):
         self._objects.remove(obj)
         del self._by_id[obj.id]
         del self._by_path[obj.object_path]
-        self.InterfacesRemoved(obj.object_path, obj.interface)
+        self.InterfacesRemoved(obj.object_path, [obj.interface])
+        obj.remove_from_connection()
 
     def add_object(self, obj):
         self._objects.append(obj)

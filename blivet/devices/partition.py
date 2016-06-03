@@ -156,7 +156,17 @@ class PartitionDevice(StorageDevice):
         #        For existing partitions we will get the size from
         #        parted.
 
-        if self.exists and not flags.testing:
+        # We can't rely on self.disk.format.supported because self.disk may get reformatted
+        # in the course of things.
+        self.disklabel_supported = True
+        if self.exists and self.disk.partitioned and not self.disk.format.supported:
+            log.info("partition %s disklabel is unsupported", self.name)
+            self.disklabel_supported = False
+        elif self.exists and not flags.testing:
+            if not self.disk.partitioned:
+                self.disklabel_supported = False
+                raise errors.DeviceError("disk has wrong format '%s'" % self.disk.format.type)
+
             log.debug("looking up parted Partition: %s", self.path)
             self._parted_partition = self.disk.format.parted_disk.getPartitionByPath(self.path)
             if not self._parted_partition:
@@ -351,7 +361,7 @@ class PartitionDevice(StorageDevice):
     def pre_commit_fixup(self):
         """ Re-get self.parted_partition from the original disklabel. """
         log_method_call(self, self.name)
-        if not self.exists:
+        if not self.exists or not self.disklabel_supported:
             return
 
         # find the correct partition on the original parted.Disk since the
@@ -386,7 +396,9 @@ class PartitionDevice(StorageDevice):
         self._name = value  # actual name setting is done by parted
 
     def update_name(self):
-        if self.parted_partition is None:
+        if self.disk and not self.disklabel_supported:
+            pass
+        elif self.parted_partition is None:
             self.name = self.req_name
         else:
             self.name = device_path_to_name(self.parted_partition.path)
@@ -473,7 +485,7 @@ class PartitionDevice(StorageDevice):
 
     @property
     def is_magic(self):
-        if not self.disk:
+        if not self.disk or not self.disklabel_supported:
             return False
 
         number = getattr(self.parted_partition, "number", -1)
@@ -481,7 +493,7 @@ class PartitionDevice(StorageDevice):
         return (number == magic)
 
     def remove_hook(self, modparent=True):
-        if modparent:
+        if modparent and self.disklabel_supported:
             # if this partition hasn't been allocated it could not have
             # a disk attribute
             if not self.disk:
@@ -525,7 +537,7 @@ class PartitionDevice(StorageDevice):
             size, partition type, flags
         """
         log_method_call(self, self.name, exists=self.exists)
-        if not self.exists:
+        if not self.exists or not self.disklabel_supported:
             return
 
         self._size = Size(self.parted_partition.getLength(unit="B"))
@@ -699,6 +711,9 @@ class PartitionDevice(StorageDevice):
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
+        if not self.disklabel_supported:
+            return
+
         # we should have already set self.parted_partition to point to the
         # partition on the original disklabel
         self.disk.original_format.remove_partition(self.parted_partition)
@@ -722,6 +737,9 @@ class PartitionDevice(StorageDevice):
             self.disk.format.commit()
 
     def _post_destroy(self):
+        if not self.disklabel_supported:
+            return
+
         super(PartitionDevice, self)._post_destroy()
         if isinstance(self.disk, DMDevice):
             udev.settle()
@@ -867,7 +885,7 @@ class PartitionDevice(StorageDevice):
     @property
     def resizable(self):
         return super(PartitionDevice, self).resizable and \
-            self.disk.type != 'dasd'
+            self.disk.type != 'dasd' and self.disklabel_supported
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the

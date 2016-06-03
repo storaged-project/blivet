@@ -623,17 +623,29 @@ def device_is_biosraid_member(info):
 
 
 def device_get_partition_disk(info):
+    """ Return the (friendly) name of the given partition's disk. """
     if not (device_is_partition(info) or device_is_dm_partition(info)):
         return None
 
     disk = None
     majorminor = info.get("ID_PART_ENTRY_DISK")
+    sysfs_path = device_get_sysfs_path(info)
+    slaves_dir = "%s/slaves" % sysfs_path
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
             if device.get("MAJOR") == major and device.get("MINOR") == minor:
                 disk = device_get_name(device)
                 break
+    elif device_is_dm_partition(info):
+        if os.path.isdir(slaves_dir):
+            parents = os.listdir(slaves_dir)
+            if len(parents) == 1:
+                disk = resolve_devspec(parents[0].replace('!', '/'))
+    else:
+        _disk = os.path.basename(os.path.dirname(sysfs_path).replace('!', '/'))
+        if info.sys_name.startswith(_disk):
+            disk = resolve_devspec(_disk)
 
     return disk
 

@@ -1891,7 +1891,7 @@ class InstallerStorage(Blivet):
         # partitions. This can still happen through the UI but it makes sense to
         # avoid it where possible.
         partitions = sorted(self.partitions,
-                            key=lambda p: p.parted_partition.number,
+                            key=lambda p: getattr(p.parted_partition, "number", 1),
                             reverse=True)
         for part in partitions:
             log.debug("clearpart: looking at %s", part.name)
@@ -1899,7 +1899,7 @@ class InstallerStorage(Blivet):
                 continue
 
             self.recursive_remove(part)
-            log.debug("partitions: %s", [p.getDeviceNodeName() for p in part.parted_partition.disk.partitions])
+            log.debug("partitions: %s", [p.name for p in part.disk.children])
 
         # now remove any empty extended partitions
         self.remove_empty_extended_partitions()
