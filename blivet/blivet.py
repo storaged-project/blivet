@@ -620,7 +620,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         # partitions. This can still happen through the UI but it makes sense to
         # avoid it where possible.
         partitions = sorted(self.partitions,
-                            key=lambda p: p.parted_partition.number,
+                            key=lambda p: getattr(p.parted_partition, "number", 1),
                             reverse=True)
         for part in partitions:
             log.debug("clearpart: looking at %s", part.name)
@@ -628,7 +628,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 continue
 
             self.recursive_remove(part)
-            log.debug("partitions: %s", [p.getDeviceNodeName() for p in part.parted_partition.disk.partitions])
+            log.debug("partitions: %s", [p.name for p in part.disk.children])
 
         # now remove any empty extended partitions
         self.remove_empty_extended_partitions()
@@ -1843,8 +1843,14 @@ class Blivet(object, metaclass=SynchronizedMeta):
                   MDRaidArrayDevice: ("RaidData", "raid"),
                   BTRFSDevice: ("BTRFSData", "btrfs")}
 
+        # list comprehension that builds device ancestors should not get None as a member
+        # when searching for bootloader devices
+        bootloader_devices = []
+        if self.bootloader_device is not None:
+            bootloader_devices.append(self.bootloader_device)
+
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootloader_devices
                            for a in d.ancestors))
 
         # devices which share information with their distinct raw device
