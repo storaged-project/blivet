@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.47
+Version: 0.61.15.48
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,38 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jun 03 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.48-1
+- Make sure the DM path exists before setting status True (bcl)
+  Resolves: rhbz#1325707
+- Try harder to identify a partition's disk when necessary. (dlehman)
+  Related: rhbz#1266199
+  Related: rhbz#1294081
+- Add some fallback methods for finding a partition's disk. (dlehman)
+  Related: rhbz#1266199
+  Related: rhbz#1294081
+- Add kwarg to udev.resolve_devspec to return canonical device name. (dlehman)
+  Related: rhbz#1266199
+  Related: rhbz#1294081
+- Don't let unsupported or broken disklabels get in the way. (dlehman)
+  Resolves: rhbz#1294081
+  Resolves: rhbz#1266199
+- Convert device_get_dm_partition_disk to not be dm-specific. (dlehman)
+  Related: rhbz#1266199
+  Related: rhbz#1294081
+- Add a tearDown method to StorageTestCase. (dlehman)
+  Related: rhbz#1266199
+  Related: rhbz#1294081
+- Continue with recursive teardown beyond inactive devices. (dlehman)
+  Related: rhbz#1182229
+  Resolves: rhbz#1322981
+- Revert "Do not break the chain when an inactive device is torn down
+  recursively" (dlehman)
+  Related: rhbz#1322981
+- Don't traceback if we fail to examine an md member. (dlehman)
+  Resolves: rhbz#1196666
+- Disklabel commit errors can occur for disks, too. (dlehman)
+  Resolves: rhbz#1192571
+
 * Fri May 27 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.47-1
 - Remember VG name even if it seems to have no PVs (vpodzime)
   Resolves: rhbz#1245038
