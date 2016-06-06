@@ -69,7 +69,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.clear_part_choice = None
         self.encrypted_autopart = False
         self.encryption_passphrase = None
-        self.autopart_type = AUTOPART_TYPE_LVM
         self.encryption_cipher = None
         self.escrow_certificates = {}
         self.autopart_escrow_cert = None
