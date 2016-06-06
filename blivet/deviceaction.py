@@ -46,13 +46,15 @@ ACTION_TYPE_RESIZE = 500
 ACTION_TYPE_CREATE = 100
 ACTION_TYPE_ADD = 50
 ACTION_TYPE_REMOVE = 10
+ACTION_TYPE_CONFIGURE = 5
 
 action_strings = {ACTION_TYPE_NONE: "None",
                   ACTION_TYPE_DESTROY: "Destroy",
                   ACTION_TYPE_RESIZE: "Resize",
                   ACTION_TYPE_CREATE: "Create",
                   ACTION_TYPE_ADD: "Add",
-                  ACTION_TYPE_REMOVE: "Remove"}
+                  ACTION_TYPE_REMOVE: "Remove",
+                  ACTION_TYPE_CONFIGURE: "Configure"}
 
 ACTION_OBJECT_NONE = 0
 ACTION_OBJECT_FORMAT = 1
@@ -214,6 +216,10 @@ class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
     @property
     def is_remove(self):
         return self.type == ACTION_TYPE_REMOVE
+
+    @property
+    def is_configure(self):
+        return self.type == ACTION_TYPE_CONFIGURE
 
     @property
     def is_device(self):
@@ -981,3 +987,105 @@ class ActionRemoveMember(DeviceAction):
             retval = True
 
         return retval
+
+
+class ActionConfigureFormat(DeviceAction):
+
+    """ An action change of an attribute of device format """
+    type = ACTION_TYPE_CONFIGURE
+    obj = ACTION_OBJECT_FORMAT
+    type_desc_str = N_("configrure format")
+
+    def __init__(self, device, attr, new_value):
+        super().__init__(device)
+
+        self.device = device
+        self.attr = attr
+        self.new_value = new_value
+
+        config_actions_map = getattr(self.device.format, "config_actions_map", None)
+        if config_actions_map is None or self.attr not in config_actions_map.keys():
+            raise ValueError("Format %s doesn't support changing '%s' attribute "
+                             "using configuration actions" % (self.device.format.type, self.attr))
+
+        if config_actions_map[self.attr] is None:
+            self._execute = None
+        else:
+            self._execute = getattr(self.device.format, config_actions_map[self.attr], None)
+            if not callable(self._execute):
+                raise RuntimeError("Invalid method for changing format attribute '%s'" % self.attr)
+
+        self.old_value = getattr(self.device.format, self.attr)
+
+        if self._execute:
+            self._execute(dry_run=True)
+
+    def apply(self):
+        if self._applied:
+            return
+
+        setattr(self.device.format, self.attr, self.new_value)
+        super().apply()
+
+    def cancel(self):
+        if not self._applied:
+            return
+
+        setattr(self.device.format, self.attr, self.old_value)
+
+    def execute(self, callbacks=None):
+        super().execute(callbacks=callbacks)
+
+        if self._execute is not None:
+            self._execute(dry_run=False)
+
+
+class ActionConfigureDevice(DeviceAction):
+
+    """ An action change of an attribute of a device """
+    type = ACTION_TYPE_CONFIGURE
+    obj = ACTION_OBJECT_FORMAT
+    type_desc_str = N_("configrure device")
+
+    def __init__(self, device, attr, new_value):
+        super().__init__(device)
+
+        self.device = device
+        self.attr = attr
+        self.new_value = new_value
+
+        config_actions_map = getattr(self.device, "config_actions_map", None)
+        if config_actions_map is None or self.attr not in config_actions_map.keys():
+            raise ValueError("Device %s doesn't support changing '%s' attribute "
+                             "using configuration actions" % (self.device.type, self.attr))
+
+        if config_actions_map[self.attr] is None:
+            self._execute = None
+        else:
+            self._execute = getattr(self.device, config_actions_map[self.attr], None)
+            if not callable(self._execute):
+                raise RuntimeError("Invalid method for changing attribute '%s'" % self.attr)
+
+        self.old_value = getattr(self.device, self.attr)
+
+        if self._execute:
+            self._execute(dry_run=True)
+
+    def apply(self):
+        if self._applied:
+            return
+
+        setattr(self.device, self.attr, self.new_value)
+        super().apply()
+
+    def cancel(self):
+        if not self._applied:
+            return
+
+        setattr(self.device, self.attr, self.old_value)
+
+    def execute(self, callbacks=None):
+        super().execute(callbacks=callbacks)
+
+        if self._execute is not None:
+            self._execute(dry_run=False)
