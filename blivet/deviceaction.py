@@ -33,6 +33,7 @@ from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 from .callbacks import WaitForEntropyData, ReportProgressData
 from .size import Size
 from .threads import SynchronizedMeta
+from .static_data import luks_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -387,8 +388,8 @@ class ActionDestroyDevice(DeviceAction):
         if action.device.depends_on(self.device) and action.is_destroy:
             rc = True
         elif (action.is_destroy and action.is_device and
-              isinstance(self.device, PartitionDevice) and
-              isinstance(action.device, PartitionDevice) and
+              isinstance(self.device, PartitionDevice) and self.device.disklabel_supported and
+              isinstance(action.device, PartitionDevice) and action.device.disklabel_supported and
               self.device.disk == action.device.disk):
             # remove partitions in descending numerical order
             self_num = self.device.parted_partition.number
@@ -563,7 +564,7 @@ class ActionCreateFormat(DeviceAction):
             msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_pre(CreateFormatPreData(msg))
 
-        if isinstance(self.device, PartitionDevice):
+        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
             for flag in partitionFlag.keys():
                 # Keep the LBA flag on pre-existing partitions
                 if flag in [PARTITION_LBA, self.format.parted_flag]:
@@ -580,8 +581,12 @@ class ActionCreateFormat(DeviceAction):
             udev.settle()
 
         if isinstance(self.device.format, luks.LUKS):
+            if self.device.format.min_luks_entropy is None:
+                min_required_entropy = luks_data.min_entropy
+            else:
+                min_required_entropy = self.device.format.min_luks_entropy
+
             # LUKS needs to wait for random data entropy if it is too low
-            min_required_entropy = self.device.format.min_luks_entropy
             current_entropy = get_current_entropy()
             if current_entropy < min_required_entropy:
                 force_cont = False
@@ -595,7 +600,7 @@ class ActionCreateFormat(DeviceAction):
                     log.warning("Forcing LUKS creation regardless of enough "
                                 "random data entropy (%d/%d)",
                                 get_current_entropy(), min_required_entropy)
-                    self.device.format.min_luks_entropy = 0
+                    luks_data.min_entropy = 0
 
         self.device.setup()
         self.device.format.create(device=self.device.path,

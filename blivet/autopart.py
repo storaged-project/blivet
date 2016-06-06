@@ -31,6 +31,7 @@ from .errors import NoDisksError, NotEnoughFreeSpaceError
 from .formats import get_format
 from .partitioning import do_partitioning, get_free_regions, grow_lvm
 from .i18n import _
+from .static_data import luks_data
 
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
@@ -117,6 +118,9 @@ def _get_candidate_disks(storage):
     """
     disks = []
     for disk in storage.partitioned:
+        if not disk.format.supported:
+            continue
+
         if storage.config.clear_part_disks and \
            (disk.name not in storage.config.clear_part_disks):
             continue
@@ -136,7 +140,7 @@ def _get_candidate_disks(storage):
     return disks
 
 
-def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
+def _schedule_implicit_partitions(storage, disks):
     """ Schedule creation of a lvm/btrfs member partitions for autopart.
 
         We create one such partition on each disk. They are not allocated until
@@ -146,9 +150,6 @@ def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
         :type storage: :class:`~.Blivet`
         :param disks: list of partitioned disks with free space
         :type disks: list of :class:`~.devices.StorageDevice`
-        :param min_luks_entropy: minimum entropy in bits required for
-                                 luks format creation
-        :type min_luks_entropy: int
         :returns: list of newly created (unallocated) partitions
         :rtype: list of :class:`~.devices.PartitionDevice`
     """
@@ -162,11 +163,11 @@ def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
     for disk in disks:
         if storage.encrypted_autopart:
             fmt_type = "luks"
-            fmt_args = {"passphrase": storage.encryption_passphrase,
+            fmt_args = {"passphrase": luks_data.encryption_passphrase,
                         "cipher": storage.encryption_cipher,
                         "escrow_cert": storage.autopart_escrow_cert,
                         "add_backup_passphrase": storage.autopart_add_backup_passphrase,
-                        "min_luks_entropy": min_luks_entropy}
+                        "min_luks_entropy": luks_data.min_entropy}
         else:
             if storage.autopart_type in (AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP):
                 fmt_type = "lvmpv"
@@ -183,7 +184,7 @@ def _schedule_implicit_partitions(storage, disks, min_luks_entropy=0):
     return devs
 
 
-def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, requests=None):
+def _schedule_partitions(storage, disks, implicit_devices, requests=None):
     """ Schedule creation of autopart/reqpart partitions.
 
         This only schedules the requests for actual partitions.
@@ -192,9 +193,6 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
         :type storage: :class:`~.Blivet`
         :param disks: list of partitioned disks with free space
         :type disks: list of :class:`~.devices.StorageDevice`
-        :param min_luks_entropy: minimum entropy in bits required for
-                                 luks format creation
-        :type min_luks_entropy: int
         :param requests: list of partitioning requests to operate on,
                          or `~.storage.autopart_requests` by default
         :type requests: list of :class:`~.partspec.PartSpec` instances
@@ -279,11 +277,11 @@ def _schedule_partitions(storage, disks, implicit_devices, min_luks_entropy=0, r
 
         if request.encrypted and storage.encrypted_autopart:
             fmt_type = "luks"
-            fmt_args = {"passphrase": storage.encryption_passphrase,
+            fmt_args = {"passphrase": luks_data.encryption_passphrase,
                         "cipher": storage.encryption_cipher,
                         "escrow_cert": storage.autopart_escrow_cert,
                         "add_backup_passphrase": storage.autopart_add_backup_passphrase,
-                        "min_luks_entropy": min_luks_entropy}
+                        "min_luks_entropy": luks_data.min_entropy}
         else:
             fmt_type = request.fstype
             fmt_args = {}
@@ -438,7 +436,7 @@ def do_reqpart(storage, requests):
                         or `~.storage.autopart_requests` by default
        :type requests: list of :class:`~.partspec.PartSpec` instances
     """
-    if not storage.partitioned:
+    if not any(d.format.supported for d in storage.partitioned):
         raise NoDisksError(_("No usable disks selected"))
 
     disks = _get_candidate_disks(storage)
@@ -450,7 +448,7 @@ def do_reqpart(storage, requests):
     _schedule_partitions(storage, disks, [], requests=requests)
 
 
-def do_autopart(storage, data, min_luks_entropy=0):
+def do_autopart(storage, data, min_luks_entropy=None):
     """ Perform automatic partitioning.
 
         :param storage: a :class:`~.Blivet` instance
@@ -458,7 +456,7 @@ def do_autopart(storage, data, min_luks_entropy=0):
         :param data: kickstart data
         :type data: :class:`pykickstart.BaseHandler`
         :param min_luks_entropy: minimum entropy in bits required for
-                                 luks format creation
+                                 luks format creation; uses default when None
         :type min_luks_entropy: int
 
         :attr:`Blivet.do_autopart` controls whether this method creates the
@@ -480,7 +478,7 @@ def do_autopart(storage, data, min_luks_entropy=0):
     log.debug("clear_part_disks: %s", storage.config.clear_part_disks)
     log.debug("autopart_requests:\n%s", "".join([str(p) for p in storage.autopart_requests]))
     log.debug("storage.disks: %s", [d.name for d in storage.disks])
-    log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned])
+    log.debug("storage.partitioned: %s", [d.name for d in storage.partitioned if d.format.supported])
     log.debug("all names: %s", [d.name for d in storage.devices])
     log.debug("boot disk: %s", getattr(storage.boot_disk, "name", None))
 
@@ -490,19 +488,21 @@ def do_autopart(storage, data, min_luks_entropy=0):
     if not storage.do_autopart:
         return
 
-    if not storage.partitioned:
+    if not any(d.format.supported for d in storage.partitioned):
         raise NoDisksError(_("No usable disks selected"))
 
+    if min_luks_entropy is not None:
+        luks_data.min_entropy = min_luks_entropy
+
     disks = _get_candidate_disks(storage)
-    devs = _schedule_implicit_partitions(storage, disks, min_luks_entropy)
+    devs = _schedule_implicit_partitions(storage, disks)
     log.debug("candidate disks: %s", disks)
     log.debug("devs: %s", devs)
 
     if disks == []:
         raise NotEnoughFreeSpaceError(_("Not enough free space on disks for "
                                         "automatic partitioning"))
-
-    devs = _schedule_partitions(storage, disks, devs, min_luks_entropy=min_luks_entropy)
+    devs = _schedule_partitions(storage, disks, devs)
 
     # run the autopart function to allocate and grow partitions
     do_partitioning(storage)

@@ -34,6 +34,7 @@ from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
 from .size import Size
+from .static_data import luks_data
 
 import gi
 gi.require_version("BlockDev", "1.0")
@@ -254,7 +255,7 @@ class DeviceFactory(object):
                  label=None, raid_level=None, encrypted=False,
                  container_encrypted=False, container_name=None,
                  container_raid_level=None, container_size=SIZE_POLICY_AUTO,
-                 name=None, device=None, min_luks_entropy=0):
+                 name=None, device=None, min_luks_entropy=None):
         """
             :param storage: a Blivet instance
             :type storage: :class:`~.Blivet`
@@ -336,7 +337,11 @@ class DeviceFactory(object):
 
         self.child_factory = None
         self.parent_factory = None
-        self.min_luks_entropy = min_luks_entropy
+
+        if min_luks_entropy is None:
+            self.min_luks_entropy = luks_data.min_entropy
+        else:
+            self.min_luks_entropy = min_luks_entropy
 
         # used for error recovery
         self.__devices = []
@@ -1049,7 +1054,7 @@ class PartitionSetFactory(PartitionFactory):
         # drop any new disks that don't have free space
         min_free = min(Size("500MiB"), self.parent_factory.size)
         add_disks = [d for d in add_disks if d.partitioned and
-                     d.format.free >= min_free]
+                     d.format.supported and d.format.free >= min_free]
 
         log.debug("add_disks: %s", [d.name for d in add_disks])
         log.debug("remove_disks: %s", [d.name for d in remove_disks])

@@ -54,6 +54,7 @@ from .zfcp import zfcp
 from . import devicefactory
 from . import get_bootloader, get_sysroot, short_product_name, __version__
 from .threads import SynchronizedMeta
+from .static_data import luks_data
 
 from .i18n import _
 
@@ -127,7 +128,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.clear_part_choice = None
         self.encrypted_autopart = False
         self.autopart_type = AUTOPART_TYPE_LVM
-        self.encryption_passphrase = None
         self.encryption_cipher = None
         self.escrow_certificates = {}
         self.autopart_escrow_cert = None
@@ -135,7 +135,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.autopart_requests = []
         self.edd_dict = {}
 
-        self.__luks_devs = {}
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
         self._default_boot_fstype = None
@@ -145,8 +144,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         # these will both be empty until our reset method gets called
         self.devicetree = DeviceTree(conf=self.config,
-                                     passphrase=self.encryption_passphrase,
-                                     luks_dict=self.__luks_devs)
+                                     passphrase=luks_data.encryption_passphrase,
+                                     luks_dict=None)
         self.fsset = FSSet(self.devicetree)
         self.roots = []
         self.services = set()
@@ -253,10 +252,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
         log.info("resetting Blivet (version %s) instance %s", __version__, self)
         if flags.installer_mode:
             # save passphrases for luks devices so we don't have to reprompt
-            self.encryption_passphrase = None
+            luks_data.encryption_passphrase = None
             for device in self.devices:
                 if device.format.type == "luks" and device.format.exists:
-                    self.save_passphrase(device)
+                    luks_data.save_passphrase(device)
 
         if self.ksdata:
             self.config.update(self.ksdata)
@@ -267,8 +266,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
             zfcp.startup()
 
         self.devicetree.reset(conf=self.config,
-                              passphrase=self.encryption_passphrase,
-                              luks_dict=self.__luks_devs)
+                              passphrase=luks_data.encryption_passphrase,
+                              luks_dict=luks_data.luks_devs)
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.fsset = FSSet(self.devicetree)
         self.edd_dict = get_edd_dict(self.partitioned)
@@ -495,6 +494,17 @@ class Blivet(object, metaclass=SynchronizedMeta):
         swaps.sort(key=lambda d: d.name)
         return swaps
 
+    @property
+    def encryption_passphrase(self):
+        return luks_data.encryption_passphrase
+
+    @encryption_passphrase.setter
+    def encryption_passphrase(self, value):
+        luks_data.encryption_passphrase = value
+
+    def save_passphrase(self, device):
+        luks_data.save_passphrase(device)
+
     def should_clear(self, device, **kwargs):
         """ Return True if a clearpart settings say a device should be cleared.
 
@@ -610,7 +620,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         # partitions. This can still happen through the UI but it makes sense to
         # avoid it where possible.
         partitions = sorted(self.partitions,
-                            key=lambda p: p.parted_partition.number,
+                            key=lambda p: getattr(p.parted_partition, "number", 1),
                             reverse=True)
         for part in partitions:
             log.debug("clearpart: looking at %s", part.name)
@@ -618,7 +628,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 continue
 
             self.recursive_remove(part)
-            log.debug("partitions: %s", [p.getDeviceNodeName() for p in part.parted_partition.disk.partitions])
+            log.debug("partitions: %s", [p.name for p in part.disk.children])
 
         # now remove any empty extended partitions
         self.remove_empty_extended_partitions()
@@ -1322,13 +1332,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return name
 
-    def save_passphrase(self, device):
-        """ Save a device's LUKS passphrase in case of reset. """
-        passphrase = device.format._LUKS__passphrase
-        if passphrase:
-            self.__luks_devs[device.format.uuid] = passphrase
-            self.devicetree.save_luks_passphrase(device)
-
     def setup_disk_images(self):
         self.devicetree.set_disk_images(self.config.disk_images)
         self.devicetree.setup_disk_images()
@@ -1840,8 +1843,14 @@ class Blivet(object, metaclass=SynchronizedMeta):
                   MDRaidArrayDevice: ("RaidData", "raid"),
                   BTRFSDevice: ("BTRFSData", "btrfs")}
 
+        # list comprehension that builds device ancestors should not get None as a member
+        # when searching for bootloader devices
+        bootloader_devices = []
+        if self.bootloader_device is not None:
+            bootloader_devices.append(self.bootloader_device)
+
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootloader_devices
                            for a in d.ancestors))
 
         # devices which share information with their distinct raw device

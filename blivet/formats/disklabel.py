@@ -69,6 +69,7 @@ class DiskLabel(DeviceFormat):
         self._parted_device = None
         self._parted_disk = None
         self._orig_parted_disk = None
+        self._supported = True
 
         self._disk_label_alignment = None
         self._minimal_alignment = None
@@ -76,7 +77,12 @@ class DiskLabel(DeviceFormat):
 
         if self.parted_device:
             # set up the parted objects and raise exception on failure
-            self.update_orig_parted_disk()
+            try:
+                self.update_orig_parted_disk()
+            except Exception as e:  # pylint: disable=broad-except
+                self._supported = False
+                self._label_type = kwargs.get("label_type") or ""
+                log.warning("error setting up disklabel object on %s: %s", self.device, str(e))
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Disklabel instance.
@@ -122,6 +128,10 @@ class DiskLabel(DeviceFormat):
                   "grain_size": self.get_alignment().grainSize})
         return d
 
+    @property
+    def supported(self):
+        return self._supported
+
     def update_parted_disk(self):
         """ re-read the disklabel from the device """
         self._parted_disk = None
@@ -145,13 +155,16 @@ class DiskLabel(DeviceFormat):
 
     @property
     def parted_disk(self):
-        if not self._parted_disk:
+        if not self.parted_device:
+            return None
+
+        if not self._parted_disk and self.supported:
             if self.exists:
                 try:
                     self._parted_disk = parted.Disk(device=self.parted_device)
-                except (_ped.DiskLabelException, _ped.IOException,
-                        NotImplementedError) as e:
-                    raise InvalidDiskLabelError(e)
+                except (_ped.DiskLabelException, _ped.IOException, NotImplementedError):
+                    self._supported = False
+                    return None
 
                 if self._parted_disk.type == "loop":
                     # When the device has no partition table but it has a FS,
@@ -182,7 +195,7 @@ class DiskLabel(DeviceFormat):
             else:
                 log.debug("Did not change pmbr_boot on %s", self._parted_disk)
 
-        udev.settle(quiet=True)
+            udev.settle(quiet=True)
         return self._parted_disk
 
     @property
@@ -207,6 +220,9 @@ class DiskLabel(DeviceFormat):
     @property
     def label_type(self):
         """ The disklabel type (eg: 'gpt', 'msdos') """
+        if not self.supported:
+            return self._label_type
+
         try:
             lt = self.parted_disk.type
         except Exception:  # pylint: disable=broad-except
@@ -224,7 +240,12 @@ class DiskLabel(DeviceFormat):
 
     @property
     def name(self):
-        return "%s (%s)" % (_(self._name), self.label_type.upper())
+        if self.supported:
+            _str = "%(name)s (%(type)s)"
+        else:
+            _str = _("Unsupported %(name)s")
+
+        return _str % {"name": _(self._name), "type": self.label_type.upper()}
 
     @property
     def size(self):
@@ -351,7 +372,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def partitions(self):
-        return self.parted_disk.partitions
+        return getattr(self.parted_disk, "partitions", [])
 
     def _get_disk_label_alignment(self):
         """ Return the disklabel's required alignment for new partitions.
@@ -361,7 +382,7 @@ class DiskLabel(DeviceFormat):
         if not self._disk_label_alignment:
             try:
                 self._disk_label_alignment = self.parted_disk.partitionAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 self._disk_label_alignment = parted.Alignment(offset=0,
                                                               grainSize=1)
 
@@ -376,7 +397,7 @@ class DiskLabel(DeviceFormat):
             disklabel_alignment = self._get_disk_label_alignment()
             try:
                 minimal_alignment = self.parted_device.minimumAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 # handle this in the same place we'd handle an ArithmeticError
                 minimal_alignment = None
 
@@ -403,7 +424,7 @@ class DiskLabel(DeviceFormat):
             disklabel_alignment = self._get_disk_label_alignment()
             try:
                 optimal_alignment = self.parted_device.optimumAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 # if there is no optimal alignment, use the minimal alignment,
                 # which has already been intersected with the disklabel
                 # alignment
@@ -473,7 +494,12 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        return sum((Size(f.getLength(unit="B")) for f in self.parted_disk.getFreeSpacePartitions()), Size(0))
+        if self.parted_disk is not None:
+            free_areas = self.parted_disk.getFreeSpacePartitions()
+        else:
+            free_areas = []
+
+        return sum((Size(f.getLength(unit="B")) for f in free_areas), Size(0))
 
     @property
     def magic_partition_number(self):
