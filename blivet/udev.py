@@ -41,7 +41,7 @@ device_name_blacklist = []
 
 def get_device(sysfs_path):
     try:
-        dev = pyudev.Device.from_sys_path(global_udev, sysfs_path)
+        dev = pyudev.Devices.from_sys_path(global_udev, sysfs_path)
     except pyudev.DeviceNotFoundError as e:
         log.error(e)
         dev = None

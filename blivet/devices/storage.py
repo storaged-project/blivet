@@ -280,8 +280,8 @@ class StorageDevice(Device):
             raise errors.DeviceError("device has not been created", self.name)
 
         try:
-            udev_device = pyudev.Device.from_device_file(udev.global_udev,
-                                                         self.path)
+            udev_device = pyudev.Devices.from_device_file(udev.global_udev,
+                                                          self.path)
 
         # from_device_file() does not process exceptions but just propagates
         # any errors that are raised.
