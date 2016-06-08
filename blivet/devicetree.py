@@ -904,7 +904,7 @@ class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
             self.luks_dict_passed = luks_dict
 
         DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=luks_dict_passed, disk_images=disk_images)
+        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=self.luks_dict_passed, disk_images=disk_images)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ

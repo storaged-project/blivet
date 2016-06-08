@@ -1622,8 +1622,14 @@ class InstallerStorage(Blivet):
                   MDRaidArrayDevice: ("RaidData", "raid"),
                   BTRFSDevice: ("BTRFSData", "btrfs")}
 
+        # list comprehension that builds device ancestors should not get None as a member
+        # when searching for bootloader devices
+        bootloader_devices = []
+        if self.bootloader_device is not None:
+            bootloader_devices.append(self.bootloader_device)
+
         # make a list of ancestors of all used devices
-        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps
+        devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootloader_devices
                            for a in d.ancestors))
 
         # devices which share information with their distinct raw device

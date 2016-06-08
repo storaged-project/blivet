@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import PropertyMock
 from unittest.mock import patch
 from pykickstart.version import returnClassForVersion
-from blivet import Blivet
+from blivet.osinstall import InstallerStorage
 from blivet.devices import PartitionDevice
 from blivet import formats
 from blivet.size import Size
@@ -18,14 +18,14 @@ class BlivetTestCase(unittest.TestCase):
         in the kickstart data
         '''
 
-        with patch('blivet.blivet.Blivet.bootloader_device', new_callable=PropertyMock) as mock_bootloader_device:
-            with patch('blivet.blivet.Blivet.mountpoints', new_callable=PropertyMock) as mock_mountpoints:
+        with patch('blivet.osinstall.InstallerStorage.bootloader_device', new_callable=PropertyMock) as mock_bootloader_device:
+            with patch('blivet.osinstall.InstallerStorage.mountpoints', new_callable=PropertyMock) as mock_mountpoints:
                 # set up prepboot partition
                 bootloader_device_obj = PartitionDevice("test_partition_device")
                 bootloader_device_obj.size = Size('5 MiB')
                 bootloader_device_obj.format = formats.get_format("prepboot")
 
-                blivet_obj = Blivet()
+                blivet_obj = InstallerStorage()
 
                 # mountpoints must exist for update_ksdata to run
                 mock_bootloader_device.return_value = bootloader_device_obj
