@@ -30,7 +30,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, getFormat
-from ..size import Size
+from ..size import Size, ROUND_DOWN
 
 from ..devicelibs import dm
 
@@ -882,7 +882,8 @@ class PartitionDevice(StorageDevice):
         data.resize = (self.exists and self.targetSize and
                        self.targetSize != self.currentSize)
         if not self.exists:
-            data.size = self.req_base_size.convertTo(spec="MiB")
+            # round this to nearest MiB before doing anything else
+            data.size = self.req_base_size.roundToNearest(spec="MiB", rounding=ROUND_DOWN).convertTo(spec="MiB")
             data.grow = self.req_grow
             if self.req_grow:
                 data.maxSizeMB = self.req_max_size.convertTo(spec="MiB")
@@ -895,4 +896,6 @@ class PartitionDevice(StorageDevice):
             data.onPart = self.name                     # by-id
 
             if data.resize:
-                data.size = self.size.convertTo(spec="MiB")
+                # on s390x in particular, fractional sizes are reported, which
+                # cause issues when writing to ks.cfg
+                data.size = self.size.roundToNearest(spec="Mib", rounding=ROUND_DOWN).convertTo(spec="MiB")
