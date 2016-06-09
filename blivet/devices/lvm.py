@@ -714,6 +714,11 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def data_vg_space_used(self):
         """ Space occupied by the data part of this LV, not including snapshots """
+        int_data_lvs = [lv for lv in self._internal_lvs
+                        if lv.int_lv_type in (LVMInternalLVtype.data, LVMInternalLVtype.image)]
+        if self.exists and int_data_lvs:
+            return sum(lv.vg_space_used for lv in int_data_lvs)
+
         rounded_size = self.vg.align(self.size, roundup=True)
         if self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
@@ -733,6 +738,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def metadata_vg_space_used(self):
         """ Space occupied by the metadata part(s) of this LV, not including snapshots """
+        if self.exists:
+            return sum((lv.vg_space_used for lv in self._internal_lvs
+                        if lv.is_internal_lv and lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log)),
+                       Size(0))
         non_raid_base = self.metadata_size + self.log_size
         if non_raid_base and self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
