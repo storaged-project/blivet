@@ -1414,8 +1414,15 @@ class LVMThinPoolMixin(object):
     @property
     def vg_space_used(self):
         # TODO: what about cached thin pools?
+
         space = self.data_vg_space_used + self.metadata_vg_space_used
-        space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
+
+        # We need to make the nonexisting thin pools pretend to be bigger so
+        # that their padding is not eaten by some other LV, but we need to
+        # provide consistent information with the LVM tools for existing
+        # thin pools.
+        if not self.exists:
+            space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
         return space
 
     def _create(self):
