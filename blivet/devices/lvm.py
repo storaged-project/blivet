@@ -431,12 +431,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ The amount of free space in this VG. """
         # TODO: just ask lvm if is_modified returns False
 
-        # get the number of disks used by PVs on RAID (if any)
-        raid_disks = 0
-        for pv in self.pvs:
-            if isinstance(pv, MDRaidArrayDevice):
-                raid_disks = max([raid_disks, len(pv.disks)])
-
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
         used = sum((lv.vg_space_used for lv in self.lvs), Size(0))
