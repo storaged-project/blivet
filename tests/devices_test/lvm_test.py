@@ -93,7 +93,8 @@ class LVMDeviceTest(unittest.TestCase):
                                     fmt=blivet.formats.get_format("xfs"),
                                     exists=False, cache_request=cache_req)
 
-        # the cache reserves space for the 8MiB pmspare internal LV
+        # the cache reserves space for its metadata from the requested size, but
+        # it may require (and does in this case) a pmspare LV to be allocated
         self.assertEqual(lv.vg_space_used, Size("504 MiB"))
 
         # check that the LV behaves like a cached LV
