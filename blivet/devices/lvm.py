@@ -942,38 +942,18 @@ class LVMInternalLVtype(Enum):
     unknown = 99
 
     @classmethod
-    def get_type(cls, lv_attr, lv_name):  # pylint: disable=unused-argument
-        attr_letters = {cls.data: ("T", "C"),
-                        cls.meta: ("e",),
-                        cls.log: ("l", "L"),
-                        cls.image: ("i",),
-                        cls.origin: ("o",),
-                        cls.cache_pool: ("C",)}
-
-        if lv_attr[0] == "C":
-            # cache pools and internal data LV of cache pools need a more complicated check
-            if lv_attr[6] == "C":
-                # target type == cache -> cache pool
-                return cls.cache_pool
-            else:
-                return cls.data
-
-        if lv_attr[0] == "r":
-            # internal LV which is at the same time a RAID LV
-            if lv_attr[6] == "C":
-                # part of the cache -> cache origin
-                # (cache pool cannot be a RAID LV, cache pool's data LV would
-                # have lv_attr[0] == "C", metadata LV would have
-                # lv_attr[0] == "e" even if they were RAID LVs)
-                return cls.origin
-            elif lv_attr[6] == "r":
-                # a data LV (metadata LV would have lv_attr[0] == "e")
-                return cls.data
-
-        for lv_type, letters in attr_letters.items():
-            if lv_attr[0] in letters:
-                return lv_type
-
+    def get_type(cls, lv_roles):
+        type_roles = {
+            cls.data: ["data"],
+            cls.meta: ["metadata"],
+            cls.log: ["log"],
+            cls.image: ["image"],
+            cls.origin: ["origin"],
+            cls.cache_pool: ["cache", "pool"]
+        }
+        for int_type, roles in type_roles.items():
+            if all(role in lv_roles for role in roles):
+                return int_type
         return cls.unknown
 
 

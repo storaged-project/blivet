@@ -288,7 +288,7 @@ class LVMFormatPopulator(FormatPopulator):
             lv_size = Size(lv.size)
             seg_type = lv.segtype
 
-            lv_type = LVMInternalLVtype.get_type(lv_attr, lv_name)
+            lv_type = LVMInternalLVtype.get_type(lv.roles.split(","))
             if lv_type is LVMInternalLVtype.unknown:
                 raise DeviceTreeError("Internal LVs of type '%s' are not supported" % lv_attr[0])
 
