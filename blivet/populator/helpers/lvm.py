@@ -339,7 +339,7 @@ class LVMFormatPopulator(FormatPopulator):
 
         # assign parents to internal LVs (and vice versa)
         for lv in orphan_lvs.values():
-            parent_lv = lvm.determine_parent_lv(vg_name, lv, all_lvs)
+            parent_lv = lvm.determine_parent_lv(lv, all_lvs, lv_info)
             if parent_lv:
                 lv.parent_lv = parent_lv
             else:
