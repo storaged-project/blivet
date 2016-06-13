@@ -1,5 +1,5 @@
 Summary:  A python module for system storage configuration
-Name: python-blivet
+Name: python-blivet1
 Url: http://fedoraproject.org/wiki/blivet
 Version: 1.20.3
 Release: 1%{?dist}
@@ -45,41 +45,8 @@ Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 The python-blivet package is a python module for examining and modifying
 storage configuration.
 
-%package -n %{realname}-data
-Summary: Data for the %{realname} python module.
-
-%description -n %{realname}-data
-The %{realname}-data package provides data files required by the %{realname}
-python module.
-
-%package -n python3-%{realname}
-Summary: A python3 package for examining and modifying storage configuration.
-Requires: python3
-Requires: python3-six
-Requires: python3-kickstart
-Requires: python3-pyudev
-Requires: parted >= %{partedver}
-Requires: python3-pyparted >= %{pypartedver}
-Requires: libselinux-python3
-Requires: python3-blockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
-Requires: util-linux >= %{utillinuxver}
-Requires: dosfstools
-Requires: e2fsprogs >= %{e2fsver}
-Requires: lsof
-Requires: python3-hawkey
-Requires: python3-gobject-base
-Requires: %{realname}-data = %{epoch}:%{version}-%{release}
-
-%description -n python3-%{realname}
-The python3-%{realname} is a python3 package for examining and modifying storage
-configuration.
-
 %prep
 %setup -q -n %{realname}-%{version}
-
-rm -rf %{py3dir}
-cp -a . %{py3dir}
 
 %build
 make
@@ -88,21 +55,10 @@ make
 make PYTHON=%{__python2} DESTDIR=%{buildroot} install
 %find_lang %{realname}
 
-pushd %{py3dir}
-make PYTHON=%{__python3} DESTDIR=%{buildroot} install
-popd
-
-%files
+%files -f %{realname}.lang
 %license COPYING
 %doc README ChangeLog examples
 %{python2_sitelib}/*
-
-%files -n %{realname}-data -f %{realname}.lang
-
-%files -n python3-%{realname}
-%license COPYING
-%doc README ChangeLog examples
-%{python3_sitelib}/*
 
 %changelog
 * Tue May 17 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.20.3-1
