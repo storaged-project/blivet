@@ -6,8 +6,8 @@
 TOP	 = ../..
 
 # What is this package?
-NLSPACKAGE	= blivet
-POTFILE		= $(NLSPACKAGE).pot
+NLSPACKAGE	= blivet1
+POTFILE		= blivet.pot
 INSTALL		= /usr/bin/install -c
 INSTALL_DATA	= $(INSTALL) -m 644
 INSTALL_DIR	= /usr/bin/install -d

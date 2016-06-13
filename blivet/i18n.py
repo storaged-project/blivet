@@ -34,7 +34,7 @@ def _get_translations():
     # on the other hand no one uses $LANGUAGE.
     lc_messages = locale.setlocale(locale.LC_MESSAGES, None)
     if lc_messages not in _cached_translations:
-        _cached_translations[lc_messages] = gettext.translation("blivet", fallback=True)
+        _cached_translations[lc_messages] = gettext.translation("blivet1", fallback=True)
     return _cached_translations[lc_messages]
 
 

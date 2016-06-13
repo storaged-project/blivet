@@ -7,6 +7,7 @@ Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
 %global realname blivet
+%global compatname blivet1
 Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{version}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
@@ -53,9 +54,9 @@ make
 
 %install
 make PYTHON=%{__python2} DESTDIR=%{buildroot} install
-%find_lang %{realname}
+%find_lang %{compatname}
 
-%files -f %{realname}.lang
+%files -f %{compatname}.lang
 %license COPYING
 %doc README ChangeLog examples
 %{python2_sitelib}/*
