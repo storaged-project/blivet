@@ -883,7 +883,7 @@ class PartitionDevice(StorageDevice):
                        self.targetSize != self.currentSize)
         if not self.exists:
             # round this to nearest MiB before doing anything else
-            data.size = self.req_base_size.roundToNearest(spec="MiB", rounding=ROUND_DOWN).convertTo(spec="MiB")
+            data.size = self.req_base_size.roundToNearest("MiB", rounding=ROUND_DOWN).convertTo(spec="MiB")
             data.grow = self.req_grow
             if self.req_grow:
                 data.maxSizeMB = self.req_max_size.convertTo(spec="MiB")
@@ -898,4 +898,4 @@ class PartitionDevice(StorageDevice):
             if data.resize:
                 # on s390x in particular, fractional sizes are reported, which
                 # cause issues when writing to ks.cfg
-                data.size = self.size.roundToNearest(spec="Mib", rounding=ROUND_DOWN).convertTo(spec="MiB")
+                data.size = self.size.roundToNearest("MiB", rounding=ROUND_DOWN).convertTo(spec="MiB")
