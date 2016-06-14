@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.49
+Version: 0.61.15.50
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Jun 14 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.50-1
+- Fix unit arg name in Size.roundToNearest call. (dlehman)
+  Resolves: rhbz#1346154
+  Related: rhbz#1257997
+
 * Fri Jun 10 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.49-1
 - Ignore errors activating unknown swap partitions (bcl)
   Resolves: rhbz#1330763
