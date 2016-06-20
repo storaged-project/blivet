@@ -112,23 +112,40 @@ def resolve_devspec(devspec, sysname=False):
         return ret.sys_name if sysname else device_get_name(ret)
 
 def resolve_glob(glob):
+    """ Find all devices (names) matching by path or name
+
+        :param str glob: glob to match device names or paths against
+        :returns: list of device names matching :param:`glob`
+
+    """
     import fnmatch
-    ret = []
 
-    if not glob:
-        return ret
+    paths = []
 
-    for dev in get_devices():
-        name = device_get_name(dev)
+    if glob.startswith("/dev"):
+        dpath = "/".join(glob.split("/")[:-1])
+        fglob = glob.split("/")[-1]
+    else:
+        dpath = "/dev"
+        fglob = glob
 
-        if fnmatch.fnmatch(name, glob):
-            ret.append(name)
-        else:
-            for link in device_get_symlinks(dev):
-                if fnmatch.fnmatch(link, glob):
-                    ret.append(name)
+    for fname in os.listdir(dpath):
+        if fnmatch.fnmatch(fname, fglob):
+            fpath = os.path.realpath(dpath + "/" + fname)
+            paths.append(fpath)
 
-    return ret
+    udev_names = [device_get_name(dev) for dev in get_devices()]
+
+    # import devices locally to avoid cyclic import (devices <-> udev)
+    from . import devices
+
+    names = []
+    for path in paths:
+        dname = devices.devicePathToName(path)
+        if dname in udev_names and not __is_blacklisted_blockdev(dname):
+            names.append(dname)
+
+    return names
 
 def __is_blacklisted_blockdev(dev_name):
     """Is this a blockdev we never want for an install?"""
