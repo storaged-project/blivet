@@ -120,8 +120,9 @@ def resolve_glob(glob):
 
     for dev in get_devices():
         name = device_get_name(dev)
+        path = device_get_devname(dev)
 
-        if fnmatch.fnmatch(name, glob):
+        if fnmatch.fnmatch(name, glob) or fnmatch.fnmatch(path, glob):
             ret.append(name)
         else:
             for link in device_get_symlinks(dev):
