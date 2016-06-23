@@ -1,12 +1,15 @@
 
 import unittest
 
+from unittest.mock import Mock
+
 from tests.storagetestcase import StorageTestCase
 import blivet
 from blivet.formats import get_format
 from blivet.size import Size
 
 # device classes for brevity's sake -- later on, that is
+from blivet.devices import StorageDevice
 from blivet.devices import DiskDevice
 from blivet.devices import PartitionDevice
 from blivet.devices import MDRaidArrayDevice
@@ -22,6 +25,8 @@ from blivet.deviceaction import ActionResizeFormat
 from blivet.deviceaction import ActionDestroyFormat
 from blivet.deviceaction import ActionAddMember
 from blivet.deviceaction import ActionRemoveMember
+from blivet.deviceaction import ActionConfigureFormat
+from blivet.deviceaction import ActionConfigureDevice
 
 DEVICE_CLASSES = [
     DiskDevice,
@@ -1146,3 +1151,71 @@ class DeviceActionTestCase(StorageTestCase):
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
         pass
+
+
+class ConfigurationActionsTest(unittest.TestCase):
+
+    def test_device_configuration(self):
+
+        mock_device = Mock(spec=StorageDevice)
+        mock_device.configure_mock(unavailable_dependencies=[])
+        mock_device.configure_mock(config_actions_map={"conf1": "do_conf1", "conf2": "do_conf2", "conf3": None})
+        attrs = {"conf1": "old_value", "do_conf1": Mock(return_value=None), "conf2": "old_value", "do_conf2": None, "conf3": "old_value"}
+        mock_device.configure_mock(**attrs)
+
+        # attribute 'conf0' not in 'config_actions_map'
+        with self.assertRaises(ValueError):
+            ActionConfigureDevice(mock_device, "conf0", "new_value")
+
+        # wrong method for 'conf2' attribute in config_actions_map -- not callable
+        with self.assertRaises(RuntimeError):
+            ActionConfigureDevice(mock_device, "conf2", "new_value")
+
+        # set 'conf1' attribute to 'new_value'
+        # action is created and right configuration function was called with 'dry_run=True'
+        ac = ActionConfigureDevice(mock_device, "conf1", "new_value")
+        mock_device.do_conf1.assert_called_once_with(dry_run=True)
+        mock_device.reset_mock()
+
+        # try to apply, cancel and execute the action
+        ac.apply()
+        self.assertEqual(mock_device.conf1, "new_value")
+
+        ac.cancel()
+        self.assertEqual(mock_device.conf1, "old_value")
+
+        ac.execute()
+        mock_device.do_conf1.assert_called_once_with(dry_run=False)
+
+    def test_format_configuration(self):
+
+        mock_format = Mock()
+        mock_device = Mock(spec=StorageDevice, format=mock_format)
+        mock_device.configure_mock(unavailable_dependencies=[])
+        mock_format.configure_mock(config_actions_map={"conf1": "do_conf1", "conf2": "do_conf2", "conf3": None})
+        attrs = {"conf1": "old_value", "do_conf1.return_value": None, "conf2": "old_value", "do_conf2": None, "conf3": "old_value"}
+        mock_format.configure_mock(**attrs)
+
+        # attribute 'conf0' not in 'config_actions_map'
+        with self.assertRaises(ValueError):
+            ActionConfigureFormat(mock_device, "conf0", "new_value")
+
+        # wrong method for 'conf2' attribute in config_actions_map -- not callable
+        with self.assertRaises(RuntimeError):
+            ActionConfigureFormat(mock_device, "conf2", "new_value")
+
+        # set 'conf1' attribute to 'new_value'
+        # action is created and right configuration function was called with 'dry_run=True'
+        ac = ActionConfigureFormat(mock_device, "conf1", "new_value")
+        mock_format.do_conf1.assert_called_once_with(dry_run=True)
+        mock_format.reset_mock()
+
+        # try to apply, cancel and execute the action
+        ac.apply()
+        self.assertEqual(mock_format.conf1, "new_value")
+
+        ac.cancel()
+        self.assertEqual(mock_format.conf1, "old_value")
+
+        ac.execute()
+        mock_format.do_conf1.assert_called_once_with(dry_run=False)

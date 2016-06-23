@@ -77,6 +77,8 @@ class FS(DeviceFormat):
     # value is already unpredictable and can change in the future...
     _metadata_size_factor = 1.0
 
+    config_actions_map = {"label": "write_label"}
+
     def __init__(self, **kwargs):
         """
             :keyword device: path to the block device node (required for
@@ -580,7 +582,7 @@ class FS(DeviceFormat):
             raise FSReadLabelError("can not read label for filesystem %s" % self.type)
         return self._readlabel.do_task()
 
-    def write_label(self):
+    def write_label(self, dry_run=False):
         """ Create a label for this filesystem.
 
             :raises: FSError
@@ -605,7 +607,8 @@ class FS(DeviceFormat):
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
-        self._writelabel.do_task()
+        if not dry_run:
+            self._writelabel.do_task()
 
     @property
     def utils_available(self):
