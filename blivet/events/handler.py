@@ -24,6 +24,7 @@ from ..errors import DeviceError, EventHandlingError
 from ..devices import DM_MAJORS, MD_MAJORS
 from .. import udev
 from ..threads import SynchronizedMeta
+from ..static_data import mpath_members
 
 from .changes import data as event_data
 from .changes import record_change
@@ -129,6 +130,7 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
         # XXX Don't change anything (except simple attributes?) if actions are being executed.
         if device is None and self._event_device_is_physical_disk(event):
             log.info("disk %s was added", udev.device_get_name(event.info))
+            mpath_members.update_cache(udev.device_get_devname(event.info))
             self.handle_device(event.info)
         elif device is not None and device.exists:
             log.info("device %s was activated", device.name)
