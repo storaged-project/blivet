@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.50
+Version: 0.61.15.51
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,16 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jun 24 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.51-1
+- fcoe: don't use dcb for autoconnecting of bnx2x and bnx2fc (rvykydal)
+  Resolves: rhbz#1261703
+- Use minimal alignment as needed when allocating small partitions. (dlehman)
+  Resolves: rhbz#1262137
+- Add support for minimal alignment of very small partitions. (dlehman)
+  Related: rhbz#1262137
+- Add an error class for alignment errors. (dlehman)
+  Related: rhbz#1262137
+
 * Tue Jun 14 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.50-1
 - Fix unit arg name in Size.roundToNearest call. (dlehman)
   Resolves: rhbz#1346154
