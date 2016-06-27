@@ -207,10 +207,10 @@ class fcoe(object):
         if os.access(example_cfg, os.R_OK):
             lines = open(example_cfg, "r").readlines()
         else:
-            anaconda_cfg = """FCOE_ENABLE="yes"\n
-DCB_REQUIRED="yes"\n
-AUTO_VLAN="yes"\n
-MODE="fabric"\n
+            anaconda_cfg = """FCOE_ENABLE="yes"
+DCB_REQUIRED="yes"
+AUTO_VLAN="yes"
+MODE="fabric"
 """
             lines = anaconda_cfg.splitlines(True)
 
@@ -220,22 +220,22 @@ MODE="fabric"\n
             if not line.strip().startswith("#"):
                 if line.startswith("FCOE_ENABLE"):
                     if enable:
-                        line = 'FCOE_ENABLE="yes"'
+                        line = 'FCOE_ENABLE="yes"\n'
                     else:
-                        line = 'FCOE_ENABLE="no"'
+                        line = 'FCOE_ENABLE="no"\n'
                 elif line.startswith("DCB_REQUIRED"):
                     if dcb:
-                        line = 'DCB_REQUIRED="yes"'
+                        line = 'DCB_REQUIRED="yes"\n'
                     else:
-                        line = 'DCB_REQUIRED="no"'
+                        line = 'DCB_REQUIRED="no"\n'
                 elif line.startswith("AUTO_VLAN"):
                     if auto_vlan:
-                        line = 'AUTO_VLAN="yes"'
+                        line = 'AUTO_VLAN="yes"\n'
                     else:
-                        line = 'AUTO_VLAN="no"'
+                        line = 'AUTO_VLAN="no"\n'
                 elif line.startswith("MODE"):
                     if mode:
-                        line = 'MODE="%s"' % mode
+                        line = 'MODE="%s"\n' % mode
             new_cfg.write(line)
 
 # Create FCoE singleton
