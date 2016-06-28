@@ -95,7 +95,7 @@ class EventHandlerMixin(metaclass=SynchronizedMeta):
         """ Return True if event device is a physical disk. """
         # udev.device_is_md and udev.device_is_dm are not sufficient for this purpose
         # because there are sometimes events when dm/ or md/ subdir does not exist.
-        return (self._udev_device_is_disk(event.info) and
+        return (udev.device_is_disk(event.info) and
                 not self._event_device_is_dm(event) and
                 not self._event_device_is_md(event))
 
