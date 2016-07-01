@@ -94,30 +94,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
         self._cleanup = False
 
-    def _udev_device_is_disk(self, info):
-        """ Return True if the udev device looks like a disk.
-
-            :param info: udevdb device entry
-            :type info: dict
-            :returns: whether the device is a disk
-            :rtype: bool
-
-            We want exclusive_disks to operate on anything that could be
-            considered a directly usable disk, ie: fwraid array, mpath, or disk.
-
-            Unfortunately, since so many things are represented as disks by
-            udev/sysfs, we have to define what is a disk in terms of what is
-            not a disk.
-        """
-        return (udev.device_is_disk(info) and
-                not (udev.device_is_cdrom(info) or
-                     udev.device_is_partition(info) or
-                     udev.device_is_dm_partition(info) or
-                     udev.device_is_dm_lvm(info) or
-                     udev.device_is_dm_crypt(info) or
-                     (udev.device_is_md(info) and
-                      not udev.device_get_md_container(info))))
-
     def _add_slave_devices(self, info):
         """ Add all slaves of a device, raising DeviceTreeError on failure.
 
@@ -234,7 +210,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
     def _mark_readonly_device(self, info, device):
         # If this device is read-only, mark it as such now.
-        if self._udev_device_is_disk(info) and \
+        if udev.device_is_disk(info) and \
                 util.get_sysfs_attr(udev.device_get_sysfs_path(info), 'ro') == '1':
             device.readonly = True
 

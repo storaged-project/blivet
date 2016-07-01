@@ -134,8 +134,9 @@ def resolve_glob(glob):
 
     for dev in get_devices():
         name = device_get_name(dev)
+        path = device_get_devname(dev)
 
-        if fnmatch.fnmatch(name, glob):
+        if fnmatch.fnmatch(name, glob) or fnmatch.fnmatch(path, glob):
             ret.append(name)
         else:
             for link in device_get_symlinks(dev):
@@ -303,11 +304,23 @@ def device_is_cdrom(info):
 
 
 def device_is_disk(info):
-    """ Return True is the device is a disk. """
-    if device_is_cdrom(info):
-        return False
+    """ Return True is the device is a disk.
+
+        Unfortunately, since so many things are represented as disks by
+        udev/sysfs, we have to define what is a disk in terms of what is
+        not a disk.
+    """
     has_range = os.path.exists("%s/range" % device_get_sysfs_path(info))
-    return info.get("DEVTYPE") == "disk" or has_range
+    is_disk = info.get("DEVTYPE") == "disk" or has_range
+
+    return (is_disk and
+            not (device_is_cdrom(info) or
+                 device_is_partition(info) or
+                 device_is_dm_partition(info) or
+                 device_is_dm_lvm(info) or
+                 device_is_dm_crypt(info) or
+                 (device_is_md(info) and
+                  not device_get_md_container(info))))
 
 
 def device_is_partition(info):
