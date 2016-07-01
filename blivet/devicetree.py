@@ -690,14 +690,7 @@ class DeviceTree(object):
             udev/sysfs, we have to define what is a disk in terms of what is
             not a disk.
         """
-        return (udev.device_is_disk(info) and
-                not (udev.device_is_cdrom(info) or
-                     udev.device_is_partition(info) or
-                     udev.device_is_dm_partition(info) or
-                     udev.device_is_dm_lvm(info) or
-                     udev.device_is_dm_crypt(info) or
-                     (udev.device_is_md(info) and
-                      not udev.device_get_md_container(info))))
+        return udev.device_is_realdisk(info)
 
     def addUdevLVDevice(self, info):
         name = udev.device_get_name(info)

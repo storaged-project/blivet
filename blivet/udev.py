@@ -120,8 +120,9 @@ def resolve_glob(glob):
 
     for dev in get_devices():
         name = device_get_name(dev)
+        path = device_get_devname(dev)
 
-        if fnmatch.fnmatch(name, glob):
+        if fnmatch.fnmatch(name, glob) or fnmatch.fnmatch(path, glob):
             ret.append(name)
         else:
             for link in device_get_symlinks(dev):
@@ -284,6 +285,29 @@ def device_is_loop(info):
     """ Return True if the device is a configured loop device. """
     return (device_get_name(info).startswith("loop") and
             os.path.isdir("%s/loop" % device_get_sysfs_path(info)))
+
+def device_is_realdisk(info):
+    """ Return True if the udev device looks like a disk.
+
+        :param info: udevdb device entry
+        :type info: dict
+        :returns: whether the device is a disk
+        :rtype: bool
+
+        We want exclusive_disks to operate on anything that could be
+        considered a directly usable disk, ie: fwraid array, mpath, or disk.
+        Unfortunately, since so many things are represented as disks by
+        udev/sysfs, we have to define what is a disk in terms of what is
+        not a disk.
+    """
+    return (device_is_disk(info) and
+            not (device_is_cdrom(info) or
+                 device_is_partition(info) or
+                 device_is_dm_partition(info) or
+                 device_is_dm_lvm(info) or
+                 device_is_dm_crypt(info) or
+                 (device_is_md(info) and
+                  not device_get_md_container(info))))
 
 def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
