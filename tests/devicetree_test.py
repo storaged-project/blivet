@@ -107,9 +107,9 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.devices, list())
 
         # things are called, updated as expected when a device is added
-        with patch("blivet.devicetree.record_change") as record_change:
+        with patch("blivet.devicetree.callbacks") as callbacks:
             dt._add_device(dev1)
-            self.assertTrue(record_change.called)
+            self.assertTrue(callbacks.device_added.called)
 
         self.assertEqual(dt.devices, [dev1])
         self.assertTrue(dev1 in dt.devices)
@@ -145,9 +145,9 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertRaisesRegex(ValueError, "not in tree", dt._remove_device, dev1)
 
         dt._add_device(dev1)
-        with patch("blivet.devicetree.record_change") as record_change:
+        with patch("blivet.devicetree.callbacks") as callbacks:
             dt._remove_device(dev1)
-            self.assertTrue(record_change.called)
+            self.assertTrue(callbacks.device_removed.called)
 
         self.assertFalse(dev1 in dt.devices)
         self.assertFalse(dev1.name in dt.names)
