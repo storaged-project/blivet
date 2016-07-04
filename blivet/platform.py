@@ -268,7 +268,7 @@ class MacEFI(EFI):
 
 class Aarch64EFI(EFI):
     _non_linux_format_types = ["vfat", "ntfs"]
-    _disklabel_types = ["msdos", "gpt"]
+    _disklabel_types = ["gpt", "msdos"]
 
 class PPC(Platform):
     _ppcMachine = arch.getPPCMachine()
