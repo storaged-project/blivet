@@ -776,7 +776,7 @@ class LVMLogicalVolumeDevice(DMDevice):
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        lvm.lvremove(self.vg.name, self._name)
+        lvm.lvremove(self.vg.name, self._name, force=True)
 
     def resize(self):
         log_method_call(self, self.name, status=self.status)
