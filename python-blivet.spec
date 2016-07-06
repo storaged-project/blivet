@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.51
+Version: 0.61.15.52
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jul 06 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.52-1
+- Add a method to determine if a udev device is a disk. (vtrefny)
+  Related: rhbz#1200833
+- Fix udev.resolve_glob to match device path too (vtrefny)
+  Related: rhbz#1200833
+
 * Fri Jun 24 2016 Brian C. Lane <bcl@redhat.com> - 0.61.15.51-1
 - fcoe: don't use dcb for autoconnecting of bnx2x and bnx2fc (rvykydal)
   Resolves: rhbz#1261703
