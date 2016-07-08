@@ -816,7 +816,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         if device.is_disk:
             # Cancel all actions on this disk and any disk related by way of an
             # aggregate/container device (eg: lvm volume group).
-            self.cancel_disk_actions(device)
+            self.cancel_disk_actions([device])
 
         for d in device.children:
             self.hide(d)
