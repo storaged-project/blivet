@@ -97,8 +97,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         lvm.lvm_cc_resetFilter()
 
-        self.exclusive_disks = exclusive_disks
-        self.ignored_disks = ignored_disks
+        self.exclusive_disks = exclusive_disks or []
+        self.ignored_disks = ignored_disks or []
 
         self.edd_dict = {}
 
