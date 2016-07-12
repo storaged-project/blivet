@@ -431,12 +431,6 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ The amount of free space in this VG. """
         # TODO: just ask lvm if is_modified returns False
 
-        # get the number of disks used by PVs on RAID (if any)
-        raid_disks = 0
-        for pv in self.pvs:
-            if isinstance(pv, MDRaidArrayDevice):
-                raid_disks = max([raid_disks, len(pv.disks)])
-
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
         used = sum((lv.vg_space_used for lv in self.lvs), Size(0))
@@ -496,7 +490,13 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         """
         # TODO: report correctly/better for existing VGs
-        return max([lv.metadata_size for lv in self.lvs] + [Size(0)])
+        # gather metadata sizes for all LVs including their potential caches
+        md_sizes = set((Size(0),))
+        for lv in self.lvs:
+            md_sizes.add(lv.metadata_size)
+            if lv.cached:
+                md_sizes.add(lv.cache.md_size)
+        return max(md_sizes)
 
     @property
     def complete(self):
@@ -701,10 +701,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
                       if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.meta)
             return Size(sum(lv.size for lv in md_lvs))
 
-        ret = self._metadata_size
-        if self.cached:
-            ret += self.cache.md_size
-        return ret
+        return self._metadata_size
 
     @property
     def dict(self):
@@ -723,50 +720,68 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def vg_space_used(self):
         """ Space occupied by this LV, not including snapshots. """
+        return self.data_vg_space_used + self.metadata_vg_space_used
+
+    @property
+    def data_vg_space_used(self):
+        """ Space occupied by the data part of this LV, not including snapshots """
         if self.cached:
             cache_size = self.cache.size
         else:
             cache_size = Size(0)
 
-        return self.data_vg_space_used + self.metadata_vg_space_used + cache_size
+        int_data_lvs = [lv for lv in self._internal_lvs
+                        if lv.int_lv_type in (LVMInternalLVtype.data, LVMInternalLVtype.image)]
+        if self.exists and int_data_lvs:
+            return sum(lv.vg_space_used for lv in int_data_lvs) + cache_size
 
-    @property
-    def data_vg_space_used(self):
-        """ Space occupied by the data part of this LV, not including snapshots """
         rounded_size = self.vg.align(self.size, roundup=True)
         if self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
             try:
-                return self._raid_level.get_space(rounded_size, self._num_raid_pvs,
-                                                  superblock_size_func=zero_superblock)
+                raided_size = self._raid_level.get_space(rounded_size, self._num_raid_pvs,
+                                                         superblock_size_func=zero_superblock)
+                return raided_size + cache_size
             except errors.RaidError:
                 # Too few PVs for the segment type (RAID level), we must have
                 # incomplete information about the current LVM
                 # configuration. Let's just default to the basic size for
                 # now. Later calls to this property will provide better results.
                 # TODO: add pv_count field to blockdev.LVInfo and this class
-                return rounded_size
+                return rounded_size + cache_size
         else:
-            return rounded_size
+            return rounded_size + cache_size
 
     @property
     def metadata_vg_space_used(self):
         """ Space occupied by the metadata part(s) of this LV, not including snapshots """
+        if self.exists:
+            return sum((lv.vg_space_used for lv in self._internal_lvs
+                        if lv.is_internal_lv and lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log)),
+                       Size(0))
+
+        # otherwise we need to do the calculations
+        if self.cached:
+            cache_md = self.cache.md_size
+        else:
+            cache_md = Size(0)
+
         non_raid_base = self.metadata_size + self.log_size
         if non_raid_base and self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
             try:
-                return self._raid_level.get_space(non_raid_base, self._num_raid_pvs,
-                                                  superblock_size_func=zero_superblock)
+                raided_space = self._raid_level.get_space(non_raid_base, self._num_raid_pvs,
+                                                          superblock_size_func=zero_superblock)
+                return raided_space + cache_md
             except errors.RaidError:
                 # Too few PVs for the segment type (RAID level), we must have
                 # incomplete information about the current LVM
                 # configuration. Let's just default to the basic size for
                 # now. Later calls to this property will provide better results.
                 # TODO: add pv_count field to blockdev.LVInfo and this class
-                return non_raid_base
+                return non_raid_base + cache_md
 
-        return non_raid_base
+        return non_raid_base + cache_md
 
     @property
     def pv_space_used(self):
@@ -1447,8 +1462,15 @@ class LVMThinPoolMixin(object):
     @property
     def vg_space_used(self):
         # TODO: what about cached thin pools?
+
         space = self.data_vg_space_used + self.metadata_vg_space_used
-        space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
+
+        # We need to make the nonexisting thin pools pretend to be bigger so
+        # that their padding is not eaten by some other LV, but we need to
+        # provide consistent information with the LVM tools for existing
+        # thin pools.
+        if not self.exists:
+            space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
         return space
 
     def _create(self):
