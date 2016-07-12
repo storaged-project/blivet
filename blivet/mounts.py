@@ -19,78 +19,28 @@
 #
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
-from collections import defaultdict
-from .udev import resolve_devspec
+
+import libmount
+import functools
+
 from . import util
-from .devicelibs import btrfs
 
 import logging
 log = logging.getLogger("blivet")
 
 
-class _MountinfoCache(object):
-
-    """ Cache for info from /proc/self/mountinfo. Looks up the root of the
-        mount within the filesystem using a pair of mountpoint, mount
-        source as keys.
-
-        This is a very simple helper class for MountsCache, and would
-        have to be altered for general purpose use.
-
-        Note that only info for fstype btrfs is stored within the cache,
-        as MountsCache methods only require information for btrfs.
-    """
-
-    def __init__(self):
-        self._cache = None
-
-    def _get_cache(self):
-        """ Reads lines in /proc/self/mountinfo and builds a table. """
-        cache = {}
-
-        with open("/proc/self/mountinfo") as mountinfos:
-            for line in mountinfos:
-                fields = line.split()
-                separator_index = fields.index("-")
-                fstype = fields[separator_index + 1]
-                if not fstype.startswith("btrfs"):
-                    continue
-
-                root = fields[3]
-                mountpoint = fields[4]
-                # store the canonical device path
-                devspec = resolve_devspec(fields[separator_index + 2],
-                                          sysname=True)
-                cache[(devspec, mountpoint)] = root
-
-        return cache
-
-    def get_root(self, devspec, mountpoint):
-        """ Retrieves the root of the mount within the filesystem
-            that corresponds to devspec and mountpoint.
-
-            :param str devspec: device specification
-            :param str mountpoint: mountpoint
-            :rtype: str or NoneType
-            :returns: the root of the mount within the filesystem, if available
-        """
-        if self._cache is None:
-            self._cache = self._get_cache()
-
-        # get the canonical device path
-        devspec = resolve_devspec(devspec, sysname=True)
-        return self._cache.get((devspec, mountpoint))
+MOUNT_FILE = "/proc/self/mountinfo"
 
 
 class MountsCache(object):
 
-    """ Cache object for system mountpoints; checks /proc/mounts and
+    """ Cache object for system mountpoints; checks
         /proc/self/mountinfo for up-to-date information.
     """
 
     def __init__(self):
         self.mounts_hash = 0
-        self.mountpoints = defaultdict(list)
+        self.mountpoints = None
 
     def get_mountpoints(self, devspec, subvolspec=None):
         """ Get mountpoints for selected device
@@ -108,21 +58,35 @@ class MountsCache(object):
         """
         self._cache_check()
 
+        mountpoints = []
+
         if subvolspec is not None:
             subvolspec = str(subvolspec)
 
-        # devspec == None means "get 'nodev' mount points"
-        if devspec is not None:
-            # use the canonical device path (if available)
-            canon_devspec = resolve_devspec(devspec, sysname=True)
-            if canon_devspec is not None:
-                devspec = canon_devspec
-            else:
-                # udev doesn't know about the given device, it can hardly be
-                # mounted
-                return []
+        # devspec might be a '/dev/dm-X' path but /proc/self/mountinfo always
+        # contains the '/dev/mapper/...' path -- find_source is able to resolve
+        # both paths but returns only one mountpoint -- it is neccesary to check
+        # for all possible mountpoints using new/resolved path (devspec)
+        try:
+            fs = self.mountpoints.find_source(devspec)
+        except Exception:  # pylint: disable=broad-except
+            return mountpoints
+        else:
+            devspec = fs.source
 
-        return self.mountpoints[(devspec, subvolspec)]
+        # iterate over all lines in the table to find all matching mountpoints
+        for fs in iter(functools.partial(self.mountpoints.next_fs), None):
+            if subvolspec:
+                if fs.fstype != "btrfs":
+                    continue
+                if fs.source == devspec and (fs.match_options("subvolid=%s" % subvolspec) or
+                                             fs.match_options("subvol=/%s" % subvolspec)):
+                    mountpoints.append(fs.target)
+            else:
+                if fs.source == devspec:
+                    mountpoints.append(fs.target)
+
+        return mountpoints
 
     def is_mountpoint(self, path):
         """ Check to see if a path is already mounted
@@ -131,47 +95,21 @@ class MountsCache(object):
         """
         self._cache_check()
 
-        return any(path in p for p in self.mountpoints.values())
-
-    def _get_active_mounts(self):
-        """ Get information about mounted devices from /proc/mounts and
-            /proc/self/mountinfo
-
-            Refreshes self.mountpoints with current mountpoint information
-        """
-        self.mountpoints = defaultdict(list)
-        mountinfo = _MountinfoCache()
-
-        with open("/proc/mounts") as mounts:
-            for line in mounts:
-                try:
-                    (devspec, mountpoint, fstype, _rest) = line.split(None, 3)
-                except ValueError:
-                    log.error("failed to parse /proc/mounts line: %s", line)
-                    continue
-
-                # use the canonical device path (if available)
-                if devspec.startswith("/dev"):
-                    devspec = resolve_devspec(devspec, sysname=True) or devspec
-
-                if fstype == "btrfs":
-                    root = mountinfo.get_root(devspec, mountpoint)
-                    if root is not None:
-                        subvolspec = root[1:] or str(btrfs.MAIN_VOLUME_ID)
-                        self.mountpoints[(devspec, subvolspec)].append(mountpoint)
-                    else:
-                        log.error("failed to obtain subvolspec for btrfs device %s at mountpoint %s", devspec, mountpoint)
-                else:
-                    self.mountpoints[(devspec, None)].append(mountpoint)
+        try:
+            self.mountpoints.find_source(path)
+        except Exception:  # pylint: disable=broad-except
+            return False
+        else:
+            return True
 
     def _cache_check(self):
-        """ Computes the MD5 hash on /proc/mounts and updates the cache on change
+        """ Computes the MD5 hash on /proc/self/mountinfo and updates the cache on change
         """
 
-        md5hash = util.md5_file("/proc/mounts")
+        md5hash = util.md5_file(MOUNT_FILE)
 
         if md5hash != self.mounts_hash:
             self.mounts_hash = md5hash
-            self._get_active_mounts()
+            self.mountpoints = libmount.Table(MOUNT_FILE)
 
 mounts_cache = MountsCache()
