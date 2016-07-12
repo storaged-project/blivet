@@ -1,6 +1,7 @@
 # vim:set fileencoding=utf-8
 
 import unittest
+from unittest.mock import patch
 
 import blivet
 
@@ -8,7 +9,7 @@ from blivet.devices import StorageDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices.lvm import LVMCacheRequest
-from blivet.devices.lvm import LVPVSpec
+from blivet.devices.lvm import LVPVSpec, LVMInternalLVtype
 from blivet.size import Size
 from blivet.devicelibs import raid
 
@@ -481,3 +482,53 @@ class TypeSpecificCallsTest(unittest.TestCase):
         self.assertEqual(c.greeting, "Hi, this is A")
         c.greeting = "Welcome"
         self.assertEqual(c.greeting, "Set by A: Welcome")
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetNewLVMDeviceTest(unittest.TestCase):
+    def test_new_lv_from_lvs(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv1 = LVMLogicalVolumeDevice("data_lv", parents=[vg], size=Size("500 MiB"), exists=True)
+        lv2 = LVMLogicalVolumeDevice("metadata_lv", parents=[vg], size=Size("50 MiB"), exists=True)
+
+        for dev in (pv, vg, lv1, lv2):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg, lv1, lv2})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {lv1, lv2})
+        self.assertEqual(set(b.vgs[0].lvs), {lv1, lv2})
+
+        self.assertEqual(vg.size, Size("1020 MiB"))
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        # combine the two LVs into a thin pool (the LVs should become its internal LVs)
+        pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+
+        self.assertEqual(set(b.devices), {pv, vg, pool})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
+
+        self.assertTrue(lv1.is_internal_lv)
+        self.assertEqual(lv1.int_lv_type, LVMInternalLVtype.data)
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertTrue(lv2.is_internal_lv)
+        self.assertEqual(lv2.int_lv_type, LVMInternalLVtype.meta)
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        self.assertEqual(pool.name, "testvg-pool")
+        self.assertEqual(pool.size, Size("500 MiB"))
+        self.assertEqual(pool.metadata_size, Size("50 MiB"))
+        self.assertIs(pool.vg, vg)
+
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(pool, "_pre_create"):
+                pool.create()
+                self.assertTrue(lvm.thpool_convert.called)
