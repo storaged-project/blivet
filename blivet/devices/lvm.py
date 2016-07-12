@@ -558,7 +558,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
-                 percent=None, cache_request=None, pvs=None):
+                 percent=None, cache_request=None, pvs=None, from_lvs=None):
 
         if not exists:
             if seg_type not in [None, "linear", "thin", "thin-pool", "cache"] + lvm.raid_seg_types:
@@ -611,8 +611,21 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         else:
             self._metadata_size = Size(0)
         self._internal_lvs = []
-        self._cache = None
 
+        self._from_lvs = from_lvs
+        if self._from_lvs:
+            if any(not lv.exists for lv in self._from_lvs):
+                raise ValueError("Conversion of LVs only supported for existing LVs")
+            if exists:
+                raise ValueError("Only new LVs can be created from other LVs")
+            if size or maxsize or percent:
+                raise ValueError("Cannot specify size for a converted LV")
+            if fmt:
+                raise ValueError("Cannot specify format for a converted LV")
+            if any(lv.vg != self.vg for lv in self._from_lvs):
+                raise ValueError("Conversion of LVs only possible inside a VG")
+
+        self._cache = None
         if cache_request and not self.exists:
             self._cache = LVMCache(self, size=cache_request.size, exists=False,
                                    pvs=cache_request.fast_devs, mode=cache_request.mode)
@@ -683,7 +696,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def metadata_size(self):
         """ Size of the meta data space this LV has available (see also :property:`metadata_vg_space_used`) """
-        if self.exists:
+        if self._internal_lvs:
             md_lvs = (int_lv for int_lv in self._internal_lvs
                       if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.meta)
             return Size(sum(lv.size for lv in md_lvs))
@@ -1018,6 +1031,11 @@ class LVMInternalLogicalVolumeMixin(object):
     @util.requires_property("is_internal_lv")
     def int_lv_type(self):
         return self._lv_type
+
+    @int_lv_type.setter
+    @util.requires_property("is_internal_lv")
+    def int_lv_type(self, lv_type):
+        self._lv_type = lv_type
 
     @property
     @util.requires_property("is_internal_lv")
@@ -1355,6 +1373,21 @@ class LVMThinPoolMixin(object):
         if self._chunk_size and not blockdev.lvm.is_valid_thpool_chunk_size(self._chunk_size):
             raise ValueError("invalid chunksize value")
 
+    def _check_from_lvs(self):
+        if self._from_lvs:
+            if len(self._from_lvs) != 2:
+                raise ValueError("two LVs required to create a thin pool")
+
+    def _convert_from_lvs(self):
+        data_lv, metadata_lv = self._from_lvs
+
+        data_lv.parent_lv = self  # also adds the the LV to self._internal_lvs
+        data_lv.int_lv_type = LVMInternalLVtype.data
+        metadata_lv.parent_lv = self
+        metadata_lv.int_lv_type = LVMInternalLVtype.meta
+
+        self.size = data_lv.size
+
     @property
     def is_thin_pool(self):
         return self.seg_type == "thin-pool"
@@ -1427,10 +1460,21 @@ class LVMThinPoolMixin(object):
             profile_name = None
         # TODO: chunk size, data/metadata split --> profile
         # TODO: allow for specification of PVs
-        blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
-                                  md_size=self.metadata_size,
-                                  chunk_size=self.chunk_size,
-                                  profile=profile_name)
+        if self._from_lvs:
+            extra = dict()
+            if profile_name:
+                extra["profile"] = profile_name
+            if self.chunk_size:
+                extra["chunksize"] = str(int(self.chunk_size))
+            data_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
+            meta_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
+            blockdev.lvm.thpool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
+            # TODO: update the names of the internal LVs here
+        else:
+            blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
+                                      md_size=self.metadata_size,
+                                      chunk_size=self.chunk_size,
+                                      profile=profile_name)
 
     def dracut_setup_args(self):
         return set()
@@ -1558,7 +1602,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
                  percent=None, cache_request=None, pvs=None,
                  parent_lv=None, int_type=None, origin=None, vorigin=False,
-                 metadata_size=None, chunk_size=None, profile=None):
+                 metadata_size=None, chunk_size=None, profile=None, from_lvs=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -1611,6 +1655,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             :type chunk_size: :class:`~.size.Size`
             :keyword profile: (allocation) profile for the pool or None (unspecified)
             :type profile: :class:`~.devicelibs.lvm.ThPoolProfile` or NoneType
+
+            For new LVs created from other LVs:
+
+            :keyword from_lvs: LVs to create the new LV from (in the (data_lv, metadata_lv) order)
+            :type from_lvs: tuple of :class:`LVMLogicalVolumeDevice`
+
         """
 
         if isinstance(parents, (list, ParentList)):
@@ -1630,12 +1680,16 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMThinLogicalVolumeMixin.__init__(self)
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
-                                      percent, cache_request, pvs)
+                                      percent, cache_request, pvs, from_lvs)
 
         LVMInternalLogicalVolumeMixin._init_check(self)
         LVMSnapshotMixin._init_check(self)
         LVMThinPoolMixin._init_check(self)
         LVMThinLogicalVolumeMixin._init_check(self)
+
+        if self._from_lvs:
+            self._check_from_lvs()
+            self._convert_from_lvs()
 
         # check that we got parents as expected and add this device to them now
         # that it is fully-initialized
@@ -1727,6 +1781,16 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         """Add this device to its parents"""
         # a normal LV has only exactly one parent -- the VG it belongs to
         self._parents[0]._add_log_vol(self)
+
+    @type_specific
+    def _check_from_lvs(self):
+        """Check the LVs to create this LV from"""
+        raise ValueError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
+
+    @type_specific
+    def _convert_from_lvs(self):
+        """Convert the LVs to create this LV from into its internal LVs"""
+        raise ValueError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
 
     @property
     @type_specific
