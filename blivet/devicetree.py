@@ -827,7 +827,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         if device.is_disk:
             # Cancel all actions on this disk and any disk related by way of an
             # aggregate/container device (eg: lvm volume group).
-            self.cancel_disk_actions(device)
+            self.cancel_disk_actions([device])
 
         for d in device.children:
             self.hide(d)
@@ -887,6 +887,10 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 # past, so I guess we will support it forever.
                 if disk.parents and all(p.format.hidden for p in disk.parents):
                     ignored = any(self._is_ignored_disk(d) for d in disk.parents)
+                elif disk.format.hidden and len(disk.children) == 1:
+                    # Similarly, if the filter allows an mpath or fwraid, we cannot
+                    # ignore the member devices.
+                    ignored = self._is_ignored_disk(disk.children[0])
 
                 if ignored:
                     self.hide(disk)

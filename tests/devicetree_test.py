@@ -11,8 +11,10 @@ from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError
 from blivet.udev import trigger
 from blivet.devicelibs import lvm
+from blivet.devices import DiskDevice
 from blivet.devices import StorageDevice
 from blivet.devices.lvm import LVMLogicalVolumeDevice
+from blivet.devices import MultipathDevice
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
 
@@ -247,6 +249,105 @@ class DeviceTreeTestCase(unittest.TestCase):
 
             dt.recursive_remove(dev1, actions=False, modparent=False)
             remove_device.assert_called_with(dev1, modparent=False)
+
+    def test_hide_ignored_disks(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda")
+        sdb = DiskDevice("sdb")
+        sdc = DiskDevice("sdc")
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+        tree._add_device(sdc)
+
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # test ignored_disks
+        tree.ignored_disks = ["sdb"]
+
+        # verify hide is called as expected
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_called_with(sdb)
+
+        # verify that hide works as expected
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertFalse(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # unhide sdb and make sure it works
+        tree.unhide(sdb)
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # test exclusive_disks
+        tree.ignored_disks = []
+        tree.exclusive_disks = ["sdc"]
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_any_call(sda)
+            hide.assert_any_call(sdb)
+
+        tree._hide_ignored_disks()
+        self.assertFalse(sda in tree.devices)
+        self.assertFalse(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        tree.unhide(sda)
+        tree.unhide(sdb)
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # now test exclusive_disks special cases for multipath
+        sda.format = get_format("multipath_member", exists=True)
+        sdb.format = get_format("multipath_member", exists=True)
+        sdc.format = get_format("multipath_member", exists=True)
+        mpatha = MultipathDevice("mpatha", parents=[sda, sdb, sdc])
+        tree._add_device(mpatha)
+
+        tree.ignored_disks = []
+        tree.exclusive_disks = ["mpatha"]
+
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            self.assertFalse(hide.called)
+
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+        self.assertTrue(mpatha in tree.devices)
+
+        # all members in exclusive_disks implies the mpath in exclusive_disks
+        tree.exclusive_disks = ["sda", "sdb", "sdc"]
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            self.assertFalse(hide.called)
+
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+        self.assertTrue(mpatha in tree.devices)
+
+        tree.exclusive_disks = ["sda", "sdb"]
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_any_call(mpatha)
+            hide.assert_any_call(sdc)
+
+        # verify that hide works as expected
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertFalse(sdc in tree.devices)
+        self.assertFalse(mpatha in tree.devices)
 
 
 def recursive_getattr(x, attr, default=None):
