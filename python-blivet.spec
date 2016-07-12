@@ -52,6 +52,7 @@ Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
 Requires: python3-gobject-base
+Requires: python3-libmount
 Obsoletes: blivet-data < 1:2.0.3
 Obsoletes: python-blivet < 1:2.0.3
 
