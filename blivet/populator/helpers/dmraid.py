@@ -79,5 +79,6 @@ class DMRaidFormatPopulator(FormatPopulator):
                 # Get the DMRaidArrayDevice a DiskLabel format *now*, in case
                 # its partitions get scanned before it does.
                 dm_array.update_sysfs_path()
+                dm_array.update_size()
                 dm_array_info = udev.get_device(dm_array.sysfs_path)
                 self._devicetree.handle_device(dm_array_info, update_orig_fmt=True)
