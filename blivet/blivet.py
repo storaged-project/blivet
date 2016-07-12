@@ -688,6 +688,31 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return LVMLogicalVolumeDevice(name, *args, **kwargs)
 
+    def new_lv_from_lvs(self, vg, name, seg_type, from_lvs, **kwargs):
+        """ Return a new LVMLogicalVolumeDevice created from other LVs
+
+            :param vg: VG to create the new LV in
+            :type vg: :class:`~.devices.lvm.LVMVolumeGroupDevice`
+            :param str name: name of the new LV
+            :param str seg_type: segment type of the new LV
+            :param from_lvs: LVs to create the new LV from (in the (data_lv, metadata_lv) order)
+            :type from_lvs: tuple of :class:`~.devices.lvm.LVMLogicalVolumeDevice`
+            :rtype: :class:`~.devices.lvm.LVMLogicalVolumeDevice`
+
+            All other arguments are passed on to the :class:`~.devices.lvm.LVMLogicalVolumeDevice`
+            constructor.
+
+        """
+        # we need to remove the LVs from the devicetree because they are now
+        # internal LVs of the new LV which on the other hand needs to be added
+        for lv in from_lvs:
+            self.devicetree._remove_device(lv)
+
+        new_lv = LVMLogicalVolumeDevice(name, parents=vg, seg_type=seg_type, from_lvs=from_lvs, **kwargs)
+        self.devicetree._add_device(new_lv)
+
+        return new_lv
+
     def new_btrfs(self, *args, **kwargs):
         """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice.
 
