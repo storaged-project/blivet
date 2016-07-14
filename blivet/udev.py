@@ -322,6 +322,31 @@ def device_is_loop(info):
             os.path.isdir("%s/loop" % device_get_sysfs_path(info)))
 
 
+@util.deprecated("3.0", "udev.device_is_disk provides same functionality in 3.0")
+def device_is_realdisk(info):
+    """ Return True if the udev device looks like a disk.
+
+        :param info: udevdb device entry
+        :type info: dict
+        :returns: whether the device is a disk
+        :rtype: bool
+
+        We want exclusive_disks to operate on anything that could be
+        considered a directly usable disk, ie: fwraid array, mpath, or disk.
+        Unfortunately, since so many things are represented as disks by
+        udev/sysfs, we have to define what is a disk in terms of what is
+        not a disk.
+    """
+    return (device_is_disk(info) and
+            not (device_is_cdrom(info) or
+                 device_is_partition(info) or
+                 device_is_dm_partition(info) or
+                 device_is_dm_lvm(info) or
+                 device_is_dm_crypt(info) or
+                 (device_is_md(info) and
+                  not device_get_md_container(info))))
+
+
 def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
     return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL", udev_info.get("ID_SERIAL_SHORT")))
