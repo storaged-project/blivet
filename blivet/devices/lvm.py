@@ -1201,8 +1201,6 @@ class LVMSnapshotMixin(object):
 
         if self.origin and not isinstance(self.origin, LVMLogicalVolumeDevice):
             raise ValueError("lvm snapshot origin must be a logical volume")
-        if self.origin and not self.origin.exists:
-            raise ValueError("lvm snapshot origin volume must already exist")
         if self.vorigin and not self.exists:
             raise ValueError("only existing vorigin snapshots are supported")
 
