@@ -30,9 +30,6 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
 
-        with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMLogicalVolumeDevice("snap1", parents=[vg], origin=lv)
-
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
 
@@ -60,9 +57,6 @@ class LVMDeviceTest(unittest.TestCase):
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
         pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
         thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
-
-        with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMLogicalVolumeDevice("snap1", parents=[pool], origin=thinlv, seg_type="thin")
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
