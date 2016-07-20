@@ -67,6 +67,6 @@ if os.environ.get("READTHEDOCS", False):
 setup(name='blivet', version='1.20.3',
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
-      url='http://fedoraproject.org/wiki/blivet',
+      url='http://github.com/rhinstaller/blivet',
       data_files=data_files,
       packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.formats', 'blivet.tasks'])
