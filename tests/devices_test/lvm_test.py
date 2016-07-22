@@ -505,6 +505,9 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
         # combine the two LVs into a thin pool (the LVs should become its internal LVs)
         pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
 
+        # add the pool LV into the devicetree
+        b.devicetree._add_device(pool)
+
         self.assertEqual(set(b.devices), {pv, vg, pool})
         self.assertEqual(set(b.vgs), {vg})
         self.assertEqual(set(b.lvs), {pool})
