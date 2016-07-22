@@ -527,3 +527,57 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
             with patch.object(pool, "_pre_create"):
                 pool.create()
                 self.assertTrue(lvm.thpool_convert.called)
+
+    def test_new_lv_from_non_existing_lvs(self):
+        # same test as above, just with non-existing LVs used to create the new one
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv1 = LVMLogicalVolumeDevice("data_lv", parents=[vg], size=Size("500 MiB"), exists=False)
+        lv2 = LVMLogicalVolumeDevice("metadata_lv", parents=[vg], size=Size("50 MiB"), exists=False)
+
+        for dev in (pv, vg, lv1, lv2):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg, lv1, lv2})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {lv1, lv2})
+        self.assertEqual(set(b.vgs[0].lvs), {lv1, lv2})
+
+        self.assertEqual(vg.size, Size("1020 MiB"))
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        # combine the two LVs into a thin pool (the LVs should become its internal LVs)
+        pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+
+        # add the pool LV into the devicetree
+        b.devicetree._add_device(pool)
+
+        self.assertEqual(set(b.devices), {pv, vg, pool})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
+
+        self.assertTrue(lv1.is_internal_lv)
+        self.assertEqual(lv1.int_lv_type, LVMInternalLVtype.data)
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertTrue(lv2.is_internal_lv)
+        self.assertEqual(lv2.int_lv_type, LVMInternalLVtype.meta)
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        self.assertEqual(pool.name, "testvg-pool")
+        self.assertEqual(pool.size, Size("500 MiB"))
+        self.assertEqual(pool.metadata_size, Size("50 MiB"))
+        self.assertIs(pool.vg, vg)
+
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv1, "_pre_create") as lv1_create:
+                with patch.object(lv2, "create") as lv2_create:
+                    pool.create()
+                    self.assertTrue(lv1_create.called)
+                    self.assertTrue(lv2_create.called)
+                    self.assertTrue(lvm.thpool_convert.called)
