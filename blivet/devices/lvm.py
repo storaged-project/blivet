@@ -673,6 +673,11 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         return self.vg.pvs
 
     @property
+    def from_lvs(self):
+        # this needs to be read-only
+        return self._from_lvs
+
+    @property
     def is_raid_lv(self):
         seg_type = self.seg_type
         if self.seg_type == "cache":
