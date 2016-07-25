@@ -572,6 +572,8 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
         self.assertTrue(lv2.is_internal_lv)
         self.assertEqual(lv2.int_lv_type, LVMInternalLVtype.meta)
         self.assertEqual(lv2.size, Size("50 MiB"))
+        self.assertTrue(pool.depends_on(lv1))
+        self.assertTrue(pool.depends_on(lv2))
 
         self.assertEqual(pool.name, "testvg-pool")
         self.assertEqual(pool.size, Size("500 MiB"))

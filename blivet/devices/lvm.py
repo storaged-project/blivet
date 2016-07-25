@@ -2037,7 +2037,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
     @type_specific
     def depends_on(self, dep):
-        return DMDevice.depends_on(self, dep)
+        # internal LVs are not in the device tree and thus not parents nor
+        # children
+        return DMDevice.depends_on(self, dep) or (dep in self._internal_lvs)
 
     @type_specific
     def read_current_size(self):
