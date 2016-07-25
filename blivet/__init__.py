@@ -35,6 +35,7 @@ _sysroot = ROOT_PATH
 shortProductName = 'blivet'
 productName = 'blivet'
 ERROR_RAISE = 0
+DEFAULT_HOSTNAME = "localhost.localdomain"
 
 class ErrorHandler(object):
     def cb(self, exn):
@@ -44,6 +45,7 @@ class ErrorHandler(object):
 errorHandler = ErrorHandler()
 
 get_bootloader = lambda: None
+current_hostname = lambda: None
 
 ##
 ## end installer stubs
@@ -112,11 +114,14 @@ def enable_installer_mode():
     global get_bootloader
     global errorHandler
     global ERROR_RAISE
+    global DEFAULT_HOSTNAME
+    global current_hostname
 
     from pyanaconda import iutil # pylint: disable=redefined-outer-name
     from pyanaconda.constants import shortProductName # pylint: disable=redefined-outer-name
     from pyanaconda.constants import productName # pylint: disable=redefined-outer-name
     from pyanaconda.bootloader import get_bootloader # pylint: disable=redefined-outer-name
+    from pyanaconda.network import DEFAULT_HOSTNAME, current_hostname # pylint: disable=redefined-outer-name
     from pyanaconda.errors import errorHandler # pylint: disable=redefined-outer-name
     from pyanaconda.errors import ERROR_RAISE # pylint: disable=redefined-outer-name
 
@@ -1108,6 +1113,8 @@ class Blivet(object):
             hostname = ""
             if self.ksdata and self.ksdata.network.hostname is not None:
                 hostname = self.ksdata.network.hostname
+                if flags.installer_mode and hostname == DEFAULT_HOSTNAME:
+                    hostname = current_hostname()
 
             name = self.suggestContainerName(hostname=hostname)
 
@@ -1253,6 +1260,8 @@ class Blivet(object):
                 hostname = ""
                 if self.ksdata and self.ksdata.network.hostname is not None:
                     hostname = self.ksdata.network.hostname
+                    if flags.installer_mode and hostname == DEFAULT_HOSTNAME:
+                        hostname = current_hostname()
 
                 name = self.suggestContainerName(hostname=hostname)
             if "label" not in fmt_args:
