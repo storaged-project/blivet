@@ -44,9 +44,9 @@ INITIATOR_FILE = "/etc/iscsi/initiatorname.iscsi"
 ISCSI_MODULES = ['cxgb3i', 'bnx2i', 'be2iscsi']
 
 
-STORAGED_SERVICE = "org.storaged.Storaged"
-STORAGED_MANAGER_PATH = "/org/storaged/Storaged/Manager"
-MANAGER_IFACE = "org.storaged.Storaged.Manager"
+STORAGED_SERVICE = "org.freedesktop.UDisks2"
+STORAGED_MANAGER_PATH = "/org/freedesktop/UDisks2/Manager"
+MANAGER_IFACE = "org.freedesktop.UDisks2.Manager"
 INITIATOR_IFACE = MANAGER_IFACE + ".ISCSI.Initiator"
 
 
