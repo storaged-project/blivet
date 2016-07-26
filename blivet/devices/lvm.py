@@ -2061,6 +2061,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         if modparent:
             self.vg._remove_log_vol(self)
 
+        if self._from_lvs:
+            for lv in self._from_lvs:
+                # changes the LV into a non-internal one
+                lv.parent_lv = None
+                lv.int_lv_type = None
+
         LVMLogicalVolumeBase.remove_hook(self, modparent=modparent)
 
     @type_specific
@@ -2071,6 +2077,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
         if self not in self.vg.lvs:
             self.vg._add_log_vol(self)
+        if self._from_lvs:
+            self._check_from_lvs()
+            self._convert_from_lvs()
 
     @type_specific
     def populate_ksdata(self, data):
