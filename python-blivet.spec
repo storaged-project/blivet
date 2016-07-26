@@ -22,7 +22,6 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{version}.tar
 BuildArch: noarch
 BuildRequires: gettext
 BuildRequires: python2-devel python2-setuptools
-BuildRequires: python3-devel python3-setuptools
 
 Requires: python
 Requires: python-six
@@ -39,7 +38,7 @@ Requires: python2-blockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: libselinux-python
 Requires: python-hawkey
-Requires: pygobject3-base
+Requires: python-gobject-base
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 %description

@@ -6,7 +6,7 @@ RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
 RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-PYTHON=python3
+PYTHON=python
 COVERAGE=coverage
 ifeq ($(PYTHON),python3)
   COVERAGE=coverage3
@@ -18,12 +18,12 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
-TEST_DEPENDENCIES += python-mock python3-mock
-TEST_DEPENDENCIES += cryptsetup-python cryptsetup-python3
-TEST_DEPENDENCIES += python3-gobject
-TEST_DEPENDENCIES += python-coverage python3-coverage
+TEST_DEPENDENCIES += python-mock
+TEST_DEPENDENCIES += cryptsetup-python
+TEST_DEPENDENCIES += python-gobject
+TEST_DEPENDENCIES += python-coverage
 TEST_DEPENDENCIES += xfsprogs hfsplus-tools
-TEST_DEPENDENCIES += python3-pocketlint python3-bugzilla
+TEST_DEPENDENCIES += python-bugzilla
 TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
 
 all:
