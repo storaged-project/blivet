@@ -18,6 +18,7 @@ class BlivetTestCase(unittest.TestCase):
         in the kickstart data
         '''
 
+        # prepboot test case
         with patch('blivet.Blivet.bootLoaderDevice', new_callable=PropertyMock) as mockBootLoaderDevice:
             with patch('blivet.Blivet.mountpoints', new_callable=PropertyMock) as mockMountpoints:
                 # set up prepboot partition
@@ -25,15 +26,36 @@ class BlivetTestCase(unittest.TestCase):
                 bootloader_device_obj.size = Size('5MiB')
                 bootloader_device_obj.format = formats.getFormat("prepboot")
 
-                blivet_obj = Blivet()
+                prepboot_blivet_obj = Blivet()
 
                 # mountpoints must exist for updateKSData to run
                 mockBootLoaderDevice.return_value = bootloader_device_obj
                 mockMountpoints.values.return_value = []
 
                 # initialize ksdata
-                test_ksdata = returnClassForVersion()()
-                blivet_obj.ksdata = test_ksdata
-                blivet_obj.updateKSData()
+                prepboot_ksdata = returnClassForVersion()()
+                prepboot_blivet_obj.ksdata = prepboot_ksdata
+                prepboot_blivet_obj.updateKSData()
 
-        self.assertTrue("part prepboot" in str(blivet_obj.ksdata))
+        self.assertIn("part prepboot", str(prepboot_blivet_obj.ksdata))
+
+        # biosboot test case
+        with patch('blivet.Blivet.devices', new_callable=PropertyMock) as mockDevices:
+            with patch('blivet.Blivet.mountpoints', new_callable=PropertyMock) as mockMountpoints:
+                # set up biosboot partition
+                biosboot_device_obj = PartitionDevice("biosboot_partition_device")
+                biosboot_device_obj.size = Size('1MiB')
+                biosboot_device_obj.format = formats.getFormat("biosboot")
+
+                biosboot_blivet_obj = Blivet()
+
+                # mountpoints must exist for updateKSData to run
+                mockDevices.return_value = [biosboot_device_obj]
+                mockMountpoints.values.return_value = []
+
+                # initialize ksdata
+                biosboot_ksdata = returnClassForVersion()()
+                biosboot_blivet_obj.ksdata = biosboot_ksdata
+                biosboot_blivet_obj.updateKSData()
+
+        self.assertIn("part biosboot", str(biosboot_blivet_obj.ksdata))
