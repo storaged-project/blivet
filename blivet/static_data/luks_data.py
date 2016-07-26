@@ -81,6 +81,14 @@ class LUKS_Data(object):
             luks_data.luks_devs[device.format.uuid] = passphrase
             self.add_passphrase(passphrase)
 
+    def reset(self, passphrase=None, luks_dict=None):
+        self.clear_passphrases()
+        self.add_passphrase(passphrase)
+        self.luks_devs = {}
+        if luks_dict and isinstance(luks_dict, dict):
+            self.luks_devs = luks_dict
+            self.add_passphrases([p for p in self.luks_devs.values() if p])
+
     @property
     def passphrases(self):
         return self.__passphrases

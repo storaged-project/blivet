@@ -64,30 +64,20 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
 
 
 class PopulatorMixin(object, metaclass=SynchronizedMeta):
-    def __init__(self, passphrase=None, luks_dict=None, disk_images=None):
+    def __init__(self, disk_images=None):
         """
-            :keyword passphrase: default LUKS passphrase
-            :keyword luks_dict: a dict with UUID keys and passphrase values
-            :type luks_dict: dict
             :keyword disk_images: dictoinary of disk images
             :type list: dict
-
         """
-        self.reset(passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
+        luks_data.reset(passphrase=None, luks_dict={})
+        self.reset(disk_images=disk_images)
 
-    def reset(self, passphrase=None, luks_dict=None, disk_images=None):
+    def reset(self, disk_images=None):
+        luks_data.reset()
         self.disk_images = {}
         if disk_images:
             # this will overwrite self.exclusive_disks
             self.set_disk_images(disk_images)
-
-        luks_data.clear_passphrases()
-        luks_data.add_passphrase(passphrase)
-
-        luks_data.luks_devs = {}
-        if luks_dict and isinstance(luks_dict, dict):
-            luks_data.luks_devs = luks_dict
-            luks_data.add_passphrases([p for p in luks_data.luks_devs.values() if p])
 
         # initialize attributes that may later hold cached lvm info
         self.drop_lvm_cache()
