@@ -925,7 +925,13 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
         if part_type == parted.PARTITION_EXTENDED and \
            part_type != _part.req_part_type:
             log.debug("creating extended partition")
-            add_partition(disklabel, free, part_type, None)
+            ext = add_partition(disklabel, free, part_type, None)
+
+            # extedned partition took all free space - make the size request smaller
+            if aligned_size > (ext.geometry.length - disklabel.alignment.grainSize) * disklabel.sector_size:
+                log.debug("not enough free space after creating extended "
+                          "partition - shrinking the logical partition")
+                aligned_size = aligned_size - (disklabel.alignment.grainSize * disklabel.sector_size)
 
             # now the extended partition exists, so set type to logical
             part_type = parted.PARTITION_LOGICAL
