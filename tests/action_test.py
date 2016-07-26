@@ -1146,3 +1146,56 @@ class DeviceActionTestCase(StorageTestCase):
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
         pass
+
+    def test_lv_from_lvs_actions(self):
+        self.destroy_all_devices()
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               size=Size("50 GiB"), parents=[sdc], fmt=blivet.formats.get_format("lvmpv"))
+        self.schedule_create_device(sdc1)
+
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="vg", parents=[sdc1])
+        self.schedule_create_device(vg)
+
+        lv1 = self.new_device(device_class=LVMLogicalVolumeDevice,
+                              name="data", parents=[vg],
+                              size=Size("10 GiB"))
+        create_lv1 = self.schedule_create_device(lv1)
+        lv2 = self.new_device(device_class=LVMLogicalVolumeDevice,
+                              name="meta", parents=[vg],
+                              size=Size("1 GiB"))
+        create_lv2 = self.schedule_create_device(lv2)
+
+        self.assertEqual(set(self.storage.lvs), {lv1, lv2})
+
+        pool = self.storage.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+        create_pool = self.schedule_create_device(pool)
+
+        self.assertTrue(create_pool.requires(create_lv1))
+        self.assertTrue(create_pool.requires(create_lv2))
+
+        self.assertEqual(set(self.storage.lvs), {pool})
+
+        # removing the action should put the LVs back into the DT
+        self.storage.devicetree.actions.remove(create_pool)
+        self.assertEqual(set(self.storage.lvs), {lv1, lv2})
+        self.assertEqual(set(self.storage.vgs[0].lvs), {lv1, lv2})
+
+        # doing everything again should just do the same changes as above
+        pool = self.storage.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+        create_pool = self.schedule_create_device(pool)
+        self.assertTrue(create_pool.requires(create_lv1))
+        self.assertTrue(create_pool.requires(create_lv2))
+        self.assertEqual(set(self.storage.lvs), {pool})
+
+        # destroying the device should put the LVs back into the DT
+        remove_pool = self.schedule_destroy_device(pool)
+        self.assertEqual(set(self.storage.lvs), {lv1, lv2})
+        self.assertEqual(set(self.storage.vgs[0].lvs), {lv1, lv2})
+
+        # cancelling the destroy action should put the pool and its internal LVs
+        # back
+        self.storage.devicetree.actions.remove(remove_pool)
+        self.assertEqual(set(self.storage.lvs), {pool})
+        self.assertEqual(set(pool._internal_lvs), {lv1, lv2})
