@@ -69,7 +69,6 @@ cp -a . %{py3dir}
 make
 
 %install
-rm -rf %{buildroot}
 make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %find_lang %{realname}
 
