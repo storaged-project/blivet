@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.52
+Version: 0.61.15.53
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jul 27 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.53-1
+- Suggest container names based on current hostname in installer (rvykydal)
+  Related: rhbz#1290858
+  Resolves: rhbz#1359631
+
 * Wed Jul 06 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.52-1
 - Add a method to determine if a udev device is a disk. (vtrefny)
   Related: rhbz#1200833
