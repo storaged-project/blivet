@@ -493,7 +493,7 @@ class DeviceTree(object):
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
 
         if isinstance(device, DASDDevice):
-            self.dasd.remove(device)
+            self.dasd.remove(device)  # pylint: disable=no-member
 
         if device.name not in self.names:
             self.names.append(device.name)
@@ -524,7 +524,7 @@ class DeviceTree(object):
                 hidden.addHook(new=False)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
                 if isinstance(device, DASDDevice):
-                    self.dasd.append(device)
+                    self.dasd.append(device)  # pylint: disable=no-member
 
     def setupDiskImages(self):
         """ Set up devices to represent the disk image files. """

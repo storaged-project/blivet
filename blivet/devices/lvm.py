@@ -1106,7 +1106,7 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
             raise ValueError("new size must of type Size")
 
         if not self.takes_extra_space:
-            if size <= self.parent_lv.size:
+            if size <= self.parent_lv.size:  # pylint: disable=no-member
                 self._size = size
             else:
                 raise ValueError("Internal LV cannot be bigger than its parent LV")
@@ -1120,7 +1120,7 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
         if not self.takes_extra_space:
             return self._parent_lv.maxSize()
         else:
-            return self.size + self.vg.freeSpace
+            return self.size + self.vg.freeSpace  # pylint: disable=no-member
 
     def __repr__(self):
         s = "%s:\n" % self.__class__.__name__
