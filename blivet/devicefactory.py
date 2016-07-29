@@ -125,7 +125,7 @@ def get_device_type(device):
     return device_type
 
 
-def get_device_factory(blivet, device_type, size, **kwargs):
+def get_device_factory(blivet, device_type=DEVICE_TYPE_LVM, size=None, **kwargs):
     """ Return a suitable DeviceFactory instance for device_type. """
     disks = kwargs.pop("disks", [])
 
