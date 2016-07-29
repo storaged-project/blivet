@@ -462,7 +462,7 @@ def usage(cmd):
 def main(argv):
     prog = os.path.basename(argv[0])
     cwd = os.getcwd()
-    spec = os.path.realpath(cwd + '/python-blivet.spec')
+    spec = os.path.realpath(cwd + '/python-blivet1.spec')
     name, version, release, new_release = None, None, None, None
     ignore, bugmap = None, None
     show_help, unknown, skip_acks = False, False, False

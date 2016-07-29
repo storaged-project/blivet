@@ -146,7 +146,7 @@ def usage(cmd):
 def main(argv):
     prog = os.path.basename(argv[0])
     cwd = os.getcwd()
-    spec = os.path.realpath(cwd + '/python-blivet.spec')
+    spec = os.path.realpath(cwd + '/python-blivet1.spec')
     updates = cwd + '/updates'
     keep, show_help, unknown = False, False, False
     tag = None

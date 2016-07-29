@@ -1,5 +1,5 @@
 PKGNAME=blivet
-SPECFILE=python-blivet.spec
+SPECFILE=python-blivet1.spec
 VERSION=$(shell awk '/Version:/ { print $$2 }' $(SPECFILE))
 RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g')
 RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
@@ -17,7 +17,7 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
-TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
+TEST_DEPENDENCIES = $(shell rpm --specfile $(SPECIFILE) --requires | cut -d' ' -f1 | grep -v ^blivet)
 TEST_DEPENDENCIES += python-mock
 TEST_DEPENDENCIES += cryptsetup-python
 TEST_DEPENDENCIES += python-gobject
