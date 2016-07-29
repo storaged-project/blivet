@@ -135,54 +135,50 @@ def lvm_cc_resetFilter():
     config_args_data["filterAccepts"] = []
 
 
-def determine_parent_lv(vg_name, internal_lv, lvs):
+def determine_parent_lv(internal_lv, lvs, lv_info):
     """Try to determine which of the lvs is the parent of the internal_lv
 
-    :param str vg_name: name of the VG the internal_lv and lvs belong to
+    :param internal_lv: the internal LV to determine parent LV from
     :type internal_lv: :class:`~.devices.lvm.LMVInternalLogicalVolumeDevice`
+    :param lvs: LVs searched for a potential parent LV
     :type lvs: :class:`~.devices.lvm.LMVLogicalVolumeDevice`
+    :param lv_info: all available information about LVs
+    :type lv_info: dict
 
     """
-    # try name matching first (fast, cheap, often works)
     for lv in lvs:
-        if internal_lv.lvname == lv.lvname:
-            # skip the internal_lv itself
+        # parent LVs has to be part of the same VG
+        if lv.vg.name != internal_lv.vg.name:
             continue
 
+        # skip the internal_lv itself
+        if internal_lv.lvname == lv.lvname:
+            continue
+
+        info = lv_info.get(lv.name)
+        if info is None:
+            # internal LVs look like "vg_name-[int_lv_name]" in lv_info so let's
+            # try that too
+            info = lv_info.get("%s-%s" % (lv.vg.name, lv.display_lvname))
+        if info:
+            # cache pools are internal LVs of cached LVs
+            pool_name = info.pool_lv
+            if pool_name and pool_name == internal_lv.lvname:
+                return lv
+
+            # pools have internal data and metadata LVs
+            data_lv_name = info.data_lv
+            if data_lv_name and data_lv_name == internal_lv.lvname:
+                return lv
+            metadata_lv_name = info.metadata_lv
+            if metadata_lv_name and metadata_lv_name == internal_lv.lvname:
+                return lv
+
+        # try name matching
         # check if the lv's name is the name of the internal LV without the suffix
         # e.g. 'pool' and 'pool_tmeta'
         if re.match(lv.lvname + internal_lv.name_suffix + "$", internal_lv.lvname):
             return lv
-
-    # now try checking relations between LVs
-    for lv in lvs:
-        # cache pools are internal LVs of cached LVs
-        try:
-            pool_name = blockdev.lvm.cache_pool_name(vg_name, lv.lvname)
-        except blockdev.LVMError:
-            # cannot determine, just go on
-            pass
-        else:
-            if pool_name == internal_lv.lvname:
-                return lv
-
-        # pools have internal data and metadata LVs
-        try:
-            data_lv_name = blockdev.lvm.data_lv_name(vg_name, lv.lvname)
-        except blockdev.LVMError:
-            # cannot determine, just go on
-            pass
-        else:
-            if data_lv_name == internal_lv.lvname:
-                return lv
-        try:
-            metadata_lv_name = blockdev.lvm.metadata_lv_name(vg_name, lv.lvname)
-        except blockdev.LVMError:
-            # cannot determine, just go on
-            pass
-        else:
-            if metadata_lv_name == internal_lv.lvname:
-                return lv
 
     return None
 
