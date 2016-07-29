@@ -109,6 +109,12 @@ class Callbacks:
        instance of :class:`~.callbacks.CallbackList`.
     """
     def __init__(self):
+        self.populate_started = CallbackList()
+        """callback list for when devicetree population is started"""
+
+        self.device_scanned = CallbackList()
+        """callback list for when a device scan is completed"""
+
         self.device_added = CallbackList()
         """callback list for when a device is added to the devicetree"""
 
@@ -145,6 +151,21 @@ class Callbacks:
         .. note::
            The arguments for these callbacks are provided by name, so any callbacks
            you provide should be able to handle that.
+
+        .. function:: populate_started_cb(n_devices)
+
+           Devicetree population was started.
+
+           :param int n_devices: (expected) total number of devices to scan
+
+
+        .. function:: device_scanned_cb(device_name)
+
+           A device scan was finished (note that some devices may be scanned
+           multiple times).
+
+           :param str device_name: name of the device that was scanned
+
 
         .. function:: device_added_cb(device)
 
