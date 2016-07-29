@@ -45,6 +45,7 @@ from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
 from ..static_data import lvs_info, pvs_info, luks_data
+from ..callbacks import callbacks
 
 import logging
 log = logging.getLogger("blivet")
@@ -247,6 +248,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         reason = self._reason_to_skip_device(info)
         if reason:
             log.debug("skipping %s device %s", reason, name)
+            callbacks.device_scanned(device_name=name)
             return
 
         log.info("scanning %s (%s)...", name, sysfs_path)
@@ -269,6 +271,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
         if not device:
             log.debug("no device obtained for %s", name)
+            callbacks.device_scanned(device_name=name)
             return
 
         log.info("got device: %r", device)
@@ -280,6 +283,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         if device_added or update_orig_fmt:
             device.original_format = copy.deepcopy(device.format)
         device.device_links = udev.device_get_symlinks(info)
+        callbacks.device_scanned(device_name=name)
 
     def handle_format(self, info, device):
         log_method_call(self, name=getattr(device, "name", None))
@@ -431,6 +435,8 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         self.setup_disk_images()
 
         old_devices = {}
+        n_devices = 0
+        report = True
 
         # Now, loop and scan for devices that have appeared since the two above
         # blocks or since previous iterations.
@@ -442,11 +448,16 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                 new_name = udev.device_get_name(new_device)
                 if new_name not in old_devices:
                     old_devices[new_name] = new_device
+                    n_devices += 1
                     devices.append(new_device)
 
             if len(devices) == 0:
                 # nothing is changing -- we are finished building devices
                 break
+
+            if report:
+                callbacks.populate_started(n_devices=n_devices)
+                report = False
 
             log.info("devices to scan: %s", [udev.device_get_name(d) for d in devices])
             for dev in devices:
