@@ -6,17 +6,17 @@ Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
-%define realname blivet
+%global realname blivet
 Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{version}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
-%define pykickstartver 1.99.22
-%define partedver 1.8.1
-%define pypartedver 3.10.4
-%define e2fsver 1.41.0
-%define utillinuxver 2.15.1
-%define libblockdevver 1.1
+%global pykickstartver 1.99.22
+%global partedver 1.8.1
+%global pypartedver 3.10.4
+%global e2fsver 1.41.0
+%global utillinuxver 2.15.1
+%global libblockdevver 1.1
 
 BuildArch: noarch
 BuildRequires: gettext
