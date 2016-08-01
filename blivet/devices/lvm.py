@@ -514,6 +514,21 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Is this device directly accessible? """
         return False
 
+    def remove_hook(self, modparent=True):
+        if modparent:
+            for pv in self.pvs:
+                pv.format.vg_name = None
+
+        super().remove_hook(modparent=modparent)
+
+    def add_hook(self, new=True):
+        super().add_hook(new=new)
+        if new:
+            return
+
+        for pv in self.pvs:
+            pv.format.vg_name = self.name
+
     def populate_ksdata(self, data):
         super(LVMVolumeGroupDevice, self).populate_ksdata(data)
         data.vgname = self.name
