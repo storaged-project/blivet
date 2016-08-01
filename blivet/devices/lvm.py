@@ -467,6 +467,23 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Is this device directly accessible? """
         return False
 
+    def removeHook(self, modparent=True):
+        if modparent:
+            for pv in self.pvs:
+                pv.format.vgName = None
+
+        # pylint: disable=bad-super-call
+        super(LVMVolumeGroupDevice, self).removeHook(modparent=modparent)
+
+    def addHook(self, new=True):
+        # pylint: disable=bad-super-call
+        super(LVMVolumeGroupDevice, self).addHook(new=new)
+        if new:
+            return
+
+        for pv in self.pvs:
+            pv.format.vgName = self.name
+
     def populateKSData(self, data):
         super(LVMVolumeGroupDevice, self).populateKSData(data)
         data.vgname = self.name
@@ -1089,7 +1106,7 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
             raise ValueError("new size must of type Size")
 
         if not self.takes_extra_space:
-            if size <= self.parent_lv.size:
+            if size <= self.parent_lv.size:  # pylint: disable=no-member
                 self._size = size
             else:
                 raise ValueError("Internal LV cannot be bigger than its parent LV")
@@ -1103,7 +1120,7 @@ class LVMInternalLogicalVolumeDevice(LVMLogicalVolumeDevice):
         if not self.takes_extra_space:
             return self._parent_lv.maxSize()
         else:
-            return self.size + self.vg.freeSpace
+            return self.size + self.vg.freeSpace  # pylint: disable=no-member
 
     def __repr__(self):
         s = "%s:\n" % self.__class__.__name__
