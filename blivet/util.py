@@ -113,6 +113,7 @@ def get_mount_paths(dev):
 
 def get_mount_device(mountpoint):
     """ Given a mountpoint, return the device node path mounted there. """
+    mountpoint = os.path.realpath(mountpoint)  # eliminate symlinks
     mounts = open("/proc/mounts").readlines()
     mount_device = None
     for mnt in mounts:
