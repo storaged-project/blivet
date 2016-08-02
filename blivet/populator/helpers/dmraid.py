@@ -53,7 +53,7 @@ class DMRaidFormatPopulator(FormatPopulator):
         minor = udev.device_get_minor(self.data)
 
         # Have we already created the DMRaidArrayDevice?
-        rs_names = blockdev.dm.get_member_raid_sets(uuid, name, major, minor)
+        rs_names = blockdev.dm.get_member_raid_sets(name, uuid, major, minor)
         if len(rs_names) == 0:
             log.warning("dmraid member %s does not appear to belong to any "
                         "array", self.device.name)
