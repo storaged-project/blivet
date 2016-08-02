@@ -629,8 +629,6 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
         self._from_lvs = from_lvs
         if self._from_lvs:
-            if any(not lv.exists for lv in self._from_lvs):
-                raise ValueError("Conversion of LVs only supported for existing LVs")
             if exists:
                 raise ValueError("Only new LVs can be created from other LVs")
             if size or maxsize or percent:
@@ -1159,13 +1157,19 @@ class LVMInternalLogicalVolumeMixin(object):
     # generally changes should be done on the parent LV (exceptions should
     # override these)
     def setup(self, orig=False):  # pylint: disable=unused-argument
-        raise errors.DeviceError("An internal LV cannot be set up separately")
+        if self._parent_lv.exists:
+            # unless this LV is yet to be used by the parent LV...
+            raise errors.DeviceError("An internal LV cannot be set up separately")
 
     def teardown(self, recursive=None):  # pylint: disable=unused-argument
-        raise errors.DeviceError("An internal LV cannot be torn down separately")
+        if self._parent_lv.exists:
+            # unless this LV is yet to be used by the parent LV...
+            raise errors.DeviceError("An internal LV cannot be torn down separately")
 
     def destroy(self):
-        raise errors.DeviceError("An internal LV cannot be destroyed separately")
+        if self._parent_lv.exists:
+            # unless this LV is yet to be used by the parent LV...
+            raise errors.DeviceError("An internal LV cannot be destroyed separately")
 
     @property
     def growable(self):
@@ -1485,6 +1489,13 @@ class LVMThinPoolMixin(object):
         if not self.exists:
             space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
         return space
+
+    def _pre_create(self):
+        if self._from_lvs:
+            # make sure all the LVs this LV should be created from exist
+            for lv in self._from_lvs:
+                if not lv.exists:
+                    lv.create()
 
     def _create(self):
         """ Create the device. """

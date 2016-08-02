@@ -986,14 +986,11 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         """
         # we need to remove the LVs from the devicetree because they are now
-        # internal LVs of the new LV which on the other hand needs to be added
+        # internal LVs of the new LV
         for lv in from_lvs:
             self.devicetree._remove_device(lv)
 
-        new_lv = LVMLogicalVolumeDevice(name, parents=vg, seg_type=seg_type, from_lvs=from_lvs, **kwargs)
-        self.devicetree._add_device(new_lv)
-
-        return new_lv
+        return LVMLogicalVolumeDevice(name, parents=vg, seg_type=seg_type, from_lvs=from_lvs, **kwargs)
 
     def new_btrfs(self, *args, **kwargs):
         """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice.
