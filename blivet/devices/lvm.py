@@ -629,8 +629,6 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
         self._from_lvs = from_lvs
         if self._from_lvs:
-            if any(not lv.exists for lv in self._from_lvs):
-                raise ValueError("Conversion of LVs only supported for existing LVs")
             if exists:
                 raise ValueError("Only new LVs can be created from other LVs")
             if size or maxsize or percent:
@@ -673,6 +671,11 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def members(self):
         return self.vg.pvs
+
+    @property
+    def from_lvs(self):
+        # this needs to be read-only
+        return self._from_lvs
 
     @property
     def is_raid_lv(self):
@@ -1159,13 +1162,19 @@ class LVMInternalLogicalVolumeMixin(object):
     # generally changes should be done on the parent LV (exceptions should
     # override these)
     def setup(self, orig=False):  # pylint: disable=unused-argument
-        raise errors.DeviceError("An internal LV cannot be set up separately")
+        if self._parent_lv.exists:
+            # unless this LV is yet to be used by the parent LV...
+            raise errors.DeviceError("An internal LV cannot be set up separately")
 
     def teardown(self, recursive=None):  # pylint: disable=unused-argument
-        raise errors.DeviceError("An internal LV cannot be torn down separately")
+        if self._parent_lv.exists:
+            # unless this LV is yet to be used by the parent LV...
+            raise errors.DeviceError("An internal LV cannot be torn down separately")
 
     def destroy(self):
-        raise errors.DeviceError("An internal LV cannot be destroyed separately")
+        if self._parent_lv.exists:
+            # unless this LV is yet to be used by the parent LV...
+            raise errors.DeviceError("An internal LV cannot be destroyed separately")
 
     @property
     def growable(self):
@@ -1485,6 +1494,11 @@ class LVMThinPoolMixin(object):
         if not self.exists:
             space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
         return space
+
+    def _pre_create(self):
+        # make sure all the LVs this LV should be created from exist (if any)
+        if self._from_lvs and any(not lv.exists for lv in self._from_lvs):
+            raise errors.DeviceError("Component LVs need to be created first")
 
     def _create(self):
         """ Create the device. """
@@ -2028,7 +2042,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
     @type_specific
     def depends_on(self, dep):
-        return DMDevice.depends_on(self, dep)
+        # internal LVs are not in the device tree and thus not parents nor
+        # children
+        return DMDevice.depends_on(self, dep) or (dep in self._internal_lvs)
 
     @type_specific
     def read_current_size(self):
@@ -2045,6 +2061,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         if modparent:
             self.vg._remove_log_vol(self)
 
+        if self._from_lvs:
+            for lv in self._from_lvs:
+                # changes the LV into a non-internal one
+                lv.parent_lv = None
+                lv.int_lv_type = None
+
         LVMLogicalVolumeBase.remove_hook(self, modparent=modparent)
 
     @type_specific
@@ -2055,6 +2077,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
         if self not in self.vg.lvs:
             self.vg._add_log_vol(self)
+        if self._from_lvs:
+            self._check_from_lvs()
+            self._convert_from_lvs()
 
     @type_specific
     def populate_ksdata(self, data):

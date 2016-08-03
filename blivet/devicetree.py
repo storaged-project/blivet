@@ -291,9 +291,20 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 raise DeviceTreeError("device is already in the tree")
 
         if action.is_create and action.is_device:
+            # if adding an LV constructed from other LVs, we need to remove the
+            # LVs it's supposed to be constructed from from the device tree
+            if isinstance(action.device, LVMLogicalVolumeDevice) and action.device.from_lvs:
+                for lv in action.device.from_lvs:
+                    if lv in self._devices:
+                        self._remove_device(lv)
             self._add_device(action.device)
         elif action.is_destroy and action.is_device:
             self._remove_device(action.device)
+            # if removing an LV constructed from other LVs, we need to put the
+            # LVs it's supposed to be constructed from back into the device tree
+            if isinstance(action.device, LVMLogicalVolumeDevice) and action.device.from_lvs:
+                for lv in action.device.from_lvs:
+                    self._add_device(lv, new=False)
         elif action.is_create and action.is_format:
             if isinstance(action.device.format, formats.fs.FS) and \
                action.device.format.mountpoint in self.filesystems:
@@ -314,7 +325,18 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         if action.is_create and action.is_device:
             # remove the device from the tree
             self._remove_device(action.device)
+            if isinstance(action.device, LVMLogicalVolumeDevice) and action.device.from_lvs:
+                # if removing an LV constructed from other LVs, we need to put the
+                # LVs it's supposed to be constructed from back into the device tree
+                for lv in action.device.from_lvs:
+                    self._add_device(lv, new=False)
         elif action.is_destroy and action.is_device:
+            # if adding an LV constructed from other LVs, we need to remove the
+            # LVs it's supposed to be constructed from from the device tree
+            if isinstance(action.device, LVMLogicalVolumeDevice) and action.device.from_lvs:
+                for lv in action.device.from_lvs:
+                    if lv in self._devices:
+                        self._remove_device(lv)
             # add the device back into the tree
             self._add_device(action.device, new=False)
 
