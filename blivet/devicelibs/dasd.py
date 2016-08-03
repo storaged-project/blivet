@@ -114,6 +114,10 @@ DASD_FORMAT_CDL = 2
 
 def is_ldl_dasd(device):
     """Determine whether or not a DASD is LDL formatted."""
+    if not device.startswith("dasd"):
+        # not a dasd; bail
+        return False
+
     device = "/dev/%s" % (device,)
 
     f = open(device, "r")
