@@ -21,7 +21,7 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}
 %define pypartedver 3.10.4
 %define e2fsver 1.41.0
 %define utillinuxver 2.15.1
-%define libblockdevver 1.7
+%define libblockdevver 1.9
 %define libbytesizever 0.3
 %define pyudevver 0.18
 
