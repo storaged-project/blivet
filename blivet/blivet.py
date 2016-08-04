@@ -1702,7 +1702,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return fstype
 
-    def factory_device(self, device_type, size, **kwargs):
+    def factory_device(self, device_type=devicefactory.DEVICE_TYPE_LVM, size=None, **kwargs):
         """ Schedule creation of a device based on a top-down specification.
 
             :param device_type: device type constant
