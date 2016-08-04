@@ -2022,6 +2022,11 @@ class Blivet(object):
         if self.bootLoaderDevice is not None:
             bootLoaderDevices.append(self.bootLoaderDevice)
 
+        # biosboot is a special case
+        for device in self.devices:
+            if device.format.type == 'biosboot':
+                bootLoaderDevices.append(device)
+
         # make a list of ancestors of all used devices
         devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootLoaderDevices
                            for a in d.ancestors))
