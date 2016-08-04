@@ -1046,7 +1046,7 @@ class LVRequest(Request):
 
         # Round up to nearest pe. For growable requests this will mean that
         # first growth is to fill the remainder of any unused extent.
-        self.base = int(lv.size // lv.vg.pe_size)
+        self.base = int(lv.vg.align(lv.size, roundup=True) // lv.vg.pe_size)
 
         if lv.req_grow:
             limits = [int(l // lv.vg.pe_size) for l in
