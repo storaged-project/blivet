@@ -1,3 +1,12 @@
+2.1.2
+======
+* `Separate data/metadata LVs for thin/cache LVs`_
+
+Separate data/metadata LVs for thin/cache LVs
+----------------------------------------------
+LVM thin pools and cached LVs can now be created from separate data/metadata LVs.
+
+
 2.1.1
 ======
 * `Improved handling for unsupported/corrupt disklabels`_
