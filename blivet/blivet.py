@@ -970,6 +970,31 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return LVMLogicalVolumeDevice(name, *args, **kwargs)
 
+    def new_lv_from_lvs(self, vg, name, seg_type, from_lvs, **kwargs):
+        """ Return a new LVMLogicalVolumeDevice created from other LVs
+
+            :param vg: VG to create the new LV in
+            :type vg: :class:`~.devices.lvm.LVMVolumeGroupDevice`
+            :param str name: name of the new LV
+            :param str seg_type: segment type of the new LV
+            :param from_lvs: LVs to create the new LV from (in the (data_lv, metadata_lv) order)
+            :type from_lvs: tuple of :class:`~.devices.lvm.LVMLogicalVolumeDevice`
+            :rtype: :class:`~.devices.lvm.LVMLogicalVolumeDevice`
+
+            All other arguments are passed on to the :class:`~.devices.lvm.LVMLogicalVolumeDevice`
+            constructor.
+
+        """
+        # we need to remove the LVs from the devicetree because they are now
+        # internal LVs of the new LV
+        for lv in from_lvs:
+            if lv in self.devicetree.devices:
+                self.devicetree._remove_device(lv)
+            else:
+                raise ValueError("All LVs to construct a new one from have to be in the devicetree")
+
+        return LVMLogicalVolumeDevice(name, parents=vg, seg_type=seg_type, from_lvs=from_lvs, **kwargs)
+
     def new_btrfs(self, *args, **kwargs):
         """ Return a new BTRFSVolumeDevice or BRFSSubVolumeDevice.
 
@@ -1848,6 +1873,11 @@ class Blivet(object, metaclass=SynchronizedMeta):
         bootloader_devices = []
         if self.bootloader_device is not None:
             bootloader_devices.append(self.bootloader_device)
+
+        # biosboot is a special case
+        for device in self.devices:
+            if device.format.type == 'biosboot':
+                bootloader_devices.append(device)
 
         # make a list of ancestors of all used devices
         devices = list(set(a for d in list(self.mountpoints.values()) + self.swaps + bootloader_devices

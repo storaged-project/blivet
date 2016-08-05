@@ -1,6 +1,7 @@
 # vim:set fileencoding=utf-8
 
 import unittest
+from unittest.mock import patch
 
 import blivet
 
@@ -8,9 +9,10 @@ from blivet.devices import StorageDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices.lvm import LVMCacheRequest
-from blivet.devices.lvm import LVPVSpec
+from blivet.devices.lvm import LVPVSpec, LVMInternalLVtype
 from blivet.size import Size
 from blivet.devicelibs import raid
+from blivet import errors
 
 DEVICE_CLASSES = [
     LVMLogicalVolumeDevice,
@@ -28,9 +30,6 @@ class LVMDeviceTest(unittest.TestCase):
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
-
-        with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMLogicalVolumeDevice("snap1", parents=[vg], origin=lv)
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
@@ -59,9 +58,6 @@ class LVMDeviceTest(unittest.TestCase):
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
         pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
         thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
-
-        with self.assertRaisesRegex(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMLogicalVolumeDevice("snap1", parents=[pool], origin=thinlv, seg_type="thin")
 
         with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
@@ -93,7 +89,8 @@ class LVMDeviceTest(unittest.TestCase):
                                     fmt=blivet.formats.get_format("xfs"),
                                     exists=False, cache_request=cache_req)
 
-        # the cache reserves space for the 8MiB pmspare internal LV
+        # the cache reserves space for its metadata from the requested size, but
+        # it may require (and does in this case) a pmspare LV to be allocated
         self.assertEqual(lv.vg_space_used, Size("504 MiB"))
 
         # check that the LV behaves like a cached LV
@@ -481,3 +478,122 @@ class TypeSpecificCallsTest(unittest.TestCase):
         self.assertEqual(c.greeting, "Hi, this is A")
         c.greeting = "Welcome"
         self.assertEqual(c.greeting, "Set by A: Welcome")
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetNewLVMDeviceTest(unittest.TestCase):
+    def test_new_lv_from_lvs(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv1 = LVMLogicalVolumeDevice("data_lv", parents=[vg], size=Size("500 MiB"), exists=True)
+        lv2 = LVMLogicalVolumeDevice("metadata_lv", parents=[vg], size=Size("50 MiB"), exists=True)
+
+        for dev in (pv, vg, lv1, lv2):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg, lv1, lv2})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {lv1, lv2})
+        self.assertEqual(set(b.vgs[0].lvs), {lv1, lv2})
+
+        self.assertEqual(vg.size, Size("1020 MiB"))
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        # combine the two LVs into a thin pool (the LVs should become its internal LVs)
+        pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+
+        # add the pool LV into the devicetree
+        b.devicetree._add_device(pool)
+
+        self.assertEqual(set(b.devices), {pv, vg, pool})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
+
+        self.assertTrue(lv1.is_internal_lv)
+        self.assertEqual(lv1.int_lv_type, LVMInternalLVtype.data)
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertTrue(lv2.is_internal_lv)
+        self.assertEqual(lv2.int_lv_type, LVMInternalLVtype.meta)
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        self.assertEqual(pool.name, "testvg-pool")
+        self.assertEqual(pool.size, Size("500 MiB"))
+        self.assertEqual(pool.metadata_size, Size("50 MiB"))
+        self.assertIs(pool.vg, vg)
+
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(pool, "_pre_create"):
+                pool.create()
+                self.assertTrue(lvm.thpool_convert.called)
+
+    def test_new_lv_from_non_existing_lvs(self):
+        # same test as above, just with non-existing LVs used to create the new one
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv1 = LVMLogicalVolumeDevice("data_lv", parents=[vg], size=Size("500 MiB"), exists=False)
+        lv2 = LVMLogicalVolumeDevice("metadata_lv", parents=[vg], size=Size("50 MiB"), exists=False)
+
+        for dev in (pv, vg, lv1, lv2):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg, lv1, lv2})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {lv1, lv2})
+        self.assertEqual(set(b.vgs[0].lvs), {lv1, lv2})
+
+        self.assertEqual(vg.size, Size("1020 MiB"))
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertEqual(lv2.size, Size("50 MiB"))
+
+        # combine the two LVs into a thin pool (the LVs should become its internal LVs)
+        pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+
+        # add the pool LV into the devicetree
+        b.devicetree._add_device(pool)
+
+        self.assertEqual(set(b.devices), {pv, vg, pool})
+        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(b.lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs), {pool})
+        self.assertEqual(set(b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
+
+        self.assertTrue(lv1.is_internal_lv)
+        self.assertEqual(lv1.int_lv_type, LVMInternalLVtype.data)
+        self.assertEqual(lv1.size, Size("500 MiB"))
+        self.assertTrue(lv2.is_internal_lv)
+        self.assertEqual(lv2.int_lv_type, LVMInternalLVtype.meta)
+        self.assertEqual(lv2.size, Size("50 MiB"))
+        self.assertTrue(pool.depends_on(lv1))
+        self.assertTrue(pool.depends_on(lv2))
+
+        self.assertEqual(pool.name, "testvg-pool")
+        self.assertEqual(pool.size, Size("500 MiB"))
+        self.assertEqual(pool.metadata_size, Size("50 MiB"))
+        self.assertIs(pool.vg, vg)
+
+        # both component LVs don't exist
+        with self.assertRaises(errors.DeviceError):
+            with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+                pool.create()
+
+        # lv2 will still not exist
+        lv1.exists = True
+        with self.assertRaises(errors.DeviceError):
+            with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+                pool.create()
+
+        # both component LVs exist, should just work
+        lv2.exists = True
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(pool, "_pre_create"):
+                pool.create()
+                self.assertTrue(lvm.thpool_convert.called)

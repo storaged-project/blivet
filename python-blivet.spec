@@ -21,8 +21,9 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}
 %define pypartedver 3.10.4
 %define e2fsver 1.41.0
 %define utillinuxver 2.15.1
-%define libblockdevver 1.4
+%define libblockdevver 1.9
 %define libbytesizever 0.3
+%define pyudevver 0.18
 
 BuildArch: noarch
 BuildRequires: gettext
@@ -38,7 +39,7 @@ Summary: A python3 package for examining and modifying storage configuration.
 Requires: python3
 Requires: python3-six
 Requires: python3-kickstart
-Requires: python3-pyudev
+Requires: python3-pyudev >= %{pyudevver}
 Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3

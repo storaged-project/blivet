@@ -47,6 +47,7 @@ blivet
         * :meth:`~blivet.blivet.Blivet.new_btrfs`
         * :meth:`~blivet.blivet.Blivet.new_btrfs_sub_volume`
         * :meth:`~blivet.blivet.Blivet.new_lv`
+        * :meth:`~blivet.blivet.Blivet.new_lv_from_lvs`
         * :meth:`~blivet.blivet.Blivet.new_mdarray`
         * :meth:`~blivet.blivet.Blivet.new_partition`
         * :meth:`~blivet.blivet.Blivet.new_tmp_fs`
