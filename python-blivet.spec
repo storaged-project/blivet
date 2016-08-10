@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.53
+Version: 0.61.15.54
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Aug 09 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.54-1
+- Check a device is a DASD before doing DASD-specific checks. (sbueno+anaconda)
+  Resolves: rhbz#1353667
+- Ensure biosboot shows up in kickstart (rmarshall)
+  Resolves: rhbz#1242666
+
 * Wed Jul 27 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.53-1
 - Suggest container names based on current hostname in installer (rvykydal)
   Related: rhbz#1290858
