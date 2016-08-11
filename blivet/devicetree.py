@@ -28,7 +28,7 @@ import pprint
 import copy
 import parted
 
-from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError, MDRaidError, StorageError
+from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError, LVMError, MDRaidError, StorageError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
 from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
@@ -1552,7 +1552,11 @@ class DeviceTree(object):
                         lv_device.cache = LVMCache(lv_dev, cache_size, exists=True)
                 self._addDevice(lv_device)
                 if flags.installer_mode:
-                    lv_device.setup()
+                    try:
+                        lv_device.setup()
+                    except LVMError:
+                        log.warning("failed to activate lv %s", lv_device.name)
+                        lv_device.controllable = False
 
                 if lv_device.status:
                     lv_device.updateSysfsPath()
