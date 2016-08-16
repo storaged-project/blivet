@@ -919,21 +919,12 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
 
 class DeviceTree(DeviceTreeBase, PopulatorMixin, EventHandlerMixin):
-    def __init__(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
-
-        # Using {} as default optional parameter value causes Python to act funny
-        # (search "mutable default argument Python" for details)
-        # Hence this:
-        if luks_dict is None:
-            self.luks_dict_passed = {}
-        else:
-            self.luks_dict_passed = luks_dict
-
+    def __init__(self, ignored_disks=None, exclusive_disks=None, disk_images=None):
         DeviceTreeBase.__init__(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
-        PopulatorMixin.__init__(self, passphrase=passphrase, luks_dict=self.luks_dict_passed, disk_images=disk_images)
+        PopulatorMixin.__init__(self, disk_images=disk_images)
         EventHandlerMixin.__init__(self)
 
     # pylint: disable=arguments-differ
-    def reset(self, passphrase=None, luks_dict=None, ignored_disks=None, exclusive_disks=None, disk_images=None):
+    def reset(self, ignored_disks=None, exclusive_disks=None, disk_images=None):
         DeviceTreeBase.reset(self, ignored_disks=ignored_disks, exclusive_disks=exclusive_disks)
-        PopulatorMixin.reset(self, passphrase=passphrase, luks_dict=luks_dict, disk_images=disk_images)
+        PopulatorMixin.reset(self, disk_images=disk_images)

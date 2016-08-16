@@ -93,9 +93,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
 
         # these will both be empty until our reset method gets called
-        self.devicetree = DeviceTree(passphrase=luks_data.encryption_passphrase,
-                                     luks_dict=None,
-                                     ignored_disks=self.ignored_disks,
+        self.devicetree = DeviceTree(ignored_disks=self.ignored_disks,
                                      exclusive_disks=self.exclusive_disks,
                                      disk_images=self.disk_images)
         self.roots = []
