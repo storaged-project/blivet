@@ -481,7 +481,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         self._post_teardown(recursive=recursive)
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Determine create parameters for this set """
         log_method_call(self, self.name)
         # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays

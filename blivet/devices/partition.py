@@ -358,7 +358,7 @@ class PartitionDevice(StorageDevice):
     parted_partition = property(lambda d: d._get_parted_partition(),
                                 lambda d, p: d._set_parted_partition(p))
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Re-get self.parted_partition from the original disklabel. """
         log_method_call(self, self.name)
         if not self.exists or not self.disklabel_supported:
@@ -366,7 +366,10 @@ class PartitionDevice(StorageDevice):
 
         # find the correct partition on the original parted.Disk since the
         # name/number we're now using may no longer match
-        _disklabel = self.disk.original_format
+        if not current_fmt:
+            _disklabel = self.disk.original_format
+        else:
+            _disklabel = self.disk.format
 
         if self.is_extended:
             # getPartitionBySector doesn't work on extended partitions
