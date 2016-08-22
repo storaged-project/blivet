@@ -936,7 +936,7 @@ class DeviceTree(object):
         disk_name = udev.device_get_partition_disk(info)
         if disk_name:
             if disk_name.startswith("md"):
-                lookup_name = mdraid.name_from_md_node(name)
+                lookup_name = mdraid.name_from_md_node(disk_name)
             else:
                 lookup_name = disk_name
 
