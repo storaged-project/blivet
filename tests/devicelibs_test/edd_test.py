@@ -101,7 +101,7 @@ class EddTestCase(unittest.TestCase):
             edd_module.fsroot = ""
         else:
             dirname = os.path.dirname(inspect.getfile(edd_module))
-            edd_module.fsroot = os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot)
+            edd_module.fsroot = os.path.abspath(os.path.join(dirname, "../../tests/devicelibs_test/edd_data/", fsroot))
 
     def debug(self, *args):
         fmt = "edd_test: "
