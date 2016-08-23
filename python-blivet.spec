@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.54
+Version: 0.61.15.55
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Aug 23 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.55-1
+- Fix lookup of md partition's disk. (dlehman)
+  Resolves: rhbz#1362161
+- fcoe: don't eat newlines in /etc/fcoe/NIC-cfg target system config (rvykydal)
+  Resolves: rhbz#1350411
+
 * Tue Aug 09 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.54-1
 - Check a device is a DASD before doing DASD-specific checks. (sbueno+anaconda)
   Resolves: rhbz#1353667
