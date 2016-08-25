@@ -225,8 +225,8 @@ class DBusBlivet(DBusObject):
                                                 "An error occured while committing the "
                                                 "changes to disk: %s" % str(e))
 
-    @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='ita{sv}', out_signature='o')
-    def Factory(self, device_type, size, kwargs):
+    @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='a{sv}', out_signature='o')
+    def Factory(self, kwargs):
         disks = [self._get_device_by_object_path(p) for p in kwargs.pop("disks", [])]
         kwargs["disks"] = disks
 
@@ -235,8 +235,12 @@ class DBusBlivet(DBusObject):
             device = self._get_device_by_object_path(dbus_device)
             kwargs["device"] = device
 
+        size = kwargs.pop("size", None)
+        if size is not None:
+            kwargs["size"] = Size(size)
+
         try:
-            device = self._blivet.factory_device(device_type, Size(size), **kwargs)
+            device = self._blivet.factory_device(**kwargs)
         except StorageError as e:
             raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
                                                 "An error occured while configuring the "

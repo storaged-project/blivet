@@ -243,6 +243,10 @@ class DeviceFactoryTestCase(unittest.TestCase):
                                sum(d.size for d in self.b.disks),
                                delta=self._get_size_delta(devices=[device]))
 
+    def test_default_factory_type(self):
+        factory = devicefactory.get_device_factory(self.b)
+        self.assertIsInstance(factory, devicefactory.LVMFactory)
+
 
 class PartitionFactoryTestCase(DeviceFactoryTestCase):
     device_class = PartitionDevice
