@@ -227,7 +227,10 @@ class ActionList(object, metaclass=SynchronizedMeta):
         fixup_devices = devices + [a.device for a in self._actions
                                    if a.is_destroy and a.is_device]
         for device in fixup_devices:
-            device.pre_commit_fixup()
+            if isinstance(device, PartitionDevice) and not self.find(device=device, object_type="device"):
+                device.pre_commit_fixup(current_fmt=True)
+            else:
+                device.pre_commit_fixup()
 
         # setup actions to create any extended partitions we added
         #
