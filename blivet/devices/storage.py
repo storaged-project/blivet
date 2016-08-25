@@ -752,7 +752,7 @@ class StorageDevice(Device):
                       lambda d, f: d._set_format(f),
                       doc="The device's formatting.")
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Do any necessary pre-commit fixups."""
         pass
 
