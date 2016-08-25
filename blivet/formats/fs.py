@@ -592,8 +592,6 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if self.label is None:
-            raise FSError("makes no sense to write a label when accepting default label")
 
         if not self.exists:
             raise FSError("filesystem has not been created")
@@ -601,13 +599,16 @@ class FS(DeviceFormat):
         if not self._writelabel.available:
             raise FSError("no application to set label for filesystem %s" % self.type)
 
-        if not self.label_format_ok(self.label):
-            raise FSError("bad label format for labelling application %s" % self._writelabel)
-
         if not os.path.exists(self.device):
             raise FSError("device does not exist")
 
         if not dry_run:
+            if self.label is None:
+                raise FSError("makes no sense to write a label when accepting default label")
+
+            if not self.label_format_ok(self.label):
+                raise FSError("bad label format for labelling application %s" % self._writelabel)
+
             self._writelabel.do_task()
 
     @property
