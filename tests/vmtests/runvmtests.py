@@ -103,34 +103,65 @@ def run_tests(cmd_args):
     """
 
     with virtual_machine(cmd_args) as virt:
-        num_errors = 0
+        test_results = []
+        fails = errors = skips = 0
         for test in TESTS:
             with ssh_connection(cmd_args) as ssh:
+                # clone the repository with tests
                 _stdin, stdout, stderr = ssh.exec_command("git clone %s" % cmd_args.repo)
                 if stdout.channel.recv_exit_status() != 0:
                     raise RuntimeError("Failed to clone test repository.")
 
-                cmd = "export VM_ENVIRONMENT=1 && cd blivet && git checkout %s && \
-                       PYTHONPATH=. python3 -m unittest %s" % (cmd_args.branch, test)
+                # switch to selected branch
+                _stdin, stdout, stderr = ssh.exec_command("cd blivet && git checkout %s" % cmd_args.branch)
+                if stdout.channel.recv_exit_status() != 0:
+                    raise RuntimeError("Failed to switch to brach %s.\nOutput:\n%s\n%s" %
+                                       (cmd_args.branch, stdout.read().decode("utf-8"),
+                                        stderr.read().decode("utf-8")))
+
+                # run the tests
+                cmd = "export VM_ENVIRONMENT=1 && cd blivet && \
+                       PYTHONPATH=. python3 -m unittest %s" % test
                 _stdin, stdout, stderr = ssh.exec_command(cmd)
-                print(stdout.read().decode("utf-8"))
-                print(stderr.read().decode("utf-8"))
-
+                out = stdout.read().decode("utf-8")
+                err = stderr.read().decode("utf-8")
                 ret = stdout.channel.recv_exit_status()
-                if ret != 0:
-                    num_errors += 1
 
+                print(out)
+                print(err)
+
+                # save the result
+                if ret != 0:
+                    if "failures=" in err:
+                        test_results.append((test, "FAILED"))
+                        fails += 1
+                    elif "errors=" in err:
+                        test_results.append((test, "ERROR"))
+                        errors += 1
+                else:
+                    if "skipped=" in err:
+                        test_results.append((test, "SKIPPED"))
+                        skips += 1
+                    else:
+                        test_results.append((test, "OK"))
+
+            # revert to snapshot
             try:
                 snap = virt.snapshotLookupByName(SNAP_NAME)
                 virt.revertToSnapshot(snap)
             except libvirt.libvirtError as e:
                 raise RuntimeError("Failed to revert to snapshot:\n %s", str(e))
 
-    print("================================")
-    print("Ran %d tests. %d failures/errors." % (len(TESTS), num_errors))
-    print("================================")
+    # print combined result of all tests
+    print("======================================================================")
+    for result in test_results:
+        print("%s: %s" % result)
+    print("----------------------------------------------------------------------")
+    print("Ran %d tests. %d failures, %d errors, %d skipped." % (len(test_results),
+                                                                 fails, errors, skips))
+    print("======================================================================")
 
-    return 0 if num_errors == 0 else 1
+    return 0 if (fails + errors) == 0 else 1
 
 
 def main():
