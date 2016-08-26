@@ -182,7 +182,7 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
 
         root = self.blivet.thinlvs[0]
         snap = LVMLogicalVolumeDevice("rootsnap1", parents=[root.pool],
-                                      origin=root)
+                                      origin=root, seg_type="thin")
         self.blivet.create_device(snap)
         self.blivet.do_it()
 
