@@ -161,9 +161,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         """
         log.info("resetting Blivet (version %s) instance %s", __version__, self)
 
-        self.devicetree.reset(passphrase=luks_data.encryption_passphrase,
-                              luks_dict=luks_data.luks_devs,
-                              ignored_disks=self.ignored_disks,
+        self.devicetree.reset(ignored_disks=self.ignored_disks,
                               exclusive_disks=self.exclusive_disks,
                               disk_images=self.disk_images)
         self.devicetree.populate(cleanup_only=cleanup_only)
