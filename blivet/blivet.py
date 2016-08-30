@@ -812,7 +812,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             :rtype: None
         """
         self.devicetree.actions.add(ActionCreateDevice(device))
-        if device.format.type and not device.format_immutable:
+        if device.format.type and not device.format_immutable and not device.format.exists:
             self.devicetree.actions.add(ActionCreateFormat(device))
 
     def destroy_device(self, device):
