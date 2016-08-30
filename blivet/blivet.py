@@ -812,7 +812,10 @@ class Blivet(object, metaclass=SynchronizedMeta):
             :rtype: None
         """
         self.devicetree.actions.add(ActionCreateDevice(device))
-        if device.format.type and not device.format_immutable:
+
+        is_snapshot = isinstance(device, LVMLogicalVolumeDevice) and device.is_snapshot_lv
+
+        if device.format.type and not device.format_immutable and not is_snapshot:
             self.devicetree.actions.add(ActionCreateFormat(device))
 
     def destroy_device(self, device):
