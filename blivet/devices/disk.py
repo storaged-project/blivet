@@ -382,9 +382,11 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         self.ibft = kwargs.pop("ibft")
         self.nic = kwargs.pop("nic")
         self.initiator = kwargs.pop("initiator")
+        self.offload = False
 
         if self.node is None:
             # qla4xxx partial offload
+            self.offload = True
             name = kwargs.pop("fw_name")
             address = kwargs.pop("fw_address")
             port = kwargs.pop("fw_port")
