@@ -1307,7 +1307,7 @@ class LVMSnapshotMixin(object):
         fmt = copy.deepcopy(self.origin.format)
         fmt.exists = False
         if hasattr(fmt, "mountpoint"):
-            fmt.mountpoint = ""
+            fmt.mountpoint = None
             fmt._chrooted_mountpoint = None
             fmt.device = self.path
 
