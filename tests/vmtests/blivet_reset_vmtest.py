@@ -208,7 +208,7 @@ class LVMRaidTestCase(BlivetResetTestCase):
         self.collect_expected_data()
 
 
-@unittest.skip("temporarily disabled due to mdadm issues")
+@unittest.skip("temporarily disabled due to issues with raids with metadata version 0.90")
 class MDRaid0TestCase(BlivetResetTestCase):
 
     """ Verify correct detection of MD RAID0 arrays. """
@@ -260,7 +260,6 @@ class MDRaid0TestCase(BlivetResetTestCase):
                                             name="default")
 
 
-@unittest.skip("temporarily disabled due to mdadm issues")
 class LVMOnMDTestCase(BlivetResetTestCase):
     # This also tests raid1 with the default metadata version.
 
