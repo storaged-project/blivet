@@ -18,6 +18,7 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
+from enum import Enum
 import os
 
 from .. import errors
@@ -25,6 +26,15 @@ from .. import udev
 from ..size import Size
 
 LINUX_SECTOR_SIZE = Size(512)
+
+
+class Tags(str, Enum):
+    """Tags that describe various classes of disk."""
+    local = 'local'
+    remote = 'remote'
+    removable = 'removable'
+    ssd = 'ssd'
+    usb = 'usb'
 
 
 def _collect_device_major_data():
