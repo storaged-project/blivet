@@ -696,9 +696,9 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         device_name = "mpathtest"
         device_get_name.return_value = device_name
-        slave_1 = Mock()
+        slave_1 = Mock(tags=set())
         slave_1.parents = []
-        slave_2 = Mock()
+        slave_2 = Mock(tags=set())
         slave_2.parents = []
         devicetree._add_device(slave_1)
         devicetree._add_device(slave_2)
