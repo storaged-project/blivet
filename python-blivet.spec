@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.55
+Version: 0.61.15.56
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Sep 02 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.56-1
+- Fix an overly inclusive regex in DeviceTree.resolveDevice. (dlehman)
+  Resolves: rhbz#1288118
+
 * Tue Aug 23 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.55-1
 - Fix lookup of md partition's disk. (dlehman)
   Resolves: rhbz#1362161
