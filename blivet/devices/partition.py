@@ -70,7 +70,7 @@ class PartitionDevice(StorageDevice):
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=0):
+                 part_type=None, primary=False, weight=0, disk_tags=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -110,13 +110,27 @@ class PartitionDevice(StorageDevice):
             :type bootable: bool
             :keyword weight: an initial sorting weight to assign
             :type weight: int
+            :keyword disk_tags: (str) tags defining candidate disk set
+            :type disk_tags: iterable
 
             .. note::
 
                 If a start sector is specified the partition will not be
                 adjusted for optimal alignment. That is up to the caller.
+
+            .. note::
+
+                You can only pass one of parents or disk_tags when instantiating
+                a non-existent partition. If both disk set and disk tags are
+                specified, the explicit disk set will be used.
+
+            .. note::
+
+                Multiple disk tags will be combined using the logical "or" operation.
+
         """
         self.req_disks = []
+        self.req_disk_tags = []
         self.req_part_type = None
         self.req_primary = None
         self.req_grow = None
@@ -187,6 +201,7 @@ class PartitionDevice(StorageDevice):
             # XXX It might be worthwhile to create a shit-simple
             #     PartitionRequest class and pass one to this constructor
             #     for new partitions.
+            self.req_disk_tags = list(disk_tags) if disk_tags is not None else list()
             self.req_name = name
             self.req_part_type = part_type
             self.req_primary = primary
