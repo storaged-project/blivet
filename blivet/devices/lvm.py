@@ -937,13 +937,17 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
                        self.target_size != self.current_size)
         if not self.exists:
             data.grow = self.req_grow
-            if self.req_grow:
+            if self.req_percent:
+                data.percent = self.req_percent
+            elif self.req_grow:
+                # use the base size for growable lvs
                 data.size = self.req_size.convert_to(MiB)
-                data.max_size_mb = self.req_max_size.convert_to(MiB)
             else:
                 data.size = self.size.convert_to(MiB)
 
-            data.percent = self.req_percent
+            if self.req_grow:
+                # base size could be literal or percentage
+                data.max_size_mb = self.req_max_size.convert_to(MiB)
         elif data.resize:
             data.size = self.target_size.convert_to(MiB)
 
