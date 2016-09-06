@@ -855,13 +855,16 @@ class LVMLogicalVolumeDevice(DMDevice):
                        self.targetSize != self.currentSize)
         if not self.exists:
             data.grow = self.req_grow
+            if self.req_percent:
+                data.percent = self.req_percent
+
             if self.req_grow:
-                data.size = self.req_size.convertTo(spec="MiB")
+                if not self.req_percent:
+                    data.size = self.req_size.convertTo(spec="MiB")
                 data.maxSizeMB = self.req_max_size.convertTo(spec="MiB")
             else:
-                data.size = self.size.convertTo(spec="MiB")
-
-            data.percent = self.req_percent
+                if not self.req_percent:
+                    data.size = self.size.convertTo(spec="MiB")
         elif data.resize:
             data.size = self.targetSize.convertTo(spec="MiB")
 
