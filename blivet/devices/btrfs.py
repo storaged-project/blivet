@@ -136,6 +136,11 @@ class BTRFSDevice(StorageDevice):
             spec = super(BTRFSDevice, self).fstabSpec
         return spec
 
+    @classmethod
+    def isNameValid(cls, name):
+        # Override StorageDevice.isNameValid to allow pretty much anything
+        return not('\x00' in name)
+
 class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice):
     _type = "btrfs volume"
     vol_id = btrfs.MAIN_VOLUME_ID
@@ -590,11 +595,6 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         label = self.parents[0].format.label
         if label:
             data.devices = ["LABEL=%s" % label]
-
-    @classmethod
-    def isNameValid(cls, name):
-        # Override StorageDevice.isNameValid to allow /
-        return not('\x00' in name or name == '.' or name == '..')
 
 class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
     """ A btrfs snapshot pseudo-device.
