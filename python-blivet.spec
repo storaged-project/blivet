@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.56
+Version: 0.61.15.57
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Sep 07 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.57-1
+- Relax the blivet device name requirements. (dshea)
+  Resolves: rhbz#1259491
+- Do not include both size and percent in kickstart logvol cmd. (dlehman)
+  Resolves: rhbz#1269124
+- Ignore NVDIMMs at OS installation time. (dlehman)
+  Resolves: rhbz#1334448
+
 * Fri Sep 02 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.56-1
 - Fix an overly inclusive regex in DeviceTree.resolveDevice. (dlehman)
   Resolves: rhbz#1288118
