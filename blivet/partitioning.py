@@ -626,6 +626,20 @@ def align_size_for_disklabel(size, disklabel):
     return (grains * grain_size) + (grain_size if rem else Size(0))
 
 
+def resolve_disk_tags(disks, tags):
+    """Resolve disk tags to a disk list.
+
+        :param disks: available disks
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :param tags: tags to select disks based on
+        :type tags: list of str
+
+        If tags contains multiple values it is interpeted as
+        "include disks containing *any* of these tags".
+    """
+    return [disk for disk in disks if any(tag in disk.tags for tag in tags)]
+
+
 def allocate_partitions(storage, disks, partitions, freespace):
     """ Allocate partitions based on requested features.
 
@@ -677,6 +691,8 @@ def allocate_partitions(storage, disks, partitions, freespace):
         if _part.req_disks:
             # use the requested disk set
             req_disks = _part.req_disks
+        elif _part.req_disk_tags:
+            req_disks = resolve_disk_tags(disks, _part.req_disk_tags)
         else:
             # no disks specified means any disk will do
             req_disks = disks

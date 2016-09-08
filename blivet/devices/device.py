@@ -88,6 +88,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
         if parents is not None and not isinstance(parents, list):
             raise ValueError("parents must be a list of Device instances")
 
+        self._tags = set()
         self.parents = parents or []
         self._children = []
 
@@ -300,6 +301,15 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             packages.extend(p for p in parent.packages if p not in packages)
 
         return packages
+
+    @property
+    def tags(self):
+        """ set of (str) tags describing this device. """
+        return self._tags
+
+    @tags.setter
+    def tags(self, newtags):
+        self._tags = set(newtags)
 
     def is_name_valid(self, name):  # pylint: disable=unused-argument
         """Is the device name valid for the device type?"""
