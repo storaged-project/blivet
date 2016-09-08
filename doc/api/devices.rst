@@ -130,6 +130,7 @@ devices
         * :attr:`~blivet.devices.storage.StorageDevice.size`
         * :attr:`~blivet.devices.storage.StorageDevice.status`
         * :attr:`~blivet.devices.storage.StorageDevice.sysfs_path`
+        * :attr:`~blivet.devices.device.Device.tags`
         * :attr:`~blivet.devices.storage.StorageDevice.target_size`
         * :meth:`~blivet.devices.storage.StorageDevice.teardown`
         * :attr:`~blivet.devices.storage.StorageDevice.uuid`

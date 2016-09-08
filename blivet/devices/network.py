@@ -19,6 +19,8 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+from .lib import Tags
+
 
 class NetworkStorageDevice(object):
 
@@ -42,3 +44,5 @@ class NetworkStorageDevice(object):
         """
         self.host_address = host_address
         self.nic = nic
+
+        self.tags.add(Tags.remote)  # pylint: disable=no-member

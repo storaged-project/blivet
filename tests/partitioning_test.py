@@ -9,6 +9,7 @@ from blivet.partitioning import get_next_partition_type
 from blivet.partitioning import do_partitioning
 from blivet.partitioning import allocate_partitions
 from blivet.partitioning import get_free_regions
+from blivet.partitioning import resolve_disk_tags
 from blivet.partitioning import Request
 from blivet.partitioning import Chunk
 from blivet.partitioning import LVRequest
@@ -19,6 +20,7 @@ from blivet.partitioning import PartitionRequest
 from blivet.devices import StorageDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
+from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
 from blivet.devices.lvm import LVMCacheRequest
@@ -723,3 +725,17 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
                          "user-specified extended partition was removed")
 
         self.blivet.do_it()
+
+
+class DiskTagsTestCase(unittest.TestCase):
+    def test_disk_tags(self):
+        disks = []
+        for i in range(3):
+            disk = DiskDevice("disk%d" % i)
+            disk.tags.add(str(i))
+            disks.append(disk)
+
+        self.assertEqual(resolve_disk_tags(disks, ["1"]), [disks[1]])
+        self.assertEqual(resolve_disk_tags(disks, ["0", "2"]), [disks[0], disks[2]])
+        self.assertEqual(resolve_disk_tags(disks, ["local"]), disks)
+        self.assertEqual(resolve_disk_tags(disks, ["canteloupe"]), [])
