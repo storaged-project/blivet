@@ -646,7 +646,7 @@ def resolve_disk_tags(disks, tags):
     return [disk for disk in disks if any(tag in disk.tags for tag in tags)]
 
 
-def allocate_partitions(storage, disks, partitions, freespace):
+def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
     """ Allocate partitions based on requested features.
 
         :param storage: a Blivet instance
