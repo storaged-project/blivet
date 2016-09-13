@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.57
+Version: 0.61.15.58
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Sep 12 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.58-1
+- Don't crash if lvm refuses to activate an lv. (dlehman)
+  Resolves: rhbz#1365758
+
 * Wed Sep 07 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.57-1
 - Relax the blivet device name requirements. (dshea)
   Resolves: rhbz#1259491
