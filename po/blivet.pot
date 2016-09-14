@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-04 14:51-0400\n"
+"POT-Creation-Date: 2016-09-14 10:45-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,9 +16,67 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: ../blivet/blivet.py:1201
-msgid "You must create a new filesystem on the root device."
+#: ../blivet/partitioning.py:430
+msgid "unable to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:438
+msgid "requested size exceeds maximum allowed"
+msgstr ""
+
+#: ../blivet/partitioning.py:554
+#, python-format
+msgid "disk %s inaccessible"
+msgstr ""
+
+#: ../blivet/partitioning.py:611
+#, python-format
+msgid ""
+"partition is too small for %(format)s formatting (allowable size is "
+"%(min_size)s to %(max_size)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:616
+#, python-format
+msgid ""
+"partition is too large for %(format)s formatting (allowable size is "
+"%(min_size)s to %(max_size)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:921
+msgid "Unable to allocate requested partition scheme."
+msgstr ""
+
+#: ../blivet/partitioning.py:956
+msgid "not enough free space after creating extended partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:963
+msgid "failed to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:1163
+msgid "cannot reclaim more than request has grown"
+msgstr ""
+
+#: ../blivet/partitioning.py:1377
+msgid "DiskChunk requests must be of type PartitionRequest"
+msgstr ""
+
+#: ../blivet/partitioning.py:1390
+msgid "partitions allocated outside disklabel limits"
+msgstr ""
+
+#: ../blivet/partitioning.py:1475
+msgid "VGChunk requests must be of type LVRequest"
+msgstr ""
+
+#. by now we have allocated the PVs so if there isn't enough
+#. space in the VG we have a real problem
+#: ../blivet/partitioning.py:1986
+msgid "not enough space for LVM requests"
 msgstr ""
 
 #: ../blivet/iscsi.py:190
@@ -49,162 +107,16 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/partitioning.py:430
-msgid "unable to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:438
-msgid "requested size exceeds maximum allowed"
-msgstr ""
-
-#: ../blivet/partitioning.py:554
-#, python-format
-msgid "disk %s inaccessible"
-msgstr ""
-
-#: ../blivet/partitioning.py:611
-#, python-format
-msgid ""
-"partition is too small for %(format)s formatting (allowable size is "
-"%(min_size)s to %(max_size)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:616
-#, python-format
-msgid ""
-"partition is too large for %(format)s formatting (allowable size is "
-"%(min_size)s to %(max_size)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:905
-msgid "Unable to allocate requested partition scheme."
-msgstr ""
-
-#: ../blivet/partitioning.py:934
-msgid "not enough free space after creating extended partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:941
-msgid "failed to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:1141
-msgid "cannot reclaim more than request has grown"
-msgstr ""
-
-#: ../blivet/partitioning.py:1355
-msgid "DiskChunk requests must be of type PartitionRequest"
-msgstr ""
-
-#: ../blivet/partitioning.py:1368
-msgid "partitions allocated outside disklabel limits"
-msgstr ""
-
-#: ../blivet/partitioning.py:1453
-msgid "VGChunk requests must be of type LVRequest"
-msgstr ""
-
-#. by now we have allocated the PVs so if there isn't enough
-#. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1964
-msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/platform.py:53
-msgid "bootloader device"
-msgstr ""
-
-#: ../blivet/platform.py:55
-msgid "RAID Device"
-msgstr ""
-
-#: ../blivet/platform.py:56
-msgid "First sector of boot partition"
-msgstr ""
-
-#: ../blivet/platform.py:195 ../blivet/platform.py:349
-#: ../blivet/platform.py:377
-msgid "Master Boot Record"
-msgstr ""
-
-#: ../blivet/platform.py:203
-msgid ""
-"You must include at least one MBR- or GPT-formatted disk as an install "
-"target."
-msgstr ""
-
-#: ../blivet/platform.py:233 ../blivet/formats/fs.py:800
-msgid "EFI System Partition"
-msgstr ""
-
-#: ../blivet/platform.py:240
-msgid ""
-"For a UEFI installation, you must include an EFI System Partition on a GPT-"
-"formatted disk, mounted at /boot/efi."
-msgstr ""
-
-#: ../blivet/platform.py:263
-msgid "Apple EFI Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:291
-msgid "PReP Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:294
-msgid ""
-"You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
-"GPT-formatted disk."
-msgstr ""
-
-#: ../blivet/platform.py:316
-msgid "Apple Bootstrap Partition"
-msgstr ""
-
-#: ../blivet/platform.py:320
-msgid ""
-"You must include an Apple Bootstrap Partition on an Apple Partition Map-"
-"formatted disk."
-msgstr ""
-
-#: ../blivet/platform.py:348
-msgid "DASD"
-msgstr ""
-
-#: ../blivet/platform.py:350
-msgid "zFCP"
-msgstr ""
-
-#: ../blivet/platform.py:355
-msgid ""
-"You must include at least one MBR- or DASD-formatted disk as an install "
-"target."
-msgstr ""
-
-#: ../blivet/platform.py:382
-msgid "You must include at least one MBR-formatted disk as an install target."
-msgstr ""
-
-#: ../blivet/platform.py:405
-msgid "U-Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:407
-msgid ""
-"You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
-"boot/uboot."
-msgstr ""
-
 #. no big enough free space for the requested partition
-#: ../blivet/autopart.py:277
+#: ../blivet/autopart.py:275
 msgid "No big enough free space on disks for automatic partitioning"
 msgstr ""
 
-#: ../blivet/autopart.py:442 ../blivet/autopart.py:494
+#: ../blivet/autopart.py:440 ../blivet/autopart.py:492
 msgid "No usable disks selected"
 msgstr ""
 
-#: ../blivet/autopart.py:447 ../blivet/autopart.py:502
+#: ../blivet/autopart.py:445 ../blivet/autopart.py:503
 msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
@@ -296,107 +208,215 @@ msgstr ""
 msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/osinstall.py:258
+#: ../blivet/osinstall.py:259
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/osinstall.py:263
+#: ../blivet/osinstall.py:264
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/osinstall.py:265
+#: ../blivet/osinstall.py:266
 #, python-format
 msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/osinstall.py:268
+#: ../blivet/osinstall.py:269
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/errors.py:198
+#: ../blivet/errors.py:206
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
 "kernel is reporting partitions on. It is unclear what the exact problem is. "
 "Please file a bug at http://bugzilla.redhat.com"
 msgstr ""
 
-#: ../blivet/errors.py:205
+#: ../blivet/errors.py:213
 msgid ""
 "Either restore the disklabel to a completely working state or remove it "
 "completely.\n"
 "Hint: parted can restore it or wipefs can remove it."
 msgstr ""
 
-#: ../blivet/errors.py:211
+#: ../blivet/errors.py:219
 msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
-#: ../blivet/deviceaction.py:182
+#: ../blivet/platform.py:53
+msgid "bootloader device"
+msgstr ""
+
+#: ../blivet/platform.py:55
+msgid "RAID Device"
+msgstr ""
+
+#: ../blivet/platform.py:56
+msgid "First sector of boot partition"
+msgstr ""
+
+#: ../blivet/platform.py:195 ../blivet/platform.py:350
+#: ../blivet/platform.py:378
+msgid "Master Boot Record"
+msgstr ""
+
+#: ../blivet/platform.py:203
+msgid ""
+"You must include at least one MBR- or GPT-formatted disk as an install "
+"target."
+msgstr ""
+
+#: ../blivet/platform.py:233 ../blivet/formats/fs.py:800
+msgid "EFI System Partition"
+msgstr ""
+
+#: ../blivet/platform.py:240
+msgid ""
+"For a UEFI installation, you must include an EFI System Partition on a GPT-"
+"formatted disk, mounted at /boot/efi."
+msgstr ""
+
+#: ../blivet/platform.py:263
+msgid "Apple EFI Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:292
+msgid "PReP Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:295
+msgid ""
+"You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
+"GPT-formatted disk."
+msgstr ""
+
+#: ../blivet/platform.py:317
+msgid "Apple Bootstrap Partition"
+msgstr ""
+
+#: ../blivet/platform.py:321
+msgid ""
+"You must include an Apple Bootstrap Partition on an Apple Partition Map-"
+"formatted disk."
+msgstr ""
+
+#: ../blivet/platform.py:349
+msgid "DASD"
+msgstr ""
+
+#: ../blivet/platform.py:351
+msgid "zFCP"
+msgstr ""
+
+#: ../blivet/platform.py:356
+msgid ""
+"You must include at least one MBR- or DASD-formatted disk as an install "
+"target."
+msgstr ""
+
+#: ../blivet/platform.py:383
+msgid "You must include at least one MBR-formatted disk as an install target."
+msgstr ""
+
+#: ../blivet/platform.py:406
+msgid "U-Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:408
+msgid ""
+"You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
+"boot/uboot."
+msgstr ""
+
+#: ../blivet/blivet.py:1236
+msgid "You must create a new filesystem on the root device."
+msgstr ""
+
+#: ../blivet/deviceaction.py:183
 #, python-format
 msgid "Executing %(action)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:306
+#: ../blivet/deviceaction.py:307
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:365
+#: ../blivet/deviceaction.py:366
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:440
+#: ../blivet/deviceaction.py:441
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:523
+#: ../blivet/deviceaction.py:524
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:563
+#: ../blivet/deviceaction.py:564
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:589
+#: ../blivet/deviceaction.py:594
 #, python-format
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:619
+#: ../blivet/deviceaction.py:624
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:666
+#: ../blivet/deviceaction.py:671
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:764
+#: ../blivet/deviceaction.py:776
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:800
+#: ../blivet/deviceaction.py:812
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:807
+#: ../blivet/deviceaction.py:819
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:851
+#: ../blivet/deviceaction.py:863
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:916
+#: ../blivet/deviceaction.py:928
 msgid "remove container member"
 msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:57
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:58
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devices/raid.py:58
+#, python-format
+msgid ""
+"RAID level %(raid_level)s requires that device have at least %(min_members)d "
+"member."
+msgid_plural ""
+"RAID level %(raid_level)s requires that device have at least %(min_members)d "
+"members."
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../blivet/devices/raid.py:79
 #, python-format
@@ -407,14 +427,6 @@ msgstr ""
 #: ../blivet/devices/raid.py:104
 #, python-format
 msgid "Cannot remove a member from existing %s array"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:57
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:58
-msgid "Performance"
 msgstr ""
 
 #: ../blivet/formats/fs.py:973
@@ -429,16 +441,16 @@ msgstr ""
 msgid "PPC PReP Boot"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:43
-msgid "software RAID"
-msgstr ""
-
 #: ../blivet/formats/luks.py:47
 msgid "LUKS"
 msgstr ""
 
 #: ../blivet/formats/luks.py:48
 msgid "Encrypted"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:144
+msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:35
@@ -449,12 +461,17 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:170
-msgid "Unknown"
-msgstr ""
-
 #: ../blivet/formats/disklabel.py:46
 msgid "partition table"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:246
+#, python-format
+msgid "Unsupported %(name)s"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:43
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:40

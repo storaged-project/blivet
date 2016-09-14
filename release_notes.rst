@@ -1,3 +1,33 @@
+2.1.2
+======
+* `Separate data/metadata LVs for thin/cache LVs`_
+
+Separate data/metadata LVs for thin/cache LVs
+----------------------------------------------
+LVM thin pools and cached LVs can now be created from separate data/metadata LVs.
+
+
+2.1.1
+======
+* `Improved handling for unsupported/corrupt disklabels`_
+
+Improved handling for unsupported/corrupt disklabels
+-----------------------------------------------------
+Devices built on disklabels which are either corrupt or otherwise
+not supported by parted are now correctly recognized and included
+in the ``DeviceTree``. This means that users can now properly remove
+all devices from such disks.
+
+
+2.1.0
+======
+* `MD chunk size`
+
+MD chunk size
+--------------
+Chunk size can now be specified when instantiating ``blivet.devices.MDRaidArrayDevice``.
+
+
 2.0.0
 ======
 
