@@ -1797,6 +1797,13 @@ class VGChunk(Chunk):
             raise ValueError(_("VGChunk requests must be of type "
                              "LVRequest"))
 
+        if req.device.metaDataSize:
+            self.pool -= int(self.vg.align(req.device.metaDataSize, roundup=True) / self.vg.peSize)
+
+        if req.device.cached:
+            # cached LV -> reserve space for the cache
+            self.pool -= int(self.vg.align(req.device.cache.size, roundup=True) / self.vg.peSize)
+
         super(VGChunk, self).addRequest(req)
 
     def lengthToSize(self, length):
