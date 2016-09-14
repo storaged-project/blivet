@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-05 12:46-0400\n"
+"POT-Creation-Date: 2016-09-14 10:45-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-
-#: ../blivet/blivet.py:1236
-msgid "You must create a new filesystem on the root device."
-msgstr ""
 
 #: ../blivet/partitioning.py:430
 msgid "unable to allocate aligned partition"
@@ -49,42 +45,79 @@ msgid ""
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:905
+#: ../blivet/partitioning.py:921
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:940
+#: ../blivet/partitioning.py:956
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:947
+#: ../blivet/partitioning.py:963
 msgid "failed to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1147
+#: ../blivet/partitioning.py:1163
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1361
+#: ../blivet/partitioning.py:1377
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1374
+#: ../blivet/partitioning.py:1390
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1459
+#: ../blivet/partitioning.py:1475
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1970
+#: ../blivet/partitioning.py:1986
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:118
-msgid "FCoE not available"
+#: ../blivet/iscsi.py:190
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:192
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:353
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:355
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:465
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:485
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:488
+msgid "Could not log in to any of the discovered nodes"
+msgstr ""
+
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:275
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:440 ../blivet/autopart.py:492
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:445 ../blivet/autopart.py:503
+msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -169,6 +202,50 @@ msgstr ""
 #: ../blivet/zfcp.py:270
 #, python-format
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
+msgstr ""
+
+#: ../blivet/fcoe.py:118
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/osinstall.py:259
+#, python-format
+msgid "Linux on %s"
+msgstr ""
+
+#: ../blivet/osinstall.py:264
+msgid "Unknown Linux"
+msgstr ""
+
+#: ../blivet/osinstall.py:266
+#, python-format
+msgid "%(product)s %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/osinstall.py:269
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/errors.py:206
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
+msgstr ""
+
+#: ../blivet/errors.py:213
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
+msgstr ""
+
+#: ../blivet/errors.py:219
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
 #: ../blivet/platform.py:53
@@ -256,85 +333,8 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:275
-msgid "No big enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/autopart.py:440 ../blivet/autopart.py:492
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/autopart.py:445 ../blivet/autopart.py:503
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/osinstall.py:259
-#, python-format
-msgid "Linux on %s"
-msgstr ""
-
-#: ../blivet/osinstall.py:264
-msgid "Unknown Linux"
-msgstr ""
-
-#: ../blivet/osinstall.py:266
-#, python-format
-msgid "%(product)s %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/osinstall.py:269
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/errors.py:206
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:213
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:219
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
-#: ../blivet/iscsi.py:190
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:192
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:353
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:355
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:465
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:485
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:488
-msgid "Could not log in to any of the discovered nodes"
+#: ../blivet/blivet.py:1236
+msgid "You must create a new filesystem on the root device."
 msgstr ""
 
 #: ../blivet/deviceaction.py:183
@@ -377,25 +377,25 @@ msgstr ""
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:769
+#: ../blivet/deviceaction.py:776
 msgid "resize format"
-msgstr ""
-
-#: ../blivet/deviceaction.py:805
-#, python-format
-msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
 #: ../blivet/deviceaction.py:812
 #, python-format
+msgid "Resizing filesystem on %(device)s"
+msgstr ""
+
+#: ../blivet/deviceaction.py:819
+#, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:856
+#: ../blivet/deviceaction.py:863
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:921
+#: ../blivet/deviceaction.py:928
 msgid "remove container member"
 msgstr ""
 
@@ -429,10 +429,6 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:144
-msgid "Unknown"
-msgstr ""
-
 #: ../blivet/formats/fs.py:973
 msgid "Apple Bootstrap"
 msgstr ""
@@ -451,6 +447,10 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:48
 msgid "Encrypted"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:144
+msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:35
