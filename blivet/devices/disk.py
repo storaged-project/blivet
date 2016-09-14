@@ -40,6 +40,7 @@ from ..fcoe import fcoe
 import logging
 log = logging.getLogger("blivet")
 
+from .lib import Tags
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .network import NetworkStorageDevice
@@ -94,6 +95,23 @@ class DiskDevice(StorageDevice):
                                sysfs_path=sysfs_path, parents=parents,
                                serial=serial, model=model,
                                vendor=vendor, bus=bus)
+
+        try:
+            ssd = int(util.get_sysfs_attr(self.sysfs_path, "queue/rotational")) == 0
+        except TypeError:  # get_sysfs_attr returns None from all error paths
+            ssd = False
+
+        self.tags.add(Tags.local)
+        if ssd:
+            self.tags.add(Tags.ssd)
+        if bus == "usb":
+            self.tags.add(Tags.usb)
+        if self.removable:
+            self.tags.add(Tags.removable)
+
+    def _clear_local_tags(self):
+        local_tags = set([Tags.local, Tags.ssd, Tags.usb, Tags.removable])
+        self.tags = self.tags.difference(local_tags)
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
@@ -204,6 +222,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         super(DMRaidArrayDevice, self).__init__(name, fmt=fmt, size=size,
                                                 parents=parents, exists=True,
                                                 sysfs_path=sysfs_path)
+        self.tags.add(Tags.local)
 
     @property
     def devices(self):
@@ -332,6 +351,17 @@ class MultipathDevice(DMDevice):
         else:
             self.parents.append(parent)
 
+    def _add_parent(self, parent):
+        super()._add_parent(parent)
+        if Tags.remote not in self.tags and Tags.remote in parent.tags:
+            self.tags.add(Tags.remote)
+
+    def _remove_parent(self, parent):
+        super()._remove_parent(parent)
+        if Tags.remote in self.tags and Tags.remote in parent.tags and \
+           not any(p for p in self.parents if Tags.remote in p.tags and p != parent):
+            self.tags.remove(Tags.remote)
+
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
@@ -382,9 +412,11 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         self.ibft = kwargs.pop("ibft")
         self.nic = kwargs.pop("nic")
         self.initiator = kwargs.pop("initiator")
+        self.offload = False
 
         if self.node is None:
             # qla4xxx partial offload
+            self.offload = True
             name = kwargs.pop("fw_name")
             address = kwargs.pop("fw_address")
             port = kwargs.pop("fw_port")
@@ -403,6 +435,8 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
                       self.node.port,
                       self.node.iface,
                       self.nic)
+
+        self._clear_local_tags()
 
     def dracut_setup_args(self):
         if self.ibft:
@@ -466,6 +500,8 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         log.debug("created new fcoe disk %s (%s) @ %s",
                   device, self.identifier, self.nic)
 
+        self._clear_local_tags()
+
     def dracut_setup_args(self):
         dcb = True
 
@@ -511,6 +547,8 @@ class ZFCPDiskDevice(DiskDevice):
         self.wwpn = kwargs.pop("wwpn")
         self.fcp_lun = kwargs.pop("fcp_lun")
         DiskDevice.__init__(self, device, **kwargs)
+        self._clear_local_tags()
+        self.tags.add(Tags.remote)
 
     def __repr__(self):
         s = DiskDevice.__repr__(self)

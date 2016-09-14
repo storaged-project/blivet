@@ -91,6 +91,6 @@ setup(name='blivet', version='2.1.2',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
-      url='http://fedoraproject.org/wiki/blivet',
+      url='http://github.com/rhinstaller/blivet',
       data_files=data_files,
       packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'])

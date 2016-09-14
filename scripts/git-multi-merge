@@ -12,11 +12,22 @@ set -e
 origin=$1; shift
 git fetch $origin
 
+if [ $? -ne 0 ]; then
+    echo "Failed to fetch $origin!" >&2
+    exit 1
+fi
+
 # rebase the source branch
 src=$1; shift
 # checkout the $origin/$src branch to check if it exists and thus prevent
 # merging local branches
 git checkout $origin/$src
+
+if [ $? -ne 0 ]; then
+    echo "Can't checkout $src branch!" >&2
+    exit 2
+fi
+
 # make sure the $src branch is up to date
 git checkout $src
 git rebase $origin/$src

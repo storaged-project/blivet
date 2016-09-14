@@ -70,7 +70,7 @@ class PartitionDevice(StorageDevice):
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=0):
+                 part_type=None, primary=False, weight=0, disk_tags=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -110,13 +110,27 @@ class PartitionDevice(StorageDevice):
             :type bootable: bool
             :keyword weight: an initial sorting weight to assign
             :type weight: int
+            :keyword disk_tags: (str) tags defining candidate disk set
+            :type disk_tags: iterable
 
             .. note::
 
                 If a start sector is specified the partition will not be
                 adjusted for optimal alignment. That is up to the caller.
+
+            .. note::
+
+                You can only pass one of parents or disk_tags when instantiating
+                a non-existent partition. If both disk set and disk tags are
+                specified, the explicit disk set will be used.
+
+            .. note::
+
+                Multiple disk tags will be combined using the logical "or" operation.
+
         """
         self.req_disks = []
+        self.req_disk_tags = []
         self.req_part_type = None
         self.req_primary = None
         self.req_grow = None
@@ -187,6 +201,7 @@ class PartitionDevice(StorageDevice):
             # XXX It might be worthwhile to create a shit-simple
             #     PartitionRequest class and pass one to this constructor
             #     for new partitions.
+            self.req_disk_tags = list(disk_tags) if disk_tags is not None else list()
             self.req_name = name
             self.req_part_type = part_type
             self.req_primary = primary
@@ -358,7 +373,7 @@ class PartitionDevice(StorageDevice):
     parted_partition = property(lambda d: d._get_parted_partition(),
                                 lambda d, p: d._set_parted_partition(p))
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Re-get self.parted_partition from the original disklabel. """
         log_method_call(self, self.name)
         if not self.exists or not self.disklabel_supported:
@@ -366,7 +381,10 @@ class PartitionDevice(StorageDevice):
 
         # find the correct partition on the original parted.Disk since the
         # name/number we're now using may no longer match
-        _disklabel = self.disk.original_format
+        if not current_fmt:
+            _disklabel = self.disk.original_format
+        else:
+            _disklabel = self.disk.format
 
         if self.is_extended:
             # getPartitionBySector doesn't work on extended partitions
