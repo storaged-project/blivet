@@ -264,7 +264,11 @@ class LVMFormatPopulator(FormatPopulator):
                                                    exists=True, **lv_kwargs)
                 self._devicetree._add_device(lv_device)
                 if flags.installer_mode:
-                    lv_device.setup()
+                    try:
+                        lv_device.setup()
+                    except blockdev.LVMError:
+                        log.warning("failed to activate lv %s", lv_device.name)
+                        lv_device.controllable = False
 
                 if lv_device.status:
                     lv_device.update_sysfs_path()
