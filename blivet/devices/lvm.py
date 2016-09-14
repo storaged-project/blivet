@@ -1185,8 +1185,11 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
 
     @property
     def vgSpaceUsed(self):
-        space = super(LVMThinPoolDevice, self).vgSpaceUsed
-        space += lvm.get_pool_padding(space, pesize=self.vg.peSize)
+        cache_size = Size(0)
+        if self.cached:
+            cache_size = self.cache.size
+        space = self.vg.align(self.size, roundup=True) * self.copies + self.logSize + self.metaDataSize + cache_size
+        space += lvm.get_pool_padding(self.size, pesize=self.vg.peSize)
         return space
 
     @property
