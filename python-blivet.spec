@@ -1,11 +1,11 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.1.3
+Version: 2.2.0
 
-#%%global prerelease .b1
+%global prerelease .dev1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 1%{?prerelease}%{?dist}
+Release: 0.1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -82,6 +82,40 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 /usr/lib/systemd/system/*
 
 %changelog
+* Wed Sep 14 2016 David Lehman <dlehman@redhat.com> - 2.2.0-0.1.dev1
+- Default to LVM in the device factory. (dlehman)
+- Add callbacks for populate (vpodzime)
+- Only overwrite current format if the new one is different. (dlehman)
+- Add a Factory method to DBusBlivet. (dlehman)
+- Update example dbus client to account for Format interface. (dlehman)
+- Add a Commit method to DBusBlivet. (dlehman)
+- Move removed devices and formats into different subtrees. (dlehman)
+- Use the object manager to look up objects. (dlehman)
+- Add mappings of objects by id and object path to ObjectManager. (dlehman)
+- Add an id property to DBusObject. (dlehman)
+- Add an Action interface to the dbus service. (dlehman)
+- Make sure DBusFormat's Type property is always a string. (dlehman)
+- Add a Format interface to the dbus service. (dlehman)
+- Add method DBusBlivet.InitializeDisk. (dlehman)
+- Add a unit test for DBusBlivet.RemoveDevice. (dlehman)
+- Maintain a mapping of object path to DBusDevice in DBusBlivet. (dlehman)
+- Correctly handle failures in ResolveDevice. (dlehman)
+- Add a RemoveDevice method to DBusBlivet. (dlehman)
+- Convert event handling change accounting to use blivet callbacks. (dlehman)
+- Add a set of callbacks for changes to blivet's view of things. (dlehman)
+- Allow replacing an active format within blivet's model. (dlehman)
+- Add the beginnings of an example client. (dlehman)
+- Add a Device interface to the dbus service. (dlehman)
+- Add an ObjectManager interface to the dbus service. (dlehman)
+- Make DBusBlivet names more dbus-like. (dlehman)
+- Clean up org.freedesktop.DBus.Properties code in DBusObject a bit. (dlehman)
+- Move constants into a separate module. (dlehman)
+- Convert some private methods to public properties. (dlehman)
+- Import the whole dbus module in a couple of places. (dlehman)
+- Add a minimal dbus interface. (dlehman)
+- Rearrange the setup call to minimize changes on updates. (dlehman)
+- Remove unused readthedocs code from setup.py. (dlehman)
+
 * Wed Sep 14 2016 David Lehman <dlehman@redhat.com> - 2.1.3-1
 - Remove some deprecated/obsolete bits from spec file. (dlehman)
 - Use %%global instead of %%define for specfile macros. (dlehman)
