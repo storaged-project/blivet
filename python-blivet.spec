@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.58
+Version: 0.61.15.59
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Sep 15 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.59-1
+- Properly calculate thin pool's vgSpaceUsed (vpodzime)
+  Related: rhbz#1374499
+- Remove cache and metadata space from pool for an LVRequest (vpodzime)
+  Resolves: rhbz#1374499
+
 * Mon Sep 12 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.58-1
 - Don't crash if lvm refuses to activate an lv. (dlehman)
   Resolves: rhbz#1365758
