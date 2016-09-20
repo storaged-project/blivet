@@ -369,7 +369,7 @@ class iSCSI(object):
             if r_password:
                 auth_info["r_password"] = GLib.Variant("s", r_password)
 
-            args = GLib.Variant("(sqa{sv}", ipaddr, port, auth_info)
+            args = GLib.Variant("(sqa{sv})", (ipaddr, port, auth_info))
             nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", args)
 
             found_nodes = _to_node_infos(nodes)
