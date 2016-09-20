@@ -24,15 +24,26 @@ def parse_args():
     parser.add_argument("--connection", type=str, help="Libvirt connection URI", required=True)
     parser.add_argument("--name", type=str, help="Name of the virtual machine", required=True)
     parser.add_argument("--ip", type=str, help="IP adress of the virtual machine", required=True)
-    parser.add_argument("--passphrase", type=str, help="Root passphrase for the virtual machine", required=True)
+    parser.add_argument("--vmpass", type=str, help="Root passphrase for the virtual machine", required=True)
+    parser.add_argument("--virtpass", type=str, help="Root passphrase for the libvirt host", required=False)
     args = parser.parse_args()
     return args
 
 
+def request_cred(credentials, cmd_args):
+    for credential in credentials:
+        if credential[0] == libvirt.VIR_CRED_AUTHNAME:
+            credential[4] = "root"
+        elif credential[0] == libvirt.VIR_CRED_PASSPHRASE:
+            credential[4] = cmd_args.virtpass
+    return 0
+
+
 @contextmanager
 def virtual_machine(cmd_args):
+    auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE], request_cred, None]
     try:
-        conn = libvirt.open(cmd_args.connection)
+        conn = libvirt.openAuth(cmd_args.connection, auth, 0)
     except libvirt.libvirtError as e:
         raise RuntimeError("Failed to open connection:\n%s", str(e))
 
@@ -86,7 +97,7 @@ def ssh_connection(cmd_args):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
-        ssh.connect(cmd_args.ip, username="root", password=cmd_args.passphrase)
+        ssh.connect(cmd_args.ip, username="root", password=cmd_args.virtpass)
     except paramiko.AuthenticationException:
         raise RuntimeError("Authentication failed while trying to connect to virtual machine.")
 
