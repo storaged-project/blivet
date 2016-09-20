@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.1.3
+Version: 2.1.4
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -78,6 +78,13 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Sep 20 2016 David Lehman <dlehman@redhat.com> - 2.1.4-1
+- Revert unsupported clearing of parted partition 'system'. (dlehman)
+- Make sure we create a proper GVariant tuple as args (#1375712) (vpodzime)
+- Do not include both size and percent in logvol ks cmd. (dlehman)
+- Ignore NVDIMMs at OS installation time. (dlehman)
+- Don't crash if lvm refuses to activate an lv. (dlehman)
+
 * Wed Sep 14 2016 David Lehman <dlehman@redhat.com> - 2.1.3-1
 - Remove some deprecated/obsolete bits from spec file. (dlehman)
 - Use %%global instead of %%define for specfile macros. (dlehman)

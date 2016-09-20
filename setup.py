@@ -87,7 +87,7 @@ if os.environ.get("READTHEDOCS", False):
     api_doc_files = rst_files + ["doc/conf.py"]
     data_files.append(("docs/blivet", api_doc_files))
 
-setup(name='blivet', version='2.1.3',
+setup(name='blivet', version='2.1.4',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',

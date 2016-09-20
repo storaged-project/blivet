@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-14 10:45-0400\n"
+"POT-Creation-Date: 2016-09-20 13:50-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: ../blivet/blivet.py:1236
+msgid "You must create a new filesystem on the root device."
+msgstr ""
 
 #: ../blivet/partitioning.py:430
 msgid "unable to allocate aligned partition"
@@ -107,19 +111,6 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:275
-msgid "No big enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/autopart.py:440 ../blivet/autopart.py:492
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/autopart.py:445 ../blivet/autopart.py:503
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
 #: ../blivet/zfcp.py:61
 msgid "You have not specified a device number or the number is invalid"
 msgstr ""
@@ -204,27 +195,21 @@ msgstr ""
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
 msgstr ""
 
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:275
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:440 ../blivet/autopart.py:492
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:445 ../blivet/autopart.py:503
+msgid "Not enough free space on disks for automatic partitioning"
+msgstr ""
+
 #: ../blivet/fcoe.py:118
 msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/osinstall.py:259
-#, python-format
-msgid "Linux on %s"
-msgstr ""
-
-#: ../blivet/osinstall.py:264
-msgid "Unknown Linux"
-msgstr ""
-
-#: ../blivet/osinstall.py:266
-#, python-format
-msgid "%(product)s %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/osinstall.py:269
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/errors.py:206
@@ -333,8 +318,23 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/blivet.py:1236
-msgid "You must create a new filesystem on the root device."
+#: ../blivet/osinstall.py:259
+#, python-format
+msgid "Linux on %s"
+msgstr ""
+
+#: ../blivet/osinstall.py:264
+msgid "Unknown Linux"
+msgstr ""
+
+#: ../blivet/osinstall.py:266
+#, python-format
+msgid "%(product)s %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/osinstall.py:269
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/deviceaction.py:183
@@ -377,25 +377,25 @@ msgstr ""
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:776
+#: ../blivet/deviceaction.py:774
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:812
+#: ../blivet/deviceaction.py:810
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:819
+#: ../blivet/deviceaction.py:817
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:863
+#: ../blivet/deviceaction.py:861
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:928
+#: ../blivet/deviceaction.py:926
 msgid "remove container member"
 msgstr ""
 
