@@ -690,15 +690,17 @@ class ActionDestroyFormat(DeviceAction):
     def execute(self, callbacks=None):
         """ wipe the filesystem signature from the device """
         # remove any flag if set
-        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
-            if self.format.parted_flag:
-                self.device.unset_flag(self.format.parted_flag)
-            self.device.disk.format.commit_to_disk()
         super(ActionDestroyFormat, self).execute(callbacks=callbacks)
         status = self.device.status
         self.device.setup(orig=True)
         self.format.destroy()
         udev.settle()
+        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
+            if self.format.parted_flag:
+                self.device.unset_flag(self.format.parted_flag)
+            self.device.disk.original_format.commit_to_disk()
+            udev.settle()
+
         if not status:
             self.device.teardown()
 
