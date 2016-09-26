@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-20 13:50-0400\n"
+"POT-Creation-Date: 2016-09-26 13:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,34 +81,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1986
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/iscsi.py:190
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:192
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:353
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:355
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:465
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:485
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:488
-msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -210,6 +182,25 @@ msgstr ""
 
 #: ../blivet/fcoe.py:118
 msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/osinstall.py:259
+#, python-format
+msgid "Linux on %s"
+msgstr ""
+
+#: ../blivet/osinstall.py:264
+msgid "Unknown Linux"
+msgstr ""
+
+#: ../blivet/osinstall.py:266
+#, python-format
+msgid "%(product)s %(version)s for %(arch)s"
+msgstr ""
+
+#: ../blivet/osinstall.py:269
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/errors.py:206
@@ -318,23 +309,32 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/osinstall.py:259
-#, python-format
-msgid "Linux on %s"
+#: ../blivet/iscsi.py:190
+msgid "Unable to change iSCSI initiator name once set"
 msgstr ""
 
-#: ../blivet/osinstall.py:264
-msgid "Unknown Linux"
+#: ../blivet/iscsi.py:192
+msgid "Must provide an iSCSI initiator name"
 msgstr ""
 
-#: ../blivet/osinstall.py:266
-#, python-format
-msgid "%(product)s %(version)s for %(arch)s"
+#: ../blivet/iscsi.py:353
+msgid "iSCSI not available"
 msgstr ""
 
-#: ../blivet/osinstall.py:269
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
+#: ../blivet/iscsi.py:355
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:465
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:485
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:488
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/deviceaction.py:183
@@ -377,25 +377,25 @@ msgstr ""
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:774
+#: ../blivet/deviceaction.py:776
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:810
+#: ../blivet/deviceaction.py:812
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:817
+#: ../blivet/deviceaction.py:819
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:861
+#: ../blivet/deviceaction.py:863
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:926
+#: ../blivet/deviceaction.py:928
 msgid "remove container member"
 msgstr ""
 
@@ -441,16 +441,16 @@ msgstr ""
 msgid "PPC PReP Boot"
 msgstr ""
 
+#: ../blivet/formats/mdraid.py:43
+msgid "software RAID"
+msgstr ""
+
 #: ../blivet/formats/luks.py:47
 msgid "LUKS"
 msgstr ""
 
 #: ../blivet/formats/luks.py:48
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:144
-msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:35
@@ -461,17 +461,18 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
+#: ../blivet/formats/__init__.py:144
+msgid "Unknown"
+msgstr ""
+
 #: ../blivet/formats/disklabel.py:46
 msgid "partition table"
 msgstr ""
 
-#: ../blivet/formats/disklabel.py:246
+#. Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
+#: ../blivet/formats/disklabel.py:247
 #, python-format
 msgid "Unsupported %(name)s"
-msgstr ""
-
-#: ../blivet/formats/mdraid.py:43
-msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:40
