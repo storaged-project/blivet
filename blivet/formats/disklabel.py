@@ -243,6 +243,7 @@ class DiskLabel(DeviceFormat):
         if self.supported:
             _str = "%(name)s (%(type)s)"
         else:
+            # Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
             _str = _("Unsupported %(name)s")
 
         return _str % {"name": _(self._name), "type": self.label_type.upper()}
