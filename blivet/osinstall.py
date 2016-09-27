@@ -250,7 +250,7 @@ def _find_existing_installations(devicetree):
 
         if not os.access(get_sysroot() + "/etc/fstab", os.R_OK):
             util.umount(mountpoint=get_sysroot())
-            device.teardown(recursive=True)
+            device.teardown()
             continue
 
         try:

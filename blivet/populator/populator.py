@@ -418,6 +418,9 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
     def teardown_disk_images(self):
         """ Tear down any disk image stacks. """
+        if not self.disk_images:
+            return
+
         self.teardown_all()
         for (name, _path) in self.disk_images.items():
             dm_device = self.get_device_by_name(name)
@@ -454,9 +457,6 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         finally:
             parted.clear_exn_handler()
             self._hide_ignored_disks()
-
-        if flags.installer_mode:
-            self.teardown_all()
 
     def _resolve_protected_device_specs(self):
         # resolve the protected device specs to device names
