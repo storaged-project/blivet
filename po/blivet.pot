@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-26 13:52-0400\n"
+"POT-Creation-Date: 2016-10-04 14:05-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,6 +81,34 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:1986
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/iscsi.py:190
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:192
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:353
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:355
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:465
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:485
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:488
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -182,25 +210,6 @@ msgstr ""
 
 #: ../blivet/fcoe.py:118
 msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/osinstall.py:259
-#, python-format
-msgid "Linux on %s"
-msgstr ""
-
-#: ../blivet/osinstall.py:264
-msgid "Unknown Linux"
-msgstr ""
-
-#: ../blivet/osinstall.py:266
-#, python-format
-msgid "%(product)s %(version)s for %(arch)s"
-msgstr ""
-
-#: ../blivet/osinstall.py:269
-#, python-format
-msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/errors.py:206
@@ -309,32 +318,23 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/iscsi.py:190
-msgid "Unable to change iSCSI initiator name once set"
+#: ../blivet/osinstall.py:259
+#, python-format
+msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/iscsi.py:192
-msgid "Must provide an iSCSI initiator name"
+#: ../blivet/osinstall.py:264
+msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/iscsi.py:353
-msgid "iSCSI not available"
+#: ../blivet/osinstall.py:266
+#, python-format
+msgid "%(product)s %(version)s for %(arch)s"
 msgstr ""
 
-#: ../blivet/iscsi.py:355
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:465
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:485
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:488
-msgid "Could not log in to any of the discovered nodes"
+#: ../blivet/osinstall.py:269
+#, python-format
+msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
 #: ../blivet/deviceaction.py:183
@@ -441,16 +441,16 @@ msgstr ""
 msgid "PPC PReP Boot"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:43
-msgid "software RAID"
-msgstr ""
-
 #: ../blivet/formats/luks.py:47
 msgid "LUKS"
 msgstr ""
 
 #: ../blivet/formats/luks.py:48
 msgid "Encrypted"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:144
+msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:35
@@ -461,10 +461,6 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:144
-msgid "Unknown"
-msgstr ""
-
 #: ../blivet/formats/disklabel.py:46
 msgid "partition table"
 msgstr ""
@@ -473,6 +469,10 @@ msgstr ""
 #: ../blivet/formats/disklabel.py:247
 #, python-format
 msgid "Unsupported %(name)s"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:43
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:40
