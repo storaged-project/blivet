@@ -5,7 +5,7 @@ from .formatpopulator import FormatPopulator
 
 from .btrfs import BTRFSFormatPopulator
 from .boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
-from .disk import DiskDevicePopulator
+from .disk import DiskDevicePopulator, iScsiDevicePopulator, FCoEDevicePopulator, MDBiosRaidDevicePopulator, DASDDevicePopulator, ZFCPDevicePopulator
 from .disklabel import DiskLabelFormatPopulator
 from .dm import DMDevicePopulator
 from .dmraid import DMRaidFormatPopulator
@@ -13,7 +13,7 @@ from .loop import LoopDevicePopulator
 from .luks import LUKSDevicePopulator, LUKSFormatPopulator
 from .lvm import LVMDevicePopulator, LVMFormatPopulator
 from .mdraid import MDDevicePopulator, MDFormatPopulator
-from .multipath import MultipathDevicePopulator
+from .multipath import MultipathDevicePopulator, MultipathFormatPopulator
 from .optical import OpticalDevicePopulator
 from .partition import PartitionDevicePopulator
 
