@@ -253,6 +253,22 @@ class DeviceFactoryTestCase(unittest.TestCase):
 
         self.assertEqual(factory.fstype, self.b.get_fstype())
 
+        kwargs = self._get_test_factory_args()
+        kwargs.update({"disks": self.b.disks[:],
+                       "fstype": "swap",
+                       "size": Size("2GiB"),
+                       "label": "SWAP"})
+        device = self._factory_device(self.device_type, **kwargs)
+        factory = devicefactory.get_device_factory(self.b, self.device_type,
+                                                   device=device)
+        self.assertEqual(factory.size, getattr(device, "req_size", device.size))
+        if self.device_type == devicefactory.DEVICE_TYPE_PARTITION:
+            self.assertIn(device.disk, factory.disks)
+        else:
+            self.assertEqual(factory.disks, device.disks)
+        self.assertEqual(factory.fstype, device.format.type)
+        self.assertEqual(factory.label, device.format.label)
+
 
 class PartitionFactoryTestCase(DeviceFactoryTestCase):
     device_class = PartitionDevice

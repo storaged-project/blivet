@@ -321,7 +321,9 @@ class DeviceFactory(object):
         self.fstype = None  # not included in default_settings b/c of special handling below
         self.min_luks_entropy = luks_data.min_entropy
 
+        # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
+        self._update_defaults_from_device()
 
         # Map kwarg 'name' to attribute 'device_name'.
         if "name" in kwargs:
@@ -347,6 +349,39 @@ class DeviceFactory(object):
         self.__actions = []
         self.__names = []
         self.__roots = []
+
+    def _update_defaults_from_device(self):
+        """ Update default settings based on passed in device, if provided. """
+        if self.device is None:
+            return
+
+        self.size = getattr(self.device, "req_size", self.device.size)
+        self.disks = getattr(self.device, "req_disks", self.device.disks[:])
+
+        self.fstype = self.device.format.type
+        self.mountpoint = getattr(self.device.format, "mountpoint", None)
+        self.label = getattr(self.device.format, "label", None)
+
+        # TODO: add a "raid_level" attribute to all relevant classes (or to RaidDevice)
+        if hasattr(self.device, "level"):
+            self.raid_level = self.device.level
+        elif hasattr(self.device, "data_level"):
+            self.raid_level = self.device.data_level
+
+        self.encrypted = isinstance(self.device, LUKSDevice)
+        self.device_name = getattr(self.device, "lvname", self.device.name)
+
+        if self.device and hasattr(self.device, "container"):
+            self.container_name = self.device.container.name
+            self.container_size = self.device.container.size_policy
+            if hasattr(self.device.container, "data_level"):
+                self.container_raid_level = self.device.container.data_level
+            elif (hasattr(self.device.container, "pvs") and
+                  len(self.device.container.pvs) == 1 and
+                  hasattr(self.device.container.pvs[0].raw_device, "level")):
+                self.container_raid_level = self.device.container.pvs[0].raw_device.level
+            self.container_encrypted = all(isinstance(p, LUKSDevice)
+                                           for p in self.device.container.parents)
 
     @property
     def encrypted(self):
