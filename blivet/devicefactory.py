@@ -300,11 +300,6 @@ class DeviceFactory(object):
             :type min_luks_entropy: int
 
         """
-
-        if encrypted and size:
-            # encrypted, bump size up with LUKS metadata size
-            size += get_format("luks").min_size
-
         self.storage = storage          # a Blivet instance
         self.size = size                # the requested size for this device
         self.disks = disks              # the set of disks to allocate from
@@ -348,6 +343,20 @@ class DeviceFactory(object):
         self.__actions = []
         self.__names = []
         self.__roots = []
+
+    @property
+    def encrypted(self):
+        return self._encrypted
+
+    @encrypted.setter
+    def encrypted(self, value):
+        if not self.encrypted and value and self.size:
+            # encrypted, bump size up with LUKS metadata size
+            self.size += get_format("luks").min_size
+        elif self.encrypted and not value and self.size:
+            self.size -= get_format("luks").min_size
+
+        self._encrypted = value
 
     @property
     def raid_level(self):
