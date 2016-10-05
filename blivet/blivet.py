@@ -1219,20 +1219,18 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return fstype
 
-    def factory_device(self, device_type=devicefactory.DEVICE_TYPE_LVM, size=None, **kwargs):
+    def factory_device(self, device_type=devicefactory.DEVICE_TYPE_LVM, **kwargs):
         """ Schedule creation of a device based on a top-down specification.
 
             :param device_type: device type constant
             :type device_type: int (:const:`~.devicefactory.DEVICE_TYPE_*`)
-            :param size: requested size
-            :type size: :class:`~.size.Size`
             :returns: the newly configured device
             :rtype: :class:`~.devices.StorageDevice`
 
             See :class:`~.devicefactory.DeviceFactory` for possible kwargs.
 
         """
-        log_method_call(self, device_type, size, **kwargs)
+        log_method_call(self, device_type, **kwargs)
 
         # we can't do anything with existing devices
         # if device and device.exists:
@@ -1248,8 +1246,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
            device_type == devicefactory.DEVICE_TYPE_BTRFS:
             device_type = devicefactory.DEVICE_TYPE_PARTITION
 
-        factory = devicefactory.get_device_factory(self, device_type, size,
-                                                   **kwargs)
+        factory = devicefactory.get_device_factory(self, device_type=device_type, **kwargs)
 
         if not factory.disks:
             raise StorageError("no disks specified for new device")
