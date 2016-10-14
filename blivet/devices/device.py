@@ -78,13 +78,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             :type parents: list of :class:`Device` instances
         """
         util.ObjectID.__init__(self)
-
-        # Copy only the validity check from _set_name so we don't try to check a
-        # bunch of inappropriate state properties during __init__ in subclasses
-        if not self.is_name_valid(name):
-            raise ValueError("%s is not a valid name for this device" % name)
         self._name = name
-
         if parents is not None and not isinstance(parents, list):
             raise ValueError("parents must be a list of Device instances")
 
