@@ -126,11 +126,10 @@ class LVMTestCase(BlivetResetTestCase):
     def _set_up_storage(self):
         # This isn't exactly autopart, but it should be plenty close to it.
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("500 MiB"),
+                                   size=Size("500 MiB"),
                                    disks=self.blivet.disks[:],
                                    fstype="swap")
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   None,
                                    disks=self.blivet.disks[:])
 
 
@@ -138,7 +137,7 @@ class LVMSnapShotTestCase(BlivetResetTestCase):
 
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("1 GiB"),
+                                   size=Size("1 GiB"),
                                    label="ROOT",
                                    disks=self.blivet.disks[:],
                                    container_name="blivet_test",
@@ -160,11 +159,10 @@ class LVMThinpTestCase(BlivetResetTestCase):
 
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("500 MiB"),
+                                   size=Size("500 MiB"),
                                    fstype="swap",
                                    disks=self.blivet.disks[:])
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
-                                   None,
                                    label="ROOT",
                                    disks=self.blivet.disks[:])
 
@@ -173,7 +171,7 @@ class LVMThinSnapShotTestCase(LVMThinpTestCase):
 
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
-                                   Size("1 GiB"),
+                                   size=Size("1 GiB"),
                                    label="ROOT",
                                    disks=self.blivet.disks[:])
 
@@ -195,7 +193,7 @@ class LVMRaidTestCase(BlivetResetTestCase):
     def _set_up_storage(self):
         # This isn't exactly autopart, but it should be plenty close to it.
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("500 MiB"),
+                                   size=Size("500 MiB"),
                                    disks=self.blivet.disks[:],
                                    container_size=devicefactory.SIZE_POLICY_MAX)
 
@@ -221,7 +219,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
 
     def _set_up_storage(self):
         device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
+                                            size=Size("200 MiB"),
                                             disks=self.blivet.disks[:],
                                             raid_level=self.level,
                                             label="v090",
@@ -229,7 +227,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
         device.metadata_version = "0.90"
 
         device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
+                                            size=Size("200 MiB"),
                                             disks=self.blivet.disks[:],
                                             raid_level=self.level,
                                             label="v1",
@@ -237,7 +235,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
         device.metadata_version = "1.0"
 
         device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
+                                            size=Size("200 MiB"),
                                             disks=self.blivet.disks[:],
                                             raid_level=self.level,
                                             label="v11",
@@ -245,7 +243,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
         device.metadata_version = "1.1"
 
         device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
+                                            size=Size("200 MiB"),
                                             disks=self.blivet.disks[:],
                                             raid_level=self.level,
                                             label="v12",
@@ -253,7 +251,7 @@ class MDRaid0TestCase(BlivetResetTestCase):
         device.metadata_version = "1.2"
 
         device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
+                                            size=Size("200 MiB"),
                                             disks=self.blivet.disks[:],
                                             raid_level=self.level,
                                             label="vdefault",
@@ -265,11 +263,10 @@ class LVMOnMDTestCase(BlivetResetTestCase):
 
     def _set_up_storage(self):
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("200 MiB"),
+                                   size=Size("200 MiB"),
                                    disks=self.blivet.disks[:],
                                    container_raid_level="raid1",
                                    fstype="swap")
         self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   None,
                                    disks=self.blivet.disks[:],
                                    container_raid_level="raid1")
