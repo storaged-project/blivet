@@ -124,7 +124,6 @@ class iSCSI(object):
         # This list contains nodes discovered through iBFT (or other firmware)
         self.ibft_nodes = []
         self._initiator = ""
-        self.initiator_set = False
         self.started = False
         self.ifaces = {}
 
@@ -134,7 +133,6 @@ class iSCSI(object):
             try:
                 initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
                 self._initiator = initiatorname
-                self.initiator_set = True
             except Exception:  # pylint: disable=broad-except
                 log_exception_info(fmt_str="failed to get initiator name from iscsi firmware")
 
@@ -170,6 +168,11 @@ class iSCSI(object):
         return safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH,
                                    INITIATOR_IFACE, method, args,
                                    connection=self._connection)
+
+    @property
+    def initiator_set(self):
+        """True if initiator is set at our level."""
+        return self._initiator != ""
 
     @property
     @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
