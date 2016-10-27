@@ -78,11 +78,7 @@ class LoginInfo(object):
 
 def _to_node_infos(variant):
     """Transforms an 'a(sisis)' GLib.Variant into a list of NodeInfo objects"""
-
-    ret = []
-    for info in variant:
-        ret.append(NodeInfo(*info))
-    return ret
+    return [NodeInfo(*info) for info in variant]
 
 
 class iSCSIDependencyGuard(util.DependencyGuard):
