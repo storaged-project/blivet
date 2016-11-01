@@ -734,7 +734,7 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
             self.assertTrue(self.helper_class.match(data, device),
                             msg="Failed to match %s against %s" % (self.udev_type, self.helper_name))
 
-    @patch("blivet.populator.helpers.disklabel.blockdev.mpath_is_mpath_member", return_value=False)
+    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
     # pylint: disable=unused-argument
@@ -790,7 +790,7 @@ class HFSPopulatorTestCase(FormatPopulatorTestCase):
 class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DiskLabelFormatPopulator
 
-    @patch("blivet.populator.helpers.disklabel.blockdev.mpath_is_mpath_member", return_value=False)
+    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
     @patch("blivet.udev.device_get_format", return_value=None)
     @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
@@ -828,7 +828,7 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(data, device))
         is_mpath_member.return_value = False
 
-    @patch("blivet.populator.helpers.disklabel.blockdev.mpath_is_mpath_member", return_value=False)
+    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
     @patch("blivet.udev.device_get_format", return_value=None)
     @patch("blivet.udev.device_get_disklabel_type", return_value="dos")

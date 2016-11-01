@@ -44,7 +44,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
-from ..static_data import lvs_info, pvs_info, luks_data
+from ..static_data import lvs_info, pvs_info, luks_data, mpath_members
 
 import logging
 log = logging.getLogger("blivet")
@@ -225,7 +225,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         return device
 
     def _clear_new_multipath_member(self, device):
-        if device is None or not device.is_disk or not blockdev.mpath.is_mpath_member(device.path):
+        if device is None or not device.is_disk or not mpath_members.is_mpath_member(device.path):
             return
 
         # newly added device (eg iSCSI) could make this one a multipath member
@@ -486,6 +486,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                  self.ignored_disks, self.exclusive_disks)
 
         self.drop_lvm_cache()
+        mpath_members.drop_cache()
 
         if flags.installer_mode and not flags.image_install:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
