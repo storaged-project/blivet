@@ -122,9 +122,7 @@ class LVMPhysicalVolume(DeviceFormat):
 
         # Consider use of -Z|--zero
         # -f|--force or -y|--yes may be required
-        blockdev.lvm.pvscan(self.device)
         blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment)
-        blockdev.lvm.pvscan(self.device)
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -133,8 +131,6 @@ class LVMPhysicalVolume(DeviceFormat):
             blockdev.lvm.pvremove(self.device)
         except blockdev.LVMError:
             DeviceFormat._destroy(self, **kwargs)
-        finally:
-            blockdev.lvm.pvscan(self.device)
 
     @property
     def destroyable(self):

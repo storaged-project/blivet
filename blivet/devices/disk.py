@@ -452,12 +452,11 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             address = "[%s]" % address
 
         netroot = "netroot=iscsi:"
-        auth = self.node.get_auth()
-        if auth:
-            netroot += "%s:%s" % (auth.username, auth.password)
-            if len(auth.reverse_username) or len(auth.reverse_password):
-                netroot += ":%s:%s" % (auth.reverse_username,
-                                       auth.reverse_password)
+        if self.node.username and self.node.password:
+            netroot += "%s:%s" % (self.node.username, self.node.password)
+            if self.node.r_username and self.node.r_password:
+                netroot += ":%s:%s" % (self.node.r_username,
+                                       self.node.r_password)
 
         iface_spec = ""
         if self.nic != "default":
