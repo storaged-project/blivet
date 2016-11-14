@@ -54,6 +54,16 @@ class MacEFIFormatPopulator(BootFormatPopulator):
     _type_specifier = "macefi"
     _base_type_specifier = "hfsplus"
 
+    @classmethod
+    def match(cls, data, device):
+        fmt = formats.get_format(cls._type_specifier)
+        try:
+            return (super().match(data, device) and
+                    device.parted_partition.name == fmt.name)
+        except AttributeError:
+            # just in case device.parted_partition has no name attr
+            return False
+
 
 class AppleBootFormatPopulator(BootFormatPopulator):
     _type_specifier = "appleboot"
