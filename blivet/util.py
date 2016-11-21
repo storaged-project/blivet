@@ -22,7 +22,7 @@ from enum import Enum
 from .errors import DependencyError
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
