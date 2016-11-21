@@ -26,7 +26,7 @@ import stat
 import time
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -250,7 +250,7 @@ def _find_existing_installations(devicetree):
 
         if not os.access(get_sysroot() + "/etc/fstab", os.R_OK):
             util.umount(mountpoint=get_sysroot())
-            device.teardown(recursive=True)
+            device.teardown()
             continue
 
         try:

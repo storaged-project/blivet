@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import call, patch, sentinel, Mock, PropertyMock
 
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 from blivet import Blivet
@@ -734,7 +734,7 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
             self.assertTrue(self.helper_class.match(data, device),
                             msg="Failed to match %s against %s" % (self.udev_type, self.helper_name))
 
-    @patch("blivet.populator.helpers.disklabel.blockdev.mpath_is_mpath_member", return_value=False)
+    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
     # pylint: disable=unused-argument
@@ -790,7 +790,7 @@ class HFSPopulatorTestCase(FormatPopulatorTestCase):
 class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DiskLabelFormatPopulator
 
-    @patch("blivet.populator.helpers.disklabel.blockdev.mpath_is_mpath_member", return_value=False)
+    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
     @patch("blivet.udev.device_get_format", return_value=None)
     @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
@@ -828,7 +828,7 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(data, device))
         is_mpath_member.return_value = False
 
-    @patch("blivet.populator.helpers.disklabel.blockdev.mpath_is_mpath_member", return_value=False)
+    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
     @patch("blivet.udev.device_get_format", return_value=None)
     @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
@@ -1114,7 +1114,22 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
             self.assertEqual(array.name, array_name)
 
 
+class FakePartedPart(object):
+    """Fake parted_partition for testing the parted partition name
+    matching stuff. Has to provide size also.
+    """
+    def __init__(self, partition, name):
+        self.name = name
+        self.partition = partition
+
+    def getLength(self, unit):
+        """This is circular, but works okay."""
+        return self.partition._size.convert_to(unit)
+
+
 class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
+    name_mismatch_ok = True
+
     def test_match(self):
         """Test boot format populator helper match method"""
         if self.helper_class is None:
@@ -1135,6 +1150,9 @@ class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
         max_size = fmt_class._max_size
         partition._size = min_size
         storagedev._size = min_size
+
+        if fmt_class._name:
+            partition._parted_partition = FakePartedPart(partition, fmt_class._name)
 
         self.assertTrue(self.helper_class.match(data, partition))
 
@@ -1158,6 +1176,18 @@ class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(data, partition))
         partition._size = min_size
 
+        # we don't always match on the parted partition name, so allow
+        # subclasses to decide
+        if not self.name_mismatch_ok:
+            orig = partition._parted_partition
+            partition._parted_partition = FakePartedPart(partition, 'dontmatchanything')
+            self.assertFalse(self.helper_class.match(data, partition))
+
+            # shouldn't crash
+            partition._parted_partition = None
+            self.assertFalse(self.helper_class.match(data, partition))
+            partition._parted_partition = orig
+
     @patch("blivet.udev.device_get_disklabel_type", return_value=None)
     # pylint: disable=unused-argument
     def test_get_helper(self, *args):
@@ -1175,6 +1205,8 @@ class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
         data["DEVTYPE"] = "partition"
         partition._bootable = self.helper_class._bootable
         partition._size = fmt_class._min_size
+        if fmt_class._name:
+            partition._parted_partition = FakePartedPart(partition, fmt_class._name)
         self.assertEqual(get_format_helper(data, partition), self.helper_class)
 
 
@@ -1184,6 +1216,7 @@ class EFIFormatPopulatorTestCase(BootFormatPopulatorTestCase):
 
 class MacEFIFormatPopulatorTestCase(BootFormatPopulatorTestCase):
     helper_class = MacEFIFormatPopulator
+    name_mismatch_ok = False
 
 
 class AppleBootFormatPopulatorTestCase(BootFormatPopulatorTestCase):

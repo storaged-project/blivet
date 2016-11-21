@@ -66,8 +66,29 @@ def has_iscsi():
     return True
 
 
-NodeInfo = namedtuple("NodeInfo", ["name", "tpgt", "address", "port", "iface"])
 TargetInfo = namedtuple("TargetInfo", ["ipaddr", "port"])
+
+
+class NodeInfo(object):
+    """Simple representation of node information."""
+    def __init__(self, name, tpgt, address, port, iface):
+        self.name = name
+        self.tpgt = tpgt
+        self.address = address
+        self.port = port
+        self.iface = iface
+        # These get set by log_into_node, but *NOT* _login
+        self.username = None
+        self.password = None
+        self.r_username = None
+        self.r_password = None
+
+    @property
+    def conn_info(self):
+        """The 5-tuple of connection info (no auth info). This form
+        is useful for interacting with storaged.
+        """
+        return (self.name, self.tpgt, self.address, self.port, self.iface)
 
 
 class LoginInfo(object):
@@ -78,11 +99,7 @@ class LoginInfo(object):
 
 def _to_node_infos(variant):
     """Transforms an 'a(sisis)' GLib.Variant into a list of NodeInfo objects"""
-
-    ret = []
-    for info in variant:
-        ret.append(NodeInfo(*info))
-    return ret
+    return [NodeInfo(*info) for info in variant]
 
 
 class iSCSIDependencyGuard(util.DependencyGuard):
@@ -128,7 +145,6 @@ class iSCSI(object):
         # This list contains nodes discovered through iBFT (or other firmware)
         self.ibft_nodes = []
         self._initiator = ""
-        self.initiator_set = False
         self.started = False
         self.ifaces = {}
 
@@ -138,7 +154,6 @@ class iSCSI(object):
             try:
                 initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
                 self._initiator = initiatorname
-                self.initiator_set = True
             except Exception:  # pylint: disable=broad-except
                 log_exception_info(fmt_str="failed to get initiator name from iscsi firmware")
 
@@ -174,6 +189,11 @@ class iSCSI(object):
         return safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH,
                                    INITIATOR_IFACE, method, args,
                                    connection=self._connection)
+
+    @property
+    def initiator_set(self):
+        """True if initiator is set at our level."""
+        return self._initiator != ""
 
     @property
     @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
@@ -239,7 +259,7 @@ class iSCSI(object):
             extra = dict()
         extra["node.startup"] = GLib.Variant("s", "automatic")
 
-        args = GLib.Variant("(sisisa{sv})", tuple(list(node_info) + [extra]))
+        args = GLib.Variant("(sisisa{sv})", node_info.conn_info + (extra,))
         self._call_initiator_method("Login", args)
 
     @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
@@ -369,7 +389,7 @@ class iSCSI(object):
             if r_password:
                 auth_info["r_password"] = GLib.Variant("s", r_password)
 
-            args = GLib.Variant("(sqa{sv})", (ipaddr, port, auth_info))
+            args = GLib.Variant("(sqa{sv})", (ipaddr, int(port), auth_info))
             nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", args)
 
             found_nodes = _to_node_infos(nodes)
@@ -414,6 +434,14 @@ class iSCSI(object):
                      node.name, node.address, node.port, node.iface)
             if not self._mark_node_active(node):
                 log.error("iSCSI: node not found among discovered")
+            if username:
+                node.username = username
+            if password:
+                node.password = password
+            if r_username:
+                node.r_username = r_username
+            if r_password:
+                node.r_password = r_password
         except safe_dbus.DBusCallError as e:
             msg = str(e)
             log.warning("iSCSI: could not log into %s: %s", node.name, msg)

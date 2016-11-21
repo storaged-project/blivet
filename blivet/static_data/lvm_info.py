@@ -21,7 +21,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -57,7 +57,23 @@ class PVsInfo(object):
     def cache(self):
         if self._pvs_cache is None:
             pvs = blockdev.lvm.pvs()
-            self._pvs_cache = dict((pv.pv_name, pv) for pv in pvs)  # pylint: disable=attribute-defined-outside-init
+            self._pvs_cache = dict()  # pylint: disable=attribute-defined-outside-init
+            for pv in pvs:
+                self._pvs_cache[pv.pv_name] = pv
+                # TODO: add get_all_device_symlinks() and resolve_device_symlink() functions to
+                #       libblockdev and use them here
+                if pv.pv_name.startswith("/dev/md/"):
+                    try:
+                        md_node = blockdev.md.node_from_name(pv.pv_name[len("/dev/md/"):])
+                        self._pvs_cache["/dev/" + md_node] = pv
+                    except blockdev.MDRaidError:
+                        pass
+                elif pv.pv_name.startswith("/dev/md"):
+                    try:
+                        md_named_dev = blockdev.md.name_from_node(pv.pv_name[len("/dev/"):])
+                        self._pvs_cache["/dev/md/" + md_named_dev] = pv
+                    except blockdev.MDRaidError:
+                        pass
 
         return self._pvs_cache
 
