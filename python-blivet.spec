@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.1.6
+Version: 2.1.7
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -78,6 +78,20 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Mon Nov 21 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-1
+- Require BlockDev 2.0 in the gi.require_version() call (vpodzime)
+- Fix detection of 'macefi' partitions (#1393846) (awilliam)
+- Add device symlinks to the PVs dictionary for MD RAID PVs (#1389130)
+  (vpodzime)
+- iSCSI: turn `iscsi.initiator_set` into a property (awilliam)
+- iSCSI: Store auth info in NodeInfo tuples (awilliam)
+- Use correct type for port in GVariant tuple (awilliam)
+- Use a list comprehension for _to_node_infos (awilliam)
+- Device name now checked only for new devices (japokorn)
+- Remove several redundant teardown calls. (dlehman)
+- Cache and reuse data about multipath members (vpodzime)
+- Remove some obsolete pvscan calls. (dlehman)
+
 * Tue Oct 04 2016 David Lehman <dlehman@redhat.com> - 2.1.6-1
 - add missing populators to populator.helpers (awilliam)
 
