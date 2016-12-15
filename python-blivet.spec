@@ -19,7 +19,6 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}
 %global pocketlintver 0.4
 %global partedver 1.8.1
 %global pypartedver 3.10.4
-%global e2fsver 1.41.0
 %global utillinuxver 2.15.1
 %global libblockdevver 2.1
 %global libbytesizever 0.3
@@ -47,8 +46,6 @@ Requires: python3-blockdev >= %{libblockdevver}
 Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
-Requires: dosfstools
-Requires: e2fsprogs >= %{e2fsver}
 Requires: lsof
 Requires: python3-hawkey
 Requires: python3-gobject-base
