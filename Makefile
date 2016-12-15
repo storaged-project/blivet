@@ -20,14 +20,11 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
-TEST_DEPENDENCIES += python-mock python3-mock
-TEST_DEPENDENCIES += cryptsetup-python cryptsetup-python3
-TEST_DEPENDENCIES += python3-gobject
-TEST_DEPENDENCIES += python-coverage python3-coverage
-TEST_DEPENDENCIES += xfsprogs hfsplus-tools
+TEST_DEPENDENCIES += python3-mock
+TEST_DEPENDENCIES += python3-coverage
+TEST_DEPENDENCIES += dosfstools e2fsprogs xfsprogs hfsplus-tools
 TEST_DEPENDENCIES += python3-pocketlint python3-bugzilla
 TEST_DEPENDENCIES += python3-pep8 zanata-python-client
-TEST_DEPENDENCIES += python3-kickstart
 TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
 
 all:
