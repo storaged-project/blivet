@@ -936,7 +936,6 @@ class LVMSnapShotBase(object):
         """
         self._originSpecifiedCheck(origin, vorigin, exists)
         self._originTypeCheck(origin)
-        self._originExistenceCheck(origin)
         self._voriginExistenceCheck(vorigin, exists)
 
         self.origin = origin
@@ -953,10 +952,6 @@ class LVMSnapShotBase(object):
     def _originTypeCheck(self, origin):
         if origin and not isinstance(origin, LVMLogicalVolumeDevice):
             raise ValueError("lvm snapshot origin must be a logical volume")
-
-    def _originExistenceCheck(self, origin):
-        if origin and not origin.exists:
-            raise ValueError("lvm snapshot origin volume must already exist")
 
     def _voriginExistenceCheck(self, vorigin, exists):
         if vorigin and not exists:
