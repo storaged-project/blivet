@@ -112,7 +112,7 @@ class MountsCache(object):
             subvolspec = str(subvolspec)
 
         # devspec == None means "get 'nodev' mount points"
-        if devspec is not None:
+        if devspec not in (None, "tmpfs"):
             # use the canonical device path (if available)
             canon_devspec = resolve_devspec(devspec, sysname=True)
             if canon_devspec is not None:
