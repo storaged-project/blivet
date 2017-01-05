@@ -171,10 +171,10 @@ def __is_blacklisted_blockdev(dev_name):
 def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
     if "DM_NAME" in udev_info:
-        name = udev_info["DM_NAME"]
+        name = udev_info.properties["DM_NAME"]
     elif "MD_DEVNAME" in udev_info and not device_is_partition(udev_info):
         # md partitions have MD_DEVNAME set to the partition's parent/disk
-        name = udev_info["MD_DEVNAME"]
+        name = udev_info.properties["MD_DEVNAME"]
     else:
         name = udev_info.sys_name
 
