@@ -36,6 +36,7 @@ from . import task
 class FSMkfsTask(fstask.FSTask):
 
     can_label = abc.abstractproperty(doc="whether this task labels")
+    can_set_uuid = abc.abstractproperty(doc="whether this task can set UUID")
 
 
 @add_metaclass(abc.ABCMeta)
@@ -49,6 +50,16 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
 
     args = abc.abstractproperty(doc="options for creating filesystem")
 
+    @abc.abstractmethod
+    def get_uuid_args(self, uuid):
+        """Return a list of arguments for setting a filesystem UUID.
+
+           :param uuid: the UUID to set
+           :type uuid: str
+           :rtype: list of str
+        """
+        raise NotImplementedError
+
     # IMPLEMENTATION methods
 
     @property
@@ -59,6 +70,15 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
             :rtype: bool
         """
         return self.label_option is not None
+
+    @property
+    def can_set_uuid(self):
+        """Whether this task can set the UUID of a filesystem.
+
+           :returns: True if UUID can be set
+           :rtype: bool
+        """
+        return self.get_uuid_args is not None
 
     @property
     def _label_options(self):
@@ -133,6 +153,9 @@ class BTRFSMkfs(FSMkfs):
     ext = availability.MKFS_BTRFS_APP
     label_option = None
 
+    def get_uuid_args(self, uuid):
+        return ["-U", uuid]
+
     @property
     def args(self):
         return []
@@ -143,6 +166,9 @@ class Ext2FSMkfs(FSMkfs):
     label_option = "-L"
 
     _opts = []
+
+    def get_uuid_args(self, uuid):
+        return ["-U", uuid]
 
     @property
     def args(self):
@@ -161,6 +187,9 @@ class FATFSMkfs(FSMkfs):
     ext = availability.MKDOSFS_APP
     label_option = "-n"
 
+    def get_uuid_args(self, uuid):
+        return ["-i", uuid.replace('-', '')]
+
     @property
     def args(self):
         return []
@@ -169,6 +198,7 @@ class FATFSMkfs(FSMkfs):
 class GFS2Mkfs(FSMkfs):
     ext = availability.MKFS_GFS2_APP
     label_option = None
+    get_uuid_args = None
 
     @property
     def args(self):
@@ -178,6 +208,7 @@ class GFS2Mkfs(FSMkfs):
 class HFSMkfs(FSMkfs):
     ext = availability.HFORMAT_APP
     label_option = "-l"
+    get_uuid_args = None
 
     @property
     def args(self):
@@ -187,6 +218,7 @@ class HFSMkfs(FSMkfs):
 class HFSPlusMkfs(FSMkfs):
     ext = availability.MKFS_HFSPLUS_APP
     label_option = "-v"
+    get_uuid_args = None
 
     @property
     def args(self):
@@ -196,6 +228,7 @@ class HFSPlusMkfs(FSMkfs):
 class JFSMkfs(FSMkfs):
     ext = availability.MKFS_JFS_APP
     label_option = "-L"
+    get_uuid_args = None
 
     @property
     def args(self):
@@ -205,6 +238,7 @@ class JFSMkfs(FSMkfs):
 class NTFSMkfs(FSMkfs):
     ext = availability.MKNTFS_APP
     label_option = "-L"
+    get_uuid_args = None
 
     @property
     def args(self):
@@ -215,6 +249,9 @@ class ReiserFSMkfs(FSMkfs):
     ext = availability.MKREISERFS_APP
     label_option = "-l"
 
+    def get_uuid_args(self, uuid):
+        return ["-u", uuid]
+
     @property
     def args(self):
         return ["-f", "-f"]
@@ -223,6 +260,9 @@ class ReiserFSMkfs(FSMkfs):
 class XFSMkfs(FSMkfs):
     ext = availability.MKFS_XFS_APP
     label_option = "-L"
+
+    def get_uuid_args(self, uuid):
+        return ["-m", "uuid=" + uuid]
 
     @property
     def args(self):
@@ -233,4 +273,8 @@ class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
 
     @property
     def can_label(self):
+        return False
+
+    @property
+    def can_set_uuid(self):
         return False
