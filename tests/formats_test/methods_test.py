@@ -300,7 +300,12 @@ class FSMethodsTestCase(FormatMethodsTestCase):
         with patch.object(self.format, "_mkfs"):
             self.format.exists = False
             self.format.create()
-            self.format._mkfs.do_task.assert_called_with(options=None, label=not self.format.relabels())  # pylint: disable=no-member
+            # pylint: disable=no-member
+            self.format._mkfs.do_task.assert_called_with(
+                options=None,
+                label=not self.format.relabels(),
+                set_uuid=self.format.can_assign_uuid()
+            )
 
     def _test_setup_backend(self):
         with patch.object(self.format, "_mount"):
