@@ -38,6 +38,7 @@ from ..tasks import fsreadlabel
 from ..tasks import fsresize
 from ..tasks import fssize
 from ..tasks import fssync
+from ..tasks import fsuuid
 from ..tasks import fswritelabel
 from ..errors import FormatCreateError, FSError, FSReadLabelError
 from ..errors import FSWriteLabelError
@@ -65,6 +66,7 @@ class FS(DeviceFormat):
     _name = None
     _modules = []                        # kernel modules required for support
     _labelfs = None                      # labeling functionality
+    _uuidfs = None                       # functionality for UUIDs
     _fsck_class = fsck.UnimplementedFSCK
     _mkfs_class = fsmkfs.UnimplementedFSMkfs
     _mount_class = fsmount.FSMount
@@ -248,6 +250,15 @@ class FS(DeviceFormat):
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="this filesystem's label")
+
+    def uuid_format_ok(self, uuid):
+        """Return True if the UUID has an acceptable format for this
+           filesystem.
+
+           :param uuid: An UUID
+           :type uuid: str
+        """
+        return self._uuidfs is not None and self._uuidfs.uuid_format_ok(uuid)
 
     def update_size_info(self):
         """ Update this filesystem's current and minimum size (for resize). """
@@ -720,6 +731,7 @@ class Ext2FS(FS):
     _type = "ext2"
     _modules = ["ext2"]
     _labelfs = fslabeling.Ext2FSLabeling()
+    _uuidfs = fsuuid.Ext2FSUUID()
     _packages = ["e2fsprogs"]
     _formattable = True
     _supported = True
@@ -779,6 +791,7 @@ class FATFS(FS):
     _type = "vfat"
     _modules = ["vfat"]
     _labelfs = fslabeling.FATFSLabeling()
+    _uuidfs = fsuuid.FATFSUUID()
     _supported = True
     _formattable = True
     _max_size = Size("1 TiB")
@@ -887,6 +900,7 @@ class JFS(FS):
     _type = "jfs"
     _modules = ["jfs"]
     _labelfs = fslabeling.JFSLabeling()
+    _uuidfs = fsuuid.JFSUUID()
     _max_size = Size("8 TiB")
     _formattable = True
     _linux_native = True
@@ -912,6 +926,7 @@ class ReiserFS(FS):
     """ reiserfs filesystem """
     _type = "reiserfs"
     _labelfs = fslabeling.ReiserFSLabeling()
+    _uuidfs = fsuuid.ReiserFSUUID()
     _modules = ["reiserfs"]
     _max_size = Size("16 TiB")
     _formattable = True
@@ -940,6 +955,7 @@ class XFS(FS):
     _type = "xfs"
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
+    _uuidfs = fsuuid.XFSUUID()
     _max_size = Size("16 EiB")
     _formattable = True
     _linux_native = True
@@ -990,6 +1006,7 @@ class HFSPlus(FS):
     _udev_types = ["hfsplus"]
     _packages = ["hfsplus-tools"]
     _labelfs = fslabeling.HFSPlusLabeling()
+    _uuidfs = fsuuid.HFSPlusUUID()
     _formattable = True
     _min_size = Size("1 MiB")
     _max_size = Size("2 TiB")
@@ -1026,6 +1043,7 @@ class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
     _labelfs = fslabeling.NTFSLabeling()
+    _uuidfs = fsuuid.NTFSUUID()
     _resizable = True
     _formattable = True
     _min_size = Size("1 MiB")
