@@ -41,7 +41,7 @@ from ..tasks import fssync
 from ..tasks import fsuuid
 from ..tasks import fswritelabel
 from ..errors import FormatCreateError, FSError, FSReadLabelError
-from ..errors import FSWriteLabelError
+from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from .. import platform
@@ -251,6 +251,14 @@ class FS(DeviceFormat):
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="this filesystem's label")
 
+    def can_set_uuid(self):
+        """Returns True if this filesystem supports setting an UUID during
+           creation, otherwise False.
+
+           :rtype: bool
+        """
+        return self._mkfs.can_set_uuid and self._mkfs.available
+
     def uuid_format_ok(self, uuid):
         """Return True if the UUID has an acceptable format for this
            filesystem.
@@ -369,9 +377,16 @@ class FS(DeviceFormat):
 
         super(FS, self)._create()
         try:
-            self._mkfs.do_task(options=kwargs.get("options"), label=not self.relabels())
+            self._mkfs.do_task(options=kwargs.get("options"),
+                               label=not self.relabels(),
+                               set_uuid=self.can_set_uuid())
         except FSWriteLabelError as e:
             log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
+        except FSWriteUUIDError as e:
+            log.warning("Choosing not to apply UUID (%s) during"
+                        " creation of filesystem %s. UUID format"
+                        " is unacceptable for this filesystem.",
+                        self.uuid, self.type)
         except FSError as e:
             raise FormatCreateError(e, self.device)
 
