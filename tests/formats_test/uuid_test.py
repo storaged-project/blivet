@@ -1,6 +1,7 @@
 import unittest
 
 import blivet.formats.fs as fs
+import blivet.formats.swap as swap
 
 from . import fsuuid
 
@@ -78,3 +79,9 @@ class NTFSTestCase(fsuuid.SetUUIDAfterMkFs):
     _fs_class = fs.NTFS
     _invalid_uuid = "b22193477ac947fb"
     _valid_uuid = "BC3B34461B8344A6"
+
+
+class SwapSpaceTestCase(fsuuid.SetUUIDWithMkFs):
+    _fs_class = swap.SwapSpace
+    _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
+    _valid_uuid = "01234567-1234-1234-1234-012345678912"
