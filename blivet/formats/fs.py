@@ -1026,6 +1026,7 @@ class NTFS(FS):
     _type = "ntfs"
     _labelfs = fslabeling.NTFSLabeling()
     _resizable = True
+    _formattable = True
     _min_size = Size("1 MiB")
     _max_size = Size("16 TiB")
     _packages = ["ntfsprogs"]
