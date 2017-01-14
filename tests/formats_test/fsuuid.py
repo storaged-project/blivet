@@ -1,8 +1,11 @@
+import sys
 import abc
 from six import add_metaclass
+from unittest import skipIf
 
 from tests import loopbackedtestcase
 from blivet.devicetree import DeviceTree
+from blivet.errors import FSError, FSWriteUUIDError
 from blivet.size import Size
 
 
@@ -37,13 +40,21 @@ class SetUUIDWithMkFs(SetUUID):
        native mkfs tool can set the UUID.
     """
 
-    def test_set_uuid(self):
+    @skipIf(sys.version_info < (3, 4), "assertLogs is not supported")
+    def test_set_invalid_uuid(self):
         """Create the filesystem with an invalid UUID."""
         an_fs = self._fs_class(device=self.loop_devices[0],
                                uuid=self._invalid_uuid)
-        self.assertIsNone(an_fs.create())
+        if self._fs_class._type == "swap":
+            with self.assertRaisesRegex(FSWriteUUIDError, "bad UUID format"):
+                an_fs.create()
+        else:
+            with self.assertLogs('blivet', 'WARNING') as logs:
+                an_fs.create()
+            self.assertTrue(len(logs.output) >= 1)
+            self.assertRegex(logs.output[0], "UUID format.*unacceptable")
 
-    def test_creating(self):
+    def test_set_uuid(self):
         """Create the filesystem with a valid UUID."""
         an_fs = self._fs_class(device=self.loop_devices[0],
                                uuid=self._valid_uuid)
@@ -87,3 +98,14 @@ class SetUUIDAfterMkFs(SetUUID):
         dt.populate()
         device = dt.get_device_by_path(self.loop_devices[0])
         self.assertEqual(device.format.uuid, self._valid_uuid)
+
+    def test_set_invalid_uuid_later(self):
+        """Create the filesystem and try to reassign an invalid UUID later."""
+        an_fs = self._fs_class(device=self.loop_devices[0])
+        if an_fs._writeuuid.availability_errors:
+            self.skipTest("can not write UUID for filesystem %s" % an_fs.name)
+        self.assertIsNone(an_fs.create())
+
+        an_fs.uuid = self._invalid_uuid
+        with self.assertRaisesRegex(FSError, "bad UUID format"):
+            an_fs.write_uuid()
