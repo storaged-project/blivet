@@ -1091,6 +1091,12 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         return (self.origin == dep or
                 super(LVMSnapShotBase, self).dependsOn(dep))
 
+    def _postCreate(self):
+        LVMLogicalVolumeDevice._postCreate(self)
+        # the snapshot's format exists if the origin's format exists
+        self.format.exists = self.origin.format.exists
+
+
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
     _type = "lvmthinpool"
@@ -1363,6 +1369,12 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
 
         lvm.thinsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
                                pool_name=pool_name)
+
+
+    def _postCreate(self):
+        LVMThinLogicalVolumeDevice._postCreate(self)
+        # the snapshot's format exists if the origin's format exists
+        self.format.exists = self.origin.format.exists
 
     def dependsOn(self, dep):
         # once a thin snapshot exists it no longer depends on its origin
