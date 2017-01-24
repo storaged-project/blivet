@@ -26,7 +26,7 @@ from decimal import Decimal
 import os
 import tempfile
 
-from parted import fileSystemType
+from parted import fileSystemType, PARTITION_BOOT
 
 from ..tasks import fsck
 from ..tasks import fsinfo
@@ -801,6 +801,7 @@ class EFIFS(FATFS):
     _min_size = Size("50 MiB")
     _check = True
     _mount_class = fsmount.EFIFSMount
+    parted_flag = PARTITION_BOOT
 
     @property
     def supported(self):
