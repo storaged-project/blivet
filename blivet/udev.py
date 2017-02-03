@@ -317,9 +317,8 @@ def device_is_partition(info):
 
 
 def device_is_loop(info):
-    """ Return True if the device is a configured loop device. """
-    return (device_get_name(info).startswith("loop") and
-            os.path.isdir("%s/loop" % device_get_sysfs_path(info)))
+    """ Return True if the device is a loop device. """
+    return device_get_name(info).startswith("loop")
 
 
 @util.deprecated("3.0", "udev.device_is_disk provides same functionality in 3.0")

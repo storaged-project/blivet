@@ -179,22 +179,12 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = LoopDevicePopulator
 
-    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_is_loop", return_value=True)
     def test_match(self, *args):
         """Test matching of loop device populator."""
-        device_is_loop = args[0]
-        get_backing_file = args[2]
-        get_backing_file.return_value = True
-        self.assertTrue(self.helper_class.match(None))
-
-        get_backing_file.return_value = False
-        self.assertFalse(self.helper_class.match(None))
-        get_backing_file.return_value = True
-
-        device_is_loop.return_value = False
-        self.assertFalse(self.helper_class.match(None))
+        # LoopDevicePopulator.match just runs the check if device is loop
+        # The backing file check is now performed in the "run" method.
+        # Test intentionally left empty
+        pass
 
     @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
     @patch("blivet.udev.device_get_name")
@@ -213,7 +203,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertEqual(get_device_helper(data), self.helper_class)
 
         get_backing_file.return_value = False
-        self.assertNotEqual(get_device_helper(data), self.helper_class)
+        self.assertEqual(get_device_helper(data), self.helper_class)
         get_backing_file.return_value = True
 
         # verify that setting one of the required True return values to False prevents success
@@ -244,8 +234,14 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_name = "loop3"
         device_get_name.return_value = device_name
         backing_file = "/some/file"
-        get_backing_file.return_value = backing_file
+
+        get_backing_file.return_value = None
         helper = self.helper_class(devicetree, data)
+        device = helper.run()
+
+        self.assertIsNone(device)
+
+        get_backing_file.return_value = backing_file
 
         device = helper.run()
 
