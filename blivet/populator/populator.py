@@ -177,6 +177,13 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
     def _reason_to_skip_device(self, info):
         sysfs_path = udev.device_get_sysfs_path(info)
         uuid = udev.device_get_uuid(info)
+        dev_name = udev.device_get_name(info)
+
+        # the device might be a detached loop device (w/o backing file)
+        # in that case ignore it
+        if (dev_name.startswith("loop")) and \
+           (blockdev.loop.get_backing_file(dev_name) is None):
+            return "detached"
 
         # make sure this device was not scheduled for removal and also has not
         # been hidden
