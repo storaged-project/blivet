@@ -468,6 +468,8 @@ def get_platform():
             return omapARM()
         else:
             return ARM()
+    elif arch.is_aarch64():
+        return ARM()
     else:
         raise SystemError("Could not determine system architecture.")
 
