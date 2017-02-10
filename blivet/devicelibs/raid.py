@@ -658,7 +658,7 @@ class Linear(ErsatzRAID):
 
     """ subclass with canonical lvm name """
     name = 'linear'
-    names = [name]
+    names = [name, 'jbod']
 
 Linear = Linear()
 ALL_LEVELS.add_raid_level(Linear)
