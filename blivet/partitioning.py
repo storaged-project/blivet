@@ -938,16 +938,15 @@ class LVRequest(Request):
         self.base = int(lv.vg.align(lv.req_size, roundup=True) // lv.vg.peSize)
 
         if lv.req_grow:
-            limits = [int(l // lv.vg.peSize) for l in
-                        (lv.vg.align(lv.req_max_size),
-                         lv.vg.align(lv.format.maxSize)) if l > Size(0)]
+            limit = min(l for l in (blockdev.lvm_get_max_lv_size(),
+                                    lv.req_max_size, lv.format.maxSize) if l > Size(0))
 
-            if limits:
-                max_units = min(limits)
-                self.max_growth = max_units - self.base
-                if self.max_growth <= 0:
-                    # max size is less than or equal to base, so we're done
-                    self.done = True
+            limit = lv.vg.align(limit)
+            max_units = int(limit // lv.vg.peSize)
+            self.max_growth = max_units - self.base
+            if self.max_growth <= 0:
+                # max size is less than or equal to base, so we're done
+                self.done = True
 
 
 class Chunk(object):
