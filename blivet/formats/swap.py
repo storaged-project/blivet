@@ -167,6 +167,7 @@ class SwapSpace(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        blockdev.swap.wipefs(self.device)
         blockdev.swap.mkswap(self.device, label=self.label)
 
 register_device_format(SwapSpace)
