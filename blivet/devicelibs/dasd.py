@@ -144,6 +144,30 @@ def is_ldl_dasd(device):
         return False
     return True
 
+def is_fba_dasd(device):
+    """Is the device a FBA DASD?"""
+    if not device.startswith("dasd"):
+        # not a dasd; bail
+        return False
+
+    device = "/dev/%s" % (device,)
+    f = open(device, "r")
+
+    # poorly check if this is even a block device...
+    arg = blksize()
+    rc = fcntl.ioctl(f.fileno(), BLKSSZGET, arg, True)
+    if rc < 0:
+        return False
+
+    # alright, it's a block device, so get some info about DASD...
+    arg = dasd_info()
+    rc = fcntl.ioctl(f.fileno(), BIODASDINFO2, arg)
+    if rc < 0:
+        return False
+
+    # check if we're on an FBA DASD
+    return arg.type.startswith('FBA')
+
 def get_dasd_ports():
     """ Return comma delimited string of valid DASD ports. """
     ports = []
