@@ -22,6 +22,11 @@
 import logging
 log = logging.getLogger("blivet")
 
+import gi
+gi.require_version("BlockDev", "2.0")
+
+from gi.repository import BlockDev as blockdev
+
 import parted
 
 from . import arch
@@ -364,12 +369,20 @@ class S390(Platform):
         return [PartSpec(mountpoint="/boot", size=Size("1GiB"),
                          weight=self.weight(mountpoint="/boot"), lv=False)]
 
-    def required_disklabel_type(self, device_type):
-        """The required disklabel type for the specified device type."""
-        if device_type == parted.DEVICE_DASD:
+    def best_disklabel_type(self, device):
+        """The best disklabel type for the specified device."""
+        if flags.testing:
+            return self.default_disklabel_type
+
+        # the device is FBA DASD
+        if blockdev.s390.dasd_is_fba(device.path):
+            return "msdos"
+        # the device is DASD
+        elif parted.Device(path=device.path).type == parted.DEVICE_DASD:
             return "dasd"
 
-        return super(S390, self).required_disklabel_type(device_type)
+        # other types of devices
+        return super(S390, self).best_disklabel_type(device)
 
 
 class ARM(Platform):
