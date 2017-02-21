@@ -304,7 +304,7 @@ def device_is_cdrom(info):
 
 
 def device_is_disk(info):
-    """ Return True is the device is a disk.
+    """ Return True if the device is a disk.
 
         Unfortunately, since so many things are represented as disks by
         udev/sysfs, we have to define what is a disk in terms of what is
@@ -329,9 +329,8 @@ def device_is_partition(info):
 
 
 def device_is_loop(info):
-    """ Return True if the device is a configured loop device. """
-    return (device_get_name(info).startswith("loop") and
-            os.path.isdir("%s/loop" % device_get_sysfs_path(info)))
+    """ Return True if the device is a loop device. """
+    return device_get_name(info).startswith("loop")
 
 
 def device_get_serial(udev_info):
