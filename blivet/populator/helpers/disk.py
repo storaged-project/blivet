@@ -46,6 +46,7 @@ class DiskDevicePopulator(DevicePopulator):
         return (udev.device_is_disk(data) and
                 not udev.device_is_cdrom(data) and
                 not udev.device_is_partition(data) and
+                not udev.device_is_loop(data) and
                 not udev.device_is_dm(data) and
                 not (udev.device_is_md(data) and not udev.device_get_md_container(data)))
 

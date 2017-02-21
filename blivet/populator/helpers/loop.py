@@ -33,14 +33,15 @@ from .devicepopulator import DevicePopulator
 class LoopDevicePopulator(DevicePopulator):
     @classmethod
     def match(cls, data):
-        return (udev.device_is_loop(data) and
-                bool(blockdev.loop.get_backing_file(udev.device_get_name(data))))
+        return udev.device_is_loop(data)
 
     def run(self):
         name = udev.device_get_name(self.data)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
         backing_file = blockdev.loop.get_backing_file(name)
+        if backing_file is None:
+            return None
         file_device = self._devicetree.get_device_by_name(backing_file)
         if not file_device:
             file_device = FileDevice(backing_file, exists=True)
