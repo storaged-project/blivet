@@ -26,7 +26,7 @@ from decimal import Decimal
 import os
 import tempfile
 
-from parted import fileSystemType
+from parted import fileSystemType, PARTITION_BOOT
 
 from ..tasks import fsck
 from ..tasks import fsinfo
@@ -805,6 +805,7 @@ class EFIFS(FATFS):
     _min_size = Size("50 MiB")
     _check = True
     _mount_class = fsmount.EFIFSMount
+    parted_flag = PARTITION_BOOT
 
     @property
     def supported(self):
@@ -1030,6 +1031,7 @@ class NTFS(FS):
     _type = "ntfs"
     _labelfs = fslabeling.NTFSLabeling()
     _resizable = True
+    _formattable = True
     _min_size = Size("1 MiB")
     _max_size = Size("16 TiB")
     _packages = ["ntfsprogs"]
