@@ -327,9 +327,11 @@ def device_is_partition(info):
     has_start = os.path.exists("%s/start" % device_get_sysfs_path(info))
     return info.get("DEVTYPE") == "partition" or has_start
 
+
 def device_is_loop(info):
     """ Return True if the device is a loop device. """
     return device_get_name(info).startswith("loop")
+
 
 def device_get_serial(udev_info):
     """ Get the serial number/UUID from the device as reported by udev. """
