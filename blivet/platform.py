@@ -117,36 +117,26 @@ class Platform(object):
              "descriptions": {k: _(v) for k, v in self._boot_descriptions.items()}}
         return d
 
-    def requiredDiskLabelType(self, device_type):
-        # pylint: disable=unused-argument
-        return None
-
     def bestDiskLabelType(self, device):
         """The best disklabel type for the specified device."""
         if flags.testing:
             return self.defaultDiskLabelType
 
         parted_device = parted.Device(path=device.path)
+        label_type = self.defaultDiskLabelType
+        log.debug("default disklabel type for %s is %s", device.name, label_type)
 
-        # if there's a required type for this device type, use that
-        labelType = self.requiredDiskLabelType(parted_device.type)
-        log.debug("required disklabel type for %s (%s) is %s",
-                  device.name, parted_device.type, labelType)
-        if not labelType:
-            # otherwise, use the first supported type for this platform
-            # that is large enough to address the whole device
-            labelType = self.defaultDiskLabelType
-            log.debug("default disklabel type for %s is %s", device.name,
-                                                             labelType)
-            for lt in self.diskLabelTypes:
-                l = parted.freshDisk(device=parted_device, ty=lt)
-                if l.maxPartitionStartSector > parted_device.length:
-                    labelType = lt
-                    log.debug("selecting %s disklabel for %s based on size",
-                              labelType, device.name)
-                    break
+        # use the first supported type for this platform
+        # that is large enough to address the whole device
+        for lt in self.diskLabelTypes:
+            l = parted.freshDisk(device=parted_device, ty=lt)
+            if l.maxPartitionStartSector > parted_device.length:
+                label_type = lt
+                log.debug("selecting %s disklabel for %s based on size",
+                          label_type, device.name)
+                break
 
-        return labelType
+        return label_type
 
     @property
     def packages (self):
