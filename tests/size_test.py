@@ -235,13 +235,13 @@ class TranslationTestCase(unittest.TestCase):
 
     def tearDown(self):
         os.environ['LANG'] = self.saved_lang
-        locale.setlocale(locale.LC_ALL, '')
+        locale.setlocale(locale.LC_ALL, 'C.UTF-8')
 
     def test_translated(self):
         s = Size("56.19 MiB")
         for lang in TEST_LANGS:
             os.environ['LANG'] = lang
-            locale.setlocale(locale.LC_ALL, '')
+            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
 
             # Check English parsing
             self.assertEqual(s, Size("56.19 MiB"))
@@ -270,7 +270,7 @@ class TranslationTestCase(unittest.TestCase):
         for lang in TEST_LANGS:
 
             os.environ['LANG'] = lang
-            locale.setlocale(locale.LC_ALL, '')
+            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
             self.assertTrue(s.human_readable().endswith("%s" % (_BS("MiB"))))
             self.assertEqual(s.human_readable(xlate=False), size_str)
 
