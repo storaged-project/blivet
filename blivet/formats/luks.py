@@ -121,9 +121,9 @@ class LUKS(DeviceFormat):
             # if you want current/min size you have to call update_size_info
             self.update_size_info()
 
-        # add the discard option for newly created LUKS formats during the
-        # installation (rhbz#1421596)
-        if not self.exists and flags.installer_mode:
+        # add the discard option for newly created LUKS formats if requested
+        # (e.g. during the installation -- see rhbz#1421596)
+        if not self.exists and flags.discard_new:
             if not self.options:
                 self.options = "discard"
             elif "discard" not in self.options:

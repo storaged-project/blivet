@@ -52,15 +52,15 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
 class LUKSNodevTestCase(unittest.TestCase):
     def test_create_discard_option(self):
-        # no installer mode --> no discard
+        # flags.discard_new=False --> no discard
         fmt = LUKS(exists=False)
         self.assertEqual(fmt.options, None)
 
         fmt = LUKS(exists=True)
         self.assertEqual(fmt.options, None)
 
-        # installer mode --> discard if creating new
-        with patch("blivet.flags.installer_mode", True):
+        # flags.discard_new=True --> discard if creating new
+        with patch("blivet.flags.flags.discard_new", True):
             fmt = LUKS(exists=True)
             self.assertEqual(fmt.options, None)
 
