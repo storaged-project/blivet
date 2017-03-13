@@ -121,6 +121,14 @@ class LUKS(DeviceFormat):
             # if you want current/min size you have to call update_size_info
             self.update_size_info()
 
+        # add the discard option for newly created LUKS formats during the
+        # installation (rhbz#1421596)
+        if not self.exists and flags.installer_mode:
+            if not self.options:
+                self.options = "discard"
+            elif "discard" not in self.options:
+                self.options += ",discard"
+
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         if self.__passphrase:
