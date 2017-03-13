@@ -1,3 +1,6 @@
+import unittest
+from unittest.mock import patch
+
 from blivet.formats.luks import LUKS
 
 from blivet.size import Size
@@ -45,3 +48,29 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         # get current size
         self.fmt.update_size_info()
         self.assertEqual(self.fmt.current_size, new_size)
+
+
+class LUKSNodevTestCase(unittest.TestCase):
+    def test_create_discard_option(self):
+        # no installer mode --> no discard
+        fmt = LUKS(exists=False)
+        self.assertEqual(fmt.options, None)
+
+        fmt = LUKS(exists=True)
+        self.assertEqual(fmt.options, None)
+
+        # installer mode --> discard if creating new
+        with patch("blivet.flags.installer_mode", True):
+            fmt = LUKS(exists=True)
+            self.assertEqual(fmt.options, None)
+
+            fmt = LUKS(exists=False)
+            self.assertEqual(fmt.options, "discard")
+
+            # do not add if already there
+            fmt = LUKS(exists=False, options="discard")
+            self.assertEqual(fmt.options, "discard")
+
+            # add with comma after other option(s)
+            fmt = LUKS(exists=False, options="blah")
+            self.assertEqual(fmt.options, "blah,discard")
