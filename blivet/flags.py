@@ -84,6 +84,10 @@ class Flags(object):
         # whether to include nodev filesystems in the devicetree
         self.include_nodev = False
 
+        # whether to enable discard for newly created devices
+        # (so far only for LUKS)
+        self.discard_new = False
+
         self.boot_cmdline = {}
 
         self.update_from_boot_cmdline()
