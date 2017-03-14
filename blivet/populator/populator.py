@@ -258,9 +258,9 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
         if device.is_disk and isinstance(device, mdclasses):
             if device.name in self.exclusive_disks:
-                for parent in device.parents:
-                    if parent.name not in self.exclusive_disks:
-                        self.exclusive_disks.append(parent.name)
+                for ancestor in device.ancestors:
+                    if ancestor.is_disk and ancestor.name not in self.exclusive_disks:
+                        self.exclusive_disks.append(ancestor.name)
 
     def _get_format_helper(self, info, device=None):
         return get_format_helper(info, device=device)
