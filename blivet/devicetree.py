@@ -1271,9 +1271,9 @@ class DeviceTree(object):
         mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
         if device.isDisk and isinstance(device, mdclasses):
             if device.name in self.exclusiveDisks:
-                for parent in device.parents:
-                    if parent.name not in self.exclusiveDisks:
-                        self.exclusiveDisks.append(parent.name)
+                for ancestor in device.ancestors:
+                    if ancestor.isDisk and ancestor.name not in self.exclusiveDisks:
+                        self.exclusiveDisks.append(ancestor.name)
 
         log.info("got device: %r", device.name)
 
