@@ -149,6 +149,7 @@ def enable_installer_mode():
     flags.auto_dev_updates = True
     flags.selinux_reset_fcon = True
     flags.keep_empty_ext_partitions = False
+    flags.discard_new = True
 
     udev.device_name_blacklist = [r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram', '^ndblk', '^pmem']
 
