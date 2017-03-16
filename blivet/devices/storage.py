@@ -306,8 +306,7 @@ class StorageDevice(Device):
     def resizable(self):
         """ Can this device be resized? """
         return (self._resizable and self.exists and
-                (self.format.type is None or self.format.resizable or
-                 not self.format.exists))
+                (self.format.resizable or not self.format.exists))
 
     @property
     def fstab_spec(self):

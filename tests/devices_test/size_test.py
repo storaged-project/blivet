@@ -87,6 +87,7 @@ class StorageDeviceSizeTest(unittest.TestCase):
         # is non-zero
         ##
         dev._resizable = True
+        dev.format._resizable = True
         dev.target_size = new_size  # verify that the target size setter works
         self.assertEqual(dev.size, new_size)
         self.assertEqual(dev.size, dev.target_size)
