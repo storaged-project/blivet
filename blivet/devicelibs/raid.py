@@ -588,6 +588,7 @@ class Container(RAIDLevel):
     name = "container"
     names = [name]
     min_members = 1
+    nick = property(lambda s: None)
     is_uniform = property(lambda s: False)
 
     def has_redundancy(self):
@@ -623,6 +624,7 @@ class ErsatzRAID(RAIDLevel):
         distinct subclasses which have different names.
     """
     min_members = 1
+    nick = property(lambda s: None)
     is_uniform = property(lambda s: False)
 
     def has_redundancy(self):
@@ -683,6 +685,7 @@ class Dup(RAIDLevel):
     name = 'dup'
     names = [name]
     min_members = 1
+    nick = property(lambda s: None)
     is_uniform = property(lambda s: False)
 
     def has_redundancy(self):
