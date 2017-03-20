@@ -1188,8 +1188,15 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         cache_size = Size(0)
         if self.cached:
             cache_size = self.cache.size
+        padding = lvm.get_pool_padding(self.size, pesize=self.vg.peSize)
         space = self.vg.align(self.size, roundup=True) * self.copies + self.logSize + self.metaDataSize + cache_size
-        space += lvm.get_pool_padding(self.size, pesize=self.vg.peSize)
+        if self.exists:
+            # subtract metadata size from padding for existing thin pools
+            # (because when creating them we could have not known the size of
+            # metadata and thus didn't include it in the calculations)
+            space += (padding - self.metaDataSize)
+        else:
+            space += padding
         return space
 
     @property
