@@ -36,6 +36,7 @@ from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
 from ..devices import MultipathDevice
 from ..devices import NoDevice
+from ..devicelibs import disk as disklib
 from ..devicelibs import lvm
 from .. import formats
 from .. import udev
@@ -489,6 +490,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
                  self.ignored_disks, self.exclusive_disks)
 
+        disklib.update_volume_info()
         self.drop_lvm_cache()
         mpath_members.drop_cache()
 

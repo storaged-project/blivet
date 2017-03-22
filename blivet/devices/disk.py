@@ -29,6 +29,7 @@ import os
 
 from .. import errors
 from .. import util
+from ..devicelibs import disk as disklib
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
@@ -139,6 +140,26 @@ class DiskDevice(StorageDevice):
             raise errors.DeviceError("cannot destroy disk with no media", self.name)
 
         StorageDevice._pre_destroy(self)
+
+    @property
+    def _volume(self):
+        return disklib.volumes.get(self.path)
+
+    @property
+    def raid_system(self):
+        return self._volume.system if self._volume is not None else None
+
+    @property
+    def raid_level(self):
+        return self._volume.raid_type if self._volume is not None else None
+
+    @property
+    def raid_stripe_size(self):
+        return self._volume.raid_stripe_size if self._volume is not None else None
+
+    @property
+    def raid_disk_count(self):
+        return self._volume.raid_disk_count if self._volume is not None else None
 
 
 class DiskFile(DiskDevice):
