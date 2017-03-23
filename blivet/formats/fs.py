@@ -672,7 +672,7 @@ class FS(DeviceFormat):
     def unmount(self, **kwargs):
         """ Unmount this filesystem.
 
-            :param str mountpoint: Optional mountpoint to be unmounted.
+            :keyword str mountpoint: Optional mountpoint to be unmounted.
             :raises: FSError
 
             If mountpoint isn't passed this will unmount the most recent mountpoint listed
@@ -680,6 +680,18 @@ class FS(DeviceFormat):
             will be raised in either case if the path doesn't exist.
         """
         return self.teardown(**kwargs)
+
+    def umount(self, **kwargs):
+        """ Unmount this filesystem.
+
+            :keyword str mountpoint: Optional mountpoint to be unmounted.
+            :raises: FSError
+
+            If mountpoint isn't passed this will unmount the most recent mountpoint listed
+            by the system. Override this behavior by passing a specific mountpoint. FSError
+            will be raised in either case if the path doesn't exist.
+        """
+        return self.unmount(**kwargs)
 
     @property
     def status(self):
