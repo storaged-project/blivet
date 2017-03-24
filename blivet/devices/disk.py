@@ -62,7 +62,7 @@ class DiskDevice(StorageDevice):
 
     def __init__(self, name, fmt=None,
                  size=None, major=None, minor=None, sysfs_path='',
-                 parents=None, serial=None, vendor="", model="", bus="",
+                 parents=None, serial=None, vendor="", model="", bus="", wwn=None,
                  exists=True):
         """
             :param name: the device name (generally a device node's basename)
@@ -88,6 +88,7 @@ class DiskDevice(StorageDevice):
             :type model: str
             :keyword bus: the interconnect this device uses
             :type bus: str
+            :keyword str wwn: the disk's WWN
 
             DiskDevices always exist.
         """
@@ -96,6 +97,8 @@ class DiskDevice(StorageDevice):
                                sysfs_path=sysfs_path, parents=parents,
                                serial=serial, model=model,
                                vendor=vendor, bus=bus)
+
+        self.wwn = wwn or None
 
         try:
             ssd = int(util.get_sysfs_attr(self.sysfs_path, "queue/rotational")) == 0
@@ -116,7 +119,8 @@ class DiskDevice(StorageDevice):
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
-        s += ("  removable = %(removable)s" % {"removable": self.removable})
+        s += ("  removable = %(removable)s  wwn = %(wwn)s" % {"removable": self.removable,
+                                                              "wwn": self.wwn})
         return s
 
     @property
@@ -131,7 +135,7 @@ class DiskDevice(StorageDevice):
 
     @property
     def description(self):
-        return " ".join(s for s in (self.vendor, self.model) if s)
+        return " ".join(s for s in (self.vendor, self.model, self.wwn) if s)
 
     def _pre_destroy(self):
         """ Destroy the device. """
@@ -224,7 +228,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
 
     def __init__(self, name, fmt=None,
-                 size=None, parents=None, sysfs_path=''):
+                 size=None, parents=None, sysfs_path='', wwn=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -236,6 +240,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfs_path: sysfs device path
             :type sysfs_path: str
+            :keyword str wwn: the device's WWN
 
             DMRaidArrayDevices always exist. Blivet cannot create or destroy
             them.
@@ -243,6 +248,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
         super(DMRaidArrayDevice, self).__init__(name, fmt=fmt, size=size,
                                                 parents=parents, exists=True,
                                                 sysfs_path=sysfs_path)
+        self.wwn = wwn or None
         self.tags.add(Tags.local)
 
     @property
@@ -305,7 +311,7 @@ class MultipathDevice(DMDevice):
     _is_disk = True
     _external_dependencies = [availability.MULTIPATH_APP]
 
-    def __init__(self, name, fmt=None, size=None, serial=None,
+    def __init__(self, name, fmt=None, size=None, wwn=None,
                  parents=None, sysfs_path=''):
         """
             :param name: the device name (generally a device node's basename)
@@ -318,33 +324,15 @@ class MultipathDevice(DMDevice):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfs_path: sysfs device path
             :type sysfs_path: str
-            :keyword serial: the device's serial number
-            :type serial: str
+            :keyword str wwn: the device's WWN
 
             MultipathDevices always exist. Blivet cannot create or destroy
             them.
         """
-
         DMDevice.__init__(self, name, fmt=fmt, size=size,
                           parents=parents, sysfs_path=sysfs_path,
                           exists=True)
-
-        self.identity = serial
-        self.config = {
-            'wwid': self.identity,
-            'mode': '0600',
-            'uid': '0',
-            'gid': '0',
-        }
-
-    @property
-    def wwid(self):
-        identity = self.identity
-        ret = []
-        while identity:
-            ret.append(identity[:2])
-            identity = identity[2:]
-        return ":".join(ret)
+        self.wwn = wwn or None
 
     @property
     def model(self):
@@ -360,7 +348,7 @@ class MultipathDevice(DMDevice):
 
     @property
     def description(self):
-        return "WWID %s" % (self.wwid,)
+        return "WWID %s" % self.wwn
 
     def add_parent(self, parent):
         """ Add a parent device to the mpath. """
@@ -417,6 +405,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword str wwn: the disk's WWN
             :keyword node: ???
             :type node: str
             :keyword ibft: use iBFT
@@ -510,6 +499,7 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword str wwn: the disk's WWN
             :keyword nic: name of NIC to use
             :keyword identifier: ???
         """
@@ -559,6 +549,7 @@ class ZFCPDiskDevice(DiskDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword str wwn: the disk's WWN
             :keyword hba_id: ???
             :keyword wwpn: ???
             :keyword fcp_lun: ???
@@ -606,6 +597,7 @@ class DASDDevice(DiskDevice):
             :type parents: list of :class:`StorageDevice`
             :keyword format: this device's formatting
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword str wwn: the disk's WWN
             :keyword busid: bus ID
             :keyword opts: options
             :type opts: dict with option name keys and option value values
