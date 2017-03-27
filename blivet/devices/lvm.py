@@ -936,7 +936,6 @@ class LVMSnapShotBase(object):
         """
         self._originSpecifiedCheck(origin, vorigin, exists)
         self._originTypeCheck(origin)
-        self._originExistenceCheck(origin)
         self._voriginExistenceCheck(vorigin, exists)
 
         self.origin = origin
@@ -954,10 +953,6 @@ class LVMSnapShotBase(object):
         if origin and not isinstance(origin, LVMLogicalVolumeDevice):
             raise ValueError("lvm snapshot origin must be a logical volume")
 
-    def _originExistenceCheck(self, origin):
-        if origin and not origin.exists:
-            raise ValueError("lvm snapshot origin volume must already exist")
-
     def _voriginExistenceCheck(self, vorigin, exists):
         if vorigin and not exists:
             raise ValueError("only existing vorigin snapshots are supported")
@@ -974,7 +969,7 @@ class LVMSnapShotBase(object):
         fmt = copy.deepcopy(self.origin.format)
         fmt.exists = False
         if hasattr(fmt, "mountpoint"):
-            fmt.mountpoint = ""
+            fmt._mountpoint = None
             fmt._chrootedMountpoint = None
             fmt.device = self.path # pylint: disable=no-member
 
@@ -1096,6 +1091,12 @@ class LVMSnapShotDevice(LVMSnapShotBase, LVMLogicalVolumeDevice):
         return (self.origin == dep or
                 super(LVMSnapShotBase, self).dependsOn(dep))
 
+    def _postCreate(self):
+        LVMLogicalVolumeDevice._postCreate(self)
+        # the snapshot's format exists if the origin's format exists
+        self.format.exists = self.origin.format.exists
+
+
 class LVMThinPoolDevice(LVMLogicalVolumeDevice):
     """ An LVM Thin Pool """
     _type = "lvmthinpool"
@@ -1188,8 +1189,15 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         cache_size = Size(0)
         if self.cached:
             cache_size = self.cache.size
+        padding = lvm.get_pool_padding(self.size, pesize=self.vg.peSize)
         space = self.vg.align(self.size, roundup=True) * self.copies + self.logSize + self.metaDataSize + cache_size
-        space += lvm.get_pool_padding(self.size, pesize=self.vg.peSize)
+        if self.exists:
+            # subtract metadata size from padding for existing thin pools
+            # (because when creating them we could have not known the size of
+            # metadata and thus didn't include it in the calculations)
+            space += (padding - self.metaDataSize)
+        else:
+            space += padding
         return space
 
     @property
@@ -1361,6 +1369,12 @@ class LVMThinSnapShotDevice(LVMSnapShotBase, LVMThinLogicalVolumeDevice):
 
         lvm.thinsnapshotcreate(self.vg.name, self._name, self.origin.lvname,
                                pool_name=pool_name)
+
+
+    def _postCreate(self):
+        LVMThinLogicalVolumeDevice._postCreate(self)
+        # the snapshot's format exists if the origin's format exists
+        self.format.exists = self.origin.format.exists
 
     def dependsOn(self, dep):
         # once a thin snapshot exists it no longer depends on its origin

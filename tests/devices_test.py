@@ -563,9 +563,6 @@ class LVMDeviceTest(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, "lvm snapshot devices require an origin lv"):
             LVMSnapShotDevice("snap1", parents=[vg])
 
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMSnapShotDevice("snap1", parents=[vg], origin=lv)
-
         with self.assertRaisesRegexp(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMSnapShotDevice("snap1", parents=[vg], origin=pv)
 
@@ -597,9 +594,6 @@ class LVMDeviceTest(unittest.TestCase):
 
         with self.assertRaisesRegexp(ValueError, "lvm thin snapshots require an origin"):
             LVMThinSnapShotDevice("snap1", parents=[pool])
-
-        with self.assertRaisesRegexp(ValueError, "lvm snapshot origin volume must already exist"):
-            LVMThinSnapShotDevice("snap1", parents=[pool], origin=thinlv)
 
         with self.assertRaisesRegexp(ValueError, "lvm snapshot origin must be a logical volume"):
             LVMThinSnapShotDevice("snap1", parents=[pool], origin=pv)
