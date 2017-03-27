@@ -19,7 +19,7 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-__version__ = '0.61.15.59'
+__version__ = '0.61.15.60'
 
 ##
 ## Default stub values for installer-specific stuff that gets set up in

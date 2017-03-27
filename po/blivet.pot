@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-15 15:39-0400\n"
+"POT-Creation-Date: 2017-03-27 12:30-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,214 +33,6 @@ msgstr ""
 #: ../blivet/__init__.py:3088
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#. not enough free space for the requested partition
-#: ../blivet/partitioning.py:213 ../blivet/partitioning.py:381
-#: ../blivet/partitioning.py:435
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/partitioning.py:376 ../blivet/partitioning.py:427
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/partitioning.py:831
-msgid "unable to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:839
-msgid "requested size exceeds maximum allowed"
-msgstr ""
-
-#: ../blivet/partitioning.py:944
-#, python-format
-msgid "disk %s inaccessible"
-msgstr ""
-
-#: ../blivet/partitioning.py:1001
-#, python-format
-msgid ""
-"partition is too small for %(format)s formatting (allowable size is "
-"%(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:1006
-#, python-format
-msgid ""
-"partition is too large for %(format)s formatting (allowable size is "
-"%(minSize)s to %(maxSize)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:1295
-msgid "Unable to allocate requested partition scheme."
-msgstr ""
-
-#: ../blivet/partitioning.py:1324
-msgid "not enough free space after creating extended partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:1496
-msgid "cannot reclaim more than request has grown"
-msgstr ""
-
-#: ../blivet/partitioning.py:1701
-msgid "DiskChunk requests must be of type PartitionRequest"
-msgstr ""
-
-#: ../blivet/partitioning.py:1714
-msgid "partitions allocated outside disklabel limits"
-msgstr ""
-
-#: ../blivet/partitioning.py:1797
-msgid "VGChunk requests must be of type LVRequest"
-msgstr ""
-
-#. by now we have allocated the PVs so if there isn't enough
-#. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2296
-msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/fcoe.py:119
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/errors.py:169
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:175
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:180
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
-#: ../blivet/zfcp.py:54 ../blivet/devicelibs/dasd.py:249
-msgid "You have not specified a device number or the number is invalid"
-msgstr ""
-
-#: ../blivet/zfcp.py:56
-msgid "You have not specified a worldwide port name or the name is invalid."
-msgstr ""
-
-#: ../blivet/zfcp.py:58
-msgid "You have not specified a FCP LUN or the number is invalid."
-msgstr ""
-
-#: ../blivet/zfcp.py:134
-#, python-format
-msgid "zFCP device %s not found, not even in device ignore list."
-msgstr ""
-
-#: ../blivet/zfcp.py:144
-#, python-format
-msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:155
-#, python-format
-msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
-msgstr ""
-
-#. newer zfcp sysfs interface with auto port scan
-#: ../blivet/zfcp.py:162
-#, python-format
-msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
-msgstr ""
-
-#: ../blivet/zfcp.py:177
-#, python-format
-msgid ""
-"Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
-"(%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:183
-#, python-format
-msgid ""
-"LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
-msgstr ""
-
-#: ../blivet/zfcp.py:195
-#, python-format
-msgid ""
-"Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
-"device %(devnum)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:204
-#, python-format
-msgid ""
-"Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
-"again."
-msgstr ""
-
-#: ../blivet/zfcp.py:261
-#, python-format
-msgid ""
-"Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
-"%(fcplun)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:270
-#, python-format
-msgid ""
-"Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
-"(%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:288
-#, python-format
-msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:314
-#, python-format
-msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:380
-msgid "Error"
-msgstr ""
-
-#: ../blivet/iscsi.py:168
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:170
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:327
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:329
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:457
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:477
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:480
-msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #. Decimal prefixes for different size increments, along with the name
@@ -390,86 +182,294 @@ msgstr ""
 msgid "bytes"
 msgstr ""
 
-#: ../blivet/platform.py:51
+#: ../blivet/errors.py:169
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
+msgstr ""
+
+#: ../blivet/errors.py:175
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
+msgstr ""
+
+#: ../blivet/errors.py:180
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
+#. not enough free space for the requested partition
+#: ../blivet/partitioning.py:213 ../blivet/partitioning.py:381
+#: ../blivet/partitioning.py:435
+msgid "Not enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/partitioning.py:376 ../blivet/partitioning.py:427
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/partitioning.py:831
+msgid "unable to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:839
+msgid "requested size exceeds maximum allowed"
+msgstr ""
+
+#: ../blivet/partitioning.py:944
+#, python-format
+msgid "disk %s inaccessible"
+msgstr ""
+
+#: ../blivet/partitioning.py:1001
+#, python-format
+msgid ""
+"partition is too small for %(format)s formatting (allowable size is "
+"%(minSize)s to %(maxSize)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:1006
+#, python-format
+msgid ""
+"partition is too large for %(format)s formatting (allowable size is "
+"%(minSize)s to %(maxSize)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:1295
+msgid "Unable to allocate requested partition scheme."
+msgstr ""
+
+#: ../blivet/partitioning.py:1324
+msgid "not enough free space after creating extended partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:1496
+msgid "cannot reclaim more than request has grown"
+msgstr ""
+
+#: ../blivet/partitioning.py:1701
+msgid "DiskChunk requests must be of type PartitionRequest"
+msgstr ""
+
+#: ../blivet/partitioning.py:1714
+msgid "partitions allocated outside disklabel limits"
+msgstr ""
+
+#: ../blivet/partitioning.py:1797
+msgid "VGChunk requests must be of type LVRequest"
+msgstr ""
+
+#. by now we have allocated the PVs so if there isn't enough
+#. space in the VG we have a real problem
+#: ../blivet/partitioning.py:2296
+msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:119
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/zfcp.py:54 ../blivet/devicelibs/dasd.py:273
+msgid "You have not specified a device number or the number is invalid"
+msgstr ""
+
+#: ../blivet/zfcp.py:56
+msgid "You have not specified a worldwide port name or the name is invalid."
+msgstr ""
+
+#: ../blivet/zfcp.py:58
+msgid "You have not specified a FCP LUN or the number is invalid."
+msgstr ""
+
+#: ../blivet/zfcp.py:134
+#, python-format
+msgid "zFCP device %s not found, not even in device ignore list."
+msgstr ""
+
+#: ../blivet/zfcp.py:144
+#, python-format
+msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:155
+#, python-format
+msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
+msgstr ""
+
+#. newer zfcp sysfs interface with auto port scan
+#: ../blivet/zfcp.py:162
+#, python-format
+msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
+msgstr ""
+
+#: ../blivet/zfcp.py:177
+#, python-format
+msgid ""
+"Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
+"(%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:183
+#, python-format
+msgid ""
+"LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
+msgstr ""
+
+#: ../blivet/zfcp.py:195
+#, python-format
+msgid ""
+"Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
+"device %(devnum)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:204
+#, python-format
+msgid ""
+"Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
+"again."
+msgstr ""
+
+#: ../blivet/zfcp.py:261
+#, python-format
+msgid ""
+"Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
+"%(fcplun)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:270
+#, python-format
+msgid ""
+"Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
+"(%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:288
+#, python-format
+msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:314
+#, python-format
+msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:380
+msgid "Error"
+msgstr ""
+
+#: ../blivet/iscsi.py:168
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:170
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:327
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:329
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:457
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:477
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:480
+msgid "Could not log in to any of the discovered nodes"
+msgstr ""
+
+#: ../blivet/platform.py:52
 msgid "bootloader device"
 msgstr ""
 
-#: ../blivet/platform.py:53
+#: ../blivet/platform.py:54
 msgid "RAID Device"
 msgstr ""
 
-#: ../blivet/platform.py:54
+#: ../blivet/platform.py:55
 msgid "First sector of boot partition"
 msgstr ""
 
-#: ../blivet/platform.py:192 ../blivet/platform.py:337
-#: ../blivet/platform.py:364
+#: ../blivet/platform.py:183 ../blivet/platform.py:328
+#: ../blivet/platform.py:363
 msgid "Master Boot Record"
 msgstr ""
 
-#: ../blivet/platform.py:200
+#: ../blivet/platform.py:191
 msgid ""
 "You must include at least one MBR- or GPT-formatted disk as an install "
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:228 ../blivet/formats/fs.py:1148
+#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1148
 msgid "EFI System Partition"
 msgstr ""
 
-#: ../blivet/platform.py:235
+#: ../blivet/platform.py:226
 msgid ""
 "For a UEFI installation, you must include an EFI System Partition on a GPT-"
 "formatted disk, mounted at /boot/efi."
 msgstr ""
 
-#: ../blivet/platform.py:257
+#: ../blivet/platform.py:248
 msgid "Apple EFI Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:282
+#: ../blivet/platform.py:273
 msgid "PReP Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:285
+#: ../blivet/platform.py:276
 msgid ""
 "You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
 "GPT-formatted disk."
 msgstr ""
 
-#: ../blivet/platform.py:306
+#: ../blivet/platform.py:297
 msgid "Apple Bootstrap Partition"
 msgstr ""
 
-#: ../blivet/platform.py:310
+#: ../blivet/platform.py:301
 msgid ""
 "You must include an Apple Bootstrap Partition on an Apple Partition Map-"
 "formatted disk."
 msgstr ""
 
-#: ../blivet/platform.py:336
+#: ../blivet/platform.py:327
 msgid "DASD"
 msgstr ""
 
-#: ../blivet/platform.py:338
+#: ../blivet/platform.py:329
 msgid "zFCP"
 msgstr ""
 
-#: ../blivet/platform.py:343
+#: ../blivet/platform.py:334
 msgid ""
 "You must include at least one MBR- or DASD-formatted disk as an install "
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:369
+#: ../blivet/platform.py:368
 msgid "You must include at least one MBR-formatted disk as an install target."
 msgstr ""
 
-#: ../blivet/platform.py:391
+#: ../blivet/platform.py:390
 msgid "U-Boot Partition"
 msgstr ""
 
-#: ../blivet/platform.py:393
+#: ../blivet/platform.py:392
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
@@ -532,6 +532,47 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
+#: ../blivet/formats/prepboot.py:36
+msgid "PPC PReP Boot"
+msgstr ""
+
+#: ../blivet/formats/dmraid.py:36
+msgid "dm-raid member device"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:40
+msgid "software RAID"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:147
+msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:44
+msgid "partition table"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:232
+#, python-format
+msgid "Unsupported %(name)s"
+msgstr ""
+
+#: ../blivet/formats/multipath.py:38
+msgid "multipath member device"
+msgstr ""
+
+#: ../blivet/formats/luks.py:46
+msgid "LUKS"
+msgstr ""
+
+#: ../blivet/formats/luks.py:47
+msgid "Encrypted"
+msgstr ""
+
 #: ../blivet/formats/fs.py:553
 #, python-format
 msgid "Unknown return code: %d."
@@ -572,57 +613,31 @@ msgstr ""
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1370
+#: ../blivet/formats/fs.py:1392
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1402
+#: ../blivet/formats/fs.py:1424
 msgid "Linux HFS+ ESP"
-msgstr ""
-
-#: ../blivet/formats/prepboot.py:36
-msgid "PPC PReP Boot"
-msgstr ""
-
-#: ../blivet/formats/dmraid.py:36
-msgid "dm-raid member device"
-msgstr ""
-
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:147
-msgid "Unknown"
-msgstr ""
-
-#: ../blivet/formats/disklabel.py:44
-msgid "partition table"
-msgstr ""
-
-#: ../blivet/formats/disklabel.py:232
-#, python-format
-msgid "Unsupported %(name)s"
-msgstr ""
-
-#: ../blivet/formats/multipath.py:38
-msgid "multipath member device"
-msgstr ""
-
-#: ../blivet/formats/luks.py:46
-msgid "LUKS"
-msgstr ""
-
-#: ../blivet/formats/luks.py:47
-msgid "Encrypted"
 msgstr ""
 
 #: ../blivet/formats/lvmpv.py:39
 msgid "physical volume (LVM)"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:40
-msgid "software RAID"
+#: ../blivet/devicelibs/dasd.py:296
+#, python-format
+msgid "DASD device %s not found, not even in device ignore list."
+msgstr ""
+
+#: ../blivet/devicelibs/dasd.py:303
+#, python-format
+msgid "Device %s is already online."
+msgstr ""
+
+#: ../blivet/devicelibs/dasd.py:309
+#, python-format
+msgid "Could not set DASD device %(dev)s online (%(e)s)."
 msgstr ""
 
 #: ../blivet/devicelibs/lvm.py:57
@@ -636,19 +651,4 @@ msgstr ""
 #: ../blivet/devicelibs/lvm.py:444
 #, python-format
 msgid "vginfo failed for %s"
-msgstr ""
-
-#: ../blivet/devicelibs/dasd.py:272
-#, python-format
-msgid "DASD device %s not found, not even in device ignore list."
-msgstr ""
-
-#: ../blivet/devicelibs/dasd.py:279
-#, python-format
-msgid "Device %s is already online."
-msgstr ""
-
-#: ../blivet/devicelibs/dasd.py:285
-#, python-format
-msgid "Could not set DASD device %(dev)s online (%(e)s)."
 msgstr ""

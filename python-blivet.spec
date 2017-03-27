@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.59
+Version: 0.61.15.60
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,30 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Mon Mar 27 2017 David Lehman <dlehman@redhat.com> - 0.61.15.60-1
+- Add a method to regenerate XFS' uuid (vpodzime)
+  Related: rhbz#1413942
+- Properly unset mountpoint of a snapshot's format (vpodzime)
+  Related: rhbz#1413942
+- Update the snapshot's format's exists flag on creation (vpodzime)
+  Related: rhbz#1413942
+- Do not require origin to exist when creating snapshot (vpodzime)
+  Resolves: rhbz#1413942
+- Make padding smaller for existing thin pools (vpodzime)
+  Resolves: rhbz#1432012
+- Use all ancestors when adding RAID disks to exclusiveDisks (vtrefny)
+  Resolves: rhbz#1327463
+- Fix detection of linear MD RAID (vtrefny)
+  Resolves: rhbz#1372414
+- Allow custom chunk size specification for MDRaidArrayDevice (vtrefny)
+  Resolves: rhbz#1405141
+- Remove the useless method requiredDiskLabelType (vponcova)
+  Related: rhbz#1405141
+- FBA DASD should use the msdos disk label type (vponcova)
+  Resolves: rhbz#1214407
+- Eliminate mountpoint symlinks when looking for mounted device (vtrefny)
+  Resolves: rhbz#1322439
+
 * Thu Sep 15 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 0.61.15.59-1
 - Properly calculate thin pool's vgSpaceUsed (vpodzime)
   Related: rhbz#1374499
