@@ -202,6 +202,11 @@ def storageInitialize(storage, ksdata, protected):
 
     # kickstart uses all the disks
     if flags.automated_install:
+        # ignore OEMDRV disk
+        oemdrv = storage.devicetree.resolveDevice("LABEL=OEMDRV")
+        if oemdrv and not oemdrv in ksdata.ignoredisk.ignoredisk:
+            ksdata.ignoredisk.ignoredisk.append(oemdrv)
+
         if not ksdata.ignoredisk.onlyuse:
             ksdata.ignoredisk.onlyuse = [d.name for d in storage.disks \
                                          if d.name not in ksdata.ignoredisk.ignoredisk]
