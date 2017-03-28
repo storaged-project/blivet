@@ -90,7 +90,8 @@ class DiskLabel(DeviceFormat):
             We can't do copy.deepcopy on parted objects, which is okay.
         """
         return util.variable_copy(self, memo,
-                                  shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',),
+                                  shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',
+                                           '_disk_label_alignment'),
                                   duplicate=('_parted_disk', '_orig_parted_disk'))
 
     def __repr__(self):
