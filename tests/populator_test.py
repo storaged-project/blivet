@@ -75,8 +75,11 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
         flags.image_install = False
 
     def runTest(self):
+        disk = self.blivet.disks[0]
+        self.assertEqual(disk.name, list(self.disks.keys())[0])
         for d in self.blivet.devicetree.devices:
-            self.assertTrue(d.size > 0)
+            if d == disk or disk.depends_on(d):
+                self.assertTrue(d.size > 0)
 
 
 class PopulatorHelperTestCase(unittest.TestCase):
