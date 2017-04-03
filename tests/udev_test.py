@@ -1,8 +1,15 @@
 #!/usr/bin/python
 
 import unittest
-import mock
 
+try:
+    import mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
+
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class UdevTest(unittest.TestCase):
 
     def setUp(self):

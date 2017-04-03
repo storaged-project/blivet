@@ -1,7 +1,13 @@
 #!/usr/bin/python
 
 import unittest
-from mock import Mock
+
+try:
+    from mock import Mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 import parted
 
@@ -12,6 +18,7 @@ from blivet.formats import getFormat
 from blivet.devices import StorageDevice
 from blivet.devices import PartitionDevice
 
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class StorageTestCase(unittest.TestCase):
     """ StorageTestCase
 

@@ -1,11 +1,17 @@
 import unittest
-import mock
+try:
+    import mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 import blivet
 from pykickstart.constants import CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_NONE
 from parted import PARTITION_NORMAL
 from blivet.flags import flags
 
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class ClearPartTestCase(unittest.TestCase):
     def setUp(self):
         flags.testing = True

@@ -1,5 +1,11 @@
 import unittest
-from mock import patch
+
+try:
+    from mock import patch
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 from tests.imagebackedtestcase import ImageBackedTestCase
 
@@ -47,9 +53,10 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.resolveDevice("/dev/dev1"), dev1)
 
         self.assertEqual(dt.resolveDevice("dev2"), dev2)
-        with patch("blivet.devicetree.edd") as patched_edd:
-            patched_edd.edd_dict = {"dev1": 0x81, "dev2": 0x82}
-            self.assertEqual(dt.resolveDevice("0x82"), dev2)
+        if has_mock:
+            with patch("blivet.devicetree.edd") as patched_edd:
+                patched_edd.edd_dict = {"dev1": 0x81, "dev2": 0x82}
+                self.assertEqual(dt.resolveDevice("0x82"), dev2)
 
         self.assertEqual(dt.resolveDevice(dev3.name), dev3)
 

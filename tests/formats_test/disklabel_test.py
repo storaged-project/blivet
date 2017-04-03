@@ -1,16 +1,22 @@
 import parted
 import unittest
-import mock
+
+try:
+    import mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 import blivet
 from blivet.size import Size
 
-patch = mock.patch
-
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class DiskLabelTestCase(unittest.TestCase):
-    @patch("blivet.formats.disklabel.DiskLabel.freshPartedDisk", None)
     def testGetAlignment(self):
-        dl = blivet.formats.disklabel.DiskLabel()
+        with mock.patch("blivet.formats.disklabel.DiskLabel.freshPartedDisk", None):
+            dl = blivet.formats.disklabel.DiskLabel()
+
         dl._partedDisk = mock.Mock()
         dl._partedDevice = mock.Mock()
         dl._partedDevice.sectorSize = 512

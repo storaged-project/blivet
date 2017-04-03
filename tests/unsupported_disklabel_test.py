@@ -1,7 +1,13 @@
 # vim:set fileencoding=utf-8
 
 import unittest
-from mock import patch, sentinel, DEFAULT
+
+try:
+    from mock import patch, sentinel, DEFAULT
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 from blivet import Blivet
 from blivet.deviceaction import ActionDestroyFormat
@@ -16,6 +22,7 @@ from blivet.size import Size
 from blivet.util import sparsetmpfile
 
 
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class UnsupportedDiskLabelTestCase(unittest.TestCase):
     def setUp(self):
         disk1 = DiskDevice("testdisk", size=Size("300 GiB"), exists=True,

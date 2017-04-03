@@ -1,5 +1,11 @@
 import unittest
-import mock
+
+try:
+    import mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 class EddTestCase(unittest.TestCase):
     @unittest.skip("not implemented")
@@ -133,6 +139,7 @@ class EddTestCase(unittest.TestCase):
         self.assertIn((('edd: both edd entries 0x80 and 0x81 seem to map to sda',), {}),
                       edd.log.info.call_args_list)
 
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class EddTestFS(object):
     def __init__(self, test_case, target_module):
         self.fs = mock.DiskIO() # pylint: disable=no-member

@@ -4,7 +4,12 @@
 import os
 import unittest
 
-from mock import Mock
+try:
+    from mock import Mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 import blivet
 
@@ -143,101 +148,102 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
            size=Size("32 MiB"),
            totalDevices=2)
 
-        self.dev12 = MDRaidArrayDevice(
-           "dev12",
-           level=1,
-           memberDevices=2,
-           parents=[
-              Mock(**{"type": "mdcontainer",
-                      "size": Size("4 MiB"),
-                      "format": getFormat(None)}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           size=Size("32 MiB"),
-           totalDevices=2)
+        if has_mock:
+            self.dev12 = MDRaidArrayDevice(
+               "dev12",
+               level=1,
+               memberDevices=2,
+               parents=[
+                  Mock(**{"type": "mdcontainer",
+                          "size": Size("4 MiB"),
+                          "format": getFormat(None)}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               size=Size("32 MiB"),
+               totalDevices=2)
 
-        self.dev13 = MDRaidArrayDevice(
-           "dev13",
-           level=0,
-           memberDevices=3,
-           parents=[
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           size=Size("32 MiB"),
-           totalDevices=3)
+            self.dev13 = MDRaidArrayDevice(
+               "dev13",
+               level=0,
+               memberDevices=3,
+               parents=[
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               size=Size("32 MiB"),
+               totalDevices=3)
 
-        self.dev14 = MDRaidArrayDevice(
-           "dev14",
-           level=4,
-           memberDevices=3,
-           parents=[
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=3)
+            self.dev14 = MDRaidArrayDevice(
+               "dev14",
+               level=4,
+               memberDevices=3,
+               parents=[
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               totalDevices=3)
 
-        self.dev15 = MDRaidArrayDevice(
-           "dev15",
-           level=5,
-           memberDevices=3,
-           parents=[
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=3)
+            self.dev15 = MDRaidArrayDevice(
+               "dev15",
+               level=5,
+               memberDevices=3,
+               parents=[
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               totalDevices=3)
 
-        self.dev16 = MDRaidArrayDevice(
-           "dev16",
-           level=6,
-           memberDevices=4,
-           parents=[
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=4)
+            self.dev16 = MDRaidArrayDevice(
+               "dev16",
+               level=6,
+               memberDevices=4,
+               parents=[
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               totalDevices=4)
 
-        self.dev17 = MDRaidArrayDevice(
-           "dev17",
-           level=10,
-           memberDevices=4,
-           parents=[
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=4)
+            self.dev17 = MDRaidArrayDevice(
+               "dev17",
+               level=10,
+               memberDevices=4,
+               parents=[
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               totalDevices=4)
 
-        self.dev18 = MDRaidArrayDevice(
-           "dev18",
-           level=10,
-           memberDevices=4,
-           parents=[
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("4 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")}),
-              Mock(**{"size": Size("2 MiB"),
-                      "format": getFormat("mdmember")})],
-           totalDevices=5)
+            self.dev18 = MDRaidArrayDevice(
+               "dev18",
+               level=10,
+               memberDevices=4,
+               parents=[
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("4 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")}),
+                  Mock(**{"size": Size("2 MiB"),
+                          "format": getFormat("mdmember")})],
+               totalDevices=5)
 
         self.dev19 = MDRaidArrayDevice(
            "dev19",
@@ -321,72 +327,73 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                         totalDevices=lambda x, m: self.assertEqual(x, 2, m),
                         type=lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
-        self.stateCheck(self.dev12,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        isDisk=self.assertTrue,
-                        level=lambda x, m: self.assertEqual(x.number, 1, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        partitionable=self.assertTrue,
-                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 2, m),
-                        type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
+        if has_mock:
+            self.stateCheck(self.dev12,
+                            devices=lambda x, m: self.assertEqual(len(x), 2, m),
+                            isDisk=self.assertTrue,
+                            level=lambda x, m: self.assertEqual(x.number, 1, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 2, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            partitionable=self.assertTrue,
+                            targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 2, m),
+                            type = lambda x, m: self.assertEqual(x, "mdbiosraidarray", m))
 
-        self.stateCheck(self.dev13,
-                        createBitmap=self.assertFalse,
-                        devices=lambda x, m: self.assertEqual(len(x), 2, m),
-                        level=lambda x, m: self.assertEqual(x.number, 0, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 3, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("3 MiB"), m),
-                        targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 3, m))
+            self.stateCheck(self.dev13,
+                            createBitmap=self.assertFalse,
+                            devices=lambda x, m: self.assertEqual(len(x), 2, m),
+                            level=lambda x, m: self.assertEqual(x.number, 0, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 3, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            size=lambda x, m: self.assertEqual(x, Size("3 MiB"), m),
+                            targetSize=lambda x, m: self.assertEqual(x, Size("32 MiB"), m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
-        self.stateCheck(self.dev14,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x.number, 4, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 3, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 3, m))
+            self.stateCheck(self.dev14,
+                            createBitmap=self.assertTrue,
+                            devices=lambda x, m: self.assertEqual(len(x), 3, m),
+                            level=lambda x, m: self.assertEqual(x.number, 4, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 3, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
-        self.stateCheck(self.dev15,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 3, m),
-                        level=lambda x, m: self.assertEqual(x.number, 5, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 3, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 3, m))
+            self.stateCheck(self.dev15,
+                            createBitmap=self.assertTrue,
+                            devices=lambda x, m: self.assertEqual(len(x), 3, m),
+                            level=lambda x, m: self.assertEqual(x.number, 5, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 3, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 3, m))
 
-        self.stateCheck(self.dev16,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 6, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 4, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 4, m))
+            self.stateCheck(self.dev16,
+                            createBitmap=self.assertTrue,
+                            devices=lambda x, m: self.assertEqual(len(x), 4, m),
+                            level=lambda x, m: self.assertEqual(x.number, 6, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 4, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
-        self.stateCheck(self.dev17,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 10, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 4, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 4, m))
+            self.stateCheck(self.dev17,
+                            createBitmap=self.assertTrue,
+                            devices=lambda x, m: self.assertEqual(len(x), 4, m),
+                            level=lambda x, m: self.assertEqual(x.number, 10, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 4, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 4, m))
 
-        self.stateCheck(self.dev18,
-                        createBitmap=self.assertTrue,
-                        devices=lambda x, m: self.assertEqual(len(x), 4, m),
-                        level=lambda x, m: self.assertEqual(x.number, 10, m),
-                        memberDevices=lambda x, m: self.assertEqual(x, 4, m),
-                        parents=lambda x, m: self.assertNotEqual(x, [], m),
-                        size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
-                        spares=lambda x, m: self.assertEqual(x, 1, m),
-                        totalDevices=lambda x, m: self.assertEqual(x, 5, m))
+            self.stateCheck(self.dev18,
+                            createBitmap=self.assertTrue,
+                            devices=lambda x, m: self.assertEqual(len(x), 4, m),
+                            level=lambda x, m: self.assertEqual(x.number, 10, m),
+                            memberDevices=lambda x, m: self.assertEqual(x, 4, m),
+                            parents=lambda x, m: self.assertNotEqual(x, [], m),
+                            size=lambda x, m: self.assertEqual(x, Size("2 MiB"), m),
+                            spares=lambda x, m: self.assertEqual(x, 1, m),
+                            totalDevices=lambda x, m: self.assertEqual(x, 5, m))
 
         self.stateCheck(self.dev19,
                         level=lambda x, m: self.assertEqual(x.number, 1, m),
