@@ -18,9 +18,11 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.Ext2FS.labelFormatOK("root___filesystem"))
         self.assertTrue(fs.Ext2FS.labelFormatOK("root__filesystem"))
 
-        # FATFS has a maximum length of 11
+        # FATFS has a maximum length of 11 and requires all caps
         self.assertFalse(fs.FATFS.labelFormatOK("rtfilesystem"))
-        self.assertTrue(fs.FATFS.labelFormatOK("rfilesystem"))
+        self.assertFalse(fs.FATFS.labelFormatOK("RTFILESYSTEM"))
+        self.assertFalse(fs.FATFS.labelFormatOK("rfilesystem"))
+        self.assertTrue(fs.FATFS.labelFormatOK("RFILESYSTEM"))
 
         # JFS has a maximum length of 16
         self.assertFalse(fs.JFS.labelFormatOK("root___filesystem"))

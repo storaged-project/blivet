@@ -117,8 +117,11 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         self.assertEqual(an_fs.readLabel(), an_fs._labelfs.default_label)
 
         an_fs.label = "an_fs"
-        self.assertIsNone(an_fs.writeLabel())
-        self.assertEqual(an_fs.readLabel(), an_fs.label)
+        if an_fs.labelFormatOK(an_fs.label):
+            self.assertIsNone(an_fs.writeLabel())
+            self.assertEqual(an_fs.readLabel(), an_fs.label)
+        else:
+            self.assertRaisesRegexp(FSError, "bad label format", an_fs.writeLabel)
 
         an_fs.label = ""
         self.assertIsNone(an_fs.writeLabel())
@@ -138,7 +141,8 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         """
         an_fs = self._fs_class(device=self.loopDevices[0], label="start")
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.readLabel(), "start")
+        if an_fs.labelFormatOK(an_fs.label):
+            self.assertEqual(an_fs.readLabel(), "start")
 
     def testCreatingNone(self):
         """Create a filesystem with the label None.
