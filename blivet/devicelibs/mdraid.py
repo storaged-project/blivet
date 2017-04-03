@@ -342,7 +342,7 @@ def mddetail(device):
         raise MDRaidError("mddetail failed for %s: %s" % (device, e))
 
     info = {}
-    for (name, colon, value) in (line.strip().partition(":") for line in lines):
+    for (name, colon, value) in (line.strip().partition(" : ") for line in lines):
         value = value.strip()
         name = name.strip().upper()
         if colon and value and name:
