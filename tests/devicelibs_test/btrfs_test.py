@@ -7,6 +7,7 @@ import unittest
 
 import blivet.devicelibs.btrfs as btrfs
 from blivet.errors import BTRFSError
+from blivet.formats import fs
 
 from tests import loopbackedtestcase
 
@@ -16,7 +17,7 @@ class BTRFSMountDevice(loopbackedtestcase.LoopBackedTestCase):
        It always mounts the filesystem using self.device at self.mountpoint.
     """
     def __init__(self, methodName='runTest'):
-        super(BTRFSMountDevice, self).__init__(methodName=methodName)
+        super(BTRFSMountDevice, self).__init__(methodName=methodName, deviceSpec=[fs.BTRFS._minSize.convertTo("KiB"), fs.BTRFS._minSize.convertTo("KiB")])
         self.device = None
         self.mountpoint = None
 
@@ -53,6 +54,9 @@ class BTRFSMountDevice(loopbackedtestcase.LoopBackedTestCase):
         super(BTRFSMountDevice, self).tearDown()
 
 class BTRFSAsRootTestCase1(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(BTRFSAsRootTestCase1, self).__init__(methodName=methodName, deviceSpec=[fs.BTRFS._minSize.convertTo("KiB"), fs.BTRFS._minSize.convertTo("KiB")])
 
     def testUnmountedBTRFS(self):
         """A series of simple tests on an unmounted file system.
@@ -163,20 +167,6 @@ class BTRFSAsRootTestCase2(BTRFSMountDevice):
         self.assertEqual(btrfs.create_subvolume(os.path.join(self.mountpoint, "SV1"), "SV1.1"), 0)
         subvolumes = btrfs.list_subvolumes(self.mountpoint)
         self.assertEqual(len([v for v in subvolumes if v['path'].find("SV1.1") != -1]), 1)
-
-class BTRFSAsRootTestCase3(loopbackedtestcase.LoopBackedTestCase):
-
-    def __init__(self, methodName='runTest'):
-        super(BTRFSAsRootTestCase3, self).__init__(methodName=methodName, deviceSpec=[8192])
-
-    def testSmallDevice(self):
-        """ Creation of a smallish device will result in an error if the
-            data and metadata levels are specified differently, but not if
-            they are unspecified.
-        """
-        with self.assertRaises(BTRFSError):
-            btrfs.create_volume(self.loopDevices, data="single", metadata="dup")
-        self.assertEqual(btrfs.create_volume(self.loopDevices), 0)
 
 if __name__ == "__main__":
     unittest.main()
