@@ -19,7 +19,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         super(SELinuxContextTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
 
     def setUp(self):
-        self.selinux_reset_fcon = blivet.flags.selinux_reset_fcon
+        self.selinux_reset_fcon = blivet.flags.flags.selinux_reset_fcon
         super(SELinuxContextTestCase, self).setUp()
 
     def test_mounting_ext2fs(self):
@@ -35,7 +35,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertIsNone(an_fs.create())
 
-        blivet.flags.selinux_reset_fcon = False
+        blivet.flags.flags.selinux_reset_fcon = False
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -49,7 +49,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertNotEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
 
-        blivet.flags.selinux_reset_fcon = True
+        blivet.flags.flags.selinux_reset_fcon = True
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -72,7 +72,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.assertIsNone(an_fs.create())
 
-        blivet.flags.selinux_reset_fcon = False
+        blivet.flags.flags.selinux_reset_fcon = False
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -82,7 +82,7 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
         an_fs.unmount()
         os.rmdir(mountpoint)
 
-        blivet.flags.selinux_reset_fcon = True
+        blivet.flags.flags.selinux_reset_fcon = True
         mountpoint = tempfile.mkdtemp("test.selinux")
         an_fs.mount(mountpoint=mountpoint)
 
@@ -94,4 +94,4 @@ class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def tearDown(self):
         super(SELinuxContextTestCase, self).tearDown()
-        blivet.flags.selinux_reset_fcon = self.selinux_reset_fcon
+        blivet.flags.flags.selinux_reset_fcon = self.selinux_reset_fcon
