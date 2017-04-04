@@ -22,6 +22,11 @@
 import logging
 log = logging.getLogger("blivet")
 
+import gi
+gi.require_version("BlockDev", "2.0")
+
+from gi.repository import BlockDev as blockdev
+
 import parted
 
 from . import arch
@@ -118,34 +123,24 @@ class Platform(object):
              "descriptions": dict((k, _(v)) for k, v in self._boot_descriptions.items())}
         return d
 
-    def required_disklabel_type(self, device_type):
-        # pylint: disable=unused-argument
-        return None
-
     def best_disklabel_type(self, device):
         """The best disklabel type for the specified device."""
         if flags.testing:
             return self.default_disklabel_type
 
         parted_device = parted.Device(path=device.path)
+        label_type = self.default_disklabel_type
+        log.debug("default disklabel type for %s is %s", device.name, label_type)
 
-        # if there's a required type for this device type, use that
-        label_type = self.required_disklabel_type(parted_device.type)
-        log.debug("required disklabel type for %s (%s) is %s",
-                  device.name, parted_device.type, label_type)
-        if not label_type:
-            # otherwise, use the first supported type for this platform
-            # that is large enough to address the whole device
-            label_type = self.default_disklabel_type
-            log.debug("default disklabel type for %s is %s", device.name,
-                      label_type)
-            for lt in self.disklabel_types:
-                l = parted.freshDisk(device=parted_device, ty=lt)
-                if l.maxPartitionStartSector > parted_device.length:
-                    label_type = lt
-                    log.debug("selecting %s disklabel for %s based on size",
-                              label_type, device.name)
-                    break
+        # use the first supported type for this platform
+        # that is large enough to address the whole device
+        for lt in self.disklabel_types:
+            l = parted.freshDisk(device=parted_device, ty=lt)
+            if l.maxPartitionStartSector > parted_device.length:
+                label_type = lt
+                log.debug("selecting %s disklabel for %s based on size",
+                          label_type, device.name)
+                break
 
         return label_type
 
@@ -364,12 +359,20 @@ class S390(Platform):
         return [PartSpec(mountpoint="/boot", size=Size("1GiB"),
                          weight=self.weight(mountpoint="/boot"), lv=False)]
 
-    def required_disklabel_type(self, device_type):
-        """The required disklabel type for the specified device type."""
-        if device_type == parted.DEVICE_DASD:
+    def best_disklabel_type(self, device):
+        """The best disklabel type for the specified device."""
+        if flags.testing:
+            return self.default_disklabel_type
+
+        # the device is FBA DASD
+        if blockdev.s390.dasd_is_fba(device.path):
+            return "msdos"
+        # the device is DASD
+        elif parted.Device(path=device.path).type == parted.DEVICE_DASD:
             return "dasd"
 
-        return super(S390, self).required_disklabel_type(device_type)
+        # other types of devices
+        return super(S390, self).best_disklabel_type(device)
 
 
 class ARM(Platform):

@@ -1,8 +1,10 @@
 # pylint: skip-file
 
 import unittest
+from unittest import mock
 from decimal import Decimal
 
+from blivet import errors
 from blivet import util
 
 
@@ -113,3 +115,35 @@ class TestRequiresProperty(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             t.bad_news
+
+
+class TestDependencyGuard(util.DependencyGuard):
+    error_msg = "test dep not satisfied"
+
+    def _check_avail(self):
+        return False
+
+_requires_something = TestDependencyGuard()
+
+
+class DependencyGuardTestCase(unittest.TestCase):
+    @_requires_something(critical=True)
+    def _test_dependency_guard_critical(self):
+        return True
+
+    @_requires_something(critical=False)
+    def _test_dependency_guard_non_critical(self):
+        return True
+
+    def test_dependency_guard(self):
+        guard = TestDependencyGuard()
+        with self.assertLogs("blivet", level="WARNING") as cm:
+            self.assertEqual(self._test_dependency_guard_non_critical(), None)
+        self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
+
+        with self.assertRaises(errors.DependencyError):
+            self._test_dependency_guard_critical()
+
+        with unittest.mock.patch.object(_requires_something, '_check_avail', return_value=True):
+            self.assertEqual(self._test_dependency_guard_non_critical(), True)
+            self.assertEqual(self._test_dependency_guard_critical(), True)

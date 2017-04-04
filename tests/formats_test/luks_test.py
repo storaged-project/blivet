@@ -49,6 +49,10 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.fmt.update_size_info()
         self.assertEqual(self.fmt.current_size, new_size)
 
+    def tearDown(self):
+        self.fmt.teardown()
+        super(LUKSTestCase, self).tearDown()
+
 
 class LUKSNodevTestCase(unittest.TestCase):
     def test_create_discard_option(self):
