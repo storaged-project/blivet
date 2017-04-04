@@ -447,7 +447,7 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
     def testImplicitExtendedPartitionsInstallerMode(self):
         flags.installer_mode = True
         self.testImplicitExtendedPartitions()
-        flags.install_mode = False
+        flags.installer_mode = False
 
     def testExplicitExtendedPartitions(self):
         """ Verify that explicitly requested extended partitions work. """
