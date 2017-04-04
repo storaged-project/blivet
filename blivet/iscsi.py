@@ -106,9 +106,9 @@ class iSCSIDependencyGuard(util.DependencyGuard):
     error_msg = "storaged iSCSI functionality not available"
 
     def _check_avail(self):
-        if not safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE):
-            return False
         try:
+            if not safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE):
+                return False
             # storaged is modular and we need to make sure it has the iSCSI module
             # loaded (this also autostarts storaged if it isn't running already)
             safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE,

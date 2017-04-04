@@ -184,6 +184,7 @@ class PartitionDevice(StorageDevice):
             log.debug("looking up parted Partition: %s", self.path)
             self._parted_partition = self.disk.format.parted_disk.getPartitionByPath(self.path)
             if not self._parted_partition:
+                self.parents = []
                 raise errors.DeviceError("cannot find parted partition instance", self.name)
 
             self._orig_path = self.path

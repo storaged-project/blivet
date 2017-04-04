@@ -7,7 +7,7 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from mock import Mock
+from mock import Mock, patch
 
 import blivet
 
@@ -109,6 +109,18 @@ class DeviceStateTestCase(unittest.TestCase):
                     test_func(device, k)
             else:
                 v(device, k)
+
+    def test_resizable(self):
+        """ Test resizable property of unformatted devices. """
+        # Devices with no (or unrecognized) formatting should not be resizable.
+        device = StorageDevice("testdev1", exists=True, size=Size("100 G"), fmt=get_format("ext4", exists=True))
+        device._resizable = True
+        with patch.object(device, "_format", exists=True, resizable=True):
+            self.assertTrue(device.resizable)
+
+        device = StorageDevice("testdev1", exists=True, size=Size("100 G"))
+        device._resizable = True
+        self.assertFalse(device.resizable)
 
 
 class MDRaidArrayDeviceTestCase(DeviceStateTestCase):

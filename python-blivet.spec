@@ -20,7 +20,7 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}
 %global partedver 1.8.1
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
-%global libblockdevver 2.1
+%global libblockdevver 2.6
 %global libbytesizever 0.3
 %global pyudevver 0.18
 

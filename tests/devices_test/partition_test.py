@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
+from blivet.devices import StorageDevice
+from blivet.errors import DeviceError
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import sparsetmpfile
@@ -197,3 +199,25 @@ class PartitionDeviceTestCase(unittest.TestCase):
             end_free = (extended_end - logical_end) * sector_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))
+
+    @patch("blivet.devices.partition.PartitionDevice.update_size", lambda part: None)
+    @patch("blivet.devices.partition.PartitionDevice.probe", lambda part: None)
+    def test_ctor_parted_partition_error_handling(self):
+        disk = StorageDevice("testdisk", exists=True)
+        disk._partitionable = True
+        with patch.object(disk, "_format") as fmt:
+            fmt.type = "disklabel"
+            self.assertTrue(disk.partitioned)
+
+            fmt.supported = True
+
+            # Normal case, no exn.
+            device = PartitionDevice("testpart1", exists=True, parents=[disk])
+            self.assertIn(device, disk.children)
+            device.parents.remove(disk)
+            self.assertEqual(len(disk.children), 0, msg="disk has children when it should not")
+
+            # Parted doesn't find a partition, exn is raised.
+            fmt.parted_disk.getPartitionByPath.return_value = None
+            self.assertRaises(DeviceError, PartitionDevice, "testpart1", exists=True, parents=[disk])
+            self.assertEqual(len(disk.children), 0, msg="device is still attached to disk in spite of ctor error")
