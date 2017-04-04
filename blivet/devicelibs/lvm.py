@@ -49,6 +49,8 @@ LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 
+LVM_THINP_DEFAULT_CHUNK_SIZE = Size("64 KiB")
+
 LVM_MIN_CACHE_MD_SIZE = Size("8 MiB")
 
 RAID_levels = raid.RAIDLevels(["raid0", "raid1", "linear"])
@@ -191,6 +193,15 @@ def get_pool_padding(size, pesize=LVM_PE_SIZE, reverse=False):
               clampSize(LVM_THINP_MAX_METADATA_SIZE, pesize, roundup=True))
 
     return pad
+
+def get_pool_metadata_size(size, chunk_size=LVM_THINP_DEFAULT_CHUNK_SIZE, snapshots=100):
+    argv = ["thin_metadata_size", "-n", "-ub",
+            "-s%d" % size, "-b%d" % chunk_size, "-m%d" % snapshots]
+    (ret, out) = util.run_program_and_capture_output(argv)
+    if ret == 0 and out:
+        return Size(out)
+    else:
+        raise LVMError("Failed to get metadata size from thin_metadata_size (ret: %d)" % ret)
 
 def is_valid_thin_pool_metadata_size(size):
     """ Return True if size is a valid thin pool metadata vol size.

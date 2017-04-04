@@ -30,13 +30,15 @@ from .errors import DeviceError, NoDisksError, NotEnoughFreeSpaceError, Partitio
 from .flags import flags
 from .devices import PartitionDevice, LUKSDevice, devicePathToName
 from .devices.partition import FALLBACK_DEFAULT_PART_SIZE
+from .devices.lvm import ThPoolReserveSpec
 from .formats import getFormat
-from .devicelibs.lvm import get_pool_padding
 from .size import Size
 from .i18n import _
 
 import logging
 log = logging.getLogger("blivet")
+
+AUTOPART_THPOOL_RESERVE = ThPoolReserveSpec(20, Size("1 GiB"), Size("100 GiB"))
 
 def _getCandidateDisks(storage):
     """ Return a list of disks to be used for autopart/reqpart.
@@ -323,6 +325,8 @@ def _scheduleVolumes(storage, devs):
             # create a single thin pool in the vg
             pool = storage.newLV(parents=[container], thin_pool=True, grow=True)
             storage.createDevice(pool)
+            # make sure VG reserves space for the pool to grow if needed
+            container.thpool_reserve = AUTOPART_THPOOL_RESERVE
 
         if not btr and not lv and not thinlv:
             continue
@@ -2267,11 +2271,6 @@ def _apply_chunk_growth(chunk):
 
         size = chunk.lengthToSize(req.base + req.growth)
 
-        # reduce the size of thin pools by the pad size
-        if hasattr(req.device, "lvs"):
-            size -= get_pool_padding(size, pesize=req.device.vg.peSize,
-                                     reverse=True)
-
         # Base is pe, which means potentially rounded up by as much as
         # pesize-1. As a result, you can't just add the growth to the
         # initial size.
@@ -2309,9 +2308,6 @@ def growLVM(storage):
                 # make sure the pool's base size is at least the sum of its lvs'
                 lv.req_size = max(lv.req_size, lv.usedSpace)
 
-                # add the required padding to the requested pool size
-                lv.req_size += get_pool_padding(lv.req_size, pesize=vg.peSize)
-
         # establish sizes for the percentage-based requests (which are fixed)
         percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
         if sum(lv.req_percent for lv in percentage_based_lvs) > 100:
@@ -2329,6 +2325,12 @@ def growLVM(storage):
         chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])
         chunk.growRequests()
         _apply_chunk_growth(chunk)
+
+        # now that we have grown all thin pools (if any), let's calculate and
+        # set their metadata size if not told otherwise
+        for pool in vg.thinpools:
+            if not pool.exists and pool.metaDataSize == Size(0):
+                pool.autoset_md_size()
 
         # now, grow thin lv requests within their respective pools
         for pool in vg.thinpools:
