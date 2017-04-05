@@ -397,7 +397,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
-        used = sum(lv.vgSpaceUsed for lv in self.lvs)
+        used = sum(lv.vgSpaceUsed for lv in self.lvs if not isinstance(lv, LVMThinLogicalVolumeDevice))
         used += self.reservedSpace
         used += self.poolMetaData
         free = self.size - used
