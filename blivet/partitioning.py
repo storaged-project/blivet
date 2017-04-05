@@ -2307,6 +2307,7 @@ def growLVM(storage):
             if lv in vg.thinpools:
                 # make sure the pool's base size is at least the sum of its lvs'
                 lv.req_size = max(lv.req_size, lv.usedSpace)
+                lv.size = lv.req_size
 
         # establish sizes for the percentage-based requests (which are fixed)
         percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
