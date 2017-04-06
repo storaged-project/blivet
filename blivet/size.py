@@ -243,7 +243,7 @@ class Size(Decimal):
         return Decimal.__sub__(self, other, context=context)
 
     def __mul__(self, other, context=None):
-        return Size(Decimal.__mul__(self, other, context=context))
+        return Size(Decimal.__mul__(self, Decimal(other), context=context))
     __rmul__ = __mul__
 
     def __div__(self, other, context=None):
