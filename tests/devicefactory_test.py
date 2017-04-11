@@ -17,6 +17,7 @@ from blivet.errors import RaidError
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import create_sparse_tempfile
+from blivet.autopart import AUTOPART_THPOOL_RESERVE
 
 """
     Things we're still not testing:
@@ -49,8 +50,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
             raise unittest.SkipTest("abstract base class")
 
         self.b = blivet.Blivet()  # don't populate it
-        self.disk_files = [create_sparse_tempfile("factorytest", Size("1 GiB")),
-                           create_sparse_tempfile("factorytest", Size("1 GiB"))]
+        self.disk_files = [create_sparse_tempfile("factorytest", Size("2 GiB")),
+                           create_sparse_tempfile("factorytest", Size("2 GiB"))]
         for filename in self.disk_files:
             disk = DiskFile(filename)
             self.b.devicetree._add_device(disk)
@@ -447,8 +448,11 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     def _get_size_delta(self, devices=None):
         delta = super(LVMThinPFactoryTestCase, self)._get_size_delta(devices=devices)
         if devices:
-            # we reserve 20% of thin pool size in VG for pool metadata
-            delta += sum(d.size for d in devices) * Decimal('0.20')
+            # we reserve 20% in the VG for pool to grow
+            if sum(d.size for d in devices) * Decimal('0.20') > AUTOPART_THPOOL_RESERVE.min:
+                delta += sum(d.size for d in devices) * (AUTOPART_THPOOL_RESERVE.percent / 100)
+            else:
+                delta += AUTOPART_THPOOL_RESERVE.min
 
         return delta
 
