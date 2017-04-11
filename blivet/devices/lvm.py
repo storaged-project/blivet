@@ -67,6 +67,10 @@ PVFreeInfo = namedtuple("PVFreeInfo", ["pv", "size", "free"])
 """ A namedtuple class holding the information about PV's (usable) size and free space """
 
 
+ThPoolReserveSpec = namedtuple("ThPoolReserveSpec", ["percent", "min", "max"])
+""" A namedtuple class for specifying restrictions of space reserved for a thin pool to grow """
+
+
 class NotTypeSpecific(Exception):
     """Exception class for invalid type-specific calls"""
     pass
@@ -138,6 +142,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.free = util.numeric_type(free)
         self._reserved_percent = 0
         self._reserved_space = Size(0)
+        self._thpool_reserve = None
 
         if not self.exists:
             self.pv_count = len(self.parents)
@@ -371,6 +376,16 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return modified
 
     @property
+    def thpool_reserve(self):
+        return self._thpool_reserve
+
+    @thpool_reserve.setter
+    def thpool_reserve(self, value):
+        if value is not None and not isinstance(value, ThPoolReserveSpec):
+            raise ValueError("Invalid thpool_reserve given, must be of type ThPoolReserveSpec")
+        self._thpool_reserve = value
+
+    @property
     def reserved_space(self):
         """ Reserved space in this VG """
         reserved = Size(0)
@@ -378,6 +393,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
             reserved = self._reserved_percent * Decimal('0.01') * self.size
         elif self._reserved_space > Size(0):
             reserved = self._reserved_space
+        elif self._thpool_reserve and any(lv.is_thin_pool for lv in self._lvs):
+            reserved = min(max(self._thpool_reserve.percent * Decimal(0.01) * self.size,
+                               self._thpool_reserve.min),
+                           self._thpool_reserve.max)
 
         # reserve space for the pmspare LV LVM creates behind our back
         reserved += self.pmspare_size
@@ -623,8 +642,16 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # we reserve space for it
             self._metadata_size = self.vg.pe_size
             self._size -= self._metadata_size
+        elif self.seg_type == "thin-pool":
+            # LVMThinPoolMixin sets self._metadata_size on its own
+            if not self.exists and not from_lvs and not grow:
+                # a thin pool we are not going to grow -> lets calculate metadata
+                # size now if not given explicitly
+                # pylint: disable=no-member
+                self.autoset_md_size()
         else:
             self._metadata_size = Size(0)
+
         self._internal_lvs = []
 
         self._from_lvs = from_lvs
@@ -1485,19 +1512,30 @@ class LVMThinPoolMixin(object):
         """ A list of this pool's LVs """
         return self._lvs[:]     # we don't want folks changing our list
 
-    @property
-    def vg_space_used(self):
-        # TODO: what about cached thin pools?
+    @util.requires_property("is_thin_pool")
+    def autoset_md_size(self):
+        """ If self._metadata_size not set already, it calculates the recommended value
+        and sets it while subtracting the size from self.size.
 
-        space = self.data_vg_space_used + self.metadata_vg_space_used
+        """
 
-        # We need to make the nonexisting thin pools pretend to be bigger so
-        # that their padding is not eaten by some other LV, but we need to
-        # provide consistent information with the LVM tools for existing
-        # thin pools.
-        if not self.exists:
-            space += Size(blockdev.lvm.get_thpool_padding(space, self.vg.pe_size))
-        return space
+        if self._metadata_size != 0:
+            return  # Metadata size already set
+
+        log.debug("Auto-setting thin pool metadata size")
+
+        # we need to know chunk size to calculate recommended metadata size
+        if self._chunk_size == 0:
+            self._chunk_size = Size(blockdev.LVM_DEFAULT_CHUNK_SIZE)
+            log.debug("Using default chunk size: %s", self._chunk_size)
+
+        self._metadata_size = Size(blockdev.lvm.get_thpool_meta_size(self._size,
+                                                                     self._chunk_size,
+                                                                     100))  # snapshots
+        log.debug("Recommended metadata size: %s", self._metadata_size)
+
+        log.debug("Adjusting size from %s to %s", self.size, self.size - self._metadata_size)
+        self.size = self.size - self._metadata_size
 
     def _pre_create(self):
         # make sure all the LVs this LV should be created from exist (if any)

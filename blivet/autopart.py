@@ -27,6 +27,7 @@ from . import util
 from .size import Size
 from .devices.partition import PartitionDevice, FALLBACK_DEFAULT_PART_SIZE
 from .devices.luks import LUKSDevice
+from .devices.lvm import ThPoolReserveSpec
 from .errors import NoDisksError, NotEnoughFreeSpaceError
 from .formats import get_format
 from .partitioning import do_partitioning, get_free_regions, grow_lvm
@@ -40,6 +41,8 @@ log = logging.getLogger("anaconda")
 
 # maximum ratio of swap size to disk size (10 %)
 MAX_SWAP_DISK_RATIO = Decimal('0.1')
+
+AUTOPART_THPOOL_RESERVE = ThPoolReserveSpec(20, Size("1 GiB"), Size("100 GiB"))
 
 
 def swap_suggestion(quiet=False, hibernation=False, disk_space=None):
@@ -386,6 +389,9 @@ def _schedule_volumes(storage, devs):
             # create a single thin pool in the vg
             pool = storage.new_lv(parents=[container], thin_pool=True, grow=True)
             storage.create_device(pool)
+
+            # make sure VG reserves space for the pool to grow if needed
+            container.thpool_reserve = AUTOPART_THPOOL_RESERVE
 
         if not btr and not lv and not thinlv:
             continue
