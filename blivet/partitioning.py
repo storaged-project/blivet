@@ -27,8 +27,6 @@ import functools
 import gi
 gi.require_version("BlockDev", "2.0")
 
-from gi.repository import BlockDev as blockdev
-
 import parted
 
 from .errors import DeviceError, PartitioningError, AlignmentError
@@ -1966,10 +1964,6 @@ def _apply_chunk_growth(chunk):
 
         size = chunk.length_to_size(req.base + req.growth)
 
-        # reduce the size of thin pools by the pad size
-        if req.device.is_thin_pool:
-            size -= Size(blockdev.lvm.get_thpool_padding(size, req.device.vg.pe_size, included=True))
-
         # Base is pe, which means potentially rounded up by as much as
         # pesize-1. As a result, you can't just add the growth to the
         # initial size.
@@ -2009,9 +2003,6 @@ def grow_lvm(storage):
                 lv.req_size = max(lv.req_size, lv.used_space)
                 lv.size = lv.req_size
 
-                # add the required padding to the requested pool size
-                lv.req_size += Size(blockdev.lvm.get_thpool_padding(lv.req_size, vg.pe_size))
-
         # establish sizes for the percentage-based requests (which are fixed)
         percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
         if sum(lv.req_percent for lv in percentage_based_lvs) > 100:
@@ -2029,6 +2020,17 @@ def grow_lvm(storage):
         chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])
         chunk.grow_requests()
         _apply_chunk_growth(chunk)
+
+        # now that we have grown all thin pools (if any), let's calculate and
+        # set their metadata size if not told otherwise
+        for pool in vg.thinpools:
+            orig_pmspare_size = vg.pmspare_size
+            if not pool.exists and pool.metadata_size == Size(0):
+                pool.autoset_md_size()
+            if vg.pmspare_size != orig_pmspare_size:
+                # pmspare size change caused by the above step, let's trade part
+                # of pool's space for it
+                pool.size -= vg.pmspare_size - orig_pmspare_size
 
         # now, grow thin lv requests within their respective pools
         for pool in vg.thinpools:
