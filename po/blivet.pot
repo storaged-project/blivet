@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-27 12:30-0400\n"
+"POT-Creation-Date: 2017-04-12 15:33-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -182,27 +182,6 @@ msgstr ""
 msgid "bytes"
 msgstr ""
 
-#: ../blivet/errors.py:169
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:175
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:180
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
 #. not enough free space for the requested partition
 #: ../blivet/partitioning.py:213 ../blivet/partitioning.py:381
 #: ../blivet/partitioning.py:435
@@ -272,6 +251,112 @@ msgstr ""
 
 #: ../blivet/fcoe.py:119
 msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet/errors.py:169
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
+msgstr ""
+
+#: ../blivet/errors.py:175
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
+msgstr ""
+
+#: ../blivet/errors.py:180
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
+#: ../blivet/platform.py:52
+msgid "bootloader device"
+msgstr ""
+
+#: ../blivet/platform.py:54
+msgid "RAID Device"
+msgstr ""
+
+#: ../blivet/platform.py:55
+msgid "First sector of boot partition"
+msgstr ""
+
+#: ../blivet/platform.py:183 ../blivet/platform.py:328
+#: ../blivet/platform.py:363
+msgid "Master Boot Record"
+msgstr ""
+
+#: ../blivet/platform.py:191
+msgid ""
+"You must include at least one MBR- or GPT-formatted disk as an install "
+"target."
+msgstr ""
+
+#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1148
+msgid "EFI System Partition"
+msgstr ""
+
+#: ../blivet/platform.py:226
+msgid ""
+"For a UEFI installation, you must include an EFI System Partition on a GPT-"
+"formatted disk, mounted at /boot/efi."
+msgstr ""
+
+#: ../blivet/platform.py:248
+msgid "Apple EFI Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:273
+msgid "PReP Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:276
+msgid ""
+"You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
+"GPT-formatted disk."
+msgstr ""
+
+#: ../blivet/platform.py:297
+msgid "Apple Bootstrap Partition"
+msgstr ""
+
+#: ../blivet/platform.py:301
+msgid ""
+"You must include an Apple Bootstrap Partition on an Apple Partition Map-"
+"formatted disk."
+msgstr ""
+
+#: ../blivet/platform.py:327
+msgid "DASD"
+msgstr ""
+
+#: ../blivet/platform.py:329
+msgid "zFCP"
+msgstr ""
+
+#: ../blivet/platform.py:334
+msgid ""
+"You must include at least one MBR- or DASD-formatted disk as an install "
+"target."
+msgstr ""
+
+#: ../blivet/platform.py:368
+msgid "You must include at least one MBR-formatted disk as an install target."
+msgstr ""
+
+#: ../blivet/platform.py:390
+msgid "U-Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:392
+msgid ""
+"You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
+"boot/uboot."
 msgstr ""
 
 #: ../blivet/zfcp.py:54 ../blivet/devicelibs/dasd.py:273
@@ -390,91 +475,6 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/platform.py:52
-msgid "bootloader device"
-msgstr ""
-
-#: ../blivet/platform.py:54
-msgid "RAID Device"
-msgstr ""
-
-#: ../blivet/platform.py:55
-msgid "First sector of boot partition"
-msgstr ""
-
-#: ../blivet/platform.py:183 ../blivet/platform.py:328
-#: ../blivet/platform.py:363
-msgid "Master Boot Record"
-msgstr ""
-
-#: ../blivet/platform.py:191
-msgid ""
-"You must include at least one MBR- or GPT-formatted disk as an install "
-"target."
-msgstr ""
-
-#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1148
-msgid "EFI System Partition"
-msgstr ""
-
-#: ../blivet/platform.py:226
-msgid ""
-"For a UEFI installation, you must include an EFI System Partition on a GPT-"
-"formatted disk, mounted at /boot/efi."
-msgstr ""
-
-#: ../blivet/platform.py:248
-msgid "Apple EFI Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:273
-msgid "PReP Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:276
-msgid ""
-"You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
-"GPT-formatted disk."
-msgstr ""
-
-#: ../blivet/platform.py:297
-msgid "Apple Bootstrap Partition"
-msgstr ""
-
-#: ../blivet/platform.py:301
-msgid ""
-"You must include an Apple Bootstrap Partition on an Apple Partition Map-"
-"formatted disk."
-msgstr ""
-
-#: ../blivet/platform.py:327
-msgid "DASD"
-msgstr ""
-
-#: ../blivet/platform.py:329
-msgid "zFCP"
-msgstr ""
-
-#: ../blivet/platform.py:334
-msgid ""
-"You must include at least one MBR- or DASD-formatted disk as an install "
-"target."
-msgstr ""
-
-#: ../blivet/platform.py:368
-msgid "You must include at least one MBR-formatted disk as an install target."
-msgstr ""
-
-#: ../blivet/platform.py:390
-msgid "U-Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:392
-msgid ""
-"You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
-"boot/uboot."
-msgstr ""
-
 #: ../blivet/deviceaction.py:282
 msgid "create device"
 msgstr ""
@@ -532,47 +532,6 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/formats/prepboot.py:36
-msgid "PPC PReP Boot"
-msgstr ""
-
-#: ../blivet/formats/dmraid.py:36
-msgid "dm-raid member device"
-msgstr ""
-
-#: ../blivet/formats/mdraid.py:40
-msgid "software RAID"
-msgstr ""
-
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:147
-msgid "Unknown"
-msgstr ""
-
-#: ../blivet/formats/disklabel.py:44
-msgid "partition table"
-msgstr ""
-
-#: ../blivet/formats/disklabel.py:232
-#, python-format
-msgid "Unsupported %(name)s"
-msgstr ""
-
-#: ../blivet/formats/multipath.py:38
-msgid "multipath member device"
-msgstr ""
-
-#: ../blivet/formats/luks.py:46
-msgid "LUKS"
-msgstr ""
-
-#: ../blivet/formats/luks.py:47
-msgid "Encrypted"
-msgstr ""
-
 #: ../blivet/formats/fs.py:553
 #, python-format
 msgid "Unknown return code: %d."
@@ -621,8 +580,49 @@ msgstr ""
 msgid "Linux HFS+ ESP"
 msgstr ""
 
+#: ../blivet/formats/prepboot.py:36
+msgid "PPC PReP Boot"
+msgstr ""
+
+#: ../blivet/formats/dmraid.py:36
+msgid "dm-raid member device"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:147
+msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:44
+msgid "partition table"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:232
+#, python-format
+msgid "Unsupported %(name)s"
+msgstr ""
+
+#: ../blivet/formats/multipath.py:38
+msgid "multipath member device"
+msgstr ""
+
+#: ../blivet/formats/luks.py:46
+msgid "LUKS"
+msgstr ""
+
+#: ../blivet/formats/luks.py:47
+msgid "Encrypted"
+msgstr ""
+
 #: ../blivet/formats/lvmpv.py:39
 msgid "physical volume (LVM)"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:40
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/devicelibs/dasd.py:296

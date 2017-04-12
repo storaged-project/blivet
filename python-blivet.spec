@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.60
+Version: 0.61.15.61
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Apr 12 2017 David Lehman <dlehman@redhat.com> - 0.61.15.61-1
+- Call subprocess.Popen with absolute path to a binary (rvykydal)
+  Related: rhbz#1411407
+
 * Mon Mar 27 2017 David Lehman <dlehman@redhat.com> - 0.61.15.60-1
 - Add a method to regenerate XFS' uuid (vpodzime)
   Related: rhbz#1413942
