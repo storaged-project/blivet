@@ -11,6 +11,7 @@ import tempfile
 import uuid
 from decimal import Decimal
 from contextlib import contextmanager
+from distutils import spawn
 
 from .size import Size
 
@@ -39,6 +40,13 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
                     "INSTALL_PATH": root})
         for var in env_prune:
             env.pop(var, None)
+
+        # Try to find absolute path of the executable so we prevent possible
+        # deadlock on strerror called from fork from thread (rhbz#1411407)
+        if not argv[0].startswith('/') and (not root or root == '/'):
+            exec_path = spawn.find_executable(argv[0])
+            if exec_path != None:
+                argv[0] = exec_path
 
         try:
             proc = subprocess.Popen(argv,
