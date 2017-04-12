@@ -689,6 +689,23 @@ class FS(DeviceFormat):
 
         self._writeuuid.do_task()
 
+    def reset_uuid(self):
+        """Generate a new UUID for the file system and set/write it."""
+
+        orig_uuid = self.uuid
+        self.uuid = self.generate_new_uuid()
+
+        if self.status:
+            # XXX: does any FS support this?
+            raise FSError("Cannot reset UUID on a mounted file system")
+
+        try:
+            self.write_uuid()
+        except:
+            # something went wrong, restore the original UUID
+            self.uuid = orig_uuid
+            raise
+
     @property
     def utils_available(self):
         # we aren't checking for fsck because we shouldn't need it

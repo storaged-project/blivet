@@ -99,3 +99,15 @@ class SetUUIDAfterMkFs(SetUUID):
         an_fs.uuid = self._invalid_uuid
         with self.assertRaisesRegex(FSError, "bad UUID format"):
             an_fs.write_uuid()
+
+    def test_reset_uuid(self):
+        """Create the filesystem with random UUID and reset it later."""
+        an_fs = self._fs_class(device=self.loop_devices[0])
+        if an_fs._writeuuid.availability_errors:
+            self.skipTest("can not write UUID for filesystem %s" % an_fs.name)
+        self.assertIsNone(an_fs.create())
+
+        self.assertIsNone(an_fs.reset_uuid())
+
+        out = capture_output(["blkid", "-sUUID", "-ovalue", self.loop_devices[0]])
+        self.assertEqual(out.strip(), an_fs.uuid)
