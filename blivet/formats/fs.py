@@ -1051,6 +1051,27 @@ class XFS(FS):
     _metadata_size_factor = 0.97  # xfs metadata may take 3% of space
     parted_system = fileSystemType["xfs"]
 
+    def write_uuid(self):
+        """Set an UUID for this filesystem.
+
+           :raises: FSError
+
+           Raises an FSError if the UUID can not be set.
+        """
+
+        try:
+            super().write_uuid()
+        except FSWriteUUIDError:
+            # try to mount and umount the FS to make sure it is clean
+            tmpdir = tempfile.mkdtemp(prefix="fs-tmp-mnt")
+            try:
+                self.mount(mountpoint=tmpdir, options="nouuid")
+                self.unmount()
+            finally:
+                os.rmdir(tmpdir)
+
+            # and now try one more time
+            super().write_uuid()
 
 register_device_format(XFS)
 
