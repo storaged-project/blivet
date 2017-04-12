@@ -25,6 +25,8 @@
 from decimal import Decimal
 import os
 import tempfile
+import uuid as uuid_mod
+import random
 
 from parted import fileSystemType, PARTITION_BOOT
 
@@ -279,6 +281,17 @@ class FS(DeviceFormat):
         """
         return self._uuidfs is not None and self._uuidfs.uuid_format_ok(uuid)
 
+    def generate_new_uuid(self):
+        """Generate a new random UUID in the RFC 4122 format.
+
+           :rtype: str
+
+           .. note:
+                Sub-classes that require a different format of UUID has to
+                override this method!
+        """
+        return str(uuid_mod.uuid4())  # uuid4() returns a random UUID
+
     def update_size_info(self):
         """ Update this filesystem's current and minimum size (for resize). """
 
@@ -408,7 +421,7 @@ class FS(DeviceFormat):
                 self.write_label()
             except FSError as e:
                 log.warning("Failed to write label (%s) for filesystem %s: %s", self.label, self.type, e)
-        if self.uuid is not None and not self.can_assign_uuid() and \
+        if self.uuid is not None and not self.can_set_uuid() and \
            self.can_modify_uuid():
             self.write_uuid()
 
@@ -864,6 +877,12 @@ class FATFS(FS):
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
 
+    def generate_new_uuid(self):
+        ret = ""
+        for _i in range(8):
+            ret += random.choice("0123456789ABCDEF")
+        return ret[:4] + "-" + ret[4:]
+
 register_device_format(FATFS)
 
 
@@ -1122,6 +1141,13 @@ class NTFS(FS):
     _writelabel_class = fswritelabel.NTFSWriteLabel
     _writeuuid_class = fswriteuuid.NTFSWriteUUID
     parted_system = fileSystemType["ntfs"]
+
+    def generate_new_uuid(self):
+        ret = ""
+        for _i in range(16):
+            ret += random.choice("0123456789ABCDEF")
+        return ret
+
 
 register_device_format(NTFS)
 

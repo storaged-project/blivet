@@ -38,6 +38,15 @@ class InitializationTestCase(unittest.TestCase):
         self.assertTrue(fs.NTFS().uuid_format_ok("1234567890123456"))
         self.assertTrue(fs.NTFS().uuid_format_ok("ABCDEFABCDEFABCD"))
 
+    def test_generate_new_uuid(self):
+        """Test that newly generated UUIDs are considered valid"""
+
+        for fscls in (fs.Ext2FS, fs.JFS, fs.ReiserFS, fs.XFS, fs.HFSPlus,
+                      fs.FATFS, fs.NTFS):
+            an_fs = fscls()
+            for _i in range(100):
+                self.assertTrue(an_fs.uuid_format_ok(an_fs.generate_new_uuid()))
+
 
 class XFSTestCase(fsuuid.SetUUIDWithMkFs):
     _fs_class = fs.XFS
