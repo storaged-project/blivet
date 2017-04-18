@@ -31,6 +31,7 @@ from .devicelibs import raid
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import doPartitioning
+from .partitioning import AUTOPART_THPOOL_RESERVE
 from .size import Size
 
 import logging
@@ -1395,22 +1396,17 @@ class LVMThinPFactory(LVMFactory):
         """ The extent size of our vg or the default if we have no vg. """
         return getattr(self.container, "peSize", lvm.LVM_PE_SIZE)
 
-    def _get_device_space(self):
-        """ Calculate and return the total disk space needed for the device.
-
-            Our container will still be None if we are going to create it.
-        """
-        space = super(LVMThinPFactory, self)._get_device_space()
-        log.debug("calculated total disk space prior to padding: %s", space)
-        space += lvm.get_pool_padding(space, pesize=self._pesize)
-        log.debug("total disk space needed: %s", space)
-        return space
-
     def _get_total_space(self):
         """ Calculate and return the total disk space needed for the vg.
 
             Our container will still be None if we are going to create it.
         """
+        # unset the thpool_reserve here so that the previously reserved space is
+        # considered free space (and thus swallowed) -> we will set it and
+        # calculate an updated reserve below
+        if self.container:
+            self.container.thpool_reserve = None
+
         size = super(LVMThinPFactory, self)._get_total_space()
         # this does not apply if a specific container size was requested
         if self.container_size in (SIZE_POLICY_AUTO, SIZE_POLICY_MAX):
@@ -1420,23 +1416,18 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.pool.freeSpace
                 log.debug("size cut to %s to omit pool free space", size)
 
-                pad = lvm.get_pool_padding(self.pool.freeSpace,
-                                       pesize=self._pesize)
-                size -= pad
-                log.debug("size cut to %s to omit pool padding from free "
-                          "space", size)
+        if self.container:
+            self.container.thpool_reserve = AUTOPART_THPOOL_RESERVE
 
-            if self.device and self.container_size == SIZE_POLICY_AUTO:
-                # Now we have to reduce the space again by the current device's
-                # portion of the pool padding.
-                # The member count here uses the container's current member set
-                # since that's the basis for the current device's disk space
-                # usage.
-                pad = lvm.get_pool_padding(self.device.size,
-                                       pesize=self._pesize)
-                log.debug("old device size: %s ; old pad: %s", self.device.size, pad)
-                size -= pad
-                log.debug("size cut to %s to omit old device padding", size)
+        # black maths (to make sure there's AUTOPART_THPOOL_RESERVE.percent reserve)
+        size_with_reserve = size * (1 / (1 - (AUTOPART_THPOOL_RESERVE.percent / 100.0)))
+        reserve = size_with_reserve - size
+        if reserve < AUTOPART_THPOOL_RESERVE.min:
+            size = size + AUTOPART_THPOOL_RESERVE.min
+        elif reserve < AUTOPART_THPOOL_RESERVE.max:
+            size = size_with_reserve
+        else:
+            size = size + AUTOPART_THPOOL_RESERVE.max
 
         return size
 
@@ -1484,7 +1475,7 @@ class LVMThinPFactory(LVMFactory):
             return self.pool.size
 
         log.debug("requested size is %s", self.size)
-        size = self.size    # projected size for the pool (not padded)
+        size = self.size
         free = Size(0)# total space within the vg that is available to us
         if self.pool:
             free += self.pool.freeSpace # pools are always auto-sized
@@ -1496,22 +1487,12 @@ class LVMThinPFactory(LVMFactory):
                 log.debug("reducing size by device space (%s)", self.device.poolSpaceUsed)
                 size -= self.device.poolSpaceUsed   # don't count our device
 
-            # increase vg free space by the size of the current pool's pad
-            pad = lvm.get_pool_padding(self.pool.size,
-                                   pesize=self._pesize)
-            log.debug("increasing free by current pool pad size (%s)", pad)
-            free += pad
-
         # round to nearest extent. free rounds down, size rounds up.
         free = self.container.align(free + self.container.freeSpace)
         size = self.container.align(size, roundup=True)
 
-        pad = lvm.get_pool_padding(size, pesize=self._pesize)
-
-        log.debug("size is %s ; pad is %s ; free is %s", size, pad, free)
-        if free < (size + pad):
-            pad = int(lvm.get_pool_padding(free, pesize=self._pesize, reverse=True))
-            free = self.container.align(free - pad) # round down
+        if free < size:
+            free = self.container.align(free) # round down
             log.info("adjusting pool size from %s to %s so it fits "
                      "in container %s", size, free, self.container.name)
             size = free
@@ -1532,12 +1513,17 @@ class LVMThinPFactory(LVMFactory):
         if self.size == 0:
             return
 
+        self.container.thpool_reserve = AUTOPART_THPOOL_RESERVE
         size = self._get_pool_size()
         if size == 0:
             raise DeviceFactoryError("not enough free space for thin pool")
 
         self.pool = self._get_new_pool(size=size, parents=[self.container])
         self.storage.createDevice(self.pool)
+
+        # reconfigure the pool here in case its presence in the VG has caused
+        # some extra changes (e.g. reserving space for it to grow)
+        self._reconfigure_pool()
 
     #
     # methods to configure the factory's container (both vg and pool)

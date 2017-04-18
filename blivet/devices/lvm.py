@@ -25,6 +25,7 @@ import copy
 import pprint
 import re
 import time
+from collections import namedtuple
 
 # device backend modules
 from ..devicelibs import lvm
@@ -45,6 +46,9 @@ from .storage import StorageDevice
 from .container import ContainerDevice
 from .dm import DMDevice
 from .md import MDRaidArrayDevice
+
+ThPoolReserveSpec = namedtuple("ThPoolReserveSpec", ["percent", "min", "max"])
+""" A namedtuple class for specifying restrictions of space reserved for a thin pool to grow """
 
 class LVMVolumeGroupDevice(ContainerDevice):
     """ An LVM Volume Group """
@@ -102,6 +106,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.peFree = util.numeric_type(peFree)
         self.reserved_percent = 0
         self.reserved_space = Size(0)
+        self._thpool_reserve = None
 
         # this will have to be covered by the 20% pad for non-existent pools
         self.poolMetaData = 0
@@ -323,6 +328,16 @@ class LVMVolumeGroupDevice(ContainerDevice):
         return modified
 
     @property
+    def thpool_reserve(self):
+        return self._thpool_reserve
+
+    @thpool_reserve.setter
+    def thpool_reserve(self, value):
+        if value is not None and not isinstance(value, ThPoolReserveSpec):
+            raise ValueError("Invalid thpool_reserve given, must be of type ThPoolReserveSpec")
+        self._thpool_reserve = value
+
+    @property
     def reservedSpace(self):
         """ Reserved space in this VG """
         reserved = Size(0)
@@ -330,6 +345,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
             reserved = self.reserved_percent * Decimal('0.01') * self.size
         elif self.reserved_space > 0:
             reserved = self.reserved_space
+        elif self._thpool_reserve and any(self.thinpools):
+            reserved = min(max(self._thpool_reserve.percent * Decimal(0.01) * self.size,
+                               self._thpool_reserve.min),
+                           self._thpool_reserve.max)
 
         return self.align(reserved, roundup=True)
 
@@ -378,7 +397,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # total the sizes of any LVs
         log.debug("%s size is %s", self.name, self.size)
-        used = sum(lv.vgSpaceUsed for lv in self.lvs)
+        used = sum(lv.vgSpaceUsed for lv in self.lvs if not isinstance(lv, LVMThinLogicalVolumeDevice))
         used += self.reservedSpace
         used += self.poolMetaData
         free = self.size - used
@@ -1156,10 +1175,17 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                 percent=percent,
                                                 segType=segType)
 
-        self.metaDataSize = metadatasize or 0
         self.chunkSize = chunksize or 0
         self.profile = profile
         self._lvs = []
+
+        self.metaDataSize = Size(0)
+        if metadatasize:
+            self.metaDataSize = metadatasize
+        elif not self.exists and not grow:
+            # a thin pool we are not going to grow -> lets calculate metadata
+            # size now if not given explicitly
+            self.autoset_md_size()
 
     def _addLogVol(self, lv):
         """ Add an LV to this pool. """
@@ -1185,28 +1211,37 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         return self._lvs[:]     # we don't want folks changing our list
 
     @property
-    def vgSpaceUsed(self):
-        cache_size = Size(0)
-        if self.cached:
-            cache_size = self.cache.size
-        padding = lvm.get_pool_padding(self.size, pesize=self.vg.peSize)
-        space = self.vg.align(self.size, roundup=True) * self.copies + self.logSize + self.metaDataSize + cache_size
-        if self.exists:
-            # subtract metadata size from padding for existing thin pools
-            # (because when creating them we could have not known the size of
-            # metadata and thus didn't include it in the calculations)
-            space += (padding - self.metaDataSize)
-        else:
-            space += padding
-        return space
-
-    @property
     def usedSpace(self):
         return sum(l.poolSpaceUsed for l in self.lvs)
 
     @property
     def freeSpace(self):
         return self.size - self.usedSpace
+
+    def autoset_md_size(self):
+        """ If self._metadata_size not set already, it calculates the recommended value
+        and sets it while subtracting the size from self.size.
+
+        """
+        if self.metaDataSize != 0:
+            return  # Metadata size already set
+
+        log.debug("Auto-setting thin pool metadata size")
+
+        # we need to know chunk size to calculate recommended metadata size
+        if self.chunkSize == 0:
+            self.chunkSize = lvm.LVM_THINP_DEFAULT_CHUNK_SIZE
+            log.debug("Using default chunk size: %s", self.chunkSize)
+
+        self.metaDataSize = lvm.get_pool_metadata_size(self._size,
+                                                       self.chunkSize,
+                                                       100)  # snapshots
+        log.debug("Recommended metadata size: %s", self.metaDataSize)
+
+        # we also need space for the (potential) pmspare LV (of the same size as
+        # the metaDataSize)
+        log.debug("Adjusting size from %s to %s", self.size, self.size - 2 * self.metaDataSize)
+        self._size = self.size - 2 * self.metaDataSize
 
     def _create(self):
         """ Create the device. """
