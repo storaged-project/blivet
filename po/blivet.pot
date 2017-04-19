@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-21 11:34+0100\n"
+"POT-Creation-Date: 2017-04-19 09:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,97 +18,86 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: ../blivet/iscsi.py:210
-msgid "Unable to change iSCSI initiator name once set"
+#: ../blivet/blivet.py:1236
+msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/iscsi.py:212
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:373
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:375
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:493
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:513
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:516
-msgid "Could not log in to any of the discovered nodes"
-msgstr ""
-
-#: ../blivet/partitioning.py:430
+#: ../blivet/partitioning.py:428
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:438
+#: ../blivet/partitioning.py:436
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:554
+#: ../blivet/partitioning.py:552
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:611
+#: ../blivet/partitioning.py:609
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:616
+#: ../blivet/partitioning.py:614
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:921
+#: ../blivet/partitioning.py:919
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:956
+#: ../blivet/partitioning.py:954
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:963
+#: ../blivet/partitioning.py:961
 msgid "failed to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1163
+#: ../blivet/partitioning.py:1161
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1377
+#: ../blivet/partitioning.py:1375
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1390
+#: ../blivet/partitioning.py:1388
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1475
+#: ../blivet/partitioning.py:1473
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:1986
+#: ../blivet/partitioning.py:1980
 msgid "not enough space for LVM requests"
 msgstr ""
 
 #: ../blivet/fcoe.py:118
 msgid "FCoE not available"
+msgstr ""
+
+#. no big enough free space for the requested partition
+#: ../blivet/autopart.py:278
+msgid "No big enough free space on disks for automatic partitioning"
+msgstr ""
+
+#: ../blivet/autopart.py:446 ../blivet/autopart.py:498
+msgid "No usable disks selected"
+msgstr ""
+
+#: ../blivet/autopart.py:451 ../blivet/autopart.py:509
+msgid "Not enough free space on disks for automatic partitioning"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -195,104 +184,6 @@ msgstr ""
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
 msgstr ""
 
-#: ../blivet/platform.py:53
-msgid "bootloader device"
-msgstr ""
-
-#: ../blivet/platform.py:55
-msgid "RAID Device"
-msgstr ""
-
-#: ../blivet/platform.py:56
-msgid "First sector of boot partition"
-msgstr ""
-
-#: ../blivet/platform.py:195 ../blivet/platform.py:350
-#: ../blivet/platform.py:378
-msgid "Master Boot Record"
-msgstr ""
-
-#: ../blivet/platform.py:203
-msgid ""
-"You must include at least one MBR- or GPT-formatted disk as an install "
-"target."
-msgstr ""
-
-#: ../blivet/platform.py:233 ../blivet/formats/fs.py:800
-msgid "EFI System Partition"
-msgstr ""
-
-#: ../blivet/platform.py:240
-msgid ""
-"For a UEFI installation, you must include an EFI System Partition on a GPT-"
-"formatted disk, mounted at /boot/efi."
-msgstr ""
-
-#: ../blivet/platform.py:263
-msgid "Apple EFI Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:292
-msgid "PReP Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:295
-msgid ""
-"You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
-"GPT-formatted disk."
-msgstr ""
-
-#: ../blivet/platform.py:317
-msgid "Apple Bootstrap Partition"
-msgstr ""
-
-#: ../blivet/platform.py:321
-msgid ""
-"You must include an Apple Bootstrap Partition on an Apple Partition Map-"
-"formatted disk."
-msgstr ""
-
-#: ../blivet/platform.py:349
-msgid "DASD"
-msgstr ""
-
-#: ../blivet/platform.py:351
-msgid "zFCP"
-msgstr ""
-
-#: ../blivet/platform.py:356
-msgid ""
-"You must include at least one MBR- or DASD-formatted disk as an install "
-"target."
-msgstr ""
-
-#: ../blivet/platform.py:383
-msgid "You must include at least one MBR-formatted disk as an install target."
-msgstr ""
-
-#: ../blivet/platform.py:406
-msgid "U-Boot Partition"
-msgstr ""
-
-#: ../blivet/platform.py:408
-msgid ""
-"You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
-"boot/uboot."
-msgstr ""
-
-#. no big enough free space for the requested partition
-#: ../blivet/autopart.py:275
-msgid "No big enough free space on disks for automatic partitioning"
-msgstr ""
-
-#: ../blivet/autopart.py:440 ../blivet/autopart.py:492
-msgid "No usable disks selected"
-msgstr ""
-
-#: ../blivet/autopart.py:445 ../blivet/autopart.py:503
-msgid "Not enough free space on disks for automatic partitioning"
-msgstr ""
-
 #: ../blivet/osinstall.py:259
 #, python-format
 msgid "Linux on %s"
@@ -333,8 +224,117 @@ msgid ""
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
-#: ../blivet/blivet.py:1236
-msgid "You must create a new filesystem on the root device."
+#: ../blivet/platform.py:58
+msgid "bootloader device"
+msgstr ""
+
+#: ../blivet/platform.py:60
+msgid "RAID Device"
+msgstr ""
+
+#: ../blivet/platform.py:61
+msgid "First sector of boot partition"
+msgstr ""
+
+#: ../blivet/platform.py:190 ../blivet/platform.py:345
+#: ../blivet/platform.py:381
+msgid "Master Boot Record"
+msgstr ""
+
+#: ../blivet/platform.py:198
+msgid ""
+"You must include at least one MBR- or GPT-formatted disk as an install "
+"target."
+msgstr ""
+
+#: ../blivet/platform.py:228 ../blivet/formats/fs.py:800
+msgid "EFI System Partition"
+msgstr ""
+
+#: ../blivet/platform.py:235
+msgid ""
+"For a UEFI installation, you must include an EFI System Partition on a GPT-"
+"formatted disk, mounted at /boot/efi."
+msgstr ""
+
+#: ../blivet/platform.py:258
+msgid "Apple EFI Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:287
+msgid "PReP Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:290
+msgid ""
+"You must include a PReP Boot Partition within the first 4GiB of an MBR- or "
+"GPT-formatted disk."
+msgstr ""
+
+#: ../blivet/platform.py:312
+msgid "Apple Bootstrap Partition"
+msgstr ""
+
+#: ../blivet/platform.py:316
+msgid ""
+"You must include an Apple Bootstrap Partition on an Apple Partition Map-"
+"formatted disk."
+msgstr ""
+
+#: ../blivet/platform.py:344
+msgid "DASD"
+msgstr ""
+
+#: ../blivet/platform.py:346
+msgid "zFCP"
+msgstr ""
+
+#: ../blivet/platform.py:351
+msgid ""
+"You must include at least one MBR- or DASD-formatted disk as an install "
+"target."
+msgstr ""
+
+#: ../blivet/platform.py:386
+msgid "You must include at least one MBR-formatted disk as an install target."
+msgstr ""
+
+#: ../blivet/platform.py:409
+msgid "U-Boot Partition"
+msgstr ""
+
+#: ../blivet/platform.py:411
+msgid ""
+"You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
+"boot/uboot."
+msgstr ""
+
+#: ../blivet/iscsi.py:210
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:212
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:373
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:375
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:493
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:513
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:516
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/deviceaction.py:183
@@ -429,16 +429,20 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:973
-msgid "Apple Bootstrap"
-msgstr ""
-
-#: ../blivet/formats/fs.py:1006
-msgid "Linux HFS+ ESP"
+#: ../blivet/formats/__init__.py:144
+msgid "Unknown"
 msgstr ""
 
 #: ../blivet/formats/prepboot.py:37
 msgid "PPC PReP Boot"
+msgstr ""
+
+#: ../blivet/formats/dmraid.py:37
+msgid "dm-raid member device"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:43
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/luks.py:47
@@ -449,16 +453,12 @@ msgstr ""
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:144
-msgid "Unknown"
+#: ../blivet/formats/lvmpv.py:47
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:35
 msgid "BIOS Boot"
-msgstr ""
-
-#: ../blivet/formats/dmraid.py:37
-msgid "dm-raid member device"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:46
@@ -466,19 +466,19 @@ msgid "partition table"
 msgstr ""
 
 #. Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
-#: ../blivet/formats/disklabel.py:247
+#: ../blivet/formats/disklabel.py:248
 #, python-format
 msgid "Unsupported %(name)s"
-msgstr ""
-
-#: ../blivet/formats/mdraid.py:43
-msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/multipath.py:40
 msgid "multipath member device"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:47
-msgid "physical volume (LVM)"
+#: ../blivet/formats/fs.py:974
+msgid "Apple Bootstrap"
+msgstr ""
+
+#: ../blivet/formats/fs.py:1007
+msgid "Linux HFS+ ESP"
 msgstr ""

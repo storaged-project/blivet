@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.1.7
+Version: 2.1.8
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -76,6 +76,32 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Wed Apr 19 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.8-1
+- Fix "unknown" SAS device sysfs parsing. (adamw)
+- Reserve space in a VG when using LVMThinPFactory (vpodzime)
+- Reserve space in a VG instead of padding thin pools on autopart (vpodzime)
+- Focus the nonzero disk image size test a bit. (dlehman)
+- Add missing tearDown method to luks resize test case. (dlehman)
+- Fix some flag stomping in tests. (dlehman)
+- Remove the useless method requiredDiskLabelType (vponcova)
+- FBA DASD should use the msdos disk label type (vponcova)
+- Be more careful when checking for udisks-iscsi availability (vpodzime)
+- Do not allow resize of devices with no/unrecoginized formatting. (#1033778)
+  (dlehman)
+- Clean up parent/child relations on partition ctor error. (#1383873) (dlehman)
+- Use all ancestors when adding RAID disks to exclusiveDisks (vtrefny)
+- Fix detection of linear MD RAID (vtrefny)
+- Add 'discard' option to crypttab for newly created LUKS (vpodzime)
+- Loop devices w/o backing file are now ignored (japokorn)
+- Set parted boot flag when creating EFI filesystem (vtrefny)
+- formats/fs: Set NTFS to be formattable (aszlig)
+- Do not try to search for 'tmpfs' devices in udev database (vtrefny)
+- Fix resize test in fstesting (vtrefny)
+- Fix task availability test (vtrefny)
+- Shallow copy another alignment property (#1408282) (awilliam)
+- Fix the test dependencies (vpodzime)
+- Add 'systemd-udev' to dependencies (#1392591) (vtrefny)
+
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1:2.1.7-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
