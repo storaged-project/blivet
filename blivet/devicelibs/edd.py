@@ -316,8 +316,8 @@ class EddEntry(object):
                         self.sas_address = int(sas_match.group(1), base=16)
                         self.sas_lun = int(sas_match.group(2), base=16)
                     elif unknown_match:
-                        self.sas_address = int(unknown_match.group(1), base=16)
-                        self.sas_lun = int(unknown_match.group(2), base=16)
+                        self.sas_address = int(unknown_match.group(2), base=16)
+                        self.sas_lun = int(unknown_match.group(3), base=16)
                     else:
                         log.warning("edd: can not match interface for %s: %s",
                                     self.sysfspath, interface)
