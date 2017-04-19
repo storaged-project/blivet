@@ -62,7 +62,8 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
         # this is an image install. Somewhere along the line this will
         # execute setup_disk_images() once more and the DMLinearDevice created
         # in this second execution has size 0
-        storage_initialize(self.blivet, ksdata, [])
+        with patch('blivet.osinstall.flags'):
+            storage_initialize(self.blivet, ksdata, [])
 
     def tearDown(self):
         self.blivet.reset()
@@ -74,8 +75,11 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
         flags.image_install = False
 
     def runTest(self):
+        disk = self.blivet.disks[0]
+        self.assertEqual(disk.name, list(self.disks.keys())[0])
         for d in self.blivet.devicetree.devices:
-            self.assertTrue(d.size > 0)
+            if d == disk or disk.depends_on(d):
+                self.assertTrue(d.size > 0)
 
 
 class PopulatorHelperTestCase(unittest.TestCase):
