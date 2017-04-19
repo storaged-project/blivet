@@ -76,6 +76,24 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1:2.1.7-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Sat Dec 24 2016 Adam Williamson <awilliam@redhat.com> - 1:2.1.7-6
+- Actually apply the patch mentioned in -5
+
+* Fri Dec 23 2016 Adam Williamson <awilliam@redhat.com> - 1:2.1.7-5
+- backport GH#530 to fix #1408282 (crash with Python 3.6)
+
+* Mon Dec 19 2016 Miro Hrončok <mhroncok@redhat.com> - 1:2.1.7-4
+- Rebuild for Python 3.6
+
+* Tue Dec  6 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-3
+- Add 'systemd-udev' to dependencies (#1392591) (vtrefny)
+
+* Mon Nov 21 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-2
+- Fix "unknown" SAS device sysfs parsing. (#1394026) (awilliam)
+
 * Mon Nov 21 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-1
 - Require BlockDev 2.0 in the gi.require_version() call (vpodzime)
 - Fix detection of 'macefi' partitions (#1393846) (awilliam)
