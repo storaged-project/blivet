@@ -21,6 +21,7 @@
 
 import abc
 from distutils.version import LooseVersion
+from distutils.spawn import find_executable
 import hawkey
 
 from six import add_metaclass
@@ -30,7 +31,6 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from .. import util
 from ..errors import AvailabilityError
 
 import logging
@@ -109,7 +109,7 @@ class Path(Method):
             :returns: [] if the name of the application is in the path
             :rtype: list of str
         """
-        if not util.find_program_in_path(resource.name):
+        if not find_executable(resource.name):
             return ["application %s is not in $PATH" % resource.name]
         else:
             return []
