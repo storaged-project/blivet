@@ -84,6 +84,7 @@ def resolve_devspec(devspec, sysname=False):
     from . import devices
 
     devname = devices.devicePathToName(devspec)
+    get_name = device_get_name
 
     ret = None
     for dev in get_devices():
@@ -98,6 +99,10 @@ def resolve_devspec(devspec, sysname=False):
         elif device_get_name(dev) == devname or dev.sys_name == devname:
             ret = dev
             break
+        elif device_get_md_name(dev) == devname:
+            get_name = device_get_md_name
+            ret = dev
+            break
         else:
             spec = devspec
             if not spec.startswith("/dev/"):
@@ -109,7 +114,7 @@ def resolve_devspec(devspec, sysname=False):
                     break
 
     if ret:
-        return ret.sys_name if sysname else device_get_name(ret)
+        return ret.sys_name if sysname else get_name(ret)
 
 def resolve_glob(glob):
     import fnmatch
