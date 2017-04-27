@@ -25,6 +25,8 @@
 from decimal import Decimal
 import os
 import tempfile
+import uuid as uuid_mod
+import random
 
 from parted import fileSystemType, PARTITION_BOOT
 
@@ -38,9 +40,11 @@ from ..tasks import fsreadlabel
 from ..tasks import fsresize
 from ..tasks import fssize
 from ..tasks import fssync
+from ..tasks import fsuuid
 from ..tasks import fswritelabel
+from ..tasks import fswriteuuid
 from ..errors import FormatCreateError, FSError, FSReadLabelError
-from ..errors import FSWriteLabelError
+from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from .. import platform
@@ -65,12 +69,14 @@ class FS(DeviceFormat):
     _name = None
     _modules = []                        # kernel modules required for support
     _labelfs = None                      # labeling functionality
+    _uuidfs = None                       # functionality for UUIDs
     _fsck_class = fsck.UnimplementedFSCK
     _mkfs_class = fsmkfs.UnimplementedFSMkfs
     _mount_class = fsmount.FSMount
     _readlabel_class = fsreadlabel.UnimplementedFSReadLabel
     _sync_class = fssync.UnimplementedFSSync
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
+    _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
     # This number is more guess than precise number because this
@@ -111,6 +117,7 @@ class FS(DeviceFormat):
         self._readlabel = self._readlabel_class(self)
         self._sync = self._sync_class(self)
         self._writelabel = self._writelabel_class(self)
+        self._writeuuid = self._writeuuid_class(self)
 
         self._current_info = None  # info obtained by _info task
 
@@ -249,6 +256,42 @@ class FS(DeviceFormat):
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="this filesystem's label")
 
+    def can_set_uuid(self):
+        """Returns True if this filesystem supports setting an UUID during
+           creation, otherwise False.
+
+           :rtype: bool
+        """
+        return self._mkfs.can_set_uuid and self._mkfs.available
+
+    def can_modify_uuid(self):
+        """Returns True if it's possible to set the UUID of this filesystem
+           after it has been created, otherwise False.
+
+           :rtype: bool
+        """
+        return self._writeuuid.available
+
+    def uuid_format_ok(self, uuid):
+        """Return True if the UUID has an acceptable format for this
+           filesystem.
+
+           :param uuid: An UUID
+           :type uuid: str
+        """
+        return self._uuidfs is not None and self._uuidfs.uuid_format_ok(uuid)
+
+    def generate_new_uuid(self):
+        """Generate a new random UUID in the RFC 4122 format.
+
+           :rtype: str
+
+           .. note:
+                Sub-classes that require a different format of UUID has to
+                override this method!
+        """
+        return str(uuid_mod.uuid4())  # uuid4() returns a random UUID
+
     def update_size_info(self):
         """ Update this filesystem's current and minimum size (for resize). """
 
@@ -358,9 +401,16 @@ class FS(DeviceFormat):
 
         super(FS, self)._create()
         try:
-            self._mkfs.do_task(options=kwargs.get("options"), label=not self.relabels())
+            self._mkfs.do_task(options=kwargs.get("options"),
+                               label=not self.relabels(),
+                               set_uuid=self.can_set_uuid())
         except FSWriteLabelError as e:
             log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
+        except FSWriteUUIDError as e:
+            log.warning("Choosing not to apply UUID (%s) during"
+                        " creation of filesystem %s. UUID format"
+                        " is unacceptable for this filesystem.",
+                        self.uuid, self.type)
         except FSError as e:
             raise FormatCreateError(e, self.device)
 
@@ -371,6 +421,9 @@ class FS(DeviceFormat):
                 self.write_label()
             except FSError as e:
                 log.warning("Failed to write label (%s) for filesystem %s: %s", self.label, self.type, e)
+        if self.uuid is not None and not self.can_set_uuid() and \
+           self.can_modify_uuid():
+            self.write_uuid()
 
     def _post_resize(self):
         self.do_check()
@@ -607,6 +660,52 @@ class FS(DeviceFormat):
 
         self._writelabel.do_task()
 
+    def write_uuid(self):
+        """Set an UUID for this filesystem.
+
+           :raises: FSError
+
+           Raises an FSError if the UUID can not be set.
+        """
+        err = None
+
+        if self.uuid is None:
+            err = "makes no sense to write an UUID when not requested"
+
+        if not self.exists:
+            err = "filesystem has not been created"
+
+        if not self._writeuuid.available:
+            err = "no application to set UUID for filesystem %s" % self.type
+
+        if not self.uuid_format_ok(self.uuid):
+            err = "bad UUID format for application %s" % self._writeuuid
+
+        if not os.path.exists(self.device):
+            err = "device does not exist"
+
+        if err is not None:
+            raise FSError(err)
+
+        self._writeuuid.do_task()
+
+    def reset_uuid(self):
+        """Generate a new UUID for the file system and set/write it."""
+
+        orig_uuid = self.uuid
+        self.uuid = self.generate_new_uuid()
+
+        if self.status:
+            # XXX: does any FS support this?
+            raise FSError("Cannot reset UUID on a mounted file system")
+
+        try:
+            self.write_uuid()
+        except:
+            # something went wrong, restore the original UUID
+            self.uuid = orig_uuid
+            raise
+
     @property
     def utils_available(self):
         # we aren't checking for fsck because we shouldn't need it
@@ -720,6 +819,7 @@ class Ext2FS(FS):
     _type = "ext2"
     _modules = ["ext2"]
     _labelfs = fslabeling.Ext2FSLabeling()
+    _uuidfs = fsuuid.Ext2FSUUID()
     _packages = ["e2fsprogs"]
     _formattable = True
     _supported = True
@@ -736,6 +836,7 @@ class Ext2FS(FS):
     _resize_class = fsresize.Ext2FSResize
     _size_info_class = fssize.Ext2FSSize
     _writelabel_class = fswritelabel.Ext2FSWriteLabel
+    _writeuuid_class = fswriteuuid.Ext2FSWriteUUID
     parted_system = fileSystemType["ext2"]
     _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
 
@@ -779,6 +880,7 @@ class FATFS(FS):
     _type = "vfat"
     _modules = ["vfat"]
     _labelfs = fslabeling.FATFSLabeling()
+    _uuidfs = fsuuid.FATFSUUID()
     _supported = True
     _formattable = True
     _max_size = Size("1 TiB")
@@ -791,6 +893,12 @@ class FATFS(FS):
     _metadata_size_factor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
+
+    def generate_new_uuid(self):
+        ret = ""
+        for _i in range(8):
+            ret += random.choice("0123456789ABCDEF")
+        return ret[:4] + "-" + ret[4:]
 
 register_device_format(FATFS)
 
@@ -887,6 +995,7 @@ class JFS(FS):
     _type = "jfs"
     _modules = ["jfs"]
     _labelfs = fslabeling.JFSLabeling()
+    _uuidfs = fsuuid.JFSUUID()
     _max_size = Size("8 TiB")
     _formattable = True
     _linux_native = True
@@ -896,6 +1005,7 @@ class JFS(FS):
     _mkfs_class = fsmkfs.JFSMkfs
     _size_info_class = fssize.JFSSize
     _writelabel_class = fswritelabel.JFSWriteLabel
+    _writeuuid_class = fswriteuuid.JFSWriteUUID
     _metadata_size_factor = 0.99  # jfs metadata may take 1% of space
     parted_system = fileSystemType["jfs"]
 
@@ -912,6 +1022,7 @@ class ReiserFS(FS):
     """ reiserfs filesystem """
     _type = "reiserfs"
     _labelfs = fslabeling.ReiserFSLabeling()
+    _uuidfs = fsuuid.ReiserFSUUID()
     _modules = ["reiserfs"]
     _max_size = Size("16 TiB")
     _formattable = True
@@ -923,6 +1034,7 @@ class ReiserFS(FS):
     _mkfs_class = fsmkfs.ReiserFSMkfs
     _size_info_class = fssize.ReiserFSSize
     _writelabel_class = fswritelabel.ReiserFSWriteLabel
+    _writeuuid_class = fswriteuuid.ReiserFSWriteUUID
     _metadata_size_factor = 0.98  # reiserfs metadata may take 2% of space
     parted_system = fileSystemType["reiserfs"]
 
@@ -940,6 +1052,7 @@ class XFS(FS):
     _type = "xfs"
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
+    _uuidfs = fsuuid.XFSUUID()
     _max_size = Size("16 EiB")
     _formattable = True
     _linux_native = True
@@ -951,9 +1064,31 @@ class XFS(FS):
     _size_info_class = fssize.XFSSize
     _sync_class = fssync.XFSSync
     _writelabel_class = fswritelabel.XFSWriteLabel
+    _writeuuid_class = fswriteuuid.XFSWriteUUID
     _metadata_size_factor = 0.97  # xfs metadata may take 3% of space
     parted_system = fileSystemType["xfs"]
 
+    def write_uuid(self):
+        """Set an UUID for this filesystem.
+
+           :raises: FSError
+
+           Raises an FSError if the UUID can not be set.
+        """
+
+        try:
+            super().write_uuid()
+        except FSWriteUUIDError:
+            # try to mount and umount the FS to make sure it is clean
+            tmpdir = tempfile.mkdtemp(prefix="fs-tmp-mnt")
+            try:
+                self.mount(mountpoint=tmpdir, options="nouuid")
+                self.unmount()
+            finally:
+                os.rmdir(tmpdir)
+
+            # and now try one more time
+            super().write_uuid()
 
 register_device_format(XFS)
 
@@ -990,6 +1125,7 @@ class HFSPlus(FS):
     _udev_types = ["hfsplus"]
     _packages = ["hfsplus-tools"]
     _labelfs = fslabeling.HFSPlusLabeling()
+    _uuidfs = fsuuid.HFSPlusUUID()
     _formattable = True
     _min_size = Size("1 MiB")
     _max_size = Size("2 TiB")
@@ -1026,6 +1162,7 @@ class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
     _labelfs = fslabeling.NTFSLabeling()
+    _uuidfs = fsuuid.NTFSUUID()
     _resizable = True
     _formattable = True
     _min_size = Size("1 MiB")
@@ -1040,7 +1177,15 @@ class NTFS(FS):
     _resize_class = fsresize.NTFSResize
     _size_info_class = fssize.NTFSSize
     _writelabel_class = fswritelabel.NTFSWriteLabel
+    _writeuuid_class = fswriteuuid.NTFSWriteUUID
     parted_system = fileSystemType["ntfs"]
+
+    def generate_new_uuid(self):
+        ret = ""
+        for _i in range(16):
+            ret += random.choice("0123456789ABCDEF")
+        return ret
+
 
 register_device_format(NTFS)
 

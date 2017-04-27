@@ -109,6 +109,10 @@ class FSWriteLabelError(FSError):
     pass
 
 
+class FSWriteUUIDError(FSError):
+    pass
+
+
 class FSReadLabelError(FSError):
     pass
 
