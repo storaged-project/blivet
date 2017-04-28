@@ -21,8 +21,10 @@
 #
 
 from parted import PARTITION_SWAP, fileSystemType
+from ..errors import FSWriteUUIDError
 from ..storage_log import log_method_call
 from ..tasks import availability
+from ..tasks import fsuuid
 from . import DeviceFormat, register_device_format
 from ..size import Size
 
@@ -110,6 +112,10 @@ class SwapSpace(DeviceFormat):
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="the label for this swap space")
 
+    def uuid_format_ok(self, uuid):
+        """Check whether the given UUID is correct according to RFC 4122."""
+        return fsuuid.FSUUID._check_rfc4122_uuid(uuid)
+
     def _set_priority(self, priority):
         # pylint: disable=attribute-defined-outside-init
         if priority is None:
@@ -167,6 +173,12 @@ class SwapSpace(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap.mkswap(self.device, label=self.label)
+        if self.uuid is None:
+            blockdev.swap.mkswap(self.device, label=self.label)
+        else:
+            if not self.uuid_format_ok(self.uuid):
+                raise FSWriteUUIDError("bad UUID format for swap filesystem")
+            blockdev.swap.mkswap(self.device, label=self.label,
+                                 extra={"-U": self.uuid})
 
 register_device_format(SwapSpace)

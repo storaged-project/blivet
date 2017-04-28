@@ -1387,9 +1387,9 @@ class LVMSnapshotMixin(object):
 
     def _post_create(self):
         DMDevice._post_create(self)
-        if self.is_thin_lv:
-            # A snapshot's format exists as soon as the snapshot has been created.
-            self.format.exists = True
+        # Snapshot's format exists as soon as the snapshot has been
+        # created iff the origin's format exists
+        self.format.exists = self.origin.format.exists
 
     @old_snapshot_specific
     def _destroy(self):
