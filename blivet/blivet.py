@@ -27,7 +27,7 @@ import contextlib
 import time
 import parted
 import functools
-from six import add_metaclass
+import six
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
@@ -110,7 +110,7 @@ class StorageDiscoveryConfig(object):
         self.zero_mbr = ksdata.zerombr.zerombr
 
 
-@add_metaclass(SynchronizedMeta)
+@six.add_metaclass(SynchronizedMeta)
 class Blivet(object):
 
     """ Top-level class for managing storage configuration. """
@@ -1890,7 +1890,7 @@ class Blivet(object):
 
         devices.sort(key=lambda d: len(d.ancestors))
         for device in devices:
-            cls = next((c for c in ks_map if isinstance(device, c)), None)
+            cls = six.next((c for c in ks_map if isinstance(device, c)), None)
             if cls is None:
                 log.info("omitting ksdata: %s", device)
                 continue

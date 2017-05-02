@@ -24,7 +24,7 @@ import abc
 import inspect
 from threading import current_thread, RLock, Thread
 import pyudev
-from six import add_metaclass
+import six
 import sys
 import time
 import traceback
@@ -130,7 +130,7 @@ class EventMask(util.ObjectID):
 #
 # EventManager
 #
-@add_metaclass(abc.ABCMeta)
+@six.add_metaclass(abc.ABCMeta)
 class EventManager(object):
     def __init__(self, handler_cb=None, notify_cb=None, error_cb=None):
         self._handler_cb = None
@@ -218,7 +218,7 @@ class EventManager(object):
     def _mask_event(self, event):
         """ Return True if this event should be ignored """
         with self._lock:
-            return next((m for m in self._mask_list if m.match(event)), None) is not None
+            return six.next((m for m in self._mask_list if m.match(event)), None) is not None
 
     def add_mask(self, device=None, action=None, partitions=False):
         """ Add an event mask and return the new :class:`EventMask`.

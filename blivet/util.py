@@ -310,7 +310,7 @@ def total_memory():
     from .size import Size
 
     with open("/proc/meminfo") as lines:
-        line = next(l for l in lines if l.startswith("MemTotal:"))
+        line = six.next(l for l in lines if l.startswith("MemTotal:"))
         mem = Size("%s KiB" % line.split()[1])
 
     # Because /proc/meminfo only gives us the MemTotal (total physical RAM

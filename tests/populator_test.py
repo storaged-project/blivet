@@ -2,6 +2,7 @@ import os
 import gi
 import unittest
 from unittest.mock import call, patch, sentinel, Mock, PropertyMock
+import six
 
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
@@ -987,7 +988,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         def gdbu(uuid, **kwargs):  # pylint: disable=unused-argument
             # This version doesn't check format UUIDs
-            return next((d for d in devicetree.devices if d.uuid == uuid), None)
+            return six.next((d for d in devicetree.devices if d.uuid == uuid), None)
         get_device_by_uuid.side_effect = gdbu
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:

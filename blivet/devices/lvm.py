@@ -28,6 +28,7 @@ import time
 from collections import namedtuple
 from functools import wraps
 from enum import Enum
+import six
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -1557,8 +1558,8 @@ class LVMThinPoolMixin(object):
                 extra["profile"] = profile_name
             if self.chunk_size:
                 extra["chunksize"] = str(int(self.chunk_size))
-            data_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
-            meta_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
+            data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
+            meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
             blockdev.lvm.thpool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
             # TODO: update the names of the internal LVs here
         else:
