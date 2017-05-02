@@ -23,6 +23,7 @@
 import os
 import pprint
 import re
+from six import add_metaclass
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -49,7 +50,8 @@ log = logging.getLogger("blivet")
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 
-class DeviceTreeBase(object, metaclass=SynchronizedMeta):
+@add_metaclass(SynchronizedMeta)
+class DeviceTreeBase(object):
     """ A quasi-tree that represents the devices in the system.
 
         The tree contains a list of :class:`~.devices.StorageDevice` instances,

@@ -24,6 +24,7 @@ import abc
 import inspect
 from threading import current_thread, RLock, Thread
 import pyudev
+from six import add_metaclass
 import sys
 import time
 import traceback
@@ -129,7 +130,8 @@ class EventMask(util.ObjectID):
 #
 # EventManager
 #
-class EventManager(object, metaclass=abc.ABCMeta):
+@add_metaclass(abc.ABCMeta)
+class EventManager(object):
     def __init__(self, handler_cb=None, notify_cb=None, error_cb=None):
         self._handler_cb = None
         """ event handler (must accept 'event', 'notify_cb' kwargs """

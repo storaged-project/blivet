@@ -1070,7 +1070,8 @@ class EvalMode(Enum):
     # TODO: no_sooner_than, if_changed,...
 
 
-class DependencyGuard(object, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DependencyGuard(object):
 
     error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
 

@@ -20,6 +20,8 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+from six import add_metaclass
+
 from ..callbacks import callbacks
 from ..errors import DeviceError, EventHandlingError
 from ..devices import DM_MAJORS, MD_MAJORS
@@ -35,7 +37,8 @@ log = logging.getLogger("blivet")
 event_log = logging.getLogger("blivet.event")
 
 
-class EventHandlerMixin(metaclass=SynchronizedMeta):
+@add_metaclass(SynchronizedMeta)
+class EventHandlerMixin:
     def __init__(self):
         event_manager.handler_cb = self.handle_event
 

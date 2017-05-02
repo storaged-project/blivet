@@ -27,6 +27,7 @@ import contextlib
 import time
 import parted
 import functools
+from six import add_metaclass
 
 from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
 
@@ -109,7 +110,8 @@ class StorageDiscoveryConfig(object):
         self.zero_mbr = ksdata.zerombr.zerombr
 
 
-class Blivet(object, metaclass=SynchronizedMeta):
+@add_metaclass(SynchronizedMeta)
+class Blivet(object):
 
     """ Top-level class for managing storage configuration. """
 
