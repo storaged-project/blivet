@@ -21,10 +21,9 @@
 #
 
 from threading import RLock, current_thread, main_thread
-from functools import wraps
 from types import FunctionType
 from abc import ABCMeta
-from six import raise_from
+from six import raise_from, wraps
 
 from .errors import ThreadError
 from .flags import flags
