@@ -693,7 +693,7 @@ class PartitionDevice(StorageDevice):
 
     @property
     def protected(self):
-        protected = super().protected
+        protected = super(PartitionDevice, self).protected
 
         # extended partition is protected also when one of its logical partitions is protected
         if self.is_extended:

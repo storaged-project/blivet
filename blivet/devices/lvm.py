@@ -538,10 +538,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
             for pv in self.pvs:
                 pv.format.vg_name = None
 
-        super().remove_hook(modparent=modparent)
+        super(LVMVolumeGroupDevice, self).remove_hook(modparent=modparent)
 
     def add_hook(self, new=True):
-        super().add_hook(new=new)
+        super(LVMVolumeGroupDevice, self).add_hook(new=new)
         if new:
             return
 
@@ -865,7 +865,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         if self.vg is not None:
             return "%s-%s" % (self.vg.name, self._name)
         else:
-            return super()._get_name()
+            return super(LVMLogicalVolumeBase, self)._get_name()
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
@@ -1887,7 +1887,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def vg(self):
         """This Logical Volume's Volume Group."""
-        return super().vg
+        return super(LVMLogicalVolumeDevice, self).vg
 
     @type_specific
     def _set_size(self, newsize):
@@ -1919,7 +1919,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def vg_space_used(self):
         """ Space occupied by this LV, not including snapshots. """
-        return super().vg_space_used
+        return super(LVMLogicalVolumeDevice, self).vg_space_used
 
     @type_specific
     def _set_format(self, fmt):
@@ -1946,12 +1946,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @property
     @type_specific
     def growable(self):
-        return super().growable
+        return super(LVMLogicalVolumeDevice, self).growable
 
     @property
     @type_specific
     def readonly(self):
-        return super().readonly
+        return super(LVMLogicalVolumeDevice, self).readonly
 
     @property
     @type_specific
@@ -2075,12 +2075,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @property
     @type_specific
     def resizable(self):
-        return super().resizable
+        return super(LVMLogicalVolumeDevice, self).resizable
 
     @property
     @type_specific
     def format_immutable(self):
-        return super().format_immutable
+        return super(LVMLogicalVolumeDevice, self).format_immutable
 
     @type_specific
     def depends_on(self, dep):

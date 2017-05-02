@@ -47,7 +47,7 @@ class DBusBlivet(DBusObject):
         state.
     """
     def __init__(self, manager):
-        super().__init__(manager)
+        super(DBusBlivet, self).__init__(manager)
         self._blivet = Blivet()
         self._id = ObjectID().id
         self._manager.add_object(self)

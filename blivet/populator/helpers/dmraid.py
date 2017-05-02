@@ -40,7 +40,7 @@ class DMRaidFormatPopulator(FormatPopulator):
     _type_specifier = "dmraidmember"
 
     def run(self):
-        super().run()
+        super(DMRaidFormatPopulator, self).run()
 
         # if dmraid usage is disabled skip any dmraid set activation
         if not flags.dmraid:

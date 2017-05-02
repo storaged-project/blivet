@@ -11,7 +11,7 @@ from tests import loopbackedtestcase
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super().__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+        super(LUKSTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
         self.fmt = LUKS(passphrase="password")
 
     def test_size(self):

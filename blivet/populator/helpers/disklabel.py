@@ -46,7 +46,7 @@ class DiskLabelFormatPopulator(FormatPopulator):
                 not (device.is_disk and mpath_members.is_mpath_member(device.path)))
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(DiskLabelFormatPopulator, self)._get_kwargs()
         kwargs["uuid"] = udev.device_get_disklabel_uuid(self.data)
         return kwargs
 
