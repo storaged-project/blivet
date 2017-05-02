@@ -84,7 +84,7 @@ ReportProgressData = namedtuple("ReportProgressData",
 #
 # Callbacks for changes to the model.
 #
-class CallbackList:
+class CallbackList(object):
     def __init__(self):
         self._cb_list = list()
 
@@ -102,7 +102,7 @@ class CallbackList:
             cb(*args, **kwargs)
 
 
-class Callbacks:
+class Callbacks(object):
     """A collection of callbacks for various events
 
        Each trigger/event gets a list of callbacks to run, represented by an
