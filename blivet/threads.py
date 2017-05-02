@@ -24,6 +24,7 @@ from threading import RLock, current_thread, main_thread
 from functools import wraps
 from types import FunctionType
 from abc import ABCMeta
+from six import raise_from
 
 from .errors import ThreadError
 from .flags import flags
@@ -40,7 +41,7 @@ def exclusive(m):
                 exn_info = get_thread_exception()
                 if exn_info[1]:
                     clear_thread_exception()
-                    raise ThreadError("raising queued exception") from exn_info[1]
+                    raise_from(ThreadError("raising queued exception"), exn_info[1])
 
             return m(*args, **kwargs)
 
