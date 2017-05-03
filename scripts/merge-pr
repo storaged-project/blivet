@@ -139,13 +139,13 @@ def main():
         sys.exit(1)
 
     # Parse the username and password
-    m = re.search('^username=(.*)$', stdin, flags=re.MULTILINE)
+    m = re.search('^username=(.*)$', stdin, flags=re.MULTILINE)  # pylint: disable=no-member
     if not m:
         print("Unable to determine github username")
         sys.exit(1)
     username = m.group(1)
 
-    m = re.search('^password=(.*)$', stdin, flags=re.MULTILINE)
+    m = re.search('^password=(.*)$', stdin, flags=re.MULTILINE)  # pylint: disable=no-member
     if not m:
         print("Unable to determine github password")
         sys.exit(1)
