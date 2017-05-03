@@ -574,6 +574,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         data.preexist = self.exists
         data.device = self.name
 
+        if not self.exists:
+            # chunk size is meaningless on RAID1, so do not add our default value
+            # to generated kickstart
+            if self.level != raid.RAID1:
+                data.chunk_size = self.chunk_size.convert_to("KiB")
+
 
 class MDContainerDevice(MDRaidArrayDevice):
 
