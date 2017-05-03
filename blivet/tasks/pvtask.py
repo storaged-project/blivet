@@ -18,7 +18,7 @@
 # License and may only be used or replicated with the express permission of
 # Red Hat, Inc.
 #
-# Red Hat Author(s): Vojtěch Trefný <vtrefny@redhat.com>
+# Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 
 import gi
 gi.require_version("BlockDev", "2.0")
