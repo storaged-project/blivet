@@ -21,7 +21,7 @@
 
 import os
 
-from ..devicelibs import mdraid
+from ..devicelibs import mdraid, raid
 
 from .. import errors
 from .. import util
@@ -645,3 +645,9 @@ class MDRaidArrayDevice(ContainerDevice):
         data.members = ["raid.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         data.device = self.name
+
+        if not self.exists:
+            # chunk size is meaningless on RAID1, so do not add our default
+            # value to generated kickstart
+            if self.level != raid.RAID1:
+                data.chunk_size = self.chunkSize.convertTo("KiB")
