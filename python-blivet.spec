@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.61
+Version: 0.61.15.62
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,15 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed May 03 2017 David Lehman <dlehman@redhat.com> - 0.61.15.62-1
+- Don't pass unused mountpoint dict to preCommitFixup. (dlehman)
+  Related: rhbz#1184945
+- Use the default md metadata version for everything except /boot/efi.
+  (dlehman)
+  Resolves: rhbz#1184945
+- Fix resolve_devspec to fully support raid devices (vponcova)
+  Resolves: rhbz#1445723
+
 * Wed Apr 12 2017 David Lehman <dlehman@redhat.com> - 0.61.15.61-1
 - Call subprocess.Popen with absolute path to a binary (rvykydal)
   Related: rhbz#1411407
