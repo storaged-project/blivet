@@ -57,13 +57,13 @@ class PartitionDevicePopulator(DevicePopulator):
                 return device
 
         disk = None
-        sys_name = udev.device_get_partition_disk(self.data)
-        if sys_name:
-            disk_name = udev.resolve_devspec(sys_name)
+        disk_name = udev.device_get_partition_disk(self.data)
+        if disk_name:
             disk = self._devicetree.get_device_by_name(disk_name)
             if disk is None:
                 # create a device instance for the disk
-                disk_info = next((i for i in udev.get_devices() if i.sys_name == sys_name), None)
+                disk_info = next((i for i in udev.get_devices()
+                                  if udev.device_get_name(i) == disk_name), None)
                 if disk_info is not None:
                     self._devicetree.handle_device(disk_info)
                     disk = self._devicetree.get_device_by_name(disk_name)
