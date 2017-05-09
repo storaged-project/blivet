@@ -52,7 +52,8 @@ class DiskDevicePopulator(DevicePopulator):
             "serial": udev.device_get_serial(self.data),
             "vendor": util.get_sysfs_attr(sysfs_path, "device/vendor"),
             "model": util.get_sysfs_attr(sysfs_path, "device/model"),
-            "bus": udev.device_get_bus(self.data)
+            "bus": udev.device_get_bus(self.data),
+            "wwn": udev.device_get_wwn(self.data)
         }
 
         if self._device_class == DiskDevice:

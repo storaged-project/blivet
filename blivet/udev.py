@@ -338,11 +338,8 @@ def device_get_serial(udev_info):
     return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL", udev_info.get("ID_SERIAL_SHORT")))
 
 
-def device_get_wwid(udev_info):
-    """ The WWID of a device is typically just its serial number, but with
-        colons in the name to make it more readable. """
-    serial = device_get_serial(udev_info)
-    return util.insert_colons(serial) if serial else ""
+def device_get_wwn(udev_info):
+    return udev_info.get("ID_WWN")
 
 
 def device_get_vendor(udev_info):
