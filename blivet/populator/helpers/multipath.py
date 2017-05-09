@@ -22,7 +22,6 @@
 
 from ... import udev
 from ...devices import MultipathDevice
-from ...errors import DeviceTreeError
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
@@ -45,15 +44,9 @@ class MultipathDevicePopulator(DevicePopulator):
 
         device = None
         if slave_devices:
-            try:
-                serial = self.data["DM_UUID"].split("-", 1)[1]
-            except (IndexError, AttributeError):
-                log.error("multipath device %s has no DM_UUID", name)
-                raise DeviceTreeError("multipath %s has no DM_UUID" % name)
-
             device = MultipathDevice(name, parents=slave_devices,
                                      sysfs_path=udev.device_get_sysfs_path(self.data),
-                                     serial=serial)
+                                     wwn=udev.device_get_wwn(self.data))
             self._devicetree._add_device(device)
 
         return device

@@ -81,4 +81,6 @@ class DMRaidFormatPopulator(FormatPopulator):
                 dm_array.update_sysfs_path()
                 dm_array.update_size()
                 dm_array_info = udev.get_device(dm_array.sysfs_path)
+                if dm_array_info:
+                    dm_array.wwn = udev.device_get_wwn(dm_array_info)
                 self._devicetree.handle_device(dm_array_info, update_orig_fmt=True)

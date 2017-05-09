@@ -548,7 +548,15 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_name = args[0]
 
         devicetree = DeviceTree()
+
+        # set up some fake udev data to verify handling of specific entries
         data = Mock()
+        _data = {"ID_WWN": "0x5000c50086fb75ca"}
+
+        def _getitem_(key, extra=None):
+            return _data.get(key, extra)
+        data.get = Mock(side_effect=_getitem_)
+        data.__getitem__ = Mock(side_effect=_getitem_)
 
         device_name = "nop"
         device_get_name.return_value = device_name
@@ -558,6 +566,7 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertIsInstance(device, DiskDevice)
         self.assertTrue(device.exists)
         self.assertTrue(device.is_disk)
+        self.assertEqual(device.wwn, _data["ID_WWN"])
         self.assertEqual(device.name, device_name)
         self.assertTrue(device in devicetree.devices)
 
@@ -692,7 +701,15 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         add_slave_devices = args[1]
 
         devicetree = DeviceTree()
-        data = {"DM_UUID": "1-2-3-4"}
+        # set up some fake udev data to verify handling of specific entries
+        data = Mock()
+        _data = {"ID_WWN": "0x5000c50086fb75ca",
+                 "DM_UUID": "1-2-3-4"}
+
+        def _getitem_(key, extra=None):
+            return _data.get(key, extra)
+        data.get = Mock(side_effect=_getitem_)
+        data.__getitem__ = Mock(side_effect=_getitem_)
 
         device_name = "mpathtest"
         device_get_name.return_value = device_name
@@ -710,6 +727,7 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertIsInstance(device, MultipathDevice)
         self.assertTrue(device.exists)
         self.assertEqual(device.name, device_name)
+        self.assertEqual(device.wwn, _data["ID_WWN"])
         self.assertTrue(device in devicetree.devices)
 
 
