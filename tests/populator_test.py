@@ -120,7 +120,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test get_device_helper for dm devices."""
         device_is_dm = args[0]
         device_is_dm_lvm = args[6]
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
         self.assertEqual(get_device_helper(data), self.helper_class)
 
         # verify that setting one of the required True return values to False prevents success
@@ -202,7 +202,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test get_device_helper for loop devices."""
         device_is_loop = args[0]
         get_backing_file = args[7]
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
         get_backing_file.return_value = True
         self.assertEqual(get_device_helper(data), self.helper_class)
 
@@ -280,7 +280,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_get_helper(self, *args):
         """Test get_device_helper for lvm devices."""
         device_is_dm_lvm = args[0]
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
         self.assertEqual(get_device_helper(data), self.helper_class)
 
         # verify that setting one of the required True return values to False prevents success
@@ -367,7 +367,7 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_get_helper(self, *args):
         """Test get_device_helper for optical devices."""
         device_is_cdrom = args[0]
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
         self.assertEqual(get_device_helper(data), self.helper_class)
 
         # verify that setting one of the required True return values to False prevents success
@@ -431,7 +431,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test get_device_helper for partitions."""
         device_is_partition = args[0]
         device_is_loop = args[2]
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
         self.assertEqual(get_device_helper(data), self.helper_class)
 
         # verify that setting one of the required True return values to False prevents success
@@ -465,7 +465,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         get_device_by_name = args[2]
 
         devicetree = DeviceTree()
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
 
         # for every case:
         #   1. device(s) in tree
@@ -548,7 +548,7 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_name = args[0]
 
         devicetree = DeviceTree()
-        data = Mock()
+        data = {'SYS_PATH': 'dummy'}
 
         device_name = "nop"
         device_get_name.return_value = device_name
