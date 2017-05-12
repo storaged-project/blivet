@@ -185,3 +185,23 @@ def determine_parent_lv(internal_lv, lvs, lv_info):
 
 def lvmetad_socket_exists():
     return os.path.exists(LVMETAD_SOCKET_PATH)
+
+
+def is_lvm_name_valid(name):
+    # No . or ..
+    if name == '.' or name == '..':
+        return False
+
+    # Check that all characters are in the allowed set and that the name
+    # does not start with a -
+    if not re.match('^[a-zA-Z0-9+_.][a-zA-Z0-9+_.-]*$', name):
+        return False
+
+    # According to the LVM developers, vgname + lvname is limited to 126 characters
+    # minus the number of hyphens, and possibly minus up to another 8 characters
+    # in some unspecified set of situations. Instead of figuring all of that out,
+    # no one gets a vg or lv name longer than, let's say, 55.
+    if len(name) > 55:
+        return False
+
+    return True

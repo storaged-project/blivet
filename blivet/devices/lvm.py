@@ -560,23 +560,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # reserved percent/space
 
     def is_name_valid(self, name):
-        # No . or ..
-        if name == '.' or name == '..':
-            return False
-
-        # Check that all characters are in the allowed set and that the name
-        # does not start with a -
-        if not re.match('^[a-zA-Z0-9+_.][a-zA-Z0-9+_.-]*$', name):
-            return False
-
-        # According to the LVM developers, vgname + lvname is limited to 126 characters
-        # minus the number of hyphens, and possibly minus up to another 8 characters
-        # in some unspecified set of situations. Instead of figuring all of that out,
-        # no one gets a vg or lv name longer than, let's say, 55.
-        if len(name) > 55:
-            return False
-
-        return True
+        return lvm.is_lvm_name_valid(name)
 
 
 class LVMLogicalVolumeBase(DMDevice, RaidDevice):
@@ -2130,10 +2114,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
     @type_specific
     def is_name_valid(self, name):
-        # Check that the LV name is valid
-
-        # Start with the checks shared with volume groups
-        if not LVMVolumeGroupDevice.is_name_valid(self, name):
+        if not lvm.is_lvm_name_valid(name):
             return False
 
         # And now the ridiculous ones
