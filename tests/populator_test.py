@@ -28,7 +28,7 @@ from blivet.size import Size
 try:
     from pyanaconda import kickstart
     pyanaconda_present = True
-except ImportError:
+except (ImportError, AttributeError):
     pyanaconda_present = False
 
 
