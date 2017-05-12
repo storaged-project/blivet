@@ -65,7 +65,7 @@ install-requires:
 
 test: check-requires
 	@echo "*** Running unittests with $(PYTHON) ***"
-	PYTHONPATH=. $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
+	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
 
 coverage: check-requires
 	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
