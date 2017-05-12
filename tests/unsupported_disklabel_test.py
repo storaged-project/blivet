@@ -2,6 +2,7 @@
 import test_compat
 
 from six.moves.mock import patch, sentinel, DEFAULT
+import six
 import unittest
 
 from blivet.actionlist import ActionList
@@ -23,15 +24,23 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
                            fmt=get_format("disklabel", exists=True))
         disk1.format._supported = False
 
-        with self.assertLogs("blivet", level="INFO") as cm:
+        if six.PY3:
+            with self.assertLogs("blivet", level="INFO") as cm:
+                partition1 = PartitionDevice("testpart1", size=Size("150 GiB"), exists=True,
+                                             parents=[disk1], fmt=get_format("ext4", exists=True))
+            self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
+        else:
             partition1 = PartitionDevice("testpart1", size=Size("150 GiB"), exists=True,
                                          parents=[disk1], fmt=get_format("ext4", exists=True))
-        self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
 
-        with self.assertLogs("blivet", level="INFO") as cm:
+        if six.PY3:
+            with self.assertLogs("blivet", level="INFO") as cm:
+                partition2 = PartitionDevice("testpart2", size=Size("100 GiB"), exists=True,
+                                             parents=[disk1], fmt=get_format("lvmpv", exists=True))
+            self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
+        else:
             partition2 = PartitionDevice("testpart2", size=Size("100 GiB"), exists=True,
                                          parents=[disk1], fmt=get_format("lvmpv", exists=True))
-        self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
 
         # To be supported, all of a devices ancestors must be supported.
         disk2 = DiskDevice("testdisk2", size=Size("300 GiB"), exists=True,

@@ -343,10 +343,13 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
                 return sentinel.non_vg_device
 
         get_device_by_name.side_effect = _get_device_by_name2
-        with self.assertLogs('blivet', level='WARNING') as log_cm:
+        if six.PY3:
+            with self.assertLogs('blivet', level='WARNING') as log_cm:
+                self.assertEqual(helper.run(), sentinel.lv_device)
+            log_entry = "WARNING:blivet:found non-vg device with name %s" % sentinel.vg_name
+            self.assertTrue(log_entry in log_cm.output)
+        else:
             self.assertEqual(helper.run(), sentinel.lv_device)
-        log_entry = "WARNING:blivet:found non-vg device with name %s" % sentinel.vg_name
-        self.assertTrue(log_entry in log_cm.output)
 
 
 class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):

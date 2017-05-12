@@ -2,6 +2,7 @@
 import test_compat
 
 from six.moves import mock
+import six
 import unittest
 from decimal import Decimal
 
@@ -138,9 +139,12 @@ class DependencyGuardTestCase(unittest.TestCase):
 
     def test_dependency_guard(self):
         guard = TestDependencyGuard()
-        with self.assertLogs("blivet", level="WARNING") as cm:
+        if six.PY3:
+            with self.assertLogs("blivet", level="WARNING") as cm:
+                self.assertEqual(self._test_dependency_guard_non_critical(), None)
+            self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
+        else:
             self.assertEqual(self._test_dependency_guard_non_critical(), None)
-        self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
 
         with self.assertRaises(errors.DependencyError):
             self._test_dependency_guard_critical()
