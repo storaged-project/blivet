@@ -20,16 +20,23 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from threading import RLock, current_thread, main_thread
+import threading
 from types import FunctionType
 from abc import ABCMeta
-from six import raise_from, wraps
+from six import raise_from, wraps, PY3
 import functools
 
 from .errors import ThreadError
 from .flags import flags
 
-blivet_lock = RLock(verbose=flags.debug_threads)
+blivet_lock = threading.RLock(verbose=flags.debug_threads)
+
+
+def _is_main_thread():
+    if PY3:
+        return threading.current_thread() == threading.main_thread()
+    else:
+        return threading.currentThread().name == "MainThread"
 
 
 def exclusive(m):
@@ -37,7 +44,7 @@ def exclusive(m):
     @wraps(m, set(functools.WRAPPER_ASSIGNMENTS) & set(dir(m)))
     def run_with_lock(*args, **kwargs):
         with blivet_lock:
-            if current_thread() == main_thread():
+            if _is_main_thread():
                 exn_info = get_thread_exception()
                 if exn_info[1]:
                     clear_thread_exception()

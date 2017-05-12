@@ -270,8 +270,8 @@ class EventManager(object):
 
         t = Thread(target=self._run_event_handler,
                    name="event%d" % event.id,
-                   kwargs={"event": event},
-                   daemon=True)
+                   kwargs={"event": event})
+        t.daemon = True  # py2 compat
         t.start()
 
     def _run_event_handler(self, event):
