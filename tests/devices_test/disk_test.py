@@ -1,6 +1,8 @@
 # pylint: skip-file
+import test_compat
+
+from six.moves.mock import patch
 import unittest
-from unittest.mock import patch
 
 from blivet.devices import DiskDevice
 from blivet.devicelibs import disk as disklib

@@ -1,7 +1,8 @@
 # vim:set fileencoding=utf-8
+import test_compat
 
+from six.moves.mock import patch, sentinel, DEFAULT
 import unittest
-from unittest.mock import patch, sentinel, DEFAULT
 
 from blivet.actionlist import ActionList
 from blivet.deviceaction import ActionDestroyFormat

@@ -1,4 +1,5 @@
 # vim:set fileencoding=utf-8
+import test_compat
 
 import unittest
 
@@ -7,7 +8,7 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from mock import Mock, patch
+from six.moves.mock import Mock, patch
 
 import blivet
 

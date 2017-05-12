@@ -1,6 +1,7 @@
+import test_compat
 
+from six.moves.mock import patch
 import unittest
-from unittest.mock import patch
 
 from blivet.devices import DiskDevice, FcoeDiskDevice, iScsiDiskDevice, MultipathDevice, StorageDevice, ZFCPDiskDevice
 from blivet.devices.lib import Tags

@@ -1,7 +1,8 @@
 # pylint: skip-file
+import test_compat
 
+from six.moves import mock
 import unittest
-from unittest import mock
 from decimal import Decimal
 
 from blivet import errors
@@ -144,6 +145,6 @@ class DependencyGuardTestCase(unittest.TestCase):
         with self.assertRaises(errors.DependencyError):
             self._test_dependency_guard_critical()
 
-        with unittest.mock.patch.object(_requires_something, '_check_avail', return_value=True):
+        with mock.patch.object(_requires_something, '_check_avail', return_value=True):
             self.assertEqual(self._test_dependency_guard_non_critical(), True)
             self.assertEqual(self._test_dependency_guard_critical(), True)

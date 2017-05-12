@@ -1,6 +1,7 @@
+import test_compat
 
+from six.moves.mock import Mock, patch
 from unittest import TestCase
-from unittest.mock import Mock, patch
 
 from blivet.events.manager import Event, EventManager
 

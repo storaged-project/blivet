@@ -1,7 +1,8 @@
 # vim:set fileencoding=utf-8
+import test_compat
 
+from six.moves.mock import patch
 import unittest
-from unittest.mock import patch
 
 import blivet
 

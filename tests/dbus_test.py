@@ -1,6 +1,8 @@
+import test_compat
+
 import random
+from six.moves.mock import Mock, patch
 from unittest import TestCase
-from unittest.mock import Mock, patch
 
 import dbus
 

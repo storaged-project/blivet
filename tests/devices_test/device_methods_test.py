@@ -1,5 +1,8 @@
+import test_compat
+
+import six
+from six.moves.mock import patch, Mock, PropertyMock
 import unittest
-from unittest.mock import patch, Mock, PropertyMock
 
 from blivet.devices import StorageDevice
 from blivet.devices import DiskDevice, PartitionDevice

@@ -1,14 +1,11 @@
+import test_compat
+
 import parted
-import six
+from six.moves import mock
 import unittest
 
 import blivet
 from blivet.size import Size
-
-if six.PY2:
-    import mock
-else:
-    from unittest import mock
 
 patch = mock.patch
 

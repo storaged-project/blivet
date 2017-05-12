@@ -1,6 +1,7 @@
+import test_compat
+
+from six.moves.mock import PropertyMock, patch
 import unittest
-from unittest.mock import PropertyMock
-from unittest.mock import patch
 from pykickstart.version import returnClassForVersion
 from blivet import Blivet
 from blivet.devices import PartitionDevice

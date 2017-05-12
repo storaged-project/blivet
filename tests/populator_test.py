@@ -1,8 +1,10 @@
-import os
+import test_compat
+
 import gi
-import unittest
-from unittest.mock import call, patch, sentinel, Mock, PropertyMock
+import os
+from six.moves.mock import call, patch, sentinel, Mock, PropertyMock
 import six
+import unittest
 
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev

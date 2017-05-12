@@ -1,5 +1,7 @@
+import test_compat
+
+from six.moves.mock import Mock, patch, sentinel
 import unittest
-from unittest.mock import Mock, patch, sentinel
 
 from tests.imagebackedtestcase import ImageBackedTestCase
 

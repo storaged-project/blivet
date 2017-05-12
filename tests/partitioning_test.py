@@ -1,6 +1,8 @@
+import test_compat
 
+import six
+from six.moves.mock import Mock, patch
 import unittest
-from mock import Mock, patch
 
 import parted
 
