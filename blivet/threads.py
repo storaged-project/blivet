@@ -24,6 +24,7 @@ from threading import RLock, current_thread, main_thread
 from types import FunctionType
 from abc import ABCMeta
 from six import raise_from, wraps
+import functools
 
 from .errors import ThreadError
 from .flags import flags
@@ -33,7 +34,7 @@ blivet_lock = RLock(verbose=flags.debug_threads)
 
 def exclusive(m):
     """ Run a callable while holding the global lock. """
-    @wraps(m)
+    @wraps(m, set(functools.WRAPPER_ASSIGNMENTS) & set(dir(m)))
     def run_with_lock(*args, **kwargs):
         with blivet_lock:
             if current_thread() == main_thread():
