@@ -1,6 +1,7 @@
 # vim:set fileencoding=utf-8
 import test_compat
 
+import six
 from six.moves.mock import patch
 import unittest
 
@@ -32,10 +33,10 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
 
-        with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
+        with six.assertRaisesRegex(self, ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
 
-        with self.assertRaisesRegex(ValueError, "only existing vorigin snapshots are supported"):
+        with six.assertRaisesRegex(self, ValueError, "only existing vorigin snapshots are supported"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], vorigin=True)
 
         lv.exists = True
@@ -60,7 +61,7 @@ class LVMDeviceTest(unittest.TestCase):
         pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
         thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
 
-        with self.assertRaisesRegex(ValueError, "lvm snapshot origin must be a logical volume"):
+        with six.assertRaisesRegex(self, ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
 
         # now make the constructor succeed so we can test some properties
@@ -322,16 +323,16 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(lv.size, orig_size)
 
         # ValueError if size smaller than min_size
-        with self.assertRaisesRegex(ValueError,
-                                    "size.*smaller than the minimum"):
+        with six.assertRaisesRegex(self, ValueError,
+                                   "size.*smaller than the minimum"):
             lv.target_size = Size("1 MiB")
 
         # target size should be unchanged
         self.assertEqual(lv.target_size, orig_size)
 
         # ValueError if size larger than max_size
-        with self.assertRaisesRegex(ValueError,
-                                    "size.*larger than the maximum"):
+        with six.assertRaisesRegex(self, ValueError,
+                                   "size.*larger than the maximum"):
             lv.target_size = Size("1 GiB")
 
         # target size should be unchanged

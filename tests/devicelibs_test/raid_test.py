@@ -1,3 +1,4 @@
+import six
 import unittest
 
 import blivet.devicelibs.raid as raid
@@ -14,7 +15,7 @@ class RaidTestCase(unittest.TestCase):
 
     def test_raid(self):
 
-        with self.assertRaisesRegex(TypeError, "Can't instantiate abstract class"):
+        with six.assertRaisesRegex(self, TypeError, "Can't instantiate abstract class"):
             raid.ErsatzRAID()
 
         ##
@@ -151,11 +152,11 @@ class RaidTestCase(unittest.TestCase):
         ##
         # __init__
         ##
-        with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
+        with six.assertRaisesRegex(self, errors.RaidError, "invalid RAID level"):
             self.levels_none.raid_level(10)
 
-        with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
+        with six.assertRaisesRegex(self, errors.RaidError, "invalid RAID level"):
             self.levels_some.raid_level(10)
 
-        with self.assertRaisesRegex(errors.RaidError, "invalid standard RAID level descriptor"):
+        with six.assertRaisesRegex(self, errors.RaidError, "invalid standard RAID level descriptor"):
             raid.RAIDLevels(["raid3.1415"])

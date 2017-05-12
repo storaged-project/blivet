@@ -2,6 +2,8 @@ import test_compat
 
 import six
 from six.moves.mock import Mock, patch
+
+import six
 import unittest
 
 import parted
@@ -221,8 +223,8 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a logical partition to a primary free region
             #
-            with self.assertRaisesRegex(parted.PartitionException,
-                                        "no extended partition"):
+            with six.assertRaisesRegex(self, parted.PartitionException,
+                                       "no extended partition"):
                 part = add_partition(disk.format, free, parted.PARTITION_LOGICAL,
                                      Size("10 MiB"))
 
@@ -253,7 +255,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a primary partition to an extended free region
             #
-            with self.assertRaisesRegex(parted.PartitionException, "overlap"):
+            with six.assertRaisesRegex(self, parted.PartitionException, "overlap"):
                 part = add_partition(disk.format, all_free[1],
                                      parted.PARTITION_NORMAL,
                                      Size("10 MiB"), all_free[1].start)
