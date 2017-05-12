@@ -49,22 +49,18 @@ def validate_cb(cb, kwargs=None, arg_count=None):
     kwargs = kwargs or []
     arg_count = arg_count or 0
 
-    params = inspect.signature(cb).parameters
+    if six.PY2:
+        argspec = inspect.getargspec(cb)  # pylint: disable=deprecated-method
+        if argspec.varargs or argspec.keywords:
+            return True
+        params = argspec.args
+    else:
+        params = list(inspect.signature(cb).parameters.keys())
+
     if len(params) < arg_count:
         return False
 
-    if not all(kw in params for kw in kwargs):
-        return False
-
-    for kw in kwargs:
-        if kw not in params:
-            return False
-
-        p = params[kw]
-        if p.kind not in (p.KEYWORD_ONLY, p.POSITIONAL_OR_KEYWORD):
-            return False
-
-    return True
+    return all(kw in params for kw in kwargs)
 
 
 #
