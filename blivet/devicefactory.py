@@ -1276,10 +1276,10 @@ class LVMFactory(DeviceFactory):
                 space -= self.vg.free_space
                 # we need to account for the LVM metadata being placed somewhere
                 space += self.vg.lvm_metadata_space
-
-            # we need to account for the LVM metadata being placed on each disk
-            # (and thus taking up to one extent from each disk)
-            space += len(self.disks) * self._pe_size
+            else:
+                # we need to account for the LVM metadata being placed on each disk
+                # (and thus taking up to one extent from each disk)
+                space += len(self.disks) * self._pe_size
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
             if self.vg:
