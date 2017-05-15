@@ -333,8 +333,8 @@ class DeviceFactory(object):
 
         self.container_size = container_size
 
-        self.container = None
-        self.device = device
+        self.container = None           # container for the device
+        self.device = device            # the leaf device this factory modifies or creates (also known as "factory device")
 
         if not self.fstype:
             self.fstype = self.storage.get_fstype(mountpoint=self.mountpoint)
@@ -443,7 +443,7 @@ class DeviceFactory(object):
         return size
 
     def _get_device_space(self):
-        """ The total disk space required for this device. """
+        """ The total disk space required for the factory device. """
         return self.size
 
     def _get_device_size(self):
@@ -451,7 +451,7 @@ class DeviceFactory(object):
         return self.size
 
     def _set_device_size(self):
-        """ Set the size of a defined factory device. """
+        """ Set the size of the factory device. """
         pass
 
     #
@@ -1228,12 +1228,16 @@ class LVMFactory(DeviceFactory):
             return lvm.LVM_PE_SIZE
 
     def _get_device_space(self):
+        """ The total disk space required for the factory device (LV). """
         return blockdev.lvm.get_lv_physical_size(self.size, self._pe_size)
 
     def _get_device_size(self):
+        """ Return the factory device size including container limitations. """
         size = self.size
         free = self.container.free_space
         if self.device:
+            # self.raw_device == self.device.raw_device
+            # (i.e. self.device or the backing device in case self.device is encrypted)
             free += self.raw_device.size
 
         if free < size:
@@ -1244,7 +1248,11 @@ class LVMFactory(DeviceFactory):
         return size
 
     def _set_device_size(self):
+        """ Set the size of the factory device. """
         size = self._get_device_size()
+
+        # self.raw_device == self.device.raw_device
+        # (i.e. self.device or the backing device in case self.device is encrypted)
         if self.device and size != self.raw_device.size:
             log.info("adjusting device size from %s to %s",
                      self.raw_device.size, size)
@@ -1368,7 +1376,7 @@ class LVMFactory(DeviceFactory):
             self.device.name = safe_new_name
 
     def _configure(self):
-        self._set_container()
+        self._set_container()  # just sets self.container based on the specs
         if self.container and not self.container.exists:
             # If there's already a VG associated with this LV that doesn't have
             # MD PVs we need to remove the partition PVs.
@@ -1447,7 +1455,7 @@ class LVMThinPFactory(LVMFactory):
     # methods related to device size and disk space requirements
     #
     def _get_device_size(self):
-        # calculate device size based on space in the pool
+        """ Calculate device size based on space in the pool. """
         pool_size = self.pool.size
         log.debug("pool size is %s", pool_size)
         free = pool_size - self.pool.used_space
