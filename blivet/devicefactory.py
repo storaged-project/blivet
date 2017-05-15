@@ -248,6 +248,11 @@ class DeviceFactory(object):
             - change the container member device type of a defined device
 
     """
+
+    # This is a bit tricky, the child factory creates devices on top of which
+    # this (parent) factory builds its devices. E.g. partitions (as PVs) for a
+    # VG. And such "underlying" devices are called "parent" devices in other
+    # places in Blivet. So a child factory actually creates parent devices.
     child_factory_class = None
     child_factory_fstype = None
     size_set_class = TotalSizeSet
@@ -336,8 +341,8 @@ class DeviceFactory(object):
             if fstype == "swap":
                 self.mountpoint = None
 
-        self.child_factory = None
-        self.parent_factory = None
+        self.child_factory = None       # factory creating the parent devices (e.g. PVs for a VG)
+        self.parent_factory = None      # factory this factory is a child factory for (e.g. the one creating an LV in a VG)
 
         if min_luks_entropy is None:
             self.min_luks_entropy = luks_data.min_entropy
