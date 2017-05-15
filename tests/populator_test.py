@@ -750,7 +750,8 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
                              self.helper_class,
                              msg="get_format_helper failed for %s" % self.udev_type)
 
-    def test_run(self):
+    # pylint: disable=unused-argument
+    def test_run(self, *args):
         if self.udev_type is None:
             return
 
