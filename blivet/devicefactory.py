@@ -1197,6 +1197,10 @@ class LVMFactory(DeviceFactory):
         if self.container_raid_level:
             self.child_factory_class = MDFactory
 
+    @property
+    def vg(self):
+        return self.container
+
     #
     # methods related to device size and disk space requirements
     #
@@ -1222,8 +1226,8 @@ class LVMFactory(DeviceFactory):
 
     @property
     def _pe_size(self):
-        if self.container:
-            return self.container.pe_size
+        if self.vg:
+            return self.vg.pe_size
         else:
             return lvm.LVM_PE_SIZE
 
@@ -1234,7 +1238,7 @@ class LVMFactory(DeviceFactory):
     def _get_device_size(self):
         """ Return the factory device size including container limitations. """
         size = self.size
-        free = self.container.free_space
+        free = self.vg.free_space
         if self.device:
             # self.raw_device == self.device.raw_device
             # (i.e. self.device or the backing device in case self.device is encrypted)
@@ -1242,7 +1246,7 @@ class LVMFactory(DeviceFactory):
 
         if free < size:
             log.info("adjusting size from %s to %s so it fits "
-                     "in container %s", size, free, self.container.name)
+                     "in container %s", size, free, self.vg.name)
             size = free
 
         return size
@@ -1262,25 +1266,25 @@ class LVMFactory(DeviceFactory):
     def _get_total_space(self):
         """ Total disk space requirement for this device and its container. """
         space = Size(0)
-        if self.container and self.container.exists:
+        if self.vg and self.vg.exists:
             return space
 
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic container size management
-            if self.container:
-                space += sum([p.size for p in self.container.parents])
-                space -= self.container.free_space
+            if self.vg:
+                space += sum([p.size for p in self.vg.parents])
+                space -= self.vg.free_space
                 # we need to account for the LVM metadata being placed somewhere
-                space += self.container.lvm_metadata_space
+                space += self.vg.lvm_metadata_space
 
             # we need to account for the LVM metadata being placed on each disk
             # (and thus taking up to one extent from each disk)
             space += len(self.disks) * self._pe_size
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
-            if self.container:
-                space += sum(p.size for p in self.container.parents)
-                log.debug("size bumped to %s to include container parents", space)
+            if self.vg:
+                space += sum(p.size for p in self.vg.parents)
+                log.debug("size bumped to %s to include VG parents", space)
 
             space += self._get_free_disk_space()
             log.debug("size bumped to %s to include free disk space", space)
@@ -1321,10 +1325,10 @@ class LVMFactory(DeviceFactory):
 
     def _check_container_size(self):
         """ Raise an exception if the container cannot hold its devices. """
-        if not self.container:
+        if not self.vg:
             return
 
-        free_space = self.container.free_space + getattr(self.device, "size", 0)
+        free_space = self.vg.free_space + getattr(self.device, "size", 0)
         if free_space < 0:
             raise DeviceFactoryError("container changes impossible due to "
                                      "the devices it already contains")
@@ -1338,9 +1342,9 @@ class LVMFactory(DeviceFactory):
         if self.container_raid_level:
             # md pv
             kwargs["raid_level"] = self.container_raid_level
-            if self.container and self.container.parents:
-                kwargs["device"] = self.container.parents[0]
-                kwargs["name"] = self.container.parents[0].name
+            if self.vg and self.vg.parents:
+                kwargs["device"] = self.vg.parents[0]
+                kwargs["name"] = self.vg.parents[0].name
             else:
                 kwargs["name"] = self.storage.suggest_device_name(prefix="pv")
 
@@ -1353,11 +1357,11 @@ class LVMFactory(DeviceFactory):
     def _set_name(self):
         if not self.device_name:
             self.device_name = self.storage.suggest_device_name(
-                parent=self.container,
+                parent=self.vg,
                 swap=(self.fstype == "swap"),
                 mountpoint=self.mountpoint)
 
-        lvname = "%s-%s" % (self.container.name, self.device_name)
+        lvname = "%s-%s" % (self.vg.name, self.device_name)
         safe_new_name = self.storage.safe_device_name(lvname)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
@@ -1365,12 +1369,12 @@ class LVMFactory(DeviceFactory):
                           self.device.name, safe_new_name)
                 return
 
-            if not safe_new_name.startswith(self.container.name):
+            if not safe_new_name.startswith(self.vg.name):
                 log.error("device rename failure (%s)", safe_new_name)
                 return
 
             # strip off the vg name before setting
-            safe_new_name = safe_new_name[len(self.container.name) + 1:]
+            safe_new_name = safe_new_name[len(self.vg.name) + 1:]
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
             self.device.name = safe_new_name
@@ -1473,14 +1477,14 @@ class LVMThinPFactory(LVMFactory):
     def _get_total_space(self):
         """ Calculate and return the total disk space needed for the vg.
 
-            Our container will still be None if we are going to create it.
+            Our container (VG) will still be None if we are going to create it.
         """
 
         # unset the thpool_reserve here so that the previously reserved space is
         # considered free space (and thus swallowed) -> we will set it and
         # calculate an updated reserve below
-        if self.container:
-            self.container.thpool_reserve = None
+        if self.vg:
+            self.vg.thpool_reserve = None
 
         size = super(LVMThinPFactory, self)._get_total_space()
         # this does not apply if a specific container size was requested
@@ -1491,8 +1495,8 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.pool.free_space
                 log.debug("size cut to %s to omit pool free space", size)
 
-        if self.container:
-            self.container.thpool_reserve = AUTOPART_THPOOL_RESERVE
+        if self.vg:
+            self.vg.thpool_reserve = AUTOPART_THPOOL_RESERVE
 
         # black maths (to make sure there's AUTOPART_THPOOL_RESERVE.percent reserve)
         size_with_reserve = size * (1 / (1 - (AUTOPART_THPOOL_RESERVE.percent / 100)))
@@ -1511,7 +1515,7 @@ class LVMThinPFactory(LVMFactory):
         return self.storage.thinpools
 
     def get_pool(self):
-        if not self.container:
+        if not self.vg:
             return None
 
         if self.device:
@@ -1522,7 +1526,7 @@ class LVMThinPFactory(LVMFactory):
         # create a new pool to allocate new devices from? Probably not, since
         # that would prevent users from setting up custom pools on tty2.
         pool = None
-        pools = [p for p in self.pool_list if p.vg == self.container]
+        pools = [p for p in self.pool_list if p.vg == self.vg]
         pools.sort(key=lambda p: p.free_space, reverse=True)
         if pools:
             new_pools = [p for p in pools if not p.exists]
@@ -1563,8 +1567,8 @@ class LVMThinPFactory(LVMFactory):
                 size -= self.device.pool_space_used   # don't count our device
 
         # round to nearest extent. free rounds down, size rounds up.
-        free = self.container.align(free + self.container.free_space)
-        size = self.container.align(size, roundup=True)
+        free = self.vg.align(free + self.vg.free_space)
+        size = self.vg.align(size, roundup=True)
 
         if free < size:
             size = free
@@ -1585,12 +1589,12 @@ class LVMThinPFactory(LVMFactory):
         if self.size == Size(0):
             return
 
-        self.container.thpool_reserve = AUTOPART_THPOOL_RESERVE
+        self.vg.thpool_reserve = AUTOPART_THPOOL_RESERVE
         size = self._get_pool_size()
         if size == Size(0):
             raise DeviceFactoryError("not enough free space for thin pool")
 
-        self.pool = self._get_new_pool(size=size, parents=[self.container])
+        self.pool = self._get_new_pool(size=size, parents=[self.vg])
         self.storage.create_device(self.pool)
 
         # reconfigure the pool here in case its presence in the VG has caused
@@ -1601,6 +1605,7 @@ class LVMThinPFactory(LVMFactory):
     # methods to configure the factory's container (both vg and pool)
     #
     def _set_container(self):
+        """ Set this factory's container (VG) device. """
         super(LVMThinPFactory, self)._set_container()
         self.pool = self.get_pool()
         if self.pool:
