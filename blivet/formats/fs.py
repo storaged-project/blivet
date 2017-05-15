@@ -26,6 +26,7 @@ from decimal import Decimal
 import os
 import shlex
 import tempfile
+import uuid as uuid_mod
 
 from . import fslabeling
 from ..errors import FormatCreateError, FSError, FSResizeError
@@ -764,8 +765,7 @@ class FS(DeviceFormat):
         self.notifyKernel()
 
     def _getRandomUUID(self):
-        uuid = util.capture_output(["uuidgen"]).strip()
-        return uuid
+        return str(uuid_mod.uuid4())
 
     @property
     def needsFSCheck(self):
