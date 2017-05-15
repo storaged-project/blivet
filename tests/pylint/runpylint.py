@@ -11,7 +11,7 @@ class BlivetLintConfig(PocketLintConfig):
         PocketLintConfig.__init__(self)
 
         self.falsePositives = [FalsePositive(r"BTRFSVolumeDevice._create: Instance of 'DeviceFormat' has no 'label' member"),
-                               FalsePositive(r"Catching an exception which doesn't inherit from BaseException: (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|G)Error$"),
+                               FalsePositive(r"Catching an exception which doesn't inherit from (BaseException|Exception): (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|G)Error$"),
                                FalsePositive(r"Function 'run_program' has no 'called' member"),
                                FalsePositive(r"(PartitioningTestCase|PartitionDeviceTestCase).*: Instance of 'DeviceFormat' has no .* member"),
                                FalsePositive(r"Instance of 'int' has no .* member"),
