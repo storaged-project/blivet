@@ -340,28 +340,28 @@ class LVMVolumeGroupDevice(ContainerDevice):
             for size_spec in pv_sizes:
                 size_spec.pv.format.free += size_spec.size
 
-    def _add_parent(self, member):
-        super(LVMVolumeGroupDevice, self)._add_parent(member)
+    def _add_parent(self, parent):
+        super(LVMVolumeGroupDevice, self)._add_parent(parent)
 
-        if (self.exists and member.format.exists and
+        if (self.exists and parent.format.exists and
                 len(self.parents) + 1 == self.pv_count):
             self._complete = True
 
         # this PV object is just being added so it has all its space available
         # (adding LVs will eat that space later)
-        if not member.format.exists:
-            member.format.free = self._get_pv_usable_space(member)
+        if not parent.format.exists:
+            parent.format.free = self._get_pv_usable_space(parent)
 
-    def _remove_parent(self, member):
+    def _remove_parent(self, parent):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
         #     being possible to _temporarily_ overcommit the VG.
         #
         #     Maybe remove_member could be a wrapper with the checks and the
         #     devicefactory could call the _ versions to bypass the checks.
-        super(LVMVolumeGroupDevice, self)._remove_parent(member)
-        member.format.free = None
-        member.format.container_uuid = None
+        super(LVMVolumeGroupDevice, self)._remove_parent(parent)
+        parent.format.free = None
+        parent.format.container_uuid = None
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
