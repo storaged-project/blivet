@@ -1272,7 +1272,7 @@ class LVMFactory(DeviceFactory):
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic container size management
             if self.vg:
-                space += sum([p.size for p in self.vg.parents])
+                space += sum(p.size for p in self.vg.parents)
                 space -= self.vg.free_space
                 # we need to account for the LVM metadata being placed somewhere
                 space += self.vg.lvm_metadata_space
