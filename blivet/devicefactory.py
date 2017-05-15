@@ -1220,9 +1220,15 @@ class LVMFactory(DeviceFactory):
         else:
             super(LVMFactory, self)._handle_no_size()
 
+    @property
+    def _pe_size(self):
+        if self.container:
+            return self.container.pe_size
+        else:
+            return lvm.LVM_PE_SIZE
+
     def _get_device_space(self):
-        # XXX: should respect the real extent size
-        return blockdev.lvm.get_lv_physical_size(self.size, lvm.LVM_PE_SIZE)
+        return blockdev.lvm.get_lv_physical_size(self.size, self._pe_size)
 
     def _get_device_size(self):
         size = self.size
@@ -1261,7 +1267,7 @@ class LVMFactory(DeviceFactory):
 
             # we need to account for the LVM metadata being placed on each disk
             # (and thus taking up to one extent from each disk)
-            space += len(self.disks) * lvm.LVM_PE_SIZE
+            space += len(self.disks) * self._pe_size
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
             if self.container:
@@ -1272,12 +1278,11 @@ class LVMFactory(DeviceFactory):
             log.debug("size bumped to %s to include free disk space", space)
         else:
             # container_size is a request for a fixed size for the container
-            # XXX: should respect the real extent size
-            space += blockdev.lvm.get_lv_physical_size(self.container_size, lvm.LVM_PE_SIZE)
+            space += blockdev.lvm.get_lv_physical_size(self.container_size, self._pe_size)
 
             # we need to account for the LVM metadata being placed on each disk
             # (and thus taking up to one extent from each disk)
-            space += len(self.disks) * lvm.LVM_PE_SIZE
+            space += len(self.disks) * self._pe_size
 
         # this does not apply if a specific container size was requested
         if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
@@ -1287,13 +1292,12 @@ class LVMFactory(DeviceFactory):
                 # The member count here uses the container's current member set
                 # since that's the basis for the current device's disk space
                 # usage.
-                # XXX: should respect the real extent size
-                space -= blockdev.lvm.round_size_to_pe(self.device.size, lvm.LVM_PE_SIZE)
+                space -= blockdev.lvm.round_size_to_pe(self.device.size, self._pe_size)
                 log.debug("size cut to %s to omit old device space", space)
 
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
-            space += lvm.LVM_PE_SIZE * len(self.disks)
+            space += self._pe_size * len(self.disks)
 
         return space
 
@@ -1457,11 +1461,6 @@ class LVMThinPFactory(LVMFactory):
             size = free
 
         return size
-
-    @property
-    def _pesize(self):
-        """ The extent size of our vg or the default if we have no vg. """
-        return getattr(self.container, "pe_size", lvm.LVM_PE_SIZE)
 
     def _get_total_space(self):
         """ Calculate and return the total disk space needed for the vg.
