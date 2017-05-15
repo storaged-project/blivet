@@ -19,7 +19,8 @@ class BlivetLintConfig(PocketLintConfig):
                                FalsePositive(r"Method 'do_task' is abstract in class 'Task' but is not overridden"),
                                FalsePositive(r"Method 'do_task' is abstract in class 'UnimplementedTask' but is not overridden"),
                                FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
-                               FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$")
+                               FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
+                               FalsePositive(r"Parameters differ from overridden 'do_task' method$")
                                ]
 
     @property
