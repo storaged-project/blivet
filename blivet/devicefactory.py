@@ -1280,6 +1280,13 @@ class LVMFactory(DeviceFactory):
                 # we need to account for the LVM metadata being placed on each disk
                 # (and thus taking up to one extent from each disk)
                 space += len(self.disks) * self._pe_size
+
+            space += self._get_device_space()
+            log.debug("size bumped to %s to include new device space", space)
+            if self.device:
+                space -= blockdev.lvm.round_size_to_pe(self.device.size, self._pe_size)
+                log.debug("size cut to %s to omit old device space", space)
+
         elif self.container_size == SIZE_POLICY_MAX:
             # grow the container as large as possible
             if self.vg:
@@ -1295,17 +1302,6 @@ class LVMFactory(DeviceFactory):
             # we need to account for the LVM metadata being placed on each disk
             # (and thus taking up to one extent from each disk)
             space += len(self.disks) * self._pe_size
-
-        # this does not apply if a specific container size was requested
-        if self.container_size in [SIZE_POLICY_AUTO, SIZE_POLICY_MAX]:
-            space += self._get_device_space()
-            log.debug("size bumped to %s to include new device space", space)
-            if self.device and self.container_size == SIZE_POLICY_AUTO:
-                # The member count here uses the container's current member set
-                # since that's the basis for the current device's disk space
-                # usage.
-                space -= blockdev.lvm.round_size_to_pe(self.device.size, self._pe_size)
-                log.debug("size cut to %s to omit old device space", space)
 
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
