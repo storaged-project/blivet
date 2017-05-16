@@ -330,6 +330,8 @@ def remove_new_partitions(disks, remove, all_partitions):
     log.debug("removing all non-preexisting partitions %s from disk(s) %s",
               ["%s(id %d)" % (p.name, p.id) for p in remove],
               [d.name for d in disks])
+
+    removed_logical = []
     for part in remove:
         if part.parted_partition and part.disk in disks:
             if part.exists:
@@ -340,16 +342,38 @@ def remove_new_partitions(disks, remove, all_partitions):
                 # these get removed last
                 continue
 
+            if part.is_logical:
+                removed_logical.append(part)
             part.disk.format.parted_disk.removePartition(part.parted_partition)
             part.parted_partition = None
             part.disk = None
 
+    def _remove_extended(disk, extended):
+        """ We may want to remove extended partition from the disk too.
+            This should happen if we don't have the PartitionDevice object
+            or in installer_mode after we've removed all logical paritions.
+        """
+
+        if extended and not disk.format.logical_partitions:
+            if extended not in (p.parted_partition for p in all_partitions):
+                # extended partition is not in all_partitions -> remove it
+                return True
+            else:
+                if not flags.installer_mode:
+                    # we are not in installer mode -> do not remove empty extended
+                    return False
+                else:
+                    if any(l.disk == extended.disk for l in removed_logical):
+                        # we removed all logical paritions from this extended
+                        # so we no longer need this one
+                        return True
+                    else:
+                        return False
+
     for disk in disks:
         # remove empty extended so it doesn't interfere
         extended = disk.format.extended_partition
-        if extended and not disk.format.logical_partitions and \
-           (not flags.keep_empty_ext_partitions or
-                extended not in (p.parted_partition for p in all_partitions)):
+        if _remove_extended(disk, extended):
             log.debug("removing empty extended partition from %s", disk.name)
             disk.format.parted_disk.removePartition(extended)
 
