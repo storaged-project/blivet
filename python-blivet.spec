@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.62
+Version: 0.61.15.63
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue May 16 2017 David Lehman <dlehman@redhat.com> - 0.61.15.63-1
+- Use the uuid module instead of the uuidgen tool (vpodzime)
+  Related: rhbz#1413942
+- Respect thin pool's min size when setting its req_size (vpodzime)
+  Resolves: rhbz#1449963
+- Add RAID chunk size to the generated kickstart file (vtrefny)
+  Resolves: rhbz#1447343
+
 * Wed May 03 2017 David Lehman <dlehman@redhat.com> - 0.61.15.62-1
 - Don't pass unused mountpoint dict to preCommitFixup. (dlehman)
   Related: rhbz#1184945
