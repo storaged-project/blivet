@@ -1169,13 +1169,13 @@ class LVMInternalLogicalVolumeMixin(object):
         pass
 
     # internal LVs follow different rules limitting size
-    def _set_size(self, size):
-        if not isinstance(size, Size):
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
         if not self.takes_extra_space:
-            if size <= self.parent_lv.size:  # pylint: disable=no-member
-                self._size = size  # pylint: disable=attribute-defined-outside-init
+            if newsize <= self.parent_lv.size:  # pylint: disable=no-member
+                self._size = newsize  # pylint: disable=attribute-defined-outside-init
             else:
                 raise ValueError("Internal LV cannot be bigger than its parent LV")
         else:
@@ -1638,15 +1638,15 @@ class LVMThinLogicalVolumeMixin(object):
     def vg_space_used(self):
         return Size(0)    # the pool's size is already accounted for in the vg
 
-    def _set_size(self, size):
-        if not isinstance(size, Size):
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        size = self.vg.align(size)
-        size = self.vg.align(util.numeric_type(size))
+        newsize = self.vg.align(newsize)
+        newsize = self.vg.align(util.numeric_type(newsize))
         # just make sure the size is set (no VG size/free space check needed for
         # a thin LV)
-        DMDevice._set_size(self, size)
+        DMDevice._set_size(self, newsize)
 
     def _pre_create(self):
         # skip LVMLogicalVolumeDevice's _pre_create() method as it checks for a
@@ -1890,20 +1890,20 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         return super().vg
 
     @type_specific
-    def _set_size(self, size):
-        if not isinstance(size, Size):
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
             raise ValueError("new size must be of type Size")
 
-        size = self.vg.align(size)
-        log.debug("trying to set lv %s size to %s", self.name, size)
+        newsize = self.vg.align(newsize)
+        log.debug("trying to set lv %s size to %s", self.name, newsize)
         # Don't refuse to set size if we think there's not enough space in the
         # VG for an existing LV, since it's existence proves there is enough
         # space for it. A similar reasoning applies to shrinking the LV.
-        if not self.exists and size > self.size and size > self.vg.free_space + self.vg_space_used:
-            log.error("failed to set size: %s short", size - (self.vg.free_space + self.vg_space_used))
+        if not self.exists and newsize > self.size and newsize > self.vg.free_space + self.vg_space_used:
+            log.error("failed to set size: %s short", newsize - (self.vg.free_space + self.vg_space_used))
             raise ValueError("not enough free space in volume group")
 
-        LVMLogicalVolumeBase._set_size(self, size)
+        LVMLogicalVolumeBase._set_size(self, newsize)
 
     size = property(StorageDevice._get_size, _set_size)
 
