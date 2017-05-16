@@ -1076,19 +1076,15 @@ class XFS(FS):
            Raises an FSError if the UUID can not be set.
         """
 
+        # try to mount and umount the FS first to make sure it is clean
+        tmpdir = tempfile.mkdtemp(prefix="fs-tmp-mnt")
         try:
-            super().write_uuid()
-        except FSWriteUUIDError:
-            # try to mount and umount the FS to make sure it is clean
-            tmpdir = tempfile.mkdtemp(prefix="fs-tmp-mnt")
-            try:
-                self.mount(mountpoint=tmpdir, options="nouuid")
-                self.unmount()
-            finally:
-                os.rmdir(tmpdir)
+            self.mount(mountpoint=tmpdir, options="nouuid")
+            self.unmount()
+        finally:
+            os.rmdir(tmpdir)
 
-            # and now try one more time
-            super().write_uuid()
+        super().write_uuid()
 
 register_device_format(XFS)
 

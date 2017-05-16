@@ -37,7 +37,7 @@ from .static_data import luks_data
 from pykickstart.constants import AUTOPART_TYPE_BTRFS, AUTOPART_TYPE_LVM, AUTOPART_TYPE_LVM_THINP, AUTOPART_TYPE_PLAIN
 
 import logging
-log = logging.getLogger("anaconda")
+log = logging.getLogger("anaconda.blivet.autopart")
 
 # maximum ratio of swap size to disk size (10 %)
 MAX_SWAP_DISK_RATIO = Decimal('0.1')
