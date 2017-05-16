@@ -60,7 +60,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  member_devices=None, total_devices=None,
                  uuid=None, fmt=None, exists=False, metadata_version=None,
-                 parents=None, sysfs_path=''):
+                 parents=None, sysfs_path='', chunk_size=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -74,6 +74,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfs_path: sysfs device path
             :type sysfs_path: str
+            :keyword chunk_size: chunk size for the device
+            :type chunk_size: :class:`~.size.Size`
             :keyword uuid: the device UUID
             :type uuid: str
 
@@ -127,7 +129,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self._total_devices = util.numeric_type(total_devices)
         self.member_devices = util.numeric_type(member_devices)
 
-        self.chunk_size = mdraid.MD_CHUNK_SIZE
+        if self.exists:
+            self._chunk_size = self.read_chunk_size()
+        else:
+            self._chunk_size = chunk_size or mdraid.MD_CHUNK_SIZE
 
         if not self.exists and not isinstance(metadata_version, str):
             self.metadata_version = "default"
@@ -186,6 +191,34 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise errors.DeviceError(e)
 
         self._level = level
+
+    @property
+    def chunk_size(self):
+        if self.exists and self._chunk_size == Size(0):
+            self._chunk_size = self.read_chunk_size()
+        return self._chunk_size
+
+    @chunk_size.setter
+    def chunk_size(self, newsize):
+        if not isinstance(newsize, Size):
+            raise ValueError("new chunk size must be of type Size")
+
+        if newsize % Size("4 KiB") != Size(0):
+            raise ValueError("new chunk size must be multiple of 4 KiB")
+
+        if self.exists:
+            raise ValueError("cannot set chunk size for an existing device")
+
+        self._chunk_size = newsize
+
+    def read_chunk_size(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfs_path=self.sysfs_path)
+        chunk_size = Size(0)
+        if self.status:
+            chunk_size = Size(util.get_sysfs_attr(self.sysfs_path, "md/chunk_size") or "0")
+
+        return chunk_size
 
     @property
     def create_bitmap(self):
@@ -511,7 +544,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             level = str(self.level)
         blockdev.md.create(self.path, level, disks, spares,
                            version=self.metadata_version,
-                           bitmap=self.create_bitmap)
+                           bitmap=self.create_bitmap,
+                           chunk_size=int(self.chunk_size))
         udev.settle()
 
     def _remove(self, member):
@@ -573,6 +607,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         data.members = ["raid.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         data.device = self.name
+
+        if not self.exists:
+            # chunk size is meaningless on RAID1, so do not add our default value
+            # to generated kickstart
+            if self.level != raid.RAID1:
+                data.chunk_size = self.chunk_size.convert_to("KiB")
 
 
 class MDContainerDevice(MDRaidArrayDevice):
