@@ -1305,7 +1305,7 @@ class LVMFactory(DeviceFactory):
 
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
-            space += self._pe_size * len(self.disks)
+            space += get_format("luks").min_size * len(self.disks)
 
         return space
 
