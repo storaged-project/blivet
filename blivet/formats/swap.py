@@ -141,12 +141,12 @@ class SwapSpace(DeviceFormat):
 
         return opts
 
-    def _set_options(self, opts):
-        if not opts:
+    def _set_options(self, options):
+        if not options:
             self.priority = None
             return
 
-        for option in opts.split(","):
+        for option in options.split(","):
             (opt, equals, arg) = option.partition("=")
             if equals and opt == "pri":
                 try:
