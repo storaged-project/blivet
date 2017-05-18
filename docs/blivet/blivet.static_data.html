@@ -60,17 +60,142 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="blivet-static-data-luks-data-module">
-<h2>blivet.static_data.luks_data module<a class="headerlink" href="#blivet-static-data-luks-data-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-blivet.static_data.luks_data">
+<span id="blivet-static-data-luks-data-module"></span><h2>blivet.static_data.luks_data module<a class="headerlink" href="#module-blivet.static_data.luks_data" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.static_data.luks_data.LUKS_Data">
+<em class="property">class </em><code class="descclassname">blivet.static_data.luks_data.</code><code class="descname">LUKS_Data</code><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Class to be used as a singleton.
+Maintains the LUKS data.</p>
+<dl class="method">
+<dt id="blivet.static_data.luks_data.LUKS_Data.add_passphrase">
+<code class="descname">add_passphrase</code><span class="sig-paren">(</span><em>passphrase</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.add_passphrase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.luks_data.LUKS_Data.add_passphrases">
+<code class="descname">add_passphrases</code><span class="sig-paren">(</span><em>passphrases</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.add_passphrases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.luks_data.LUKS_Data.clear_passphrases">
+<code class="descname">clear_passphrases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.clear_passphrases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.static_data.luks_data.LUKS_Data.encryption_passphrase">
+<code class="descname">encryption_passphrase</code><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.encryption_passphrase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.static_data.luks_data.LUKS_Data.luks_devs">
+<code class="descname">luks_devs</code><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.luks_devs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.static_data.luks_data.LUKS_Data.min_entropy">
+<code class="descname">min_entropy</code><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.min_entropy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="blivet.static_data.luks_data.LUKS_Data.passphrases">
+<code class="descname">passphrases</code><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.passphrases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.luks_data.LUKS_Data.save_passphrase">
+<code class="descname">save_passphrase</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.luks_data.LUKS_Data.save_passphrase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a device&#8217;s LUKS passphrase in case of reset.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="blivet-static-data-lvm-info-module">
-<h2>blivet.static_data.lvm_info module<a class="headerlink" href="#blivet-static-data-lvm-info-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-blivet.static_data.lvm_info">
+<span id="blivet-static-data-lvm-info-module"></span><h2>blivet.static_data.lvm_info module<a class="headerlink" href="#module-blivet.static_data.lvm_info" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.static_data.lvm_info.LVsInfo">
+<em class="property">class </em><code class="descclassname">blivet.static_data.lvm_info.</code><code class="descname">LVsInfo</code><a class="headerlink" href="#blivet.static_data.lvm_info.LVsInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Class to be used as a singleton.
+Maintains the LVs cache.</p>
+<dl class="attribute">
+<dt id="blivet.static_data.lvm_info.LVsInfo.cache">
+<code class="descname">cache</code><a class="headerlink" href="#blivet.static_data.lvm_info.LVsInfo.cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.lvm_info.LVsInfo.drop_cache">
+<code class="descname">drop_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.lvm_info.LVsInfo.drop_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="blivet.static_data.lvm_info.PVsInfo">
+<em class="property">class </em><code class="descclassname">blivet.static_data.lvm_info.</code><code class="descname">PVsInfo</code><a class="headerlink" href="#blivet.static_data.lvm_info.PVsInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Class to be used as a singleton.
+Maintains the PVs cache.</p>
+<dl class="attribute">
+<dt id="blivet.static_data.lvm_info.PVsInfo.cache">
+<code class="descname">cache</code><a class="headerlink" href="#blivet.static_data.lvm_info.PVsInfo.cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.lvm_info.PVsInfo.drop_cache">
+<code class="descname">drop_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.lvm_info.PVsInfo.drop_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="blivet-static-data-mpath-info-module">
-<h2>blivet.static_data.mpath_info module<a class="headerlink" href="#blivet-static-data-mpath-info-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-blivet.static_data.mpath_info">
+<span id="blivet-static-data-mpath-info-module"></span><h2>blivet.static_data.mpath_info module<a class="headerlink" href="#module-blivet.static_data.mpath_info" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="blivet.static_data.mpath_info.MpathMembers">
+<em class="property">class </em><code class="descclassname">blivet.static_data.mpath_info.</code><code class="descname">MpathMembers</code><a class="headerlink" href="#blivet.static_data.mpath_info.MpathMembers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A cache for querying multipath member devices</p>
+<dl class="method">
+<dt id="blivet.static_data.mpath_info.MpathMembers.drop_cache">
+<code class="descname">drop_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.mpath_info.MpathMembers.drop_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.mpath_info.MpathMembers.is_mpath_member">
+<code class="descname">is_mpath_member</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.mpath_info.MpathMembers.is_mpath_member" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the given device is a member of some multipath mapping or not.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; path of the device to query</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="blivet.static_data.mpath_info.MpathMembers.update_cache">
+<code class="descname">update_cache</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.mpath_info.MpathMembers.update_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the cache with the given device (checks and adds it is an mpath member)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; path of the device to check and add</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-blivet.static_data">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.static_data" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -84,10 +209,10 @@
   <ul>
 <li><a class="reference internal" href="#">blivet.static_data package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#blivet-static-data-luks-data-module">blivet.static_data.luks_data module</a></li>
-<li><a class="reference internal" href="#blivet-static-data-lvm-info-module">blivet.static_data.lvm_info module</a></li>
-<li><a class="reference internal" href="#blivet-static-data-mpath-info-module">blivet.static_data.mpath_info module</a></li>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-blivet.static_data.luks_data">blivet.static_data.luks_data module</a></li>
+<li><a class="reference internal" href="#module-blivet.static_data.lvm_info">blivet.static_data.lvm_info module</a></li>
+<li><a class="reference internal" href="#module-blivet.static_data.mpath_info">blivet.static_data.mpath_info module</a></li>
+<li><a class="reference internal" href="#module-blivet.static_data">Module contents</a></li>
 </ul>
 </li>
 </ul>
