@@ -1309,7 +1309,7 @@ class TmpFS(NoDevFS):
         """ A filesystem is created automatically once tmpfs is mounted. """
         pass
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ The device and its filesystem are automatically destroyed once the
         mountpoint is unmounted.
         """
@@ -1365,7 +1365,7 @@ class TmpFS(NoDevFS):
         """ All the tmpfs mounts use the same "tmpfs" device. """
         return self._type
 
-    def _set_device(self, value):
+    def _set_device(self, devspec):
         # the DeviceFormat parent class does a
         # self.device = kwargs["device"]
         # assignment, so we need a setter for the

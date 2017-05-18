@@ -311,13 +311,13 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                                    chunk_size=Size(1),
                                    superblock_size_func=lambda x: 0)
 
-    def _remove_parent(self, member):
+    def _remove_parent(self, parent):
         levels = (l for l in (self.data_level, self.metadata_level) if l)
         for l in levels:
-            error_msg = self._validate_parent_removal(l, member)
+            error_msg = self._validate_parent_removal(l, parent)
             if error_msg:
                 raise errors.DeviceError(error_msg)
-        super(BTRFSVolumeDevice, self)._remove_parent(member)
+        super(BTRFSVolumeDevice, self)._remove_parent(parent)
 
     def _add_subvolume(self, vol):
         if vol.name in [v.name for v in self.subvolumes]:

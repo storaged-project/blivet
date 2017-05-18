@@ -20,7 +20,7 @@ class ParentListTestCase(unittest.TestCase):
         self.assertEqual(pl[:], pl.items)
 
         with self.assertRaises(TypeError):
-            pl[2] = 99
+            pl[2] = 99  # pylint: disable=unsupported-assignment-operation
 
         newval = 99
         self.assertEqual(99 in pl, False)

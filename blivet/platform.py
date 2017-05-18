@@ -198,9 +198,6 @@ class X86(Platform):
     _boot_stage1_missing_error = N_("You must include at least one MBR- or "
                                     "GPT-formatted disk as an install target.")
 
-    def __init__(self):
-        super(X86, self).__init__()
-
     def set_platform_bootloader_reqs(self):
         """Return the default platform-specific partitioning information."""
         ret = Platform.set_platform_bootloader_reqs(self)

@@ -166,7 +166,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
         if root and root != '/':
             os.chroot(root)
 
-    with program_log_lock:
+    with program_log_lock:  # pylint: disable=not-context-manager
         program_log.info("Running... %s", " ".join(argv))
 
         env = os.environ.copy()
