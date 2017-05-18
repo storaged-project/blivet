@@ -109,7 +109,7 @@ class EddTestCase(unittest.TestCase):
                                 "../../tests/devicelibs_test/edd_data/",
                                 name)
 
-    def debug(self, *args):
+    def edd_debug(self, *args):
         fmt = "edd_test: "
         if len(args) >= 0:
             fmt += args[0]
@@ -135,7 +135,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.collect_edd_data(root=self.root("sata_usb"))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
              '/sys/firmware/edd/int13_dev80/'),
@@ -174,7 +174,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.get_edd_dict(devices, root=self.root("sata_usb"))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         lib.assertVerboseEqual(len(edd_dict), 2)
         lib.assertVerboseEqual(edd_dict["sda"], 0x80)
         lib.assertVerboseEqual(edd_dict["sdb"], 0x81)
@@ -235,7 +235,7 @@ class EddTestCase(unittest.TestCase):
                                sysfspath="/sys/firmware/edd/int13_dev85/"),
         }
         edd_dict = edd.collect_edd_data(root=self.root('absurd_virt'))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         lib.assertVerboseEqual(len(edd_dict), 6)
         lib.assertVerboseEqual(fakeedd[0x80], edd_dict[0x80])
         lib.assertVerboseEqual(fakeedd[0x81], edd_dict[0x81])
@@ -313,7 +313,7 @@ class EddTestCase(unittest.TestCase):
                    )
 
         edd_dict = edd.get_edd_dict(devices, root=self.root("absurd_virt"))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         lib.assertVerboseEqual(len(edd_dict), 6)
         # this order is *completely unlike* the order in virt-manager,
         # but it does appear to be what EDD is displaying.
@@ -419,7 +419,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.collect_edd_data(root=self.root('strawberry_mountain'))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
              '/sys/firmware/edd/int13_dev80/'),
@@ -481,7 +481,7 @@ class EddTestCase(unittest.TestCase):
 
         edd_dict = edd.get_edd_dict(devices,
                                     root=self.root('strawberry_mountain'))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: data extracted from 0x%x:%r", 0x80, fakeedd[0x80]),
             ("edd: data extracted from 0x%x:%r", 0x81, fakeedd[0x81]),
@@ -563,7 +563,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.collect_edd_data(root=self.root("bad_sata_virt"))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
              '/sys/firmware/edd/int13_dev80/'),
@@ -605,7 +605,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.get_edd_dict(devices, root=self.root('bad_sata_virt'))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
              '/sys/firmware/edd/int13_dev80/'),
@@ -686,7 +686,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.collect_edd_data(root=self.root('mostly_fixed_virt'))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
              '/sys/firmware/edd/int13_dev80/'),
@@ -745,7 +745,7 @@ class EddTestCase(unittest.TestCase):
         }
 
         edd_dict = edd.get_edd_dict(devices, root=self.root('mostly_fixed_virt'))
-        self.debug('edd_dict: %s', edd_dict)
+        self.edd_debug('edd_dict: %s', edd_dict)
         debugs = [
             ("edd: found device 0x%x at %s", 0x80,
              '/sys/firmware/edd/int13_dev80/'),

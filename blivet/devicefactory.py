@@ -1662,7 +1662,7 @@ class MDFactory(DeviceFactory):
     def get_container(self, device=None, name=None, allow_existing=False):
         return self.raw_device
 
-    def _create_container(self, *args, **kwargs):
+    def _create_container(self):
         pass
 
 

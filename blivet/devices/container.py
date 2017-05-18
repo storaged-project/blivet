@@ -107,24 +107,24 @@ class ContainerDevice(StorageDevice):
 
         return None
 
-    def _add_parent(self, member):
-        """ Add a member device to the container.
+    def _add_parent(self, parent):
+        """ Add a parent device to the container.
 
-            :param member: the member device to add
-            :type member: :class:`.StorageDevice`
+            :param parent: the parent device to add
+            :type parent: :class:`.StorageDevice`
 
             This operates on the in-memory model and does not alter disk
             contents at all.
         """
-        log_method_call(self, self.name, member=member.name)
-        if not isinstance(member.format, self.format_class):
-            raise ValueError("member has wrong format")
+        log_method_call(self, self.name, parent=parent.name)
+        if not isinstance(parent.format, self.format_class):
+            raise ValueError("parent has wrong format")
 
-        error = self._verify_member_uuid(member)
+        error = self._verify_member_uuid(parent)
         if error:
-            raise ValueError("cannot add member with mismatched UUID")
+            raise ValueError("cannot add parent with mismatched UUID")
 
-        super(ContainerDevice, self)._add_parent(member)
+        super(ContainerDevice, self)._add_parent(parent)
 
     @abc.abstractmethod
     def _add(self, member):
