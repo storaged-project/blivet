@@ -1045,7 +1045,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         key = "devices.%d.%s" % (time.time(), suffix)
         with contextlib.closing(shelve.open(self._dump_file)) as shelf:
             try:
-                shelf[key] = [d.dict for d in self.devices]
+                shelf[key] = [d.dict for d in self.devices]  # pylint: disable=unsupported-assignment-operation
             except AttributeError:
                 log_exception_info()
 
