@@ -1,0 +1,38 @@
+blivet.static_data package
+==========================
+
+Submodules
+----------
+
+blivet.static_data.luks_data module
+-----------------------------------
+
+.. automodule:: blivet.static_data.luks_data
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.static_data.lvm_info module
+----------------------------------
+
+.. automodule:: blivet.static_data.lvm_info
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.static_data.mpath_info module
+------------------------------------
+
+.. automodule:: blivet.static_data.mpath_info
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: blivet.static_data
+    :members:
+    :undoc-members:
+    :show-inheritance:

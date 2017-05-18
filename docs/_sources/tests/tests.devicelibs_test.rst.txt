@@ -1,0 +1,38 @@
+tests.devicelibs_test package
+=============================
+
+Submodules
+----------
+
+tests.devicelibs_test.edd_test module
+-------------------------------------
+
+.. automodule:: tests.devicelibs_test.edd_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.devicelibs_test.mdraid_test module
+----------------------------------------
+
+.. automodule:: tests.devicelibs_test.mdraid_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.devicelibs_test.raid_test module
+--------------------------------------
+
+.. automodule:: tests.devicelibs_test.raid_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: tests.devicelibs_test
+    :members:
+    :undoc-members:
+    :show-inheritance:

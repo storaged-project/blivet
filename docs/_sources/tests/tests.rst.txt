@@ -1,0 +1,168 @@
+tests package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tests.devicelibs_test
+    tests.devices_test
+    tests.formats_test
+    tests.tasks_test
+
+Submodules
+----------
+
+tests.action_test module
+------------------------
+
+.. automodule:: tests.action_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.blivet_test module
+------------------------
+
+.. automodule:: tests.blivet_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.clearpart_test module
+---------------------------
+
+.. automodule:: tests.clearpart_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.devicefactory_test module
+-------------------------------
+
+.. automodule:: tests.devicefactory_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.devicetree_test module
+----------------------------
+
+.. automodule:: tests.devicetree_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.events_test module
+------------------------
+
+.. automodule:: tests.events_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.imagebackedtestcase module
+--------------------------------
+
+.. automodule:: tests.imagebackedtestcase
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.lib module
+----------------
+
+.. automodule:: tests.lib
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.loopbackedtestcase module
+-------------------------------
+
+.. automodule:: tests.loopbackedtestcase
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.parentlist_test module
+----------------------------
+
+.. automodule:: tests.parentlist_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.partitioning_test module
+------------------------------
+
+.. automodule:: tests.partitioning_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.populator_test module
+---------------------------
+
+.. automodule:: tests.populator_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.size_test module
+----------------------
+
+.. automodule:: tests.size_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.storagetestcase module
+----------------------------
+
+.. automodule:: tests.storagetestcase
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.tsort_test module
+-----------------------
+
+.. automodule:: tests.tsort_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.udev_test module
+----------------------
+
+.. automodule:: tests.udev_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.unsupported_disklabel_test module
+---------------------------------------
+
+.. automodule:: tests.unsupported_disklabel_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tests.util_test module
+----------------------
+
+.. automodule:: tests.util_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

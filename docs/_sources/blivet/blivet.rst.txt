@@ -1,0 +1,235 @@
+blivet package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    blivet.devicelibs
+    blivet.devices
+    blivet.events
+    blivet.formats
+    blivet.populator
+    blivet.static_data
+    blivet.tasks
+
+Submodules
+----------
+
+blivet.actionlist module
+------------------------
+
+.. automodule:: blivet.actionlist
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.arch module
+------------------
+
+.. automodule:: blivet.arch
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.autopart module
+----------------------
+
+.. automodule:: blivet.autopart
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.blivet module
+--------------------
+
+.. automodule:: blivet.blivet
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.callbacks module
+-----------------------
+
+.. automodule:: blivet.callbacks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.deviceaction module
+--------------------------
+
+.. automodule:: blivet.deviceaction
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devicefactory module
+---------------------------
+
+.. automodule:: blivet.devicefactory
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devicetree module
+------------------------
+
+.. automodule:: blivet.devicetree
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.errors module
+--------------------
+
+.. automodule:: blivet.errors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.fcoe module
+------------------
+
+.. automodule:: blivet.fcoe
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.flags module
+-------------------
+
+.. automodule:: blivet.flags
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.i18n module
+------------------
+
+.. automodule:: blivet.i18n
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.iscsi module
+-------------------
+
+.. automodule:: blivet.iscsi
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.mounts module
+--------------------
+
+.. automodule:: blivet.mounts
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.osinstall module
+-----------------------
+
+.. automodule:: blivet.osinstall
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.partitioning module
+--------------------------
+
+.. automodule:: blivet.partitioning
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.partspec module
+----------------------
+
+.. automodule:: blivet.partspec
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.platform module
+----------------------
+
+.. automodule:: blivet.platform
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.safe_dbus module
+-----------------------
+
+.. automodule:: blivet.safe_dbus
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.size module
+------------------
+
+.. automodule:: blivet.size
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.storage_log module
+-------------------------
+
+.. automodule:: blivet.storage_log
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.threads module
+---------------------
+
+.. automodule:: blivet.threads
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tsort module
+-------------------
+
+.. automodule:: blivet.tsort
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.udev module
+------------------
+
+.. automodule:: blivet.udev
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.util module
+------------------
+
+.. automodule:: blivet.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.zfcp module
+------------------
+
+.. automodule:: blivet.zfcp
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: blivet
+    :members:
+    :undoc-members:
+    :show-inheritance:

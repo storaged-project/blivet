@@ -1,0 +1,150 @@
+blivet.tasks package
+====================
+
+Submodules
+----------
+
+blivet.tasks.availability module
+--------------------------------
+
+.. automodule:: blivet.tasks.availability
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.dfresize module
+----------------------------
+
+.. automodule:: blivet.tasks.dfresize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsck module
+------------------------
+
+.. automodule:: blivet.tasks.fsck
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsinfo module
+--------------------------
+
+.. automodule:: blivet.tasks.fsinfo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fslabeling module
+------------------------------
+
+.. automodule:: blivet.tasks.fslabeling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsminsize module
+-----------------------------
+
+.. automodule:: blivet.tasks.fsminsize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsmkfs module
+--------------------------
+
+.. automodule:: blivet.tasks.fsmkfs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsmount module
+---------------------------
+
+.. automodule:: blivet.tasks.fsmount
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsreadlabel module
+-------------------------------
+
+.. automodule:: blivet.tasks.fsreadlabel
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fsresize module
+----------------------------
+
+.. automodule:: blivet.tasks.fsresize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fssize module
+--------------------------
+
+.. automodule:: blivet.tasks.fssize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fssync module
+--------------------------
+
+.. automodule:: blivet.tasks.fssync
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fstask module
+--------------------------
+
+.. automodule:: blivet.tasks.fstask
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.fswritelabel module
+--------------------------------
+
+.. automodule:: blivet.tasks.fswritelabel
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.lukstasks module
+-----------------------------
+
+.. automodule:: blivet.tasks.lukstasks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.pvtask module
+--------------------------
+
+.. automodule:: blivet.tasks.pvtask
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.tasks.task module
+------------------------
+
+.. automodule:: blivet.tasks.task
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: blivet.tasks
+    :members:
+    :undoc-members:
+    :show-inheritance:

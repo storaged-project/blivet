@@ -1,0 +1,166 @@
+blivet.devices package
+======================
+
+Submodules
+----------
+
+blivet.devices.btrfs module
+---------------------------
+
+.. automodule:: blivet.devices.btrfs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.cache module
+---------------------------
+
+.. automodule:: blivet.devices.cache
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.container module
+-------------------------------
+
+.. automodule:: blivet.devices.container
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.device module
+----------------------------
+
+.. automodule:: blivet.devices.device
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.disk module
+--------------------------
+
+.. automodule:: blivet.devices.disk
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.dm module
+------------------------
+
+.. automodule:: blivet.devices.dm
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.file module
+--------------------------
+
+.. automodule:: blivet.devices.file
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.lib module
+-------------------------
+
+.. automodule:: blivet.devices.lib
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.loop module
+--------------------------
+
+.. automodule:: blivet.devices.loop
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.luks module
+--------------------------
+
+.. automodule:: blivet.devices.luks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.lvm module
+-------------------------
+
+.. automodule:: blivet.devices.lvm
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.md module
+------------------------
+
+.. automodule:: blivet.devices.md
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.network module
+-----------------------------
+
+.. automodule:: blivet.devices.network
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.nfs module
+-------------------------
+
+.. automodule:: blivet.devices.nfs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.nodev module
+---------------------------
+
+.. automodule:: blivet.devices.nodev
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.optical module
+-----------------------------
+
+.. automodule:: blivet.devices.optical
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.partition module
+-------------------------------
+
+.. automodule:: blivet.devices.partition
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.raid module
+--------------------------
+
+.. automodule:: blivet.devices.raid
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+blivet.devices.storage module
+-----------------------------
+
+.. automodule:: blivet.devices.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: blivet.devices
+    :members:
+    :undoc-members:
+    :show-inheritance:
