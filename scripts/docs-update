@@ -1,0 +1,92 @@
+#!/usr/bin/python3
+
+import argparse
+import shutil
+import subprocess
+import tempfile
+
+WEB_BRANCH = 'gh-pages'  # website branch
+
+
+def run_command(command, cwd=None):
+    res = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, cwd=cwd)
+
+    out, err = res.communicate()
+    if res.returncode != 0:
+        output = out.decode().strip() + '\n' + err.decode().strip()
+    else:
+        output = out.decode().strip()
+    return (res.returncode, output)
+
+
+def main(blivet_branch):
+    temp_dir = tempfile.TemporaryDirectory()
+
+    # checkout to the "docs" branch and build the documentation
+    ret, out = run_command(command='git checkout %s' % blivet_branch)
+    if ret != 0:
+        print('Failed to checkout to %s:\n%s' % (blivet_branch, out))
+        return
+
+    ret, out = run_command(command='make html', cwd='doc')
+    if ret != 0:
+        print('Documentation generation failed:\n%s' % out)
+        return
+
+    # and now move the results to temp_dir
+    shutil.move('doc/_build/html/', temp_dir.name)
+
+    # checkout to the website branch
+    ret, out = run_command(command='git checkout %s' % WEB_BRANCH)
+    if ret != 0:
+        print('Failed to checkout to %s:\n%s' % (WEB_BRANCH, out))
+        return
+
+    # clean all local changes and pull upstream
+    ret, out = run_command(command='git clean -f -d')
+    if ret != 0:
+        print('Failed to clean git repo:\n%s' % out)
+        return
+
+    ret, out = run_command(command='git pull --rebase origin %s' % WEB_BRANCH)
+    if ret != 0:
+        print('Failed to pull origin:\n%s' % out)
+        return
+
+    # move new documentation
+    ret, out = run_command(command='cp -R %s/html/* docs/' % temp_dir.name)
+    if ret != 0:
+        print('Failed to copy generated documentation into the repo:\n%s' % out)
+        return
+
+    # and now commit the changes
+    ret, out = run_command(command='git add . && git commit -m "Documentation update"')
+    if ret != 0:
+        print('Failed to commit the changes:\n%s' % out)
+        return
+
+    # show the diff
+    ret, out = run_command(command='git diff-tree --no-commit-id --stat -r HEAD')
+    if ret != 0:
+        print('Failed to show committed changes:\n%s' % out)
+        return
+    print("Commited changes:\n%s" % out)
+
+    answer = input("Is this okay? [y/N]")
+    if answer in ("y", "Y"):
+        ret, out = run_command(command='git push origin %s' % WEB_BRANCH)
+        if ret != 0:
+            print('Failed to push the changes:\n%s' % out)
+            return
+        else:
+            print('Changes pushed to %s' % WEB_BRANCH)
+
+
+if __name__ == '__main__':
+    argparser = argparse.ArgumentParser(description='docs-update')
+    argparser.add_argument(dest='branch', action='store',
+                           help='Branch to create documentation from (e.g. "2.1-release")')
+    args = argparser.parse_args()
+
+    main(args.branch)
