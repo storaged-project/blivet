@@ -26,7 +26,7 @@ def mock_dbus_device(obj_id):
 class DBusBlivetTestCase(TestCase):
     @patch.object(DBusObject, "_init_dbus_object")
     @patch("blivet.dbus.blivet.callbacks")
-    def setUp(self, *args):  # pylint: disable=unused-argument
+    def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         self.dbus_object = DBusBlivet(Mock(name="ObjectManager"))
         self.dbus_object._blivet = Mock()
 
@@ -105,7 +105,7 @@ class DBusBlivetTestCase(TestCase):
 class DBusObjectTestCase(TestCase):
     @patch.object(DBusObject, "_init_dbus_object")
     @patch("blivet.dbus.blivet.callbacks")
-    def setUp(self, *args):  # pylint: disable=unused-argument
+    def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         self.obj = DBusObject(Mock(name="ObjectManager"))
         self.obj._manager.get_object_by_id.return_value = Mock(name="DBusObject", object_path="/an/object/path")
 

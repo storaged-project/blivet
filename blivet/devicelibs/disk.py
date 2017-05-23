@@ -49,7 +49,7 @@ class _LSMDependencyGuard(util.DependencyGuard):
 
     def _check_avail(self):
         global lsm
-        if lsm is None:
+        if lsm is None:  # pylint: disable=used-before-assignment
             try:
                 import lsm  # pylint: disable=redefined-outer-name
             except ImportError:
