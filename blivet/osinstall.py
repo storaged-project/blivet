@@ -1475,7 +1475,7 @@ class InstallerStorage(Blivet):
 
         return self._free_space_snapshot
 
-    def get_free_space(self, disks=None, clear_part_type=None):
+    def get_free_space(self, disks=None, clear_part_type=None):  # pylint: disable=arguments-differ
         """ Return a dict with free space info for each disk.
 
              The dict values are 2-tuples: (disk_free, fs_free). fs_free is
@@ -1498,6 +1498,10 @@ class InstallerStorage(Blivet):
                 The free space values are :class:`~.size.Size` instances.
 
         """
+
+        # FIXME: we should definitely do something with this method -- it takes
+        # different parameters than get_free_space from Blivet and does
+        # different things too
 
         if disks is None:
             disks = self.disks

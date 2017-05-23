@@ -359,8 +359,7 @@ def remove_new_partitions(disks, remove, all_partitions):
                 # extended partition is not in all_partitions -> remove it
                 return True
             else:
-                if not flags.installer_mode:
-                    # we are not in installer mode -> do not remove empty extended
+                if flags.keep_empty_ext_partitions:
                     return False
                 else:
                     if any(l.disk == extended.disk for l in removed_logical):
