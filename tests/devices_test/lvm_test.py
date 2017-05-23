@@ -1,8 +1,8 @@
 # vim:set fileencoding=utf-8
-import test_compat
+import test_compat  # pylint: disable=unused-import
 
 import six
-from six.moves.mock import patch
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
 
 import blivet

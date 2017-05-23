@@ -1,7 +1,7 @@
 # vim:set fileencoding=utf-8
-import test_compat
+import test_compat  # pylint: disable=unused-import
 
-from six.moves.mock import patch, sentinel, DEFAULT
+from six.moves.mock import patch, sentinel, DEFAULT  # pylint: disable=no-name-in-module,import-error
 import six
 import unittest
 

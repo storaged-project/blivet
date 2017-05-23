@@ -1,7 +1,7 @@
-import test_compat
+import test_compat  # pylint: disable=unused-import
 
 import six
-from six.moves.mock import patch, sentinel, PropertyMock
+from six.moves.mock import patch, sentinel, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import unittest
 
 from blivet.errors import DeviceFormatError

@@ -1,6 +1,7 @@
 # vim:set fileencoding=utf-8
-import test_compat
+import test_compat  # pylint: disable=unused-import
 
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import six
 import unittest
 
@@ -13,9 +14,9 @@ import blivet
 
 class DeviceNameTestCase(unittest.TestCase):
     """Test device name validation"""
-    @six.moves.mock.patch.object(StorageDevice, "status", return_value=True)
-    @six.moves.mock.patch.object(StorageDevice, "update_sysfs_path", return_value=None)
-    @six.moves.mock.patch.object(StorageDevice, "read_current_size", return_value=None)
+    @patch.object(StorageDevice, "status", return_value=True)
+    @patch.object(StorageDevice, "update_sysfs_path", return_value=None)
+    @patch.object(StorageDevice, "read_current_size", return_value=None)
     def test_storage_device(self, *patches):  # pylint: disable=unused-argument
         # Check that / and NUL are rejected along with . and ..
         good_names = ['sda1', '1sda', 'good-name', 'cciss/c0d0']

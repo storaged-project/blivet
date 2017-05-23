@@ -1,7 +1,7 @@
-import test_compat
+import test_compat  # pylint: disable=unused-import
 
 import parted
-from six.moves import mock
+from six.moves import mock  # pylint: disable=no-name-in-module,import-error
 import unittest
 
 import blivet

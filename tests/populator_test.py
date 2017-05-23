@@ -1,8 +1,8 @@
-import test_compat
+import test_compat  # pylint: disable=unused-import
 
 import gi
 import os
-from six.moves.mock import call, patch, sentinel, Mock, PropertyMock
+from six.moves.mock import call, patch, sentinel, Mock, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import six
 import unittest
 
