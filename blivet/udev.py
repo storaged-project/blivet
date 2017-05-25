@@ -24,36 +24,56 @@
 import os
 import re
 import subprocess
+import logging
+import pyudev
 
 from . import util
 from .size import Size
 from .flags import flags
 
-import pyudev
 global_udev = pyudev.Context()
-
-import logging
 log = logging.getLogger("blivet")
 
 device_name_blacklist = []
 """ device name regexes to ignore; this should be empty by default """
 
 
+def device_to_dict(device):
+    # Transform Device to dictionary
+    # Originally it was possible to use directly Device where needed,
+    # but it lead to unfixable excessive deprecation warnings from udev.
+    # Sice blivet uses Device.properties only (with couple of exceptions)
+    # this is a functional workaround. (japokorn May 2017)
+
+    result = dict(device.properties)
+    result["SYS_NAME"] = device.sys_name
+    result["SYS_PATH"] = device.sys_path
+    return result
+
+
 def get_device(sysfs_path):
     try:
-        dev = pyudev.Devices.from_sys_path(global_udev, sysfs_path)
+        device = pyudev.Devices.from_sys_path(global_udev, sysfs_path)
     except pyudev.DeviceNotFoundError as e:
         log.error(e)
-        dev = None
+        result = None
+    else:
+        result = device_to_dict(device)
 
-    return dev
+    return result
 
 
 def get_devices(subsystem="block"):
     if not flags.uevents:
         settle()
-    return [d for d in global_udev.list_devices(subsystem=subsystem)
-            if not __is_blacklisted_blockdev(d.sys_name)]
+
+    result = []
+    for device in global_udev.list_devices(subsystem=subsystem):
+        if not __is_blacklisted_blockdev(device.sys_name):
+            dev = device_to_dict(device)
+            result.append(dev)
+
+    return result
 
 
 def settle(quiet=False):
@@ -101,7 +121,7 @@ def resolve_devspec(devspec, sysname=False):
             if device_get_uuid(dev) == devspec[5:]:
                 ret = dev
                 break
-        elif device_get_name(dev) == devname or dev.sys_name == devname:
+        elif device_get_name(dev) == devname or dev["SYS_NAME"] == devname:
             ret = dev
             break
         else:
@@ -115,7 +135,7 @@ def resolve_devspec(devspec, sysname=False):
                     break
 
     if ret:
-        return ret.sys_name if sysname else device_get_name(ret)
+        return ret["SYS_NAME"] if sysname else device_get_name(ret)
 
 
 def resolve_glob(glob):
@@ -176,7 +196,7 @@ def device_get_name(udev_info):
         # md partitions have MD_DEVNAME set to the partition's parent/disk
         name = udev_info["MD_DEVNAME"]
     else:
-        name = udev_info.sys_name
+        name = udev_info["SYS_NAME"]
 
     return name
 
@@ -380,7 +400,7 @@ def device_get_by_path(info):
 
 
 def device_get_sysfs_path(info):
-    return info.sys_path
+    return info["SYS_PATH"]
 
 
 def device_get_major(info):
@@ -653,7 +673,7 @@ def device_get_partition_disk(info):
                 disk = resolve_devspec(parents[0].replace('!', '/'))
     else:
         _disk = os.path.basename(os.path.dirname(sysfs_path).replace('!', '/'))
-        if info.sys_name.startswith(_disk):
+        if info["SYS_NAME"].startswith(_disk):
             disk = resolve_devspec(_disk)
 
     return disk
