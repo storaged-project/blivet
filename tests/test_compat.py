@@ -23,7 +23,6 @@
 import six as _six
 
 mock_move = _six.MovedModule('mock', 'mock', 'unittest.mock')
-has_mock = False
 
 
 def add_move(mod):
@@ -33,14 +32,7 @@ def add_move(mod):
 
 
 def setup():
-    global has_mock
     add_move(mock_move)
 
-    try:
-        import six.moves.mock as _mock
-    except ImportError:
-        has_mock = False
-    else:
-        has_mock = True
 
 setup()
