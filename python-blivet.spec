@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 2.1.8
+Version: 2.1.9
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -76,6 +76,43 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 01 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.9-1
+- Adapt to logging module name change (mkolman)
+- Updated calls to avoid log spamming (japokorn)
+- Add a script for generating and pushing updated documentation (vtrefny)
+- pylint: ignore some false positive warnings in blivet.py and lvm.py (vtrefny)
+- pylint: remove unused false positives from pocketlint config (vtrefny)
+- pylint: disable false positive "not-context-manager" for threading.Lock
+  (vtrefny)
+- pylint: ignore "arguments-differ" warnings in blivet.size.Size (vtrefny)
+- pylint: fix various "arguments-differ" warnings (vtrefny)
+- pylint: remove init from platform.X86 (vtrefny)
+- pylint: fix various errors in tests (vtrefny)
+- pylint: ignore "arguments-differ" warning for "do_tasks" method (vtrefny)
+- pylint: fix false positive for "catching-non-exception" (vtrefny)
+- pylint: fix argument name for Device._remove_parent/_add_parent (vtrefny)
+- Always mount & unmount an XFS file system when writing new UUID (vpodzime)
+- Do not remove manually created extended partitions (#1440150) (vtrefny)
+- Look the disk up for a partition by name not sys_name (vpodzime)
+- Disable pylint "no-member" warnings for re module constants (vtrefny)
+- Allow custom chunk size specification for MDRaidArrayDevice (vtrefny)
+- Add RAID chunk size to the generated kickstart file (vtrefny)
+- Use structured logging for the anaconda logger (mkolman)
+- Use distutils.spawn.find_executable instead of our custom code (vpodzime)
+- Add a method to reset file system's UUID (vpodzime)
+- Try to mount and unmount an XFS FS when writing UUID (vpodzime)
+- Add a method for a file system to generate a new UUID (vpodzime)
+- tests/fsuuid: Implement checking invalid UUIDs (aszlig)
+- formats/swap: Support setting UUID (aszlig)
+- tests: Add a series of tests for setting UUIDs (aszlig)
+- tests: Add tests to check the UUID format checkers (aszlig)
+- tasks: Implement setting UUID after FS creation (aszlig)
+- formats/fs: Implement setting UUID during mkfs (aszlig)
+- formats/fs: Add functionality for checking UUIDs (aszlig)
+- tasks/fsmkfs: Add arguments for setting UUID (aszlig)
+- Properly unset mountpoint of a snapshot's format (vpodzime)
+- Update snapshot's format's exists flag based on its origin (vpodzime)
+
 * Wed Apr 19 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.8-1
 - Fix "unknown" SAS device sysfs parsing. (adamw)
 - Reserve space in a VG when using LVMThinPFactory (vpodzime)
