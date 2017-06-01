@@ -58,7 +58,7 @@ def add_member_order_option(files):
         amended = re.sub(AM_RE,
                          r'\1    :member-order: bysource\n\n',
                          buf,
-                         flags=re.DOTALL | re.MULTILINE)
+                         flags=re.DOTALL | re.MULTILINE)  # pylint: disable=no-member
         open(fn, "w").write(amended)
 
 # Extend the sdist command

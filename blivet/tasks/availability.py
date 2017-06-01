@@ -21,6 +21,7 @@
 
 import abc
 from distutils.version import LooseVersion
+from distutils.spawn import find_executable
 import hawkey
 
 from six import add_metaclass
@@ -30,7 +31,6 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from .. import util
 from ..errors import AvailabilityError
 
 import logging
@@ -109,7 +109,7 @@ class Path(Method):
             :returns: [] if the name of the application is in the path
             :rtype: list of str
         """
-        if not util.find_program_in_path(resource.name):
+        if not find_executable(resource.name):
             return ["application %s is not in $PATH" % resource.name]
         else:
             return []
@@ -298,12 +298,14 @@ MKFS_JFS_APP = application("mkfs.jfs")
 MKFS_XFS_APP = application("mkfs.xfs")
 MKNTFS_APP = application("mkntfs")
 MKREISERFS_APP = application("mkreiserfs")
+MLABEL_APP = application("mlabel")
 MULTIPATH_APP = application("multipath")
 NTFSINFO_APP = application("ntfsinfo")
 NTFSLABEL_APP = application("ntfslabel")
 NTFSRESIZE_APP = application("ntfsresize")
 REISERFSTUNE_APP = application("reiserfstune")
 RESIZE2FS_APP = application_by_package("resize2fs", E2FSPROGS_PACKAGE)
+TUNE2FS_APP = application_by_package("tune2fs", E2FSPROGS_PACKAGE)
 XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")

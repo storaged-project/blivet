@@ -95,6 +95,7 @@ class Size(bytesize.Size):
     def __deepcopy__(self, memo_dict):
         return Size(bytesize.Size.__deepcopy__(self, memo_dict))
 
+    # pylint: disable=arguments-differ
     def convert_to(self, spec=None):
         """ Return the size in the units indicated by the specifier.
 
@@ -137,6 +138,7 @@ class Size(bytesize.Size):
             max_places = -1
         return bytesize.Size.human_readable(self, min_unit, max_places, xlate)
 
+    # pylint: disable=arguments-differ
     def round_to_nearest(self, size, rounding=ROUND_DEFAULT):
         """ Rounds to nearest unit specified as a named constant or a Size.
 

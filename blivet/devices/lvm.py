@@ -340,28 +340,28 @@ class LVMVolumeGroupDevice(ContainerDevice):
             for size_spec in pv_sizes:
                 size_spec.pv.format.free += size_spec.size
 
-    def _add_parent(self, member):
-        super(LVMVolumeGroupDevice, self)._add_parent(member)
+    def _add_parent(self, parent):
+        super(LVMVolumeGroupDevice, self)._add_parent(parent)
 
-        if (self.exists and member.format.exists and
+        if (self.exists and parent.format.exists and
                 len(self.parents) + 1 == self.pv_count):
             self._complete = True
 
         # this PV object is just being added so it has all its space available
         # (adding LVs will eat that space later)
-        if not member.format.exists:
-            member.format.free = self._get_pv_usable_space(member)
+        if not parent.format.exists:
+            parent.format.free = self._get_pv_usable_space(parent)
 
-    def _remove_parent(self, member):
+    def _remove_parent(self, parent):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
         #     being possible to _temporarily_ overcommit the VG.
         #
         #     Maybe remove_member could be a wrapper with the checks and the
         #     devicefactory could call the _ versions to bypass the checks.
-        super(LVMVolumeGroupDevice, self)._remove_parent(member)
-        member.format.free = None
-        member.format.container_uuid = None
+        super(LVMVolumeGroupDevice, self)._remove_parent(parent)
+        parent.format.free = None
+        parent.format.container_uuid = None
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -1133,7 +1133,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     @property
     def resizable(self):
-        if DMDevice.resizable.__get__(self) and self._lv_type is LVMInternalLVtype.meta:  # pylint: disable=no-member
+        if DMDevice.resizable.__get__(self) and self._lv_type is LVMInternalLVtype.meta:  # pylint: disable=no-member,too-many-function-args
             if self._parent_lv:
                 return self._parent_lv.is_thin_pool
             else:
@@ -1169,13 +1169,13 @@ class LVMInternalLogicalVolumeMixin(object):
         pass
 
     # internal LVs follow different rules limitting size
-    def _set_size(self, size):
-        if not isinstance(size, Size):
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
         if not self.takes_extra_space:
-            if size <= self.parent_lv.size:  # pylint: disable=no-member
-                self._size = size  # pylint: disable=attribute-defined-outside-init
+            if newsize <= self.parent_lv.size:  # pylint: disable=no-member
+                self._size = newsize  # pylint: disable=attribute-defined-outside-init
             else:
                 raise ValueError("Internal LV cannot be bigger than its parent LV")
         else:
@@ -1338,7 +1338,7 @@ class LVMSnapshotMixin(object):
         fmt = copy.deepcopy(self.origin.format)
         fmt.exists = False
         if hasattr(fmt, "mountpoint"):
-            fmt.mountpoint = ""
+            fmt._mountpoint = None
             fmt._chrooted_mountpoint = None
             fmt.device = self.path
 
@@ -1387,9 +1387,9 @@ class LVMSnapshotMixin(object):
 
     def _post_create(self):
         DMDevice._post_create(self)
-        if self.is_thin_lv:
-            # A snapshot's format exists as soon as the snapshot has been created.
-            self.format.exists = True
+        # Snapshot's format exists as soon as the snapshot has been
+        # created iff the origin's format exists
+        self.format.exists = self.origin.format.exists
 
     @old_snapshot_specific
     def _destroy(self):
@@ -1638,15 +1638,15 @@ class LVMThinLogicalVolumeMixin(object):
     def vg_space_used(self):
         return Size(0)    # the pool's size is already accounted for in the vg
 
-    def _set_size(self, size):
-        if not isinstance(size, Size):
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        size = self.vg.align(size)
-        size = self.vg.align(util.numeric_type(size))
+        newsize = self.vg.align(newsize)
+        newsize = self.vg.align(util.numeric_type(newsize))
         # just make sure the size is set (no VG size/free space check needed for
         # a thin LV)
-        DMDevice._set_size(self, size)
+        DMDevice._set_size(self, newsize)
 
     def _pre_create(self):
         # skip LVMLogicalVolumeDevice's _pre_create() method as it checks for a
@@ -1890,20 +1890,20 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         return super().vg
 
     @type_specific
-    def _set_size(self, size):
-        if not isinstance(size, Size):
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
             raise ValueError("new size must be of type Size")
 
-        size = self.vg.align(size)
-        log.debug("trying to set lv %s size to %s", self.name, size)
+        newsize = self.vg.align(newsize)
+        log.debug("trying to set lv %s size to %s", self.name, newsize)
         # Don't refuse to set size if we think there's not enough space in the
         # VG for an existing LV, since it's existence proves there is enough
         # space for it. A similar reasoning applies to shrinking the LV.
-        if not self.exists and size > self.size and size > self.vg.free_space + self.vg_space_used:
-            log.error("failed to set size: %s short", size - (self.vg.free_space + self.vg_space_used))
+        if not self.exists and newsize > self.size and newsize > self.vg.free_space + self.vg_space_used:
+            log.error("failed to set size: %s short", newsize - (self.vg.free_space + self.vg_space_used))
             raise ValueError("not enough free space in volume group")
 
-        LVMLogicalVolumeBase._set_size(self, size)
+        LVMLogicalVolumeBase._set_size(self, newsize)
 
     size = property(StorageDevice._get_size, _set_size)
 

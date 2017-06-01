@@ -251,7 +251,7 @@ class PartitionDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
         self.patchers["disk"] = patch.object(self.device_class, "disk", new=PropertyMock())
 
     @patch("blivet.devices.partition.DeviceFormat")
-    def test_create(self, *args):  # pylint: disable=unused-argument
+    def test_create(self, *args):  # pylint: disable=unused-argument,arguments-differ
         with patch.object(self.device, "_wipe"):
             super().test_create()
 

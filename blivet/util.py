@@ -167,7 +167,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
         if root and root != '/':
             os.chroot(root)
 
-    with program_log_lock:
+    with program_log_lock:  # pylint: disable=not-context-manager
         program_log.info("Running... %s", " ".join(argv))
 
         env = os.environ.copy()
@@ -494,16 +494,6 @@ def reset_file_context(path, root=None):
 ##
 # Miscellaneous
 ##
-
-
-def find_program_in_path(prog, raise_on_error=False):
-    for d in os.environ["PATH"].split(os.pathsep):
-        full = os.path.join(d, prog)
-        if os.access(full, os.X_OK):
-            return full
-
-    if raise_on_error:
-        raise RuntimeError("Unable to locate a needed executable: '%s'" % prog)
 
 
 def makedirs(path):

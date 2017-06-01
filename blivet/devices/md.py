@@ -359,36 +359,36 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     spares = property(_get_spares, _set_spares)
 
-    def _add_parent(self, member):
-        super(MDRaidArrayDevice, self)._add_parent(member)
+    def _add_parent(self, parent):
+        super(MDRaidArrayDevice, self)._add_parent(parent)
 
-        if self.status and member.format.exists:
+        if self.status and parent.format.exists:
             # we always probe since the device may not be set up when we want
             # information about it
             self._size = self.current_size
 
-        # These should be incremented when adding new member devices except
+        # These should be incremented when adding new parent devices except
         # during devicetree.populate. When detecting existing arrays we will
         # have gotten these values from udev and will use them to determine
-        # whether we found all of the members, so we shouldn't change them in
+        # whether we found all of the parents, so we shouldn't change them in
         # that case.
-        if not member.format.exists:
+        if not parent.format.exists:
             self._total_devices += 1
             self.member_devices += 1
 
-        # The new member hasn't been added yet, so account for it explicitly.
-        is_disk = self.is_disk and member.is_disk
+        # The new parent hasn't been added yet, so account for it explicitly.
+        is_disk = self.is_disk and parent.is_disk
         for p in self.parents:
             p.format._hidden = is_disk
 
-        member.format._hidden = is_disk
+        parent.format._hidden = is_disk
 
-    def _remove_parent(self, member):
-        error_msg = self._validate_parent_removal(self.level, member)
+    def _remove_parent(self, parent):
+        error_msg = self._validate_parent_removal(self.level, parent)
         if error_msg:
             raise errors.DeviceError(error_msg)
 
-        super(MDRaidArrayDevice, self)._remove_parent(member)
+        super(MDRaidArrayDevice, self)._remove_parent(parent)
         self.member_devices -= 1
 
     @property
@@ -608,6 +608,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         data.preexist = self.exists
         data.device = self.name
 
+        if not self.exists:
+            # chunk size is meaningless on RAID1, so do not add our default value
+            # to generated kickstart
+            if self.level != raid.RAID1:
+                data.chunk_size = self.chunk_size.convert_to("KiB")
+
 
 class MDContainerDevice(MDRaidArrayDevice):
 
@@ -723,22 +729,22 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
     def _get_member_devices(self):
         return self.parents[0].member_devices
 
-    def _add_parent(self, member):
+    def _add_parent(self, parent):
         # pylint: disable=bad-super-call
-        super(MDRaidArrayDevice, self)._add_parent(member)
+        super(MDRaidArrayDevice, self)._add_parent(parent)
 
-        if self.status and member.format.exists:
+        if self.status and parent.format.exists:
             # we always probe since the device may not be set up when we want
             # information about it
             self._size = self.current_size
 
-    def _remove_parent(self, member):
-        error_msg = self._validate_parent_removal(self.level, member)
+    def _remove_parent(self, parent):
+        error_msg = self._validate_parent_removal(self.level, parent)
         if error_msg:
             raise errors.DeviceError(error_msg)
 
         # pylint: disable=bad-super-call
-        super(MDRaidArrayDevice, self)._remove_parent(member)
+        super(MDRaidArrayDevice, self)._remove_parent(parent)
 
     def teardown(self, recursive=None):
         log_method_call(self, self.name, status=self.status,
