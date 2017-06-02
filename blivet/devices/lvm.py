@@ -1238,6 +1238,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
                                                        100)  # snapshots
         log.debug("Recommended metadata size: %s", self.metaDataSize)
 
+        self.metaDataSize = self.vg.align(self.metaDataSize, roundup=True)
+        log.debug("Rounded metadata size to extents: %s", self.metaDataSize)
+
         # we also need space for the (potential) pmspare LV (of the same size as
         # the metaDataSize)
         log.debug("Adjusting size from %s to %s", self.size, self.size - 2 * self.metaDataSize)
