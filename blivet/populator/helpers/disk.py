@@ -85,13 +85,13 @@ class iScsiDevicePopulator(DiskDevicePopulator):
     @classmethod
     def match(cls, data):
         from ...iscsi import iscsi
-        return (super().match(data) and
+        return (super(iScsiDevicePopulator, iScsiDevicePopulator).match(data) and
                 udev.device_is_iscsi(data) and iscsi.initiator and
                 iscsi.initiator == udev.device_get_iscsi_initiator(data))
 
     def _get_kwargs(self):
         from ...iscsi import iscsi
-        kwargs = super()._get_kwargs()
+        kwargs = super(iScsiDevicePopulator, self)._get_kwargs()
         name = udev.device_get_name(self.data)
         initiator = udev.device_get_iscsi_initiator(self.data)
         target = udev.device_get_iscsi_name(self.data)
@@ -124,11 +124,11 @@ class FCoEDevicePopulator(DiskDevicePopulator):
 
     @classmethod
     def match(cls, data):
-        return (super().match(data) and
+        return (super(FCoEDevicePopulator, FCoEDevicePopulator).match(data) and
                 udev.device_is_fcoe(data))
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(FCoEDevicePopulator, self)._get_kwargs()
         kwargs["nic"] = udev.device_get_fcoe_nic(self.data)
         kwargs["identifier"] = udev.device_get_fcoe_identifier(self.data)
         log.info("%s is an fcoe disk", udev.device_get_name(self.data))
@@ -142,11 +142,11 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
 
     @classmethod
     def match(cls, data):
-        return (super().match(data) and
+        return (super(MDBiosRaidDevicePopulator, MDBiosRaidDevicePopulator).match(data) and
                 udev.device_get_md_container(data))
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(MDBiosRaidDevicePopulator, self)._get_kwargs()
         parent_path = udev.device_get_md_container(self.data)
         parent_name = device_path_to_name(parent_path)
         container = self._devicetree.get_device_by_name(parent_name)
@@ -187,11 +187,11 @@ class DASDDevicePopulator(DiskDevicePopulator):
 
     @classmethod
     def match(cls, data):
-        return (super().match(data) and
+        return (super(DASDDevicePopulator, DASDDevicePopulator).match(data) and
                 udev.device_is_dasd(data))
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(DASDDevicePopulator, self)._get_kwargs()
         kwargs["busid"] = udev.device_get_dasd_bus_id(self.data)
         kwargs["opts"] = {}
         for attr in ['readonly', 'use_diag', 'erplog', 'failfast']:
@@ -208,11 +208,11 @@ class ZFCPDevicePopulator(DiskDevicePopulator):
 
     @classmethod
     def match(cls, data):
-        return (super().match(data) and
+        return (super(ZFCPDevicePopulator, ZFCPDevicePopulator).match(data) and
                 udev.device_is_zfcp(data))
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(ZFCPDevicePopulator, self)._get_kwargs()
 
         for attr in ['hba_id', 'wwpn', 'fcp_lun']:
             kwargs[attr] = udev.device_get_zfcp_attribute(self.data, attr=attr)

@@ -361,12 +361,12 @@ class MultipathDevice(DMDevice):
             self.parents.append(parent)
 
     def _add_parent(self, parent):
-        super()._add_parent(parent)
+        super(MultipathDevice, self)._add_parent(parent)
         if Tags.remote not in self.tags and Tags.remote in parent.tags:
             self.tags.add(Tags.remote)
 
     def _remove_parent(self, parent):
-        super()._remove_parent(parent)
+        super(MultipathDevice, self)._remove_parent(parent)
         if Tags.remote in self.tags and Tags.remote in parent.tags and \
            not any(p for p in self.parents if Tags.remote in p.tags and p != parent):
             self.tags.remove(Tags.remote)

@@ -267,6 +267,12 @@ class EddEntry(object):
     def __repr__(self):
         return "<EddEntry%s>" % (self._fmt(' ', ''),)
 
+    def __getitem__(self, idx):
+        return str(self)[idx]
+
+    def __len__(self):
+        return len(str(self))
+
     def load(self):
         interface = util.get_sysfs_attr(self.sysfspath, "interface")
         # save this so we can log it from the matcher.

@@ -1,3 +1,4 @@
+import six
 import unittest
 
 import blivet
@@ -42,8 +43,8 @@ class MDRaidArrayDeviceTest(unittest.TestCase):
 
         self.assertEqual(raid_array.chunk_size, Size("1024 KiB"))
 
-        with self.assertRaisesRegex(ValueError, "new chunk size must be of type Size"):
+        with six.assertRaisesRegex(self, ValueError, "new chunk size must be of type Size"):
             raid_array.chunk_size = 1
 
-        with self.assertRaisesRegex(ValueError, "new chunk size must be multiple of 4 KiB"):
+        with six.assertRaisesRegex(self, ValueError, "new chunk size must be multiple of 4 KiB"):
             raid_array.chunk_size = Size("5 KiB")

@@ -1,5 +1,8 @@
+import test_compat  # pylint: disable=unused-import
+
+from six.moves.mock import Mock, patch, sentinel  # pylint: disable=no-name-in-module,import-error
+import six
 import unittest
-from unittest.mock import Mock, patch, sentinel
 
 from tests.imagebackedtestcase import ImageBackedTestCase
 
@@ -119,13 +122,13 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev1.add_hook.called)  # pylint: disable=no-member
 
         # adding an already-added device fails
-        self.assertRaisesRegex(ValueError, "already in tree", dt._add_device, dev1)
+        six.assertRaisesRegex(self, ValueError, "already in tree", dt._add_device, dev1)
 
         dev2 = StorageDevice("dev2", exists=False, parents=[])
         dev3 = StorageDevice("dev3", exists=False, parents=[dev1, dev2])
 
         # adding a device with one or more parents not already in the tree fails
-        self.assertRaisesRegex(DeviceTreeError, "parent.*not in tree", dt._add_device, dev3)
+        six.assertRaisesRegex(self, DeviceTreeError, "parent.*not in tree", dt._add_device, dev3)
         self.assertFalse(dev2 in dt.devices)
         self.assertFalse(dev2.name in dt.names)
 
@@ -144,7 +147,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev1 = StorageDevice("dev1", exists=False, parents=[])
 
         # removing a device not in the tree raises an exception
-        self.assertRaisesRegex(ValueError, "not in tree", dt._remove_device, dev1)
+        six.assertRaisesRegex(self, ValueError, "not in tree", dt._remove_device, dev1)
 
         dt._add_device(dev1)
         with patch("blivet.devicetree.callbacks") as callbacks:
@@ -162,7 +165,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev2.name in dt.names)
 
         # removal of a non-leaf device raises an exception
-        self.assertRaisesRegex(ValueError, "non-leaf device", dt._remove_device, dev1)
+        six.assertRaisesRegex(self, ValueError, "non-leaf device", dt._remove_device, dev1)
         self.assertTrue(dev1 in dt.devices)
         self.assertTrue(dev1.name in dt.names)
         self.assertTrue(dev2 in dt.devices)

@@ -1,5 +1,7 @@
+import test_compat  # pylint: disable=unused-import
+
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
-from unittest.mock import patch
 
 from blivet.formats.luks import LUKS
 
@@ -11,7 +13,7 @@ from tests import loopbackedtestcase
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super().__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+        super(LUKSTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
         self.fmt = LUKS(passphrase="password")
 
     def test_size(self):

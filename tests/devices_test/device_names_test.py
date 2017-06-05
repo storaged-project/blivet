@@ -1,5 +1,8 @@
 # vim:set fileencoding=utf-8
+import test_compat  # pylint: disable=unused-import
 
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
+import six
 import unittest
 
 from blivet.devices import LVMVolumeGroupDevice
@@ -10,10 +13,11 @@ import blivet
 
 
 class DeviceNameTestCase(unittest.TestCase):
-
     """Test device name validation"""
-
-    def test_storage_device(self):
+    @patch.object(StorageDevice, "status", return_value=True)
+    @patch.object(StorageDevice, "update_sysfs_path", return_value=None)
+    @patch.object(StorageDevice, "read_current_size", return_value=None)
+    def test_storage_device(self, *patches):  # pylint: disable=unused-argument
         # Check that / and NUL are rejected along with . and ..
         good_names = ['sda1', '1sda', 'good-name', 'cciss/c0d0']
         bad_names = ['sda/1', 'sda\x00', '.', '..', 'cciss/..']
@@ -47,7 +51,7 @@ class DeviceNameTestCase(unittest.TestCase):
                 if ' is not a valid name for this device' in str(e):
                     self.fail("Device name checked on already existing device")
 
-            with self.assertRaisesRegex(ValueError, ' is not a valid name for this device'):
+            with six.assertRaisesRegex(self, ValueError, ' is not a valid name for this device'):
                 StorageDevice(name, exists=False)
 
     def test_volume_group(self):

@@ -24,6 +24,7 @@ import os
 import pprint
 import copy
 import parted
+from six import add_metaclass
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -65,7 +66,8 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
     return ret
 
 
-class PopulatorMixin(object, metaclass=SynchronizedMeta):
+@add_metaclass(SynchronizedMeta)
+class PopulatorMixin(object):
     def __init__(self, conf=None, passphrase=None, luks_dict=None):
         """
             :keyword conf: storage discovery configuration

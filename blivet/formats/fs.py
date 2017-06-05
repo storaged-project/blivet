@@ -1084,7 +1084,7 @@ class XFS(FS):
         finally:
             os.rmdir(tmpdir)
 
-        super().write_uuid()
+        super(XFS, self).write_uuid()
 
 register_device_format(XFS)
 

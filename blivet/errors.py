@@ -202,7 +202,7 @@ class UnusableConfigurationError(StorageError):
     suggestion = ""
 
     def __init__(self, message, dev_name=None):
-        super().__init__(message)
+        super(UnusableConfigurationError, self).__init__(message)
         self.dev_name = dev_name
 
 
