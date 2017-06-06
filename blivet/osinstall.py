@@ -130,7 +130,7 @@ def enable_installer_mode():
         from pyanaconda.constants import ROOT_PATH  # pylint: disable=redefined-outer-name,no-name-in-module
         _storage_root = _sysroot = ROOT_PATH
 
-    from pyanaconda.anaconda_log import program_log_lock
+    from pyanaconda.anaconda_logging import program_log_lock
     util.program_log_lock = program_log_lock
 
     # always enable the debug mode when in the installer mode so that we
