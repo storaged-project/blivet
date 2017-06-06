@@ -827,6 +827,8 @@ class StorageDevice(Device):
         # ...except some names *do* contain directory components, for this
         # is an imperfect world of joy and sorrow mingled. For cciss, split
         # the path into its components and do the real check on each piece
+        if name is None:
+            return False
         if name.startswith("cciss/"):
             return all(self.is_name_valid(n) for n in name.split('/'))
 
