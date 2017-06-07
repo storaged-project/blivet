@@ -792,6 +792,10 @@ class LVMLogicalVolumeDevice(DMDevice):
         # set up the vg's pvs so lvm can remove the lv
         self.vg.setupParents(orig=True)
 
+        # setting up VG's PVs may have caused this LV was automatically
+        # activated, make sure it is deactivated before removal
+        self.teardown()
+
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
