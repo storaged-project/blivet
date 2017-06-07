@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-16 15:42-0400\n"
+"POT-Creation-Date: 2017-06-07 10:41-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,94 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: ../blivet/zfcp.py:54 ../blivet/devicelibs/dasd.py:273
+msgid "You have not specified a device number or the number is invalid"
+msgstr ""
+
+#: ../blivet/zfcp.py:56
+msgid "You have not specified a worldwide port name or the name is invalid."
+msgstr ""
+
+#: ../blivet/zfcp.py:58
+msgid "You have not specified a FCP LUN or the number is invalid."
+msgstr ""
+
+#: ../blivet/zfcp.py:134
+#, python-format
+msgid "zFCP device %s not found, not even in device ignore list."
+msgstr ""
+
+#: ../blivet/zfcp.py:144
+#, python-format
+msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:155
+#, python-format
+msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
+msgstr ""
+
+#. newer zfcp sysfs interface with auto port scan
+#: ../blivet/zfcp.py:162
+#, python-format
+msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
+msgstr ""
+
+#: ../blivet/zfcp.py:177
+#, python-format
+msgid ""
+"Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
+"(%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:183
+#, python-format
+msgid ""
+"LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
+msgstr ""
+
+#: ../blivet/zfcp.py:195
+#, python-format
+msgid ""
+"Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
+"device %(devnum)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:204
+#, python-format
+msgid ""
+"Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
+"again."
+msgstr ""
+
+#: ../blivet/zfcp.py:261
+#, python-format
+msgid ""
+"Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
+"%(fcplun)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:270
+#, python-format
+msgid ""
+"Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
+"(%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:288
+#, python-format
+msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:314
+#, python-format
+msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
+msgstr ""
+
+#: ../blivet/zfcp.py:380
+msgid "Error"
+msgstr ""
 
 #: ../blivet/__init__.py:1433
 msgid "You must create a new filesystem on the root device."
@@ -33,153 +121,6 @@ msgstr ""
 #: ../blivet/__init__.py:3088
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
-msgstr ""
-
-#. Decimal prefixes for different size increments, along with the name
-#. and accepted abbreviation for the prefix.  These prefixes are all
-#. for 'bytes'.
-#: ../blivet/size.py:42
-msgid "kilo"
-msgstr ""
-
-#: ../blivet/size.py:42
-msgid "k"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "Y"
-msgstr ""
-
-#. Binary prefixes for the different size increments.  Same structure
-#. as the above list.
-#: ../blivet/size.py:53
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "Yi"
-msgstr ""
-
-#. Handle 'B' separately so that it can be localized without translating
-#. both 'B' and 'b'
-#: ../blivet/size.py:64
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:65 ../blivet/size.py:100
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:65 ../blivet/size.py:101
-msgid "bytes"
 msgstr ""
 
 #. not enough free space for the requested partition
@@ -359,94 +300,6 @@ msgid ""
 "boot/uboot."
 msgstr ""
 
-#: ../blivet/zfcp.py:54 ../blivet/devicelibs/dasd.py:273
-msgid "You have not specified a device number or the number is invalid"
-msgstr ""
-
-#: ../blivet/zfcp.py:56
-msgid "You have not specified a worldwide port name or the name is invalid."
-msgstr ""
-
-#: ../blivet/zfcp.py:58
-msgid "You have not specified a FCP LUN or the number is invalid."
-msgstr ""
-
-#: ../blivet/zfcp.py:134
-#, python-format
-msgid "zFCP device %s not found, not even in device ignore list."
-msgstr ""
-
-#: ../blivet/zfcp.py:144
-#, python-format
-msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:155
-#, python-format
-msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
-msgstr ""
-
-#. newer zfcp sysfs interface with auto port scan
-#: ../blivet/zfcp.py:162
-#, python-format
-msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
-msgstr ""
-
-#: ../blivet/zfcp.py:177
-#, python-format
-msgid ""
-"Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
-"(%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:183
-#, python-format
-msgid ""
-"LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
-msgstr ""
-
-#: ../blivet/zfcp.py:195
-#, python-format
-msgid ""
-"Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
-"device %(devnum)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:204
-#, python-format
-msgid ""
-"Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
-"again."
-msgstr ""
-
-#: ../blivet/zfcp.py:261
-#, python-format
-msgid ""
-"Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
-"%(fcplun)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:270
-#, python-format
-msgid ""
-"Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
-"(%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:288
-#, python-format
-msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:314
-#, python-format
-msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
-msgstr ""
-
-#: ../blivet/zfcp.py:380
-msgid "Error"
-msgstr ""
-
 #: ../blivet/iscsi.py:168
 msgid "Unable to change iSCSI initiator name once set"
 msgstr ""
@@ -475,6 +328,153 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
+#. Decimal prefixes for different size increments, along with the name
+#. and accepted abbreviation for the prefix.  These prefixes are all
+#. for 'bytes'.
+#: ../blivet/size.py:42
+msgid "kilo"
+msgstr ""
+
+#: ../blivet/size.py:42
+msgid "k"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "mega"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "M"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:49
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:49
+msgid "Y"
+msgstr ""
+
+#. Binary prefixes for the different size increments.  Same structure
+#. as the above list.
+#: ../blivet/size.py:53
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "Yi"
+msgstr ""
+
+#. Handle 'B' separately so that it can be localized without translating
+#. both 'B' and 'b'
+#: ../blivet/size.py:64
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:65 ../blivet/size.py:100
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:65 ../blivet/size.py:101
+msgid "bytes"
+msgstr ""
+
 #: ../blivet/deviceaction.py:282
 msgid "create device"
 msgstr ""
@@ -501,34 +501,34 @@ msgstr ""
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:584
+#: ../blivet/deviceaction.py:585
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:630
+#: ../blivet/deviceaction.py:631
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:723
+#: ../blivet/deviceaction.py:724
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:753
+#: ../blivet/deviceaction.py:754
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:760
+#: ../blivet/deviceaction.py:761
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:803
+#: ../blivet/deviceaction.py:804
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:867
+#: ../blivet/deviceaction.py:868
 msgid "remove container member"
 msgstr ""
 

@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.63
+Version: 0.61.15.64
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jun 07 2017 David Lehman <dlehman@redhat.com> - 0.61.15.64-1
+- Make sure an LV is deactivated before removal (vpodzime)
+  Resolves: rhbz#1456821
+- Make sure the device is setup before formatting it (bcl)
+  Resolves: rhbz#1368986
+- Round the recommended thpool metadata size to extents (vpodzime)
+  Resolves: rhbz#1456528
+
 * Tue May 16 2017 David Lehman <dlehman@redhat.com> - 0.61.15.63-1
 - Use the uuid module instead of the uuidgen tool (vpodzime)
   Related: rhbz#1413942
