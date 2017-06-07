@@ -271,7 +271,7 @@ class DeviceTree(object):
             else:
                 raise RuntimeError("partitions in use on disks with changes "
                                    "pending: %s" %
-                                   ",".join(p.name for p in problematic))
+                                   ",".join(problematic))
 
         log.info("resetting parted disks...")
         for device in self.devices:
