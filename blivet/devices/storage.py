@@ -131,7 +131,7 @@ class StorageDevice(Device):
 
         self._readonly = False
         self._protected = False
-        self.controllable = not flags.testing
+        self._controllable = True
 
         # Copy only the validity check from Device._set_name() so we don't try
         # to check a bunch of inappropriate state properties during
@@ -189,6 +189,14 @@ class StorageDevice(Device):
     def raw_device(self):
         """ The device itself, or when encrypted, the backing device. """
         return self
+
+    @property
+    def controllable(self):
+        return self._controllable and not flags.testing and not self.unavailable_type_dependencies()
+
+    @controllable.setter
+    def controllable(self, value):
+        self._controllable = value
 
     def _set_name(self, value):
         """Set the device's name.
