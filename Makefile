@@ -1,17 +1,21 @@
+PYTHON?=python3
+PKG_INSTALL?=dnf
+
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
-VERSION=$(shell python3 setup.py --version)
+VERSION=$(shell $(PYTHON) setup.py --version)
 RPMVERSION=$(shell rpmspec -q --queryformat "%{version}\n" $(SPECFILE) | head -1)
 RPMRELEASE=$(shell rpmspec --undefine '%dist' -q --queryformat "%{release}\n" $(SPECFILE) | head -1)
 RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
 RELEASE_TAG=$(PKGNAME)-$(RPMVERSION)-$(RPMRELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-PYTHON=python3
-COVERAGE=coverage
-PEP8=$(PYTHON)-pep8
 ifeq ($(PYTHON),python3)
   COVERAGE=coverage3
+  PEP8=$(PYTHON)-pep8
+else
+  COVERAGE=coverage
+  PEP8=pep8
 endif
 
 ZANATA_PULL_ARGS = --transdir ./po/
@@ -19,21 +23,35 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
-TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
+ifeq ($(PYTHON),python3)
+  TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet | grep -v python2)
+  TEST_DEPENDENCIES += python3-mock
+  TEST_DEPENDENCIES += python3-coverage
+  TEST_DEPENDENCIES += python3-pocketlint
+  TEST_DEPENDENCIES += python3-bugzilla
+  TEST_DEPENDENCIES += python3-pep8
+endif
+
+ifeq ($(PYTHON),python2)
+  TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet | grep -v python3)
+  TEST_DEPENDENCIES += python2-mock
+  TEST_DEPENDENCIES += /usr/bin/coverage
+  TEST_DEPENDENCIES += python2-pocketlint
+  TEST_DEPENDENCIES += python-bugzilla
+  TEST_DEPENDENCIES += python-pep8
+endif
+
 TEST_DEPENDENCIES += anaconda-core
-TEST_DEPENDENCIES += python3-mock
-TEST_DEPENDENCIES += python3-coverage
 TEST_DEPENDENCIES += dosfstools e2fsprogs xfsprogs hfsplus-tools
-TEST_DEPENDENCIES += python3-pocketlint python3-bugzilla
-TEST_DEPENDENCIES += python3-pep8 zanata-python-client
-TEST_DEPENDENCIES += python3-paramiko libvirt-python3
+TEST_DEPENDENCIES += zanata-python-client
+
 TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
 
 all:
 	$(MAKE) -C po
 
 po-pull:
-	rpm -q zanata-python-client &>/dev/null || ( echo "need to run: yum install zanata-python-client"; exit 1 )
+	rpm -q zanata-python-client &>/dev/null || ( echo "need to run: $(PKG_INSTALL) install zanata-python-client"; exit 1 )
 	zanata pull $(ZANATA_PULL_ARGS)
 
 po-empty:
@@ -61,7 +79,7 @@ check-requires:
 
 install-requires:
 	@echo "*** Installing the dependencies required for testing and analysis ***"
-	dnf install -y $(TEST_DEPENDENCIES)
+	$(PKG_INSTALL) install -y $(TEST_DEPENDENCIES)
 
 test: check-requires
 	@echo "*** Running unittests with $(PYTHON) ***"
@@ -75,7 +93,7 @@ coverage: check-requires
 
 pylint: check-requires
 	@echo "*** Running pylint ***"
-	PYTHONPATH=.:tests/:$(PYTHONPATH) tests/pylint/runpylint.py
+	PYTHONPATH=.:tests/:$(PYTHONPATH) $(PYTHON) tests/pylint/runpylint.py
 
 pep8: check-requires
 	@echo "*** Running pep8 compliance check ***"
@@ -83,7 +101,7 @@ pep8: check-requires
 
 canary: check-requires po-fallback
 	@echo "*** Running translation-canary tests ***"
-	PYTHONPATH=translation-canary:$(PYTHONPATH) python3 -m translation_canary.translatable po/blivet.pot
+	PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/blivet.pot
 
 check:
 	@status=0; \
