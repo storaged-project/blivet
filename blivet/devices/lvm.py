@@ -794,7 +794,7 @@ class LVMLogicalVolumeDevice(DMDevice):
 
         # setting up VG's PVs may have caused this LV was automatically
         # activated, make sure it is deactivated before removal
-        self.teardown()
+        self._teardown()
 
     def _destroy(self):
         """ Destroy the device. """
