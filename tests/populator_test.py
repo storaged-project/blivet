@@ -1,7 +1,6 @@
 import test_compat  # pylint: disable=unused-import
 
 import gi
-import os
 from six.moves.mock import call, patch, sentinel, Mock, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import six
 import unittest
@@ -9,16 +8,12 @@ import unittest
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
-from blivet import util
 from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
 from blivet.devices import PartitionDevice, StorageDevice
 from blivet.devicetree import DeviceTree
-from blivet.flags import flags
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
-from blivet.osinstall import storage_initialize
-from blivet.osinstall import InstallerStorage
 from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
 from blivet.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
 from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
@@ -28,62 +23,6 @@ from blivet.populator.helpers.boot import AppleBootFormatPopulator, EFIFormatPop
 from blivet.populator.helpers.formatpopulator import FormatPopulator
 from blivet.populator.helpers.disklabel import DiskLabelFormatPopulator
 from blivet.size import Size
-try:
-    from pyanaconda import kickstart
-    pyanaconda_present = True
-except (ImportError, AttributeError):
-    pyanaconda_present = False
-
-
-@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
-@unittest.skipUnless(pyanaconda_present, "pyanaconda is missing")
-class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
-    """
-        Test if size of disk images is > 0. Related: rhbz#1252703.
-        This test emulates how anaconda configures its storage.
-    """
-
-    disks = {"disk1": Size("2 GiB")}
-
-    def setUp(self):
-        self.blivet = InstallerStorage()
-
-        # anaconda first configures disk images
-        for (name, size) in iter(self.disks.items()):
-            path = util.create_sparse_tempfile(name, size)
-            self.blivet.disk_images[name] = path
-
-        # at this point the DMLinearDevice has correct size
-        self.blivet.setup_disk_images()
-        self.addCleanup(self._clean_up)
-
-        # emulates setting the anaconda flags which later update
-        # blivet flags as the first thing to do in storage_initialize
-        flags.image_install = True
-        # no kickstart available
-        ksdata = kickstart.AnacondaKSHandler([])
-        # anaconda calls storage_initialize regardless of whether or not
-        # this is an image install. Somewhere along the line this will
-        # execute setup_disk_images() once more and the DMLinearDevice created
-        # in this second execution has size 0
-        with patch('blivet.osinstall.flags'):
-            storage_initialize(self.blivet, ksdata, [])
-
-    def _clean_up(self):
-        self.blivet.reset()
-        self.blivet.devicetree.teardown_disk_images()
-        for fn in self.blivet.disk_images.values():
-            if os.path.exists(fn):
-                os.unlink(fn)
-
-        flags.image_install = False
-
-    def runTest(self):
-        disk = self.blivet.disks[0]
-        self.assertEqual(disk.name, list(self.disks.keys())[0])
-        for d in self.blivet.devicetree.devices:
-            if d == disk or disk.depends_on(d):
-                self.assertTrue(d.size > 0)
 
 
 class PopulatorHelperTestCase(unittest.TestCase):
