@@ -2321,6 +2321,10 @@ def growLVM(storage):
             new_extents = int(lv.req_percent * Decimal('0.01') * percentage_basis)
             # set req_size also so the request can also be growable if desired
             lv.size = lv.req_size = vg.peSize * new_extents
+            if lv in vg.thinpools:
+                # thin pools need to have their MD size set now that they know
+                # their sizes
+                lv.autoset_md_size()
 
         # grow regular lvs
         chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])

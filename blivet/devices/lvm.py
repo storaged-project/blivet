@@ -1230,6 +1230,9 @@ class LVMThinPoolDevice(LVMLogicalVolumeDevice):
         if self.metaDataSize != 0:
             return  # Metadata size already set
 
+        if self.size == 0:
+            return  # no size (yet) to derive MD size from
+
         log.debug("Auto-setting thin pool metadata size")
 
         # we need to know chunk size to calculate recommended metadata size
