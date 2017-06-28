@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.64
+Version: 0.61.15.65
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,12 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Jun 28 2017 David Lehman <dlehman@redhat.com> - 0.61.15.65-1
+- Autoset metadata size on percent-based thin pools (vpodzime)
+  Resolves: rhbz#1463198
+- Do not try to autoset MD size on a thin pool with no size (vpodzime)
+  Related: rhbz#1463198
+
 * Wed Jun 07 2017 David Lehman <dlehman@redhat.com> - 0.61.15.64-1
 - Make sure an LV is deactivated before removal (vpodzime)
   Resolves: rhbz#1456821
