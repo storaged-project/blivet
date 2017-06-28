@@ -114,7 +114,9 @@ class Ext2FSCK(FSCK):
                     128: "Shared library error."}
 
     ext = availability.E2FSCK_APP
-    options = ["-f", "-p", "-C", "0"]
+    # "Force checking even if the file system seems clean." (we might get false results otherwise)
+    # + "Open the filesystem read-only, and assume an answer of `no' to all questions."
+    options = ["-f", "-n"]
 
     def _error_message(self, rc):
         msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
