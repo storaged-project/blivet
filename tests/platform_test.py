@@ -1,22 +1,7 @@
-from collections import namedtuple
 import unittest
 from unittest import mock
 
 from blivet import platform
-
-Weighted = namedtuple("Weighted", ["fstype", "mountpoint", "cls", "weight"])
-
-weighted = [Weighted(fstype=None, mountpoint="/", cls=platform.Platform, weight=0),
-            Weighted(fstype=None, mountpoint="/boot", cls=platform.Platform, weight=2000),
-            Weighted(fstype="biosboot", mountpoint=None, cls=platform.X86, weight=5000),
-            Weighted(fstype="efi", mountpoint="/boot/efi", cls=platform.EFI, weight=5000),
-            Weighted(fstype="efi", mountpoint="/boot/efi", cls=platform.MacEFI, weight=5000),
-            Weighted(fstype="efi", mountpoint="/boot/efi", cls=platform.Aarch64EFI, weight=5000),
-            Weighted(fstype="prepboot", mountpoint=None, cls=platform.IPSeriesPPC, weight=5000),
-            Weighted(fstype="appleboot", mountpoint=None, cls=platform.NewWorldPPC, weight=5000),
-            Weighted(fstype="vfat", mountpoint="/boot/uboot", cls=platform.omapARM, weight=6000),
-            Weighted(fstype=None, mountpoint="/", cls=platform.ARM, weight=-100),
-            Weighted(fstype=None, mountpoint="/", cls=platform.omapARM, weight=-100)]
 
 
 class PlatformTestCase(unittest.TestCase):
@@ -107,9 +92,3 @@ class PlatformTestCase(unittest.TestCase):
                 best_label_type = obj.best_disklabel_type(blivetdev)
                 self.assertEqual(obj.default_disklabel_type, "msdos")
                 self.assertEqual(best_label_type, "gpt")
-
-    def test_partition_weight(self):
-        for spec in weighted:
-            pl = spec.cls()
-            with self.subTest(spec=spec):
-                self.assertEqual(pl.weight(fstype=spec.fstype, mountpoint=spec.mountpoint), spec.weight)

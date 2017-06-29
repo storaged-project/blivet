@@ -517,14 +517,6 @@ class Blivet(object):
         else:
             name = "req%d" % self.next_id
 
-        if "weight" not in kwargs:
-            fmt = kwargs.get("fmt")
-            if fmt:
-                mountpoint = getattr(fmt, "mountpoint", None)
-
-                kwargs["weight"] = _platform.weight(mountpoint=mountpoint,
-                                                    fstype=fmt.type)
-
         return PartitionDevice(name, *args, **kwargs)
 
     def new_mdarray(self, *args, **kwargs):

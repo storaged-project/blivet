@@ -160,23 +160,11 @@ class Platform(object):
 
     def set_platform_boot_partition(self):
         """Return the default /boot partition for this platform."""
-        return [PartSpec(mountpoint="/boot", size=Size("1GiB"),
-                         weight=self.weight(mountpoint="/boot"))]
+        return [PartSpec(mountpoint="/boot", size=Size("1GiB"))]
 
     def set_default_partitioning(self):
         """Return the default platform-specific partitioning information."""
         return self.set_platform_bootloader_reqs() + self.set_platform_boot_partition()
-
-    def weight(self, fstype=None, mountpoint=None):
-        """ Given an fstype (as a string) or a mountpoint, return an integer
-            for the base sorting weight.  This is used to modify the sort
-            algorithm for partition requests, mainly to make sure bootable
-            partitions and /boot are placed where they need to be."""
-        # pylint: disable=unused-argument
-        if mountpoint == "/boot":
-            return 2000
-        else:
-            return 0
 
     @property
     def stage1_missing_error(self):
@@ -201,18 +189,8 @@ class X86(Platform):
     def set_platform_bootloader_reqs(self):
         """Return the default platform-specific partitioning information."""
         ret = Platform.set_platform_bootloader_reqs(self)
-        ret.append(PartSpec(fstype="biosboot", size=Size("1MiB"),
-                            weight=self.weight(fstype="biosboot")))
+        ret.append(PartSpec(fstype="biosboot", size=Size("1MiB")))
         return ret
-
-    def weight(self, fstype=None, mountpoint=None):
-        score = Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
-        if score:
-            return score
-        elif fstype == "biosboot":
-            return 5000
-        else:
-            return 0
 
 
 class EFI(Platform):
@@ -237,17 +215,8 @@ class EFI(Platform):
         ret = Platform.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="efi",
                             size=Size("20MiB"), max_size=Size("200MiB"),
-                            grow=True, weight=self.weight(fstype="efi")))
+                            grow=True))
         return ret
-
-    def weight(self, fstype=None, mountpoint=None):
-        score = Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
-        if score:
-            return score
-        elif fstype == "efi" or mountpoint == "/boot/efi":
-            return 5000
-        else:
-            return 0
 
 
 class MacEFI(EFI):
@@ -260,7 +229,7 @@ class MacEFI(EFI):
         ret = Platform.set_platform_bootloader_reqs(self)
         ret.append(PartSpec(mountpoint="/boot/efi", fstype="macefi",
                             size=Size("20MiB"), max_size=Size("200MiB"),
-                            grow=True, weight=self.weight(mountpoint="/boot/efi")))
+                            grow=True))
         return ret
 
 
@@ -290,18 +259,8 @@ class IPSeriesPPC(PPC):
 
     def set_platform_bootloader_reqs(self):
         ret = PPC.set_platform_bootloader_reqs(self)
-        ret.append(PartSpec(fstype="prepboot", size=Size("4MiB"),
-                            weight=self.weight(fstype="prepboot")))
+        ret.append(PartSpec(fstype="prepboot", size=Size("4MiB")))
         return ret
-
-    def weight(self, fstype=None, mountpoint=None):
-        score = Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
-        if score:
-            return score
-        elif fstype == "prepboot":
-            return 5000
-        else:
-            return 0
 
 
 class NewWorldPPC(PPC):
@@ -316,18 +275,8 @@ class NewWorldPPC(PPC):
 
     def set_platform_bootloader_reqs(self):
         ret = Platform.set_platform_bootloader_reqs(self)
-        ret.append(PartSpec(fstype="appleboot", size=Size("1MiB"),
-                            weight=self.weight(fstype="appleboot")))
+        ret.append(PartSpec(fstype="appleboot", size=Size("1MiB")))
         return ret
-
-    def weight(self, fstype=None, mountpoint=None):
-        score = Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
-        if score:
-            return score
-        elif fstype == "appleboot":
-            return 5000
-        else:
-            return 0
 
 
 class PS3(PPC):
@@ -353,8 +302,7 @@ class S390(Platform):
 
     def set_platform_boot_partition(self):
         """Return the default platform-specific partitioning information."""
-        return [PartSpec(mountpoint="/boot", size=Size("1GiB"),
-                         weight=self.weight(mountpoint="/boot"), lv=False)]
+        return [PartSpec(mountpoint="/boot", size=Size("1GiB"), lv=False)]
 
     def best_disklabel_type(self, device):
         """The best disklabel type for the specified device."""
@@ -389,15 +337,6 @@ class ARM(Platform):
             self._arm_machine = arch.get_arm_machine()
         return self._arm_machine
 
-    def weight(self, fstype=None, mountpoint=None):
-        """Return the ARM platform-specific weight for the / partition.
-           On ARM images '/' must be the last partition, so we try to
-           weight it accordingly."""
-        if mountpoint == "/":
-            return -100
-        else:
-            return Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
-
 
 class omapARM(ARM):
     _boot_stage1_format_types = ["vfat"]
@@ -412,28 +351,14 @@ class omapARM(ARM):
         """Return the ARM-OMAP platform-specific partitioning information."""
         ret = [PartSpec(mountpoint="/boot/uboot", fstype="vfat",
                         size=Size("20MiB"), max_size=Size("200MiB"),
-                        grow=True,
-                        weight=self.weight(fstype="vfat", mountpoint="/boot/uboot"))]
+                        grow=True)]
         return ret
 
     def set_default_partitioning(self):
         ret = ARM.set_default_partitioning(self)
         ret.append(PartSpec(mountpoint="/", fstype="ext4",
-                            size=Size("2GiB"), max_size=Size("3GiB"),
-                            weight=self.weight(mountpoint="/")))
+                            size=Size("2GiB"), max_size=Size("3GiB")))
         return ret
-
-    def weight(self, fstype=None, mountpoint=None):
-        """Return the ARM-OMAP platform-specific weights for the uboot
-           and / partitions.  On OMAP, uboot must be the first partition,
-           and '/' must be the last partition, so we try to weight them
-           accordingly."""
-        if fstype == "vfat" and mountpoint == "/boot/uboot":
-            return 6000
-        elif mountpoint == "/":
-            return -100
-        else:
-            return Platform.weight(self, fstype=fstype, mountpoint=mountpoint)
 
 
 def get_platform():

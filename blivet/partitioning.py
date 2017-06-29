@@ -66,11 +66,11 @@ def partition_compare(part1, part2):
     elif part1_start is not None and part2_start is not None:
         return compare(part1_start, part2_start)
 
-    if part1.req_base_weight:
-        ret -= part1.req_base_weight
+    if part1.weight:
+        ret -= part1.weight
 
-    if part2.req_base_weight:
-        ret += part2.req_base_weight
+    if part2.weight:
+        ret += part2.weight
 
     # more specific disk specs to the front of the list
     # req_disks being empty is equivalent to it being an infinitely long list
@@ -732,7 +732,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                     boot_index = req_disks.index(disk)
                     req_disks.insert(0, req_disks.pop(boot_index))
 
-        boot = _part.req_base_weight > 1000
+        boot = _part.weight > 1000
 
         log.debug("allocating partition: %s ; id: %d ; disks: %s ;\n"
                   "boot: %s ; primary: %s ; size: %s ; grow: %s ; "

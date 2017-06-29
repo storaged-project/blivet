@@ -70,7 +70,7 @@ class PartitionDevice(StorageDevice):
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=0, disk_tags=None):
+                 part_type=None, primary=False, weight=None, disk_tags=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -109,7 +109,7 @@ class PartitionDevice(StorageDevice):
             :keyword bootable: whether the partition is bootable
             :type bootable: bool
             :keyword weight: an initial sorting weight to assign
-            :type weight: int
+            :type weight: int or NoneType
             :keyword disk_tags: (str) tags defining candidate disk set
             :type disk_tags: iterable
 
@@ -403,7 +403,34 @@ class PartitionDevice(StorageDevice):
         self.parted_partition = _partition
 
     def _get_weight(self):
-        return self.req_base_weight
+        if isinstance(self.req_base_weight, int):
+            return self.req_base_weight
+
+        # now we have the weights for varying mountpoints and fstypes by platform
+        weight = 0
+        if self.format.mountable and self.format.mountpoint == "/boot":
+            weight = 2000
+        elif (self.format.mountable and
+              self.format.mountpoint == "/boot/efi" and
+              self.format.type in ("efi", "macefi") and
+              arch.is_efi()):
+            weight = 5000
+        elif arch.is_x86() and self.format.type == "biosboot" and not arch.is_efi():
+            weight = 5000
+        elif self.format.mountable and arch.is_arm():
+            # On ARM images '/' must be the last partition.
+            if self.format.mountpoint == "/":
+                weight = -100
+            elif (arch.is_omap_arm() and
+                  self.format.mountpoint == "/boot/uboot" and self.format.type == "vfat"):
+                weight = 6000
+        elif arch.is_ppc():
+            if arch.is_pmac() and self.format.type == "appleboot":
+                weight = 5000
+            elif arch.is_ipseries() and self.format.type == "prepboot":
+                weight = 5000
+
+        return weight
 
     def _set_weight(self, weight):
         self.req_base_weight = weight
