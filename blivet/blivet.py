@@ -42,7 +42,6 @@ from .size import Size
 from .devicetree import DeviceTree
 from .formats import get_default_filesystem_type
 from .flags import flags
-from .platform import platform as _platform
 from .formats import get_format
 from . import arch
 from . import devicefactory
@@ -1043,7 +1042,6 @@ class Blivet(object):
     @property
     def packages(self):
         pkgs = set()
-        pkgs.update(_platform.packages)
 
         # install support packages for all devices in the system
         for device in self.devices:
