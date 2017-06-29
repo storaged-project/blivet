@@ -71,6 +71,8 @@ PVFreeInfo = namedtuple("PVFreeInfo", ["pv", "size", "free"])
 ThPoolReserveSpec = namedtuple("ThPoolReserveSpec", ["percent", "min", "max"])
 """ A namedtuple class for specifying restrictions of space reserved for a thin pool to grow """
 
+DEFAULT_THPOOL_RESERVE = ThPoolReserveSpec(20, Size("1 GiB"), Size("100 GiB"))
+
 
 class NotTypeSpecific(Exception):
     """Exception class for invalid type-specific calls"""

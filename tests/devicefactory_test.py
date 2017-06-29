@@ -14,11 +14,11 @@ from blivet.devices import LUKSDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
+from blivet.devices.lvm import DEFAULT_THPOOL_RESERVE
 from blivet.errors import RaidError
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import create_sparse_tempfile
-from blivet.autopart import AUTOPART_THPOOL_RESERVE
 
 """
     Things we're still not testing:
@@ -472,10 +472,10 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
         delta = super(LVMThinPFactoryTestCase, self)._get_size_delta(devices=devices)
         if devices:
             # we reserve 20% in the VG for pool to grow
-            if sum(d.size for d in devices) * Decimal('0.20') > AUTOPART_THPOOL_RESERVE.min:
-                delta += sum(d.size for d in devices) * (AUTOPART_THPOOL_RESERVE.percent / 100)
+            if sum(d.size for d in devices) * Decimal('0.20') > DEFAULT_THPOOL_RESERVE.min:
+                delta += sum(d.size for d in devices) * (DEFAULT_THPOOL_RESERVE.percent / 100)
             else:
-                delta += AUTOPART_THPOOL_RESERVE.min
+                delta += DEFAULT_THPOOL_RESERVE.min
 
         return delta
 
