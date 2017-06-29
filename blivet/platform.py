@@ -31,6 +31,7 @@ import parted
 
 from . import arch
 from .devicelibs import raid
+from .formats import get_device_format_class
 from .flags import flags
 from .partspec import PartSpec
 from .size import Size
@@ -61,7 +62,6 @@ class Platform(object):
     _boot_partition_description = N_("First sector of boot partition")
     _boot_descriptions = {}
 
-    _disklabel_types = []
     _non_linux_format_types = []
 
     def __init__(self):
@@ -74,42 +74,16 @@ class Platform(object):
 
     def update_from_flags(self):
         if flags.gpt:
-            if not self.set_default_disklabel_type("gpt"):
+            disklabel_class = get_device_format_class("disklabel")
+            disklabel_types = disklabel_class.get_platform_label_types()
+            if "gpt" not in disklabel_types:
                 log.warning("GPT is not a supported disklabel on this platform. Using default "
-                            "disklabel %s instead.", self.default_disklabel_type)
+                            "disklabel %s instead.", disklabel_types[0])
+            else:
+                disklabel_class.set_default_label_type("gpt")
 
     def __call__(self):
         return self
-
-    @property
-    def disklabel_types(self):
-        """A list of valid disklabel types for this architecture."""
-        return self._disklabel_types
-
-    @property
-    def default_disklabel_type(self):
-        """The default disklabel type for this architecture."""
-        return self.disklabel_types[0]
-
-    def set_default_disklabel_type(self, disklabel):
-        """Make the disklabel the default
-
-           :param str disklabel: The disklabel type to set as default
-           :returns: True if successful False if disklabel not supported
-
-           If the disklabel is not supported on the platform it will return
-           False and make no change to the disklabel list.
-
-           If it is supported it will move it to the start of the list,
-           making it the default.
-        """
-        if disklabel not in self._disklabel_types:
-            return False
-
-        self._disklabel_types.remove(disklabel)
-        self._disklabel_types.insert(0, disklabel)
-        log.debug("Default disklabel has been set to %s", disklabel)
-        return True
 
     @property
     def boot_stage1_constraint_dict(self):
@@ -122,27 +96,6 @@ class Platform(object):
              "raid_member_types": self._boot_stage1_raid_member_types,
              "descriptions": dict((k, _(v)) for k, v in self._boot_descriptions.items())}
         return d
-
-    def best_disklabel_type(self, device):
-        """The best disklabel type for the specified device."""
-        if flags.testing:
-            return self.default_disklabel_type
-
-        parted_device = parted.Device(path=device.path)
-        label_type = self.default_disklabel_type
-        log.debug("default disklabel type for %s is %s", device.name, label_type)
-
-        # use the first supported type for this platform
-        # that is large enough to address the whole device
-        for lt in self.disklabel_types:
-            l = parted.freshDisk(device=parted_device, ty=lt)
-            if l.maxPartitionStartSector > parted_device.length:
-                label_type = lt
-                log.debug("selecting %s disklabel for %s based on size",
-                          label_type, device.name)
-                break
-
-        return label_type
 
     @property
     def packages(self):
@@ -180,7 +133,6 @@ class X86(Platform):
                           "partition": Platform._boot_partition_description,
                           "mdarray": Platform._boot_raid_description}
 
-    _disklabel_types = ["msdos", "gpt"]
     # XXX hpfs, if reported by blkid/udev, will end up with a type of None
     _non_linux_format_types = ["vfat", "ntfs", "hpfs"]
     _boot_stage1_missing_error = N_("You must include at least one MBR- or "
@@ -204,7 +156,6 @@ class EFI(Platform):
     _boot_descriptions = {"partition": _boot_efi_description,
                           "mdarray": Platform._boot_raid_description}
 
-    _disklabel_types = ["gpt"]
     # XXX hpfs, if reported by blkid/udev, will end up with a type of None
     _non_linux_format_types = ["vfat", "ntfs", "hpfs"]
     _boot_stage1_missing_error = N_("For a UEFI installation, you must include "
@@ -235,7 +186,6 @@ class MacEFI(EFI):
 
 class Aarch64EFI(EFI):
     _non_linux_format_types = ["vfat", "ntfs"]
-    _disklabel_types = ["gpt", "msdos"]
 
 
 class PPC(Platform):
@@ -252,7 +202,6 @@ class IPSeriesPPC(PPC):
     _boot_stage1_max_end = Size("4 GiB")
     _boot_prep_description = N_("PReP Boot Partition")
     _boot_descriptions = {"partition": _boot_prep_description}
-    _disklabel_types = ["msdos", "gpt"]
     _boot_stage1_missing_error = N_("You must include a PReP Boot Partition "
                                     "within the first 4GiB of an MBR- "
                                     "or GPT-formatted disk.")
@@ -267,7 +216,6 @@ class NewWorldPPC(PPC):
     _boot_stage1_format_types = ["appleboot"]
     _boot_apple_description = N_("Apple Bootstrap Partition")
     _boot_descriptions = {"partition": _boot_apple_description}
-    _disklabel_types = ["mac"]
     _non_linux_format_types = ["hfs", "hfs+"]
     _boot_stage1_missing_error = N_("You must include an Apple Bootstrap "
                                     "Partition on an Apple Partition Map-"
@@ -285,7 +233,6 @@ class PS3(PPC):
 
 class S390(Platform):
     _packages = ["s390utils"]
-    _disklabel_types = ["msdos", "dasd"]
     _boot_stage1_device_types = ["disk", "partition"]
     _boot_dasd_description = N_("DASD")
     _boot_mbr_description = N_("Master Boot Record")
@@ -304,21 +251,6 @@ class S390(Platform):
         """Return the default platform-specific partitioning information."""
         return [PartSpec(mountpoint="/boot", size=Size("1GiB"), lv=False)]
 
-    def best_disklabel_type(self, device):
-        """The best disklabel type for the specified device."""
-        if flags.testing:
-            return self.default_disklabel_type
-
-        # the device is FBA DASD
-        if blockdev.s390.dasd_is_fba(device.path):
-            return "msdos"
-        # the device is DASD
-        elif parted.Device(path=device.path).type == parted.DEVICE_DASD:
-            return "dasd"
-
-        # other types of devices
-        return super(S390, self).best_disklabel_type(device)
-
 
 class ARM(Platform):
     _arm_machine = None
@@ -327,7 +259,6 @@ class ARM(Platform):
     _boot_descriptions = {"disk": _boot_mbr_description,
                           "partition": Platform._boot_partition_description}
 
-    _disklabel_types = ["msdos", "gpt"]
     _boot_stage1_missing_error = N_("You must include at least one MBR-formatted "
                                     "disk as an install target.")
 

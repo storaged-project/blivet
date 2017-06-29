@@ -20,7 +20,11 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import gi
 import os
+
+gi.require_version("BlockDev", "2.0")
+from gi.repository import BlockDev as blockdev
 
 from ..storage_log import log_exception_info, log_method_call
 import parted
@@ -45,6 +49,7 @@ class DiskLabel(DeviceFormat):
     _type = "disklabel"
     _name = N_("partition table")
     _formattable = True                # can be formatted
+    _default_label_type = None
 
     def __init__(self, **kwargs):
         """
@@ -59,10 +64,9 @@ class DiskLabel(DeviceFormat):
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
 
+        self._label_type = ""
         if not self.exists:
-            self._label_type = kwargs.get("label_type", "msdos")
-        else:
-            self._label_type = ""
+            self._label_type = kwargs.get("label_type") or ""
 
         self._size = Size(0)
 
@@ -151,8 +155,8 @@ class DiskLabel(DeviceFormat):
 
     def fresh_parted_disk(self):
         """ Return a new, empty parted.Disk instance for this device. """
-        log_method_call(self, device=self.device, label_type=self._label_type)
-        return parted.freshDisk(device=self.parted_device, ty=self._label_type)
+        log_method_call(self, device=self.device, label_type=self.label_type)
+        return parted.freshDisk(device=self.parted_device, ty=self.label_type)
 
     @property
     def parted_disk(self):
@@ -173,10 +177,6 @@ class DiskLabel(DeviceFormat):
                     # same as if the device had no label (cause it really
                     # doesn't).
                     raise InvalidDiskLabelError()
-
-                # here's where we correct the ctor-supplied disklabel type for
-                # preexisting disklabels if the passed type was wrong
-                self._label_type = self._parted_disk.type
             else:
                 self._parted_disk = self.fresh_parted_disk()
 
@@ -218,11 +218,70 @@ class DiskLabel(DeviceFormat):
             log.info("DiskLabel.parted_device returning None")
         return self._parted_device
 
+    @classmethod
+    def get_platform_label_types(cls):
+        label_types = ["msdos", "gpt"]
+        if arch.is_pmac():
+            label_types = ["mac"]
+        elif arch.is_efi() and not arch.is_aarch64():
+            label_types = ["gpt"]
+        elif arch.is_s390():
+            label_types = ["msdos"]  # since 'dasd' is only for DASD, it isn't listed here
+
+        return label_types
+
+    @classmethod
+    def set_default_label_type(cls, labeltype):
+        cls._default_label_type = labeltype
+        log.debug("default disklabel has been set to %s", labeltype)
+
+    def _label_type_size_check(self, label_type):
+        if self.parted_device is None:
+            return False
+
+        label = parted.freshDisk(device=self.parted_device, ty=label_type)
+        return self.parted_device.length < label.maxPartitionStartSector
+
+    def _get_best_label_type(self):
+        label_type = self._default_label_type
+        label_types = self.get_platform_label_types()[:]
+        if label_type in label_types:
+            label_types.remove(label_type)
+        if label_type:
+            label_types.insert(0, label_type)
+
+        if arch.is_s390():
+            if blockdev.s390.dasd_is_fba(self.device):
+                # the device is FBA DASD
+                return "msdos"
+            elif self.parted_device.type == parted.DEVICE_DASD:
+                # the device is DASD
+                return "dasd"
+
+        for lt in label_types:
+            if self._label_type_size_check(lt):
+                log.debug("selecting %s disklabel for %s based on size",
+                          label_type, os.path.basename(self.device))
+                label_type = lt
+                break
+
+        return label_type
+
     @property
     def label_type(self):
         """ The disklabel type (eg: 'gpt', 'msdos') """
         if not self.supported:
             return self._label_type
+
+        # For new disklabels, user-specified type overrides built-in logic.
+        # XXX This determines the type we pass to parted.Disk
+        if not self.exists and not self._parted_disk:
+            if self._label_type:
+                lt = self._label_type
+            else:
+                lt = self._get_best_label_type()
+
+            return lt
 
         try:
             lt = self.parted_disk.type

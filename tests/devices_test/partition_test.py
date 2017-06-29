@@ -38,7 +38,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
     def test_target_size(self):
         with sparsetmpfile("targetsizetest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path)
+            disk.format = get_format("disklabel", device=disk.path, label_type="msdos")
             grain_size = Size(disk.format.alignment.grainSize)
             sector_size = Size(disk.format.parted_device.sectorSize)
             start = int(grain_size)
@@ -183,7 +183,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
     def test_extended_min_size(self):
         with sparsetmpfile("extendedtest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path)
+            disk.format = get_format("disklabel", device=disk.path, label_type="msdos")
             grain_size = Size(disk.format.alignment.grainSize)
             sector_size = Size(disk.format.parted_device.sectorSize)
 

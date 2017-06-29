@@ -412,11 +412,8 @@ class Blivet(object):
         destroy_action = ActionDestroyFormat(disk)
         self.devicetree.actions.add(destroy_action)
 
-        label_type = _platform.best_disklabel_type(disk)
-
         # create a new disklabel on the disk
-        new_label = get_format("disklabel", device=disk.path,
-                               label_type=label_type)
+        new_label = get_format("disklabel", device=disk.path)
         create_action = ActionCreateFormat(disk, fmt=new_label)
         self.devicetree.actions.add(create_action)
 
