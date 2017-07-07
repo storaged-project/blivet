@@ -24,6 +24,7 @@ import abc
 import inspect
 from threading import current_thread, RLock, Thread
 import pyudev
+import six
 import sys
 import time
 import traceback
@@ -48,22 +49,18 @@ def validate_cb(cb, kwargs=None, arg_count=None):
     kwargs = kwargs or []
     arg_count = arg_count or 0
 
-    params = inspect.signature(cb).parameters
+    if six.PY2:
+        argspec = inspect.getargspec(cb)  # pylint: disable=deprecated-method
+        if argspec.varargs or argspec.keywords:
+            return True
+        params = argspec.args
+    else:
+        params = list(inspect.signature(cb).parameters.keys())
+
     if len(params) < arg_count:
         return False
 
-    if not all(kw in params for kw in kwargs):
-        return False
-
-    for kw in kwargs:
-        if kw not in params:
-            return False
-
-        p = params[kw]
-        if p.kind not in (p.KEYWORD_ONLY, p.POSITIONAL_OR_KEYWORD):
-            return False
-
-    return True
+    return all(kw in params for kw in kwargs)
 
 
 #
@@ -129,7 +126,8 @@ class EventMask(util.ObjectID):
 #
 # EventManager
 #
-class EventManager(object, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class EventManager(object):
     def __init__(self, handler_cb=None, notify_cb=None, error_cb=None):
         self._handler_cb = None
         """ event handler (must accept 'event', 'notify_cb' kwargs """
@@ -216,7 +214,7 @@ class EventManager(object, metaclass=abc.ABCMeta):
     def _mask_event(self, event):
         """ Return True if this event should be ignored """
         with self._lock:
-            return next((m for m in self._mask_list if m.match(event)), None) is not None
+            return six.next((m for m in self._mask_list if m.match(event)), None) is not None
 
     def add_mask(self, device=None, action=None, partitions=False):
         """ Add an event mask and return the new :class:`EventMask`.
@@ -272,8 +270,8 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
         t = Thread(target=self._run_event_handler,
                    name="event%d" % event.id,
-                   kwargs={"event": event},
-                   daemon=True)
+                   kwargs={"event": event})
+        t.daemon = True  # py2 compat
         t.start()
 
     def _run_event_handler(self, event):
@@ -296,7 +294,7 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
 class UdevEventManager(EventManager):
     def __init__(self, handler_cb=None, notify_cb=None):
-        super().__init__(handler_cb=handler_cb, notify_cb=notify_cb)
+        super(UdevEventManager, self).__init__(handler_cb=handler_cb, notify_cb=notify_cb)
         self._pyudev_observer = None
 
     @property
@@ -305,7 +303,7 @@ class UdevEventManager(EventManager):
 
     def enable(self):
         """ Enable monitoring and handling of block device uevents. """
-        super().enable()
+        super(UdevEventManager, self).enable()
         monitor = pyudev.Monitor.from_netlink(udev.global_udev)
         monitor.filter_by("block")
         self._pyudev_observer = pyudev.MonitorObserver(monitor,
@@ -317,7 +315,7 @@ class UdevEventManager(EventManager):
 
     def disable(self):
         """ Disable monitoring and handling of block device uevents. """
-        super().disable()
+        super(UdevEventManager, self).disable()
         if self.enabled:
             self._pyudev_observer.stop()
 

@@ -28,6 +28,7 @@ import time
 from collections import namedtuple
 from functools import wraps
 from enum import Enum
+import six
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -538,10 +539,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
             for pv in self.pvs:
                 pv.format.vg_name = None
 
-        super().remove_hook(modparent=modparent)
+        super(LVMVolumeGroupDevice, self).remove_hook(modparent=modparent)
 
     def add_hook(self, new=True):
-        super().add_hook(new=new)
+        super(LVMVolumeGroupDevice, self).add_hook(new=new)
         if new:
             return
 
@@ -559,23 +560,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # reserved percent/space
 
     def is_name_valid(self, name):
-        # No . or ..
-        if name == '.' or name == '..':
-            return False
-
-        # Check that all characters are in the allowed set and that the name
-        # does not start with a -
-        if not re.match('^[a-zA-Z0-9+_.][a-zA-Z0-9+_.-]*$', name):
-            return False
-
-        # According to the LVM developers, vgname + lvname is limited to 126 characters
-        # minus the number of hyphens, and possibly minus up to another 8 characters
-        # in some unspecified set of situations. Instead of figuring all of that out,
-        # no one gets a vg or lv name longer than, let's say, 55.
-        if len(name) > 55:
-            return False
-
-        return True
+        return lvm.is_lvm_name_valid(name)
 
 
 class LVMLogicalVolumeBase(DMDevice, RaidDevice):
@@ -865,7 +850,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         if self.vg is not None:
             return "%s-%s" % (self.vg.name, self._name)
         else:
-            return super()._get_name()
+            return super(LVMLogicalVolumeBase, self)._get_name()
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
@@ -1534,6 +1519,9 @@ class LVMThinPoolMixin(object):
                                                                      100))  # snapshots
         log.debug("Recommended metadata size: %s", self._metadata_size)
 
+        self._metadata_size = self.vg.align(self._metadata_size, roundup=True)
+        log.debug("Rounded metadata size to extents: %s", self._metadata_size)
+
         log.debug("Adjusting size from %s to %s", self.size, self.size - self._metadata_size)
         self.size = self.size - self._metadata_size
 
@@ -1557,8 +1545,8 @@ class LVMThinPoolMixin(object):
                 extra["profile"] = profile_name
             if self.chunk_size:
                 extra["chunksize"] = str(int(self.chunk_size))
-            data_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
-            meta_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
+            data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
+            meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
             blockdev.lvm.thpool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
             # TODO: update the names of the internal LVs here
         else:
@@ -1887,7 +1875,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def vg(self):
         """This Logical Volume's Volume Group."""
-        return super().vg
+        return super(LVMLogicalVolumeDevice, self).vg
 
     @type_specific
     def _set_size(self, newsize):
@@ -1919,7 +1907,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def vg_space_used(self):
         """ Space occupied by this LV, not including snapshots. """
-        return super().vg_space_used
+        return super(LVMLogicalVolumeDevice, self).vg_space_used
 
     @type_specific
     def _set_format(self, fmt):
@@ -1946,12 +1934,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @property
     @type_specific
     def growable(self):
-        return super().growable
+        return super(LVMLogicalVolumeDevice, self).growable
 
     @property
     @type_specific
     def readonly(self):
-        return super().readonly
+        return super(LVMLogicalVolumeDevice, self).readonly
 
     @property
     @type_specific
@@ -2075,12 +2063,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @property
     @type_specific
     def resizable(self):
-        return super().resizable
+        return super(LVMLogicalVolumeDevice, self).resizable
 
     @property
     @type_specific
     def format_immutable(self):
-        return super().format_immutable
+        return super(LVMLogicalVolumeDevice, self).format_immutable
 
     @type_specific
     def depends_on(self, dep):
@@ -2129,10 +2117,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
     @type_specific
     def is_name_valid(self, name):
-        # Check that the LV name is valid
-
-        # Start with the checks shared with volume groups
-        if not LVMVolumeGroupDevice.is_name_valid(self, name):
+        if not lvm.is_lvm_name_valid(name):
             return False
 
         # And now the ridiculous ones

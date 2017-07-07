@@ -57,12 +57,12 @@ class LUKSFormatPopulator(FormatPopulator):
     _type_specifier = "luks"
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(LUKSFormatPopulator, self)._get_kwargs()
         kwargs["name"] = "luks-%s" % udev.device_get_uuid(self.data)
         return kwargs
 
     def run(self):
-        super().run()
+        super(LUKSFormatPopulator, self).run()
         if not self.device.format.uuid:
             log.info("luks device %s has no uuid", self.device.path)
             return

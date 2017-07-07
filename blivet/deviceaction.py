@@ -20,6 +20,8 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+from six import add_metaclass
+
 from . import util
 from . import udev
 from .util import get_current_entropy
@@ -102,7 +104,8 @@ def resize_type_from_string(type_string):
             return k
 
 
-class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
+@add_metaclass(SynchronizedMeta)
+class DeviceAction(util.ObjectID):
 
     """ An action that will be carried out in the future on a Device.
 
@@ -554,7 +557,7 @@ class ActionCreateFormat(DeviceAction):
             raise ValueError("specified format already exists")
 
         if not self._format.formattable:
-            raise ValueError("resource to create this format %s is unavailable" % fmt)
+            raise ValueError("resource to create this format %s is unavailable" % self._format.type)
 
     def apply(self):
         """ apply changes related to the action to the device(s) """

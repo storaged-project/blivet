@@ -1,6 +1,8 @@
+import test_compat  # pylint: disable=unused-import
+
 import random
+from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 from unittest import TestCase
-from unittest.mock import Mock, patch
 
 import dbus
 

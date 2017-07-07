@@ -73,7 +73,7 @@ setup(name='blivet',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
-      url='http://github.com/rhinstaller/blivet',
+      url='http://github.com/storaged-project/blivet',
       data_files=data_files,
       packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers']
 )

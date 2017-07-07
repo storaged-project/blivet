@@ -85,7 +85,7 @@ class LVMFormatPopulator(FormatPopulator):
     _type_specifier = "lvmpv"
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(LVMFormatPopulator, self)._get_kwargs()
 
         pv_info = pvs_info.cache.get(self.device.path, None)
 
@@ -395,7 +395,7 @@ class LVMFormatPopulator(FormatPopulator):
 
     def run(self):
         log_method_call(self, pv=self.device.name)
-        super().run()
+        super(LVMFormatPopulator, self).run()
         self._add_vg_device()
         self._update_lvs()
 

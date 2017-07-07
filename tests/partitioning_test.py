@@ -1,6 +1,8 @@
+import test_compat  # pylint: disable=unused-import
 
+from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
+import six
 import unittest
-from mock import Mock, patch
 
 import parted
 
@@ -35,9 +37,9 @@ from blivet.flags import flags
 # disklabel-type-specific constants
 # keys: disklabel type string
 # values: 3-tuple of (max_primary_count, supports_extended, max_logical_count)
-disklabel_types = {'dos': (4, True, 11),
-                   'gpt': (128, False, 0),
-                   'mac': (62, False, 0)}
+disklabel_types = {'dos': (4, True),
+                   'gpt': (128, False),
+                   'mac': (62, False)}
 
 
 class PartitioningTestCase(unittest.TestCase):
@@ -49,7 +51,7 @@ class PartitioningTestCase(unittest.TestCase):
 
         disk.type = disk_type
         label_type_info = disklabel_types[disk_type]
-        (max_primaries, supports_extended, max_logicals) = label_type_info
+        (max_primaries, supports_extended) = label_type_info
 
         # primary partitions
         disk.primaryPartitionCount = primary_count
@@ -60,7 +62,6 @@ class PartitioningTestCase(unittest.TestCase):
         disk.getExtendedPartition = Mock(return_value=has_extended)
 
         # logical partitions
-        disk.getMaxLogicalPartitions = Mock(return_value=max_logicals)
         disk.getLogicalPartitions = Mock(return_value=[0] * logical_count)
 
         return disk
@@ -92,26 +93,25 @@ class PartitioningTestCase(unittest.TestCase):
                              logical_count=9)
         self.assertEqual(get_next_partition_type(disk), parted.PARTITION_LOGICAL)
 
-        # four primaries and an extended, no available logical -> None
+        # four primaries and an extended -> logical
         disk = self.get_disk(disk_type="dos", primary_count=4, has_extended=True,
                              logical_count=11)
-        self.assertEqual(get_next_partition_type(disk), None)
+        self.assertEqual(get_next_partition_type(disk), parted.PARTITION_LOGICAL)
 
         # four primaries and no extended -> None
         disk = self.get_disk(disk_type="dos", primary_count=4,
                              has_extended=False)
         self.assertEqual(get_next_partition_type(disk), None)
 
-        # free primary slot, extended, no free logical slot -> primary
+        # free primary slot, extended -> primary
         disk = self.get_disk(disk_type="dos", primary_count=3, has_extended=True,
                              logical_count=11)
         self.assertEqual(get_next_partition_type(disk), parted.PARTITION_NORMAL)
 
-        # free primary slot, extended, no free logical slot w/ no_primary
-        # -> None
+        # free primary slot, extended w/ no_primary -> logical
         disk = self.get_disk(disk_type="dos", primary_count=3, has_extended=True,
                              logical_count=11)
-        self.assertEqual(get_next_partition_type(disk, no_primary=True), None)
+        self.assertEqual(get_next_partition_type(disk, no_primary=True), parted.PARTITION_LOGICAL)
 
         #
         # GPT
@@ -220,8 +220,8 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a logical partition to a primary free region
             #
-            with self.assertRaisesRegex(parted.PartitionException,
-                                        "no extended partition"):
+            with six.assertRaisesRegex(self, parted.PartitionException,
+                                       "no extended partition"):
                 part = add_partition(disk.format, free, parted.PARTITION_LOGICAL,
                                      Size("10 MiB"))
 
@@ -252,7 +252,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a primary partition to an extended free region
             #
-            with self.assertRaisesRegex(parted.PartitionException, "overlap"):
+            with six.assertRaisesRegex(self, parted.PartitionException, "overlap"):
                 part = add_partition(disk.format, all_free[1],
                                      parted.PARTITION_NORMAL,
                                      Size("10 MiB"), all_free[1].start)

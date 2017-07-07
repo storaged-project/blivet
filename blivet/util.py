@@ -309,7 +309,7 @@ def total_memory():
     from .size import Size
 
     with open("/proc/meminfo") as lines:
-        line = next(l for l in lines if l.startswith("MemTotal:"))
+        line = six.next(l for l in lines if l.startswith("MemTotal:"))
         mem = Size("%s KiB" % line.split()[1])
 
     # Because /proc/meminfo only gives us the MemTotal (total physical RAM
@@ -1052,7 +1052,8 @@ class EvalMode(Enum):
     # TODO: no_sooner_than, if_changed,...
 
 
-class DependencyGuard(object, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DependencyGuard(object):
 
     error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
 

@@ -1,6 +1,7 @@
+import test_compat  # pylint: disable=unused-import
 
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
-from unittest.mock import patch
 
 from blivet.devices import DiskDevice, FcoeDiskDevice, iScsiDiskDevice, MultipathDevice, StorageDevice, ZFCPDiskDevice
 from blivet.devices.lib import Tags

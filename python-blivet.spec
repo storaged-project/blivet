@@ -1,6 +1,15 @@
+%define is_rhel 0%{?rhel} != 0
+
+# python3 is not available on RHEL
+%if %{is_rhel}
+%define with_python3 0
+%else
+%define with_python3 1
+%endif
+
 Summary:  A python module for system storage configuration
 Name: python-blivet
-Url: http://fedoraproject.org/wiki/blivet
+Url: https://www-rhstorage.rhcloud.com/projects/blivet
 Version: 2.0.2
 
 #%%global prerelease .b1
@@ -11,7 +20,7 @@ License: LGPLv2+
 Group: System Environment/Libraries
 %global realname blivet
 %global realversion %{version}%{?prerelease}
-Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}.tar.gz
+Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -25,16 +34,34 @@ Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}
 %global pyudevver 0.18
 
 BuildArch: noarch
-BuildRequires: gettext
-BuildRequires: python3-pocketlint >= %{pocketlintver}
-BuildRequires: python3-devel python3-setuptools
 
 %description
 The python-blivet package is a python module for examining and modifying
 storage configuration.
 
+%package -n %{realname}-data
+Summary: Data for the %{realname} python module.
+
+BuildRequires: systemd
+
+Conflicts: python-blivet < 1:2.0.0
+Conflicts: python3-blivet < 1:2.0.0
+
+%description -n %{realname}-data
+The %{realname}-data package provides data files required by the %{realname}
+python module.
+
+%if %{with_python3}
 %package -n python3-%{realname}
 Summary: A python3 package for examining and modifying storage configuration.
+
+%{?python_provide:%python_provide python3-%{realname}}
+
+BuildRequires: gettext
+BuildRequires: python3-pocketlint >= %{pocketlintver}
+BuildRequires: python3-devel
+BuildRequires: python3-setuptools
+
 Requires: python3
 Requires: python3-six
 Requires: python3-kickstart
@@ -51,34 +78,97 @@ Requires: python3-hawkey
 Requires: python3-gobject-base
 Requires: python3-libmount
 Requires: systemd-udev
-Obsoletes: blivet-data < 1:2.0.3
-Obsoletes: python-blivet < 1:2.0.3
+Requires: %{realname}-data = %{epoch}:%{version}-%{release}
+
+Obsoletes: blivet-data < 1:2.0.0
+Obsoletes: python-blivet < 1:2.0.0
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
 configuration.
+%endif
+
+%package -n python2-%{realname}
+Summary: A python2 package for examining and modifying storage configuration.
+
+%{?python_provide:%python_provide python2-%{realname}}
+
+BuildRequires: gettext
+BuildRequires: python2-pocketlint >= %{pocketlintver}
+BuildRequires: python2-devel
+
+%if %{is_rhel}
+BuildRequires: python-setuptools
+%else
+BuildRequires: python2-setuptools
+%endif
+
+Requires: python2
+Requires: python-six
+Requires: pykickstart
+Requires: python-pyudev >= %{pyudevver}
+Requires: parted >= %{partedver}
+Requires: pyparted >= %{pypartedver}
+Requires: libselinux-python
+Requires: python-blockdev >= %{libblockdevver}
+Requires: libblockdev-plugins-all >= %{libblockdevver}
+Requires: python-bytesize >= %{libbytesizever}
+Requires: util-linux >= %{utillinuxver}
+Requires: lsof
+Requires: python-hawkey
+Requires: %{realname}-data = %{epoch}:%{version}-%{release}
+
+%if %{is_rhel}
+Requires: udev
+Requires: pygobject3
+%else
+Requires: systemd-udev
+Requires: python-gobject-base
+%endif
+
+Obsoletes: blivet-data < 1:2.0.0
+Obsoletes: python-blivet < 1:2.0.0
+
+%description -n python2-%{realname}
+The python2-%{realname} is a python2 package for examining and modifying storage
+configuration.
 
 %prep
-%setup -q -n %{realname}-%{realversion}
-
-rm -rf %{py3dir}
-cp -a . %{py3dir}
+%autosetup -n %{realname}-%{realversion}
 
 %build
-make
+make PYTHON=%{__python2}
+
+%if %{with_python3}
+make PYTHON=%{__python3}
+%endif
 
 %install
+make PYTHON=%{__python2} DESTDIR=%{buildroot} install
+
+%if %{with_python3}
 make PYTHON=%{__python3} DESTDIR=%{buildroot} install
+%endif
+
 %find_lang %{realname}
 
-%files -n python3-%{realname} -f %{realname}.lang
-%license COPYING
-%doc README ChangeLog examples
-%{python3_sitelib}/*
+%files -n %{realname}-data -f %{realname}.lang
 %{_sysconfdir}/dbus-1/system.d/*
 %{_datadir}/dbus-1/system-services/*
 %{_libexecdir}/*
-/usr/lib/systemd/system/*
+%{_unitdir}/*
+
+%files -n python2-%{realname}
+%license COPYING
+%doc README ChangeLog examples
+%{python2_sitelib}/*
+
+%if %{with_python3}
+%files -n python3-%{realname}
+%license COPYING
+%doc README ChangeLog examples
+%{python3_sitelib}/*
+%endif
 
 %changelog
 * Mon Apr 04 2016 David Lehman <dlehman@redhat.com> - 2.0.2-1

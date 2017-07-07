@@ -26,6 +26,7 @@ import shelve
 import contextlib
 import time
 import functools
+import six
 
 from .storage_log import log_method_call, log_exception_info
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice
@@ -53,7 +54,8 @@ import logging
 log = logging.getLogger("blivet")
 
 
-class Blivet(object, metaclass=SynchronizedMeta):
+@six.add_metaclass(SynchronizedMeta)
+class Blivet(object):
 
     """ Top-level class for managing storage configuration. """
 

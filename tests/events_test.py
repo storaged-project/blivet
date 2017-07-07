@@ -1,6 +1,8 @@
+import test_compat  # pylint: disable=unused-import
 
+from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
+import time
 from unittest import TestCase
-from unittest.mock import Mock, patch
 
 from blivet.events.manager import Event, EventManager
 
@@ -28,6 +30,7 @@ class EventManagerTest(TestCase):
         device = "sdc"
         action = "add"
         mgr.handle_event(action, device)
+        time.sleep(1)
         self.assertEqual(handler_cb.call_count, 1)
         event = handler_cb.call_args[1]["event"]  # pylint: disable=unsubscriptable-object
         self.assertEqual(event.device, device)
@@ -37,6 +40,7 @@ class EventManagerTest(TestCase):
         handler_cb.reset_mock()
         mask = mgr.add_mask(device=device, action=action + 'x')
         mgr.handle_event(action, device)
+        time.sleep(1)
         self.assertEqual(handler_cb.call_count, 1)
         event = handler_cb.call_args[1]["event"]  # pylint: disable=unsubscriptable-object
         self.assertEqual(event.device, device)
@@ -46,6 +50,7 @@ class EventManagerTest(TestCase):
         handler_cb.reset_mock()
         mask = mgr.add_mask(device=device + 'x', action=action)
         mgr.handle_event(action, device)
+        time.sleep(1)
         self.assertEqual(handler_cb.call_count, 1)
         event = handler_cb.call_args[1]["event"]  # pylint: disable=unsubscriptable-object
         self.assertEqual(event.device, device)
@@ -56,6 +61,7 @@ class EventManagerTest(TestCase):
         mgr.remove_mask(mask)
         mask = mgr.add_mask(device=device, action=action)
         mgr.handle_event(action, device)
+        time.sleep(1)
         self.assertEqual(handler_cb.call_count, 0)
 
         # device-only mask matches -> event is ignored
@@ -63,6 +69,7 @@ class EventManagerTest(TestCase):
         mgr.remove_mask(mask)
         mask = mgr.add_mask(device=device)
         mgr.handle_event(action, device)
+        time.sleep(1)
         self.assertEqual(handler_cb.call_count, 0)
 
         # action-only mask matches -> event is ignored
@@ -70,5 +77,6 @@ class EventManagerTest(TestCase):
         mgr.remove_mask(mask)
         mask = mgr.add_mask(action=action)
         mgr.handle_event(action, device)
+        time.sleep(1)
         self.assertEqual(handler_cb.call_count, 0)
         mgr.remove_mask(mask)

@@ -26,7 +26,7 @@ from .object import DBusObject
 class DBusDevice(DBusObject):
     def __init__(self, device, manager):
         self._device = device
-        super().__init__(manager)
+        super(DBusDevice, self).__init__(manager)
 
     @property
     def id(self):
