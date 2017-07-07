@@ -23,6 +23,7 @@
 import os
 import pprint
 import re
+import six
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -49,7 +50,8 @@ log = logging.getLogger("blivet")
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 
-class DeviceTreeBase(object, metaclass=SynchronizedMeta):
+@six.add_metaclass(SynchronizedMeta)
+class DeviceTreeBase(object):
     """ A quasi-tree that represents the devices in the system.
 
         The tree contains a list of :class:`~.devices.StorageDevice` instances,
@@ -484,7 +486,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         result = None
         if path:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if d.sysfs_path == path), None)
+            result = six.next((d for d in devices if d.sysfs_path == path), None)
         log_method_return(self, result)
         return result
 
@@ -501,7 +503,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         result = None
         if uuid:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if d.uuid == uuid or d.format.uuid == uuid), None)
+            result = six.next((d for d in devices if d.uuid == uuid or d.format.uuid == uuid), None)
         log_method_return(self, result)
         return result
 
@@ -518,7 +520,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         result = None
         if label:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if getattr(d.format, "label", None) == label), None)
+            result = six.next((d for d in devices if getattr(d.format, "label", None) == label), None)
         log_method_return(self, result)
         return result
 
@@ -535,9 +537,9 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         result = None
         if name:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = next((d for d in devices if d.name == name or
-                           (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
-                          None)
+            result = six.next((d for d in devices if d.name == name or
+                               (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
+                              None)
         log_method_return(self, result)
         return result
 
@@ -561,9 +563,9 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             # The usual order of the devices list is one where leaves are at
             # the end. So that the search can prefer leaves to interior nodes
             # the list that is searched is the reverse of the devices list.
-            result = next((d for d in reversed(list(devices)) if d.path == path or
-                           (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
-                          None)
+            result = six.next((d for d in reversed(list(devices)) if d.path == path or
+                               (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
+                              None)
 
         log_method_return(self, result)
         return result
@@ -579,7 +581,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         """
         log_method_call(self, id_num=id_num, incomplete=incomplete, hidden=hidden)
         devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-        result = next((d for d in devices if d.id == id_num), None)
+        result = six.next((d for d in devices if d.id == id_num), None)
         log_method_return(self, result)
         return result
 

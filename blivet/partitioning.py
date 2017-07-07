@@ -136,8 +136,6 @@ def get_next_partition_type(disk, no_primary=None):
     part_type = None
     extended = disk.getExtendedPartition()
     supports_extended = disk.supportsFeature(parted.DISK_TYPE_EXTENDED)
-    logical_count = len(disk.getLogicalPartitions())
-    max_logicals = disk.getMaxLogicalPartitions()
     primary_count = disk.primaryPartitionCount
 
     if primary_count < disk.maxPrimaryPartitionCount:
@@ -153,17 +151,17 @@ def get_next_partition_type(disk, no_primary=None):
                 # there is an extended and a free primary
                 if not no_primary:
                     part_type = parted.PARTITION_NORMAL
-                elif logical_count < max_logicals:
-                    # we have an extended with logical slots, so use one.
+                else:
+                    # we have an extended, so use it.
                     part_type = parted.PARTITION_LOGICAL
         else:
             # there are two or more primary slots left. use one unless we're
             # not supposed to make primaries.
             if not no_primary:
                 part_type = parted.PARTITION_NORMAL
-            elif extended and logical_count < max_logicals:
+            elif extended:
                 part_type = parted.PARTITION_LOGICAL
-    elif extended and logical_count < max_logicals:
+    elif extended:
         part_type = parted.PARTITION_LOGICAL
 
     return part_type
@@ -1068,8 +1066,9 @@ class PartitionRequest(Request):
         sector_size = Size(partition.parted_partition.disk.device.sectorSize)
 
         if partition.req_grow:
-            req_format_max_size = min((size for size in (partition.req_max_size, partition.format.max_size)
-                                       if size > 0), default=Size(0))
+            mins = [size for size in (partition.req_max_size, partition.format.max_size)
+                    if size > 0]
+            req_format_max_size = min(mins) if mins else Size(0)
             limits = [l for l in (size_to_sectors(req_format_max_size, sector_size),
                                   partition.parted_partition.disk.maxPartitionLength) if l > 0]
 
@@ -2023,7 +2022,7 @@ def grow_lvm(storage):
         for lv in fatlvs:
             if lv in vg.thinpools:
                 # make sure the pool's base size is at least the sum of its lvs'
-                lv.req_size = max(lv.req_size, lv.used_space)
+                lv.req_size = max(lv.min_size, lv.req_size, lv.used_space)
                 lv.size = lv.req_size
 
         # establish sizes for the percentage-based requests (which are fixed)

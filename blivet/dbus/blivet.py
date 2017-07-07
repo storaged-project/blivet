@@ -21,13 +21,13 @@ import sys
 
 import dbus
 
-from blivet import Blivet
-from blivet.callbacks import callbacks
-from blivet.devicefactory import DEVICE_TYPE_PARTITION, DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP
-from blivet.devicefactory import DEVICE_TYPE_MD, DEVICE_TYPE_BTRFS
-from blivet.errors import StorageError
-from blivet.size import Size
-from blivet.util import ObjectID
+from .. import Blivet
+from ..callbacks import callbacks
+from ..devicefactory import DEVICE_TYPE_PARTITION, DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP
+from ..devicefactory import DEVICE_TYPE_MD, DEVICE_TYPE_BTRFS
+from ..errors import StorageError
+from ..size import Size
+from ..util import ObjectID
 from .action import DBusAction
 from .constants import BLIVET_INTERFACE, BLIVET_OBJECT_PATH, BUS_NAME
 from .device import DBusDevice
@@ -47,7 +47,7 @@ class DBusBlivet(DBusObject):
         state.
     """
     def __init__(self, manager):
-        super().__init__(manager)
+        super(DBusBlivet, self).__init__(manager)
         self._blivet = Blivet()
         self._id = ObjectID().id
         self._manager.add_object(self)

@@ -298,8 +298,6 @@ class FS(DeviceFormat):
         """ Update this filesystem's current and minimum size (for resize). """
 
         #   This method ensures:
-        #   * If there are fsck errors, self._resizable is False.
-        #       Note that if there is no fsck program, no errors are possible.
         #   * If it is not possible to obtain the current size of the
         #       filesystem by interrogating the filesystem, self._resizable
         #       is False (and self._size is 0).
@@ -319,32 +317,26 @@ class FS(DeviceFormat):
         self._min_instance_size = Size(0)
         self._resizable = self.__class__._resizable
 
-        # We can't allow resize if the filesystem has errors.
+        # try to gather current size info
+        self._size = Size(0)
         try:
-            self.do_check()
-        except FSError:
-            self._resizable = False
-            raise
-        finally:
-            # try to gather current size info anyway
-            self._size = Size(0)
-            try:
-                if self._info.available:
-                    self._current_info = self._info.do_task()
-            except FSError as e:
-                log.info("Failed to obtain info for device %s: %s", self.device, e)
-            try:
-                self._size = self._size_info.do_task()
-                self._min_instance_size = self._size
-            except (FSError, NotImplementedError) as e:
-                log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+            if self._info.available:
+                self._current_info = self._info.do_task()
+        except FSError as e:
+            log.info("Failed to obtain info for device %s: %s", self.device, e)
+        try:
+            self._size = self._size_info.do_task()
+        except (FSError, NotImplementedError) as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+        else:
+            self._min_instance_size = self._size
 
-            # We absolutely need a current size to enable resize. To shrink the
-            # filesystem we need a real minimum size provided by the resize
-            # tool. Failing that, we can default to the current size,
-            # effectively disabling shrink.
-            if self._size == Size(0):
-                self._resizable = False
+        # We absolutely need a current size to enable resize. To shrink the
+        # filesystem we need a real minimum size provided by the resize
+        # tool. Failing that, we can default to the current size,
+        # effectively disabling shrink.
+        if self._size == Size(0):
+            self._resizable = False
 
         try:
             result = self._minsize.do_task()
@@ -1088,7 +1080,7 @@ class XFS(FS):
         finally:
             os.rmdir(tmpdir)
 
-        super().write_uuid()
+        super(XFS, self).write_uuid()
 
 register_device_format(XFS)
 

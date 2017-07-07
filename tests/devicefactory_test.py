@@ -1,4 +1,5 @@
 
+import six
 import unittest
 from decimal import Decimal
 import os
@@ -566,16 +567,16 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
                                                     size=Size("1 GiB"),
                                                     raid_level=0)
 
-        with self.assertRaisesRegex(devicefactory.DeviceFactoryError, "must have some RAID level"):
+        with six.assertRaisesRegex(self, devicefactory.DeviceFactoryError, "must have some RAID level"):
             devicefactory.get_device_factory(
                 self.b,
                 devicefactory.DEVICE_TYPE_MD,
                 size=Size("1 GiB"))
 
-        with self.assertRaisesRegex(RaidError, "requires at least"):
+        with six.assertRaisesRegex(self, RaidError, "requires at least"):
             factory1._get_device_space()
 
-        with self.assertRaisesRegex(RaidError, "requires at least"):
+        with six.assertRaisesRegex(self, RaidError, "requires at least"):
             factory1._configure()
 
         self.assertEqual(factory1.container_list, [])
@@ -588,7 +589,7 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         ]
         self.assertIsNotNone(factory1._get_new_device(parents=parents))
 
-        with self.assertRaisesRegex(RaidError, "requires at least"):
+        with six.assertRaisesRegex(self, RaidError, "requires at least"):
             factory2._get_device_space()
 
         self.assertEqual(factory2.container_list, [])

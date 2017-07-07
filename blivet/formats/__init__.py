@@ -28,6 +28,7 @@ from gi.repository import BlockDev as blockdev
 
 import os
 import importlib
+from six import add_metaclass
 
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
@@ -132,7 +133,8 @@ def get_device_format_class(fmt_type):
     return fmt
 
 
-class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
+@add_metaclass(SynchronizedMeta)
+class DeviceFormat(ObjectID):
 
     """ Generic device format.
 

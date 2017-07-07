@@ -1,7 +1,10 @@
-import os
+import test_compat  # pylint: disable=unused-import
+
 import gi
+import os
+from six.moves.mock import call, patch, sentinel, Mock, PropertyMock  # pylint: disable=no-name-in-module,import-error
+import six
 import unittest
-from unittest.mock import call, patch, sentinel, Mock, PropertyMock
 
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
@@ -28,7 +31,7 @@ from blivet.size import Size
 try:
     from pyanaconda import kickstart
     pyanaconda_present = True
-except ImportError:
+except (ImportError, AttributeError):
     pyanaconda_present = False
 
 
@@ -340,10 +343,13 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
                 return sentinel.non_vg_device
 
         get_device_by_name.side_effect = _get_device_by_name2
-        with self.assertLogs('blivet', level='WARNING') as log_cm:
+        if six.PY3:
+            with self.assertLogs('blivet', level='WARNING') as log_cm:
+                self.assertEqual(helper.run(), sentinel.lv_device)
+            log_entry = "WARNING:blivet:found non-vg device with name %s" % sentinel.vg_name
+            self.assertTrue(log_entry in log_cm.output)
+        else:
             self.assertEqual(helper.run(), sentinel.lv_device)
-        log_entry = "WARNING:blivet:found non-vg device with name %s" % sentinel.vg_name
-        self.assertTrue(log_entry in log_cm.output)
 
 
 class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -987,7 +993,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         def gdbu(uuid, **kwargs):  # pylint: disable=unused-argument
             # This version doesn't check format UUIDs
-            return next((d for d in devicetree.devices if d.uuid == uuid), None)
+            return six.next((d for d in devicetree.devices if d.uuid == uuid), None)
         get_device_by_uuid.side_effect = gdbu
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:

@@ -1,10 +1,12 @@
 # vim:set fileencoding=utf-8
+import test_compat  # pylint: disable=unused-import
 
 import os
+import six
 import unittest
 import parted
 
-from unittest.mock import patch
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
@@ -50,28 +52,28 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(device.max_size, Size("9 MiB"))
 
             # ValueError if not Size
-            with self.assertRaisesRegex(ValueError,
-                                        "new size must.*type Size"):
+            with six.assertRaisesRegex(self, ValueError,
+                                       "new size must.*type Size"):
                 device.target_size = 22
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if size smaller than min_size
-            with self.assertRaisesRegex(ValueError,
-                                        "size.*smaller than the minimum"):
+            with six.assertRaisesRegex(self, ValueError,
+                                       "size.*smaller than the minimum"):
                 device.target_size = Size("1 MiB")
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if size larger than max_size
-            with self.assertRaisesRegex(ValueError,
-                                        "size.*larger than the maximum"):
+            with six.assertRaisesRegex(self, ValueError,
+                                       "size.*larger than the maximum"):
                 device.target_size = Size("11 MiB")
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if unaligned
-            with self.assertRaisesRegex(ValueError, "new size.*not.*aligned"):
+            with six.assertRaisesRegex(self, ValueError, "new size.*not.*aligned"):
                 device.target_size = Size("3.1 MiB")
 
             self.assertEqual(device.target_size, orig_size)

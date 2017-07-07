@@ -26,7 +26,7 @@ from .object import DBusObject
 class DBusFormat(DBusObject):
     def __init__(self, fmt, manager):
         self._format = fmt
-        super().__init__(manager)
+        super(DBusFormat, self).__init__(manager)
 
     @property
     def id(self):

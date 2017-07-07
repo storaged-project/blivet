@@ -97,7 +97,7 @@ class MDFormatPopulator(FormatPopulator):
     _type_specifier = "mdmember"
 
     def _get_kwargs(self):
-        kwargs = super()._get_kwargs()
+        kwargs = super(MDFormatPopulator, self)._get_kwargs()
         try:
             # ID_FS_UUID contains the array UUID
             kwargs["md_uuid"] = udev.device_get_uuid(self.data)
@@ -112,7 +112,7 @@ class MDFormatPopulator(FormatPopulator):
         return kwargs
 
     def run(self):
-        super().run()
+        super(MDFormatPopulator, self).run()
         try:
             md_info = blockdev.md.examine(self.device.path)
         except blockdev.MDRaidError as e:

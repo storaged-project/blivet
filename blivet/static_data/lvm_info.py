@@ -37,7 +37,13 @@ class LVsInfo(object):
     @property
     def cache(self):
         if self._lvs_cache is None:
-            lvs = blockdev.lvm.lvs()
+            try:
+                lvs = blockdev.lvm.lvs()
+            except NotImplementedError:
+                log.error("libblockdev lvm plugin is missing")
+                self._lvs_cache = dict()  # pylint: disable=attribute-defined-outside-init
+                return self._lvs_cache
+
             self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
 
         return self._lvs_cache
@@ -56,8 +62,14 @@ class PVsInfo(object):
     @property
     def cache(self):
         if self._pvs_cache is None:
-            pvs = blockdev.lvm.pvs()
             self._pvs_cache = dict()  # pylint: disable=attribute-defined-outside-init
+
+            try:
+                pvs = blockdev.lvm.pvs()
+            except NotImplementedError:
+                log.error("libblockdev lvm plugin is missing")
+                return self._pvs_cache
+
             for pv in pvs:
                 self._pvs_cache[pv.pv_name] = pv
                 # TODO: add get_all_device_symlinks() and resolve_device_symlink() functions to

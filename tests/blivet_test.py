@@ -1,6 +1,7 @@
+import test_compat  # pylint: disable=unused-import
+
+from six.moves.mock import PropertyMock, patch  # pylint: disable=no-name-in-module,import-error
 import unittest
-from unittest.mock import PropertyMock
-from unittest.mock import patch
 from pykickstart.version import returnClassForVersion
 from blivet.osinstall import InstallerStorage
 from blivet.devices import PartitionDevice

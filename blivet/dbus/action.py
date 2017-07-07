@@ -26,7 +26,7 @@ from .object import DBusObject
 class DBusAction(DBusObject):
     def __init__(self, action, manager):
         self._action = action
-        super().__init__(manager)
+        super(DBusAction, self).__init__(manager)
 
     @property
     def id(self):
