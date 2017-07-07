@@ -9,7 +9,7 @@
 
 Summary:  A python module for system storage configuration
 Name: python-blivet
-Url: http://fedoraproject.org/wiki/blivet
+Url: https://www-rhstorage.rhcloud.com/projects/blivet
 Version: 2.0.2
 
 #%%global prerelease .b1
@@ -20,7 +20,7 @@ License: LGPLv2+
 Group: System Environment/Libraries
 %global realname blivet
 %global realversion %{version}%{?prerelease}
-Source0: http://github.com/rhinstaller/blivet/archive/%{realname}-%{realversion}.tar.gz
+Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).

@@ -1519,6 +1519,9 @@ class LVMThinPoolMixin(object):
                                                                      100))  # snapshots
         log.debug("Recommended metadata size: %s", self._metadata_size)
 
+        self._metadata_size = self.vg.align(self._metadata_size, roundup=True)
+        log.debug("Rounded metadata size to extents: %s", self._metadata_size)
+
         log.debug("Adjusting size from %s to %s", self.size, self.size - self._metadata_size)
         self.size = self.size - self._metadata_size
 

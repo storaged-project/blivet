@@ -24,6 +24,7 @@ from ..devicelibs import crypto
 
 from ..storage_log import log_method_call
 from ..size import Size
+from ..tasks import availability
 
 import logging
 log = logging.getLogger("blivet")
@@ -38,6 +39,7 @@ class LUKSDevice(DMCryptDevice):
     _type = "luks/dm-crypt"
     _resizable = True
     _packages = ["cryptsetup"]
+    _external_dependencies = [availability.BLOCKDEV_CRYPTO_PLUGIN]
 
     def __init__(self, name, fmt=None, size=None, uuid=None,
                  exists=False, sysfs_path='', parents=None):

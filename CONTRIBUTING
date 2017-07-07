@@ -6,7 +6,7 @@ Contributor's Guide
 
 Where the Code Lives
 ---------------------
-The upstream git repo is on `GitHub <https://github.com/rhinstaller/blivet>`_.
+The upstream git repo is on `GitHub <https://github.com/storaged-project/blivet>`_.
 
 Branching Model
 ----------------
