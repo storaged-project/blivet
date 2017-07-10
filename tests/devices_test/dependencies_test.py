@@ -1,9 +1,10 @@
 # vim:set fileencoding=utf-8
-
+from unittest.mock import patch, PropertyMock
 import unittest
 
 from blivet.deviceaction import ActionCreateDevice
 from blivet.deviceaction import ActionDestroyDevice
+from blivet.deviceaction import ActionResizeDevice
 
 from blivet.deviceaction import ActionCreateFormat
 from blivet.deviceaction import ActionDestroyFormat
@@ -12,6 +13,7 @@ from blivet.devices import DiskDevice
 from blivet.devices import LUKSDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
+from blivet.devices import StorageDevice
 
 from blivet.formats import get_format
 
@@ -38,7 +40,7 @@ class DeviceDependenciesTestCase(unittest.TestCase):
         self.assertGreater(len(luks.external_dependencies), 0)
 
 
-class MockingDeviceDependenciesTestCase(unittest.TestCase):
+class MockingDeviceDependenciesTestCase1(unittest.TestCase):
 
     """Test availability of external device dependencies. """
 
@@ -91,3 +93,37 @@ class MockingDeviceDependenciesTestCase(unittest.TestCase):
         availability.BLOCKDEV_DM_PLUGIN.available  # pylint: disable=pointless-statement
 
         availability.CACHE_AVAILABILITY = self.cache_availability
+
+
+class MockingDeviceDependenciesTestCase2(unittest.TestCase):
+    def test_dependencies_handling(self):
+        device = StorageDevice("testdev1")
+        self.assertTrue(device.controllable)
+        self.assertIsNotNone(ActionCreateDevice(device))
+        device.exists = True
+        self.assertIsNotNone(ActionDestroyDevice(device))
+        with patch.object(StorageDevice, "resizable", new_callable=PropertyMock(return_value=True)):
+            self.assertIsNotNone(ActionResizeDevice(device, Size("1 GiB")))
+
+        # if any external dependency is missing, it should be impossible to create, destroy, setup,
+        # teardown, or resize the device (controllable encompasses setup & teardown)
+        with patch.object(StorageDevice, "_external_dependencies",
+                          new_callable=PropertyMock(return_value=[availability.unavailable_resource("testing")])):
+            device = StorageDevice("testdev1")
+            self.assertFalse(device.controllable)
+            self.assertRaises(ValueError, ActionCreateDevice, device)
+            device.exists = True
+            self.assertRaises(ValueError, ActionDestroyDevice, device)
+            self.assertRaises(ValueError, ActionResizeDevice, device, Size("1 GiB"))
+
+        # same goes for formats, except that the properties they affect vary by format class
+        fmt = get_format("lvmpv")
+        fmt._plugin = availability.available_resource("lvm-testing")
+        self.assertTrue(fmt.supported)
+        self.assertTrue(fmt.formattable)
+        self.assertTrue(fmt.destroyable)
+
+        fmt._plugin = availability.unavailable_resource("lvm-testing")
+        self.assertFalse(fmt.supported)
+        self.assertFalse(fmt.formattable)
+        self.assertFalse(fmt.destroyable)
