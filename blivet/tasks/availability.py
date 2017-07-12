@@ -20,9 +20,7 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-from distutils.version import LooseVersion
 from distutils.spawn import find_executable
-import hawkey
 
 from six import add_metaclass
 
@@ -30,8 +28,6 @@ import gi
 gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
-
-from ..errors import AvailabilityError
 
 import logging
 log = logging.getLogger("blivet")
@@ -117,58 +113,38 @@ class Path(Method):
 Path = Path()
 
 
-class PackageInfo(object):
+class AppVersionInfo(object):
 
-    def __init__(self, package_name, required_version=None):
+    def __init__(self, app_name, required_version, version_opt, version_regex):
         """ Initializer.
 
-            :param str package_name: the name of the package
-            :param required_version: the required version for this package
+            :param str app_name: the name of the application
+            :param required_version: the required version for this application
+            :param version_opt: command line option to print version of this application
+            :param version_regex: regular expression to extract version from
+                                  output of @version_opt
             :type required_version: :class:`distutils.LooseVersion` or NoneType
         """
-        self.package_name = package_name
+        self.app_name = app_name
         self.required_version = required_version
+        self.version_opt = version_opt
+        self.version_regex = version_regex
 
     def __str__(self):
-        return "%s-%s" % (self.package_name, self.required_version)
+        return "%s-%s" % (self.app_name, self.required_version)
 
 
-class PackageMethod(Method):
+class VersionMethod(Method):
 
-    """ Methods for checking the package version of the external resource. """
+    """ Methods for checking the version of the external resource. """
 
-    def __init__(self, package=None):
+    def __init__(self, version_info=None):
         """ Initializer.
 
-            :param :class:`PackageInfo` package:
+            :param :class:`AppVersionInfo` version_info:
         """
-        self.package = package
+        self.version_info = version_info
         self._availability_errors = None
-
-    @property
-    def package_version(self):
-        """ Returns the version of the installed package.
-
-            :returns: the package version
-            :rtype: LooseVersion
-            :raises AvailabilityError: on failure to obtain package version
-        """
-        sack = hawkey.Sack()
-
-        try:
-            sack.load_system_repo()
-        except IOError as e:
-            # hawkey has been observed allowing an IOError to propagate to
-            # caller with message "Failed calculating RPMDB checksum."
-            # See: https://bugzilla.redhat.com/show_bug.cgi?id=1223914
-            raise AvailabilityError("Could not determine package version for %s: %s" % (self.package.package_name, e))
-
-        query = hawkey.Query(sack).filter(name=self.package.package_name, latest=True)
-        packages = query.run()
-        if len(packages) != 1:
-            raise AvailabilityError("Could not determine package version for %s: unable to obtain package information from repo" % self.package.package_name)
-
-        return LooseVersion(packages[0].version)
 
     def availability_errors(self, resource):
         if self._availability_errors is not None and CACHE_AVAILABILITY:
@@ -176,16 +152,22 @@ class PackageMethod(Method):
 
         self._availability_errors = Path.availability_errors(resource)
 
-        if self.package.required_version is None:
+        if self.version_info.required_version is None:
             return self._availability_errors[:]
 
         try:
-            if self.package_version < self.package.required_version:
-                self._availability_errors.append("installed version %s for package %s is less than required version %s" % (self.package_version, self.package.package_name, self.package.required_version))
-        except AvailabilityError as e:
-            # In contexts like the installer, a package may not be available,
-            # but the version of the tools is likely to be correct.
-            log.warning(str(e))
+            ret = blockdev.utils.check_util_version(self.version_info.app_name,
+                                                    self.version_info.required_version,
+                                                    self.version_info.version_opt,
+                                                    self.version_info.version_regex)
+            if not ret:
+                err = "installed version of %s is less than " \
+                      "required version %s" % (self.version_info.app_name,
+                                               self.version_info.required_version)
+                self._availability_errors.append(err)
+        except blockdev.UtilsError as e:
+            err = "failed to get installed version of %s: %s" % (self.version_info.app_name, e)
+            self._availability_errors.append(err)
 
         return self._availability_errors[:]
 
@@ -239,15 +221,15 @@ def application(name):
     return ExternalResource(Path, name)
 
 
-def application_by_package(name, package_method):
+def application_by_version(name, version_method):
     """ Construct an external resource that is an application.
 
         This application will be available if its name can be found in $PATH
-        AND its package version is at least the required version.
+        AND its version is at least the required version.
 
-        :param :class:`PackageMethod` package_method: the package method
+        :param :class:`VersionMethod` version_method: the version method
     """
-    return ExternalResource(package_method, name)
+    return ExternalResource(version_method, name)
 
 
 def blockdev_plugin(name):
@@ -274,23 +256,29 @@ BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid")
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("mpath")
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap")
 
-# packages
-E2FSPROGS_PACKAGE = PackageMethod(PackageInfo("e2fsprogs", LooseVersion("1.41.0")))
+# applications with versions
+# we need e2fsprogs newer than 1.41 and we are checking the version by running
+# the "e2fsck" tool and parsing its ouput for version number
+E2FSPROGS_INFO = AppVersionInfo(app_name="e2fsck",
+                                required_version="1.41.0",
+                                version_opt="-V",
+                                version_regex=r"e2fsck ([0-9+\.]+) .*")
+E2FSPROGS_VERSION = VersionMethod(E2FSPROGS_INFO)
 
 # applications
 DEBUGREISERFS_APP = application("debugreiserfs")
 DF_APP = application("df")
 DOSFSCK_APP = application("dosfsck")
 DOSFSLABEL_APP = application("dosfslabel")
-DUMPE2FS_APP = application_by_package("dumpe2fs", E2FSPROGS_PACKAGE)
-E2FSCK_APP = application_by_package("e2fsck", E2FSPROGS_PACKAGE)
-E2LABEL_APP = application_by_package("e2label", E2FSPROGS_PACKAGE)
+DUMPE2FS_APP = application_by_version("dumpe2fs", E2FSPROGS_VERSION)
+E2FSCK_APP = application_by_version("e2fsck", E2FSPROGS_VERSION)
+E2LABEL_APP = application_by_version("e2label", E2FSPROGS_VERSION)
 FSCK_HFSPLUS_APP = application("fsck.hfsplus")
 HFORMAT_APP = application("hformat")
 JFSTUNE_APP = application("jfs_tune")
 KPARTX_APP = application("kpartx")
 MKDOSFS_APP = application("mkdosfs")
-MKE2FS_APP = application_by_package("mke2fs", E2FSPROGS_PACKAGE)
+MKE2FS_APP = application_by_version("mke2fs", E2FSPROGS_VERSION)
 MKFS_BTRFS_APP = application("mkfs.btrfs")
 MKFS_GFS2_APP = application("mkfs.gfs2")
 MKFS_HFSPLUS_APP = application("mkfs.hfsplus")
@@ -304,8 +292,8 @@ NTFSINFO_APP = application("ntfsinfo")
 NTFSLABEL_APP = application("ntfslabel")
 NTFSRESIZE_APP = application("ntfsresize")
 REISERFSTUNE_APP = application("reiserfstune")
-RESIZE2FS_APP = application_by_package("resize2fs", E2FSPROGS_PACKAGE)
-TUNE2FS_APP = application_by_package("tune2fs", E2FSPROGS_PACKAGE)
+RESIZE2FS_APP = application_by_version("resize2fs", E2FSPROGS_VERSION)
+TUNE2FS_APP = application_by_version("tune2fs", E2FSPROGS_VERSION)
 XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")
