@@ -74,7 +74,6 @@ Requires: libblockdev-plugins-all >= %{libblockdevver}
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
-Requires: python3-hawkey
 Requires: python3-gobject-base
 Requires: systemd-udev
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
