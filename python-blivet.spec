@@ -75,7 +75,6 @@ Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
 Requires: python3-gobject-base
-Requires: python3-libmount
 Requires: systemd-udev
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
