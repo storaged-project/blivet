@@ -423,7 +423,7 @@ class PartitionDevice(StorageDevice):
                 weight = -100
             elif (arch.is_omap_arm() and
                   self.format.mountpoint == "/boot/uboot" and self.format.type == "vfat"):
-                weight = 6000
+                weight = 5000
         elif arch.is_ppc():
             if arch.is_pmac() and self.format.type == "appleboot":
                 weight = 5000
