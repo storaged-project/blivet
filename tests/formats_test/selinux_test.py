@@ -13,6 +13,8 @@ class SELinuxContextTestCase(unittest.TestCase):
     """
 
     def setUp(self):
+        if not blivet.flags.flags.selinux:
+            self.skipTest("SELinux disabled.")
         self.selinux_reset_fcon = blivet.flags.flags.selinux_reset_fcon
         super(SELinuxContextTestCase, self).setUp()
 
