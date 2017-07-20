@@ -13,8 +13,6 @@ class SELinuxContextTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        if not blivet.flags.selinux:
-            self.skipTest("SELinux disabled.")
         self.installer_mode = blivet.flags.installer_mode
         super(SELinuxContextTestCase, self).setUp()
 
