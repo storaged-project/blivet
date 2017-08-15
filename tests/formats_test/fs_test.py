@@ -144,6 +144,7 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.mountpoint = tempfile.mkdtemp()
         self.an_fs.mountpoint = self.mountpoint
         self.an_fs.mount()
+        self.addCleanup(self._clean_up)
 
     def test_resize(self):
         self.an_fs.update_size_info()
@@ -160,7 +161,7 @@ class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         with self.assertRaises(ValueError):
             self.an_fs.target_size = newsize
 
-    def tearDown(self):
+    def _clean_up(self):
         try:
             self.an_fs.unmount()
         except Exception:  # pylint: disable=broad-except

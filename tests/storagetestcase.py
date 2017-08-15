@@ -52,6 +52,8 @@ class StorageTestCase(unittest.TestCase):
         blivet.devices.PartitionDevice.max_size = StorageDevice.max_size
         blivet.devices.PartitionDevice.min_size = StorageDevice.min_size
 
+        self.addCleanup(self._clean_up)
+
         def partition_probe(device):
             if isinstance(device._parted_partition, Mock):
                 # don't clobber a Mock we already set up here
@@ -74,7 +76,7 @@ class StorageTestCase(unittest.TestCase):
         self.get_active_mounts = blivet.formats.fs.mounts_cache._get_active_mounts
         blivet.formats.fs.mounts_cache._get_active_mounts = Mock()
 
-    def tearDown(self):
+    def _clean_up(self):
         blivet.devices.StorageDevice.status = self.storage_status
         blivet.devices.DMDevice.status = self.dm_status
         blivet.devices.LUKSDevice.status = self.luks_status
