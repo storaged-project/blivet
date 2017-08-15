@@ -20,6 +20,7 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         # create and open the luks format
         self.fmt.create()
         self.fmt.setup()
+        self.addCleanup(self._luks_close)
 
         # without update_size_info size should be 0
         self.assertEqual(self.fmt.current_size, Size(0))
@@ -34,6 +35,7 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         # create and open the luks format
         self.fmt.create()
         self.fmt.setup()
+        self.addCleanup(self._luks_close)
 
         # get current size to make format resizable
         self.assertFalse(self.fmt.resizable)
@@ -49,9 +51,8 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.fmt.update_size_info()
         self.assertEqual(self.fmt.current_size, new_size)
 
-    def tearDown(self):
+    def _luks_close(self):
         self.fmt.teardown()
-        super(LUKSTestCase, self).tearDown()
 
 
 class LUKSNodevTestCase(unittest.TestCase):
