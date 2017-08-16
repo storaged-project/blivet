@@ -18,7 +18,6 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import os
 import copy
 import tempfile
 import re
@@ -1049,52 +1048,6 @@ class Blivet(object):
             pkgs.update(device.packages)
 
         return list(pkgs)
-
-    def write(self):
-        """ Write out all storage-related configuration files. """
-        if not os.path.isdir("%s/etc" % self.sysroot):
-            os.mkdir("%s/etc" % self.sysroot)
-
-        self.write_dasd_conf(self.sysroot)
-
-    def write_dasd_conf(self, root):
-        """ Write /etc/dasd.conf to target system for all DASD devices
-            configured during installation.
-        """
-        dasds = [d for d in self.devices if d.type == "dasd"]
-        dasds.sort(key=lambda d: d.name)
-        if not (arch.is_s390() and dasds):
-            return
-
-        with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:
-            for dasd in dasds:
-                fields = [dasd.busid] + dasd.get_opts()
-                f.write("%s\n" % " ".join(fields),)
-
-        # check for hyper PAV aliases; they need to get added to dasd.conf as well
-        sysfs = "/sys/bus/ccw/drivers/dasd-eckd"
-
-        # in the case that someone is installing with *only* FBA DASDs,the above
-        # sysfs path will not exist; so check for it and just bail out of here if
-        # that's the case
-        if not os.path.exists(sysfs):
-            return
-
-        # this does catch every DASD, even non-aliases, but we're only going to be
-        # checking for a very specific flag, so there won't be any duplicate entries
-        # in dasd.conf
-        devs = [d for d in os.listdir(sysfs) if d.startswith("0.0")]
-        with open(os.path.realpath(root + "/etc/dasd.conf"), "a") as f:
-            for d in devs:
-                aliasfile = "%s/%s/alias" % (sysfs, d)
-                with open(aliasfile, "r") as falias:
-                    alias = falias.read().strip()
-
-                # if alias == 1, then the device is an alias; otherwise it is a
-                # normal dasd (alias == 0) and we can skip it, since it will have
-                # been added to dasd.conf in the above block of code
-                if alias == "1":
-                    f.write("%s\n" % d)
 
     def _check_valid_fstype(self, newtype):
         """ Check the fstype to see if it is valid
