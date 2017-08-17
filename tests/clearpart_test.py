@@ -17,6 +17,10 @@ class ClearPartTestCase(unittest.TestCase):
 
     def setUp(self):
         flags.testing = True
+        self.addCleanup(self._clean_up)
+
+    def _clean_up(self):
+        flags.testing = False
 
     def test_should_clear(self):
         """ Test the Blivet.should_clear method. """
@@ -193,9 +197,6 @@ class ClearPartTestCase(unittest.TestCase):
         # clearpart type list
         #
         # TODO
-
-    def tearDown(self):
-        flags.testing = False
 
     def test_initialize_disk(self):
         """

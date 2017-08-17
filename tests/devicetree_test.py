@@ -399,20 +399,6 @@ class BlivetResetTestCase(ImageBackedTestCase):
         self.device_attr_dicts = []
         self.collect_expected_data()
 
-    def tearDown(self):
-        """ Clean up after testing is complete. """
-        super(BlivetResetTestCase, self).tearDown()
-
-        # XXX The only reason for this may be lvmetad
-        for disk in self.blivet.disks:
-            self.blivet.recursive_remove(disk)
-
-        try:
-            self.blivet.do_it()
-        except Exception:
-            self.blivet.reset()
-            raise
-
     def skip_attr(self, device, attr):
         """ Return True if attr should not be checked for device. """
         # pylint: disable=unused-argument

@@ -74,12 +74,13 @@ class EddTestCase(unittest.TestCase):
                                  side_effect=self._edd_logger.error)
         edd.log = newlog
 
-    def tearDown(self):
+        self.addCleanup(self._clean_up)
+
+    def _clean_up(self):
         edd.log = self._edd_logger
         edd.log.setLevel(self._edd_logger_level)
         edd.log.removeHandler(self.log_handler)
         edd.testdata_log.removeHandler(self.td_log_handler)
-        super(EddTestCase, self).tearDown()
 
     def check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
         def check(left, right_object):

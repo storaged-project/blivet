@@ -232,8 +232,9 @@ class TranslationTestCase(unittest.TestCase):
 
     def setUp(self):
         self.saved_lang = os.environ.get('LANG', None)
+        self.addCleanup(self._clean_up)
 
-    def tearDown(self):
+    def _clean_up(self):
         os.environ['LANG'] = self.saved_lang
         locale.setlocale(locale.LC_ALL, '')
 
