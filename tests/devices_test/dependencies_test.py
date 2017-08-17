@@ -55,6 +55,8 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
         self.dm_method = availability.BLOCKDEV_DM_PLUGIN._method
         self.cache_availability = availability.CACHE_AVAILABILITY
 
+        self.addCleanup(self._clean_up)
+
     def test_availability_mdraidplugin(self):
 
         availability.CACHE_AVAILABILITY = False
@@ -84,7 +86,7 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
         with self.assertRaises(ValueError):
             ActionDestroyFormat(self.dev)
 
-    def tearDown(self):
+    def _clean_up(self):
         availability.BLOCKDEV_MDRAID_PLUGIN._method = self.mdraid_method
         availability.BLOCKDEV_DM_PLUGIN._method = self.dm_method
 

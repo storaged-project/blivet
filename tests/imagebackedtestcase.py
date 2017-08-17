@@ -102,6 +102,17 @@ class ImageBackedTestCase(unittest.TestCase):
 
     def _clean_up(self):
         """ Clean up any resources that may have been set up for a test. """
+
+        # XXX The only reason for this may be lvmetad
+        for disk in self.blivet.disks:
+            self.blivet.recursive_remove(disk)
+
+        try:
+            self.blivet.do_it()
+        except Exception:
+            self.blivet.reset()
+            raise
+
         self.blivet.reset()
         self.blivet.devicetree.teardown_disk_images()
         for fn in self.blivet.disk_images.values():
