@@ -55,6 +55,7 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
 
         # at this point the DMLinearDevice has correct size
         self.blivet.setup_disk_images()
+        self.addCleanup(self._clean_up)
 
         # emulates setting the anaconda flags which later update
         # blivet flags as the first thing to do in storage_initialize
@@ -68,7 +69,7 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
         with patch('blivet.osinstall.flags'):
             storage_initialize(self.blivet, ksdata, [])
 
-    def tearDown(self):
+    def _clean_up(self):
         self.blivet.reset()
         self.blivet.devicetree.teardown_disk_images()
         for fn in self.blivet.config.disk_images.values():

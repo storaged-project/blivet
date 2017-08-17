@@ -16,7 +16,10 @@ class SELinuxContextTestCase(unittest.TestCase):
         if not blivet.flags.selinux:
             self.skipTest("SELinux disabled.")
         self.installer_mode = blivet.flags.installer_mode
-        super(SELinuxContextTestCase, self).setUp()
+        self.addCleanup(self._clean_up)
+
+    def _clean_up(self):
+        blivet.flags.installer_mode = self.installer_mode
 
     @patch("blivet.util.mount", return_value=0)
     @patch.object(fs.FS, "_pre_setup", return_value=True)
@@ -50,7 +53,3 @@ class SELinuxContextTestCase(unittest.TestCase):
     def test_mount_selinux_xfs(self):
         """ Test of correct selinux context parameter value when mounting XFS"""
         self.exec_mount_selinux_format(fs.XFS)
-
-    def tearDown(self):
-        super(SELinuxContextTestCase, self).tearDown()
-        blivet.flags.installer_mode = self.installer_mode
