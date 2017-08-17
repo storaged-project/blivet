@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://www-rhstorage.rhcloud.com/projects/blivet
-Version: 2.1.9
+Version: 2.1.10
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -75,6 +75,34 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 17 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.10-1
+- Use addCleanup for test cleanup instead of clening in tearDown (vtrefny)
+- No longer skip test w/o selinux; mocked (japokorn)
+- Skip tests when SELinux is disabled (japokorn)
+- New test for selinux context setting when mounting (japokorn)
+- Add tests for disklabel type selection and partition weight. (dlehman)
+- Do not use package version to check version of installed tools (vtrefny)
+- Update the upstream git URL (vpodzime)
+- Stop enforcing obsolete limits on partition count. (#1460668) (dlehman)
+- Do not run FS check as part of updating (re)size info (vpodzime)
+- Change how we run e2fsck to check ext filesystems (vpodzime)
+- Round the recommended thpool metadata size to extents (vpodzime)
+- Respect thin pool's min size when setting its req_size (vpodzime)
+- Don't crash during populate when lvm plugin is missing. (dlehman)
+- Actually add space for LUKS metadata when encrypting a VG (vpodzime)
+- Only consider old and new device sizes when not growing to max (vpodzime)
+- Do not reserve space for LVM metadata twice (vpodzime)
+- Do not create a temporary list for sum() (vpodzime)
+- Refer to self.container as self.vg in the LVMFactory (vpodzime)
+- Add a couple of extra comments and docstrings to factories (vpodzime)
+- Use existing VG's PE size if available in LVMFactory (vpodzime)
+- Add comments warning before a weird nomenclature in factories (vpodzime)
+- Don't let device state block modification of the model. (dlehman)
+- Fix error message for format create w/ missing external dep. (dlehman)
+- Expand coverage of devices_test.dependencies_test a bit. (dlehman)
+- Account for external dep availabilty in StorageDevice.controllable. (dlehman)
+- Add the appropriate external dependency to LUKSDevice. (dlehman)
+
 * Thu Jun 01 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.9-1
 - Adapt to logging module name change (mkolman)
 - Updated calls to avoid log spamming (japokorn)
