@@ -154,6 +154,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         self.get_superblock_size = MDRaidArrayDevice.get_superblock_size
         MDRaidArrayDevice.get_superblock_size = lambda a, s: Size(0)
 
+        self.addCleanup(self._clean_up)
+
         parents = [
             DiskDevice("name1", fmt=get_format("mdmember"))
         ]
@@ -358,7 +360,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
             uuid='Just-pretending'
         )
 
-    def tearDown(self):
+    def _clean_up(self):
         mdraid.MD_CHUNK_SIZE = self.md_chunk_size
         MDRaidArrayDevice.get_superblock_size = self.get_superblock_size
 
