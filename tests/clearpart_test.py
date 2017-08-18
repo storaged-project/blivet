@@ -2,7 +2,9 @@ import unittest
 import mock
 
 import blivet
-from pykickstart.constants import CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_NONE
+import blivet.devices
+from blivet.devices.lib import Tags
+from pykickstart.constants import CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_NONE, CLEARPART_TYPE_LIST
 from parted import PARTITION_NORMAL
 from blivet.flags import flags
 
@@ -193,10 +195,81 @@ class ClearPartTestCase(unittest.TestCase):
                              "be cleared")
         sda1.protected = False
 
-        #
-        # clearpart type list
-        #
-        # TODO
+    def test_should_clear_tags(self):
+        """ Test the Blivet.should_clear method using tags. """
+        b = blivet.Blivet()
+
+        DiskDevice = blivet.devices.DiskDevice
+        PartitionDevice = blivet.devices.PartitionDevice
+
+        # sda is a disk with an existing disklabel containing two partitions
+        sda = DiskDevice("sda", size=100000, exists=True)
+        sda.format = blivet.formats.get_format("disklabel", device=sda.path,
+                                               exists=True)
+        sda.format._parted_disk = mock.Mock()
+        sda.format._parted_device = mock.Mock()
+        sda.format._parted_disk.configure_mock(partitions=[])
+        b.devicetree._add_device(sda)
+
+        # sda1 is a partition containing an existing ext4 filesystem
+        sda1 = PartitionDevice("sda1", size=500, exists=True,
+                               parents=[sda])
+        sda1._parted_partition = mock.Mock(**{'type': PARTITION_NORMAL,
+                                              'getFlag.return_value': 0})
+        sda1.format = blivet.formats.get_format("ext4", mountpoint="/boot",
+                                                device=sda1.path,
+                                                exists=True)
+        b.devicetree._add_device(sda1)
+
+        # sdb is an unpartitioned disk containing an xfs filesystem
+        sdb = DiskDevice("sdb", size=100000, exists=True)
+        sdb.format = blivet.formats.get_format("xfs", device=sdb.path,
+                                               exists=True)
+        b.devicetree._add_device(sdb)
+
+        # sdc is an unformatted/uninitialized/empty disk
+        sdc = DiskDevice("sdc", size=100000, exists=True)
+        b.devicetree._add_device(sdc)
+
+        # sdd is a disk containing an existing disklabel with no partitions
+        sdd = DiskDevice("sdd", size=100000, exists=True)
+        sdd.format = blivet.formats.get_format("disklabel", device=sdd.path,
+                                               exists=True)
+        b.devicetree._add_device(sdd)
+
+        # devices marked for cleaning
+        b.config.clear_part_devices = ["sdd", "@ssd", "@local"]
+        # devices tags configuration:
+        sda.tags = {Tags.remote}
+        sdb.tags = {Tags.ssd}
+        sdc.tags = {Tags.local}
+        sdd.tags = set()
+
+        b.config.clear_part_type = CLEARPART_TYPE_LIST
+
+        self.assertFalse(b.should_clear(sda),
+                         msg="device should not be cleared")
+        self.assertTrue(b.should_clear(sdb),
+                        msg="device should be cleared")
+        self.assertTrue(b.should_clear(sdc),
+                        msg="device should be cleared")
+        self.assertTrue(b.should_clear(sdd),
+                        msg="device should be cleared")
+
+        b.config.clear_part_devices = []
+        b.config.clear_part_type = CLEARPART_TYPE_ALL
+
+        b.config.clear_part_disks = ["sda", "@ssd", "@local"]
+        self.assertTrue(b.should_clear(sda1),
+                        msg="device should be cleared")
+
+        b.config.clear_part_disks = ["@ssd", "@local"]
+        self.assertFalse(b.should_clear(sda1),
+                         msg="device should not be cleared")
+
+        b.config.clear_part_disks = ["@ssd", "@remote"]
+        self.assertTrue(b.should_clear(sda1),
+                        msg="device should be cleared")
 
     def test_initialize_disk(self):
         """
