@@ -23,30 +23,6 @@ ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
 
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
-ifeq ($(PYTHON),python3)
-  TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet | grep -v python2)
-  TEST_DEPENDENCIES += python3-mock
-  TEST_DEPENDENCIES += python3-coverage
-  TEST_DEPENDENCIES += python3-pocketlint
-  TEST_DEPENDENCIES += python3-bugzilla
-  TEST_DEPENDENCIES += python3-pep8
-endif
-
-ifeq ($(PYTHON),python2)
-  TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet | grep -v python3)
-  TEST_DEPENDENCIES += python2-mock
-  TEST_DEPENDENCIES += /usr/bin/coverage
-  TEST_DEPENDENCIES += python2-pocketlint
-  TEST_DEPENDENCIES += python-bugzilla
-  TEST_DEPENDENCIES += python-pep8
-endif
-
-TEST_DEPENDENCIES += anaconda-core
-TEST_DEPENDENCIES += dosfstools e2fsprogs xfsprogs hfsplus-tools
-TEST_DEPENDENCIES += zanata-python-client
-
-TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
-
 all:
 	$(MAKE) -C po
 
@@ -65,41 +41,30 @@ po-empty:
 po-fallback:
 	$(MAKE) po-pull || $(MAKE) po-empty
 
-check-requires:
-	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
-	@status=0 ; \
-	for pkg in $(TEST_DEPENDENCIES) ; do \
-		test_output="$$(rpm -q --whatprovides "$$pkg")" ; \
-		if [ $$? != 0 ]; then \
-			echo "$$test_output" ; \
-			status=1 ; \
-		fi ; \
-	done ; \
-	exit $$status
-
 install-requires:
 	@echo "*** Installing the dependencies required for testing and analysis ***"
-	$(PKG_INSTALL) install -y $(TEST_DEPENDENCIES)
+	@which ansible-playbook &>/dev/null || ( echo "Please install Ansible to install testing dependencies"; exit 1 )
+	@ansible-playbook -K -i "localhost," -c local install-test-dependencies.yml --extra-vars "python=$(PYTHON)"
 
-test: check-requires
+test:
 	@echo "*** Running unittests with $(PYTHON) ***"
 	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
 
-coverage: check-requires
+coverage:
 	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
 	PYTHONPATH=.:tests/ $(COVERAGE) run --branch -m unittest discover -v -s tests/ -p '*_test.py'
 	$(COVERAGE) report --include="blivet/*" --show-missing
 	$(COVERAGE) report --include="blivet/*" > coverage-report.log
 
-pylint: check-requires
+pylint:
 	@echo "*** Running pylint ***"
 	PYTHONPATH=.:tests/:$(PYTHONPATH) $(PYTHON) tests/pylint/runpylint.py
 
-pep8: check-requires
+pep8:
 	@echo "*** Running pep8 compliance check ***"
 	$(PEP8) --ignore=E501,E402,E731 blivet/ tests/ examples/
 
-canary: check-requires po-fallback
+canary: po-fallback
 	@echo "*** Running translation-canary tests ***"
 	PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/blivet.pot
 
