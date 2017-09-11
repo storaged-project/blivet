@@ -10,6 +10,7 @@ from blivet.devicelibs import lvm
 from blivet.devices import DiskDevice
 from blivet.devices import StorageDevice
 from blivet.devices import MultipathDevice
+from blivet.devices.lib import Tags
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
 
@@ -244,6 +245,24 @@ class DeviceTreeTestCase(unittest.TestCase):
 
             dt.recursive_remove(dev1, actions=False, modparent=False)
             remove_device.assert_called_with(dev1, modparent=False)
+
+    def test_ignored_disk_tags(self):
+        tree = DeviceTree()
+
+        fake_ssd = Mock(name="fake_ssd", spec=StorageDevice, parents=[],
+                        tags=[Tags.ssd], exists=True)
+        fake_local = Mock(name="fake_local", spec=StorageDevice, parents=[],
+                          tags=[Tags.local], exists=True)
+        tree._devices.extend([fake_ssd, fake_local])
+
+        self.assertFalse(tree._is_ignored_disk(fake_ssd))
+        self.assertFalse(tree._is_ignored_disk(fake_local))
+        tree.ignored_disks.append("@ssd")
+        self.assertTrue(tree._is_ignored_disk(fake_ssd))
+        self.assertFalse(tree._is_ignored_disk(fake_local))
+        tree.exclusive_disks.append("@local")
+        self.assertTrue(tree._is_ignored_disk(fake_ssd))
+        self.assertFalse(tree._is_ignored_disk(fake_local))
 
     def test_hide_ignored_disks(self):
         tree = DeviceTree()
