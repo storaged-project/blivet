@@ -34,6 +34,7 @@ from .storage_log import log_method_call, log_exception_info
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import MDRaidArrayDevice, PartitionDevice, TmpFSDevice, device_path_to_name
+from .devices.lib import Tags
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .devicelibs.edd import get_edd_dict
@@ -521,6 +522,20 @@ class Blivet(object, metaclass=SynchronizedMeta):
             :returns: whether or not clear_partitions should remove this device
             :rtype: bool
         """
+
+        def disk_in_taglist(disk, taglist):
+            # Taglist is a list containing mix of disk names and tags into which disk may belong.
+            # Check if it does. Raise ValueError if unknown tag is encountered.
+            if disk.name in taglist:
+                return True
+            tags = [t[1:] for t in taglist if t.startswith("@")]
+            for tag in tags:
+                if tag not in Tags.__members__:
+                    raise ValueError("unknown clearpart tag '@%s' encountered" % tag)
+                if Tags(tag) in disk.tags:
+                    return True
+            return False
+
         clear_part_type = kwargs.get("clear_part_type", self.config.clear_part_type)
         clear_part_disks = kwargs.get("clear_part_disks",
                                       self.config.clear_part_disks)
@@ -530,7 +545,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         for disk in device.disks:
             # this will not include disks with hidden formats like multipath
             # and firmware raid member disks
-            if clear_part_disks and disk.name not in clear_part_disks:
+            if clear_part_disks and not disk_in_taglist(disk, clear_part_disks):
                 return False
 
         if not self.config.clear_non_existent:
@@ -567,7 +582,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
                not device.get_flag(parted.PARTITION_SWAP):
                 return False
         elif device.is_disk:
-            if device.partitioned and clear_part_type != CLEARPART_TYPE_ALL:
+            if device.partitioned and \
+               clear_part_type not in (CLEARPART_TYPE_ALL, CLEARPART_TYPE_LIST):
                 # if clear_part_type is not CLEARPART_TYPE_ALL but we'll still be
                 # removing every partition from the disk, return True since we
                 # will want to be able to create a new disklabel on this disk
@@ -594,7 +610,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             return False
 
         if clear_part_type == CLEARPART_TYPE_LIST and \
-           device.name not in clear_part_devices:
+           not disk_in_taglist(device, clear_part_devices):
             return False
 
         return True
