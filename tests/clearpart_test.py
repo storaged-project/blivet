@@ -4,9 +4,11 @@ import mock
 import blivet
 import blivet.devices
 from blivet.devices.lib import Tags
+from blivet.osinstall import InstallerStorage
 from pykickstart.constants import CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_NONE, CLEARPART_TYPE_LIST
 from parted import PARTITION_NORMAL
 from blivet.flags import flags
+
 
 DEVICE_CLASSES = [
     blivet.devices.DiskDevice,
@@ -26,7 +28,7 @@ class ClearPartTestCase(unittest.TestCase):
 
     def test_should_clear(self):
         """ Test the Blivet.should_clear method. """
-        b = blivet.osinstall.InstallerStorage()
+        b = InstallerStorage()
 
         DiskDevice = blivet.devices.DiskDevice
         PartitionDevice = blivet.devices.PartitionDevice
@@ -197,7 +199,7 @@ class ClearPartTestCase(unittest.TestCase):
 
     def test_should_clear_tags(self):
         """ Test the Blivet.should_clear method using tags. """
-        b = blivet.Blivet()
+        b = InstallerStorage()
 
         DiskDevice = blivet.devices.DiskDevice
         PartitionDevice = blivet.devices.PartitionDevice
