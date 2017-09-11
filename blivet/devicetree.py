@@ -36,6 +36,7 @@ from .errors import DeviceError, DeviceTreeError, StorageError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
+from .devices.lib import Tags
 from . import formats
 from .devicelibs import lvm
 from .events.handler import EventHandlerMixin
@@ -896,9 +897,25 @@ class DeviceTreeBase(object):
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
 
     def _is_ignored_disk(self, disk):
-        return ((self.ignored_disks and disk.name in self.ignored_disks) or
-                (self.exclusive_disks and
-                 disk.name not in self.exclusive_disks))
+        """ Checks config for lists of exclusive and ignored disks
+            and returns if the given one should be ignored
+        """
+
+        def disk_in_taglist(disk, taglist):
+            # Taglist is a list containing mix of disk names and tags into which disk may belong.
+            # Check if it does. Raise ValueError if unknown tag is encountered.
+            if disk.name in taglist:
+                return True
+            tags = [t[1:] for t in taglist if t.startswith("@")]
+            for tag in tags:
+                if tag not in Tags.__members__:
+                    raise ValueError("unknown ignoredisk tag '@%s' encountered" % tag)
+                if Tags(tag) in disk.tags:
+                    return True
+            return False
+
+        return ((self.ignored_disks and disk_in_taglist(disk, self.ignored_disks)) or
+                (self.exclusive_disks and not disk_in_taglist(disk, self.exclusive_disks)))
 
     def _hide_ignored_disks(self):
         # hide any subtrees that begin with an ignored disk
