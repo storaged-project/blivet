@@ -419,6 +419,11 @@ class FS(DeviceFormat):
            self.can_modify_uuid():
             self.write_uuid()
 
+    def _pre_resize(self):
+        # file systems need a check before being resized
+        self.do_check()
+        super(FS, self)._pre_resize()
+
     def _post_resize(self):
         self.do_check()
         super(FS, self)._post_resize()
