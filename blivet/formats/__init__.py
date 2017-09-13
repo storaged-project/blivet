@@ -429,10 +429,8 @@ class DeviceFormat(ObjectID):
         if not self.device == "tmpfs" and not os.path.exists(self.device):
             raise FormatResizeError("device does not exist", self.device)
 
-        # The first minimum size can be incorrect if the fs was not
-        # properly unmounted. After do_check the minimum size will be correct
-        # so run the check one last time and bump up the size if it was too
-        # small.
+        self._pre_resize()
+
         self.update_size_info()
 
         # Check again if resizable is True, as update_size_info() can change that
@@ -482,6 +480,10 @@ class DeviceFormat(ObjectID):
             raise FormatResizeError(e, self.device)
 
         self._post_resize()
+
+    def _pre_resize(self):
+        """ Do whatever needs to be done before the format is resized """
+        pass
 
     def _post_resize(self):
         # XXX must be a smarter way to do this
