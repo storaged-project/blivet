@@ -15,7 +15,7 @@ class SELinuxContextTestCase(unittest.TestCase):
     def setUp(self):
         if not blivet.flags.flags.selinux:
             self.skipTest("SELinux disabled.")
-        self.installer_mode = blivet.flags.installer_mode
+        self.selinux_reset_fcon = blivet.flags.flags.selinux_reset_fcon
         self.selinux = blivet.flags.selinux
         super(SELinuxContextTestCase, self).setUp()
         self.addCleanup(self._clean_up)
@@ -55,5 +55,5 @@ class SELinuxContextTestCase(unittest.TestCase):
         self.exec_mount_selinux_format(fs.XFS)
 
     def _clean_up(self):
-        blivet.flags.installer_mode = self.installer_mode
+        blivet.flags.flags.selinux_reset_fcon = self.selinux_reset_fcon
         blivet.flags.selinux = self.selinux
