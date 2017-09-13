@@ -115,8 +115,8 @@ class Ext2FSCK(FSCK):
 
     ext = availability.E2FSCK_APP
     # "Force checking even if the file system seems clean." (we might get false results otherwise)
-    # + "Open the filesystem read-only, and assume an answer of `no' to all questions."
-    options = ["-f", "-n"]
+    # + "Automatically repair ("preen") the file system."
+    options = ["-f", "-p"]
 
     def _error_message(self, rc):
         msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
