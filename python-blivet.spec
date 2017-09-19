@@ -16,7 +16,6 @@ Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realver
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %global pykickstartver 1.99.22
-%global pocketlintver 0.4
 %global partedver 1.8.1
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
@@ -26,7 +25,6 @@ Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realver
 
 BuildArch: noarch
 BuildRequires: gettext
-BuildRequires: python3-pocketlint >= %{pocketlintver}
 BuildRequires: python3-devel python3-setuptools
 
 %description

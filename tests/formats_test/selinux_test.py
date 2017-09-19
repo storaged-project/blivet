@@ -14,10 +14,9 @@ class SELinuxContextTestCase(unittest.TestCase):
 
     def setUp(self):
         self.installer_mode = blivet.flags.installer_mode
+        self.selinux = blivet.flags.selinux
+        super(SELinuxContextTestCase, self).setUp()
         self.addCleanup(self._clean_up)
-
-    def _clean_up(self):
-        blivet.flags.installer_mode = self.installer_mode
 
     @patch("blivet.util.mount", return_value=0)
     @patch.object(fs.FS, "_pre_setup", return_value=True)
@@ -28,6 +27,7 @@ class SELinuxContextTestCase(unittest.TestCase):
         """ Test of correct selinux context parameter value when mounting """
 
         lost_found_context = "system_u:object_r:lost_found_t:s0"
+        blivet.flags.selinux = True
         fmt = formt()
 
         # Patch selinux context setting
@@ -51,3 +51,7 @@ class SELinuxContextTestCase(unittest.TestCase):
     def test_mount_selinux_xfs(self):
         """ Test of correct selinux context parameter value when mounting XFS"""
         self.exec_mount_selinux_format(fs.XFS)
+
+    def _clean_up(self):
+        blivet.flags.installer_mode = self.installer_mode
+        blivet.flags.selinux = self.selinux
