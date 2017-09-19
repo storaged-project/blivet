@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://www-rhstorage.rhcloud.com/projects/blivet
-Version: 2.1.10
+Version: 2.1.11
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -73,6 +73,17 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Sep 19 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.11-1
+- Remove build requires for pocketlint (rkuska)
+- edd_test: don't run on non-x86 (pjones)
+- Added support for device tags (japokorn)
+- fcoe: don't use dcb for autoconnecting of bnx2x and bnx2fc (#1261703)
+  (rvykydal)
+- fcoe: replace fipvlan with fcoemon (#1085325) (rvykydal)
+- Do not use read-only mode for e2fsck (vpodzime)
+- Fixed behavior when selinux is disabled (japokorn)
+- Do file system check before resize (#1484575) (vpodzime)
+
 * Thu Aug 17 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.10-1
 - Use addCleanup for test cleanup instead of clening in tearDown (vtrefny)
 - No longer skip test w/o selinux; mocked (japokorn)

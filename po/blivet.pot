@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-17 11:23+0200\n"
+"POT-Creation-Date: 2017-09-19 10:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: ../blivet/blivet.py:1236
+#: ../blivet/blivet.py:1252
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
@@ -111,7 +111,7 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/fcoe.py:118
+#: ../blivet/fcoe.py:121
 msgid "FCoE not available"
 msgstr ""
 
@@ -275,7 +275,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:225 ../blivet/formats/fs.py:900
+#: ../blivet/platform.py:225 ../blivet/formats/fs.py:905
 msgid "EFI System Partition"
 msgstr ""
 
@@ -429,11 +429,11 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1097
+#: ../blivet/formats/fs.py:1102
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1131
+#: ../blivet/formats/fs.py:1136
 msgid "Linux HFS+ ESP"
 msgstr ""
 
