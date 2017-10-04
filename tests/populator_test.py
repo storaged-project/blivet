@@ -9,7 +9,6 @@ import unittest
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
-from blivet import Blivet
 from blivet import util
 from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
@@ -19,6 +18,7 @@ from blivet.flags import flags
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
 from blivet.osinstall import storage_initialize
+from blivet.osinstall import InstallerStorage
 from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
 from blivet.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
 from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
@@ -46,7 +46,7 @@ class setupDiskImagesNonZeroSizeTestCase(unittest.TestCase):
     disks = {"disk1": Size("2 GiB")}
 
     def setUp(self):
-        self.blivet = Blivet()
+        self.blivet = InstallerStorage()
 
         # anaconda first configures disk images
         for (name, size) in iter(self.disks.items()):
