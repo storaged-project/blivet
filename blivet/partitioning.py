@@ -54,7 +54,7 @@ def _getCandidateDisks(storage):
     """
     disks = []
     for disk in storage.partitioned:
-        if not disk.format.supported:
+        if not disk.format.supported or disk.protected:
             continue
 
         if storage.config.clearPartDisks and \
