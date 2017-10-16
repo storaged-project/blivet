@@ -18,8 +18,8 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-BUS_NAME = "com.redhat.Blivet1"
-BASE_OBJECT_PATH = "/com/redhat/Blivet1"
+BUS_NAME = "com.redhat.Blivet0"
+BASE_OBJECT_PATH = "/com/redhat/Blivet0"
 BLIVET_INTERFACE = "%s.Blivet" % BUS_NAME
 BLIVET_OBJECT_PATH = "%s/Blivet" % BASE_OBJECT_PATH
 DEVICE_INTERFACE = "%s.Device" % BUS_NAME
