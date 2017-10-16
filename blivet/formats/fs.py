@@ -967,6 +967,9 @@ class Ext2FS(FS):
     _minSize = Size(0)
     _defaultMountOptions = ["defaults"]
     _defaultCheckOptions = ["-f", "-p", "-C", "0"]
+    # force option required to avoid confirmation question when mkfs
+    # is called over the whole disk (Oct 2017)
+    _defaultFormatOptions = ["-F", "-t", "ext2"]
     _dump = True
     _check = True
     _infofs = "dumpe2fs"
@@ -1083,7 +1086,9 @@ register_device_format(Ext2FS)
 class Ext3FS(Ext2FS):
     """ ext3 filesystem. """
     _type = "ext3"
-    _defaultFormatOptions = ["-t", "ext3"]
+    # force option required to avoid confirmation question when mkfs
+    # is called over the whole disk (Oct 2017)
+    _defaultFormatOptions = ["-F", "-t", "ext3"]
     _modules = ["ext3"]
     partedSystem = fileSystemType["ext3"]
 
@@ -1103,7 +1108,9 @@ register_device_format(Ext3FS)
 class Ext4FS(Ext3FS):
     """ ext4 filesystem. """
     _type = "ext4"
-    _defaultFormatOptions = ["-t", "ext4"]
+    # force option required to avoid confirmation question when mkfs
+    # is called over the whole disk (Oct 2017)
+    _defaultFormatOptions = ["-F", "-t", "ext4"]
     _modules = ["ext4"]
     partedSystem = fileSystemType["ext4"]
     _maxSize = Size("1 EiB")
