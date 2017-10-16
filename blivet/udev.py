@@ -31,6 +31,11 @@ from . import util
 from .size import Size
 from .flags import flags
 
+import gi
+gi.require_version("BlockDev", "2.0")
+
+from gi.repository import BlockDev as blockdev
+
 global_udev = pyudev.Context()
 log = logging.getLogger("blivet")
 
@@ -592,15 +597,12 @@ def device_get_lv_type(info):
 
 def device_dm_subsystem_match(info, subsystem):
     """ Return True if the device matches a given device-mapper subsystem. """
-    uuid = info.get("DM_UUID", "")
-    uuid_fields = uuid.split("-")
-    _subsystem = uuid_fields[0]
-    if _subsystem.lower().startswith("part") and len(uuid_fields) > 1:
-        # kpartx uses partN- as a subsystem prefix, which we ignore because
-        # we only care about the subsystem of the partitions' parent device.
-        _subsystem = uuid_fields[1]
+    name = info.get("DM_NAME")
+    if name is None:
+        return False
 
-    if _subsystem == uuid or not _subsystem:
+    _subsystem = blockdev.dm.get_subsystem_from_name(name)
+    if not _subsystem:
         return False
 
     return _subsystem.lower() == subsystem.lower()
