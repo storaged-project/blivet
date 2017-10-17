@@ -57,13 +57,7 @@ class Blivet(object):
 
     """ Top-level class for managing storage configuration. """
 
-    def __init__(self, ksdata=None):
-        """
-            :keyword ksdata: kickstart data store
-            :type ksdata: :class:`pykickstart.Handler`
-        """
-        self.ksdata = ksdata
-
+    def __init__(self):
         # storage configuration variables
         self.do_autopart = False
         self.clear_part_choice = None
@@ -579,11 +573,7 @@ class Blivet(object):
                             safe_name, name)
                 name = safe_name
         else:
-            hostname = ""
-            if self.ksdata and self.ksdata.network.hostname is not None:
-                hostname = self.ksdata.network.hostname
-
-            name = self.suggest_container_name(hostname=hostname)
+            name = self.suggest_container_name()
 
         if name in self.names:
             raise ValueError("name already in use")
@@ -750,11 +740,7 @@ class Blivet(object):
             dev_class = BTRFSVolumeDevice
             # set up the volume label, using hostname if necessary
             if not name:
-                hostname = ""
-                if self.ksdata and self.ksdata.network.hostname is not None:
-                    hostname = self.ksdata.network.hostname
-
-                name = self.suggest_container_name(hostname=hostname)
+                name = self.suggest_container_name()
             if "label" not in fmt_args:
                 fmt_args["label"] = name
             fmt_args["subvolspec"] = MAIN_VOLUME_ID
@@ -930,10 +916,17 @@ class Blivet(object):
 
         return tmp
 
-    def suggest_container_name(self, hostname=None, prefix=""):
+    def _get_container_name_template(self, prefix=None):
+        template = prefix or ""
+
+        if flags.image_install:
+            template = "%s_image" % template
+
+        return template
+
+    def suggest_container_name(self, prefix=""):
         """ Return a reasonable, unused device name.
 
-            :keyword hostname: the system's hostname
             :keyword prefix: a prefix for the container name
             :returns: the suggested name
             :rtype: str
@@ -941,16 +934,7 @@ class Blivet(object):
         if not prefix:
             prefix = self.short_product_name
 
-        # try to create a device name incorporating the hostname
-        if hostname not in (None, "", 'localhost', 'localhost.localdomain'):
-            template = "%s_%s" % (prefix, hostname.split('.')[0].lower())
-            template = self.safe_device_name(template)
-        else:
-            template = prefix
-
-        if flags.image_install:
-            template = "%s_image" % template
-
+        template = self._get_container_name_template(prefix=prefix)
         names = self.names
         name = template
         if name in names:
@@ -962,8 +946,7 @@ class Blivet(object):
                     break
 
             if not name:
-                log.error("failed to create device name based on prefix "
-                          "'%s' and hostname '%s'", prefix, hostname)
+                log.error("failed to create device name based on template '%s'", template)
                 raise RuntimeError("unable to find suitable device name")
 
         return name
