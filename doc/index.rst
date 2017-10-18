@@ -13,6 +13,7 @@ Contents:
 
    intro
    api
+   dbus
    testing
    blivet/blivet
    tests/tests
