@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-28 09:51-0400\n"
+"POT-Creation-Date: 2017-11-03 10:47-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -192,61 +192,65 @@ msgstr ""
 msgid "No usable disks selected"
 msgstr ""
 
-#: ../blivet/partitioning.py:835
+#: ../blivet/partitioning.py:833
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:843
+#: ../blivet/partitioning.py:841
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:948
+#: ../blivet/partitioning.py:946
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:1005
+#: ../blivet/partitioning.py:1003
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:1010
+#: ../blivet/partitioning.py:1008
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(minSize)s to %(maxSize)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:1299
+#: ../blivet/partitioning.py:1297
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:1328
+#: ../blivet/partitioning.py:1326
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1500
+#: ../blivet/partitioning.py:1498
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1705
+#: ../blivet/partitioning.py:1703
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1718
+#: ../blivet/partitioning.py:1716
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1801
+#: ../blivet/partitioning.py:1799
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2295
+#: ../blivet/partitioning.py:2293
 msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/fcoe.py:119
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/errors.py:169
@@ -268,10 +272,6 @@ msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
-#: ../blivet/fcoe.py:119
-msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:52
@@ -297,7 +297,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1148
+#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1155
 msgid "EFI System Partition"
 msgstr ""
 
@@ -357,34 +357,6 @@ msgstr ""
 msgid ""
 "You must include a U-Boot Partition on a FAT-formatted disk, mounted at /"
 "boot/uboot."
-msgstr ""
-
-#: ../blivet/iscsi.py:168
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:170
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:327
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:329
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:457
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:477
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:480
-msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/zfcp.py:54 ../blivet/devicelibs/dasd.py:273
@@ -475,6 +447,34 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
+#: ../blivet/iscsi.py:168
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:170
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:327
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:329
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:457
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:477
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:480
+msgid "Could not log in to any of the discovered nodes"
+msgstr ""
+
 #: ../blivet/deviceaction.py:282
 msgid "create device"
 msgstr ""
@@ -562,21 +562,21 @@ msgstr ""
 msgid "Shared library error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1121
+#: ../blivet/formats/fs.py:1128
 msgid ""
 "Recoverable errors have been detected or dosfsck has discovered an internal "
 "inconsistency."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1123
+#: ../blivet/formats/fs.py:1130
 msgid "Usage error."
 msgstr ""
 
-#: ../blivet/formats/fs.py:1392
+#: ../blivet/formats/fs.py:1399
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1424
+#: ../blivet/formats/fs.py:1431
 msgid "Linux HFS+ ESP"
 msgstr ""
 
@@ -588,16 +588,12 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:39
-msgid "physical volume (LVM)"
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:147
 msgid "Unknown"
-msgstr ""
-
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -619,6 +615,10 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:47
 msgid "Encrypted"
+msgstr ""
+
+#: ../blivet/formats/lvmpv.py:39
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/mdraid.py:40
