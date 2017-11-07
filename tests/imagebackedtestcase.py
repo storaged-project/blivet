@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from blivet.osinstall import InstallerStorage
+from blivet import Blivet
 from blivet import util
 from blivet.size import Size
 from blivet.flags import flags
@@ -95,7 +95,7 @@ class ImageBackedTestCase(unittest.TestCase):
     def setUp(self):
         """ Do any setup required prior to running a test. """
         flags.image_install = True
-        self.blivet = InstallerStorage()
+        self.blivet = Blivet()
 
         self.addCleanup(self._clean_up)
         self.set_up_storage()

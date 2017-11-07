@@ -21,7 +21,7 @@
 #
 
 from ..size import Size
-from .. import platform
+from .. import arch
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
 from parted import PARTITION_PREP
@@ -96,6 +96,6 @@ class PPCPRePBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return super(PPCPRePBoot, self).supported and isinstance(platform.platform, platform.IPSeriesPPC)
+        return super(PPCPRePBoot, self).supported and arch.is_ipseries()
 
 register_device_format(PPCPRePBoot)

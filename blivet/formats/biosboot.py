@@ -23,7 +23,7 @@
 from parted import PARTITION_BIOS_GRUB
 
 from ..size import Size
-from .. import platform
+from .. import arch
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
@@ -59,6 +59,6 @@ class BIOSBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return super(BIOSBoot, self).supported and isinstance(platform.platform, platform.X86)
+        return super(BIOSBoot, self).supported and arch.is_x86() and not arch.is_efi()
 
 register_device_format(BIOSBoot)

@@ -47,7 +47,6 @@ from ..errors import FormatCreateError, FSError, FSReadLabelError
 from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
-from .. import platform
 from ..flags import flags
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
@@ -914,7 +913,7 @@ class EFIFS(FATFS):
 
     @property
     def supported(self):
-        return super(EFIFS, self).supported and isinstance(platform.platform, platform.EFI)
+        return super(EFIFS, self).supported and arch.is_efi()
 
 register_device_format(EFIFS)
 
@@ -1111,7 +1110,7 @@ class AppleBootstrapFS(HFS):
 
     @property
     def supported(self):
-        return super(AppleBootstrapFS, self).supported and isinstance(platform.platform, platform.NewWorldPPC)
+        return super(AppleBootstrapFS, self).supported and arch.is_pmac()
 
 register_device_format(AppleBootstrapFS)
 
@@ -1144,7 +1143,7 @@ class MacEFIFS(HFSPlus):
 
     @property
     def supported(self):
-        return super(MacEFIFS, self).supported and isinstance(platform.platform, platform.MacEFI)
+        return super(MacEFIFS, self).supported and arch.is_efi() and arch.is_mactel()
 
     def __init__(self, **kwargs):
         if "label" not in kwargs:

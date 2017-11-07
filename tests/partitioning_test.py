@@ -148,7 +148,7 @@ class PartitioningTestCase(unittest.TestCase):
     def test_add_partition(self):
         with sparsetmpfile("addparttest", Size("50 MiB")) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path, exists=False)
+            disk.format = get_format("disklabel", device=disk.path, exists=False, label_type="msdos")
 
             free = disk.format.parted_disk.getFreeSpaceRegions()[0]
 
@@ -319,11 +319,11 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(req2.growth, 0)
         self.assertEqual(req3.growth, 35)
 
-    def test_disk_chunk1(self):
+    def test_msdos_disk_chunk1(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path, exists=False)
+            disk.format = get_format("disklabel", device=disk.path, exists=False, label_type="msdos")
 
             p1 = PartitionDevice("p1", size=Size("10 MiB"), grow=True)
             p2 = PartitionDevice("p2", size=Size("30 MiB"), grow=True)
@@ -340,7 +340,9 @@ class PartitioningTestCase(unittest.TestCase):
             requests = [PartitionRequest(p) for p in partitions]
             chunk = DiskChunk(free[0], requests=requests)
 
-            # parted reports a first free sector of 32 for disk files. whatever.
+            # parted reports a first free sector of 32 for msdos on disk files. whatever.
+            # XXX on gpt, the start is increased to 34 and the end is reduced from 204799 to 204766,
+            #     yielding an expected length of 204733
             length_expected = 204768
             self.assertEqual(chunk.length, length_expected)
 
@@ -370,11 +372,11 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(requests[0].growth, 30712)
             self.assertEqual(requests[1].growth, 92136)
 
-    def test_disk_chunk2(self):
+    def test_msdos_disk_chunk2(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path, exists=False)
+            disk.format = get_format("disklabel", device=disk.path, exists=False, label_type="msdos")
 
             p1 = PartitionDevice("p1", size=Size("10 MiB"), grow=True)
             p2 = PartitionDevice("p2", size=Size("30 MiB"), grow=True)

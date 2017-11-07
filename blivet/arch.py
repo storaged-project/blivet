@@ -344,6 +344,18 @@ def is_arm():
     return os.uname()[4].startswith('arm')
 
 
+def is_pmac():
+    return is_ppc() and get_ppc_machine() == "PMac" and get_ppc_mac_gen() == "NewWorld"
+
+
+def is_ipseries():
+    return is_ppc() and get_ppc_machine() in ("iSeries", "pSeries")
+
+
+def is_omap_arm():
+    return is_arm() and get_arm_machine() == "omap"
+
+
 def get_arch():
     """
     :return: The hardware architecture
