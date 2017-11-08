@@ -18,7 +18,6 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import os
 import copy
 import tempfile
 import re
@@ -42,7 +41,6 @@ from .size import Size
 from .devicetree import DeviceTree
 from .formats import get_default_filesystem_type
 from .flags import flags
-from .platform import platform as _platform
 from .formats import get_format
 from . import arch
 from . import devicefactory
@@ -59,13 +57,7 @@ class Blivet(object):
 
     """ Top-level class for managing storage configuration. """
 
-    def __init__(self, ksdata=None):
-        """
-            :keyword ksdata: kickstart data store
-            :type ksdata: :class:`pykickstart.Handler`
-        """
-        self.ksdata = ksdata
-
+    def __init__(self):
         # storage configuration variables
         self.do_autopart = False
         self.clear_part_choice = None
@@ -412,11 +404,8 @@ class Blivet(object):
         destroy_action = ActionDestroyFormat(disk)
         self.devicetree.actions.add(destroy_action)
 
-        label_type = _platform.best_disklabel_type(disk)
-
         # create a new disklabel on the disk
-        new_label = get_format("disklabel", device=disk.path,
-                               label_type=label_type)
+        new_label = get_format("disklabel", device=disk.path)
         create_action = ActionCreateFormat(disk, fmt=new_label)
         self.devicetree.actions.add(create_action)
 
@@ -517,14 +506,6 @@ class Blivet(object):
         else:
             name = "req%d" % self.next_id
 
-        if "weight" not in kwargs:
-            fmt = kwargs.get("fmt")
-            if fmt:
-                mountpoint = getattr(fmt, "mountpoint", None)
-
-                kwargs["weight"] = _platform.weight(mountpoint=mountpoint,
-                                                    fstype=fmt.type)
-
         return PartitionDevice(name, *args, **kwargs)
 
     def new_mdarray(self, *args, **kwargs):
@@ -592,11 +573,7 @@ class Blivet(object):
                             safe_name, name)
                 name = safe_name
         else:
-            hostname = ""
-            if self.ksdata and self.ksdata.network.hostname is not None:
-                hostname = self.ksdata.network.hostname
-
-            name = self.suggest_container_name(hostname=hostname)
+            name = self.suggest_container_name()
 
         if name in self.names:
             raise ValueError("name already in use")
@@ -763,11 +740,7 @@ class Blivet(object):
             dev_class = BTRFSVolumeDevice
             # set up the volume label, using hostname if necessary
             if not name:
-                hostname = ""
-                if self.ksdata and self.ksdata.network.hostname is not None:
-                    hostname = self.ksdata.network.hostname
-
-                name = self.suggest_container_name(hostname=hostname)
+                name = self.suggest_container_name()
             if "label" not in fmt_args:
                 fmt_args["label"] = name
             fmt_args["subvolspec"] = MAIN_VOLUME_ID
@@ -943,10 +916,17 @@ class Blivet(object):
 
         return tmp
 
-    def suggest_container_name(self, hostname=None, prefix=""):
+    def _get_container_name_template(self, prefix=None):
+        template = prefix or ""
+
+        if flags.image_install:
+            template = "%s_image" % template
+
+        return template
+
+    def suggest_container_name(self, prefix=""):
         """ Return a reasonable, unused device name.
 
-            :keyword hostname: the system's hostname
             :keyword prefix: a prefix for the container name
             :returns: the suggested name
             :rtype: str
@@ -954,16 +934,7 @@ class Blivet(object):
         if not prefix:
             prefix = self.short_product_name
 
-        # try to create a device name incorporating the hostname
-        if hostname not in (None, "", 'localhost', 'localhost.localdomain'):
-            template = "%s_%s" % (prefix, hostname.split('.')[0].lower())
-            template = self.safe_device_name(template)
-        else:
-            template = prefix
-
-        if flags.image_install:
-            template = "%s_image" % template
-
+        template = self._get_container_name_template(prefix=prefix)
         names = self.names
         name = template
         if name in names:
@@ -975,8 +946,7 @@ class Blivet(object):
                     break
 
             if not name:
-                log.error("failed to create device name based on prefix "
-                          "'%s' and hostname '%s'", prefix, hostname)
+                log.error("failed to create device name based on template '%s'", template)
                 raise RuntimeError("unable to find suitable device name")
 
         return name
@@ -1054,7 +1024,6 @@ class Blivet(object):
     @property
     def packages(self):
         pkgs = set()
-        pkgs.update(_platform.packages)
 
         # install support packages for all devices in the system
         for device in self.devices:
@@ -1062,52 +1031,6 @@ class Blivet(object):
             pkgs.update(device.packages)
 
         return list(pkgs)
-
-    def write(self):
-        """ Write out all storage-related configuration files. """
-        if not os.path.isdir("%s/etc" % self.sysroot):
-            os.mkdir("%s/etc" % self.sysroot)
-
-        self.write_dasd_conf(self.sysroot)
-
-    def write_dasd_conf(self, root):
-        """ Write /etc/dasd.conf to target system for all DASD devices
-            configured during installation.
-        """
-        dasds = [d for d in self.devices if d.type == "dasd"]
-        dasds.sort(key=lambda d: d.name)
-        if not (arch.is_s390() and dasds):
-            return
-
-        with open(os.path.realpath(root + "/etc/dasd.conf"), "w") as f:
-            for dasd in dasds:
-                fields = [dasd.busid] + dasd.get_opts()
-                f.write("%s\n" % " ".join(fields),)
-
-        # check for hyper PAV aliases; they need to get added to dasd.conf as well
-        sysfs = "/sys/bus/ccw/drivers/dasd-eckd"
-
-        # in the case that someone is installing with *only* FBA DASDs,the above
-        # sysfs path will not exist; so check for it and just bail out of here if
-        # that's the case
-        if not os.path.exists(sysfs):
-            return
-
-        # this does catch every DASD, even non-aliases, but we're only going to be
-        # checking for a very specific flag, so there won't be any duplicate entries
-        # in dasd.conf
-        devs = [d for d in os.listdir(sysfs) if d.startswith("0.0")]
-        with open(os.path.realpath(root + "/etc/dasd.conf"), "a") as f:
-            for d in devs:
-                aliasfile = "%s/%s/alias" % (sysfs, d)
-                with open(aliasfile, "r") as falias:
-                    alias = falias.read().strip()
-
-                # if alias == 1, then the device is an alias; otherwise it is a
-                # normal dasd (alias == 0) and we can skip it, since it will have
-                # been added to dasd.conf in the above block of code
-                if alias == "1":
-                    f.write("%s\n" % d)
 
     def _check_valid_fstype(self, newtype):
         """ Check the fstype to see if it is valid

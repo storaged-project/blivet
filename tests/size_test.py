@@ -231,7 +231,7 @@ class TranslationTestCase(unittest.TestCase):
         super(TranslationTestCase, self).__init__(methodName=methodName)
 
     def setUp(self):
-        self.saved_lang = os.environ.get('LANG', None)
+        self.saved_lang = os.environ.get('LANG', 'en_US.UTF-8')
         self.addCleanup(self._clean_up)
 
     def _clean_up(self):

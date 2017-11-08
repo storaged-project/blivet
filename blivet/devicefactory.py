@@ -27,6 +27,7 @@ from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
 from .devices import LUKSDevice, LVMLogicalVolumeDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
+from .devices.lvm import DEFAULT_THPOOL_RESERVE
 from .formats import get_format
 from .devicelibs import btrfs
 from .devicelibs import mdraid
@@ -35,7 +36,6 @@ from .devicelibs import raid
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
-from .autopart import AUTOPART_THPOOL_RESERVE
 from .size import Size
 from .static_data import luks_data
 
@@ -1544,17 +1544,17 @@ class LVMThinPFactory(LVMFactory):
                 log.debug("size cut to %s to omit pool free space", size)
 
         if self.vg:
-            self.vg.thpool_reserve = AUTOPART_THPOOL_RESERVE
+            self.vg.thpool_reserve = DEFAULT_THPOOL_RESERVE
 
-        # black maths (to make sure there's AUTOPART_THPOOL_RESERVE.percent reserve)
-        size_with_reserve = size * (1 / (1 - (AUTOPART_THPOOL_RESERVE.percent / 100)))
+        # black maths (to make sure there's DEFAULT_THPOOL_RESERVE.percent reserve)
+        size_with_reserve = size * (1 / (1 - (DEFAULT_THPOOL_RESERVE.percent / 100)))
         reserve = size_with_reserve - size
-        if reserve < AUTOPART_THPOOL_RESERVE.min:
-            size = size + AUTOPART_THPOOL_RESERVE.min
-        elif reserve < AUTOPART_THPOOL_RESERVE.max:
+        if reserve < DEFAULT_THPOOL_RESERVE.min:
+            size = size + DEFAULT_THPOOL_RESERVE.min
+        elif reserve < DEFAULT_THPOOL_RESERVE.max:
             size = size_with_reserve
         else:
-            size = size + AUTOPART_THPOOL_RESERVE.max
+            size = size + DEFAULT_THPOOL_RESERVE.max
 
         return size
 
@@ -1637,7 +1637,7 @@ class LVMThinPFactory(LVMFactory):
         if self.size == Size(0):
             return
 
-        self.vg.thpool_reserve = AUTOPART_THPOOL_RESERVE
+        self.vg.thpool_reserve = DEFAULT_THPOOL_RESERVE
         size = self._get_pool_size()
         if size == Size(0):
             raise DeviceFactoryError("not enough free space for thin pool")

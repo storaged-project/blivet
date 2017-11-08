@@ -104,13 +104,12 @@ class Flags(object):
 
     def update_from_boot_cmdline(self):
         self.get_boot_cmdline()
-        if "nompath" in self.boot_cmdline:
-            self.multipath = False
+        self.multipath = "nompath" not in self.boot_cmdline
+        self.dmraid = "nodmraid" not in self.boot_cmdline
+        self.noiswmd = "noiswmd" in self.boot_cmdline
+        self.gfs2 = "gfs2" in self.boot_cmdline
+        self.jfs = "jfs" in self.boot_cmdline
+        self.reiserfs = "reiserfs" in self.boot_cmdline
 
-        if "nodmraid" in self.boot_cmdline:
-            self.dmraid = False
-
-        if "noiswmd" in self.boot_cmdline:
-            self.noiswmd = True
 
 flags = Flags()
