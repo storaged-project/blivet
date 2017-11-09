@@ -1436,7 +1436,7 @@ class LVMThinPoolMixin(object):
     def _convert_from_lvs(self):
         data_lv, metadata_lv = self._from_lvs
 
-        data_lv.parent_lv = self  # also adds the the LV to self._internal_lvs
+        data_lv.parent_lv = self  # also adds the LV to self._internal_lvs
         data_lv.int_lv_type = LVMInternalLVtype.data
         metadata_lv.parent_lv = self
         metadata_lv.int_lv_type = LVMInternalLVtype.meta

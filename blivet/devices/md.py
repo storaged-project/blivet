@@ -224,7 +224,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     def create_bitmap(self):
         """ Whether or not a bitmap should be created on the array.
 
-            If the the array is sufficiently small, a bitmap yields no benefit.
+            If the array is sufficiently small, a bitmap yields no benefit.
 
             If the array has no redundancy, a bitmap is just pointless.
         """
