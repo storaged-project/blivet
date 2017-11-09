@@ -69,7 +69,7 @@ data_files = [
 
 
 setup(name='blivet',
-      version='2.1.11',
+      version='3.0.0.b1',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
