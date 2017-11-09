@@ -1,3 +1,83 @@
+3.0.0
+======
+* `Python 2&3 Compatibility`_
+* `Configuration Actions`_
+* `Streamlined DeviceFactory Reconfiguration`_
+* `New Upstream Location`_
+* `DeviceFactory Defaults to LVM`_
+* `DBus Interface`_
+* `HBA RAID Info`_
+* `DiskDevice.wwn`_
+* `Removed`_
+** `udev.device_is_realdisk`
+* `Moved`_
+** `Encrypted Volume Data`
+
+Python 2&3 Compatibility
+-------------------------
+Blivet can now run using python-2.7.x or python-3.5.x. The ``six`` python
+module is used as a compatibility layer.
+
+Configuration Actions
+----------------------
+Setting arbitrary attributes of devices and their formatting can now be
+accomplished using configuration actions (``ActionConfigureDevice``,
+``ActionConfigureFormat``). Previously, the only way to do this was by making
+ad-hoc changes that were not properly accounted for.
+
+Streamlined DeviceFactory Reconfiguration
+------------------------------------------
+When passing a device to a ``DeviceFactory`` constructor to reconfigure that
+device, blivet will now obtain the factory defaults from that device. This
+saves the caller from having to pass all arguments explicitly to maintain the
+initial settings for that device.
+
+New Upstream Location
+----------------------
+Blivet has moved to https://github.com/storaged-project/blivet, along with
+libblockdev, libbytesize, and blivet-gui.
+
+DeviceFactory Defaults to LVM
+------------------------------
+``Blivet.factory_device`` and ``devicefactory.get_device_factory`` both
+default to configuring LVM. Previously there was no default type.
+
+DBus Interface
+---------------
+An *experimental* DBus interface has been added. It contains functionality
+related to examining the current configuration, removing devices, and
+configuring new devices using blivet's ``DeviceFactory``.
+
+HBA RAID Info
+--------------
+Blivet now uses libstoragemgmt's python module (``lsm``) to provide some
+basic information about HBA RAID volumes as properties of ``DiskDevice``.
+
+DiskDevice.wwn
+---------------
+An attribute (``wwn``) has been added to ``DiskDevice`` to convey World Wide
+Number for disks.
+
+Removed
+--------
+* ``udev.device_is_realdisk``
+
+Moved
+------
+Encrypted Volume Data has moved to a singleton and is no longer passed around
+as arguments to ``DeviceTree`` or related classes.
+
+
+2.1.3
+======
+* `Device Tags`
+
+Device Tags
+------------
+All ``Device`` subclasses now have a ``tags`` attribute which is prepopulated
+with predefined tags describing the drive(s) a device resides on. The available
+tags are defined in ``blivet.devices.lib.Tags``.
+
 2.1.2
 ======
 * `Separate data/metadata LVs for thin/cache LVs`_
