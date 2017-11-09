@@ -10,7 +10,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://www-rhstorage.rhcloud.com/projects/blivet
-Version: 2.0.2
+Version: 2.1.11
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -165,6 +165,260 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %endif
 
 %changelog
+* Tue Sep 19 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.11-1
+- Remove build requires for pocketlint (rkuska)
+- edd_test: don't run on non-x86 (pjones)
+- Added support for device tags (japokorn)
+- fcoe: don't use dcb for autoconnecting of bnx2x and bnx2fc (#1261703)
+  (rvykydal)
+- fcoe: replace fipvlan with fcoemon (#1085325) (rvykydal)
+- Do not use read-only mode for e2fsck (vpodzime)
+- Fixed behavior when selinux is disabled (japokorn)
+- Do file system check before resize (#1484575) (vpodzime)
+
+* Thu Aug 17 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.10-1
+- Use addCleanup for test cleanup instead of clening in tearDown (vtrefny)
+- No longer skip test w/o selinux; mocked (japokorn)
+- Skip tests when SELinux is disabled (japokorn)
+- New test for selinux context setting when mounting (japokorn)
+- Add tests for disklabel type selection and partition weight. (dlehman)
+- Do not use package version to check version of installed tools (vtrefny)
+- Update the upstream git URL (vpodzime)
+- Stop enforcing obsolete limits on partition count. (#1460668) (dlehman)
+- Do not run FS check as part of updating (re)size info (vpodzime)
+- Change how we run e2fsck to check ext filesystems (vpodzime)
+- Round the recommended thpool metadata size to extents (vpodzime)
+- Respect thin pool's min size when setting its req_size (vpodzime)
+- Don't crash during populate when lvm plugin is missing. (dlehman)
+- Actually add space for LUKS metadata when encrypting a VG (vpodzime)
+- Only consider old and new device sizes when not growing to max (vpodzime)
+- Do not reserve space for LVM metadata twice (vpodzime)
+- Do not create a temporary list for sum() (vpodzime)
+- Refer to self.container as self.vg in the LVMFactory (vpodzime)
+- Add a couple of extra comments and docstrings to factories (vpodzime)
+- Use existing VG's PE size if available in LVMFactory (vpodzime)
+- Add comments warning before a weird nomenclature in factories (vpodzime)
+- Don't let device state block modification of the model. (dlehman)
+- Fix error message for format create w/ missing external dep. (dlehman)
+- Expand coverage of devices_test.dependencies_test a bit. (dlehman)
+- Account for external dep availabilty in StorageDevice.controllable. (dlehman)
+- Add the appropriate external dependency to LUKSDevice. (dlehman)
+
+* Thu Jun 01 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.9-1
+- Adapt to logging module name change (mkolman)
+- Updated calls to avoid log spamming (japokorn)
+- Add a script for generating and pushing updated documentation (vtrefny)
+- pylint: ignore some false positive warnings in blivet.py and lvm.py (vtrefny)
+- pylint: remove unused false positives from pocketlint config (vtrefny)
+- pylint: disable false positive "not-context-manager" for threading.Lock
+  (vtrefny)
+- pylint: ignore "arguments-differ" warnings in blivet.size.Size (vtrefny)
+- pylint: fix various "arguments-differ" warnings (vtrefny)
+- pylint: remove init from platform.X86 (vtrefny)
+- pylint: fix various errors in tests (vtrefny)
+- pylint: ignore "arguments-differ" warning for "do_tasks" method (vtrefny)
+- pylint: fix false positive for "catching-non-exception" (vtrefny)
+- pylint: fix argument name for Device._remove_parent/_add_parent (vtrefny)
+- Always mount & unmount an XFS file system when writing new UUID (vpodzime)
+- Do not remove manually created extended partitions (#1440150) (vtrefny)
+- Look the disk up for a partition by name not sys_name (vpodzime)
+- Disable pylint "no-member" warnings for re module constants (vtrefny)
+- Allow custom chunk size specification for MDRaidArrayDevice (vtrefny)
+- Add RAID chunk size to the generated kickstart file (vtrefny)
+- Use structured logging for the anaconda logger (mkolman)
+- Use distutils.spawn.find_executable instead of our custom code (vpodzime)
+- Add a method to reset file system's UUID (vpodzime)
+- Try to mount and unmount an XFS FS when writing UUID (vpodzime)
+- Add a method for a file system to generate a new UUID (vpodzime)
+- tests/fsuuid: Implement checking invalid UUIDs (aszlig)
+- formats/swap: Support setting UUID (aszlig)
+- tests: Add a series of tests for setting UUIDs (aszlig)
+- tests: Add tests to check the UUID format checkers (aszlig)
+- tasks: Implement setting UUID after FS creation (aszlig)
+- formats/fs: Implement setting UUID during mkfs (aszlig)
+- formats/fs: Add functionality for checking UUIDs (aszlig)
+- tasks/fsmkfs: Add arguments for setting UUID (aszlig)
+- Properly unset mountpoint of a snapshot's format (vpodzime)
+- Update snapshot's format's exists flag based on its origin (vpodzime)
+
+* Wed Apr 19 2017 Vojtech Trefny <vtrefny@redhat.com> - 2.1.8-1
+- Fix "unknown" SAS device sysfs parsing. (adamw)
+- Reserve space in a VG when using LVMThinPFactory (vpodzime)
+- Reserve space in a VG instead of padding thin pools on autopart (vpodzime)
+- Focus the nonzero disk image size test a bit. (dlehman)
+- Add missing tearDown method to luks resize test case. (dlehman)
+- Fix some flag stomping in tests. (dlehman)
+- Remove the useless method requiredDiskLabelType (vponcova)
+- FBA DASD should use the msdos disk label type (vponcova)
+- Be more careful when checking for udisks-iscsi availability (vpodzime)
+- Do not allow resize of devices with no/unrecoginized formatting. (#1033778)
+  (dlehman)
+- Clean up parent/child relations on partition ctor error. (#1383873) (dlehman)
+- Use all ancestors when adding RAID disks to exclusiveDisks (vtrefny)
+- Fix detection of linear MD RAID (vtrefny)
+- Add 'discard' option to crypttab for newly created LUKS (vpodzime)
+- Loop devices w/o backing file are now ignored (japokorn)
+- Set parted boot flag when creating EFI filesystem (vtrefny)
+- formats/fs: Set NTFS to be formattable (aszlig)
+- Do not try to search for 'tmpfs' devices in udev database (vtrefny)
+- Fix resize test in fstesting (vtrefny)
+- Fix task availability test (vtrefny)
+- Shallow copy another alignment property (#1408282) (awilliam)
+- Fix the test dependencies (vpodzime)
+- Add 'systemd-udev' to dependencies (#1392591) (vtrefny)
+
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1:2.1.7-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Sat Dec 24 2016 Adam Williamson <awilliam@redhat.com> - 1:2.1.7-6
+- Actually apply the patch mentioned in -5
+
+* Fri Dec 23 2016 Adam Williamson <awilliam@redhat.com> - 1:2.1.7-5
+- backport GH#530 to fix #1408282 (crash with Python 3.6)
+
+* Mon Dec 19 2016 Miro Hrončok <mhroncok@redhat.com> - 1:2.1.7-4
+- Rebuild for Python 3.6
+
+* Tue Dec  6 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-3
+- Add 'systemd-udev' to dependencies (#1392591) (vtrefny)
+
+* Mon Nov 21 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-2
+- Fix "unknown" SAS device sysfs parsing. (#1394026) (awilliam)
+
+* Mon Nov 21 2016 Vratislav Podzimek <vpodzime@redhat.com> - 2.1.7-1
+- Require BlockDev 2.0 in the gi.require_version() call (vpodzime)
+- Fix detection of 'macefi' partitions (#1393846) (awilliam)
+- Add device symlinks to the PVs dictionary for MD RAID PVs (#1389130)
+  (vpodzime)
+- iSCSI: turn `iscsi.initiator_set` into a property (awilliam)
+- iSCSI: Store auth info in NodeInfo tuples (awilliam)
+- Use correct type for port in GVariant tuple (awilliam)
+- Use a list comprehension for _to_node_infos (awilliam)
+- Device name now checked only for new devices (japokorn)
+- Remove several redundant teardown calls. (dlehman)
+- Cache and reuse data about multipath members (vpodzime)
+- Remove some obsolete pvscan calls. (dlehman)
+
+* Tue Oct 04 2016 David Lehman <dlehman@redhat.com> - 2.1.6-1
+- add missing populators to populator.helpers (awilliam)
+
+* Mon Sep 26 2016 David Lehman <dlehman@redhat.com> - 2.1.5-1
+- Move parted changes to after format destroy. (#1378162) (dlehman)
+- Add translators comment for unsupported disklabel names (vtrefny)
+
+* Tue Sep 20 2016 David Lehman <dlehman@redhat.com> - 2.1.4-1
+- Revert unsupported clearing of parted partition 'system'. (dlehman)
+- Make sure we create a proper GVariant tuple as args (#1375712) (vpodzime)
+- Do not include both size and percent in logvol ks cmd. (dlehman)
+- Ignore NVDIMMs at OS installation time. (dlehman)
+- Don't crash if lvm refuses to activate an lv. (dlehman)
+
+* Wed Sep 14 2016 David Lehman <dlehman@redhat.com> - 2.1.3-1
+- Remove some deprecated/obsolete bits from spec file. (dlehman)
+- Use %%global instead of %%define for specfile macros. (dlehman)
+- Fix URLs pointing to blivet resources. (dlehman)
+- UUID is now cleaned when destroying format (japokorn)
+- Support disk tags as disk specification for new partitions. (dlehman)
+- Add tags property to Device with some defaults for disk variants. (dlehman)
+- Add checks to git-multi-merge script (jkonecny)
+- UUID now set correctly when reformatting partition (japokorn)
+- Eliminate mountpoint symlinks when looking for mounted device (vtrefny)
+- iscsi: allow installing bootloader on offload iscsi disks (qla4xxx)
+  (#1325134) (rvykydal)
+
+* Fri Aug 05 2016 David Lehman <dlehman@redhat.com> - 2.1.2-1
+- Update release notes to include previous two releases. (dlehman)
+- Allign the LV's size up to set the base size for growing (vpodzime)
+- Ensure biosboot shows up in kickstart (#1242666) (rmarshall)
+- Add tests for the new LV from LVs actions (vpodzime)
+- Make sure to add/remove internal LVs when adding/removing a compound LV
+  (vpodzime)
+- Make sure all LVs to create a new LV from are in the DT (vpodzime)
+- Make sure internal LVs are added/removed to/from DT properly (vpodzime)
+- Make LVs depend on their internal LVs (vpodzime)
+- Do not add the LV to devicetree in new_lv_from_lvs() (vpodzime)
+- Require libblockdev version with all the functions we need (vpodzime)
+- Allow for cascade creation of LVs from LVs (vpodzime)
+- Fix removing PVs after removing VG (#1358067) (vtrefny)
+- Pass arguments to get_member_raid_sets() in the correct order (#1225184)
+  (vpodzime)
+- Use the new way extra information is provided for LVs (vpodzime)
+- Add a method to determine if a udev device is a disk. (vtrefny)
+- Fix udev.resolve_glob to match device path too (vtrefny)
+- Adapt to the old-new storaged API paths (vpodzime)
+- Handle an mpath name as lone exclusive disk. (#984059) (dlehman)
+- Add unit tests for disk filter. (dlehman)
+- Allow creation of a new LV from other LVs (vpodzime)
+- Removed test for snapshot origin existance (jkonecny)
+- Don't require existing origin when modeling snapshot (jkonecny)
+- Update size for dmraid arrays found during populate. (#1269662) (dlehman)
+- Restore the correct default partition table type for AArch64 EFI. (dmarlin)
+- Fix args to cancel_disk_actions call from hide(). (dlehman)
+- Fix not enough free space after creating extended partition (#1252350)
+  (vtrefny)
+- Add some more unit tests for DeviceTree. (dlehman)
+- Add tests for critical format methods. (dlehman)
+- Split and include cache data and metadata sizes properly (vpodzime)
+- Use internal LVs (if any) to calculate space used by existing LVs (vpodzime)
+- Remove an unused calculation of VG's RAID PVs (vpodzime)
+- Only include padding to nonexisting thin pools' vg_space_used (vpodzime)
+- Require pyudev 0.18 or newer (vtrefny)
+- Do not use deprecated pyudev methods (vtrefny)
+- Show changes for each branch in git-multi-merge before pushing (vpodzime)
+
+* Mon Jun 06 2016 David Lehman <dlehman@redhat.com> - 2.1.1-1
+- Ignore all merge commits when making rpm log. (dlehman)
+- Try harder to identify a partition's disk when necessary. (dlehman)
+- Add some fallback methods for finding a partition's disk. (dlehman)
+- Include devices on disklabels unsupported by parted in the devicetree.
+  (dlehman)
+- Don't traceback if we fail to examine an md member. (dlehman)
+- Disklabel commit errors can occur for disks, too. (dlehman)
+- Add unit tests for device methods. (dlehman)
+- ARM platforms: support both msdos and gpt partitions (pbrobinson)
+- LUKS data moved to singleton (japokorn)
+- Add the P_ keyword to xgettext. (dshea)
+- Add xfs to default filesystem types (rmarshall)
+- Fix blivet constructor fs support check (rmarshall)
+- Do not put LVM stuff into syslog (vpodzime)
+- Kickstart missing bootloader partitions (#1242666) (rmarshall)
+
+* Thu May 12 2016 David Lehman <dlehman@redhat.com> - 2.1.0-1
+- Add name of problematic device to UnusableConfigurationError (vtrefny)
+- LVM data are now global (japokorn)
+- Allow custom chunk size specification for MDRaidArrayDevice (vtrefny)
+- Mock all blockdev's listing functions for populator tests (vpodzime)
+- Add zanata-python-client to TEST_DEPENDENCIES (bcl)
+
+* Thu May 12 2016 David Lehman <dlehman@redhat.com> - 2.0.3-1
+- Fix protected status for extended partitions (vtrefny)
+- Improve documentation of the udev.resolve_glob() function (vpodzime)
+- Remove the locale list from zanata.xml (dshea)
+- Do not test translated strings during make ci. (dshea)
+- Squashed 'translation-canary/' changes from 5a45c19..3bc2ad6 (dshea)
+- Fix root detection on btrfs in rescue mode (vtrefny)
+- Use device's mount options when mounting existing systems (vtrefny)
+- Ignore pylint being confused with our mixins' properties (vpodzime)
+- Get back to use ROUND_HALF_UP by default (vpodzime)
+- Let Python import the formats for us (vpodzime)
+- Only call resolve_devspec() in _get_active_mounts() for real devices
+  (vpodzime)
+- Call is_mpath_member() only when it makes sense (dlehman)
+- Break the cycle in LVMPhysicalVolume.destroy (#1331630) (vpodzime)
+- Use libbytesize's translations for Size tests (vpodzime)
+- Compare sizes instead of numbers of sectors (vpodzime)
+- Obsolete python-blivet and blivet-data packages. (dlehman)
+- Increase the default size of /boot to 1 GB. (#377) (clumens)
+- Do not add btrfs volume subvolid to subvolumes mountopts (#1306808) (vtrefny)
+- A simple script for multi-merges we now do (vpodzime)
+- Update CONTRIBUTING file to match current practices. (dlehman)
+- Only import the 'iscsi' singleton when really needed (vpodzime)
+- Correctly recognize internal RAID LVs (vpodzime)
+- Do not add mdarray with no slave (#1321393) (vtrefny)
+- Make sure to add hyperPAV aliases to dasd.conf. (sbueno+anaconda)
+- LVM data are now global (japokorn)
+- Preserve traceback when re-raising exceptions (vpodzime)
+
 * Mon Apr 04 2016 David Lehman <dlehman@redhat.com> - 2.0.2-1
 - Fix mistake from PEP8 conversion. (#1323012) (dlehman)
 - Set both req_size and size of thin pool when growing LVM (vpodzime)

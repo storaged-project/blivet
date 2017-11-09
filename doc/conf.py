@@ -49,7 +49,7 @@ copyright = u'2013-2016, Red Hat, Inc.'     # pylint: disable=redefined-builtin
 # built documents.
 #
 # The short X.Y version.
-version = '2.0.2'
+version = '2.1.11'
 # The full version, including alpha/beta/rc tags.
 release = version
 
