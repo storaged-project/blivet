@@ -1004,7 +1004,7 @@ class ActionConfigureFormat(DeviceAction):
     """ An action change of an attribute of device format """
     type = ACTION_TYPE_CONFIGURE
     obj = ACTION_OBJECT_FORMAT
-    type_desc_str = N_("configrure format")
+    type_desc_str = N_("configure format")
 
     def __init__(self, device, attr, new_value):
         super().__init__(device)
@@ -1055,7 +1055,7 @@ class ActionConfigureDevice(DeviceAction):
     """ An action change of an attribute of a device """
     type = ACTION_TYPE_CONFIGURE
     obj = ACTION_OBJECT_FORMAT
-    type_desc_str = N_("configrure device")
+    type_desc_str = N_("configure device")
 
     def __init__(self, device, attr, new_value):
         super().__init__(device)
