@@ -26,8 +26,10 @@ from six import add_metaclass
 
 import gi
 gi.require_version("BlockDev", "2.0")
+gi.require_version("GLib", "2.0")
 
 from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 import logging
 log = logging.getLogger("blivet")
@@ -172,9 +174,43 @@ class VersionMethod(Method):
         return self._availability_errors[:]
 
 
+class BlockDevTechInfo(object):
+
+    def __init__(self, plugin_name, check_fn, technologies):
+        """ Initializer.
+
+            :param str plugin_name: the name of the libblockdev plugin
+            :param check_fn: function used to check for support availability
+            :param technologies: list of required technologies
+        """
+        self.plugin_name = plugin_name
+        self.check_fn = check_fn
+        self.technologies = technologies
+
+    def __str__(self):
+        return "blockdev-%s" % self.plugin_name
+
+
 class BlockDevMethod(Method):
 
     """ Methods for when application is actually a libblockdev plugin. """
+
+    def __init__(self, tech_info):
+        """ Initializer.
+
+            :param :class:`AppVersionInfo` version_info:
+        """
+        self._tech_info = tech_info
+        self._availability_errors = None
+
+    def _check_technologies(self):
+        errors = []
+        for tech, mode in self._tech_info.technologies.items():
+            try:
+                self._tech_info.check_fn(tech, mode)
+            except GLib.GError as e:
+                errors.append(str(e))
+        return errors
 
     def availability_errors(self, resource):
         """ Returns [] if the plugin is loaded.
@@ -185,12 +221,15 @@ class BlockDevMethod(Method):
             :returns: [] if the name of the plugin is loaded
             :rtype: list of str
         """
-        if resource.name in blockdev.get_available_plugin_names():
-            return []
-        else:
+        if resource.name not in blockdev.get_available_plugin_names():
             return ["libblockdev plugin %s not loaded" % resource.name]
-
-BlockDevMethod = BlockDevMethod()
+        else:
+            tech_missing = self._check_technologies()
+            if tech_missing:
+                return ["libblockdev plugin %s is loaded but some required "
+                        "technologies are not available:\n%s" % (resource.name, tech_missing)]
+            else:
+                return []
 
 
 class UnavailableMethod(Method):
@@ -232,9 +271,9 @@ def application_by_version(name, version_method):
     return ExternalResource(version_method, name)
 
 
-def blockdev_plugin(name):
+def blockdev_plugin(name, blockdev_method):
     """ Construct an external resource that is a libblockdev plugin. """
-    return ExternalResource(BlockDevMethod, name)
+    return ExternalResource(blockdev_method, name)
 
 
 def unavailable_resource(name):
@@ -246,15 +285,110 @@ def available_resource(name):
     """ Construct an external resource that is always available. """
     return ExternalResource(AvailableMethod, name)
 
-# blockdev plugins
-BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("btrfs")
-BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("crypto")
-BLOCKDEV_DM_PLUGIN = blockdev_plugin("dm")
-BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("loop")
-BLOCKDEV_LVM_PLUGIN = blockdev_plugin("lvm")
-BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid")
-BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("mpath")
-BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap")
+# libblockdev btrfs plugin required technologies and modes
+BLOCKDEV_BTRFS_ALL_MODES = (blockdev.BtrfsTechMode.CREATE |
+                            blockdev.BtrfsTechMode.DELETE |
+                            blockdev.BtrfsTechMode.MODIFY |
+                            blockdev.BtrfsTechMode.QUERY)
+BLOCKDEV_BTRFS = BlockDevTechInfo(plugin_name="btrfs",
+                                  check_fn=blockdev.btrfs_is_tech_avail,
+                                  technologies={blockdev.BtrfsTech.MULTI_DEV: BLOCKDEV_BTRFS_ALL_MODES,
+                                                blockdev.BtrfsTech.SUBVOL: BLOCKDEV_BTRFS_ALL_MODES,
+                                                blockdev.BtrfsTech.SNAPSHOT: BLOCKDEV_BTRFS_ALL_MODES})
+BLOCKDEV_BTRFS_TECH = BlockDevMethod(BLOCKDEV_BTRFS)
+
+# libblockdev crypto plugin required technologies and modes
+BLOCKDEV_CRYPTO_ALL_MODES = (blockdev.CryptoTechMode.CREATE |
+                             blockdev.CryptoTechMode.OPEN_CLOSE |
+                             blockdev.CryptoTechMode.QUERY |
+                             blockdev.CryptoTechMode.ADD_KEY |
+                             blockdev.CryptoTechMode.REMOVE_KEY |
+                             blockdev.CryptoTechMode.RESIZE)
+BLOCKDEV_CRYPTO = BlockDevTechInfo(plugin_name="crypto",
+                                   check_fn=blockdev.crypto_is_tech_avail,
+                                   technologies={blockdev.CryptoTech.LUKS: BLOCKDEV_CRYPTO_ALL_MODES,
+                                                 blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
+BLOCKDEV_CRYPTO_TECH = BlockDevMethod(BLOCKDEV_CRYPTO)
+
+# libblockdev dm plugin required technologies and modes
+BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
+                         blockdev.DMTechMode.REMOVE_DEACTIVATE |
+                         blockdev.DMTechMode.QUERY)
+BLOCKDEV_DM = BlockDevTechInfo(plugin_name="dm",
+                               check_fn=blockdev.dm_is_tech_avail,
+                               technologies={blockdev.DMTech.MAP: BLOCKDEV_DM_ALL_MODES,
+                                             blockdev.DMTech.RAID: BLOCKDEV_DM_ALL_MODES})
+BLOCKDEV_DM_TECH = BlockDevMethod(BLOCKDEV_DM)
+
+# libblockdev loop plugin required technologies and modes
+BLOCKDEV_LOOP_ALL_MODES = (blockdev.LoopTechMode.CREATE |
+                           blockdev.LoopTechMode.CREATE |
+                           blockdev.LoopTechMode.DESTROY |
+                           blockdev.LoopTechMode.MODIFY |
+                           blockdev.LoopTechMode.QUERY)
+BLOCKDEV_LOOP = BlockDevTechInfo(plugin_name="loop",
+                                 check_fn=blockdev.loop_is_tech_avail,
+                                 technologies={blockdev.LoopTech.LOOP_TECH_LOOP: BLOCKDEV_LOOP_ALL_MODES})
+BLOCKDEV_LOOP_TECH = BlockDevMethod(BLOCKDEV_LOOP)
+
+# libblockdev lvm plugin required technologies and modes
+BLOCKDEV_LVM_ALL_MODES = (blockdev.LVMTechMode.CREATE |
+                          blockdev.LVMTechMode.REMOVE |
+                          blockdev.LVMTechMode.MODIFY |
+                          blockdev.LVMTechMode.QUERY)
+BLOCKDEV_LVM = BlockDevTechInfo(plugin_name="lvm",
+                                check_fn=blockdev.lvm_is_tech_avail,
+                                technologies={blockdev.LVMTech.BASIC: BLOCKDEV_LVM_ALL_MODES,
+                                              blockdev.LVMTech.BASIC_SNAP: BLOCKDEV_LVM_ALL_MODES,
+                                              blockdev.LVMTech.THIN: BLOCKDEV_LVM_ALL_MODES,
+                                              blockdev.LVMTech.CACHE: BLOCKDEV_LVM_ALL_MODES,
+                                              blockdev.LVMTech.CALCS: blockdev.LVMTechMode.QUERY,
+                                              blockdev.LVMTech.THIN_CALCS: blockdev.LVMTechMode.QUERY,
+                                              blockdev.LVMTech.CACHE_CALCS: blockdev.LVMTechMode.QUERY,
+                                              blockdev.LVMTech.GLOB_CONF: (blockdev.LVMTechMode.QUERY |
+                                                                           blockdev.LVMTechMode.MODIFY)})
+BLOCKDEV_LVM_TECH = BlockDevMethod(BLOCKDEV_LVM)
+
+# libblockdev mdraid plugin required technologies and modes
+BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |
+                         blockdev.MDTechMode.DELETE |
+                         blockdev.MDTechMode.MODIFY |
+                         blockdev.MDTechMode.QUERY)
+BLOCKDEV_MD = BlockDevTechInfo(plugin_name="mdraid",
+                               check_fn=blockdev.md_is_tech_avail,
+                               technologies={blockdev.MDTech.MD_TECH_MDRAID: BLOCKDEV_MD_ALL_MODES})
+BLOCKDEV_MD_TECH = BlockDevMethod(BLOCKDEV_MD)
+
+# libblockdev mpath plugin required technologies and modes
+BLOCKDEV_MPATH_ALL_MODES = (blockdev.MpathTechMode.MODIFY |
+                            blockdev.MpathTechMode.QUERY)
+BLOCKDEV_MPATH = BlockDevTechInfo(plugin_name="mpath",
+                                  check_fn=blockdev.mpath_is_tech_avail,
+                                  technologies={blockdev.MpathTech.BASE: BLOCKDEV_MPATH_ALL_MODES})
+BLOCKDEV_MPATH_TECH = BlockDevMethod(BLOCKDEV_MPATH)
+
+# libblockdev swap plugin required technologies and modes
+BLOCKDEV_SWAP_ALL_MODES = (blockdev.SwapTechMode.CREATE |
+                           blockdev.SwapTechMode.ACTIVATE_DEACTIVATE |
+                           blockdev.SwapTechMode.QUERY |
+                           blockdev.SwapTechMode.SET_LABEL)
+BLOCKDEV_SWAP = BlockDevTechInfo(plugin_name="swap",
+                                 check_fn=blockdev.swap_is_tech_avail,
+                                 technologies={blockdev.SwapTech.SWAP_TECH_SWAP: BLOCKDEV_SWAP_ALL_MODES})
+BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
+
+# libblockdev plugins
+# we can't just check if the plugin is loaded, we also need to make sure
+# that all technologies required by us our supported (some may be missing
+# due to missing dependencies)
+BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("btrfs", BLOCKDEV_BTRFS_TECH)
+BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("crypto", BLOCKDEV_CRYPTO_TECH)
+BLOCKDEV_DM_PLUGIN = blockdev_plugin("dm", BLOCKDEV_DM_TECH)
+BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("loop", BLOCKDEV_LOOP_TECH)
+BLOCKDEV_LVM_PLUGIN = blockdev_plugin("lvm", BLOCKDEV_LVM_TECH)
+BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid", BLOCKDEV_MD_TECH)
+BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("mpath", BLOCKDEV_MPATH_TECH)
+BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap", BLOCKDEV_SWAP_TECH)
 
 # applications with versions
 # we need e2fsprogs newer than 1.41 and we are checking the version by running
