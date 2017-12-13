@@ -1,7 +1,10 @@
-
+from six import PY3
 import unittest
 
-from unittest.mock import Mock
+if PY3:
+    from unittest.mock import Mock
+else:
+    from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
 import blivet
