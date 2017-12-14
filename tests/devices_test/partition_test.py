@@ -362,13 +362,12 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
     def test_weight_2(self):
         for spec in weighted:
-            with self.subTest(spec=spec):
-                part = PartitionDevice('weight_test')
-                part._format = Mock(name="fmt", type=spec.fstype, mountpoint=spec.mountpoint,
-                                    mountable=spec.mountpoint is not None)
-                with patch('blivet.devices.partition.arch') as _arch:
-                    for func in arch_funcs:
-                        f = getattr(_arch, func)
-                        f.return_value = func in spec.true_funcs
+            part = PartitionDevice('weight_test')
+            part._format = Mock(name="fmt", type=spec.fstype, mountpoint=spec.mountpoint,
+                                mountable=spec.mountpoint is not None)
+            with patch('blivet.devices.partition.arch') as _arch:
+                for func in arch_funcs:
+                    f = getattr(_arch, func)
+                    f.return_value = func in spec.true_funcs
 
-                    self.assertEqual(part.weight, spec.weight)
+                self.assertEqual(part.weight, spec.weight)
