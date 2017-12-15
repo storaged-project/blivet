@@ -1587,17 +1587,18 @@ class LVMThinPoolMixin(object):
         self._metadata_size = Size(blockdev.lvm.get_thpool_meta_size(self._size,
                                                                      self._chunk_size,
                                                                      100))  # snapshots
-        log.debug("Recommended metadata size: %s", self._metadata_size)
+        log.debug("Recommended metadata size: %s MiB", self._metadata_size.convert_to("MiB"))
 
         self._metadata_size = self.vg.align(self._metadata_size, roundup=True)
-        log.debug("Rounded metadata size to extents: %s", self._metadata_size)
+        log.debug("Rounded metadata size to extents: %s MiB", self._metadata_size.convert_to("MiB"))
 
         if self._metadata_size == old_md_size:
             log.debug("Rounded metadata size unchanged")
         else:
-            log.debug("Adjusting size from %s to %s",
-                      self.size, self.size - (self._metadata_size - old_md_size))
-            self.size = self.size - (self._metadata_size - old_md_size)
+            new_size = self.size - (self._metadata_size - old_md_size)
+            log.debug("Adjusting size from %s MiB to %s MiB",
+                      self.size.convert_to("MiB"), new_size.convert_to("MiB"))
+            self.size = new_size
 
     def _pre_create(self):
         # make sure all the LVs this LV should be created from exist (if any)
