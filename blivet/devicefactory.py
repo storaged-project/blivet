@@ -1645,6 +1645,7 @@ class LVMThinPFactory(LVMFactory):
         new_size = self._get_pool_size()
         self.pool.size = new_size
         self.pool.req_grow = False
+        self.pool.autoset_md_size(enforced=True)
 
     def _reconfigure_pool(self):
         """ Adjust the pool according to the set of devices it will contain. """
