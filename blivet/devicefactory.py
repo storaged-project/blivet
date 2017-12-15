@@ -1333,6 +1333,12 @@ class LVMFactory(DeviceFactory):
         if self.vg and self.vg.exists:
             return space
 
+        # unset the thpool_reserve here so that the previously reserved space is
+        # considered free space (and thus swallowed) -> we will set it and
+        # calculate an updated reserve below
+        if self.vg:
+            self.vg.thpool_reserve = None
+
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic container size management
             if self.vg:
@@ -1366,6 +1372,25 @@ class LVMFactory(DeviceFactory):
             # we need to account for the LVM metadata being placed on each disk
             # (and thus taking up to one extent from each disk)
             space += len(self.disks) * self._pe_size
+
+        # make sure there's space reserved for a thin pool to grow in case thin provisioning is involved
+        # XXX: This has to happen in this class because plain (non-thin) LVs are
+        #      added through/by/with it even if the LVMThinPFactory class was
+        #      used before to add some thin LVs. And the reserved space depends
+        #      on the size of the VG, not on the thin pool's size.
+        if self.vg and (any(lv.is_thin_pool for lv in self.vg.lvs) or isinstance(self, LVMThinPFactory)):
+            self.vg.thpool_reserve = DEFAULT_THPOOL_RESERVE
+
+        if (self.vg and self.vg.thpool_reserve) or isinstance(self, LVMThinPFactory):
+            # black maths (to make sure there's DEFAULT_THPOOL_RESERVE.percent reserve)
+            space_with_reserve = space * (1 / (1 - (DEFAULT_THPOOL_RESERVE.percent / 100)))
+            reserve = space_with_reserve - space
+            if reserve < DEFAULT_THPOOL_RESERVE.min:
+                space = space + DEFAULT_THPOOL_RESERVE.min
+            elif reserve < DEFAULT_THPOOL_RESERVE.max:
+                space = space_with_reserve
+            else:
+                space = space + DEFAULT_THPOOL_RESERVE.max
 
         if self.container_encrypted:
             # Add space for LUKS metadata, each parent will be encrypted
@@ -1540,34 +1565,27 @@ class LVMThinPFactory(LVMFactory):
 
             Our container (VG) will still be None if we are going to create it.
         """
-
-        # unset the thpool_reserve here so that the previously reserved space is
-        # considered free space (and thus swallowed) -> we will set it and
-        # calculate an updated reserve below
-        if self.vg:
-            self.vg.thpool_reserve = None
-
         size = super(LVMThinPFactory, self)._get_total_space()
         # this does not apply if a specific container size was requested
         if self.container_size in (SIZE_POLICY_AUTO, SIZE_POLICY_MAX):
             if self.container_size == SIZE_POLICY_AUTO and \
                self.pool and not self.pool.exists and self.pool.free_space > 0:
                 # this is mostly for cleaning up after removing a thin lv
+                # we need to make sure the free space and its portion of the
+                # reserved space in the VG are removed
                 size -= self.pool.free_space
-                log.debug("size cut to %s to omit pool free space", size)
 
-        if self.vg:
-            self.vg.thpool_reserve = DEFAULT_THPOOL_RESERVE
+                # this is how we get the portion of the thpool reserve in the VG
+                # for the free space
+                reserve_portion = (self.pool.free_space * (1 / (1 - (DEFAULT_THPOOL_RESERVE.percent / 100)))) - self.pool.free_space
 
-        # black maths (to make sure there's DEFAULT_THPOOL_RESERVE.percent reserve)
-        size_with_reserve = size * (1 / (1 - (DEFAULT_THPOOL_RESERVE.percent / 100)))
-        reserve = size_with_reserve - size
-        if reserve < DEFAULT_THPOOL_RESERVE.min:
-            size = size + DEFAULT_THPOOL_RESERVE.min
-        elif reserve < DEFAULT_THPOOL_RESERVE.max:
-            size = size_with_reserve
-        else:
-            size = size + DEFAULT_THPOOL_RESERVE.max
+                # but we need to make sure at least DEFAULT_THPOOL_RESERVE.min
+                # is kept as the reserve
+                thpool_reserve = self.vg.size * (DEFAULT_THPOOL_RESERVE.percent / 100)
+                if (thpool_reserve - reserve_portion) < DEFAULT_THPOOL_RESERVE.min:
+                    reserve_portion -= DEFAULT_THPOOL_RESERVE.min - (thpool_reserve - reserve_portion)
+                size -= reserve_portion
+                log.debug("size cut to %s to omit pool free space (and its portion of the reserve)", size)
 
         return size
 
