@@ -1383,7 +1383,7 @@ class LVMFactory(DeviceFactory):
 
         if (self.vg and self.vg.thpool_reserve) or isinstance(self, LVMThinPFactory):
             # black maths (to make sure there's DEFAULT_THPOOL_RESERVE.percent reserve)
-            space_with_reserve = space * (1 / (1 - (DEFAULT_THPOOL_RESERVE.percent / 100)))
+            space_with_reserve = space.ensure_percent_reserve(DEFAULT_THPOOL_RESERVE.percent)
             reserve = space_with_reserve - space
             if reserve < DEFAULT_THPOOL_RESERVE.min:
                 space = space + DEFAULT_THPOOL_RESERVE.min
@@ -1575,9 +1575,9 @@ class LVMThinPFactory(LVMFactory):
                 # reserved space in the VG are removed
                 size -= self.pool.free_space
 
-                # this is how we get the portion of the thpool reserve in the VG
-                # for the free space
-                reserve_portion = (self.pool.free_space * (1 / (1 - (DEFAULT_THPOOL_RESERVE.percent / 100)))) - self.pool.free_space
+                # get the portion of the thpool reserve in the VG for the free
+                # space
+                reserve_portion = self.pool.free_space.ensure_percent_reserve(DEFAULT_THPOOL_RESERVE.percent) - self.pool.free_space
 
                 # but we need to make sure at least DEFAULT_THPOOL_RESERVE.min
                 # is kept as the reserve
