@@ -1578,6 +1578,11 @@ class LVMThinPoolMixin(object):
 
         log.debug("Auto-setting thin pool metadata size%s", (" (enforced)" if enforced else ""))
 
+        if self._size <= Size(0):
+            log.debug("Thin pool size not bigger than 0, just setting metadata size to 0")
+            self._metadata_size = 0
+            return
+
         # we need to know chunk size to calculate recommended metadata size
         if self._chunk_size == 0:
             self._chunk_size = Size(blockdev.LVM_DEFAULT_CHUNK_SIZE)
