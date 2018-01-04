@@ -23,7 +23,7 @@ import os
 import six
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -494,7 +494,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         log_method_call(self, self.name)
         # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays
         if getattr(self.format, "mountpoint", None) == "/boot/efi":
-            self.metadataVersion = "1.0"
+            self.metadataVersion = "2.0"
 
     def _postCreate(self):
         # this is critical since our status method requires a valid sysfs path

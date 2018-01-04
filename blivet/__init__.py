@@ -73,7 +73,7 @@ log_bd_message = lambda level, msg: program_log.info(msg)
 
 import gi
 gi.require_version("GLib", "2.0")
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 # initialize the libblockdev library
 from gi.repository import GLib
