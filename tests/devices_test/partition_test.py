@@ -4,7 +4,7 @@ import os
 import unittest
 import parted
 
-from unittest.mock import patch
+from mock import patch
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
