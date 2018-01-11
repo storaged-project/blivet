@@ -32,9 +32,9 @@ from blivet.flags import flags
 # disklabel-type-specific constants
 # keys: disklabel type string
 # values: 3-tuple of (max_primary_count, supports_extended, max_logical_count)
-disklabel_types = {'dos': (4, True, 11),
-                   'gpt': (128, False, 0),
-                   'mac': (62, False, 0)}
+disklabel_types = {'dos': (4, True),
+                   'gpt': (128, False),
+                   'mac': (62, False)}
 
 class PartitioningTestCase(unittest.TestCase):
     def getDisk(self, disk_type, primary_count=0,
@@ -44,7 +44,7 @@ class PartitioningTestCase(unittest.TestCase):
 
         disk.type = disk_type
         label_type_info = disklabel_types[disk_type]
-        (max_primaries, supports_extended, max_logicals) = label_type_info
+        (max_primaries, supports_extended) = label_type_info
 
         # primary partitions
         disk.primaryPartitionCount = primary_count
@@ -55,8 +55,7 @@ class PartitioningTestCase(unittest.TestCase):
         disk.getExtendedPartition = Mock(return_value=has_extended)
 
         # logical partitions
-        disk.getMaxLogicalPartitions = Mock(return_value=max_logicals)
-        disk.getLogicalPartitions = Mock(return_value=[0]*logical_count)
+        disk.getLogicalPartitions = Mock(return_value=[0] * logical_count)
 
         return disk
 
@@ -90,7 +89,7 @@ class PartitioningTestCase(unittest.TestCase):
         # four primaries and an extended, no available logical -> None
         disk = self.getDisk(disk_type="dos", primary_count=4, has_extended=True,
                             logical_count=11)
-        self.assertEqual(getNextPartitionType(disk), None)
+        self.assertEqual(getNextPartitionType(disk), parted.PARTITION_LOGICAL)
 
         # four primaries and no extended -> None
         disk = self.getDisk(disk_type="dos", primary_count=4,
@@ -106,7 +105,7 @@ class PartitioningTestCase(unittest.TestCase):
         # -> None
         disk = self.getDisk(disk_type="dos", primary_count=3, has_extended=True,
                             logical_count=11)
-        self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
+        self.assertEqual(getNextPartitionType(disk, no_primary=True), parted.PARTITION_LOGICAL)
 
         #
         # GPT
