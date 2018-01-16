@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet1
 Url: http://fedoraproject.org/wiki/blivet
-Version: 1.20.3
+Version: 1.20.4
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -61,6 +61,21 @@ make PYTHON=%{__python2} DESTDIR=%{buildroot} install
 %{python2_sitelib}/*
 
 %changelog
+* Tue Jan 16 2018 David Lehman <dlehman@redhat.com> - 1.20.4-1
+- Rename rpm specfile to match compat package. (dlehman)
+- Adjust for python2-only. (dlehman)
+- Use blivet1 for compat package translation domain. (dlehman)
+- Modify rpm spec for blivet-1 compat package. (dlehman)
+- Stop enforcing obsolete limits on partition count. (#1460668) (dlehman)
+- Update BlockDev gi version to 2.0. (dlehman)
+- Use %%global instead of %%define for specfile macros. (dlehman)
+- Fix a python2-only bug in the edd tests. (dlehman)
+- Remove some deprecated/obsolete bits from spec file. (dlehman)
+- Fix URLs pointing to blivet resources. (dlehman)
+- Pylint fixes (vtrefny)
+- Fix removing PVs after removing VG (#1358067) (vtrefny)
+- Restore the correct default partition table type for AArch64 EFI. (dmarlin)
+
 * Tue May 17 2016 Samantha N. Bueno <sbueno+anaconda@redhat.com> - 1.20.3-1
 - ARM platforms: support both msdos and gpt partitions (pbrobinson)
 
