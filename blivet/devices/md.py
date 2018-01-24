@@ -21,6 +21,7 @@
 
 import os
 import six
+import time
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -31,6 +32,7 @@ from ..devicelibs import mdraid, raid
 
 from .. import errors
 from .. import util
+from ..static_data import pvs_info
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
@@ -533,6 +535,30 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self.uuid = info.uuid
         for member in self.members:
             member.format.md_uuid = self.uuid
+
+        def remove_stale_lvm():
+            """ Remove any stale LVM metadata that pre-existed in a new array's on-disk footprint. """
+            log.debug("waiting 5s for activation of stale lvm on new md array %s", self.path)
+            time.sleep(5)
+            udev.settle()
+            pvs_info.drop_cache()
+            pv_info = pvs_info.cache.get(self.path)
+            if pv_info is None:
+                return
+
+            if pv_info.vg_uuid:
+                log.info("removing stale LVM metadata found on %s", self.name)
+                try:
+                    blockdev.lvm.vgremove(pv_info.vg_name, extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid})
+                except blockdev.LVMError as e:
+                    log.error("Failed to remove stale volume group from newly-created md array %s: %s",
+                              self.path, str(e))
+                    raise
+
+            # lvm says it is a pv whether or not there is vg metadata, so wipe the pv signature
+            blockdev.lvm.pvremove(self.path)
+
+        remove_stale_lvm()
 
     def _create(self):
         """ Create the device. """
