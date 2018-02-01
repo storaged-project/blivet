@@ -65,8 +65,9 @@ class DMRaidFormatPopulator(FormatPopulator):
                 # We add the new device.
                 dm_array.parents.append(self.device)
             else:
-                # Activate the Raid set.
-                blockdev.dm.activate_raid_set(rs_name)
+                # Activate the Raid set (unless it's already active).
+                if not blockdev.dm.map_exists(rs_name, True, True):
+                    blockdev.dm.activate_raid_set(rs_name)
                 dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[self.device])
 
