@@ -819,6 +819,34 @@ class DeviceNameTestCase(unittest.TestCase):
         for name in bad_names:
             self.assertFalse(StorageDevice.isNameValid(name))
 
+        # Check that name validity check is omitted (only) when
+        # device already exists
+        # This test was added to prevent regression (see #1379145)
+        for name in good_names:
+            try:
+                StorageDevice(name, exists=True)
+            except ValueError:
+                self.fail("Name check should not be performed nor failing")
+
+            try:
+                StorageDevice(name, exists=False)
+            except ValueError:
+                self.fail("Device name check failed when it shouldn't")
+
+        for name in bad_names:
+            try:
+                StorageDevice(name, exists=True)
+            except ValueError as e:
+                if ' is not a valid name for this device' in str(e):
+                    self.fail("Device name checked on already existing device")
+            except TypeError:
+                # This should fail because of invalid name. In this case it
+                # should not be prevented by the check
+                pass
+
+            with self.assertRaisesRegexp(ValueError, ' is not a valid name for this device'):
+                StorageDevice(name, exists=False)
+
     def testVolumeGroup(self):
         good_names = ['vg00', 'group-name', 'groupname-']
         bad_names = ['-leading-hyphen', 'únicode', 'sp aces']
