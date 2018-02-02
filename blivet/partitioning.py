@@ -1800,7 +1800,7 @@ class VGChunk(Chunk):
                              "LVRequest"))
 
         if req.device.metaDataSize:
-            self.pool -= int(self.vg.align(req.device.metaDataSize, roundup=True) / self.vg.peSize)
+            self.pool -= 2 * int(self.vg.align(req.device.metaDataSize, roundup=True) / self.vg.peSize)
 
         if req.device.cached:
             # cached LV -> reserve space for the cache

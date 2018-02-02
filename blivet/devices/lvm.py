@@ -625,7 +625,7 @@ class LVMLogicalVolumeDevice(DMDevice):
         if self.cached:
             cache_size = self.cache.size
         return (self.vg.align(self.size, roundup=True) * self.copies
-                + self.logSize + self.metaDataSize + cache_size)
+                + self.logSize + 2 * self.metaDataSize + cache_size)
 
     def _setFormat(self, fmt):
         super(LVMLogicalVolumeDevice, self)._setFormat(fmt)
