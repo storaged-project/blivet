@@ -199,7 +199,11 @@ class fcoe(object):
 
         # Done before packages are installed so don't call
         # write_nic_fcoe_cfg in target root but just copy the cfgs
-        shutil.copytree("/etc/fcoe", root + "/etc/fcoe")
+        dest_cfg_dir = root + "/etc/fcoe"
+        # The directory may already exist on image installation (eg RHEV).
+        if os.path.isdir(dest_cfg_dir):
+            shutil.rmtree(dest_cfg_dir)
+        shutil.copytree("/etc/fcoe", dest_cfg_dir)
 
     def write_nic_fcoe_cfg(self, nic, dcb=True, auto_vlan=True, enable=True, mode=None, root=""):
         cfg_dir = root + "/etc/fcoe"
