@@ -20,7 +20,9 @@
 #
 
 import os
+import time
 
+from ..devicelibs import lvm
 from ..devicelibs import mdraid, raid
 
 from .. import errors
@@ -566,6 +568,34 @@ class MDRaidArrayDevice(ContainerDevice):
         self.uuid = info.get("UUID")
         for member in self.devices:
             member.format.mdUuid = self.uuid
+
+        def removeStaleLVM():
+            """ Remove any stale LVM metadata that pre-existed in a new array's on-disk footprint. """
+            log.debug("waiting 5s for activation of stale lvm on new md array %s", self.path)
+            time.sleep(5)
+            udev.settle()
+
+            try:
+                pv_info = lvm.pvinfo(device=self.path)[self.path]
+            except errors.LVMError as e:
+                return
+
+            vg_uuid = None
+            try:
+                vg_uuid = udev.device_get_vg_uuid(pv_info)
+            except KeyError:
+                return
+
+            if vg_uuid:
+                log.info("removing stale LVM metadata found on %s", self.name)
+                try:
+                    lvm.vgremove(None, vg_uuid=vg_uuid)
+                except errors.LVMError as e:
+                    log.error("Failed to remove stale volume group from newly-created md array %s: %s",
+                              self.path, str(e))
+                    raise
+
+        removeStaleLVM()
 
     def _create(self):
         """ Create the device. """

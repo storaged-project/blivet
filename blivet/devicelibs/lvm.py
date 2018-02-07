@@ -376,13 +376,24 @@ def vgcreate(vg_name, pv_list, pe_size):
     except LVMError as msg:
         raise LVMError("vgcreate failed for %s: %s" % (vg_name, msg))
 
-def vgremove(vg_name):
-    args = ["vgremove", "--force", vg_name]
+def vgremove(vg_name, vg_uuid=None):
+    """ Remove volume group metadata/signature from disk.
+
+        Optional keyword argument vg_uuid allows for precise specification of
+        volume group in the face of the potential for multiple distinct volume
+        groups with the same name. If vg_uuid is passed it will be used instead
+        of vg_name.
+    """
+    args = ["vgremove", "--force"]
+    if vg_uuid:
+        args.extend(["--select", "vg_uuid=%s" % vg_uuid])
+    else:
+        args.append(vg_name)
 
     try:
         lvm(args)
     except LVMError as msg:
-        raise LVMError("vgremove failed for %s: %s" % (vg_name, msg))
+        raise LVMError("vgremove failed for %s: %s" % (vg_name if not vg_uuid else vg_uuid, msg))
 
 def vgactivate(vg_name):
     args = ["vgchange", "-a", "y", vg_name]
