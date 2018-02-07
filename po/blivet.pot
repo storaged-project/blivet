@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-03 10:47-0400\n"
+"POT-Creation-Date: 2018-02-07 11:43-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -648,7 +648,7 @@ msgstr ""
 msgid "Performance"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:455
+#: ../blivet/devicelibs/lvm.py:466
 #, python-format
 msgid "vginfo failed for %s"
 msgstr ""
