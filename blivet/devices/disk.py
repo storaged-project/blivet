@@ -63,7 +63,7 @@ class DiskDevice(StorageDevice):
     def __init__(self, name, fmt=None,
                  size=None, major=None, minor=None, sysfs_path='',
                  parents=None, serial=None, vendor="", model="", bus="", wwn=None,
-                 exists=True):
+                 uuid=None, exists=True):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -96,7 +96,7 @@ class DiskDevice(StorageDevice):
                                major=major, minor=minor, exists=exists,
                                sysfs_path=sysfs_path, parents=parents,
                                serial=serial, model=model,
-                               vendor=vendor, bus=bus)
+                               vendor=vendor, bus=bus, uuid=uuid)
 
         self.wwn = wwn or None
 
@@ -660,3 +660,50 @@ class DASDDevice(DiskDevice):
                                             ":".join(opts))])
         else:
             return set(["rd.dasd=%s" % self.busid])
+
+
+class NVDIMMNamespaceDevice(DiskDevice):
+
+    """ Non-volatile memory namespace """
+    _type = "nvdimm"
+
+    def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword mode: mode of the namespace
+            :type mode: str
+            :keyword devname: name of the namespace (e.g. 'namespace0.0')
+            :type devname: str
+            :keyword sector_size: sector size of the namespace in sector mode
+            :type sector_size: str
+        """
+        self.mode = kwargs.pop("mode")
+        self.devname = kwargs.pop("devname")
+        self.sector_size = kwargs.pop("sector_size")
+
+        DiskDevice.__init__(self, device, **kwargs)
+
+    def __repr__(self):
+        s = DiskDevice.__repr__(self)
+        s += ("  mode = %(mode)s  devname = %(devname)s" %
+              {"mode": self.mode,
+               "devname": self.devname})
+        if self.sector_size:
+            s += ("  sector size = %(sector_size)s" % {"sector_size": self.sector_size})
+        return s
+
+    @property
+    def description(self):
+        return "NVDIMM namespace %(devname)s in %(mode)s mode exported as %(path)s" \
+               % {'devname': self.devname,
+                  'mode': self.mode,
+                  'path': self.path}
