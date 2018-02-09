@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.67
+Version: 0.61.15.68
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,11 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Feb 09 2018 David Lehman <dlehman@redhat.com> - 0.61.15.68-1
+- Catch lvm metadata lookup failure in md post create. (dlehman)
+  Related: rhbz#1223564
+  Resolves: rhbz#1543579
+
 * Wed Feb 07 2018 David Lehman <dlehman@redhat.com> - 0.61.15.67-1
 - fcoe: remove /etc/fcoe dir if it exists before copying configuration
   (rvykydal)
