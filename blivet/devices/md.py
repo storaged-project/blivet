@@ -577,7 +577,7 @@ class MDRaidArrayDevice(ContainerDevice):
 
             try:
                 pv_info = lvm.pvinfo(device=self.path)[self.path]
-            except errors.LVMError as e:
+            except (errors.LVMError, KeyError) as e:
                 return
 
             vg_uuid = None
