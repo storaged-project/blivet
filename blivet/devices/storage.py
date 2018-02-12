@@ -128,12 +128,6 @@ class StorageDevice(Device):
         self._protected = False
         self.controllable = not flags.testing
 
-        # Copy only the validity check from Device._set_name() so we don't try
-        # to check a bunch of inappropriate state properties during
-        # __init__ in subclasses
-        # Has to be here because Device does not have exists attribute
-        if not self.exists and not self.isNameValid(name):
-            raise ValueError("%s is not a valid name for this device" % name)
         Device.__init__(self, name, parents=parents)
 
         self.format = fmt

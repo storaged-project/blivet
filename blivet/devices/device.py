@@ -78,7 +78,12 @@ class Device(util.ObjectID):
         util.ObjectID.__init__(self)
         self.kids = 0
 
+        # Copy only the validity check from _setName so we don't try to check a
+        # bunch of inappropriate state properties during __init__ in subclasses
+        if not self.isNameValid(name):
+            raise ValueError("%s is not a valid name for this device" % name)
         self._name = name
+
         self.parents = []
         if parents and not isinstance(parents, list):
             raise ValueError("parents must be a list of Device instances")
