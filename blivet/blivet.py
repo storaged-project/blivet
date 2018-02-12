@@ -1759,7 +1759,17 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     def copy(self):
         log.debug("starting Blivet copy")
+
+        # Do not copy ksdata
+        old_data = self.ksdata
+        self.ksdata = None
+
         new = copy.deepcopy(self)
+
+        # Recover ksdata
+        self.ksdata = old_data
+        new.ksdata = old_data
+
         # go through and re-get parted_partitions from the disks since they
         # don't get deep-copied
         hidden_partitions = [d for d in new.devicetree._hidden
