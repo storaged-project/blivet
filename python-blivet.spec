@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.68
+Version: 0.61.15.69
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -64,6 +64,9 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Wed Feb 21 2018 David Lehman <dlehman@redhat.com> - 0.61.15.69-1
+- Fix accounting for metadata when growing lvm. (dlehman)
+
 * Fri Feb 09 2018 David Lehman <dlehman@redhat.com> - 0.61.15.68-1
 - Catch lvm metadata lookup failure in md post create. (dlehman)
   Related: rhbz#1223564
