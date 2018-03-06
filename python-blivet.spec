@@ -56,7 +56,6 @@ Summary: A python3 package for examining and modifying storage configuration.
 %{?python_provide:%python_provide python3-%{realname}}
 
 BuildRequires: gettext
-BuildRequires: python3-pocketlint >= %{pocketlintver}
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
 
@@ -89,7 +88,6 @@ Summary: A python2 package for examining and modifying storage configuration.
 %{?python_provide:%python_provide python2-%{realname}}
 
 BuildRequires: gettext
-BuildRequires: python2-pocketlint >= %{pocketlintver}
 BuildRequires: python2-devel
 
 %if %{is_rhel}
