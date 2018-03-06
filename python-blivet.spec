@@ -126,7 +126,7 @@ The python2-%{realname} is a python2 package for examining and modifying storage
 configuration.
 
 %prep
-%autosetup -n %{realname}-%{realversion}
+%autosetup -n %{realname}-%{realversion} -p1
 
 %build
 make PYTHON=%{__python2}
