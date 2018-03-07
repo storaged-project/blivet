@@ -27,7 +27,7 @@ MOFILES		= $(patsubst %.po,%.mo,$(POFILES))
 PYSRC		= $(wildcard ../blivet/*.py ../blivet/*/*.py)
 SRCFILES 	= $(PYSRC)
 
-all::  update-po $(MOFILES)
+all::  refresh-po $(MOFILES)
 
 $(POTFILE): $(SRCFILES)
 	$(XGETTEXT) -L Python --keyword=_ --keyword=N_ --keyword=P_:1,2 $(SRCFILES)
@@ -65,5 +65,3 @@ install: $(MOFILES)
 	$(MSGFMT) -o $@ $<
 
 .PHONY: missing depend
-
-
