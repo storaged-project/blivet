@@ -874,8 +874,11 @@ class Blivet(object):
                 self.recursiveRemove(disk)
 
             if zerombr or should_clear:
-                log.debug("clearpart: initializing %s", disk.name)
-                self.initializeDisk(disk)
+                if disk.protected:
+                    log.warning("cannot clear '%s': disk is protected or read only", disk.name)
+                else:
+                    log.debug("clearpart: initializing %s", disk.name)
+                    self.initializeDisk(disk)
 
         self.updateBootLoaderDiskList()
 
