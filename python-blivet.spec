@@ -9,7 +9,7 @@
 
 Summary:  A python module for system storage configuration
 Name: python-blivet
-Url: https://www-rhstorage.rhcloud.com/projects/blivet
+Url: https://storageapis.wordpress.com/projects/blivet
 Version: 2.0.2
 
 #%%global prerelease .b1
