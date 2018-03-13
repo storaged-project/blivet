@@ -692,6 +692,10 @@ class NVDIMMNamespaceDevice(DiskDevice):
 
         DiskDevice.__init__(self, device, **kwargs)
 
+        self._clear_local_tags()
+        self.tags.add(Tags.local)
+        self.tags.add(Tags.nvdimm)
+
     def __repr__(self):
         s = DiskDevice.__repr__(self)
         s += ("  mode = %(mode)s  devname = %(devname)s" %
