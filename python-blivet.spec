@@ -1,7 +1,7 @@
-%define is_rhel 0%{?rhel} != 0
+%define is_rhel67 0%{?rhel} != 0 && 0%{?rhel} <= 7
 
-# python3 is not available on RHEL
-%if %{is_rhel}
+# python3 is not available on RHEL6/7
+%if %{is_rhel67}
 %define with_python3 0
 %else
 %define with_python3 1
@@ -9,7 +9,7 @@
 
 Summary:  A python module for system storage configuration
 Name: python-blivet
-Url: https://www-rhstorage.rhcloud.com/projects/blivet
+Url: https://storageapis.wordpress.com/projects/blivet
 Version: 2.0.2
 
 #%%global prerelease .b1
@@ -92,7 +92,7 @@ BuildRequires: gettext
 BuildRequires: python2-pocketlint >= %{pocketlintver}
 BuildRequires: python2-devel
 
-%if %{is_rhel}
+%if %{is_rhel67}
 BuildRequires: python-setuptools
 %else
 BuildRequires: python2-setuptools
@@ -112,7 +112,7 @@ Requires: lsof
 Requires: python-hawkey
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
-%if %{is_rhel}
+%if %{is_rhel67}
 Requires: udev
 Requires: pygobject3
 %else

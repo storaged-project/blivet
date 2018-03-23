@@ -297,7 +297,7 @@ class DeviceTreeBase(object):
 
         if action.is_create and action.is_device:
             # if adding an LV constructed from other LVs, we need to remove the
-            # LVs it's supposed to be constructed from from the device tree
+            # LVs it's supposed to be constructed from the device tree
             if isinstance(action.device, LVMLogicalVolumeDevice) and action.device.from_lvs:
                 for lv in action.device.from_lvs:
                     if lv in self._devices:
@@ -337,7 +337,7 @@ class DeviceTreeBase(object):
                     self._add_device(lv, new=False)
         elif action.is_destroy and action.is_device:
             # if adding an LV constructed from other LVs, we need to remove the
-            # LVs it's supposed to be constructed from from the device tree
+            # LVs it's supposed to be constructed from the device tree
             if isinstance(action.device, LVMLogicalVolumeDevice) and action.device.from_lvs:
                 for lv in action.device.from_lvs:
                     if lv in self._devices:

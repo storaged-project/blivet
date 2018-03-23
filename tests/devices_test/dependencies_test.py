@@ -1,5 +1,10 @@
 # vim:set fileencoding=utf-8
-from unittest.mock import patch, PropertyMock
+from six import PY3
+if PY3:
+    from unittest.mock import patch, PropertyMock
+else:
+    from mock import patch, PropertyMock
+
 import unittest
 
 from blivet.deviceaction import ActionCreateDevice

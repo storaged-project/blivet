@@ -1,7 +1,10 @@
-
+from six import PY3
 import unittest
 
-from unittest.mock import Mock
+if PY3:
+    from unittest.mock import Mock
+else:
+    from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
 import blivet
@@ -842,6 +845,19 @@ class DeviceActionTestCase(StorageTestCase):
 
         self.assertEqual(grow_lv.requires(grow_pv), True)
         self.assertEqual(grow_pv.requires(grow_lv), False)
+
+        # ActionResizeDevice
+        # an action that grows a device should require an action that shrinks
+        # a device with ancestors in common
+        testlv2 = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  exists=True, size=Size("10 GiB"),
+                                  name="testlv2", parents=[testvg])
+        testlv2.format = self.new_format("ext4", device=testlv2.path,
+                                         exists=True, device_instance=testlv2)
+        shrink_lv2 = ActionResizeDevice(testlv2, testlv2.size - Size("10 GiB"))
+        shrink_lv2.apply()
+
+        self.assertTrue(grow_lv.requires(shrink_lv2))
 
         # ActionResizeFormat
         # an action that grows a format should require the action that grows

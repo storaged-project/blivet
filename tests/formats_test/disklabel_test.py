@@ -84,7 +84,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_efi.return_value = False
 
         arch.is_s390.return_value = True
-        self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos"])
+        self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos", "dasd"])
         arch.is_s390.return_value = False
 
     def test_label_type_size_check(self):

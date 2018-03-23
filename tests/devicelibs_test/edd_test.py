@@ -5,6 +5,7 @@ import inspect
 import logging
 import copy
 
+from blivet import arch
 from blivet.devicelibs import edd
 from tests import lib
 
@@ -29,7 +30,7 @@ class FakeEddEntry(edd.EddEntry):
         return "<FakeEddEntry%s>" % (self._fmt(' ', ''),)
 
 
-@unittest.skipUnless(os.uname().machine in ['i386', 'i686', 'x86_64'],
+@unittest.skipUnless(arch.get_arch() in ['x86', 'x86_64'],
                      reason='incompatible arch')
 class EddTestCase(unittest.TestCase):
 

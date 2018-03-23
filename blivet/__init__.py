@@ -57,6 +57,9 @@ else:
 
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 try:
+    # do not check for dependencies during libblockdev initializtion, do runtime
+    # checks instead
+    blockdev.switch_init_checks(False)
     succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
 except GLib.GError as err:
     raise RuntimeError("Failed to intialize the libblockdev library: %s" % err)
