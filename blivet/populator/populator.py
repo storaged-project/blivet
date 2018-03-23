@@ -142,11 +142,14 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
             slave_info = udev.get_device(os.path.realpath(path))
 
+            if not slave_info:
+                log.error("unable to get udev info for %s", slave_name)
+                msg = "unable to get udev info for %s of device %s" % (slave_name,
+                                                                       name)
+                raise DeviceTreeError(msg)
+
             # cciss in sysfs is "cciss!cXdYpZ" but we need "cciss/cXdYpZ"
             slave_name = udev.device_get_name(slave_info).replace("!", "/")
-
-            if not slave_info:
-                log.warning("unable to get udev info for %s", slave_name)
 
             slave_dev = self.get_device_by_name(slave_name)
             if not slave_dev and slave_info:
