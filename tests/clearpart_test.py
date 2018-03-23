@@ -271,6 +271,80 @@ class ClearPartTestCase(unittest.TestCase):
         self.assertTrue(b.should_clear(sda1),
                         msg="device should be cleared")
 
+    @mock.patch.object(blivet.Blivet, "remove_empty_extended_partitions")
+    @mock.patch.object(blivet.Blivet, "update_bootloader_disk_list")
+    def test_clear_partitions(self, *args):
+        """
+            Disks reinitialization should be run based on should_clear method.
+            Under certain circumstances zerombr flag can override this behavior.
+            This test checks these circumstances.
+            The disks should be reinitialized when (and only when):
+            * not marked as protected AND
+            * zerombr flag is set OR should_clear method returns True
+            Note: When disk is marked as protected, should_clear returns False
+        """
+        # pylint: disable=unused-argument
+        b = blivet.Blivet()
+
+        DiskDevice = blivet.devices.DiskDevice
+
+        # sda is a disk with an existing disklabel containing two partitions
+        sda = DiskDevice("sda", size=100000, exists=True)
+        sda.format = blivet.formats.get_format(None, device=sda.path,
+                                               exists=True)
+        sda.format._partedDisk = mock.Mock()
+        sda.format._partedDevice = mock.Mock()
+        sda.format._partedDisk.configure_mock(partitions=[])
+        b.devicetree._add_device(sda)
+
+        sda.protected = False
+        b.config.zero_mbr = False
+        with mock.patch.object(b, "should_clear", return_value=False):
+            with mock.patch.object(b, "initialize_disk") as mock_initialize:
+                b.clear_partitions()
+                self.assertFalse(mock_initialize.called,
+                                 "Trying to reinitialize a disk when shouldn't")
+
+        sda.protected = False
+        b.config.zero_mbr = False
+        with mock.patch.object(b, "should_clear", return_value=True):
+            with mock.patch.object(b, "initialize_disk") as mock_initialize:
+                b.clear_partitions()
+                self.assertTrue(mock_initialize.called,
+                                "Skipped disk reinitialization when shouldn't.")
+
+        sda.protected = False
+        b.config.zero_mbr = True
+        with mock.patch.object(b, "should_clear", return_value=False):
+            with mock.patch.object(b, "initialize_disk") as mock_initialize:
+                b.clear_partitions()
+                self.assertTrue(mock_initialize.called,
+                                "Skipped disk reinitialization when shouldn't.")
+
+        sda.protected = False
+        b.config.zero_mbr = True
+        with mock.patch.object(b, "should_clear", return_value=True):
+            with mock.patch.object(b, "initialize_disk") as mock_initialize:
+                b.clear_partitions()
+                self.assertTrue(mock_initialize.called,
+                                "Skipped disk reinitialization when shouldn't.")
+
+        sda.protected = True
+        b.config.zero_mbr = False
+        with mock.patch.object(b, "should_clear", return_value=False):
+            with mock.patch.object(b, "initialize_disk") as mock_initialize:
+                b.clear_partitions()
+                self.assertFalse(mock_initialize.called,
+                                 "Trying to reinitialize a disk when shouldn't")
+
+        sda.protected = True
+        b.config.zero_mbr = True
+        with mock.patch.object(b, "should_clear", return_value=False):
+            with mock.patch.object(b, "initialize_disk") as mock_initialize:
+                b.clear_partitions()
+                self.assertFalse(mock_initialize.called,
+                                 "Trying to reinitialize a disk when shouldn't")
+
     def test_initialize_disk(self):
         """
             magic partitions

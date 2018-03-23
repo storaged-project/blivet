@@ -659,8 +659,11 @@ class Blivet(object):
                 self.recursive_remove(disk)
 
             if zerombr or should_clear:
-                log.debug("clearpart: initializing %s", disk.name)
-                self.initialize_disk(disk)
+                if disk.protected:
+                    log.warning("cannot clear '%s': disk is protected or read only", disk.name)
+                else:
+                    log.debug("clearpart: initializing %s", disk.name)
+                    self.initialize_disk(disk)
 
         self.update_bootloader_disk_list()
 
@@ -1761,7 +1764,17 @@ class Blivet(object):
 
     def copy(self):
         log.debug("starting Blivet copy")
+
+        # Do not copy ksdata
+        old_data = self.ksdata
+        self.ksdata = None
+
         new = copy.deepcopy(self)
+
+        # Recover ksdata
+        self.ksdata = old_data
+        new.ksdata = old_data
+
         # go through and re-get parted_partitions from the disks since they
         # don't get deep-copied
         hidden_partitions = [d for d in new.devicetree._hidden
