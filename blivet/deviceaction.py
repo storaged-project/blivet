@@ -504,9 +504,6 @@ class ActionResizeDevice(DeviceAction):
                   this action's device depends on
                 - the other action shrinks a device (or format it contains)
                   that depends on this action's device
-                - this action is a grow action and the other action is a shrink
-                  action and the two actions' respective devices share one or more
-                  ancestors
                 - the other action removes this action's device from a container
                 - the other action adds a member to this device's container
         """
@@ -520,9 +517,6 @@ class ActionResizeDevice(DeviceAction):
                 retval = True
             elif action.is_shrink and action.device.depends_on(self.device):
                 retval = True
-            elif self.is_grow and action.is_shrink and \
-                    set(self.device.ancestors).intersection(set(action.device.ancestors)):
-                return True
         elif (action.is_remove and action.device == self.device):
             retval = True
         elif (action.is_add and action.container == self.container):
