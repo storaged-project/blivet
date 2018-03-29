@@ -1,10 +1,19 @@
-%define is_rhel67 0%{?rhel} != 0 && 0%{?rhel} <= 7
+%define is_rhel 0%{?rhel} != 0
 
-# python3 is not available on RHEL6/7
-%if %{is_rhel67}
-%define with_python3 0
+# python3 is not available on RHEL <=7
+%if %{is_rhel} && 0%{?rhel} <= 7
+# disable python3 by default
+%bcond_with python3
 %else
-%define with_python3 1
+%bcond_without python3
+%endif
+
+# python2 is not available on RHEL > 7 and not needed on Fedora > 28
+%if 0%{?rhel} > 7 || 0%{?fedora} > 28
+# disable python2 by default
+%bcond_with python2
+%else
+%bcond_without python2
 %endif
 
 Summary:  A python module for system storage configuration
@@ -14,7 +23,7 @@ Version: 2.0.2
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 1%{?prerelease}%{?dist}
+Release: 2%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -49,7 +58,7 @@ Conflicts: python3-blivet < 1:2.0.0
 The %{realname}-data package provides data files required by the %{realname}
 python module.
 
-%if %{with_python3}
+%if %{with python3}
 %package -n python3-%{realname}
 Summary: A python3 package for examining and modifying storage configuration.
 
@@ -75,13 +84,21 @@ Requires: systemd-udev
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 Obsoletes: blivet-data < 1:2.0.0
+
+%if %{without python2}
+# the version here needs to be updated to actual version when this happened
+Obsoletes: python2-blivet < 1:2.0.2-2
+Obsoletes: python-blivet < 1:2.0.2-2
+%else
 Obsoletes: python-blivet < 1:2.0.0
+%endif
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
 configuration.
 %endif
 
+%if %{with python2}
 %package -n python2-%{realname}
 Summary: A python2 package for examining and modifying storage configuration.
 
@@ -90,7 +107,7 @@ Summary: A python2 package for examining and modifying storage configuration.
 BuildRequires: gettext
 BuildRequires: python2-devel
 
-%if %{is_rhel67}
+%if %{is_rhel}
 BuildRequires: python-setuptools
 %else
 BuildRequires: python2-setuptools
@@ -110,7 +127,7 @@ Requires: lsof
 Requires: python-hawkey
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
-%if %{is_rhel67}
+%if %{is_rhel}
 Requires: udev
 Requires: pygobject3
 %else
@@ -124,23 +141,18 @@ Obsoletes: python-blivet < 1:2.0.0
 %description -n python2-%{realname}
 The python2-%{realname} is a python2 package for examining and modifying storage
 configuration.
+%endif
 
 %prep
 %autosetup -n %{realname}-%{realversion} -p1
 
 %build
-make PYTHON=%{__python2}
-
-%if %{with_python3}
-make PYTHON=%{__python3}
-%endif
+%{?with_python2:make PYTHON=%{__python2}}
+%{?with_python3:make PYTHON=%{__python3}}
 
 %install
-make PYTHON=%{__python2} DESTDIR=%{buildroot} install
-
-%if %{with_python3}
-make PYTHON=%{__python3} DESTDIR=%{buildroot} install
-%endif
+%{?with_python2:make PYTHON=%{__python2} DESTDIR=%{buildroot} install}
+%{?with_python3:make PYTHON=%{__python3} DESTDIR=%{buildroot} install}
 
 %find_lang %{realname}
 
@@ -150,12 +162,14 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{_libexecdir}/*
 %{_unitdir}/*
 
+%if %{with python2}
 %files -n python2-%{realname}
 %license COPYING
 %doc README ChangeLog examples
 %{python2_sitelib}/*
+%endif
 
-%if %{with_python3}
+%if %{with python3}
 %files -n python3-%{realname}
 %license COPYING
 %doc README ChangeLog examples
@@ -163,6 +177,10 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %endif
 
 %changelog
+* Tue Mar 20 2018 Miro Hrončok <mhroncok@redhat.com> - 1:2.0.2-2
+- Use bcond for with python3, allow it on RHEL > 7
+- Conditionalize the Python 2 subpackage and don't build it on EL > 7 and Fedora > 28
+
 * Mon Apr 04 2016 David Lehman <dlehman@redhat.com> - 2.0.2-1
 - Fix mistake from PEP8 conversion. (#1323012) (dlehman)
 - Set both req_size and size of thin pool when growing LVM (vpodzime)
