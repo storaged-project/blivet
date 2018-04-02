@@ -12,9 +12,9 @@ Name: python-blivet
 Url: https://www-rhstorage.rhcloud.com/projects/blivet
 Version: 3.0.0
 
-%global prerelease .b1
+#%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 0.1%{?prerelease}%{?dist}
+Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -165,6 +165,9 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %endif
 
 %changelog
+* Mon Apr 02 2018 David Lehman <dlehman@redhat.com> - 3.0.0-1
+- Bump version for release. (dlehman)
+
 * Wed Nov 08 2017 David Lehman <dlehman@redhat.com> - 3.0.0-0.1.b1
 - Add some reasonable default value for LANG variable in size_test (vtrefny)
 - Remove ksdata from Blivet. (dlehman)
