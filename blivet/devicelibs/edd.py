@@ -35,7 +35,7 @@ log = logging.getLogger("blivet")
 testdata_log = logging.getLogger("testdata")
 testdata_log.setLevel(logging.DEBUG)
 
-re_bios_device_number = re.compile(r'.*/int13_dev(\d+)/*$')
+re_bios_device_number = re.compile(r'.*/int13_dev([0-9a-fA-F]+)/*$')
 re_host_bus_pci = re.compile(r'^(PCIX|PCI|XPRS|HTPT)\s*(\S*)\s*channel: (\S*)\s*$')
 re_interface_atapi = re.compile(r'^ATAPI\s*device: (\S*)\s*lun: (\S*)\s*$')
 re_interface_ata = re.compile(r'^ATA\s*device: (\S*)\s*$')
