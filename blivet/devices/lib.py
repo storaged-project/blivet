@@ -31,7 +31,6 @@ LINUX_SECTOR_SIZE = Size(512)
 class Tags(str, Enum):
     """Tags that describe various classes of disk."""
     local = 'local'
-    nvdimm = 'nvdimm'
     remote = 'remote'
     removable = 'removable'
     ssd = 'ssd'
