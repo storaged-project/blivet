@@ -10,14 +10,14 @@ from gi.repository import BlockDev as blockdev
 
 from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
-from blivet.devices import PartitionDevice, StorageDevice, NVDIMMNamespaceDevice
+from blivet.devices import PartitionDevice, StorageDevice
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
 from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
 from blivet.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
 from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
-from blivet.populator.helpers import LVMFormatPopulator, MDFormatPopulator, NVDIMMNamespaceDevicePopulator
+from blivet.populator.helpers import LVMFormatPopulator, MDFormatPopulator
 from blivet.populator.helpers import get_format_helper, get_device_helper
 from blivet.populator.helpers.boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
 from blivet.populator.helpers.formatpopulator import FormatPopulator
@@ -508,71 +508,6 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertTrue(device.is_disk)
         self.assertEqual(device.wwn, data["ID_WWN"])
         self.assertEqual(device.name, device_name)
-        self.assertTrue(device in devicetree.devices)
-
-
-class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
-    helper_class = NVDIMMNamespaceDevicePopulator
-
-    @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
-    @patch("blivet.udev.device_is_nvdimm_namespace", return_value=True)
-    def test_match(self, *args):
-        """Test matching of NVDIMM namespace device populator."""
-        device_is_nvdimm_namespace = args[0]
-        self.assertTrue(self.helper_class.match(None))
-        device_is_nvdimm_namespace.return_value = False
-        self.assertFalse(self.helper_class.match(None))
-
-    @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
-    @patch("blivet.udev.device_is_nvdimm_namespace", return_value=True)
-    def test_get_helper(self, *args):
-        """Test get_device_helper for NVDIMM namespaces."""
-        device_is_nvdimm_namespace = args[0]
-        data = {}
-        self.assertEqual(get_device_helper(data), self.helper_class)
-
-        # verify that setting one of the required True return values to False prevents success
-        device_is_nvdimm_namespace.return_value = False
-        self.assertNotEqual(get_device_helper(data), self.helper_class)
-        device_is_nvdimm_namespace.return_value = True
-
-    @patch("blivet.udev.device_get_name")
-    def test_run(self, *args):
-        """Test disk device populator."""
-        device_get_name = args[0]
-
-        devicetree = DeviceTree()
-
-        # set up some fake udev data to verify handling of specific entries
-        data = {'SYS_PATH': 'dummy', 'DEVNAME': 'dummy'}
-
-        device_name = "nop"
-        device_get_name.return_value = device_name
-        helper = self.helper_class(devicetree, data)
-
-        nvdimm_data = Mock(mode=blockdev.NVDIMMNamespaceMode.SECTOR, devname='dummy',
-                           uuid='test-uuid', sector_size=512)
-
-        with patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data):
-            device = helper.run()
-        self.assertIsInstance(device, NVDIMMNamespaceDevice)
-        self.assertTrue(device.exists)
-        self.assertTrue(device.is_disk)
-        self.assertEqual(device.mode, 'sector')
-        self.assertEqual(device.uuid, 'test-uuid')
-        self.assertTrue(device.sector_size, 512)
         self.assertTrue(device in devicetree.devices)
 
 
