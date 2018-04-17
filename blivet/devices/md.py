@@ -494,6 +494,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # give valid results
         self.sysfs_path = ''
 
+        # make sure the /dev/mdXXX path is removed after stopping the array
+        udev.settle()
+
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
