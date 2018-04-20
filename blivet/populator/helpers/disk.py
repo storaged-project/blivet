@@ -172,6 +172,7 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
         del kwargs["serial"]
         del kwargs["vendor"]
         del kwargs["bus"]
+        del kwargs["wwn"]
         return kwargs
 
 

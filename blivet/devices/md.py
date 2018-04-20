@@ -224,7 +224,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     def create_bitmap(self):
         """ Whether or not a bitmap should be created on the array.
 
-            If the the array is sufficiently small, a bitmap yields no benefit.
+            If the array is sufficiently small, a bitmap yields no benefit.
 
             If the array has no redundancy, a bitmap is just pointless.
         """
@@ -493,6 +493,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # we need to clear the sysfs path now so our status method continues to
         # give valid results
         self.sysfs_path = ''
+
+        # make sure the /dev/mdXXX path is removed after stopping the array
+        udev.settle()
 
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """

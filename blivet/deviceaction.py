@@ -1004,10 +1004,10 @@ class ActionConfigureFormat(DeviceAction):
     """ An action change of an attribute of device format """
     type = ACTION_TYPE_CONFIGURE
     obj = ACTION_OBJECT_FORMAT
-    type_desc_str = N_("configrure format")
+    type_desc_str = N_("configure format")
 
     def __init__(self, device, attr, new_value):
-        super().__init__(device)
+        super(ActionConfigureFormat, self).__init__(device)
 
         self.device = device
         self.attr = attr
@@ -1035,7 +1035,7 @@ class ActionConfigureFormat(DeviceAction):
             return
 
         setattr(self.device.format, self.attr, self.new_value)
-        super().apply()
+        super(ActionConfigureFormat, self).apply()
 
     def cancel(self):
         if not self._applied:
@@ -1044,7 +1044,7 @@ class ActionConfigureFormat(DeviceAction):
         setattr(self.device.format, self.attr, self.old_value)
 
     def execute(self, callbacks=None):
-        super().execute(callbacks=callbacks)
+        super(ActionConfigureFormat, self).execute(callbacks=callbacks)
 
         if self._execute is not None:
             self._execute(dry_run=False)
@@ -1055,10 +1055,10 @@ class ActionConfigureDevice(DeviceAction):
     """ An action change of an attribute of a device """
     type = ACTION_TYPE_CONFIGURE
     obj = ACTION_OBJECT_FORMAT
-    type_desc_str = N_("configrure device")
+    type_desc_str = N_("configure device")
 
     def __init__(self, device, attr, new_value):
-        super().__init__(device)
+        super(ActionConfigureDevice, self).__init__(device)
 
         self.device = device
         self.attr = attr
@@ -1086,7 +1086,7 @@ class ActionConfigureDevice(DeviceAction):
             return
 
         setattr(self.device, self.attr, self.new_value)
-        super().apply()
+        super(ActionConfigureDevice, self).apply()
 
     def cancel(self):
         if not self._applied:
@@ -1095,7 +1095,7 @@ class ActionConfigureDevice(DeviceAction):
         setattr(self.device, self.attr, self.old_value)
 
     def execute(self, callbacks=None):
-        super().execute(callbacks=callbacks)
+        super(ActionConfigureDevice, self).execute(callbacks=callbacks)
 
         if self._execute is not None:
             self._execute(dry_run=False)

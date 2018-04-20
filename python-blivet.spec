@@ -1,15 +1,24 @@
 %define is_rhel 0%{?rhel} != 0
 
-# python3 is not available on RHEL
-%if %{is_rhel}
-%define with_python3 0
+# python3 is not available on RHEL <=7
+%if %{is_rhel} && 0%{?rhel} <= 7
+# disable python3 by default
+%bcond_with python3
 %else
-%define with_python3 1
+%bcond_without python3
+%endif
+
+# python2 is not available on RHEL > 7 and not needed on Fedora > 28
+%if 0%{?rhel} > 7 || 0%{?fedora} > 28
+# disable python2 by default
+%bcond_with python2
+%else
+%bcond_without python2
 %endif
 
 Summary:  A python module for system storage configuration
 Name: python-blivet
-Url: https://www-rhstorage.rhcloud.com/projects/blivet
+Url: https://storageapis.wordpress.com/projects/blivet
 Version: 3.0.0
 
 #%%global prerelease .b1
@@ -49,14 +58,13 @@ Conflicts: python3-blivet < 1:2.0.0
 The %{realname}-data package provides data files required by the %{realname}
 python module.
 
-%if %{with_python3}
+%if %{with python3}
 %package -n python3-%{realname}
 Summary: A python3 package for examining and modifying storage configuration.
 
 %{?python_provide:%python_provide python3-%{realname}}
 
 BuildRequires: gettext
-BuildRequires: python3-pocketlint >= %{pocketlintver}
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
 
@@ -67,7 +75,18 @@ Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: python3-blockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
+Recommends: libblockdev-btrfs >= %{libblockdevver}
+Recommends: libblockdev-crypto >= %{libblockdevver}
+Recommends: libblockdev-dm >= %{libblockdevver}
+Recommends: libblockdev-fs >= %{libblockdevver}
+Recommends: libblockdev-kbd >= %{libblockdevver}
+Recommends: libblockdev-loop >= %{libblockdevver}
+Recommends: libblockdev-lvm >= %{libblockdevver}
+Recommends: libblockdev-mdraid >= %{libblockdevver}
+Recommends: libblockdev-mpath >= %{libblockdevver}
+Recommends: libblockdev-part >= %{libblockdevver}
+Recommends: libblockdev-swap >= %{libblockdevver}
+Recommends: libblockdev-s390 >= %{libblockdevver}
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
@@ -76,20 +95,27 @@ Requires: systemd-udev
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
 Obsoletes: blivet-data < 1:2.0.0
+
+%if %{without python2}
+# the version here needs to be updated to actual version when this happened
+Obsoletes: python2-blivet < 1:2.0.2-2
+Obsoletes: python-blivet < 1:2.0.2-2
+%else
 Obsoletes: python-blivet < 1:2.0.0
+%endif
 
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
 configuration.
 %endif
 
+%if %{with python2}
 %package -n python2-%{realname}
 Summary: A python2 package for examining and modifying storage configuration.
 
 %{?python_provide:%python_provide python2-%{realname}}
 
 BuildRequires: gettext
-BuildRequires: python2-pocketlint >= %{pocketlintver}
 BuildRequires: python2-devel
 
 %if %{is_rhel}
@@ -105,7 +131,18 @@ Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
 Requires: libselinux-python
 Requires: python-blockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
+Recommends: libblockdev-btrfs >= %{libblockdevver}
+Recommends: libblockdev-crypto >= %{libblockdevver}
+Recommends: libblockdev-dm >= %{libblockdevver}
+Recommends: libblockdev-fs >= %{libblockdevver}
+Recommends: libblockdev-kbd >= %{libblockdevver}
+Recommends: libblockdev-loop >= %{libblockdevver}
+Recommends: libblockdev-lvm >= %{libblockdevver}
+Recommends: libblockdev-mdraid >= %{libblockdevver}
+Recommends: libblockdev-mpath >= %{libblockdevver}
+Recommends: libblockdev-part >= %{libblockdevver}
+Recommends: libblockdev-swap >= %{libblockdevver}
+Recommends: libblockdev-s390 >= %{libblockdevver}
 Requires: python-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
@@ -126,23 +163,18 @@ Obsoletes: python-blivet < 1:2.0.0
 %description -n python2-%{realname}
 The python2-%{realname} is a python2 package for examining and modifying storage
 configuration.
+%endif
 
 %prep
-%autosetup -n %{realname}-%{realversion}
+%autosetup -n %{realname}-%{realversion} -p1
 
 %build
-make PYTHON=%{__python2}
-
-%if %{with_python3}
-make PYTHON=%{__python3}
-%endif
+%{?with_python2:make PYTHON=%{__python2}}
+%{?with_python3:make PYTHON=%{__python3}}
 
 %install
-make PYTHON=%{__python2} DESTDIR=%{buildroot} install
-
-%if %{with_python3}
-make PYTHON=%{__python3} DESTDIR=%{buildroot} install
-%endif
+%{?with_python2:make PYTHON=%{__python2} DESTDIR=%{buildroot} install}
+%{?with_python3:make PYTHON=%{__python3} DESTDIR=%{buildroot} install}
 
 %find_lang %{realname}
 
@@ -152,12 +184,14 @@ make PYTHON=%{__python3} DESTDIR=%{buildroot} install
 %{_libexecdir}/*
 %{_unitdir}/*
 
+%if %{with python2}
 %files -n python2-%{realname}
 %license COPYING
 %doc README ChangeLog examples
 %{python2_sitelib}/*
+%endif
 
-%if %{with_python3}
+%if %{with python3}
 %files -n python3-%{realname}
 %license COPYING
 %doc README ChangeLog examples

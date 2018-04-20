@@ -226,7 +226,7 @@ class DiskLabel(DeviceFormat):
         elif arch.is_efi() and not arch.is_aarch64():
             label_types = ["gpt"]
         elif arch.is_s390():
-            label_types = ["msdos"]  # since 'dasd' is only for DASD, it isn't listed here
+            label_types = ["msdos", "dasd"]
 
         return label_types
 
