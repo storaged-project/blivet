@@ -24,6 +24,7 @@ from six import add_metaclass
 
 from . import util
 from . import udev
+from .errors import DependencyError
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice, LVMLogicalVolumeDevice
@@ -162,7 +163,7 @@ class DeviceAction(util.ObjectID):
         unavailable_dependencies = device.unavailable_dependencies
         if unavailable_dependencies:
             dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
-            raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, dependencies_str))
+            raise DependencyError("device type %s requires unavailable_dependencies: %s" % (device.type, dependencies_str))
 
         self.device = device
         self.container = getattr(self.device, "container", None)
