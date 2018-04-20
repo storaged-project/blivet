@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.0.0
+Version: 3.0.1
 
 #%%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -199,6 +199,31 @@ configuration.
 %endif
 
 %changelog
+* Fri Apr 20 2018 David Lehman <dlehman@redhat.com> - 3.0.1-1
+- Weak dependencies for libblockdev plugins (japokorn)
+- Translate log levels from libblockdev to python log levels (vtrefny)
+- Try to wait after stopping an MD array (vtrefny)
+- Replace deprecated iscsi_firmware dracut option (rvykydal)
+- Fix how we check return value for call_sync in safe_dbus (vtrefny)
+- Conditionalize the Python 2 subpackage and don't build it on EL > 7 and
+  Fedora > 28 (miro)
+- Don't use a 'wwn' kwarg for MDBiosRaidArrayDevice (#1557957) (awilliam)
+- Fix python3 conditional in rpm spec file. (dlehman)
+- Fix upstream URL in spec (vtrefny)
+- Allow device specification by node to udev.get_device. (#1524700) (dlehman)
+- Do not try to update potfile during make all (vtrefny)
+- Use '-p1' when applying patches with autosetup (vtrefny)
+- Remove dependency on pocketlint (vtrefny)
+- Dasd is a valid label type on s390x (#1538550) (vponcova)
+- fcoe: remove /etc/fcoe dir if it exists before copying configuration
+  (#1542846) (rvykydal)
+- Avoid UnitTest.subTest due to python2 incompatibility. (dlehman)
+- Adapt action test mock imports for compatibility w/ python2 & python3.
+  (dlehman)
+- Use explicit super() syntax in config actions for py2 compat. (dlehman)
+- Use libblockdev runtime dependency checks (#1501249) (vtrefny)
+- Fix minor typos (yurchor)
+
 * Mon Apr 02 2018 David Lehman <dlehman@redhat.com> - 3.0.0-1
 - Bump version for release. (dlehman)
 
