@@ -123,9 +123,6 @@ class LVMFormatPopulator(FormatPopulator):
         lv_info = dict((k, v) for (k, v) in iter(lvs_info.cache.items())
                        if v.vg_name == vg_name)
 
-        # FIXME: This should account for added/removed LVs.
-        self._devicetree.names.extend(n for n in lv_info.keys() if n not in self._devicetree.names)
-
         for lv_device in vg_device.lvs[:]:
             if lv_device.name not in lv_info:
                 log.info("lv %s was removed", lv_device.name)

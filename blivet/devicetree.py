@@ -44,6 +44,7 @@ from . import util
 from .populator import PopulatorMixin
 from .storage_log import log_method_call, log_method_return
 from .threads import SynchronizedMeta
+from .static_data import lvs_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -93,9 +94,6 @@ class DeviceTreeBase(object):
         self._actions = ActionList(addfunc=self._register_action,
                                    removefunc=self._cancel_action)
 
-        # a list of all device names we encounter
-        self.names = []
-
         self._hidden = []
 
         lvm.lvm_cc_resetFilter()
@@ -144,6 +142,22 @@ class DeviceTreeBase(object):
 
         return devices
 
+    @property
+    def names(self):
+        """ List of devices names """
+        lv_info = list(lvs_info.cache.keys())
+
+        names = []
+        for dev in self._devices + self._hidden:
+            # don't include "req%d" partition names
+            if (dev.type != "partition" or not dev.name.startswith("req")) and \
+               dev.type != "btrfs volume" and \
+               dev.name not in names:
+                names.append(dev.name)
+
+        names.extend(n for n in lv_info if n not in names)
+        return names
+
     def _add_device(self, newdev, new=True):
         """ Add a device to the tree.
 
@@ -165,12 +179,6 @@ class DeviceTreeBase(object):
         newdev.add_hook(new=new)
         self._devices.append(newdev)
 
-        # don't include "req%d" partition names
-        if ((newdev.type != "partition" or
-             not newdev.name.startswith("req")) and
-                newdev.type != "btrfs volume" and
-                newdev.name not in self.names):
-            self.names.append(newdev.name)
         callbacks.device_added(device=newdev)
         log.info("added %s %s (id %d) to device tree", newdev.type,
                  newdev.name,
@@ -196,10 +204,6 @@ class DeviceTreeBase(object):
         if not dev.isleaf and not force:
             log.debug("%s has children %s", dev.name, pprint.pformat(c.name for c in dev.children))
             raise ValueError("Cannot remove non-leaf device '%s'" % dev.name)
-
-        # handle name registry first since removing an lv from the vg changes its name
-        if dev.name in self.names and getattr(dev, "complete", True):
-            self.names.remove(dev.name)
 
         dev.remove_hook(modparent=modparent)
         if modparent:
@@ -866,9 +870,6 @@ class DeviceTreeBase(object):
 
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
-
-        if device.name not in self.names:
-            self.names.append(device.name)
 
     def unhide(self, device):
         """ Restore a device's visibility.
