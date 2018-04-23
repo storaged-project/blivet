@@ -450,7 +450,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
 
     def dracut_setup_args(self):
         if self.ibft:
-            return set(["iscsi_firmware"])
+            return set(["rd.iscsi.firmware"])
 
         # qla4xxx partial offload
         if self.node is None:

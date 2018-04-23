@@ -75,7 +75,18 @@ Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: python3-blockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
+Recommends: libblockdev-btrfs >= %{libblockdevver}
+Recommends: libblockdev-crypto >= %{libblockdevver}
+Recommends: libblockdev-dm >= %{libblockdevver}
+Recommends: libblockdev-fs >= %{libblockdevver}
+Recommends: libblockdev-kbd >= %{libblockdevver}
+Recommends: libblockdev-loop >= %{libblockdevver}
+Recommends: libblockdev-lvm >= %{libblockdevver}
+Recommends: libblockdev-mdraid >= %{libblockdevver}
+Recommends: libblockdev-mpath >= %{libblockdevver}
+Recommends: libblockdev-part >= %{libblockdevver}
+Recommends: libblockdev-swap >= %{libblockdevver}
+Recommends: libblockdev-s390 >= %{libblockdevver}
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
@@ -120,7 +131,18 @@ Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
 Requires: libselinux-python
 Requires: python-blockdev >= %{libblockdevver}
-Requires: libblockdev-plugins-all >= %{libblockdevver}
+Recommends: libblockdev-btrfs >= %{libblockdevver}
+Recommends: libblockdev-crypto >= %{libblockdevver}
+Recommends: libblockdev-dm >= %{libblockdevver}
+Recommends: libblockdev-fs >= %{libblockdevver}
+Recommends: libblockdev-kbd >= %{libblockdevver}
+Recommends: libblockdev-loop >= %{libblockdevver}
+Recommends: libblockdev-lvm >= %{libblockdevver}
+Recommends: libblockdev-mdraid >= %{libblockdevver}
+Recommends: libblockdev-mpath >= %{libblockdevver}
+Recommends: libblockdev-part >= %{libblockdevver}
+Recommends: libblockdev-swap >= %{libblockdevver}
+Recommends: libblockdev-s390 >= %{libblockdevver}
 Requires: python-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
