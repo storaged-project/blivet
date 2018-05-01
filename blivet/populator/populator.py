@@ -167,7 +167,8 @@ class PopulatorMixin(object):
         # If the md name is None, then some udev info is missing. Likely,
         # this is because the array is degraded, and mdadm has deactivated
         # it. Try to activate it and re-get the udev info.
-        if flags.allow_imperfect_devices and udev.device_get_md_name(info) is None:
+        if flags.allow_imperfect_devices and udev.device_get_md_name(info) is None and \
+           MDRaidArrayDevice.unavailable_type_dependencies():
             devname = udev.device_get_devname(info)
             if devname:
                 try:
@@ -333,6 +334,10 @@ class PopulatorMixin(object):
 
     def setup_disk_images(self):
         """ Set up devices to represent the disk image files. """
+        if LoopDevice.unavailable_type_dependencies():
+            log.error("Cannot set up disk images without libblockdev loop plugin.")
+            return
+
         for (name, path) in self.disk_images.items():
             log.info("setting up disk image file '%s' as '%s'", path, name)
             dmdev = self.get_device_by_name(name)
@@ -427,7 +432,7 @@ class PopulatorMixin(object):
         self.drop_lvm_cache()
         mpath_members.drop_cache()
 
-        if flags.auto_dev_updates and not flags.image_install:
+        if flags.auto_dev_updates and not flags.image_install and MultipathDevice.unavailable_type_dependencies():
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
         self.setup_disk_images()

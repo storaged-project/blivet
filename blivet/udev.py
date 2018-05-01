@@ -27,6 +27,7 @@ import subprocess
 import logging
 import pyudev
 
+from . import dependencies
 from . import util
 from .size import Size
 from .flags import flags
@@ -582,6 +583,7 @@ def device_get_lv_type(info):
     return info['LVM2_SEGTYPE']
 
 
+@dependencies.blockdev_dm_required()
 def device_dm_subsystem_match(info, subsystem):
     """ Return True if the device matches a given device-mapper subsystem. """
     name = info.get("DM_NAME")
@@ -589,6 +591,7 @@ def device_dm_subsystem_match(info, subsystem):
         return False
 
     _subsystem = blockdev.dm.get_subsystem_from_name(name)
+
     if not _subsystem:
         return False
 

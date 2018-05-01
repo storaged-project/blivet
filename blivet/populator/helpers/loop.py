@@ -24,6 +24,7 @@ import gi
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
+from ... import dependencies
 from ... import udev
 from ...devices import FileDevice, LoopDevice
 from ...storage_log import log_method_call
@@ -32,6 +33,7 @@ from .devicepopulator import DevicePopulator
 
 class LoopDevicePopulator(DevicePopulator):
     @classmethod
+    @dependencies.blockdev_loop_required()
     def match(cls, data):
         return udev.device_is_loop(data)
 

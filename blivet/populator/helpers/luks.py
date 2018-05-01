@@ -40,7 +40,7 @@ log = logging.getLogger("blivet")
 class LUKSDevicePopulator(DevicePopulator):
     @classmethod
     def match(cls, data):
-        return udev.device_is_dm_luks(data)
+        return not LUKSDevice.unavailable_type_dependencies() and udev.device_is_dm_luks(data)
 
     def run(self):
         parents = self._devicetree._add_slave_devices(self.data)
@@ -55,6 +55,10 @@ class LUKSDevicePopulator(DevicePopulator):
 class LUKSFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "luks"
+
+    @classmethod
+    def match(cls, data, device):
+        return not LUKSDevice.unavailable_type_dependencies() and super(cls, cls).match(data, device)
 
     def _get_kwargs(self):
         kwargs = super(LUKSFormatPopulator, self)._get_kwargs()

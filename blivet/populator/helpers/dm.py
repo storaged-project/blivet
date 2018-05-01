@@ -21,6 +21,7 @@
 #
 
 from ... import udev
+from ... import dependencies
 from ...devices import DMDevice
 from ...devicelibs import lvm
 from ...storage_log import log_method_call
@@ -34,6 +35,7 @@ class DMDevicePopulator(DevicePopulator):
     priority = 50
 
     @classmethod
+    @dependencies.blockdev_dm_required()
     def match(cls, data):
         return (udev.device_is_dm(data) and
                 not udev.device_is_dm_partition(data) and

@@ -33,7 +33,8 @@ log = logging.getLogger("blivet")
 class MultipathDevicePopulator(DevicePopulator):
     @classmethod
     def match(cls, data):
-        return (udev.device_is_dm_mpath(data) and
+        return (not MultipathDevice.unavailable_type_dependencies() and
+                udev.device_is_dm_mpath(data) and
                 not udev.device_is_dm_partition(data))
 
     def run(self):
