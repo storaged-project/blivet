@@ -97,7 +97,6 @@ Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 Obsoletes: blivet-data < 1:2.0.0
 
 %if %{without python2}
-# the version here needs to be updated to actual version when this happened
 Obsoletes: python2-blivet < 1:2.0.2-2
 Obsoletes: python-blivet < 1:2.0.2-2
 %else
@@ -117,20 +116,15 @@ Summary: A python2 package for examining and modifying storage configuration.
 
 BuildRequires: gettext
 BuildRequires: python2-devel
-
-%if %{is_rhel}
-BuildRequires: python-setuptools
-%else
 BuildRequires: python2-setuptools
-%endif
 
 Requires: python2
-Requires: python-six
-Requires: python-pyudev >= %{pyudevver}
+Requires: python2-six
+Requires: python2-pyudev >= %{pyudevver}
 Requires: parted >= %{partedver}
-Requires: pyparted >= %{pypartedver}
-Requires: libselinux-python
-Requires: python-blockdev >= %{libblockdevver}
+Requires: python2-pyparted >= %{pypartedver}
+Requires: python2-libselinux
+Requires: python2-blockdev >= %{libblockdevver}
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
 Recommends: libblockdev-dm >= %{libblockdevver}
@@ -143,19 +137,14 @@ Recommends: libblockdev-mpath >= %{libblockdevver}
 Recommends: libblockdev-part >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
 Recommends: libblockdev-s390 >= %{libblockdevver}
-Requires: python-bytesize >= %{libbytesizever}
+Requires: python2-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
-Requires: python-hawkey
+Requires: python2-hawkey
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
-%if %{is_rhel}
-Requires: udev
-Requires: pygobject3
-%else
 Requires: systemd-udev
-Requires: python-gobject-base
-%endif
+Requires: python2-gobject-base
 
 Obsoletes: blivet-data < 1:2.0.0
 Obsoletes: python-blivet < 1:2.0.0
@@ -207,7 +196,6 @@ configuration.
 - Fix how we check return value for call_sync in safe_dbus (vtrefny)
 - Conditionalize the Python 2 subpackage and don't build it on EL > 7 and
   Fedora > 28 (miro)
-- Don't use a 'wwn' kwarg for MDBiosRaidArrayDevice (#1557957) (awilliam)
 - Fix python3 conditional in rpm spec file. (dlehman)
 - Fix upstream URL in spec (vtrefny)
 - Allow device specification by node to udev.get_device. (#1524700) (dlehman)
@@ -224,8 +212,25 @@ configuration.
 - Use libblockdev runtime dependency checks (#1501249) (vtrefny)
 - Fix minor typos (yurchor)
 
-* Mon Apr 02 2018 David Lehman <dlehman@redhat.com> - 3.0.0-1
-- Bump version for release. (dlehman)
+* Mon Apr 02 2018 David Lehman <dlehman@redhat.com> - 1:3.0.0-0.6.1.b1
+- Use bcond for with python3, allow it on RHEL > 7 (mhroncok)
+- Conditionalize the Python 2 subpackage and don't build it on EL > 7 and Fedora > 28 (mhroncok)
+
+* Tue Mar 20 2018 David Lehman <dlehman@redhat.com> - 1:3.0.0-0.6.b1
+- Don't use a 'wwn' kwarg for MDBiosRaidArrayDevice (#1557957) (awilliam)
+
+* Sat Mar 17 2018 Iryna Shcherbina <ishcherb@redhat.com> - 1:3.0.0-0.5.b1
+- Update Python 2 dependency declarations to new packaging standards
+  (See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3)
+
+* Mon Mar 12 2018 David Lehman <dlehman@redhat.com> - 1:3.0.0-0.4.b1
+- Allow device specification by node to udev.get_device. (#1524700)
+
+* Tue Mar 06 2018 Vojtech Trefny <vtrefny@redhat.com> - 1:3.0.0-0.3.b1
+- Dasd is a valid label type on s390x (#1538550)
+
+* Fri Feb 09 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.0.0-0.2.b1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
 * Wed Nov 08 2017 David Lehman <dlehman@redhat.com> - 3.0.0-0.1.b1
 - Add some reasonable default value for LANG variable in size_test (vtrefny)
