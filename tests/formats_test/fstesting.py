@@ -87,9 +87,6 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.resizable, False)
 
         # sizes
-        expected_min_size = Size(0) if can_resize(an_fs) else an_fs._min_size
-        self.assertEqual(an_fs.min_size, expected_min_size)
-
         self.assertEqual(an_fs.max_size, an_fs._max_size)
         self.assertEqual(an_fs.size, Size(0))
         self.assertEqual(an_fs.current_size, Size(0))
@@ -101,9 +98,6 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         an_fs = self._fs_class(size=NEW_SIZE)
 
         # sizes
-        expected_min_size = Size(0) if can_resize(an_fs) else an_fs._min_size
-        self.assertEqual(an_fs.min_size, expected_min_size)
-
         self.assertEqual(an_fs.max_size, an_fs._max_size)
         self.assertEqual(an_fs.size, NEW_SIZE)
         self.assertEqual(an_fs.current_size, Size(0))
@@ -119,9 +113,6 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertEqual(an_fs.resizable, False)
         self.assertTrue(an_fs.exists)
         self.assertIsNone(an_fs.do_check())
-
-        expected_min_size = Size(0) if can_resize(an_fs) else an_fs._min_size
-        self.assertEqual(an_fs.min_size, expected_min_size)
 
         self.assertEqual(an_fs.max_size, an_fs._max_size)
         self.assertEqual(an_fs.size, Size(0))
