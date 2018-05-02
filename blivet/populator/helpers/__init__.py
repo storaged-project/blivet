@@ -6,7 +6,7 @@ from .formatpopulator import FormatPopulator
 
 from .btrfs import BTRFSFormatPopulator
 from .boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
-from .disk import DiskDevicePopulator, iScsiDevicePopulator, FCoEDevicePopulator, MDBiosRaidDevicePopulator, DASDDevicePopulator, ZFCPDevicePopulator
+from .disk import DiskDevicePopulator, iScsiDevicePopulator, FCoEDevicePopulator, MDBiosRaidDevicePopulator, DASDDevicePopulator, ZFCPDevicePopulator, NVDIMMNamespaceDevicePopulator
 from .disklabel import DiskLabelFormatPopulator
 from .dm import DMDevicePopulator
 from .dmraid import DMRaidFormatPopulator
