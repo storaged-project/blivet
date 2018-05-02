@@ -19,11 +19,11 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.0.1
+Version: 3.1.0
 
-#%%global prerelease .b1
+%global prerelease .b1
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 1%{?prerelease}%{?dist}
+Release: 0.1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -190,6 +190,15 @@ configuration.
 %endif
 
 %changelog
+* Wed May 02 2018 David Lehman <dlehman@redhat.com> - 3.1.0-0.1.b1
+- Add 'nvdimm' tag for NVDIMM namespaces (vtrefny)
+- Add test for NVDIMMNamespaceDevicePopulator (vtrefny)
+- Add populator helper for NVDIMM namespaces (vtrefny)
+- Add 'NVDIMMNamespaceDevice' device representing NVDIMM namespaces (vtrefny)
+- Add a function for identifying NVDIMM namespaces (vtrefny)
+- Add a singleton for NVDIMM namespaces management (vtrefny)
+- Add NVDIMM plugin to list of requested plugins (vtrefny)
+
 * Fri Apr 20 2018 David Lehman <dlehman@redhat.com> - 3.0.1-1
 - Weak dependencies for libblockdev plugins (japokorn)
 - Translate log levels from libblockdev to python log levels (vtrefny)
