@@ -219,9 +219,11 @@ class PartitioningTestCase(unittest.TestCase):
 
             #
             # fail: add a logical partition to a primary free region
-            #
+            # Note: Added second message option - for some reason the call
+            # of blockdev.reinit() in dependencies_test.py will cause parted
+            # to return different message. See PR #691 comments for more details
             with six.assertRaisesRegex(self, parted.PartitionException,
-                                       "no extended partition"):
+                                       "(no extended partition|Could not create partition)"):
                 part = add_partition(disk.format, free, parted.PARTITION_LOGICAL,
                                      Size("10 MiB"))
 
@@ -251,8 +253,11 @@ class PartitioningTestCase(unittest.TestCase):
 
             #
             # fail: add a primary partition to an extended free region
-            #
-            with six.assertRaisesRegex(self, parted.PartitionException, "overlap"):
+            # Note: Added second message option - for some reason the call
+            # of blockdev.reinit() in dependencies_test.py will cause parted
+            # to return different message. See PR #691 comments for more details
+            with six.assertRaisesRegex(self, parted.PartitionException,
+                                       "(overlap|Could not create partition)"):
                 part = add_partition(disk.format, all_free[1],
                                      parted.PARTITION_NORMAL,
                                      Size("10 MiB"), all_free[1].start)
