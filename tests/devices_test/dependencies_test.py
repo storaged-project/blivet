@@ -18,6 +18,7 @@ from blivet.deviceaction import ActionCreateFormat
 from blivet.deviceaction import ActionDestroyFormat
 
 from blivet.devices import DiskDevice
+from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
@@ -152,13 +153,9 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         # reload all libblockdev plugins
         self.load_all_plugins()
 
-        for disk in self.bvt.disks:
-            self.bvt.recursive_remove(disk)
+        if os.path.exists(self.disk1_file):
+            os.unlink(self.disk1_file)
 
-        self.bvt.devicetree.teardown_disk_images()
-        for fn in self.bvt.disk_images.values():
-            if os.path.exists(fn):
-                os.unlink(fn)
         availability.CACHE_AVAILABILITY = True
 
     def load_all_plugins(self):
@@ -179,19 +176,19 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         # reinitialize blockdev without the plugins
         # TODO: uncomment (workaround (1/2) for blivet.reset fail)
         # self.unload_all_plugins()
-        self.bvt.disk_images["disk1"] = self.disk1_file
-        self.bvt.exclusive_disks = self.bvt.disk_images["disk1"]
-        try:
-            self.bvt.reset()
-        except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
-            self.fail("Improper handling of missing libblockdev plugin")
+        disk1 = DiskFile(self.disk1_file)
+
+        self.bvt.exclusive_disks = [disk1.name]
+        if os.geteuid() == 0:
+            try:
+                self.bvt.reset()
+            except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
+                self.fail("Improper handling of missing libblockdev plugin")
         # TODO: remove line (workaround (2/2) for blivet.reset fail)
         self.unload_all_plugins()
 
-        disk1 = self.bvt.devicetree.get_device_by_name("disk1")
-
-        with six.assertRaisesRegex(self, DependencyError, "requires unavailable_dependencies"):
-            self.bvt.initialize_disk(disk1)
+        self.bvt.devicetree._add_device(disk1)
+        self.bvt.initialize_disk(disk1)
 
         pv = self.bvt.new_partition(size=Size("8GiB"), fmt_type="lvmpv")
         pv_fail = self.bvt.new_partition(size=Size("8GiB"), fmt_type="lvmpv")
