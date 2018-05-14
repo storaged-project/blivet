@@ -159,6 +159,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         for fn in self.bvt.disk_images.values():
             if os.path.exists(fn):
                 os.unlink(fn)
+        availability.CACHE_AVAILABILITY = True
 
     def load_all_plugins(self):
         result, plugins = blockdev.try_reinit(require_plugins=self.plugins, reload=True)
