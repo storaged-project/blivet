@@ -146,10 +146,11 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
     def setUp(self):
         self.addCleanup(self._clean_up)
         self.disk1_file = create_sparse_tempfile("disk1", Size("2GiB"))
+        self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())
 
     def _clean_up(self):
         # reload all libblockdev plugins
-        blockdev.try_reinit(require_plugins=None, reload=False)
+        self.load_all_plugins()
 
         for disk in self.bvt.disks:
             self.bvt.recursive_remove(disk)
@@ -160,7 +161,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
                 os.unlink(fn)
 
     def load_all_plugins(self):
-        result, plugins = blockdev.try_reinit(require_plugins=None, reload=False)
+        result, plugins = blockdev.try_reinit(require_plugins=self.plugins, reload=True)
         if not result:
             self.fail("Could not reload libblockdev plugins")
         return plugins
