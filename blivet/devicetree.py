@@ -30,7 +30,7 @@ import parted
 
 from .errors import CryptoError, DeviceError, DeviceTreeError, DiskLabelCommitError, DMError, DuplicateVGError, FSError, InvalidDiskLabelError, LUKSError, LVMError, MDRaidError, StorageError
 from .devices import BTRFSDevice, BTRFSSubVolumeDevice, BTRFSVolumeDevice, BTRFSSnapShotDevice
-from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice
+from .devices import DASDDevice, DMDevice, DMLinearDevice, DMRaidArrayDevice, DiskDevice, NVDIMMNamespaceDevice
 from .devices import FcoeDiskDevice, FileDevice, LoopDevice, LUKSDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import LVMThinPoolDevice, LVMThinLogicalVolumeDevice
@@ -55,6 +55,10 @@ from . import tsort
 from .flags import flags
 from .storage_log import log_exception_info, log_method_call, log_method_return
 from .size import Size
+
+import gi
+gi.require_version("BlockDev", "2.0")
+from gi.repository import BlockDev as blockdev
 
 import logging
 log = logging.getLogger("blivet")
@@ -1071,6 +1075,18 @@ class DeviceTree(object):
                 kwargs[attr] = udev.device_get_zfcp_attribute(info, attr=attr)
 
             log.info("%s is a zfcp device", name)
+        elif udev.device_is_nvdimm_namespace(info):
+            diskType = NVDIMMNamespaceDevice
+
+            from .nvdimm import nvdimm
+            ninfo = nvdimm.get_namespace_info(info.get("DEVNAME"))
+
+            kwargs["mode"] = blockdev.nvdimm_namespace_get_mode_str(ninfo.mode)
+            kwargs["devname"] = ninfo.dev
+            kwargs["uuid"] = ninfo.uuid
+            kwargs["sectorSize"] = ninfo.sector_size
+
+            log.info("%s is an NVDIMM namespace device", udev.device_get_name(info))
         else:
             diskType = DiskDevice
             log.info("%s is a disk", name)
