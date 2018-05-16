@@ -11,7 +11,7 @@ from .disklabel import DiskLabelFormatPopulator
 from .dm import DMDevicePopulator
 from .dmraid import DMRaidFormatPopulator
 from .loop import LoopDevicePopulator
-from .luks import LUKSDevicePopulator, LUKSFormatPopulator
+from .luks import LUKSDevicePopulator, LUKSFormatPopulator, IntegrityDevicePopulator
 from .lvm import LVMDevicePopulator, LVMFormatPopulator
 from .mdraid import MDDevicePopulator, MDFormatPopulator
 from .multipath import MultipathDevicePopulator, MultipathFormatPopulator

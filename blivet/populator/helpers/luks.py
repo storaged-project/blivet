@@ -26,7 +26,7 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 from ... import udev
-from ...devices import LUKSDevice
+from ...devices import LUKSDevice, IntegrityDevice
 from ...errors import DeviceError, LUKSError
 from ...flags import flags
 from .devicepopulator import DevicePopulator
@@ -48,6 +48,21 @@ class LUKSDevicePopulator(DevicePopulator):
                             sysfs_path=udev.device_get_sysfs_path(self.data),
                             parents=parents,
                             exists=True)
+        self._devicetree._add_device(device)
+        return device
+
+
+class IntegrityDevicePopulator(DevicePopulator):
+    @classmethod
+    def match(cls, data):
+        return udev.device_is_dm_integrity(data)
+
+    def run(self):
+        parents = self._devicetree._add_slave_devices(self.data)
+        device = IntegrityDevice(udev.device_get_name(self.data),
+                                 sysfs_path=udev.device_get_sysfs_path(self.data),
+                                 parents=parents,
+                                 exists=True)
         self._devicetree._add_device(device)
         return device
 

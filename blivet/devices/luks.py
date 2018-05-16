@@ -30,7 +30,7 @@ import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
-from .dm import DMCryptDevice
+from .dm import DMCryptDevice, DMIntegrityDevice
 
 
 class LUKSDevice(DMCryptDevice):
@@ -140,3 +140,34 @@ class LUKSDevice(DMCryptDevice):
         self.slave.populate_ksdata(data)
         data.encrypted = True
         super(LUKSDevice, self).populate_ksdata(data)
+
+
+class IntegrityDevice(DMIntegrityDevice):
+
+    """ A mapped integrity device. """
+    _type = "integrity/dm-crypt"
+    _resizable = True
+    _packages = ["cryptsetup"]
+    _external_dependencies = [availability.BLOCKDEV_CRYPTO_PLUGIN]
+
+    def __init__(self, name, fmt=None, size=None, uuid=None,
+                 exists=False, sysfs_path='', parents=None):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
+            :keyword uuid: the device UUID
+            :type uuid: str
+        """
+        DMIntegrityDevice.__init__(self, name, fmt=fmt, size=size,
+                                   parents=parents, sysfs_path=sysfs_path,
+                                   uuid=None, exists=exists)
