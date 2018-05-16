@@ -8,6 +8,8 @@ import gi
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
+from blivet.errors import DependencyError
+
 from blivet.deviceaction import ActionCreateDevice
 from blivet.deviceaction import ActionDestroyDevice
 from blivet.deviceaction import ActionResizeDevice
@@ -85,13 +87,13 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
         # dev is among the unavailable dependencies
         availability.BLOCKDEV_MDRAID_PLUGIN._method = availability.UnavailableMethod
         self.assertIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailable_dependencies)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionCreateDevice(self.luks)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionDestroyDevice(self.dev)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionCreateFormat(self.dev)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionDestroyFormat(self.dev)
 
     def _clean_up(self):
@@ -121,9 +123,9 @@ class MockingDeviceDependenciesTestCase2(unittest.TestCase):
                           new_callable=PropertyMock(return_value=[availability.unavailable_resource("testing")])):
             device = StorageDevice("testdev1")
             self.assertFalse(device.controllable)
-            self.assertRaises(ValueError, ActionCreateDevice, device)
+            self.assertRaises(DependencyError, ActionCreateDevice, device)
             device.exists = True
-            self.assertRaises(ValueError, ActionDestroyDevice, device)
+            self.assertRaises(DependencyError, ActionDestroyDevice, device)
             self.assertRaises(ValueError, ActionResizeDevice, device, Size("1 GiB"))
 
         # same goes for formats, except that the properties they affect vary by format class
@@ -186,7 +188,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
 
         disk1 = self.bvt.devicetree.get_device_by_name("disk1")
 
-        with six.assertRaisesRegex(self, ValueError, "requires unavailable_dependencies"):
+        with six.assertRaisesRegex(self, DependencyError, "requires unavailable_dependencies"):
             self.bvt.initialize_disk(disk1)
 
         pv = self.bvt.new_partition(size=Size("8GiB"), fmt_type="lvmpv")
@@ -237,7 +239,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.bvt.create_device(pool)
         self.unload_all_plugins()
 
-        with six.assertRaisesRegex(self, ValueError, "requires unavailable_dependencies"):
+        with six.assertRaisesRegex(self, DependencyError, "requires unavailable_dependencies"):
             self.bvt.destroy_device(pool)
 
         try:
