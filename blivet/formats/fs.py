@@ -1086,6 +1086,18 @@ class XFS(FS):
 
         super(XFS, self).write_uuid()
 
+    def create(self, **kwargs):
+        """Until https://bugzilla.redhat.com/show_bug.cgi?id=1575797
+        is resolved, this tries to ensure that sparse inodes are not
+        used if the mount point of the filesystem is /boot. We won't
+        bother trying to handle the case where 'options' is set, as
+        that's complicated and should never be the case for operating
+        system installation.
+        """
+        if self.mountpoint == "/boot" and not kwargs.get('options'):
+            kwargs['options'] = ['-i', 'sparse=0']
+        super().create(**kwargs)
+
 register_device_format(XFS)
 
 
