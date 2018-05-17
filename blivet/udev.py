@@ -35,7 +35,7 @@ global_udev = pyudev.Context()
 import logging
 log = logging.getLogger("blivet")
 
-INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram', r'ndblk', r'pmem')
+INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram', r'ndblk')
 """ device name regexes to ignore when flags.installer_mode is True """
 
 def get_device(sysfs_path):
