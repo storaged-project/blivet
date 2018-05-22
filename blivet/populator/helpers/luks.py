@@ -113,23 +113,12 @@ class LUKSFormatPopulator(FormatPopulator):
                     else:
                         break
 
-            luks_device = LUKSDevice(self.device.format.map_name,
-                                     parents=[self.device],
-                                     exists=True)
+            # try only to setup the luks format -- the luks device will be
+            # discovered and added later by the LUKSDevicePopulator
             try:
-                luks_device.setup()
+                self.device.format.setup()
             except (LUKSError, blockdev.CryptoError, DeviceError) as e:
                 log.info("setup of %s failed: %s", self.device.format.map_name, e)
-                self.device.remove_child(luks_device)
-            else:
-                luks_device.update_sysfs_path()
-                self._devicetree._add_device(luks_device)
-                luks_info = udev.get_device(luks_device.sysfs_path)
-                if not luks_info:
-                    log.error("failed to get udev data for %s", luks_device.name)
-                    return
-
-                self._devicetree.handle_device(luks_info, update_orig_fmt=True)
         else:
             log.warning("luks device %s already in the tree",
                         self.device.format.map_name)
