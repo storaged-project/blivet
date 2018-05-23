@@ -307,3 +307,39 @@ class LUKS(DeviceFormat):
 
 
 register_device_format(LUKS)
+
+
+class Integrity(DeviceFormat):
+
+    """ DM integrity format """
+    _type = "integrity"
+    _name = N_("DM Integrity")
+    _udev_types = ["DM_integrity"]
+    _supported = False                 # is supported
+    _formattable = False               # can be formatted
+    _linux_native = True               # for clearpart
+    _resizable = False                 # can be resized
+    _packages = ["cryptsetup"]         # required packages
+    _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
+
+    def __init__(self, **kwargs):
+        """
+            :keyword device: the path to the underlying device
+            :keyword uuid: the LUKS UUID
+            :keyword exists: indicates whether this is an existing format
+            :type exists: bool
+            :keyword name: the name of the mapped device
+
+            .. note::
+
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
+        """
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
+
+
+register_device_format(Integrity)

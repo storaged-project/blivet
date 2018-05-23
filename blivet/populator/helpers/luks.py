@@ -122,3 +122,8 @@ class LUKSFormatPopulator(FormatPopulator):
         else:
             log.warning("luks device %s already in the tree",
                         self.device.format.map_name)
+
+
+class IntegrityFormatPopulator(FormatPopulator):
+    priority = 100
+    _type_specifier = "integrity"
