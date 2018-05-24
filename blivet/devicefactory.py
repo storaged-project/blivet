@@ -673,6 +673,7 @@ class DeviceFactory(object):
         if self.encrypted:
             fstype = "luks"
             mountpoint = None
+            fmt_args["min_luks_entropy"] = self.min_luks_entropy
         else:
             fstype = self.fstype
             mountpoint = self.mountpoint
@@ -725,7 +726,6 @@ class DeviceFactory(object):
 
             fmt = get_format(self.fstype,
                              mountpoint=self.mountpoint,
-                             min_luks_entropy=self.min_luks_entropy,
                              **fmt_args)
             luks_device = LUKSDevice("luks-" + device.name,
                                      parents=[device], fmt=fmt)
