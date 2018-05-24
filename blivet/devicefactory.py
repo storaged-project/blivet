@@ -327,7 +327,7 @@ class DeviceFactory(object):
             setattr(self, setting, value)
 
         self.fstype = None  # not included in default_settings b/c of special handling below
-        self.min_luks_entropy = luks_data.min_entropy
+        self.min_luks_entropy = kwargs.get("min_luks_entropy") or luks_data.min_entropy
 
         # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
