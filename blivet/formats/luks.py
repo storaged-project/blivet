@@ -80,6 +80,8 @@ class LUKS(DeviceFormat):
             :keyword min_luks_entropy: minimum entropy in bits required for
                                        format creation
             :type min_luks_entropy: int
+            :keyword luks_version: luks format version ("luks1" or "luks2")
+            :type luks_version: str
 
             .. note::
 
@@ -98,6 +100,10 @@ class LUKS(DeviceFormat):
         self.cipher = kwargs.get("cipher")
         self.key_size = kwargs.get("key_size") or 0
         self.map_name = kwargs.get("name")
+        self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
+
+        if not self.exists and self.luks_version not in crypto.LUKS_VERSIONS.keys():
+            raise ValueError("Unknown or unsupported LUKS version '%s'" % self.luks_version)
 
         if not self.exists and not self.cipher:
             self.cipher = "aes-xts-plain64"
@@ -136,21 +142,21 @@ class LUKS(DeviceFormat):
         else:
             passphrase = "(not set)"
         s += ("  cipher = %(cipher)s  key_size = %(key_size)s"
-              "  map_name = %(map_name)s\n"
+              "  map_name = %(map_name)s\n version = %(luks_version)s"
               "  key_file = %(key_file)s  passphrase = %(passphrase)s\n"
               "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s" %
               {"cipher": self.cipher, "key_size": self.key_size,
-               "map_name": self.map_name, "key_file": self._key_file,
-               "passphrase": passphrase, "escrow_cert": self.escrow_cert,
-               "backup": self.add_backup_passphrase})
+               "map_name": self.map_name, "luks_version": self.luks_version,
+               "key_file": self._key_file, "passphrase": passphrase,
+               "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase})
         return s
 
     @property
     def dict(self):
         d = super(LUKS, self).dict
         d.update({"cipher": self.cipher, "key_size": self.key_size,
-                  "map_name": self.map_name, "has_key": self.has_key,
-                  "escrow_cert": self.escrow_cert,
+                  "map_name": self.map_name, "version": self.luks_version,
+                  "has_key": self.has_key, "escrow_cert": self.escrow_cert,
                   "backup": self.add_backup_passphrase})
         return d
 
@@ -250,7 +256,8 @@ class LUKS(DeviceFormat):
                                     key_file=self._key_file,
                                     cipher=self.cipher,
                                     key_size=self.key_size,
-                                    min_entropy=self.min_luks_entropy)
+                                    min_entropy=self.min_luks_entropy,
+                                    luks_version=crypto.LUKS_VERSIONS[self.luks_version])
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)

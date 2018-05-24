@@ -214,6 +214,11 @@ def device_get_format(udev_info):
     return udev_info.get("ID_FS_TYPE")
 
 
+def device_get_format_version(udev_info):
+    """ Return a device's format version as reported by udev. """
+    return udev_info.get("ID_FS_VERSION")
+
+
 def device_get_uuid(udev_info):
     """ Get the UUID from the device's format as reported by udev.
 

@@ -20,6 +20,11 @@
 #            Martin Sivak <msivak@redhat.com>
 #
 
+import gi
+gi.require_version("BlockDev", "2.0")
+
+from gi.repository import BlockDev
+
 from ..size import Size
 from ..tasks import availability
 
@@ -28,3 +33,7 @@ MIN_CREATE_ENTROPY = 256  # bits
 SECTOR_SIZE = Size("512 B")
 
 EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_CRYPTO_PLUGIN]
+
+LUKS_VERSIONS = {"luks1": BlockDev.CryptoLUKSVersion.LUKS1,
+                 "luks2": BlockDev.CryptoLUKSVersion.LUKS2}
+DEFAULT_LUKS_VERSION = "luks1"
