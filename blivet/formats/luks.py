@@ -241,6 +241,12 @@ class LUKS(DeviceFormat):
         log.debug("unmapping %s", self.map_name)
         blockdev.crypto.luks_close(self.map_name)
 
+    def _pre_resize(self):
+        if self.luks_version == "luks2" and not self.has_key:
+            raise LUKSError("Passphrase or key needs to be set before resizing LUKS2 format.")
+
+        super(LUKS, self)._pre_resize()
+
     def _pre_create(self, **kwargs):
         super(LUKS, self)._pre_create(**kwargs)
         self.map_name = None
