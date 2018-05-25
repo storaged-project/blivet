@@ -310,7 +310,7 @@ def is_ppc(bits=None):
 
 def is_s390():
     """
-    :return: True if the hardware supports PPC, False otherwise.
+    :return: True if the hardware supports s390(x), False otherwise.
     :rtype: boolean
 
     """
