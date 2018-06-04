@@ -1,3 +1,4 @@
+import abc
 import copy
 import functools
 import itertools
@@ -6,6 +7,7 @@ import shutil
 import selinux
 import subprocess
 import re
+import six
 import sys
 import tempfile
 import uuid
@@ -13,6 +15,7 @@ from decimal import Decimal
 from contextlib import contextmanager
 from distutils import spawn
 
+from .errors import DependencyError
 from .size import Size
 
 import logging
@@ -485,3 +488,42 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
 def get_current_entropy():
     with open("/proc/sys/kernel/random/entropy_avail", "r") as fobj:
         return int(fobj.readline())
+
+
+class EvalMode(object):
+    onetime = 1
+    always = 2
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DependencyGuard(object):
+
+    error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
+
+    def __init__(self, exn_cls=DependencyError):
+        self._exn_cls = exn_cls
+        self._avail = None
+
+    def check_avail(self, onetime=False):
+        if self._avail is None or not onetime:
+            self._avail = self._check_avail()
+        return self._avail
+
+    @abc.abstractmethod
+    def _check_avail(self):
+        raise NotImplementedError()
+
+    def __call__(self, critical=False, eval_mode=EvalMode.always):
+        def decorator(fn):
+            @functools.wraps(fn)
+            def decorated(*args, **kwargs):
+                just_onetime = eval_mode == EvalMode.onetime
+                if self.check_avail(onetime=just_onetime):
+                    return fn(*args, **kwargs)
+                elif critical:
+                    raise self._exn_cls(self.error_msg)
+                else:
+                    log.warning("Failed to call the %s method: %s", fn.__name__, self.error_msg)
+                    return None
+            return decorated
+        return decorator
