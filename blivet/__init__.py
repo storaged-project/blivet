@@ -2158,7 +2158,8 @@ class Blivet(object):
                 else:
                     log.debug("%s / %s will be ignored - NVDIMM device is not allowed to be used",
                             ns_name, ns_info.blockdev)
-            ignored_blockdevs.add(ns_info.blockdev)
+            if ns_info.blockdev:
+                ignored_blockdevs.add(ns_info.blockdev)
 
         return ignored_blockdevs
 
