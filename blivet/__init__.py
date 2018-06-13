@@ -89,6 +89,7 @@ from . import udev
 from . import iscsi
 from . import fcoe
 from . import zfcp
+from . import nvdimm
 from . import util
 from . import arch
 from .flags import flags
@@ -353,6 +354,7 @@ class Blivet(object):
         self.iscsi = iscsi.iscsi()
         self.fcoe = fcoe.fcoe()
         self.zfcp = zfcp.ZFCP()
+        self.nvdimm = nvdimm.nvdimm()
 
         self._nextID = 0
         self._dumpFile = "%s/storage.state" % tempfile.gettempdir()

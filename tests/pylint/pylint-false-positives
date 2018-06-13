@@ -21,3 +21,5 @@
 ^dm.c: [[:digit:]]+: not running as root returning empty list$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value [[:alnum:] ]+ 'member_count' in [[:alnum:] ]+ call$
 ^tests/devicelibs_test/raid_test.py:[[:digit:]]+: \[E1120\(no\-value\-for\-parameter\), [[:alnum:]\.]+\] No value [[:alnum:] ]+ 'smallest_member_size' in [[:alnum:] ]+ call$
+^blivet/nvdimm.py:[[:digit:]]+: \[E0712\(catching\-non\-exception\), \] Catching an exception which doesn't inherit from BaseException: GError$
+^blivet/nvdimm.py:[[:digit:]]+: \[E0712\(catching\-non\-exception\), NVDIMMDependencyGuard._check_avail\] Catching an exception which doesn't inherit from BaseException: GError$

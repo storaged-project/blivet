@@ -32,6 +32,10 @@ from .flags import flags
 import pyudev
 global_udev = pyudev.Context()
 
+import gi
+gi.require_version("BlockDev", "2.0")
+from gi.repository import BlockDev as blockdev
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -817,3 +821,11 @@ def device_get_fcoe_identifier(info):
     if device_is_fcoe(info) and len(path_components) >= 4 and \
        path_components[2] == 'fc':
         return path_components[3]
+
+def device_is_nvdimm_namespace(info):
+    if info.get("DEVTYPE") != "disk":
+        return False
+
+    devname = info.get("DEVNAME", "")
+    ninfo = blockdev.nvdimm_namespace_get_devname(devname)
+    return ninfo is not None

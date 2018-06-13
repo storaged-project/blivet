@@ -220,3 +220,8 @@ class UnknownSourceDeviceError(StorageError):
 # factories
 class DeviceFactoryError(StorageError):
     pass
+
+# missing dependencies
+class DependencyError(StorageError):
+    """Raised when an external dependency is missing or not available"""
+    pass

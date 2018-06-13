@@ -22,7 +22,7 @@
 from .lib import get_device_majors, devicePathToName, deviceNameToDiskByPath, ParentList
 from .device import Device
 from .storage import StorageDevice
-from .disk import DiskDevice, DiskFile, DMRaidArrayDevice, MultipathDevice, iScsiDiskDevice, FcoeDiskDevice, DASDDevice, ZFCPDiskDevice
+from .disk import DiskDevice, DiskFile, DMRaidArrayDevice, MultipathDevice, iScsiDiskDevice, FcoeDiskDevice, DASDDevice, ZFCPDiskDevice, NVDIMMNamespaceDevice
 from .partition import PartitionDevice
 from .dm import DMDevice, DMLinearDevice, DMCryptDevice
 from .luks import LUKSDevice
