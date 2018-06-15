@@ -149,7 +149,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
 
     def _clean_up(self):
         # reload all libblockdev plugins
-        blockdev.try_reinit(require_plugins=None, reload=False)
+        self.load_all_plugins()
 
         for disk in self.bvt.disks:
             self.bvt.recursive_remove(disk)
