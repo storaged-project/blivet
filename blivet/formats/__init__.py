@@ -22,6 +22,7 @@
 
 import os
 
+from .. import udev
 from ..util import notify_kernel
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
@@ -404,6 +405,7 @@ class DeviceFormat(ObjectID):
             msg = "error wiping old signatures from %s: %s" % (self.device, err)
             raise FormatDestroyError(msg)
 
+        udev.settle()
         self.exists = False
 
     def setup(self, **kwargs):
