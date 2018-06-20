@@ -69,7 +69,7 @@ except ImportError:
 
 import parted
 
-from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE
+from pykickstart.constants import AUTOPART_TYPE_LVM, CLEARPART_TYPE_ALL, CLEARPART_TYPE_LINUX, CLEARPART_TYPE_LIST, CLEARPART_TYPE_NONE, NVDIMM_ACTION_USE, NVDIMM_ACTION_RECONFIGURE
 
 from .storage_log import log_exception_info, log_method_call
 from .errors import DeviceError, DirtyFSError, FSResizeError, FSTabTypeMismatchError, UnknownSourceDeviceError, StorageError, UnrecognizedFSTabEntryError
@@ -97,6 +97,10 @@ from .platform import platform as _platform
 from .platform import EFI
 from .size import Size
 from .i18n import _
+
+import gi
+gi.require_version("BlockDev", "2.0")
+from gi.repository import BlockDev as blockdev
 
 import shelve
 import contextlib
@@ -475,6 +479,16 @@ class Blivet(object):
             for device in self.devices:
                 if device.format.type == "luks" and device.format.exists:
                     self.__luksDevs[device.format.uuid] = device.format._LUKS__passphrase
+
+            if self.ksdata:
+                nvdimm_ksdata = self.ksdata.nvdimm
+            else:
+                nvdimm_ksdata = None
+            ignored_nvdimm_devs = self.getIgnoredNvdimmBlockdevs(nvdimm_ksdata)
+            if ignored_nvdimm_devs:
+                log.debug("adding %s to ignored disks - these NVDIMM devices are not allowed to be used",
+                            ",".join(ignored_nvdimm_devs))
+                self.ksdata.ignoredisk.ignoredisk.extend(ignored_nvdimm_devs)
 
         if self.ksdata:
             self.config.update(self.ksdata)
@@ -2106,6 +2120,50 @@ class Blivet(object):
         """
 
         self.fsset.setFstabSwaps(devices)
+
+    def getIgnoredNvdimmBlockdevs(self, nvdimm_ksdata):
+        """Return names of nvdimm devices to be ignored.
+
+        By default nvdimm devices are ignored. To become available for installation,
+        the device(s) must be specified by nvdimm kickstart command.
+        Also, only devices in sector mode are allowed.
+
+        :param nvdimm_ksdata: nvdimm kickstart data
+        :type nvdimm_ksdata: Nvdimm kickstart command
+        :returns: names of nvdimm block devices that should be ignored for installation
+        :rtype: set(str)
+        """
+
+        ks_allowed_namespaces = set()
+        ks_allowed_blockdevs = set()
+        if nvdimm_ksdata:
+            # Gather allowed blockdev names and namespaces
+            for action in nvdimm_ksdata.actionList:
+                if action.action == NVDIMM_ACTION_USE:
+                    if action.namespace:
+                        ks_allowed_namespaces.add(action.namespace)
+                    if action.blockdevs:
+                        ks_allowed_blockdevs.update(action.blockdevs)
+                if action.action == NVDIMM_ACTION_RECONFIGURE:
+                    ks_allowed_namespaces.add(action.namespace)
+
+        ignored_blockdevs = set()
+        namespaces = self.nvdimm.namespaces.items()
+        for ns_name, ns_info in namespaces:
+            if ns_info.mode != blockdev.NVDIMMNamespaceMode.SECTOR:
+                log.debug("%s / %s will be ignored - NVDIMM device is not in sector mode",
+                        ns_name, ns_info.blockdev)
+            else:
+                if ns_name in ks_allowed_namespaces or \
+                        ns_info.blockdev in ks_allowed_blockdevs:
+                    continue
+                else:
+                    log.debug("%s / %s will be ignored - NVDIMM device is not allowed to be used",
+                            ns_name, ns_info.blockdev)
+            if ns_info.blockdev:
+                ignored_blockdevs.add(ns_info.blockdev)
+
+        return ignored_blockdevs
 
 def mountExistingSystem(fsset, rootDevice,
                         allowDirty=None, dirtyCB=None,
