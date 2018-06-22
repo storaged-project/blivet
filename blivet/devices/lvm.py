@@ -184,14 +184,24 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.status:
                 return True
 
+        # special handling for incomplete VGs
+        if not self.complete:
+            try:
+                lvs_info = lvm.lvs(vg_name=self.name)
+            except lvm.LVMError:
+                lvs_info = dict()
+
+            for lv_info in lvs_info.values():
+                lv_attr = udev.device_get_lv_attr(lv_info)
+                if lv_attr and lv_attr[4] == 'a':
+                    return True
+
+            return False
+
         # if any of our PVs are not active then we cannot be
         for pv in self.pvs:
             if not pv.status:
                 return False
-
-        # if we are missing some of our PVs we cannot be active
-        if not self.complete:
-            return False
 
         return True
 
