@@ -28,6 +28,7 @@ from ..errors import LVMError, PhysicalVolumeError
 from ..devicelibs import lvm
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
+from .. import udev
 
 import logging
 log = logging.getLogger("blivet")
@@ -133,6 +134,7 @@ class LVMPhysicalVolume(DeviceFormat):
         except Exception:
             raise
         finally:
+            udev.settle()
             lvm.pvscan(self.device)
 
         self.exists = True
@@ -158,6 +160,7 @@ class LVMPhysicalVolume(DeviceFormat):
         except LVMError:
             DeviceFormat.destroy(self, **kwargs)
         finally:
+            udev.settle()
             lvm.pvscan(self.device)
 
         self.exists = False
