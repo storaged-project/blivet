@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.69
+Version: 0.61.15.70
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -67,6 +67,29 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Fri Jun 22 2018 David Lehman <dlehman@redhat.com> - 0.61.15.70-1
+- Deactivate incomplete VGs along with everything else. (dlehman)
+  Resolves: rhbz#1554224
+- Work around udev timing issues. (dlehman)
+  Resolves: rhbz#1592253
+  Resolves: rhbz#1592191
+- nvdimm: don't crash on non-block devices (rvykydal)
+  Related: rhbz#1280500
+- Add NVDIMM detection to "addUdevDiskDevice" (vtrefny)
+  Related: rhbz#1558942
+- Add 'NVDIMMNamespaceDevice' device representing NVDIMM namespaces (vtrefny)
+  Related: rhbz#1558942
+- Add a function for identifying NVDIMM namespaces (vtrefny)
+  Related: rhbz#1558942
+- Add a singleton for NVDIMM namespaces management (vtrefny)
+  Resolves: rhbz#1558942
+- Backport DependencyGuard from master (vtrefny)
+  Related: rhbz#1558942
+- Ignore nvdimm devices unless configured in kickstart (rvykydal)
+  Related: rhbz#1280500
+- Do not ignore nvdimm (pmemX) devices (rvykydal)
+  Related: rhbz#1280500
+
 * Wed Feb 21 2018 David Lehman <dlehman@redhat.com> - 0.61.15.69-1
 - Fix accounting for metadata when growing lvm. (dlehman)
 
