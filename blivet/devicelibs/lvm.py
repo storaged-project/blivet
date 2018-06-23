@@ -163,15 +163,15 @@ def determine_parent_lv(internal_lv, lvs, lv_info):
         if info:
             # cache pools are internal LVs of cached LVs
             pool_name = info.pool_lv
-            if pool_name and pool_name == internal_lv.lvname:
+            if pool_name and pool_name.strip("[]") == internal_lv.lvname:
                 return lv
 
             # pools have internal data and metadata LVs
             data_lv_name = info.data_lv
-            if data_lv_name and data_lv_name == internal_lv.lvname:
+            if data_lv_name and data_lv_name.strip("[]") == internal_lv.lvname:
                 return lv
             metadata_lv_name = info.metadata_lv
-            if metadata_lv_name and metadata_lv_name == internal_lv.lvname:
+            if metadata_lv_name and metadata_lv_name.strip("[]") == internal_lv.lvname:
                 return lv
 
         # try name matching
