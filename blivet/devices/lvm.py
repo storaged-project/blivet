@@ -728,11 +728,24 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             return None
 
     @property
-    def _num_raid_pvs(self):
+    def num_raid_pvs(self):
         if self.exists:
-            image_lvs = [int_lv for int_lv in self._internal_lvs
-                         if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.image]
-            return len(image_lvs) or 1
+            if self.cached:
+                # for a cached LV we are interested in the number of image LVs of its
+                # origin LV (the original non-cached LV)
+                for lv in self._internal_lvs:
+                    if lv.int_lv_type == LVMInternalLVtype.origin:
+                        return lv.num_raid_pvs
+
+                # this should never be reached, every existing cached LV should
+                # have an origin internal LV
+                log.warning("An existing cached LV '%s' has no internal LV of type origin",
+                            self.name)
+                return 1
+            else:
+                image_lvs = [int_lv for int_lv in self._internal_lvs
+                             if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.image]
+                return len(image_lvs) or 1
         else:
             return len(self._pv_specs)
 
@@ -788,8 +801,8 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         if self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
             try:
-                raided_size = self.raid_level.get_space(rounded_size, self._num_raid_pvs,
-                                                         superblock_size_func=zero_superblock)
+                raided_size = self.raid_level.get_space(rounded_size, self.num_raid_pvs,
+                                                        superblock_size_func=zero_superblock)
                 return raided_size + cache_size
             except errors.RaidError:
                 # Too few PVs for the segment type (RAID level), we must have

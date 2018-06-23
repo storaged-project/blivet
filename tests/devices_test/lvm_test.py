@@ -221,7 +221,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(lv.size, Size("508 MiB"))
         self.assertEqual(lv._raid_level, raid.RAID1)
         self.assertTrue(lv.is_raid_lv)
-        self.assertEqual(lv._num_raid_pvs, 2)
+        self.assertEqual(lv.num_raid_pvs, 2)
 
     def test_lvm_logical_volume_mirror(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -239,7 +239,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(lv.size, Size("508 MiB"))
         self.assertEqual(lv._raid_level, raid.RAID1)
         self.assertTrue(lv.is_raid_lv)
-        self.assertEqual(lv._num_raid_pvs, 2)
+        self.assertEqual(lv.num_raid_pvs, 2)
 
     def test_lvm_logical_volume_insuf_seg_type(self):
         # pylint: disable=unused-variable
