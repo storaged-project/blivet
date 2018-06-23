@@ -787,15 +787,25 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def data_vg_space_used(self):
         """ Space occupied by the data part of this LV, not including snapshots """
+        if self.exists and self._internal_lvs:
+            image_lvs_sum = Size(0)
+            complex_int_lvs = []
+            for lv in self._internal_lvs:
+                if lv.int_lv_type == LVMInternalLVtype.image:
+                    # image LV (RAID leg)
+                    image_lvs_sum += lv.vg_space_used
+                elif lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log):
+                    # metadata LVs
+                    continue
+                else:
+                    complex_int_lvs.append(lv)
+
+            return image_lvs_sum + sum(lv.data_vg_space_used for lv in complex_int_lvs)
+
         if self.cached:
             cache_size = self.cache.size
         else:
             cache_size = Size(0)
-
-        int_data_lvs = [lv for lv in self._internal_lvs
-                        if lv.int_lv_type in (LVMInternalLVtype.data, LVMInternalLVtype.image)]
-        if self.exists and int_data_lvs:
-            return sum(lv.vg_space_used for lv in int_data_lvs) + cache_size
 
         rounded_size = self.vg.align(self.size, roundup=True)
         if self.is_raid_lv:
@@ -817,10 +827,20 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def metadata_vg_space_used(self):
         """ Space occupied by the metadata part(s) of this LV, not including snapshots """
-        if self.exists:
-            return sum((lv.vg_space_used for lv in self._internal_lvs
-                        if lv.is_internal_lv and lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log)),
-                       Size(0))
+        if self.exists and self._internal_lvs:
+            meta_lvs_sum = Size(0)
+            complex_int_lvs = []
+            for lv in self._internal_lvs:
+                if lv.int_lv_type == LVMInternalLVtype.image:
+                    # image LV (RAID leg)
+                    continue
+                elif lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log):
+                    # metadata LVs
+                    meta_lvs_sum += lv.vg_space_used
+                else:
+                    complex_int_lvs.append(lv)
+
+            return meta_lvs_sum + sum(lv.metadata_vg_space_used for lv in complex_int_lvs)
 
         # otherwise we need to do the calculations
         if self.cached:
