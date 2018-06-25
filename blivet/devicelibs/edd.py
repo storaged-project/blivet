@@ -420,8 +420,8 @@ class EddMatcher(object):
 
         answers = []
         for path in pattern.glob():
-            emptyslash = util.Path("/", self.root)
-            path = util.Path(path, self.root)
+            emptyslash = util.Path("/", root=self.root)
+            path = util.Path(path, root=self.root)
             link = util.sysfs_readlink(path=emptyslash, link=path)
             testdata_log.debug("sysfs link: \"%s\" -> \"%s\"", path, link)
             # just add /sys/block/ at the beginning so it's always valid
@@ -524,7 +524,7 @@ class EddMatcher(object):
             'dev': self.edd.scsi_id,
             'lun': self.edd.scsi_lun,
         }
-        pattern = util.Path(tmpl % args, self.root + "/sys/block/")
+        pattern = util.Path(tmpl % args, root=self.root + "/sys/block/")
         answers = []
         for mp in pattern.glob():
             # Normal VirtIO devices just have the block link right there...

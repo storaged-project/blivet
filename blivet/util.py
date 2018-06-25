@@ -49,7 +49,8 @@ class Path(str):
     _root = None
     _path = None
 
-    def __new__(cls, path, root=None, *args, **kwds):
+    def __new__(cls, path, *args, **kwds):
+        root = kwds.pop("root", None)
         obj = str.__new__(cls, path, *args, **kwds)
         obj._path = path
         obj._root = None
@@ -152,7 +153,7 @@ class Path(str):
             log.error("^^ Somehow \"None\" got logged and that's never right.")
         for g in glob.glob(self.ondisk):
             testdata_log.debug("glob match: %s", g)
-            yield Path(g, self.root)
+            yield Path(g, root=self.root)
 
     def __hash__(self):
         return self._path.__hash__()
