@@ -317,6 +317,8 @@ class DeviceFactory(object):
             :type min_luks_entropy: int
             :keyword luks_version: luks format version ("luks1" or "luks2")
             :type luks_version: str
+            :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
+            :type pbkdf_args: :class:`~.formats.luks.LUKS2PBKDFArgs`
 
         """
         self.storage = storage  # a Blivet instance
@@ -332,6 +334,7 @@ class DeviceFactory(object):
         self.fstype = None  # not included in default_settings b/c of special handling below
         self.min_luks_entropy = kwargs.get("min_luks_entropy") or luks_data.min_entropy
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
+        self.pbkdf_args = kwargs.get("pbkdf_args", None)
 
         # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
@@ -679,6 +682,7 @@ class DeviceFactory(object):
             mountpoint = None
             fmt_args["min_luks_entropy"] = self.min_luks_entropy
             fmt_args["luks_version"] = self.luks_version
+            fmt_args["pbkdf_args"] = self.pbkdf_args
         else:
             fstype = self.fstype
             mountpoint = self.mountpoint
@@ -817,7 +821,8 @@ class DeviceFactory(object):
             leaf_format = self.device.format
             self.storage.format_device(self.device, get_format("luks",
                                                                min_luks_entropy=self.min_luks_entropy,
-                                                               luks_version=self.luks_version))
+                                                               luks_version=self.luks_version,
+                                                               pbkdf_args=self.pbkdf_args))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -1153,7 +1158,8 @@ class PartitionSetFactory(PartitionFactory):
                 members.remove(member)
                 self.storage.format_device(member, get_format("luks",
                                                               min_luks_entropy=self.min_luks_entropy,
-                                                              luks_version=self.luks_version))
+                                                              luks_version=self.luks_version,
+                                                              pbkdf_args=self.pbkdf_args))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
@@ -1186,6 +1192,7 @@ class PartitionSetFactory(PartitionFactory):
             if self.encrypted:
                 member_format = "luks"
                 fmt_args["luks_version"] = self.luks_version
+                fmt_args["pbkdf_args"] = self.pbkdf_args
             else:
                 member_format = self.fstype
 

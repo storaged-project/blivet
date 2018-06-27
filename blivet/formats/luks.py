@@ -40,6 +40,16 @@ import logging
 log = logging.getLogger("blivet")
 
 
+class LUKS2PBKDFArgs(object):
+    """ PBKDF arguments for LUKS 2 format """
+
+    def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0):  # pylint: disable=redefined-builtin
+        self.type = type
+        self.max_memory_kb = max_memory_kb
+        self.iterations = iterations
+        self.time_ms = time_ms
+
+
 class LUKS(DeviceFormat):
 
     """ LUKS """
@@ -82,6 +92,9 @@ class LUKS(DeviceFormat):
             :type min_luks_entropy: int
             :keyword luks_version: luks format version ("luks1" or "luks2")
             :type luks_version: str
+            :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
+                                 (for non-existent format only)
+            :type pbkdf_args: :class:`LUKS2PBKDFArgs`
 
             .. note::
 
@@ -134,6 +147,15 @@ class LUKS(DeviceFormat):
                 self.options = "discard"
             elif "discard" not in self.options:
                 self.options += ",discard"
+
+        self.pbkdf_args = kwargs.get("pbkdf_args")
+        if self.pbkdf_args:
+            if self.luks_version != "luks2":
+                raise ValueError("PBKDF arguments are valid only for LUKS version 2.")
+            if self.pbkdf_args.time_ms and self.pbkdf_args.iterations:
+                log.warning("Both iterations and time_ms specified for PBKDF, number of iterations will be ignored.")
+            if self.pbkdf_args.type == "pbkdf2" and self.pbkdf_args.max_memory_kb:
+                log.warning("Memory limit is not used for pbkdf2 and it will be ignored.")
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -257,13 +279,25 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         super(LUKS, self)._create(**kwargs)  # set up the event sync
+
+        if self.pbkdf_args:
+            pbkdf = blockdev.CryptoLUKSPBKDF(type=self.pbkdf_args.type,
+                                             hash=None,
+                                             max_memory_kb=self.pbkdf_args.max_memory_kb,
+                                             iterations=self.pbkdf_args.iterations,
+                                             time_ms=self.pbkdf_args.time_ms)
+            extra = blockdev.CryptoLUKSExtra(pbkdf=pbkdf)
+        else:
+            extra = None
+
         blockdev.crypto.luks_format(self.device,
                                     passphrase=self.__passphrase,
                                     key_file=self._key_file,
                                     cipher=self.cipher,
                                     key_size=self.key_size,
                                     min_entropy=self.min_luks_entropy,
-                                    luks_version=crypto.LUKS_VERSIONS[self.luks_version])
+                                    luks_version=crypto.LUKS_VERSIONS[self.luks_version],
+                                    extra=extra)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
