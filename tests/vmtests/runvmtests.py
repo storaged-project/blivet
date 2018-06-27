@@ -45,12 +45,12 @@ def virtual_machine(cmd_args):
     try:
         conn = libvirt.openAuth(cmd_args.connection, auth, 0)
     except libvirt.libvirtError as e:
-        raise RuntimeError("Failed to open connection:\n%s", str(e))
+        raise RuntimeError("Failed to open connection:\n%s" % str(e))
 
     try:
         dom = conn.lookupByName(cmd_args.name)
     except libvirt.libvirtError:
-        raise RuntimeError("Virtual machine %s not found", cmd_args.name)
+        raise RuntimeError("Virtual machine %s not found" % cmd_args.name)
 
     snapshots = dom.snapshotListNames()
     if SNAP_NAME in snapshots:
@@ -58,13 +58,13 @@ def virtual_machine(cmd_args):
             snap = dom.snapshotLookupByName(SNAP_NAME)
             snap.delete()
         except libvirt.libvirtError as e:
-            raise RuntimeError("Failed to delete snapshot:\n %s", str(e))
+            raise RuntimeError("Failed to delete snapshot:\n %s" % str(e))
 
     # start the VM
     try:
         dom.create()
     except libvirt.libvirtError as e:
-        raise RuntimeError("Failed to start virtual machine:%s", str(e))
+        raise RuntimeError("Failed to start virtual machine:%s" % str(e))
 
     # wait for virtual machine to boot and create snapshot
     time.sleep(120)
@@ -73,7 +73,7 @@ def virtual_machine(cmd_args):
             snap_xml = "<domainsnapshot><name>%s</name></domainsnapshot>" % SNAP_NAME
             dom.snapshotCreateXML(snap_xml)
         except libvirt.libvirtError as e:
-            raise RuntimeError("Failed to create snapshot:\n%s.", str(e))
+            raise RuntimeError("Failed to create snapshot:\n%s." % str(e))
 
     yield dom
 
@@ -81,14 +81,14 @@ def virtual_machine(cmd_args):
     try:
         dom.destroy()
     except libvirt.libvirtError as e:
-        raise RuntimeError("Failed to stop virtual machine:%s", str(e))
+        raise RuntimeError("Failed to stop virtual machine:%s" % str(e))
 
     # remove the snapshot
     try:
         snap = dom.snapshotLookupByName(SNAP_NAME)
         snap.delete()
     except libvirt.libvirtError as e:
-        raise RuntimeError("Failed to delete snapshot:\n %s", str(e))
+        raise RuntimeError("Failed to delete snapshot:\n %s" % str(e))
 
 
 @contextmanager
@@ -161,7 +161,7 @@ def run_tests(cmd_args):
                 snap = virt.snapshotLookupByName(SNAP_NAME)
                 virt.revertToSnapshot(snap)
             except libvirt.libvirtError as e:
-                raise RuntimeError("Failed to revert to snapshot:\n %s", str(e))
+                raise RuntimeError("Failed to revert to snapshot:\n %s" % str(e))
 
     # print combined result of all tests
     print("======================================================================")
