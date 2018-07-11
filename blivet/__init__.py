@@ -63,11 +63,16 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 if arch.is_s390():
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvdimm"))
+    _REQUESTED_PLUGIN_NAMES = set(("btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvdimm"))
 else:
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm"))
+    _REQUESTED_PLUGIN_NAMES = set(("btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm"))
 
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
+# XXX force non-dbus LVM plugin
+lvm_plugin = blockdev.PluginSpec()
+lvm_plugin.name = blockdev.Plugin.LVM
+lvm_plugin.so_name = "libbd_lvm.so.2"
+_requested_plugins.append(lvm_plugin)
 try:
     # do not check for dependencies during libblockdev initializtion, do runtime
     # checks instead
