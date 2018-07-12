@@ -62,9 +62,23 @@ class ExternalResource(object):
             :returns: [] if the resource is available
             :rtype: list of str
         """
-        if self._availability_errors is None or not CACHE_AVAILABILITY:
-            self._availability_errors = self._method.availability_errors(self)
-        return self._availability_errors[:]
+        _errors = list()
+
+        # Prepare error cache and return value based on current caching setting.
+        if CACHE_AVAILABILITY:
+            _errors = self._availability_errors
+        else:
+            self._availability_errors = None
+
+        # Check for errors if necessary.
+        if self._availability_errors is None:
+            _errors = self._method.availability_errors(self)
+
+        # Update error cache if necessary.
+        if CACHE_AVAILABILITY and self._availability_errors is None:
+            self._availability_errors = _errors[:]
+
+        return _errors
 
     @property
     def available(self):
