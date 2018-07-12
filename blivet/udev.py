@@ -377,7 +377,11 @@ def device_get_serial(udev_info):
 
 
 def device_get_wwn(udev_info):
-    return udev_info.get("ID_WWN")
+    """ Return the WWID as reported by udev without '0x' prefix. """
+    wwn = udev_info.get("ID_WWN_WITH_EXTENSION")
+    if wwn:
+        wwn = wwn[2:]  # strip off the leading '0x'
+    return wwn
 
 
 def device_get_vendor(udev_info):

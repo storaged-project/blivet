@@ -68,7 +68,8 @@ class DMRaidFormatPopulator(FormatPopulator):
                 # Activate the Raid set.
                 blockdev.dm.activate_raid_set(rs_name)
                 dm_array = DMRaidArrayDevice(rs_name,
-                                             parents=[self.device])
+                                             parents=[self.device],
+                                             wwn=self.device.wwn)
 
                 self._devicetree._add_device(dm_array)
 
