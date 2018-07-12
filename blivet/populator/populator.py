@@ -410,8 +410,6 @@ class PopulatorMixin(object):
         parted.register_exn_handler(parted_exn_handler)
         try:
             self._populate()
-        except Exception:
-            raise
         finally:
             parted.clear_exn_handler()
             self._hide_ignored_disks()

@@ -96,7 +96,7 @@ class LUKS(DeviceFormat):
         self._resize = self._resize_class(self)
 
         self.cipher = kwargs.get("cipher")
-        self.key_size = kwargs.get("key_size")
+        self.key_size = kwargs.get("key_size") or 0
         self.map_name = kwargs.get("name")
 
         if not self.exists and not self.cipher:

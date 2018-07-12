@@ -606,7 +606,7 @@ def do_partitioning(storage, boot_disk=None):
     try:
         allocate_partitions(storage, disks, partitions, free, boot_disk=boot_disk)
         grow_partitions(disks, partitions, free, size_sets=storage.size_sets)
-    except Exception:
+    except Exception:  # pylint: disable=try-except-raise
         raise
     else:
         # Mark all growable requests as no longer growable.

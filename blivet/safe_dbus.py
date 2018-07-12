@@ -94,7 +94,7 @@ def get_new_session_connection():
             Gio.DBusConnectionFlags.MESSAGE_BUS_CONNECTION,
             None, None)
     except GLib.GError as gerr:
-        raise DBusCallError("Unable to connect to session bus: %s", gerr)
+        raise DBusCallError("Unable to connect to session bus: %s" % gerr)
     finally:
         if old_euid is not None:
             os.seteuid(old_euid)
@@ -136,7 +136,7 @@ def call_sync(service, obj_path, iface, method, args,
         try:
             connection = get_new_system_connection()
         except GLib.GError as gerr:
-            raise DBusCallError("Unable to connect to system bus: %s", gerr)
+            raise DBusCallError("Unable to connect to system bus: %s" % gerr)
 
     if connection.is_closed():
         raise DBusCallError("Connection is closed")
@@ -151,8 +151,10 @@ def call_sync(service, obj_path, iface, method, args,
         raise DBusCallError(msg)
 
     if ret is None:
-        ret = ret.unpack()
-    return ret
+        msg = "No return from %s method on %s with %s arguments" % (method, obj_path, args)
+        raise DBusCallError(msg)
+
+    return ret.unpack()
 
 
 def get_property_sync(service, obj_path, iface, prop_name,
@@ -192,7 +194,7 @@ def get_property_sync(service, obj_path, iface, prop_name,
 
 def check_object_available(service, obj_path, iface=None):
     intro_data = call_sync(service, obj_path, DBUS_INTRO_IFACE, "Introspect", None)
-    node_info = Gio.DBusNodeInfo.new_for_xml(intro_data.unpack()[0])
+    node_info = Gio.DBusNodeInfo.new_for_xml(intro_data[0])
     if not iface:
         # just check if any interface is available (there are none for
         # non-existing objects)

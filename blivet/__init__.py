@@ -25,6 +25,7 @@ __version__ = '2.0.2'
 import sys
 import importlib
 import warnings
+import syslog
 
 from . import util, arch
 
@@ -40,8 +41,19 @@ warnings.simplefilter('module', DeprecationWarning)
 # Enable logging of python warnings.
 logging.captureWarnings(True)
 
-# XXX: respect the level? Need to translate between C and Python log levels.
-log_bd_message = lambda level, msg: program_log.info(msg)
+# "translation" between syslog log levels (used by libblockdev) and python log levels
+LOG_LEVELS = {syslog.LOG_EMERG: logging.CRITICAL, syslog.LOG_ALERT: logging.CRITICAL,
+              syslog.LOG_CRIT: logging.CRITICAL, syslog.LOG_ERR: logging.ERROR,
+              syslog.LOG_WARNING: logging.WARNING, syslog.LOG_NOTICE: logging.INFO,
+              syslog.LOG_INFO: logging.INFO, syslog.LOG_DEBUG: logging.DEBUG}
+
+
+def log_bd_message(level, msg):
+    # only log <= info for libblockdev, debug contains debug messages
+    # from cryptsetup and we don't want to put these into program.log
+    if level <= syslog.LOG_INFO and level in LOG_LEVELS.keys():
+        program_log.log(LOG_LEVELS[level], msg)
+
 
 import gi
 gi.require_version("GLib", "2.0")
@@ -51,9 +63,9 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 if arch.is_s390():
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390"))
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvdimm"))
 else:
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm"))
 
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 try:
