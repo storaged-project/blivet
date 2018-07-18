@@ -2134,6 +2134,10 @@ class Blivet(object):
         :rtype: set(str)
         """
 
+        if not self.nvdimm.nvdimm_plugin_available:
+            log.debug("NVDIMM is not supported, all NVDIMM devices are ignored via a udev blacklist")
+            return set()
+
         ks_allowed_namespaces = set()
         ks_allowed_blockdevs = set()
         if nvdimm_ksdata:

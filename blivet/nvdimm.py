@@ -23,6 +23,7 @@ gi.require_version("GLib", "2.0")
 from gi.repository import BlockDev
 from gi.repository import GLib
 
+from . import arch
 from . import util
 
 import logging
@@ -33,21 +34,23 @@ program_log = logging.getLogger("program")
 log_bd_message = lambda level, msg: program_log.info(msg)
 
 
-_REQUESTED_PLUGINS = BlockDev.plugin_specs_from_names(("nvdimm",))
 _HAVE_NVDIMM = False
 
-try:
-    # do not check for dependencies during libblockdev initializtion, do runtime
-    # checks instead
-    BlockDev.switch_init_checks(False)
-    succ_, avail_plugs = BlockDev.try_reinit(require_plugins=_REQUESTED_PLUGINS,
-                                             reload=False,
-                                             log_func=log_bd_message)
-except GLib.GError as err:
-    log.error("Failed to intialize the libblockdev library: %s", err)
-    _HAVE_NVDIMM = False
-else:
-    _HAVE_NVDIMM = "nvdimm" in avail_plugs
+# do not try to load nvdimm plugin on other architectures than x86_64
+# nvdimm (both hardware and plugin) is not availble on other architectures
+if arch.isX86(bits=64):
+    _REQUESTED_PLUGINS = BlockDev.plugin_specs_from_names(("nvdimm",))
+    try:
+        # do not check for dependencies during libblockdev initializtion, do runtime
+        # checks instead
+        BlockDev.switch_init_checks(False)
+        succ_, avail_plugs = BlockDev.try_reinit(require_plugins=_REQUESTED_PLUGINS,
+                                                 reload=False,
+                                                 log_func=log_bd_message)
+    except GLib.GError as err:
+        log.error("Failed to intialize the libblockdev library: %s", err)
+    else:
+        _HAVE_NVDIMM = "nvdimm" in avail_plugs
 
 
 class NVDIMMDependencyGuard(util.DependencyGuard):
@@ -77,7 +80,7 @@ class NVDIMM(object):
             just returns ``self`` with no copy being created.
     """
 
-    nvdimm_plugin_available = False
+    nvdimm_plugin_available = _HAVE_NVDIMM
 
     def __init__(self):
         self._namespaces = None
