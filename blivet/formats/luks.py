@@ -352,6 +352,15 @@ class LUKS(DeviceFormat):
                                       directory, backup_passphrase)
         log.debug("escrow: escrow_volume done for %s", repr(self.device))
 
+    def populate_ksdata(self, data):
+        super(LUKS, self).populate_ksdata(data)
+        data.luks_version = self.luks_version
+
+        if self.pbkdf_args:
+            data.pbkdf = self.pbkdf_args.type
+            data.pbkdf_memory = self.pbkdf_args.max_memory_kb
+            data.pbkdf_iterations = self.pbkdf_args.iterations
+            data.pbkdf_time = self.pbkdf_args.time_ms
 
 register_device_format(LUKS)
 
