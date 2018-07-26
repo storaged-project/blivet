@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.70
+Version: 0.61.15.71
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -66,6 +66,14 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Thu Jul 26 2018 David Lehman <dlehman@redhat.com> - 0.61.15.71-1
+- Remove dependency on libblockdev-nvdimm (vtrefny)
+  Resolves: rhbz#1601557
+- Do not try to load NVDIMM plugin on non-x86_64 architectures (vtrefny)
+  Related: rhbz#1601557
+- Add version to the LUKS format (vtrefny)
+  Resolves: rhbz#1607830
+
 * Fri Jun 22 2018 David Lehman <dlehman@redhat.com> - 0.61.15.70-1
 - Deactivate incomplete VGs along with everything else. (dlehman)
   Resolves: rhbz#1554224

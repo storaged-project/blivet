@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-22 08:43-0400\n"
+"POT-Creation-Date: 2018-07-26 11:38-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,16 +21,16 @@ msgstr ""
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3141
+#: ../blivet/__init__.py:3145
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3146
+#: ../blivet/__init__.py:3150
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3148
+#: ../blivet/__init__.py:3152
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -588,12 +588,16 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
+#: ../blivet/formats/lvmpv.py:40
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:148
 msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -615,10 +619,6 @@ msgstr ""
 
 #: ../blivet/formats/luks.py:47
 msgid "Encrypted"
-msgstr ""
-
-#: ../blivet/formats/lvmpv.py:40
-msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/formats/mdraid.py:40
