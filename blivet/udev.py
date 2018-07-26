@@ -28,6 +28,7 @@ import subprocess
 from . import util
 from .size import Size
 from .flags import flags
+from .nvdimm import nvdimm
 
 import pyudev
 global_udev = pyudev.Context()
@@ -39,8 +40,11 @@ from gi.repository import BlockDev as blockdev
 import logging
 log = logging.getLogger("blivet")
 
-INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram', r'ndblk')
+INSTALLER_BLACKLIST = [r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram', r'ndblk']
 """ device name regexes to ignore when flags.installer_mode is True """
+# we don't have NVDIMM plugin, just ignore all pmem devices too
+if not nvdimm.nvdimm_plugin_available:
+    INSTALLER_BLACKLIST.append(r'^pmem')
 
 def get_device(sysfs_path):
     try:
@@ -831,5 +835,11 @@ def device_is_nvdimm_namespace(info):
         return False
 
     devname = info.get("DEVNAME", "")
+
+    # we don't have NVDIMM plugin, just return false
+    if not nvdimm.nvdimm_plugin_available:
+        return False
+
     ninfo = blockdev.nvdimm_namespace_get_devname(devname)
+
     return ninfo is not None
