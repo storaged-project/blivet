@@ -1010,7 +1010,7 @@ class LVMInternalLVtype(Enum):
         attr_letters = {cls.data: ("T", "C"),
                         cls.meta: ("e",),
                         cls.log: ("l", "L"),
-                        cls.image: ("i",),
+                        cls.image: ("i", "I"),
                         cls.origin: ("o",),
                         cls.cache_pool: ("C",)}
 
