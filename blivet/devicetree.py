@@ -1931,6 +1931,7 @@ class DeviceTree(object):
         if format_type == "crypto_LUKS":
             # luks/dmcrypt
             kwargs["name"] = "luks-%s" % uuid
+            kwargs["luks_version"] = "luks%s" % udev.device_get_format_version(info)
         elif format_type in formats.mdraid.MDRaidMember._udevTypes:
             # mdraid
             # reset the uuid to the member-specific value

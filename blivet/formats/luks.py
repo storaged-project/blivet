@@ -101,6 +101,7 @@ class LUKS(DeviceFormat):
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
         self.min_luks_entropy = kwargs.get("min_luks_entropy", 0)
+        self.luks_version = kwargs.get("luks_version", "luks1")
 
         if self.min_luks_entropy < 0:
             msg = "Invalid value for minimum required entropy: %s" % self.min_luks_entropy
@@ -355,4 +356,3 @@ class LUKS(DeviceFormat):
 
 
 register_device_format(LUKS)
-
