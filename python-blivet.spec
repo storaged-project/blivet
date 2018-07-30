@@ -21,7 +21,7 @@ Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
 Version: 3.1.0
 
-%global prerelease .b1
+%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
 Release: 0.1%{?prerelease}%{?dist}
 Epoch: 1
@@ -190,6 +190,30 @@ configuration.
 %endif
 
 %changelog
+* Mon Jul 30 2018 David Lehman <dlehman@redhat.com> - 3.1.0-0.1.b2
+- Do not ignore "Image out-of-sync" internal LVs (vtrefny)
+- Fixed error message when slave is missing (japokorn)
+- Ensure WWNs are set for multipath and dmraid. (dlehman)
+- Use ID_WWN_WITH_EXTENSION for WWNs. (dlehman)
+- Ignore pylint error "bad-option-value" for new pylint errors (vtrefny)
+- Fix errors found by new pylint 2.0.0 (vtrefny)
+- Fix caching logic in ExternalResource. (dlehman)
+- Use DiskFile to allow testing missing dependencies as non-root. (dlehman)
+- Restore availability caching after disabling for tests. (dlehman)
+- Preserve original blockdev plugin list in test cleanup. (dlehman)
+- Fix positional/key-word arguments in util.Path (vtrefny)
+- fix doc for is_s390() (dan)
+- The key size of LUKS should be 0 by default (vponcova)
+- Do not use rpm to check for Zanata client (vtrefny)
+- Fixed create_device fail behavior (japokorn)
+- Fixed KS forcing zerombr onto RO disk (japokorn)
+- Fix BIOS device number regex in edd module. (#1552236) (dlehman)
+- Shrink devices before growing others with common ancestors. (#1539422) (dlehman)
+- Do not copy ksdata. (rvykydal)
+- Find and remove stale LVM metadata immediately after creating md array. (dlehman)
+- Adapt mock imports for compatibility w/ python2 & python3. (dlehman)
+- Use py2-compatible syntax to get system architecture. (dlehman)
+
 * Wed May 02 2018 David Lehman <dlehman@redhat.com> - 3.1.0-0.1.b1
 - Add 'nvdimm' tag for NVDIMM namespaces (vtrefny)
 - Add test for NVDIMMNamespaceDevicePopulator (vtrefny)
