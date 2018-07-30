@@ -1,5 +1,10 @@
 # vim:set fileencoding=utf-8
-from unittest.mock import patch, PropertyMock
+from six import PY3
+if PY3:
+    from unittest.mock import patch, PropertyMock
+else:
+    from mock import patch, PropertyMock
+
 import unittest
 import os
 import six
@@ -7,6 +12,8 @@ import blivet
 import gi
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
+
+from blivet.errors import DependencyError
 
 from blivet.deviceaction import ActionCreateDevice
 from blivet.deviceaction import ActionDestroyDevice
@@ -16,6 +23,7 @@ from blivet.deviceaction import ActionCreateFormat
 from blivet.deviceaction import ActionDestroyFormat
 
 from blivet.devices import DiskDevice
+from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
@@ -85,13 +93,13 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
         # dev is among the unavailable dependencies
         availability.BLOCKDEV_MDRAID_PLUGIN._method = availability.UnavailableMethod
         self.assertIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailable_dependencies)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionCreateDevice(self.luks)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionDestroyDevice(self.dev)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionCreateFormat(self.dev)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(DependencyError):
             ActionDestroyFormat(self.dev)
 
     def _clean_up(self):
@@ -121,9 +129,9 @@ class MockingDeviceDependenciesTestCase2(unittest.TestCase):
                           new_callable=PropertyMock(return_value=[availability.unavailable_resource("testing")])):
             device = StorageDevice("testdev1")
             self.assertFalse(device.controllable)
-            self.assertRaises(ValueError, ActionCreateDevice, device)
+            self.assertRaises(DependencyError, ActionCreateDevice, device)
             device.exists = True
-            self.assertRaises(ValueError, ActionDestroyDevice, device)
+            self.assertRaises(DependencyError, ActionDestroyDevice, device)
             self.assertRaises(ValueError, ActionResizeDevice, device, Size("1 GiB"))
 
         # same goes for formats, except that the properties they affect vary by format class
@@ -144,21 +152,19 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
     def setUp(self):
         self.addCleanup(self._clean_up)
         self.disk1_file = create_sparse_tempfile("disk1", Size("2GiB"))
+        self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())
 
     def _clean_up(self):
         # reload all libblockdev plugins
-        blockdev.try_reinit(require_plugins=None, reload=False)
+        self.load_all_plugins()
 
-        for disk in self.bvt.disks:
-            self.bvt.recursive_remove(disk)
+        if os.path.exists(self.disk1_file):
+            os.unlink(self.disk1_file)
 
-        self.bvt.devicetree.teardown_disk_images()
-        for fn in self.bvt.disk_images.values():
-            if os.path.exists(fn):
-                os.unlink(fn)
+        availability.CACHE_AVAILABILITY = True
 
     def load_all_plugins(self):
-        result, plugins = blockdev.try_reinit(require_plugins=None, reload=False)
+        result, plugins = blockdev.try_reinit(require_plugins=self.plugins, reload=True)
         if not result:
             self.fail("Could not reload libblockdev plugins")
         return plugins
@@ -175,19 +181,19 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         # reinitialize blockdev without the plugins
         # TODO: uncomment (workaround (1/2) for blivet.reset fail)
         # self.unload_all_plugins()
-        self.bvt.disk_images["disk1"] = self.disk1_file
-        self.bvt.exclusive_disks = self.bvt.disk_images["disk1"]
-        try:
-            self.bvt.reset()
-        except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
-            self.fail("Improper handling of missing libblockdev plugin")
+        disk1 = DiskFile(self.disk1_file)
+
+        self.bvt.exclusive_disks = [disk1.name]
+        if os.geteuid() == 0:
+            try:
+                self.bvt.reset()
+            except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
+                self.fail("Improper handling of missing libblockdev plugin")
         # TODO: remove line (workaround (2/2) for blivet.reset fail)
         self.unload_all_plugins()
 
-        disk1 = self.bvt.devicetree.get_device_by_name("disk1")
-
-        with six.assertRaisesRegex(self, ValueError, "requires unavailable_dependencies"):
-            self.bvt.initialize_disk(disk1)
+        self.bvt.devicetree._add_device(disk1)
+        self.bvt.initialize_disk(disk1)
 
         pv = self.bvt.new_partition(size=Size("8GiB"), fmt_type="lvmpv")
         pv_fail = self.bvt.new_partition(size=Size("8GiB"), fmt_type="lvmpv")
@@ -237,7 +243,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.bvt.create_device(pool)
         self.unload_all_plugins()
 
-        with six.assertRaisesRegex(self, ValueError, "requires unavailable_dependencies"):
+        with six.assertRaisesRegex(self, DependencyError, "requires unavailable_dependencies"):
             self.bvt.destroy_device(pool)
 
         try:

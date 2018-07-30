@@ -110,11 +110,12 @@ class PopulatorMixin(object):
             path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
             slave_info = udev.get_device(os.path.realpath(path))
 
+            if not slave_info:
+                msg = "unable to get udev info for %s" % slave_name
+                raise DeviceTreeError(msg)
+
             # cciss in sysfs is "cciss!cXdYpZ" but we need "cciss/cXdYpZ"
             slave_name = udev.device_get_name(slave_info).replace("!", "/")
-
-            if not slave_info:
-                log.warning("unable to get udev info for %s", slave_name)
 
             slave_dev = self.get_device_by_name(slave_name)
             if not slave_dev and slave_info:
@@ -410,8 +411,6 @@ class PopulatorMixin(object):
         parted.register_exn_handler(parted_exn_handler)
         try:
             self._populate()
-        except Exception:
-            raise
         finally:
             parted.clear_exn_handler()
             self._hide_ignored_disks()

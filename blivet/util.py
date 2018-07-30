@@ -49,7 +49,8 @@ class Path(str):
     _root = None
     _path = None
 
-    def __new__(cls, path, root=None, *args, **kwds):
+    def __new__(cls, path, *args, **kwds):
+        root = kwds.pop("root", None)
         obj = str.__new__(cls, path, *args, **kwds)
         obj._path = path
         obj._root = None
@@ -152,7 +153,7 @@ class Path(str):
             log.error("^^ Somehow \"None\" got logged and that's never right.")
         for g in glob.glob(self.ondisk):
             testdata_log.debug("glob match: %s", g)
-            yield Path(g, self.root)
+            yield Path(g, root=self.root)
 
     def __hash__(self):
         return self._path.__hash__()
@@ -180,7 +181,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
         else:
             stderr_dir = subprocess.PIPE
         try:
-            proc = subprocess.Popen(argv,
+            proc = subprocess.Popen(argv,  # pylint: disable=subprocess-popen-preexec-fn
                                     stdin=stdin,
                                     stdout=subprocess.PIPE,
                                     stderr=stderr_dir,
@@ -241,21 +242,11 @@ def mount(device, mountpoint, fstype, options=None):
         makedirs(mountpoint)
 
     argv = ["mount", "-t", fstype, "-o", options, device, mountpoint]
-    try:
-        rc = run_program(argv)
-    except OSError:
-        raise
-
-    return rc
+    return run_program(argv)
 
 
 def umount(mountpoint):
-    try:
-        rc = run_program(["umount", mountpoint])
-    except OSError:
-        raise
-
-    return rc
+    return run_program(["umount", mountpoint])
 
 
 def get_mount_paths(dev):

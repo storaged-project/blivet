@@ -36,7 +36,7 @@ from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeF
 from .devicelibs.edd import get_edd_dict
 from .devicelibs.btrfs import MAIN_VOLUME_ID
 from .devicelibs.crypto import LUKS_METADATA_SIZE
-from .errors import StorageError
+from .errors import StorageError, DependencyError
 from .size import Size
 from .devicetree import DeviceTree
 from .formats import get_default_filesystem_type
@@ -786,12 +786,20 @@ class Blivet(object):
             :type device: :class:`~.devices.StorageDevice`
             :rtype: None
         """
-        self.devicetree.actions.add(ActionCreateDevice(device))
+        action_create_dev = ActionCreateDevice(device)
+        self.devicetree.actions.add(action_create_dev)
 
         is_snapshot = isinstance(device, LVMLogicalVolumeDevice) and device.is_snapshot_lv
 
         if device.format.type and not device.format_immutable and not is_snapshot:
-            self.devicetree.actions.add(ActionCreateFormat(device))
+            action_create_fmt = None
+            try:
+                action_create_fmt = ActionCreateFormat(device)
+            except (ValueError, DependencyError) as e:
+                # revert devicetree changes done so far
+                self.devicetree.actions.remove(action_create_dev)
+                raise e
+            self.devicetree.actions.add(action_create_fmt)
 
     def destroy_device(self, device):
         """ Schedule destruction of a device.
@@ -1182,7 +1190,17 @@ class Blivet(object):
 
     def copy(self):
         log.debug("starting Blivet copy")
+
+        # Do not copy ksdata
+        old_data = self.ksdata
+        self.ksdata = None
+
         new = copy.deepcopy(self)
+
+        # Recover ksdata
+        self.ksdata = old_data
+        new.ksdata = old_data
+
         # go through and re-get parted_partitions from the disks since they
         # don't get deep-copied
         hidden_partitions = [d for d in new.devicetree._hidden

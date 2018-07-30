@@ -496,7 +496,7 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         devicetree = DeviceTree()
 
         # set up some fake udev data to verify handling of specific entries
-        data = {"SYS_PATH": "dummy", "ID_WWN": "0x5000c50086fb75ca"}
+        data = {"SYS_PATH": "dummy", "ID_WWN_WITH_EXTENSION": "0x5000c50086fb75ca"}
 
         device_name = "nop"
         device_get_name.return_value = device_name
@@ -506,7 +506,7 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertIsInstance(device, DiskDevice)
         self.assertTrue(device.exists)
         self.assertTrue(device.is_disk)
-        self.assertEqual(device.wwn, data["ID_WWN"])
+        self.assertEqual(device.wwn, data["ID_WWN_WITH_EXTENSION"][2:])
         self.assertEqual(device.name, device_name)
         self.assertTrue(device in devicetree.devices)
 
@@ -708,8 +708,8 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         devicetree = DeviceTree()
         # set up some fake udev data to verify handling of specific entries
         data = Mock()
-        _data = {"ID_WWN": "0x5000c50086fb75ca",
-                 "DM_UUID": "1-2-3-4"}
+        wwn = "0x5000c50086fb75ca"
+        _data = {"DM_UUID": "1-2-3-4"}
 
         def _getitem_(key, extra=None):
             return _data.get(key, extra)
@@ -718,9 +718,9 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         device_name = "mpathtest"
         device_get_name.return_value = device_name
-        slave_1 = Mock(tags=set())
+        slave_1 = Mock(tags=set(), wwn=wwn[2:])
         slave_1.parents = []
-        slave_2 = Mock(tags=set())
+        slave_2 = Mock(tags=set(), wwn=wwn[2:])
         slave_2.parents = []
         devicetree._add_device(slave_1)
         devicetree._add_device(slave_2)
@@ -732,7 +732,7 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertIsInstance(device, MultipathDevice)
         self.assertTrue(device.exists)
         self.assertEqual(device.name, device_name)
-        self.assertEqual(device.wwn, _data["ID_WWN"])
+        self.assertEqual(device.wwn, wwn[2:])
         self.assertTrue(device in devicetree.devices)
 
 
