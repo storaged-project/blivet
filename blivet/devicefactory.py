@@ -599,7 +599,7 @@ class DeviceFactory(object):
     def _create_container(self):
         """ Create the container device required by this factory device. """
         parents = self._get_parent_devices()
-        # pylint: disable=attribute-defined-outside-init
+        # pylint: disable=attribute-defined-outside-init, assignment-from-no-return
         self.container = self._get_new_container(name=self.container_name,
                                                  parents=parents)
         self.storage.create_device(self.container)
@@ -694,6 +694,7 @@ class DeviceFactory(object):
         parents = self._get_parent_devices()
 
         try:
+            # pylint: disable=assignment-from-no-return
             device = self._get_new_device(parents=parents,
                                           size=size,
                                           fmt_type=fstype,

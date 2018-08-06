@@ -1120,7 +1120,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     @property
     def resizable(self):
-        if DMDevice.resizable.__get__(self) and self._lv_type is LVMInternalLVtype.meta:  # pylint: disable=no-member,too-many-function-args
+        if DMDevice.resizable.__get__(self) and self._lv_type is LVMInternalLVtype.meta:  # pylint: disable=no-member,too-many-function-args,no-value-for-parameter
             if self._parent_lv:
                 return self._parent_lv.is_thin_pool
             else:
