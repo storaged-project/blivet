@@ -76,4 +76,4 @@ setup(name='blivet',
       url='http://github.com/storaged-project/blivet',
       data_files=data_files,
       packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers']
-)
+     )
