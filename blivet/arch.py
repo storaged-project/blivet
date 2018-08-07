@@ -352,10 +352,6 @@ def is_ipseries():
     return is_ppc() and get_ppc_machine() in ("iSeries", "pSeries")
 
 
-def is_omap_arm():
-    return is_arm() and get_arm_machine() == "omap"
-
-
 def get_arch():
     """
     :return: The hardware architecture
