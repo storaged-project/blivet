@@ -310,6 +310,29 @@ def total_memory():
     mem = (mem / bs + 1) * bs
     return mem
 
+
+def available_memory():
+    """ Return the amount of system RAM that is currenly available.
+
+        :rtype: :class:`~.size.Size`
+    """
+    # import locally to avoid a cycle with size importing util
+    from .size import Size
+
+    with open("/proc/meminfo") as lines:
+        mems = {k.strip(): v.strip() for k, v in (l.split(":", 1) for l in lines)}
+
+    if "MemAvailable" in mems.keys():
+        return Size("%s KiB" % mems["MemAvailable"].split()[0])
+    else:
+        # MemAvailable is not present on linux < 3.14
+        free = Size("%s KiB" % mems["MemFree"].split()[0])
+        cached = Size("%s KiB" % mems["Cached"].split()[0])
+        buffers = Size("%s KiB" % mems["Buffers"].split()[0])
+
+        return (free + cached + buffers)
+
+
 ##
 # sysfs functions
 ##

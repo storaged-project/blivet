@@ -214,6 +214,11 @@ def device_get_format(udev_info):
     return udev_info.get("ID_FS_TYPE")
 
 
+def device_get_format_version(udev_info):
+    """ Return a device's format version as reported by udev. """
+    return udev_info.get("ID_FS_VERSION")
+
+
 def device_get_uuid(udev_info):
     """ Get the UUID from the device's format as reported by udev.
 
@@ -618,6 +623,20 @@ def device_is_dm_luks(info):
         _type = ""
 
     return is_crypt and _type.startswith("luks")
+
+
+def device_is_dm_integrity(info):
+    """ Return True if the device is a mapped integrity device. """
+    is_crypt = device_dm_subsystem_match(info, "crypt")
+    if not is_crypt:
+        return False
+
+    try:
+        _type = info.get("DM_UUID", "").split("-")[1].lower()
+    except IndexError:
+        _type = ""
+
+    return _type.startswith("integrity")
 
 
 def device_is_dm_raid(info):

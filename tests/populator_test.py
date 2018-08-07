@@ -33,6 +33,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DMDevicePopulator
 
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
@@ -52,6 +53,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_luks.return_value = False
 
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
@@ -137,6 +139,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
@@ -219,6 +222,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_loop", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for lvm devices."""
@@ -306,6 +310,7 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_loop", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
@@ -367,6 +372,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
