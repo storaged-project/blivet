@@ -36,7 +36,7 @@ Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realver
 %global partedver 1.8.1
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
-%global libblockdevver 2.6
+%global libblockdevver 2.17
 %global libbytesizever 0.3
 %global pyudevver 0.18
 

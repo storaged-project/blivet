@@ -251,3 +251,30 @@ class DMCryptDevice(DMDevice):
         DMDevice.__init__(self, name, fmt=fmt, size=size,
                           parents=parents, sysfs_path=sysfs_path,
                           exists=exists, target="crypt")
+
+
+class DMIntegrityDevice(DMDevice):
+
+    """ A dm-integrity device """
+    _type = "dm-integrity"
+    _encrypted = True
+
+    def __init__(self, name, fmt=None, size=None, uuid=None,
+                 exists=False, sysfs_path='', parents=None):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
+        """
+        DMDevice.__init__(self, name, fmt=fmt, size=size,
+                          parents=parents, sysfs_path=sysfs_path,
+                          exists=exists, target="integrity")

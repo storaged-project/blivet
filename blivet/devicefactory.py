@@ -33,6 +33,7 @@ from .devicelibs import btrfs
 from .devicelibs import mdraid
 from .devicelibs import lvm
 from .devicelibs import raid
+from .devicelibs import crypto
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
@@ -314,6 +315,10 @@ class DeviceFactory(object):
             :keyword min_luks_entropy: minimum entropy in bits required for
                                        LUKS format creation
             :type min_luks_entropy: int
+            :keyword luks_version: luks format version ("luks1" or "luks2")
+            :type luks_version: str
+            :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
+            :type pbkdf_args: :class:`~.formats.luks.LUKS2PBKDFArgs`
 
         """
         self.storage = storage  # a Blivet instance
@@ -327,7 +332,9 @@ class DeviceFactory(object):
             setattr(self, setting, value)
 
         self.fstype = None  # not included in default_settings b/c of special handling below
-        self.min_luks_entropy = luks_data.min_entropy
+        self.min_luks_entropy = kwargs.get("min_luks_entropy") or luks_data.min_entropy
+        self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
+        self.pbkdf_args = kwargs.get("pbkdf_args", None)
 
         # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
@@ -599,7 +606,7 @@ class DeviceFactory(object):
     def _create_container(self):
         """ Create the container device required by this factory device. """
         parents = self._get_parent_devices()
-        # pylint: disable=attribute-defined-outside-init
+        # pylint: disable=attribute-defined-outside-init, assignment-from-no-return
         self.container = self._get_new_container(name=self.container_name,
                                                  parents=parents)
         self.storage.create_device(self.container)
@@ -673,6 +680,9 @@ class DeviceFactory(object):
         if self.encrypted:
             fstype = "luks"
             mountpoint = None
+            fmt_args["min_luks_entropy"] = self.min_luks_entropy
+            fmt_args["luks_version"] = self.luks_version
+            fmt_args["pbkdf_args"] = self.pbkdf_args
         else:
             fstype = self.fstype
             mountpoint = self.mountpoint
@@ -694,6 +704,7 @@ class DeviceFactory(object):
         parents = self._get_parent_devices()
 
         try:
+            # pylint: disable=assignment-from-no-return
             device = self._get_new_device(parents=parents,
                                           size=size,
                                           fmt_type=fstype,
@@ -724,7 +735,6 @@ class DeviceFactory(object):
 
             fmt = get_format(self.fstype,
                              mountpoint=self.mountpoint,
-                             min_luks_entropy=self.min_luks_entropy,
                              **fmt_args)
             luks_device = LUKSDevice("luks-" + device.name,
                                      parents=[device], fmt=fmt)
@@ -810,7 +820,9 @@ class DeviceFactory(object):
             orig_device = self.device
             leaf_format = self.device.format
             self.storage.format_device(self.device, get_format("luks",
-                                                               min_luks_entropy=self.min_luks_entropy))
+                                                               min_luks_entropy=self.min_luks_entropy,
+                                                               luks_version=self.luks_version,
+                                                               pbkdf_args=self.pbkdf_args))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -1145,7 +1157,9 @@ class PartitionSetFactory(PartitionFactory):
             if not member_encrypted and self.encrypted:
                 members.remove(member)
                 self.storage.format_device(member, get_format("luks",
-                                                              min_luks_entropy=self.min_luks_entropy))
+                                                              min_luks_entropy=self.min_luks_entropy,
+                                                              luks_version=self.luks_version,
+                                                              pbkdf_args=self.pbkdf_args))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
@@ -1173,16 +1187,20 @@ class PartitionSetFactory(PartitionFactory):
         # Define members on added disks.
         ##
         new_members = []
+        fmt_args = {}
         for disk in add_disks:
             if self.encrypted:
                 member_format = "luks"
+                fmt_args["luks_version"] = self.luks_version
+                fmt_args["pbkdf_args"] = self.pbkdf_args
             else:
                 member_format = self.fstype
 
             try:
                 member = self.storage.new_partition(parents=[disk], grow=True,
                                                     size=base_size,
-                                                    fmt_type=member_format)
+                                                    fmt_type=member_format,
+                                                    fmt_args=fmt_args)
             except (StorageError, blockdev.BlockDevError) as e:
                 log.error("failed to create new member partition: %s", e)
                 continue
