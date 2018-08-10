@@ -21,9 +21,9 @@ Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
 Version: 3.1.0
 
-%global prerelease .b2
+#%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 0.1%{?prerelease}%{?dist}
+Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -190,6 +190,34 @@ configuration.
 %endif
 
 %changelog
+* Fri Aug 10 2018 David Lehman <dlehman@redhat.com> - 3.1.0-1
+- Allow configuring default LUKS2 PBKDF arguments using luks_data (vtrefny)
+  Related: rhbz#1561352
+- Fix the populate_kickstart method in LUKS (vtrefny)
+  Related: rhbz#1561352
+- Allow specifying extra arguments for PBKDF when creating LUKS2 (vtrefny)
+  Related: rhbz#1561352
+- Add support for LUKS2 to DeviceFactory (vtrefny)
+  Resolves: rhbz#1561352
+- DeviceFactory: use min_luks_entropy from kwargs (vtrefny)
+  Related: rhbz#1561352
+- Fix passing 'min_luks_entropy' when creating LUKS format (vtrefny)
+  Related: rhbz#1561352
+- Use passphrase/key file when resizing LUKS2 format (vtrefny)
+  Related: rhbz#1561352
+- Require libblockdev 2.17 (vtrefny)
+  Related: rhbz#1561352
+- Add support for LUKS2 format (vtrefny)
+  Related: rhbz#1561352
+- Add initial support for DM Integrity "format" (vtrefny)
+  Related: rhbz#1561352
+- Do not try to add LUKSDevice in LUKSFormatPopulator (vtrefny)
+  Related: rhbz#1561352
+- Add support for dm-integrity devices (vtrefny)
+  Related: rhbz#1561352
+- Fixed various issues preventing successful build (japokorn)
+  Related: rhbz#1561352
+
 * Mon Jul 30 2018 David Lehman <dlehman@redhat.com> - 3.1.0-0.1.b2
 - Do not ignore "Image out-of-sync" internal LVs (vtrefny)
 - Fixed error message when slave is missing (japokorn)

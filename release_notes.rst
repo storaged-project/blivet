@@ -1,3 +1,19 @@
+3.1.0
+======
+* `LUKS2`
+* `NVDIMM`
+
+LUKS2
+------
+Blivet now supports creating and unlocking LUKS2 volumes.
+
+NVDIMM
+-------
+Blivet now supports managing NVDIMM devices. Configuration of the devices
+themselves can be done prior to using ndvimms in sector mode as you would
+use any other disk-like devices in blivet.
+
+
 3.0.0
 ======
 * `Python 2&3 Compatibility`_
