@@ -225,7 +225,7 @@ class DMRaidArrayDevice(DMDevice, ContainerDevice):
     _is_disk = True
     _format_class_name = property(lambda s: "dmraidmember")
     _format_uuid_attr = property(lambda s: None)
-    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
+    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN_RAID]
 
     def __init__(self, name, fmt=None,
                  size=None, parents=None, sysfs_path='', wwn=None):
