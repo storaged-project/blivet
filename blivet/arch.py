@@ -33,7 +33,6 @@ from __future__ import absolute_import
 
 import os
 
-from .flags import flags
 from .storage_log import log_exception_info
 
 import logging
@@ -180,27 +179,6 @@ def is_aarch64():
 
     """
     return os.uname()[4] == 'aarch64'
-
-
-def get_arm_machine():
-    """
-    :return: The ARM processor variety type, or None if not ARM.
-    :rtype: string
-
-    """
-    if not is_arm():
-        return None
-
-    if flags.arm_platform:
-        return flags.arm_platform
-
-    arm_machine = os.uname()[2].rpartition('.')[2]
-
-    if arm_machine.startswith('arm'):
-        # @TBD - Huh? Don't you want the arm machine name here?
-        return None
-    else:
-        return arm_machine
 
 
 def is_cell():
