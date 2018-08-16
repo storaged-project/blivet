@@ -225,6 +225,8 @@ class DiskLabel(DeviceFormat):
             label_types = ["mac"]
         elif arch.is_aarch64():
             label_types = ["gpt", "msdos"]
+        elif arch.is_efi() and arch.is_arm():
+            label_types = ["msdos", "gpt"]
         elif arch.is_efi() and not arch.is_aarch64():
             label_types = ["gpt"]
         elif arch.is_s390():
