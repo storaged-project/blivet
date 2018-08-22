@@ -235,7 +235,7 @@ class BlockDevMethod(Method):
             :returns: [] if the name of the plugin is loaded
             :rtype: list of str
         """
-        if resource.name not in blockdev.get_available_plugin_names():
+        if resource.name not in blockdev.get_available_plugin_names():  # pylint: disable=no-value-for-parameter
             return ["libblockdev plugin %s not loaded" % resource.name]
         else:
             tech_missing = self._check_technologies()
