@@ -36,6 +36,8 @@ class LUKS_Data(object):
         self.__passphrases = []
         # dict of luks devices {device: passphrase}
         self.__luks_devs = {}
+        # default pbkdf parameters for LUKS2 format creation
+        self._pbkdf_args = None
 
     @property
     def encryption_passphrase(self):
@@ -63,6 +65,14 @@ class LUKS_Data(object):
     @luks_devs.setter
     def luks_devs(self, value):
         self.__luks_devs = value
+
+    @property
+    def pbkdf_args(self):
+        return self._pbkdf_args
+
+    @pbkdf_args.setter
+    def pbkdf_args(self, value):
+        self._pbkdf_args = value
 
     def clear_passphrases(self):
         self.__passphrases = []

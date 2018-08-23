@@ -26,7 +26,7 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 from ... import udev
-from ...devices import LUKSDevice
+from ...devices import LUKSDevice, IntegrityDevice
 from ...errors import DeviceError, LUKSError
 from ...flags import flags
 from .devicepopulator import DevicePopulator
@@ -52,6 +52,21 @@ class LUKSDevicePopulator(DevicePopulator):
         return device
 
 
+class IntegrityDevicePopulator(DevicePopulator):
+    @classmethod
+    def match(cls, data):
+        return udev.device_is_dm_integrity(data)
+
+    def run(self):
+        parents = self._devicetree._add_slave_devices(self.data)
+        device = IntegrityDevice(udev.device_get_name(self.data),
+                                 sysfs_path=udev.device_get_sysfs_path(self.data),
+                                 parents=parents,
+                                 exists=True)
+        self._devicetree._add_device(device)
+        return device
+
+
 class LUKSFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "luks"
@@ -59,6 +74,7 @@ class LUKSFormatPopulator(FormatPopulator):
     def _get_kwargs(self):
         kwargs = super(LUKSFormatPopulator, self)._get_kwargs()
         kwargs["name"] = "luks-%s" % udev.device_get_uuid(self.data)
+        kwargs["luks_version"] = "luks%s" % udev.device_get_format_version(self.data)
         return kwargs
 
     def run(self):
@@ -98,23 +114,17 @@ class LUKSFormatPopulator(FormatPopulator):
                     else:
                         break
 
-            luks_device = LUKSDevice(self.device.format.map_name,
-                                     parents=[self.device],
-                                     exists=True)
+            # try only to setup the luks format -- the luks device will be
+            # discovered and added later by the LUKSDevicePopulator
             try:
-                luks_device.setup()
+                self.device.format.setup()
             except (LUKSError, blockdev.CryptoError, DeviceError) as e:
                 log.info("setup of %s failed: %s", self.device.format.map_name, e)
-                self.device.remove_child(luks_device)
-            else:
-                luks_device.update_sysfs_path()
-                self._devicetree._add_device(luks_device)
-                luks_info = udev.get_device(luks_device.sysfs_path)
-                if not luks_info:
-                    log.error("failed to get udev data for %s", luks_device.name)
-                    return
-
-                self._devicetree.handle_device(luks_info, update_orig_fmt=True)
         else:
             log.warning("luks device %s already in the tree",
                         self.device.format.map_name)
+
+
+class IntegrityFormatPopulator(FormatPopulator):
+    priority = 100
+    _type_specifier = "integrity"

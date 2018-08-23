@@ -86,6 +86,11 @@ class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
     def do_task(self):
         """ Resizes the LUKS format. """
         try:
-            blockdev.crypto.luks_resize(self.luks.map_name, self.luks.target_size.convert_to(self.unit))
+            if self.luks.luks_version == "luks2":
+                blockdev.crypto.luks_resize(self.luks.map_name, self.luks.target_size.convert_to(self.unit),
+                                            passphrase=self.luks._LUKS__passphrase,
+                                            key_file=self.luks._key_file)
+            else:
+                blockdev.crypto.luks_resize(self.luks.map_name, self.luks.target_size.convert_to(self.unit))
         except blockdev.CryptoError as e:
             raise LUKSError(e)
