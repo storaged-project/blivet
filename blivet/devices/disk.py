@@ -666,6 +666,7 @@ class NVDIMMNamespaceDevice(DiskDevice):
 
     """ Non-volatile memory namespace """
     _type = "nvdimm"
+    _packages = ["ndctl"]
 
     def __init__(self, device, **kwargs):
         """
