@@ -57,8 +57,6 @@ class Flags(object):
         self.jfs = True
         self.reiserfs = True
 
-        self.arm_platform = None
-
         self.gpt = False
 
         # for this flag to take effect,
