@@ -63,6 +63,21 @@ def register_device_format(fmt_class):
 
 default_fstypes = ("ext4", "xfs", "ext3", "ext2")
 
+def get_supported_filesystem_types():
+    working_fstypes = []
+
+    for fstype in default_fstypes:
+        try:
+            supported = get_format(fstype).supported
+        except AttributeError:
+            supported = False
+
+        if supported:
+            working_fstypes.append(fstype)
+
+    return tuple(working_fstypes)
+
+supported_fstypes = get_supported_filesystem_types()
 
 def get_default_filesystem_type():
     for fstype in default_fstypes:
