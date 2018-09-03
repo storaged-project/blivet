@@ -26,11 +26,9 @@ weighted = [Weighted(fstype=None, mountpoint="/", true_funcs=[], weight=0),
             Weighted(fstype="efi", mountpoint="/boot/efi", true_funcs=['is_efi'], weight=5000),
             Weighted(fstype="prepboot", mountpoint=None, true_funcs=['is_ppc', 'is_ipseries'], weight=5000),
             Weighted(fstype="appleboot", mountpoint=None, true_funcs=['is_ppc', 'is_pmac'], weight=5000),
-            Weighted(fstype="vfat", mountpoint="/boot/uboot", true_funcs=['is_arm', 'is_omap_arm'], weight=5000),
-            Weighted(fstype=None, mountpoint="/", true_funcs=['is_arm'], weight=-100),
-            Weighted(fstype=None, mountpoint="/", true_funcs=['is_arm', 'is_omap_arm'], weight=-100)]
+            Weighted(fstype=None, mountpoint="/", true_funcs=['is_arm'], weight=-100)]
 
-arch_funcs = ['is_arm', 'is_efi', 'is_ipseries', 'is_omap_arm', 'is_pmac', 'is_ppc', 'is_x86']
+arch_funcs = ['is_arm', 'is_efi', 'is_ipseries', 'is_pmac', 'is_ppc', 'is_x86']
 
 
 class PartitionDeviceTestCase(unittest.TestCase):
@@ -308,14 +306,6 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
             fmt.mountpoint = "/"
             self.assertEqual(dev.weight, -100)
-
-            arch.is_omap_arm.return_value = False
-            fmt.mountpoint = "/boot/uboot"
-            fmt.type = "vfat"
-            self.assertEqual(dev.weight, 0)
-
-            arch.is_omap_arm.return_value = True
-            self.assertEqual(dev.weight, 5000)
 
             #
             # ppc
