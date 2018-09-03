@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-26 11:38-0400\n"
+"POT-Creation-Date: 2018-09-03 13:31+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -249,10 +249,6 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/fcoe.py:119
-msgid "FCoE not available"
-msgstr ""
-
 #: ../blivet/errors.py:169
 msgid ""
 "For some reason we were unable to locate a disklabel on a disk that the "
@@ -272,6 +268,10 @@ msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
+#: ../blivet/fcoe.py:119
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/platform.py:52
@@ -588,16 +588,12 @@ msgstr ""
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:40
-msgid "physical volume (LVM)"
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/__init__.py:148
 msgid "Unknown"
-msgstr ""
-
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
 msgstr ""
 
 #: ../blivet/formats/disklabel.py:44
@@ -621,8 +617,25 @@ msgstr ""
 msgid "Encrypted"
 msgstr ""
 
+#: ../blivet/formats/lvmpv.py:40
+msgid "physical volume (LVM)"
+msgstr ""
+
 #: ../blivet/formats/mdraid.py:40
 msgid "software RAID"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:59
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:60
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:466
+#, python-format
+msgid "vginfo failed for %s"
 msgstr ""
 
 #: ../blivet/devicelibs/dasd.py:296
@@ -638,17 +651,4 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:309
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:59
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:60
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:466
-#, python-format
-msgid "vginfo failed for %s"
 msgstr ""
