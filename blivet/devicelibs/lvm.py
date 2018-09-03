@@ -90,7 +90,7 @@ def _getConfigArgs(args):
     filter_string = ""
     rejects = config_args_data["filterRejects"]
     for reject in rejects:
-        filter_string += ("\"r|/%s$|\"," % reject)
+        filter_string += ("\"r|/%s$|\"," % reject.replace(".", r"\."))
 
     if filter_string:
         filter_string = "filter=[%s]" % filter_string.strip(",")
