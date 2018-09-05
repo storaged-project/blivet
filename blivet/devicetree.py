@@ -862,7 +862,9 @@ class DeviceTreeBase(object):
         if not device.exists:
             return
 
-        self._remove_device(device, force=True, modparent=False)
+        # XXX set modparent=True when hiding a VG to unset vg_name from PVs
+        modparent = device.type == "lvmvg"
+        self._remove_device(device, force=True, modparent=modparent)
 
         self._hidden.append(device)
         lvm.lvm_cc_addFilterRejectRegexp(device.name)
