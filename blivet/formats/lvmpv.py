@@ -120,9 +120,8 @@ class LVMPhysicalVolume(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
-        # Consider use of -Z|--zero
-        # -f|--force or -y|--yes may be required
-        blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment)
+        ea_yes = blockdev.ExtraArg.new("-y", "")
+        blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,

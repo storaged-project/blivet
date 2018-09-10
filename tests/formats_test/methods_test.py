@@ -389,10 +389,12 @@ class LVMPhysicalVolumeMethodsTestCase(FormatMethodsTestCase):
         self.patches["blockdev"].lvm.pvremove.assert_called_with(self.format.device)
 
     def _test_create_backend(self):
+        self.patches["blockdev"].ExtraArg.new.return_value = sentinel.extra_arg
         self.format.exists = False
         self.format.create()
         self.patches["blockdev"].lvm.pvcreate.assert_called_with(self.format.device,
-                                                                 data_alignment=self.format.data_alignment)  # pylint: disable=no-member
+                                                                 data_alignment=self.format.data_alignment,  # pylint: disable=no-member
+                                                                 extra=[sentinel.extra_arg])
 
 
 class MDRaidMemberMethodsTestCase(FormatMethodsTestCase):
