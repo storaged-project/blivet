@@ -38,13 +38,6 @@ class Flags(object):
         self.uevents = False
 
         #
-        # minor modes (installer-specific)
-        #
-        self.automated_install = False
-        self.live_install = False
-        self.image_install = False
-
-        #
         # enable/disable functionality
         #
         self.selinux = selinux.is_selinux_enabled()

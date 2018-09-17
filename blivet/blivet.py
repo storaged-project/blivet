@@ -925,12 +925,7 @@ class Blivet(object):
         return tmp
 
     def _get_container_name_template(self, prefix=None):
-        template = prefix or ""
-
-        if flags.image_install:
-            template = "%s_image" % template
-
-        return template
+        return prefix or ""
 
     def suggest_container_name(self, prefix=""):
         """ Return a reasonable, unused device name.
