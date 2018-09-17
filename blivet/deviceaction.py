@@ -162,7 +162,8 @@ class DeviceAction(util.ObjectID):
 
         self.device = device
 
-        self._check_device_dependencies()
+        if self.is_device:
+            self._check_device_dependencies()
 
         self.container = getattr(self.device, "container", None)
         self._applied = False
