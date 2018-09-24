@@ -218,7 +218,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # if any of our PVs are not active then we cannot be
         for pv in self.pvs:
-            if not pv.status:
+            if not pv.format.status:
                 return False
 
         # if we are missing some of our PVs we cannot be active
@@ -878,7 +878,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         # setup_parents (via _pre_setup, below), we should wait for auto-
         # activation before trying to manually activate this LV.
         auto_activate = (lvm.lvmetad_socket_exists() and
-                         any(not pv.status for pv in self.vg.pvs))
+                         any(not pv.format.status for pv in self.vg.pvs))
         if not super(LVMLogicalVolumeBase, self)._pre_setup(orig=orig):
             return False
 

@@ -390,6 +390,19 @@ class PopulatorMixin(object):
             loop_device = dm_device.parents[0]
             loop_device.teardown()
 
+    def _teardown_partially_hidden_vgs(self):
+        """ Teardown VGs that are not completely hidden (one of the PVs
+            is not hidden)
+        """
+
+        for device in self._hidden:
+            if device.type == "lvmvg":
+                if not all(pv in self._hidden for pv in device.pvs):
+                    log.info("Deactivating partially hidden VG '%s'", device.name)
+                    # use _teardown() to avoid _pre_teardown() because it prevents
+                    # calling _teardown() on incomplete VGs
+                    device._teardown()
+
     def save_luks_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
         # Method is here for compatibility with blivet 1.x
@@ -417,6 +430,7 @@ class PopulatorMixin(object):
 
         if flags.auto_dev_updates:
             self.teardown_all()
+            self._teardown_partially_hidden_vgs()
 
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
