@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-10 13:18-0400\n"
+"POT-Creation-Date: 2018-09-26 12:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-
-#: ../blivet/fcoe.py:121
-msgid "FCoE not available"
-msgstr ""
 
 #: ../blivet/errors.py:210
 msgid ""
@@ -43,65 +39,8 @@ msgid ""
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
-#: ../blivet/partitioning.py:449
-msgid "unable to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:457
-msgid "requested size exceeds maximum allowed"
-msgstr ""
-
-#: ../blivet/partitioning.py:575
-#, python-format
-msgid "disk %s inaccessible"
-msgstr ""
-
-#: ../blivet/partitioning.py:636
-#, python-format
-msgid ""
-"partition is too small for %(format)s formatting (allowable size is "
-"%(min_size)s to %(max_size)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:641
-#, python-format
-msgid ""
-"partition is too large for %(format)s formatting (allowable size is "
-"%(min_size)s to %(max_size)s)"
-msgstr ""
-
-#: ../blivet/partitioning.py:949
-msgid "Unable to allocate requested partition scheme."
-msgstr ""
-
-#: ../blivet/partitioning.py:984
-msgid "not enough free space after creating extended partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:991
-msgid "failed to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:1192
-msgid "cannot reclaim more than request has grown"
-msgstr ""
-
-#: ../blivet/partitioning.py:1406
-msgid "DiskChunk requests must be of type PartitionRequest"
-msgstr ""
-
-#: ../blivet/partitioning.py:1419
-msgid "partitions allocated outside disklabel limits"
-msgstr ""
-
-#: ../blivet/partitioning.py:1504
-msgid "VGChunk requests must be of type LVRequest"
-msgstr ""
-
-#. by now we have allocated the PVs so if there isn't enough
-#. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2011
-msgid "not enough space for LVM requests"
+#: ../blivet/fcoe.py:121
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/zfcp.py:61
@@ -216,73 +155,134 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/deviceaction.py:189
+#: ../blivet/partitioning.py:449
+msgid "unable to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:457
+msgid "requested size exceeds maximum allowed"
+msgstr ""
+
+#: ../blivet/partitioning.py:575
+#, python-format
+msgid "disk %s inaccessible"
+msgstr ""
+
+#: ../blivet/partitioning.py:636
+#, python-format
+msgid ""
+"partition is too small for %(format)s formatting (allowable size is "
+"%(min_size)s to %(max_size)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:641
+#, python-format
+msgid ""
+"partition is too large for %(format)s formatting (allowable size is "
+"%(min_size)s to %(max_size)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:949
+msgid "Unable to allocate requested partition scheme."
+msgstr ""
+
+#: ../blivet/partitioning.py:984
+msgid "not enough free space after creating extended partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:991
+msgid "failed to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:1192
+msgid "cannot reclaim more than request has grown"
+msgstr ""
+
+#: ../blivet/partitioning.py:1406
+msgid "DiskChunk requests must be of type PartitionRequest"
+msgstr ""
+
+#: ../blivet/partitioning.py:1419
+msgid "partitions allocated outside disklabel limits"
+msgstr ""
+
+#: ../blivet/partitioning.py:1504
+msgid "VGChunk requests must be of type LVRequest"
+msgstr ""
+
+#. by now we have allocated the PVs so if there isn't enough
+#. space in the VG we have a real problem
+#: ../blivet/partitioning.py:2011
+msgid "not enough space for LVM requests"
+msgstr ""
+
+#: ../blivet/deviceaction.py:194
 #, python-format
 msgid "Executing %(action)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:317
+#: ../blivet/deviceaction.py:322
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:376
+#: ../blivet/deviceaction.py:381
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:451
+#: ../blivet/deviceaction.py:465
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:540
+#: ../blivet/deviceaction.py:554
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:580
+#: ../blivet/deviceaction.py:594
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:610
+#: ../blivet/deviceaction.py:624
 #, python-format
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:640
+#: ../blivet/deviceaction.py:654
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:687
+#: ../blivet/deviceaction.py:701
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:792
+#: ../blivet/deviceaction.py:806
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:828
+#: ../blivet/deviceaction.py:842
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:835
+#: ../blivet/deviceaction.py:849
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:879
+#: ../blivet/deviceaction.py:893
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:944
+#: ../blivet/deviceaction.py:958
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:1014
+#: ../blivet/deviceaction.py:1028
 msgid "configure format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:1065
+#: ../blivet/deviceaction.py:1079
 msgid "configure device"
 msgstr ""
 
@@ -353,7 +353,7 @@ msgid "partition table"
 msgstr ""
 
 #. Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
-#: ../blivet/formats/disklabel.py:307
+#: ../blivet/formats/disklabel.py:311
 #, python-format
 msgid "Unsupported %(name)s"
 msgstr ""

@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.0
+Version: 3.1.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -190,6 +190,20 @@ configuration.
 %endif
 
 %changelog
+* Wed Sep 26 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.1-1
+- Check device dependencies only for device actions (vtrefny)
+- Allow removing btrfs volumes without btrfs support (vtrefny)
+- Adjust LVMPhysicalVolumeMethodsTestCase to new pvcreate option (vtrefny)
+- add `-y' to lvm.pvcreate (hongxu.jia)
+- Drop omap partition table tests on ARM platforms (pbrobinson)
+- Update disk label tests for ARM platforms (pbrobinson)
+- Ignore pylint 'no-value-for-parameter' warning (vtrefny)
+- arm: add support for EFI on ARMv7 (pbrobinson)
+- Aarch64 platforms: Fix gpt defaults for 64 bit arm platforms (pbrobinson)
+- arch: arm: drop get_arm_machine function (pbrobinson)
+- arch: arm: drop omap specifics for partitioning (pbrobinson)
+- Create a separate availability check for dmraid support (vtrefny)
+
 * Fri Aug 10 2018 David Lehman <dlehman@redhat.com> - 3.1.0-1
 - Allow configuring default LUKS2 PBKDF arguments using luks_data (vtrefny)
   Related: rhbz#1561352
