@@ -235,7 +235,7 @@ class BlockDevMethod(Method):
             :returns: [] if the name of the plugin is loaded
             :rtype: list of str
         """
-        if resource.name not in blockdev.get_available_plugin_names():
+        if resource.name not in blockdev.get_available_plugin_names():  # pylint: disable=no-value-for-parameter
             return ["libblockdev plugin %s not loaded" % resource.name]
         else:
             tech_missing = self._check_technologies()
@@ -331,9 +331,13 @@ BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
                          blockdev.DMTechMode.QUERY)
 BLOCKDEV_DM = BlockDevTechInfo(plugin_name="dm",
                                check_fn=blockdev.dm_is_tech_avail,
-                               technologies={blockdev.DMTech.MAP: BLOCKDEV_DM_ALL_MODES,
-                                             blockdev.DMTech.RAID: BLOCKDEV_DM_ALL_MODES})
+                               technologies={blockdev.DMTech.MAP: BLOCKDEV_DM_ALL_MODES})
 BLOCKDEV_DM_TECH = BlockDevMethod(BLOCKDEV_DM)
+
+BLOCKDEV_DM_RAID = BlockDevTechInfo(plugin_name="dm",
+                                    check_fn=blockdev.dm_is_tech_avail,
+                                    technologies={blockdev.DMTech.RAID: BLOCKDEV_DM_ALL_MODES})
+BLOCKDEV_DM_TECH_RAID = BlockDevMethod(BLOCKDEV_DM_RAID)
 
 # libblockdev loop plugin required technologies and modes
 BLOCKDEV_LOOP_ALL_MODES = (blockdev.LoopTechMode.CREATE |
@@ -399,6 +403,7 @@ BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
 BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("btrfs", BLOCKDEV_BTRFS_TECH)
 BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("crypto", BLOCKDEV_CRYPTO_TECH)
 BLOCKDEV_DM_PLUGIN = blockdev_plugin("dm", BLOCKDEV_DM_TECH)
+BLOCKDEV_DM_PLUGIN_RAID = blockdev_plugin("dm", BLOCKDEV_DM_TECH_RAID)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("loop", BLOCKDEV_LOOP_TECH)
 BLOCKDEV_LVM_PLUGIN = blockdev_plugin("lvm", BLOCKDEV_LVM_TECH)
 BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid", BLOCKDEV_MD_TECH)

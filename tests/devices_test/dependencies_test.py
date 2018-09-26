@@ -97,10 +97,6 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
             ActionCreateDevice(self.luks)
         with self.assertRaises(DependencyError):
             ActionDestroyDevice(self.dev)
-        with self.assertRaises(DependencyError):
-            ActionCreateFormat(self.dev)
-        with self.assertRaises(DependencyError):
-            ActionDestroyFormat(self.dev)
 
     def _clean_up(self):
         availability.BLOCKDEV_MDRAID_PLUGIN._method = self.mdraid_method
@@ -152,7 +148,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
     def setUp(self):
         self.addCleanup(self._clean_up)
         self.disk1_file = create_sparse_tempfile("disk1", Size("2GiB"))
-        self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())
+        self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())  # pylint: disable=no-value-for-parameter
 
     def _clean_up(self):
         # reload all libblockdev plugins

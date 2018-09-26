@@ -160,14 +160,19 @@ class DeviceAction(util.ObjectID):
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
 
-        unavailable_dependencies = device.unavailable_dependencies
-        if unavailable_dependencies:
-            dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
-            raise DependencyError("device type %s requires unavailable_dependencies: %s" % (device.type, dependencies_str))
-
         self.device = device
+
+        if self.is_device:
+            self._check_device_dependencies()
+
         self.container = getattr(self.device, "container", None)
         self._applied = False
+
+    def _check_device_dependencies(self):
+        unavailable_dependencies = self.device.unavailable_dependencies
+        if unavailable_dependencies:
+            dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
+            raise DependencyError("device type %s requires unavailable_dependencies: %s" % (self.device.type, dependencies_str))
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
@@ -378,6 +383,15 @@ class ActionDestroyDevice(DeviceAction):
     def __init__(self, device):
         # XXX should we insist that device.fs be None?
         DeviceAction.__init__(self, device)
+
+    def _check_device_dependencies(self):
+        if self.device.type == "btrfs volume":
+            # XXX destroying a btrfs volume is a special case -- we don't destroy
+            # the device, but use wipefs to destroy format on its parents so we
+            # don't need btrfs plugin or btrfs-progs for this
+            return
+
+        super(ActionDestroyDevice, self)._check_device_dependencies()
 
     def execute(self, callbacks=None):
         super(ActionDestroyDevice, self).execute(callbacks=callbacks)
