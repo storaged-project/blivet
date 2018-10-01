@@ -97,10 +97,6 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
             ActionCreateDevice(self.luks)
         with self.assertRaises(DependencyError):
             ActionDestroyDevice(self.dev)
-        with self.assertRaises(DependencyError):
-            ActionCreateFormat(self.dev)
-        with self.assertRaises(DependencyError):
-            ActionDestroyFormat(self.dev)
 
     def _clean_up(self):
         availability.BLOCKDEV_MDRAID_PLUGIN._method = self.mdraid_method
