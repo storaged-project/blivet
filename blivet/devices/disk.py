@@ -401,8 +401,9 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             NetworkStorageDevice.__init__(self,
                                           host_address=address,
                                           nic=self.nic)
+            initiator_name = self.initiator.decode("utf-8", errors="replace")
             log.debug("created new iscsi disk %s %s:%s using fw initiator %s",
-                      name, address, port, self.initiator)
+                      name, address, port, initiator_name)
         else:
             DiskDevice.__init__(self, device, **kwargs)
             NetworkStorageDevice.__init__(self, host_address=self.node.address,

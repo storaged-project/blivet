@@ -726,8 +726,9 @@ def device_get_iscsi_initiator(info):
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
                 initiator = open(initiator_file).read().strip()
+                initiator_name = initiator.decode("utf-8", errors="replace")
                 log.debug("found offload iscsi initiatorname %s in file %s",
-                          initiator, initiator_file)
+                          initiator_name, initiator_file)
                 if initiator.lstrip("(").rstrip(")").lower() == "null":
                     initiator = None
     if initiator is None:
@@ -735,7 +736,8 @@ def device_get_iscsi_initiator(info):
         if session:
             initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
                              session).read().strip()
-            log.debug("found iscsi initiatorname %s", initiator)
+            initiator_name = initiator.decode("utf-8", errors="replace")
+            log.debug("found iscsi initiatorname %s", initiator_name)
     return initiator
 
 
