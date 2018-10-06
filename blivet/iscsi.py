@@ -385,9 +385,9 @@ class iSCSI(object):
             if password:
                 auth_info["password"] = GLib.Variant("s", password)
             if r_username:
-                auth_info["r_username"] = GLib.Variant("s", r_username)
+                auth_info["reverse-username"] = GLib.Variant("s", r_username)
             if r_password:
-                auth_info["r_password"] = GLib.Variant("s", r_password)
+                auth_info["reverse-password"] = GLib.Variant("s", r_password)
 
             args = GLib.Variant("(sqa{sv})", (ipaddr, int(port), auth_info))
             nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", args)
@@ -423,9 +423,9 @@ class iSCSI(object):
         if password:
             auth_info["password"] = GLib.Variant("s", password)
         if r_username:
-            auth_info["r_username"] = GLib.Variant("s", r_username)
+            auth_info["reverse-username"] = GLib.Variant("s", r_username)
         if r_password:
-            auth_info["r_password"] = GLib.Variant("s", r_password)
+            auth_info["reverse-password"] = GLib.Variant("s", r_password)
 
         try:
             self._login(node, auth_info)
