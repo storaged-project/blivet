@@ -27,6 +27,7 @@ from gi.repository import BlockDev as blockdev
 
 from ...callbacks import callbacks
 from ... import udev
+from ... import dependencies
 from ...devicelibs import lvm
 from ...devices.lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMInternalLVtype
 from ...errors import DeviceTreeError, DuplicateVGError
@@ -44,6 +45,7 @@ log = logging.getLogger("blivet")
 
 class LVMDevicePopulator(DevicePopulator):
     @classmethod
+    @dependencies.blockdev_lvm_required()
     def match(cls, data):
         return udev.device_is_dm_lvm(data)
 
@@ -83,6 +85,11 @@ class LVMDevicePopulator(DevicePopulator):
 class LVMFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "lvmpv"
+
+    @classmethod
+    @dependencies.blockdev_lvm_required()
+    def match(cls, data, device):
+        return super(cls, cls).match(data, device)
 
     def _get_kwargs(self):
         kwargs = super(LVMFormatPopulator, self)._get_kwargs()

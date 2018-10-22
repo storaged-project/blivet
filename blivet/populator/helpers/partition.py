@@ -29,7 +29,7 @@ from gi.repository import BlockDev as blockdev
 
 from ... import udev
 from ...devicelibs import lvm
-from ...devices import PartitionDevice
+from ...devices import PartitionDevice, MDRaidArrayDevice
 from ...errors import DeviceError
 from ...formats import get_format
 from ...storage_log import log_method_call
@@ -51,7 +51,7 @@ class PartitionDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
 
-        if name.startswith("md"):
+        if name.startswith("md") and not MDRaidArrayDevice.unavailable_type_dependencies():
             name = blockdev.md.name_from_node(name)
             device = self._devicetree.get_device_by_name(name)
             if device:

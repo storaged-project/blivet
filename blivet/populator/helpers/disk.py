@@ -27,6 +27,7 @@ from gi.repository import BlockDev as blockdev
 
 from ... import udev
 from ... import util
+from ... import dependencies
 from ...devices import DASDDevice, DiskDevice, FcoeDiskDevice, iScsiDiskDevice
 from ...devices import MDBiosRaidArrayDevice, ZFCPDiskDevice, NVDIMMNamespaceDevice
 from ...devices import device_path_to_name
@@ -136,6 +137,7 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
     _device_class = MDBiosRaidArrayDevice
 
     @classmethod
+    @dependencies.blockdev_md_required()
     def match(cls, data):
         return (super(MDBiosRaidDevicePopulator, MDBiosRaidDevicePopulator).match(data) and
                 udev.device_get_md_container(data))

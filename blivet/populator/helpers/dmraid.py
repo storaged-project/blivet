@@ -25,6 +25,7 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
+from ... import dependencies
 from ... import udev
 from ...devices import DMRaidArrayDevice
 from ...flags import flags
@@ -38,6 +39,11 @@ log = logging.getLogger("blivet")
 class DMRaidFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "dmraidmember"
+
+    @classmethod
+    @dependencies.blockdev_dmraid_required()
+    def match(cls, data, device):
+        return super(cls, cls).match(data, device)
 
     def run(self):
         super(DMRaidFormatPopulator, self).run()
