@@ -30,6 +30,7 @@ import os
 import importlib
 from six import add_metaclass
 
+from .. import udev
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
 from ..util import ObjectID
@@ -577,6 +578,7 @@ class DeviceFormat(ObjectID):
             raise FormatDestroyError(msg)
 
     def _post_destroy(self, **kwargs):
+        udev.settle()
         self.exists = False
 
     @property
