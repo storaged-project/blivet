@@ -721,7 +721,7 @@ class DeviceFactory(object):
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
             self.storage.destroy_device(device)
-            raise_from(StorageError, e)
+            raise_from(StorageError(e), e)
         else:
             if not device.size:
                 self.storage.destroy_device(device)
@@ -904,7 +904,7 @@ class DeviceFactory(object):
                 self._revert_devicetree()
 
             if not isinstance(e, (StorageError, OverflowError)):
-                raise_from(DeviceFactoryError, e)
+                raise_from(DeviceFactoryError(e), e)
 
             raise
 
