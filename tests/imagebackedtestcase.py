@@ -5,7 +5,6 @@ import unittest
 from blivet import Blivet
 from blivet import util
 from blivet.size import Size
-from blivet.flags import flags
 
 
 @unittest.skip("disabled until it can be converted to run in a vm")
@@ -94,7 +93,6 @@ class ImageBackedTestCase(unittest.TestCase):
 
     def setUp(self):
         """ Do any setup required prior to running a test. """
-        flags.image_install = True
         self.blivet = Blivet()
 
         self.addCleanup(self._clean_up)
@@ -118,5 +116,3 @@ class ImageBackedTestCase(unittest.TestCase):
         for fn in self.blivet.disk_images.values():
             if os.path.exists(fn):
                 os.unlink(fn)
-
-        flags.image_install = False
