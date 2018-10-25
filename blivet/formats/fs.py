@@ -569,11 +569,6 @@ class FS(DeviceFormat):
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
-            lost_and_found_context = util.match_path_context("/lost+found")
-            lost_and_found_path = os.path.join(mountpoint, "lost+found")
-            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
-            if not ret:
-                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
     def _pre_teardown(self, **kwargs):
         if not super(FS, self)._pre_teardown(**kwargs):
@@ -839,6 +834,20 @@ class Ext2FS(FS):
     _writeuuid_class = fswriteuuid.Ext2FSWriteUUID
     parted_system = fileSystemType["ext2"]
     _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
+
+    def _post_setup(self, **kwargs):
+        super(Ext2FS, self)._post_setup(**kwargs)
+
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+
+        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+            lost_and_found_context = util.match_path_context("/lost+found")
+            lost_and_found_path = os.path.join(mountpoint, "lost+found")
+            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
+            if not ret:
+                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
 register_device_format(Ext2FS)
 
