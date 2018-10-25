@@ -77,3 +77,6 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
     def is_name_valid(self, name):
         # Override StorageDevice.is_name_valid to allow /
         return not('\x00' in name or name == '.' or name == '..')
+
+    def update_sysfs_path(self):
+        pass
