@@ -827,7 +827,6 @@ class HFSPopulatorTestCase(FormatPopulatorTestCase):
 class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DiskLabelFormatPopulator
 
-    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
     @patch("blivet.udev.device_get_format", return_value=None)
     @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
@@ -836,7 +835,6 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         device_get_disklabel_type = args[0]
         device_get_format = args[1]
         device_is_biosraid_member = args[2]
-        is_mpath_member = args[3]
 
         device = Mock()
         device.is_disk = True
@@ -861,9 +859,9 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         device_is_biosraid_member.return_value = False
 
         # no match for multipath members
-        is_mpath_member.return_value = True
+        device_get_format.return_value = "mpath_member"
         self.assertFalse(self.helper_class.match(data, device))
-        is_mpath_member.return_value = False
+        device_get_format.return_value = None
 
     @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
