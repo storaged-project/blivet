@@ -76,6 +76,7 @@ class FS(DeviceFormat):
     _sync_class = fssync.UnimplementedFSSync
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
     _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
+    _selinux_supported = True
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
     # This number is more guess than precise number because this
@@ -565,7 +566,7 @@ class FS(DeviceFormat):
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
-        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+        if self._selinux_supported and flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
@@ -902,6 +903,7 @@ class FATFS(FS):
     _metadata_size_factor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
+    _selinux_supported = False
 
     def generate_new_uuid(self):
         ret = ""
@@ -1235,6 +1237,7 @@ class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
+    _selinux_supported = False
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)
