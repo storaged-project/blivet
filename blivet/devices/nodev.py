@@ -75,6 +75,9 @@ class NoDevice(StorageDevice):
     def update_size(self, newsize=None):
         pass
 
+    def update_sysfs_path(self):
+        pass
+
 
 class TmpFSDevice(NoDevice):
 

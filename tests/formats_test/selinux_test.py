@@ -43,7 +43,10 @@ class SELinuxContextTestCase(unittest.TestCase):
 
             blivet.flags.flags.selinux_reset_fcon = True
             fmt.setup(mountpoint="dummy")  # param needed to pass string check
-            lsetfilecon.assert_called_with(ANY, lost_found_context)
+            if isinstance(fmt, fs.Ext2FS):
+                lsetfilecon.assert_called_with(ANY, lost_found_context)
+            else:
+                lsetfilecon.assert_not_called()
 
             lsetfilecon.reset_mock()
 

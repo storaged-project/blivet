@@ -76,6 +76,7 @@ class FS(DeviceFormat):
     _sync_class = fssync.UnimplementedFSSync
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
     _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
+    _selinux_supported = True
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
     # This number is more guess than precise number because this
@@ -565,15 +566,10 @@ class FS(DeviceFormat):
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
-        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+        if self._selinux_supported and flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
-            lost_and_found_context = util.match_path_context("/lost+found")
-            lost_and_found_path = os.path.join(mountpoint, "lost+found")
-            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
-            if not ret:
-                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
     def _pre_teardown(self, **kwargs):
         if not super(FS, self)._pre_teardown(**kwargs):
@@ -840,6 +836,20 @@ class Ext2FS(FS):
     parted_system = fileSystemType["ext2"]
     _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
 
+    def _post_setup(self, **kwargs):
+        super(Ext2FS, self)._post_setup(**kwargs)
+
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+
+        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+            lost_and_found_context = util.match_path_context("/lost+found")
+            lost_and_found_path = os.path.join(mountpoint, "lost+found")
+            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
+            if not ret:
+                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
+
 register_device_format(Ext2FS)
 
 
@@ -893,6 +903,7 @@ class FATFS(FS):
     _metadata_size_factor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
+    _selinux_supported = False
 
     def generate_new_uuid(self):
         ret = ""
@@ -1226,6 +1237,7 @@ class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
+    _selinux_supported = False
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)
