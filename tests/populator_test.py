@@ -429,10 +429,15 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         disk = DiskDevice("xyz", fmt=fmt, exists=True)
         devicetree._add_device(disk)
 
+        # pylint: disable=unused-argument
+        def _get_device_by_name(name, **kwargs):
+            if name == "xyz":
+                return disk
+
         device_name = "xyz1"
         device_get_name.return_value = device_name
+        get_device_by_name.side_effect = _get_device_by_name
         device_get_partition_disk.return_value = "xyz"
-        get_device_by_name.return_value = disk
         helper = self.helper_class(devicetree, data)
 
         device = helper.run()
