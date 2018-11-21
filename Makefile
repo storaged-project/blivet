@@ -173,6 +173,14 @@ rc-release: scratch-bumpver scratch
 	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
 	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
 
+srpm: local
+	rpmbuild -bs --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
+	rm -f $(PKGNAME)-$(VERSION).tar.gz
+
+rpm: local
+	rpmbuild -bb --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
+	rm -f $(PKGNAME)-$(VERSION).tar.gz
+
 ci: check coverage
 
 .PHONY: check clean pylint pep8 install tag archive local
