@@ -69,7 +69,7 @@ pep8:
 	else \
 		echo "You need to install pycodestyle/pep8 to run this check."; exit 1; \
 	fi ; \
-	$$pep8 --ignore=E501,E402,E731 blivet/ tests/ examples/
+	$$pep8 --ignore=E501,E402,E731,W504 blivet/ tests/ examples/
 
 canary: po-fallback
 	@echo "*** Running translation-canary tests ***"
