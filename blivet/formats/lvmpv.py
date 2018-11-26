@@ -181,4 +181,5 @@ class LVMPhysicalVolume(DeviceFormat):
     def container_uuid(self, uuid):
         self.vg_uuid = uuid
 
+
 register_device_format(LVMPhysicalVolume)

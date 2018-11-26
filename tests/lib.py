@@ -23,13 +23,13 @@ def assertVerboseListEqual(left, right, msg=None):
     s = "\n"
     if leftmissing:
         s += "log has: \n"
-        for l in leftmissing:
-            s += " %s\n" % (pprint.pformat(l),)
+        for lm in leftmissing:
+            s += " %s\n" % (pprint.pformat(lm),)
 
     if rightmissing:
         s += "expected: \n"
-        for r in rightmissing:
-            s += " %s\n" % (pprint.pformat(r),)
+        for rm in rightmissing:
+            s += " %s\n" % (pprint.pformat(rm),)
 
     if leftmissing or rightmissing:
         raise AssertionError(s)
@@ -37,12 +37,12 @@ def assertVerboseListEqual(left, right, msg=None):
 
 def assertVerboseEqual(left, right, msg=None):
     if left != right:
-        l = len(left)
-        r = len(right)
-        for x in range(0, max(l, r)):
-            if x > l - 1:
+        ll = len(left)
+        rl = len(right)
+        for x in range(0, max(ll, rl)):
+            if x > ll - 1:
                 assertVerboseEqual(None, right[x], msg)
-            if x > r - 1:
+            if x > rl - 1:
                 assertVerboseEqual(left[x], None, msg)
             if left[x] != right[x]:
                 if msg:

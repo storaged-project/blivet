@@ -118,6 +118,7 @@ class iSCSIDependencyGuard(util.DependencyGuard):
             return False
         return safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, INITIATOR_IFACE)
 
+
 storaged_iscsi_required = iSCSIDependencyGuard()
 
 
@@ -544,6 +545,7 @@ class iSCSI(object):
                 node_disks.append(disk)
 
         return node_disks
+
 
 # Create iscsi singleton
 iscsi = iSCSI()

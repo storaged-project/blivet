@@ -111,6 +111,7 @@ def partition_compare(part1, part2):
 
     return ret
 
+
 _partition_compare_key = functools.cmp_to_key(partition_compare)
 
 
@@ -1974,6 +1975,7 @@ def lv_compare(lv1, lv2):
         ret = -1
 
     return ret
+
 
 _lv_compare_key = functools.cmp_to_key(lv_compare)
 

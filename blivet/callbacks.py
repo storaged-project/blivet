@@ -67,6 +67,7 @@ def create_new_callbacks_register(create_format_pre=None,
                               resize_format_pre, resize_format_post,
                               wait_for_entropy, report_progress)
 
+
 CreateFormatPreData = namedtuple("CreateFormatPreData",
                                  ["msg"])
 CreateFormatPostData = namedtuple("CreateFormatPostData",
@@ -144,6 +145,7 @@ class Callbacks(object):
 
         self.attribute_changed = CallbackList()
         """ callback list for when a device or format attribute's value is changed"""
+
 
 """
     .. data:: callbacks

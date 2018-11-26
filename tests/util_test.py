@@ -125,6 +125,7 @@ class TestDependencyGuard(util.DependencyGuard):
     def _check_avail(self):
         return False
 
+
 _requires_something = TestDependencyGuard()
 
 

@@ -174,4 +174,5 @@ class MountsCache(object):
             self.mounts_hash = md5hash
             self._get_active_mounts()
 
+
 mounts_cache = MountsCache()

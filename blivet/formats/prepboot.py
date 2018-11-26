@@ -98,4 +98,5 @@ class PPCPRePBoot(DeviceFormat):
     def supported(self):
         return super(PPCPRePBoot, self).supported and arch.is_ipseries()
 
+
 register_device_format(PPCPRePBoot)

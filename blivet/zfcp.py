@@ -40,6 +40,7 @@ def logged_write_line_to_file(fn, value):
     f.write("%s\n" % (value))
     f.close()
 
+
 zfcpsysfs = "/sys/bus/ccw/drivers/zfcp"
 scsidevsysfs = "/sys/bus/scsi/devices"
 zfcpconf = "/etc/zfcp.conf"
@@ -381,6 +382,7 @@ class zFCP:
         f = open(root + "/etc/modprobe.conf", "a")
         f.write("alias scsi_hostadapter zfcp\n")
         f.close()
+
 
 # Create ZFCP singleton
 zfcp = zFCP()

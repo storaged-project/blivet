@@ -42,6 +42,7 @@ class BlivetLintConfig(PocketLintConfig):
     def extraArgs(self):
         return ["--unsafe-load-any-extension=yes"]
 
+
 if __name__ == "__main__":
     conf = BlivetLintConfig()
     linter = PocketLinter(conf)

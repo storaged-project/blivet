@@ -126,6 +126,7 @@ class Path(Method):
         else:
             return []
 
+
 Path = Path()
 
 
@@ -253,6 +254,7 @@ class UnavailableMethod(Method):
     def availability_errors(self, resource):
         return ["always unavailable"]
 
+
 UnavailableMethod = UnavailableMethod()
 
 
@@ -262,6 +264,7 @@ class AvailableMethod(Method):
 
     def availability_errors(self, resource):
         return []
+
 
 AvailableMethod = AvailableMethod()
 
@@ -298,6 +301,7 @@ def unavailable_resource(name):
 def available_resource(name):
     """ Construct an external resource that is always available. """
     return ExternalResource(AvailableMethod, name)
+
 
 # libblockdev btrfs plugin required technologies and modes
 BLOCKDEV_BTRFS_ALL_MODES = (blockdev.BtrfsTechMode.CREATE |

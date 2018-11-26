@@ -42,6 +42,7 @@ class NVDIMMDependencyGuard(util.DependencyGuard):
             return False
         return True
 
+
 blockdev_nvdimm_required = NVDIMMDependencyGuard()
 
 
