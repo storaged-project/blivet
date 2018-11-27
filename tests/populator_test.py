@@ -572,7 +572,9 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
                            uuid='test-uuid', sector_size=512)
 
         with patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data):
-            device = helper.run()
+            with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
+                device = helper.run()
+
         self.assertIsInstance(device, NVDIMMNamespaceDevice)
         self.assertTrue(device.exists)
         self.assertTrue(device.is_disk)
