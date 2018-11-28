@@ -25,6 +25,7 @@ from .i18n import _
 from .storage_log import log_exception_info
 from . import safe_dbus
 import os
+import re
 import shutil
 import time
 import itertools
@@ -46,9 +47,11 @@ ISCSI_MODULES = ['cxgb3i', 'bnx2i', 'be2iscsi']
 
 
 STORAGED_SERVICE = "org.freedesktop.UDisks2"
+STORAGED_PATH = "/org/freedesktop/UDisks2"
 STORAGED_MANAGER_PATH = "/org/freedesktop/UDisks2/Manager"
 MANAGER_IFACE = "org.freedesktop.UDisks2.Manager"
 INITIATOR_IFACE = MANAGER_IFACE + ".ISCSI.Initiator"
+SESSION_IFACE = STORAGED_SERVICE + ".ISCSI.Session"
 
 
 def has_iscsi():
@@ -117,6 +120,7 @@ class iSCSIDependencyGuard(util.DependencyGuard):
         except safe_dbus.DBusCallError:
             return False
         return safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, INITIATOR_IFACE)
+
 
 storaged_iscsi_required = iSCSIDependencyGuard()
 
@@ -264,6 +268,31 @@ class iSCSI(object):
         self._call_initiator_method("Login", args)
 
     @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    def _get_active_sessions(self):
+        try:
+            objects = safe_dbus.call_sync(STORAGED_SERVICE,
+                                          STORAGED_PATH,
+                                          'org.freedesktop.DBus.ObjectManager',
+                                          'GetManagedObjects',
+                                          None)[0]
+        except safe_dbus.DBusCallError:
+            log_exception_info(log.info, "iscsi: Failed to get active sessions.")
+            return []
+
+        sessions = (obj for obj in objects.keys() if re.match(r'.*/iscsi/session[0-9]+$', obj))
+
+        active = []
+        for session in sessions:
+            properties = objects[session][SESSION_IFACE]
+            active.append(NodeInfo(properties["target_name"],
+                                   properties["tpgt"],
+                                   properties["persistent_address"],
+                                   properties["persistent_port"],
+                                   None))
+
+        return active
+
+    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def _start_ibft(self):
         if not flags.ibft:
             return
@@ -277,7 +306,13 @@ class iSCSI(object):
             return
 
         found_nodes = _to_node_infos(found_nodes)
+        active_nodes = self._get_active_sessions()
         for node in found_nodes:
+            if any(node.name == a.name and node.tpgt == a.tpgt and
+                   node.address == a.address and node.port == a.port for a in active_nodes):
+                log.info("iscsi IBFT: already logged in node %s at %s:%s through %s",
+                         node.name, node.address, node.port, node.iface)
+                self.ibft_nodes.append(node)
             try:
                 self._login(node)
                 log.info("iscsi IBFT: logged into %s at %s:%s through %s",
@@ -544,6 +579,7 @@ class iSCSI(object):
                 node_disks.append(disk)
 
         return node_disks
+
 
 # Create iscsi singleton
 iscsi = iSCSI()
