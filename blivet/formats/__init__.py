@@ -63,6 +63,7 @@ def register_device_format(fmt_class):
     log.debug("registered device format class %s as %s", fmt_class.__name__,
               fmt_class._type)
 
+
 default_fstypes = ("ext4", "xfs", "ext3", "ext2")
 
 
@@ -735,6 +736,7 @@ class DeviceFormat(ObjectID):
         data.format = not self.exists
         data.fstype = self.type
         data.mountpoint = self.ks_mountpoint
+
 
 register_device_format(DeviceFormat)
 

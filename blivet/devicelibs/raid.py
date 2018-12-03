@@ -392,6 +392,7 @@ class RAIDLevels(object):
     def __iter__(self):
         return iter(self._raid_levels)
 
+
 ALL_LEVELS = RAIDLevels()
 
 
@@ -428,6 +429,7 @@ class Striped(RAID0):
     name = 'striped'
     names = [name]
 
+
 RAID0 = RAID0()
 ALL_LEVELS.add_raid_level(RAID0)
 Striped = Striped()
@@ -460,6 +462,7 @@ class RAID1(RAIDn):
     def _get_recommended_stride(self, member_count):
         return None
 
+
 RAID1 = RAID1()
 ALL_LEVELS.add_raid_level(RAID1)
 
@@ -489,6 +492,7 @@ class RAID4(RAIDn):
 
     def _get_recommended_stride(self, member_count):
         return (member_count - 1) * 16
+
 
 RAID4 = RAID4()
 ALL_LEVELS.add_raid_level(RAID4)
@@ -520,6 +524,7 @@ class RAID5(RAIDn):
     def _get_recommended_stride(self, member_count):
         return (member_count - 1) * 16
 
+
 RAID5 = RAID5()
 ALL_LEVELS.add_raid_level(RAID5)
 
@@ -549,6 +554,7 @@ class RAID6(RAIDn):
 
     def _get_recommended_stride(self, member_count):
         return None
+
 
 RAID6 = RAID6()
 ALL_LEVELS.add_raid_level(RAID6)
@@ -580,6 +586,7 @@ class RAID10(RAIDn):
     def _get_recommended_stride(self, member_count):
         return None
 
+
 RAID10 = RAID10()
 ALL_LEVELS.add_raid_level(RAID10)
 
@@ -609,6 +616,7 @@ class Container(RAIDLevel):
     def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
         # pylint: disable=unused-argument
         return sum(member_sizes, Size(0))
+
 
 Container = Container()
 ALL_LEVELS.add_raid_level(Container)
@@ -662,6 +670,7 @@ class Linear(ErsatzRAID):
     name = 'linear'
     names = [name, 'jbod']
 
+
 Linear = Linear()
 ALL_LEVELS.add_raid_level(Linear)
 
@@ -671,6 +680,7 @@ class Single(ErsatzRAID):
     """ subclass with canonical btrfs name. """
     name = 'single'
     names = [name]
+
 
 Single = Single()
 ALL_LEVELS.add_raid_level(Single)
@@ -690,6 +700,7 @@ class Dup(RAIDLevel):
 
     def has_redundancy(self):
         return True
+
 
 Dup = Dup()
 ALL_LEVELS.add_raid_level(Dup)

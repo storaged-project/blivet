@@ -51,6 +51,7 @@ class LVsInfo(object):
     def drop_cache(self):
         self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
 
+
 lvs_info = LVsInfo()
 
 
@@ -91,5 +92,6 @@ class PVsInfo(object):
 
     def drop_cache(self):
         self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
+
 
 pvs_info = PVsInfo()

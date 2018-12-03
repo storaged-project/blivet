@@ -941,6 +941,7 @@ def _add_extra_doc_text(func, field=None, desc=None, field_unique=False):
     text += field + " " + desc
     func.__doc__ = base_text + "\n" + indent(text, indent_spaces)
 
+
 #
 # Deprecation decorator.
 #
@@ -949,6 +950,7 @@ _DEPRECATION_MESSAGE = "will be removed in a future version."
 
 def _default_deprecation_msg(func):
     return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
+
 
 _SPHINX_DEPRECATE = ".. deprecated::"
 _DEPRECATION_INFO = """%(version)s

@@ -12,10 +12,8 @@ VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 ifeq ($(PYTHON),python3)
   COVERAGE=coverage3
-  PEP8=$(PYTHON)-pep8
 else
   COVERAGE=coverage
-  PEP8=pep8
 endif
 
 ZANATA_PULL_ARGS = --transdir ./po/
@@ -62,7 +60,16 @@ pylint:
 
 pep8:
 	@echo "*** Running pep8 compliance check ***"
-	$(PEP8) --ignore=E501,E402,E731 blivet/ tests/ examples/
+	@if test `which pycodestyle-3` ; then \
+		pep8='pycodestyle-3' ; \
+	elif test `which pycodestyle` ; then \
+		pep8='pycodestyle' ; \
+	elif test `which pep8` ; then \
+		pep8='pep8' ; \
+	else \
+		echo "You need to install pycodestyle/pep8 to run this check."; exit 1; \
+	fi ; \
+	$$pep8 --ignore=E501,E402,E731,W504 blivet/ tests/ examples/
 
 canary: po-fallback
 	@echo "*** Running translation-canary tests ***"

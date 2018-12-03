@@ -41,6 +41,7 @@ def _build_helper_lists():
     _device_helpers.sort(key=lambda h: h.priority, reverse=True)
     _format_helpers.sort(key=lambda h: h.priority, reverse=True)
 
+
 _build_helper_lists()
 
 

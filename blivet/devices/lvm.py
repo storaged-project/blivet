@@ -64,6 +64,7 @@ class LVPVSpec(object):
         self.pv = pv
         self.size = size
 
+
 PVFreeInfo = namedtuple("PVFreeInfo", ["pv", "size", "free"])
 """ A namedtuple class holding the information about PV's (usable) size and free space """
 
