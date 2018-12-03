@@ -618,10 +618,6 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
         self._raid_level = None
-        if self.seg_type in lvm.raid_seg_types:
-            self._raid_level = lvm.raid_levels.raid_level(self.seg_type)
-        else:
-            self._raid_level = lvm.raid_levels.raid_level("linear")
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -691,7 +687,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # nothing to do for non-RAID (and thus non-striped) LVs here
             return
         for spec in self._pv_specs:
-            spec.size = self._raid_level.get_base_member_size(self.size + self._metadata_size, len(self._pv_specs))
+            spec.size = self.raid_level.get_base_member_size(self.size + self._metadata_size, len(self._pv_specs))
 
     @property
     def members(self):
@@ -714,6 +710,27 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         return seg_type in lvm.raid_seg_types
 
     @property
+    def raid_level(self):
+        if self._raid_level is not None:
+            return self._raid_level
+
+        seg_type = self.seg_type
+        if self.cached:
+            # for a cached LV we are interested in the segment type of its
+            # origin LV (the original non-cached LV)
+            for lv in self._internal_lvs:
+                if lv.int_lv_type == LVMInternalLVtype.origin:
+                    seg_type = lv.seg_type
+                    break
+
+        if seg_type in lvm.raid_seg_types:
+            self._raid_level = lvm.raid_levels.raid_level(seg_type)
+        else:
+            self._raid_level = lvm.raid_levels.raid_level("linear")
+
+        return self._raid_level
+
+    @property
     def vg(self):
         """This Logical Volume's Volume Group."""
         if self._parents:
@@ -722,11 +739,24 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             return None
 
     @property
-    def _num_raid_pvs(self):
+    def num_raid_pvs(self):
         if self.exists:
-            image_lvs = [int_lv for int_lv in self._internal_lvs
-                         if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.image]
-            return len(image_lvs) or 1
+            if self.cached:
+                # for a cached LV we are interested in the number of image LVs of its
+                # origin LV (the original non-cached LV)
+                for lv in self._internal_lvs:
+                    if lv.int_lv_type == LVMInternalLVtype.origin:
+                        return lv.num_raid_pvs
+
+                # this should never be reached, every existing cached LV should
+                # have an origin internal LV
+                log.warning("An existing cached LV '%s' has no internal LV of type origin",
+                            self.name)
+                return 1
+            else:
+                image_lvs = [int_lv for int_lv in self._internal_lvs
+                             if int_lv.is_internal_lv and int_lv.int_lv_type == LVMInternalLVtype.image]
+                return len(image_lvs) or 1
         else:
             return len(self._pv_specs)
 
@@ -758,7 +788,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
     @property
     def mirrored(self):
-        return self._raid_level and self._raid_level.has_redundancy()
+        return self.raid_level and self.raid_level.has_redundancy()
 
     @property
     def vg_space_used(self):
@@ -768,22 +798,32 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def data_vg_space_used(self):
         """ Space occupied by the data part of this LV, not including snapshots """
+        if self.exists and self._internal_lvs:
+            image_lvs_sum = Size(0)
+            complex_int_lvs = []
+            for lv in self._internal_lvs:
+                if lv.int_lv_type == LVMInternalLVtype.image:
+                    # image LV (RAID leg)
+                    image_lvs_sum += lv.vg_space_used
+                elif lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log):
+                    # metadata LVs
+                    continue
+                else:
+                    complex_int_lvs.append(lv)
+
+            return image_lvs_sum + sum(lv.data_vg_space_used for lv in complex_int_lvs)
+
         if self.cached:
             cache_size = self.cache.size
         else:
             cache_size = Size(0)
 
-        int_data_lvs = [lv for lv in self._internal_lvs
-                        if lv.int_lv_type in (LVMInternalLVtype.data, LVMInternalLVtype.image)]
-        if self.exists and int_data_lvs:
-            return sum(lv.vg_space_used for lv in int_data_lvs) + cache_size
-
         rounded_size = self.vg.align(self.size, roundup=True)
         if self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
             try:
-                raided_size = self._raid_level.get_space(rounded_size, self._num_raid_pvs,
-                                                         superblock_size_func=zero_superblock)
+                raided_size = self.raid_level.get_space(rounded_size, self.num_raid_pvs,
+                                                        superblock_size_func=zero_superblock)
                 return raided_size + cache_size
             except errors.RaidError:
                 # Too few PVs for the segment type (RAID level), we must have
@@ -798,10 +838,20 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     @property
     def metadata_vg_space_used(self):
         """ Space occupied by the metadata part(s) of this LV, not including snapshots """
-        if self.exists:
-            return sum((lv.vg_space_used for lv in self._internal_lvs
-                        if lv.is_internal_lv and lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log)),
-                       Size(0))
+        if self.exists and self._internal_lvs:
+            meta_lvs_sum = Size(0)
+            complex_int_lvs = []
+            for lv in self._internal_lvs:
+                if lv.int_lv_type == LVMInternalLVtype.image:
+                    # image LV (RAID leg)
+                    continue
+                elif lv.int_lv_type in (LVMInternalLVtype.meta, LVMInternalLVtype.log):
+                    # metadata LVs
+                    meta_lvs_sum += lv.vg_space_used
+                else:
+                    complex_int_lvs.append(lv)
+
+            return meta_lvs_sum + sum(lv.metadata_vg_space_used for lv in complex_int_lvs)
 
         # otherwise we need to do the calculations
         if self.cached:
@@ -813,8 +863,8 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         if non_raid_base and self.is_raid_lv:
             zero_superblock = lambda x: Size(0)
             try:
-                raided_space = self._raid_level.get_space(non_raid_base, self._num_raid_pvs,
-                                                          superblock_size_func=zero_superblock)
+                raided_space = self.raid_level.get_space(non_raid_base, self.num_raid_pvs,
+                                                         superblock_size_func=zero_superblock)
                 return raided_space + cache_md
             except errors.RaidError:
                 # Too few PVs for the segment type (RAID level), we must have
