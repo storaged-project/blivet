@@ -30,6 +30,7 @@ import os
 import importlib
 from six import add_metaclass
 
+from .. import udev
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
 from ..util import ObjectID
@@ -61,6 +62,7 @@ def register_device_format(fmt_class):
     device_formats[fmt_class._type] = fmt_class
     log.debug("registered device format class %s as %s", fmt_class.__name__,
               fmt_class._type)
+
 
 default_fstypes = ("ext4", "xfs", "ext3", "ext2")
 
@@ -577,6 +579,7 @@ class DeviceFormat(ObjectID):
             raise FormatDestroyError(msg)
 
     def _post_destroy(self, **kwargs):
+        udev.settle()
         self.exists = False
 
     @property
@@ -733,6 +736,7 @@ class DeviceFormat(ObjectID):
         data.format = not self.exists
         data.fstype = self.type
         data.mountpoint = self.ks_mountpoint
+
 
 register_device_format(DeviceFormat)
 

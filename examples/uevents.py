@@ -12,6 +12,7 @@ def print_changes(event, changes):
     print("***")
     print()
 
+
 set_up_logging(console_logs=["blivet.event"])
 b = blivet.Blivet()  # create an instance of Blivet
 b.reset()  # detect system storage configuration

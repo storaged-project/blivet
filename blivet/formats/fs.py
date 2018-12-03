@@ -76,6 +76,7 @@ class FS(DeviceFormat):
     _sync_class = fssync.UnimplementedFSSync
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
     _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
+    _selinux_supported = True
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
     # This number is more guess than precise number because this
@@ -565,15 +566,10 @@ class FS(DeviceFormat):
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
-        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+        if self._selinux_supported and flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
-            lost_and_found_context = util.match_path_context("/lost+found")
-            lost_and_found_path = os.path.join(mountpoint, "lost+found")
-            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
-            if not ret:
-                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
     def _pre_teardown(self, **kwargs):
         if not super(FS, self)._pre_teardown(**kwargs):
@@ -701,7 +697,7 @@ class FS(DeviceFormat):
 
         try:
             self.write_uuid()
-        except:
+        except Exception:  # pylint: disable=broad-except
             # something went wrong, restore the original UUID
             self.uuid = orig_uuid
             raise
@@ -840,6 +836,21 @@ class Ext2FS(FS):
     parted_system = fileSystemType["ext2"]
     _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
 
+    def _post_setup(self, **kwargs):
+        super(Ext2FS, self)._post_setup(**kwargs)
+
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+
+        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+            lost_and_found_context = util.match_path_context("/lost+found")
+            lost_and_found_path = os.path.join(mountpoint, "lost+found")
+            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
+            if not ret:
+                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
+
+
 register_device_format(Ext2FS)
 
 
@@ -858,6 +869,7 @@ class Ext3FS(Ext2FS):
     _max_size = Size("16 TiB")
     _metadata_size_factor = 0.90  # ext3 metadata may take 10% of space
 
+
 register_device_format(Ext3FS)
 
 
@@ -870,6 +882,7 @@ class Ext4FS(Ext3FS):
     parted_system = fileSystemType["ext4"]
     _max_size = Size("1 EiB")
     _metadata_size_factor = 0.85  # ext4 metadata may take 15% of space
+
 
 register_device_format(Ext4FS)
 
@@ -893,12 +906,14 @@ class FATFS(FS):
     _metadata_size_factor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
+    _selinux_supported = False
 
     def generate_new_uuid(self):
         ret = ""
         for _i in range(8):
             ret += random.choice("0123456789ABCDEF")
         return ret[:4] + "-" + ret[4:]
+
 
 register_device_format(FATFS)
 
@@ -914,6 +929,7 @@ class EFIFS(FATFS):
     @property
     def supported(self):
         return super(EFIFS, self).supported and arch.is_efi()
+
 
 register_device_format(EFIFS)
 
@@ -963,6 +979,7 @@ class BTRFS(FS):
     def container_uuid(self, uuid):
         self.vol_uuid = uuid
 
+
 register_device_format(BTRFS)
 
 
@@ -985,6 +1002,7 @@ class GFS2(FS):
     def supported(self):
         """ Is this filesystem a supported type? """
         return self.utils_available if flags.gfs2 else self._supported
+
 
 register_device_format(GFS2)
 
@@ -1014,6 +1032,7 @@ class JFS(FS):
         """ Is this filesystem a supported type? """
         return self.utils_available if flags.jfs else self._supported
 
+
 register_device_format(JFS)
 
 
@@ -1042,6 +1061,7 @@ class ReiserFS(FS):
     def supported(self):
         """ Is this filesystem a supported type? """
         return self.utils_available if flags.reiserfs else self._supported
+
 
 register_device_format(ReiserFS)
 
@@ -1086,6 +1106,7 @@ class XFS(FS):
 
         super(XFS, self).write_uuid()
 
+
 register_device_format(XFS)
 
 
@@ -1096,6 +1117,7 @@ class HFS(FS):
     _formattable = True
     _mkfs_class = fsmkfs.HFSMkfs
     parted_system = fileSystemType["hfs"]
+
 
 register_device_format(HFS)
 
@@ -1111,6 +1133,7 @@ class AppleBootstrapFS(HFS):
     @property
     def supported(self):
         return super(AppleBootstrapFS, self).supported and arch.is_pmac()
+
 
 register_device_format(AppleBootstrapFS)
 
@@ -1131,6 +1154,7 @@ class HFSPlus(FS):
     _mkfs_class = fsmkfs.HFSPlusMkfs
     _mount_class = fsmount.HFSPlusMount
 
+
 register_device_format(HFSPlus)
 
 
@@ -1149,6 +1173,7 @@ class MacEFIFS(HFSPlus):
         if "label" not in kwargs:
             kwargs["label"] = self._name
         super(MacEFIFS, self).__init__(**kwargs)
+
 
 register_device_format(MacEFIFS)
 
@@ -1199,6 +1224,7 @@ class NFS(FS):
             return "device must be of the form <host>:<path>"
         return None
 
+
 register_device_format(NFS)
 
 
@@ -1207,6 +1233,7 @@ class NFSv4(NFS):
     """ NFSv4 filesystem. """
     _type = "nfs4"
     _modules = ["nfs4"]
+
 
 register_device_format(NFSv4)
 
@@ -1218,6 +1245,7 @@ class Iso9660FS(FS):
     _supported = True
     _mount_class = fsmount.Iso9660FSMount
 
+
 register_device_format(Iso9660FS)
 
 
@@ -1226,6 +1254,7 @@ class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
+    _selinux_supported = False
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)
@@ -1239,6 +1268,7 @@ class NoDevFS(FS):
     def type(self):
         return self.device
 
+
 register_device_format(NoDevFS)
 
 
@@ -1248,6 +1278,7 @@ class DevPtsFS(NoDevFS):
     _type = "devpts"
     _mount_class = fsmount.DevPtsFSMount
 
+
 register_device_format(DevPtsFS)
 
 
@@ -1255,11 +1286,13 @@ register_device_format(DevPtsFS)
 class ProcFS(NoDevFS):
     _type = "proc"
 
+
 register_device_format(ProcFS)
 
 
 class SysFS(NoDevFS):
     _type = "sysfs"
+
 
 register_device_format(SysFS)
 
@@ -1376,12 +1409,14 @@ class TmpFS(NoDevFS):
         FS.do_resize(self)
         self._accept_default_size = self._accept_default_size and original_size == self._size
 
+
 register_device_format(TmpFS)
 
 
 class BindFS(FS):
     _type = "bind"
     _mount_class = fsmount.BindFSMount
+
 
 register_device_format(BindFS)
 
@@ -1390,16 +1425,19 @@ class SELinuxFS(NoDevFS):
     _type = "selinuxfs"
     _mount_class = fsmount.SELinuxFSMount
 
+
 register_device_format(SELinuxFS)
 
 
 class USBFS(NoDevFS):
     _type = "usbfs"
 
+
 register_device_format(USBFS)
 
 
 class EFIVarFS(NoDevFS):
     _type = "efivarfs"
+
 
 register_device_format(EFIVarFS)

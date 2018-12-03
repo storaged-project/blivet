@@ -576,4 +576,5 @@ class DiskLabel(DeviceFormat):
         else:
             return 0
 
+
 register_device_format(DiskLabel)

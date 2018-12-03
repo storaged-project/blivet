@@ -153,7 +153,7 @@ class BTRFSDevice(StorageDevice):
 
     def is_name_valid(self, name):
         # Override StorageDevice.is_name_valid to allow pretty much anything
-        return not('\x00' in name)
+        return btrfs.is_btrfs_name_valid(name)
 
 
 class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):

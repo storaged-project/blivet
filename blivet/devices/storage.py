@@ -149,8 +149,8 @@ class StorageDevice(Device):
         self.device_links = []
 
         if self.exists:
-            self.update_sysfs_path()
             if self.status:
+                self.update_sysfs_path()
                 self.update_size()
 
     def __str__(self):

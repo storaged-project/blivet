@@ -227,6 +227,7 @@ MODE="fabric"
                             line = 'MODE="%s"\n' % mode
                 new_cfg.write(line)
 
+
 # Create FCoE singleton
 fcoe = FCoE()
 

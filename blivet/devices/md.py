@@ -31,6 +31,7 @@ from gi.repository import BlockDev as blockdev
 from ..devicelibs import mdraid, raid
 
 from .. import errors
+from ..formats import DeviceFormat
 from .. import util
 from ..static_data import pvs_info
 from ..storage_log import log_method_call
@@ -562,6 +563,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             blockdev.lvm.pvremove(self.path)
 
         remove_stale_lvm()
+
+        # remove any other stale metadata before proceeding
+        DeviceFormat(device=self.path, exists=True).destroy()
 
     def _create(self):
         """ Create the device. """

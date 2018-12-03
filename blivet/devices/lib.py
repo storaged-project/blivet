@@ -55,6 +55,8 @@ def _collect_device_major_data():
         except ValueError:
             continue
     return (by_major, by_device)
+
+
 _devices_by_major, _majors_by_device = _collect_device_major_data()
 
 

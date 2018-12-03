@@ -23,10 +23,6 @@
 import copy
 import six
 
-import gi
-gi.require_version("BlockDev", "2.0")
-from gi.repository import BlockDev as blockdev
-
 from ... import udev
 from ...devicelibs import lvm
 from ...devices import PartitionDevice
@@ -51,11 +47,9 @@ class PartitionDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
 
-        if name.startswith("md"):
-            name = blockdev.md.name_from_node(name)
-            device = self._devicetree.get_device_by_name(name)
-            if device:
-                return device
+        device = self._devicetree.get_device_by_name(name)
+        if device:
+            return device
 
         disk = None
         disk_name = udev.device_get_partition_disk(self.data)

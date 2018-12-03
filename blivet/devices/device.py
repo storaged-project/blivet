@@ -279,10 +279,10 @@ class Device(util.ObjectID):
     @property
     def ancestors(self):
         """ A list of all of this device's ancestors, including itself. """
-        l = set([self])
-        for p in [d for d in self.parents if d not in l]:
-            l.update(set(p.ancestors))
-        return list(l)
+        ancestors = set([self])
+        for p in [d for d in self.parents if d not in ancestors]:
+            ancestors.update(set(p.ancestors))
+        return list(ancestors)
 
     @property
     def packages(self):
