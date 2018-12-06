@@ -222,11 +222,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
             try:
                 lvs_info = blockdev.lvm.lvs(vg_name=self.name)
             except blockdev.LVMError:
-                lvs_info = dict()
+                lvs_info = []
 
-            for lv_info in lvs_info.values():
-                lv_attr = udev.device_get_lv_attr(lv_info)
-                if lv_attr and lv_attr[4] == 'a':
+            for lv_info in lvs_info:
+                if lv_info.attr and lv_info.attr[4] == 'a':
                     return True
 
             return False
