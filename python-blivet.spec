@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.1
+Version: 3.1.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -190,6 +190,39 @@ configuration.
 %endif
 
 %changelog
+* Wed Dec 12 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.2-1
+- Fix reading LV attributes in LVMVolumeGroupDevice.status (vtrefny)
+- Do not try to login to iBFTs with active session (vtrefny)
+- Fix xfs sync of chrooted mountpoint. (dlehman)
+- Only update sysfs path in ctor for active devices. (dlehman)
+- Fix new pep8/pycodestyle warnings (vtrefny)
+- Ignore PEP8 W504 warning ("line break after binary operator") (vtrefny)
+- pylint: Allow loading all C extensions (vtrefny)
+- Use 'pycodestyle' instead of 'pep8' (vtrefny)
+- Fix failing populator test without nvdimm plugin (vtrefny)
+- Add 'srpm' and 'rpm' targets to Makefile for building (S)RPMs (vtrefny)
+- Fix crash on reset on systems without nvdimm plugin (vtrefny)
+- Use the size info of internal LVs when getting space usage for existing LVs
+  (v.podzimek)
+- Calculate the number of RAID PVs from the origin for cached LVs (v.podzimek)
+- Make raid_level a property of an LV object (v.podzimek)
+- Add a test for DeviceTree.get_related_disks. (dlehman)
+- Fix ixgbe/bnx2fc fcoe disk detection (#1651506) (rvykydal)
+- Use RAID name for partitions on an MD array (vtrefny)
+- Move btrfs name validation to devicelibs (vtrefny)
+- Don't try to set selinux context for nodev or vfat file systems. (dlehman)
+- Only try to set selinux context for lost+found on ext file systems. (dlehman)
+- Wipe all stale metadata after creating md array. (#1639682) (dlehman)
+- Don't try to update sysfs path for non-block devices. (#1579375) (dlehman)
+- Don't raise errors without messages (vponcova)
+- Install ndctl when NVDIMMs are used. (dlehman)
+- Deactivate incomplete VGs along with everything else. (dlehman)
+- Work around udev timing issues. (dlehman)
+- Fix options for ISCSI functions (#1632656) (vtrefny)
+- Use format.status when checking for PV status (vtrefny)
+- Remove Anaconda flags (vponcova)
+- Remove square brackets when matching internal LVs (v.podzimek)
+
 * Wed Sep 26 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.1-1
 - Check device dependencies only for device actions (vtrefny)
 - Allow removing btrfs volumes without btrfs support (vtrefny)
