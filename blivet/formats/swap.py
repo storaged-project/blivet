@@ -181,4 +181,5 @@ class SwapSpace(DeviceFormat):
             blockdev.swap.mkswap(self.device, label=self.label,
                                  extra={"-U": self.uuid})
 
+
 register_device_format(SwapSpace)

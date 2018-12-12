@@ -200,9 +200,18 @@ def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
     if "DM_NAME" in udev_info:
         name = udev_info["DM_NAME"]
-    elif "MD_DEVNAME" in udev_info and not device_is_partition(udev_info):
-        # md partitions have MD_DEVNAME set to the partition's parent/disk
-        name = udev_info["MD_DEVNAME"]
+    elif "MD_DEVNAME" in udev_info:
+        mdname = udev_info["MD_DEVNAME"]
+        if device_is_partition(udev_info):
+            # for partitions on named RAID we want to use the raid name, not
+            # the node, e.g. "raid1" instead of "md127p1"
+            partnum = udev_info["ID_PART_ENTRY_NUMBER"]
+            if mdname[-1].isdigit():
+                name = mdname + "p" + partnum
+            else:
+                name = mdname + partnum
+        else:
+            name = mdname
     else:
         name = udev_info["SYS_NAME"]
 
@@ -872,7 +881,7 @@ def device_get_iscsi_initiator(info):
 # Ethernet interface.
 
 def _detect_broadcom_fcoe(info):
-    re_pci_host = re.compile(r'/(.*)/(host\d+)')
+    re_pci_host = re.compile(r'(.*)/(host\d+)')
     match = re_pci_host.match(device_get_sysfs_path(info))
     if match:
         sysfs_pci, host = match.groups()
@@ -944,6 +953,11 @@ def device_get_fcoe_identifier(info):
 
 def device_is_nvdimm_namespace(info):
     if info.get("DEVTYPE") != "disk":
+        return False
+
+    if not blockdev.is_plugin_available(blockdev.Plugin.NVDIMM):
+        # nvdimm plugin is not available -- even if this is an nvdimm device we
+        # don't have tools to work with it, so we should pretend it's just a disk
         return False
 
     devname = info.get("DEVNAME", "")

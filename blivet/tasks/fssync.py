@@ -49,11 +49,21 @@ class XFSSync(FSSync):
 
     ext = availability.XFSFREEZE_APP
 
-    def _freeze_command(self):
-        return [str(self.ext), "-f", self.fs.system_mountpoint]
+    def _get_mountpoint(self, root=None):
+        mountpoint = self.fs.system_mountpoint
+        if root is not None and root.replace('/', ''):
+            if mountpoint == root:
+                mountpoint = '/'
+            else:
+                mountpoint = mountpoint[len(root):]
 
-    def _unfreeze_command(self):
-        return [str(self.ext), "-u", self.fs.system_mountpoint]
+        return mountpoint
+
+    def _freeze_command(self, root=None):
+        return [str(self.ext), "-f", self._get_mountpoint(root=root)]
+
+    def _unfreeze_command(self, root=None):
+        return [str(self.ext), "-u", self._get_mountpoint(root=root)]
 
     def do_task(self, root="/"):
         # pylint: disable=arguments-differ
@@ -63,13 +73,13 @@ class XFSSync(FSSync):
 
         error_msg = None
         try:
-            rc = util.run_program(self._freeze_command(), root=root)
+            rc = util.run_program(self._freeze_command(root=root), root=root)
         except OSError as e:
             error_msg = "failed to sync filesytem: %s" % e
         error_msg = error_msg or rc
 
         try:
-            rc = util.run_program(self._unfreeze_command(), root=root)
+            rc = util.run_program(self._unfreeze_command(root=root), root=root)
         except OSError as e:
             error_msg = error_msg or "failed to sync filesystem: %s" % e
         error_msg = error_msg or rc

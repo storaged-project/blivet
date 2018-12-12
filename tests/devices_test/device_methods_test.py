@@ -404,6 +404,7 @@ class MDRaidArrayDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
         self.assertTrue(self.patches["md"].activate.called)
 
     def test_create(self):
-        super(MDRaidArrayDeviceMethodsTestCase, self).test_create()
+        with patch("blivet.devices.md.DeviceFormat"):
+            super(MDRaidArrayDeviceMethodsTestCase, self).test_create()
         self.device._create()
         self.assertTrue(self.patches["md"].create.called)

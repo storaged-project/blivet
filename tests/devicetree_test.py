@@ -8,11 +8,13 @@ from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError
 from blivet.devicelibs import lvm
 from blivet.devices import DiskDevice
+from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import StorageDevice
 from blivet.devices import MultipathDevice
 from blivet.devices.lib import Tags
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
+from blivet.size import Size
 
 """
     TODO:
@@ -362,3 +364,36 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(sdb in tree.devices)
         self.assertFalse(sdc in tree.devices)
         self.assertFalse(mpatha in tree.devices)
+
+    def test_get_related_disks(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda", size=Size('300g'))
+        sdb = DiskDevice("sdb", size=Size('300g'))
+        sdc = DiskDevice("sdc", size=Size('300G'))
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+        tree._add_device(sdc)
+
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        sda.format = get_format("lvmpv", device=sda.path)
+        sdb.format = get_format("lvmpv", device=sdb.path)
+        vg = LVMVolumeGroupDevice("relvg", parents=[sda, sdb])
+        tree._add_device(vg)
+
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdc), set())
+        tree.hide(sda)
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        tree.hide(sdb)
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        tree.unhide(sda)
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))

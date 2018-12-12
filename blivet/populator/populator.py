@@ -426,7 +426,7 @@ class PopulatorMixin(object):
         self.drop_lvm_cache()
         mpath_members.drop_cache()
 
-        if flags.auto_dev_updates and not flags.image_install:
+        if flags.auto_dev_updates:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
         self.setup_disk_images()

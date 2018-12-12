@@ -35,6 +35,7 @@ from ..i18n import N_
 from ..size import Size
 from ..errors import PhysicalVolumeError
 from . import DeviceFormat, register_device_format
+from .. import udev
 
 import logging
 log = logging.getLogger("blivet")
@@ -130,6 +131,8 @@ class LVMPhysicalVolume(DeviceFormat):
             blockdev.lvm.pvremove(self.device)
         except blockdev.LVMError:
             DeviceFormat._destroy(self, **kwargs)
+        finally:
+            udev.settle()
 
     @property
     def destroyable(self):
@@ -177,5 +180,6 @@ class LVMPhysicalVolume(DeviceFormat):
     @container_uuid.setter
     def container_uuid(self, uuid):
         self.vg_uuid = uuid
+
 
 register_device_format(LVMPhysicalVolume)

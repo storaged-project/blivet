@@ -34,4 +34,5 @@ def update_kernel_filesystems():
             if fields[0] == "nodev":
                 nodev_filesystems.append(fstype)
 
+
 update_kernel_filesystems()
