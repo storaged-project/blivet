@@ -71,8 +71,6 @@ class Blivet(object):
         self.set_default_fstype(get_default_filesystem_type())
 
         self._short_product_name = 'blivet'
-        self._sysroot = '/'
-        self._storage_root = '/'
 
         self._next_id = 0
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
@@ -95,23 +93,6 @@ class Blivet(object):
         """
         log.debug("new short product name: %s", name)
         self._short_product_name = name
-
-    @property
-    def sysroot(self):
-        return self._sysroot
-
-    @sysroot.setter
-    def sysroot(self, storage_root, sysroot):
-        """ Change the OS root path.
-        :param storage_root: The root of physical storage
-        :type storage_root: string
-        :param sysroot: An optional chroot subdirectory of storage_root
-        :type sysroot: string
-        """
-        self._storage_root = self._sysroot = storage_root
-        if sysroot is not None:
-            log.debug("new sysroot: %s", sysroot)
-            self._sysroot = sysroot
 
     def do_it(self, callbacks=None):
         """
