@@ -59,15 +59,7 @@ class Blivet(object):
 
     def __init__(self):
         # storage configuration variables
-        self.do_autopart = False
-        self.clear_part_choice = None
-        self.encrypted_autopart = False
         self.encryption_passphrase = None
-        self.encryption_cipher = None
-        self.escrow_certificates = {}
-        self.autopart_escrow_cert = None
-        self.autopart_add_backup_passphrase = False
-        self.autopart_requests = []
         self.edd_dict = {}
 
         self.ignored_disks = []
@@ -77,7 +69,6 @@ class Blivet(object):
         self.__luks_devs = {}
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
-        self._default_boot_fstype = None
 
         self._short_product_name = 'blivet'
         self._sysroot = '/'
@@ -91,7 +82,6 @@ class Blivet(object):
                                      exclusive_disks=self.exclusive_disks,
                                      disk_images=self.disk_images)
         self.roots = []
-        self.services = set()
 
     @property
     def short_product_name(self):
