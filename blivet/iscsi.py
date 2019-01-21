@@ -563,6 +563,11 @@ class iSCSI(object):
             shutil.copytree("/var/lib/iscsi", root + "/var/lib/iscsi",
                             symlinks=True)
 
+        # copy the initiator file too
+        if not os.path.isdir(root + "/etc/iscsi"):
+            os.makedirs(root + "/etc/iscsi", 0o755)
+        shutil.copyfile(INITIATOR_FILE, root + INITIATOR_FILE)
+
     def get_node(self, name, address, port, iface):
         for node in self.active_nodes():
             if node.name == name and node.address == address and \
