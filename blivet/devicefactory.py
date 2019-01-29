@@ -1585,7 +1585,7 @@ class LVMThinPFactory(LVMFactory):
             return None
 
         if self.device:
-            return self.device.pool
+            return self.raw_device.pool
 
         # We're looking for a new pool in our vg to use. If there aren't any,
         # we're using one of the existing pools. Would it be better to always
@@ -1629,8 +1629,8 @@ class LVMThinPFactory(LVMFactory):
             free += self.pool.used_space
             log.debug("increasing free and size by pool used (%s)", self.pool.used_space)
             if self.device:
-                log.debug("reducing size by device space (%s)", self.device.pool_space_used)
-                size -= self.device.pool_space_used   # don't count our device
+                log.debug("reducing size by device space (%s)", self.raw_device.pool_space_used)
+                size -= self.raw_device.pool_space_used   # don't count our device
 
         # round to nearest extent. free rounds down, size rounds up.
         free = self.vg.align(free + self.vg.free_space)
