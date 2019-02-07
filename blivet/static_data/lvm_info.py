@@ -34,6 +34,9 @@ class LVsInfo(object):
         Maintains the LVs cache.
     """
 
+    def __init__(self):
+        self._lvs_cache = None
+
     @property
     def cache(self):
         if self._lvs_cache is None:
@@ -41,15 +44,15 @@ class LVsInfo(object):
                 lvs = blockdev.lvm.lvs()
             except NotImplementedError:
                 log.error("libblockdev lvm plugin is missing")
-                self._lvs_cache = dict()  # pylint: disable=attribute-defined-outside-init
+                self._lvs_cache = dict()
                 return self._lvs_cache
 
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)  # pylint: disable=attribute-defined-outside-init
+            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)
 
         return self._lvs_cache
 
     def drop_cache(self):
-        self._lvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        self._lvs_cache = None
 
 
 lvs_info = LVsInfo()
@@ -60,10 +63,13 @@ class PVsInfo(object):
         Maintains the PVs cache.
     """
 
+    def __init__(self):
+        self._pvs_cache = None
+
     @property
     def cache(self):
         if self._pvs_cache is None:
-            self._pvs_cache = dict()  # pylint: disable=attribute-defined-outside-init
+            self._pvs_cache = dict()
 
             try:
                 pvs = blockdev.lvm.pvs()
@@ -91,7 +97,7 @@ class PVsInfo(object):
         return self._pvs_cache
 
     def drop_cache(self):
-        self._pvs_cache = None  # pylint: disable=attribute-defined-outside-init
+        self._pvs_cache = None
 
 
 pvs_info = PVsInfo()
