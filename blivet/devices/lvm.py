@@ -1979,7 +1979,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def max_size(self):
         """ The maximum size this lv can be. """
-        max_lv = self.size + self.vg.free_space
+        max_lv = (self.vg.align(self.size, roundup=True) +
+                  self.vg.align(self.vg.free_space, roundup=False))
         max_format = self.format.max_size
         return min(max_lv, max_format) if max_format else max_lv
 
