@@ -456,9 +456,9 @@ class Blivet(object):
             if disk.partitioned:
                 disk_free = disk.format.free
                 for partition in (p for p in partitions if p.disk == disk):
-                    if hasattr(partition.format, "free"):
+                    if partition.format.exists and hasattr(partition.format, "free"):
                         fs_free += partition.format.free
-            elif hasattr(disk.format, "free"):
+            elif disk.format.exists and hasattr(disk.format, "free"):
                 fs_free = disk.format.free
             elif disk.format.type is None:
                 disk_free = disk.size
