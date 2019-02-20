@@ -59,15 +59,7 @@ class Blivet(object):
 
     def __init__(self):
         # storage configuration variables
-        self.do_autopart = False
-        self.clear_part_choice = None
-        self.encrypted_autopart = False
         self.encryption_passphrase = None
-        self.encryption_cipher = None
-        self.escrow_certificates = {}
-        self.autopart_escrow_cert = None
-        self.autopart_add_backup_passphrase = False
-        self.autopart_requests = []
         self.edd_dict = {}
 
         self.ignored_disks = []
@@ -77,11 +69,8 @@ class Blivet(object):
         self.__luks_devs = {}
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
-        self._default_boot_fstype = None
 
         self._short_product_name = 'blivet'
-        self._sysroot = '/'
-        self._storage_root = '/'
 
         self._next_id = 0
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
@@ -91,7 +80,6 @@ class Blivet(object):
                                      exclusive_disks=self.exclusive_disks,
                                      disk_images=self.disk_images)
         self.roots = []
-        self.services = set()
 
     @property
     def short_product_name(self):
@@ -105,23 +93,6 @@ class Blivet(object):
         """
         log.debug("new short product name: %s", name)
         self._short_product_name = name
-
-    @property
-    def sysroot(self):
-        return self._sysroot
-
-    @sysroot.setter
-    def sysroot(self, storage_root, sysroot):
-        """ Change the OS root path.
-        :param storage_root: The root of physical storage
-        :type storage_root: string
-        :param sysroot: An optional chroot subdirectory of storage_root
-        :type sysroot: string
-        """
-        self._storage_root = self._sysroot = storage_root
-        if sysroot is not None:
-            log.debug("new sysroot: %s", sysroot)
-            self._sysroot = sysroot
 
     def do_it(self, callbacks=None):
         """
