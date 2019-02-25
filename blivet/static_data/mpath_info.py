@@ -27,6 +27,8 @@ from gi.repository import BlockDev as blockdev
 import logging
 log = logging.getLogger("blivet")
 
+from ..tasks import availability
+
 
 class MpathMembers(object):
     """A cache for querying multipath member devices"""
@@ -40,7 +42,7 @@ class MpathMembers(object):
         :param str device: path of the device to query
 
         """
-        if self._members is None:
+        if self._members is None and availability.BLOCKDEV_MPATH_PLUGIN.available:
             self._members = set(blockdev.mpath.get_mpath_members())
 
         device = os.path.realpath(device)
@@ -56,7 +58,8 @@ class MpathMembers(object):
         """
         device = os.path.realpath(device)
         device = device[len("/dev/"):]
-        if blockdev.mpath.is_mpath_member(device):
+
+        if availability.BLOCKDEV_MPATH_PLUGIN.available and blockdev.mpath.is_mpath_member(device):
             self._members.add(device)
 
     def drop_cache(self):
