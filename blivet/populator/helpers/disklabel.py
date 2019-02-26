@@ -28,7 +28,6 @@ from ... import udev
 from ...errors import InvalidDiskLabelError
 from ...storage_log import log_exception_info, log_method_call
 from .formatpopulator import FormatPopulator
-from ...static_data import mpath_members
 
 import logging
 log = logging.getLogger("blivet")
@@ -44,7 +43,7 @@ class DiskLabelFormatPopulator(FormatPopulator):
         return (bool(udev.device_get_disklabel_type(data)) and
                 not udev.device_is_biosraid_member(data) and
                 udev.device_get_format(data) != "iso9660" and
-                not (device.is_disk and mpath_members.is_mpath_member(device.path)))
+                not (device.is_disk and udev.device_get_format(data) == "mpath_member"))
 
     def _get_kwargs(self):
         kwargs = super(DiskLabelFormatPopulator, self)._get_kwargs()

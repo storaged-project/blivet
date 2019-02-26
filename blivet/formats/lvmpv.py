@@ -36,6 +36,7 @@ from ..size import Size
 from ..errors import PhysicalVolumeError
 from . import DeviceFormat, register_device_format
 from .. import udev
+from ..static_data.lvm_info import pvs_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -162,8 +163,12 @@ class LVMPhysicalVolume(DeviceFormat):
             if self.exists:
                 # we don't have any actual value, but the PV exists and is
                 # active, we should try to determine it
-                pv_info = blockdev.lvm.pvinfo(self.device)
-                self._free = Size(pv_info.pv_free)
+                pv_info = pvs_info.cache.get(self.device.path)
+                if pv_info is None:
+                    log.error("Failed to get free space information for the PV '%s'", self.device)
+                    self._free = Size(0)
+                else:
+                    self._free = Size(pv_info.pv_free)
             else:
                 raise PhysicalVolumeError("Unknown free space information for the PV '%s'" % self.device)
 

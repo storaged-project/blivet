@@ -95,7 +95,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     def __init__(self, name, parents=None, size=None, free=None,
                  pe_size=None, pe_count=None, pe_free=None, pv_count=None,
-                 uuid=None, exists=False, sysfs_path=''):
+                 uuid=None, exists=False, sysfs_path='', exported=False):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -134,6 +134,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.pe_size = util.numeric_type(pe_size)
         self.pe_count = util.numeric_type(pe_count)
         self.pe_free = util.numeric_type(pe_free)
+        self.exported = exported
 
         # TODO: validate pe_size if given
         if not self.pe_size:
@@ -545,6 +546,13 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def direct(self):
         """ Is this device directly accessible? """
         return False
+
+    @property
+    def protected(self):
+        if self.exported:
+            return True
+
+        return super(LVMVolumeGroupDevice, self).protected
 
     def remove_hook(self, modparent=True):
         if modparent:
