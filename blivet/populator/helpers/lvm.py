@@ -36,7 +36,7 @@ from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
-from ...static_data import lvs_info, pvs_info
+from ...static_data import lvs_info, pvs_info, vgs_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -381,6 +381,17 @@ class LVMFormatPopulator(FormatPopulator):
                 log.warning("invalid data for %s: %s", self.device.name, e)
                 return
 
+            vg_info = vgs_info.cache.get(pv_info.vg_uuid)
+            if vg_info is None:
+                log.warning("Failed to get information about LVM volume group %s (%s)", vg_name, pv_info.vg_uuid)
+                return
+
+            if not hasattr(vg_info, "exported"):
+                log.info("Can't get exported information from VG info, assuming VG is not exported.")
+                exported = False
+            else:
+                exported = vg_info.exported
+
             vg_device = LVMVolumeGroupDevice(vg_name,
                                              parents=[self.device],
                                              uuid=vg_uuid,
@@ -390,7 +401,8 @@ class LVMFormatPopulator(FormatPopulator):
                                              pe_count=pe_count,
                                              pe_free=pe_free,
                                              pv_count=pv_count,
-                                             exists=True)
+                                             exists=True,
+                                             exported=exported)
             self._devicetree._add_device(vg_device)
 
     def run(self):

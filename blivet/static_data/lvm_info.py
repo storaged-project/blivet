@@ -101,3 +101,32 @@ class PVsInfo(object):
 
 
 pvs_info = PVsInfo()
+
+
+class VGsInfo(object):
+    """ Class to be used as a singleton.
+        Maintains the VGs cache.
+    """
+
+    def __init__(self):
+        self._vgs_cache = None
+
+    @property
+    def cache(self):
+        if self._vgs_cache is None:
+            try:
+                vgs = blockdev.lvm.vgs()
+            except NotImplementedError:
+                log.error("libblockdev lvm plugin is missing")
+                self._vgs_cache = dict()
+                return self._vgs_cache
+
+            self._vgs_cache = dict(("%s" % (vg.uuid), vg) for vg in vgs)
+
+        return self._vgs_cache
+
+    def drop_cache(self):
+        self._vgs_cache = None
+
+
+vgs_info = VGsInfo()
