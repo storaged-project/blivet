@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.2
+Version: 3.1.3
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -190,6 +190,23 @@ configuration.
 %endif
 
 %changelog
+* Wed Feb 27 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.3-1
+- Don't crash if blockdev mpath plugin isn't available. (#1672971) (dlehman)
+- iscsi: Add default value to unused 'storage' argument in 'write' (vtrefny)
+- Add exported property to LVMVolumeGroupDevice (vtrefny)
+- Add VG data to static_data (vtrefny)
+- Do not try to get format free space for non-existing formats (vtrefny)
+- Do not raise exception if can't get PV free space (vtrefny)
+- Fix undefined attribute in LVM info cache (vtrefny)
+- Use raw_device to get thinpool device in LVMThinPFactory (#1490174) (vtrefny)
+- Do not crash if DM RAID activation fails (#1661712) (vtrefny)
+- Remove the unused sysroot property (vponcova)
+- Remove unused attributes from the Blivet class (vponcova)
+- Remove the unused gpt flag (vponcova)
+- Copy the iSCSI initiator name file to the installed system (vtrefny)
+- Use udev to determine if disk is a multipath member. (dlehman)
+- Require libfc instead of fcoe for offloaded FCoE. (#1575953) (dlehman)
+
 * Wed Dec 12 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.2-1
 - Fix reading LV attributes in LVMVolumeGroupDevice.status (vtrefny)
 - Do not try to login to iBFTs with active session (vtrefny)

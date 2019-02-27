@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-12 10:13+0100\n"
+"POT-Creation-Date: 2019-02-27 08:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,34 +77,6 @@ msgstr ""
 #. space in the VG we have a real problem
 #: ../blivet/partitioning.py:2013
 msgid "not enough space for LVM requests"
-msgstr ""
-
-#: ../blivet/iscsi.py:215
-msgid "Unable to change iSCSI initiator name once set"
-msgstr ""
-
-#: ../blivet/iscsi.py:217
-msgid "Must provide an iSCSI initiator name"
-msgstr ""
-
-#: ../blivet/iscsi.py:408
-msgid "iSCSI not available"
-msgstr ""
-
-#: ../blivet/iscsi.py:410
-msgid "No initiator name set"
-msgstr ""
-
-#: ../blivet/iscsi.py:528
-msgid "No iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:548
-msgid "No new iSCSI nodes discovered"
-msgstr ""
-
-#: ../blivet/iscsi.py:551
-msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/fcoe.py:121
@@ -214,6 +186,34 @@ msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
+#: ../blivet/iscsi.py:215
+msgid "Unable to change iSCSI initiator name once set"
+msgstr ""
+
+#: ../blivet/iscsi.py:217
+msgid "Must provide an iSCSI initiator name"
+msgstr ""
+
+#: ../blivet/iscsi.py:408
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet/iscsi.py:410
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet/iscsi.py:528
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:548
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet/iscsi.py:551
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/deviceaction.py:194
@@ -374,6 +374,6 @@ msgstr ""
 msgid "multipath member device"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:48
+#: ../blivet/formats/lvmpv.py:49
 msgid "physical volume (LVM)"
 msgstr ""
