@@ -552,7 +552,7 @@ class iSCSI(object):
 
         self.stabilize()
 
-    def write(self, root, storage):  # pylint: disable=unused-argument
+    def write(self, root, storage=None):  # pylint: disable=unused-argument
         if not self.initiator_set:
             return
 
@@ -562,6 +562,11 @@ class iSCSI(object):
         if os.path.isdir("/var/lib/iscsi"):
             shutil.copytree("/var/lib/iscsi", root + "/var/lib/iscsi",
                             symlinks=True)
+
+        # copy the initiator file too
+        if not os.path.isdir(root + "/etc/iscsi"):
+            os.makedirs(root + "/etc/iscsi", 0o755)
+        shutil.copyfile(INITIATOR_FILE, root + INITIATOR_FILE)
 
     def get_node(self, name, address, port, iface):
         for node in self.active_nodes():

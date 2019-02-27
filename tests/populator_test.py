@@ -827,7 +827,6 @@ class HFSPopulatorTestCase(FormatPopulatorTestCase):
 class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DiskLabelFormatPopulator
 
-    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
     @patch("blivet.udev.device_get_format", return_value=None)
     @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
@@ -836,7 +835,6 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         device_get_disklabel_type = args[0]
         device_get_format = args[1]
         device_is_biosraid_member = args[2]
-        is_mpath_member = args[3]
 
         device = Mock()
         device.is_disk = True
@@ -861,9 +859,9 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         device_is_biosraid_member.return_value = False
 
         # no match for multipath members
-        is_mpath_member.return_value = True
+        device_get_format.return_value = "mpath_member"
         self.assertFalse(self.helper_class.match(data, device))
-        is_mpath_member.return_value = False
+        device_get_format.return_value = None
 
     @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_biosraid_member", return_value=False)
@@ -970,18 +968,20 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
             mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
-            with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-                helper = self.helper_class(devicetree, data, device)
-                helper.run()
-                self.assertEqual(device.format.type,
-                                 self.blivet_type,
-                                 msg="Wrong format type after FormatPopulator.run on %s" % self.udev_type)
+            with patch("blivet.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
+                mock_vgs_cache.return_value = {pv_info.vg_uuid: Mock()}
+                with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+                    helper = self.helper_class(devicetree, data, device)
+                    helper.run()
+                    self.assertEqual(device.format.type,
+                                     self.blivet_type,
+                                     msg="Wrong format type after FormatPopulator.run on %s" % self.udev_type)
 
-                self.assertEqual(get_device_by_uuid.call_count, 2)
-                get_device_by_uuid.assert_called_with(pv_info.vg_uuid, incomplete=True)
-                vg_device = devicetree.get_device_by_name(pv_info.vg_name)
-                self.assertTrue(vg_device is not None)
-                devicetree._remove_device(vg_device)
+                    self.assertEqual(get_device_by_uuid.call_count, 2)
+                    get_device_by_uuid.assert_called_with(pv_info.vg_uuid, incomplete=True)
+                    vg_device = devicetree.get_device_by_name(pv_info.vg_name)
+                    self.assertTrue(vg_device is not None)
+                    devicetree._remove_device(vg_device)
 
         get_device_by_uuid.reset_mock()
 
@@ -1016,29 +1016,31 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
             mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
-            with patch("blivet.static_data.lvm_info.LVsInfo.cache", new_callable=PropertyMock) as mock_lvs_cache:
-                mock_lvs_cache.return_value = lv_info
-                with patch("blivet.udev.device_get_format", return_value=self.udev_type):
-                    self.assertEqual(devicetree.get_device_by_name(pv_info.vg_name, incomplete=True), None)
-                    helper = self.helper_class(devicetree, data, device)
-                    helper.run()
-                    self.assertEqual(device.format.type,
-                                     self.blivet_type,
-                                     msg="Wrong format type after FormatPopulator.run on %s" % self.udev_type)
+            with patch("blivet.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
+                mock_vgs_cache.return_value = {pv_info.vg_uuid: Mock()}
+                with patch("blivet.static_data.lvm_info.LVsInfo.cache", new_callable=PropertyMock) as mock_lvs_cache:
+                    mock_lvs_cache.return_value = lv_info
+                    with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+                        self.assertEqual(devicetree.get_device_by_name(pv_info.vg_name, incomplete=True), None)
+                        helper = self.helper_class(devicetree, data, device)
+                        helper.run()
+                        self.assertEqual(device.format.type,
+                                         self.blivet_type,
+                                         msg="Wrong format type after FormatPopulator.run on %s" % self.udev_type)
 
-                    self.assertEqual(get_device_by_uuid.call_count, 4,
-                                     get_device_by_uuid.mock_calls)  # two for vg and one for each lv
-                    get_device_by_uuid.assert_has_calls([call(pv_info.vg_uuid, incomplete=True),
-                                                        call(lv1.uuid),
-                                                        call(lv2.uuid)],
-                                                        any_order=True)
-                    vg_device = devicetree.get_device_by_name(pv_info.vg_name)
-                    self.assertTrue(vg_device is not None)
+                        self.assertEqual(get_device_by_uuid.call_count, 4,
+                                         get_device_by_uuid.mock_calls)  # two for vg and one for each lv
+                        get_device_by_uuid.assert_has_calls([call(pv_info.vg_uuid, incomplete=True),
+                                                            call(lv1.uuid),
+                                                            call(lv2.uuid)],
+                                                            any_order=True)
+                        vg_device = devicetree.get_device_by_name(pv_info.vg_name)
+                        self.assertTrue(vg_device is not None)
 
-                    lv1_device = devicetree.get_device_by_name(lv1_name)
-                    self.assertEqual(lv1_device.uuid, lv1.uuid)
-                    lv2_device = devicetree.get_device_by_name(lv2_name)
-                    self.assertEqual(lv2_device.uuid, lv2.uuid)
+                        lv1_device = devicetree.get_device_by_name(lv1_name)
+                        self.assertEqual(lv1_device.uuid, lv1.uuid)
+                        lv2_device = devicetree.get_device_by_name(lv2_name)
+                        self.assertEqual(lv2_device.uuid, lv2.uuid)
 
 
 class MDFormatPopulatorTestCase(FormatPopulatorTestCase):

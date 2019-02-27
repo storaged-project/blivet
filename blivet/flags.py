@@ -50,8 +50,6 @@ class Flags(object):
         self.jfs = True
         self.reiserfs = True
 
-        self.gpt = False
-
         # for this flag to take effect,
         # blockdev.mpath.set_friendly_names(flags.multipath_friendly_names) must
         # be called prior to calling Blivet.reset() or DeviceTree.populate()

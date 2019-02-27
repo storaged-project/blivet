@@ -46,7 +46,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
-from ..static_data import lvs_info, pvs_info, luks_data, mpath_members
+from ..static_data import lvs_info, pvs_info, vgs_info, luks_data, mpath_members
 from ..callbacks import callbacks
 
 import logging
@@ -468,6 +468,7 @@ class PopulatorMixin(object):
         """ Drop cached lvm information. """
         lvs_info.drop_cache()
         pvs_info.drop_cache()
+        vgs_info.drop_cache()
 
     def handle_nodev_filesystems(self):
         for line in open("/proc/mounts").readlines():

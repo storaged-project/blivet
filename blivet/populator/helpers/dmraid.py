@@ -66,7 +66,12 @@ class DMRaidFormatPopulator(FormatPopulator):
                 dm_array.parents.append(self.device)
             else:
                 # Activate the Raid set.
-                blockdev.dm.activate_raid_set(rs_name)
+                try:
+                    blockdev.dm.activate_raid_set(rs_name)
+                except blockdev.DMError:
+                    log.warning("Failed to activate the RAID set '%s'", rs_name)
+                    return
+
                 dm_array = DMRaidArrayDevice(rs_name,
                                              parents=[self.device],
                                              wwn=self.device.wwn)
