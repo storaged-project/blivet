@@ -81,7 +81,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_pmac.return_value = False
 
         arch.is_efi.return_value = True
-        self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt"])
+        self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt", "msdos"])
         arch.is_aarch64.return_value = True
         self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt", "msdos"])
         arch.is_aarch64.return_value = False
