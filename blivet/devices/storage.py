@@ -721,7 +721,12 @@ class StorageDevice(Device):
             if fmt.max_size and fmt.max_size < self.size:
                 raise errors.DeviceError("device is too large for new format")
             elif fmt.min_size and fmt.min_size > self.size:
-                raise errors.DeviceError("device is too small for new format")
+                if self.growable:
+                    log.info("%s: using size %s instead of %s to accommodate "
+                             "format minimum size", self.name, fmt.min_size, self.size)
+                    self.size = fmt.min_size
+                else:
+                    raise errors.DeviceError("device is too small for new format")
 
         if self._format != fmt:
             callbacks.format_removed(device=self, fmt=self._format)
