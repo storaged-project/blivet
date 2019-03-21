@@ -42,8 +42,11 @@ class MpathMembers(object):
         :param str device: path of the device to query
 
         """
-        if self._members is None and availability.BLOCKDEV_MPATH_PLUGIN.available:
-            self._members = set(blockdev.mpath.get_mpath_members())
+        if self._members is None:
+            if availability.BLOCKDEV_MPATH_PLUGIN.available:
+                self._members = set(blockdev.mpath.get_mpath_members())
+            else:
+                self._members = set()
 
         device = os.path.realpath(device)
         device = device[len("/dev/"):]
