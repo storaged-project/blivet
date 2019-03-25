@@ -18,64 +18,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: ../blivet/partitioning.py:450
+#: ../blivet3/fcoe.py:121
+msgid "FCoE not available"
+msgstr ""
+
+#: ../blivet3/errors.py:210
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
+msgstr ""
+
+#: ../blivet3/errors.py:217
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
+msgstr ""
+
+#: ../blivet3/errors.py:223
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
+#: ../blivet3/partitioning.py:450
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:458
+#: ../blivet3/partitioning.py:458
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:576
+#: ../blivet3/partitioning.py:576
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:637
+#: ../blivet3/partitioning.py:637
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:642
+#: ../blivet3/partitioning.py:642
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:950
+#: ../blivet3/partitioning.py:950
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:985
+#: ../blivet3/partitioning.py:985
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:992
+#: ../blivet3/partitioning.py:992
 msgid "failed to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1193
+#: ../blivet3/partitioning.py:1193
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1407
+#: ../blivet3/partitioning.py:1407
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1420
+#: ../blivet3/partitioning.py:1420
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1505
+#: ../blivet3/partitioning.py:1505
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2013
+#: ../blivet3/partitioning.py:2013
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -87,105 +112,112 @@ msgstr ""
 msgid "You have not specified a device number or the number is invalid"
 msgstr ""
 
-#: ../blivet/zfcp.py:64
+#: ../blivet3/zfcp.py:64
 msgid "You have not specified a worldwide port name or the name is invalid."
 msgstr ""
 
-#: ../blivet/zfcp.py:66
+#: ../blivet3/zfcp.py:66
 msgid "You have not specified a FCP LUN or the number is invalid."
 msgstr ""
 
-#: ../blivet/zfcp.py:91
+#: ../blivet3/zfcp.py:91
 #, python-format
 msgid "zFCP device %s not found, not even in device ignore list."
 msgstr ""
 
-#: ../blivet/zfcp.py:101
+#: ../blivet3/zfcp.py:101
 #, python-format
 msgid "Could not set zFCP device %(devnum)s online (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:112
+#: ../blivet3/zfcp.py:112
 #, python-format
 msgid "Could not add WWPN %(wwpn)s to zFCP device %(devnum)s (%(e)s)."
 msgstr ""
 
 #. newer zfcp sysfs interface with auto port scan
-#: ../blivet/zfcp.py:119
+#: ../blivet3/zfcp.py:119
 #, python-format
 msgid "WWPN %(wwpn)s not found at zFCP device %(devnum)s."
 msgstr ""
 
-#: ../blivet/zfcp.py:134
+#: ../blivet3/zfcp.py:134
 #, python-format
 msgid ""
 "Could not add LUN %(fcplun)s to WWPN %(wwpn)s on zFCP device %(devnum)s "
 "(%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:140
+#: ../blivet3/zfcp.py:140
 #, python-format
 msgid ""
 "LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s already configured."
 msgstr ""
 
-#: ../blivet/zfcp.py:152
+#: ../blivet3/zfcp.py:152
 #, python-format
 msgid ""
 "Could not read failed attribute of LUN %(fcplun)s at WWPN %(wwpn)s on zFCP "
 "device %(devnum)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:161
+#: ../blivet3/zfcp.py:161
 #, python-format
 msgid ""
 "Failed LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s removed "
 "again."
 msgstr ""
 
-#: ../blivet/zfcp.py:218
+#: ../blivet3/zfcp.py:218
 #, python-format
 msgid ""
 "Could not correctly delete SCSI device of zFCP %(devnum)s %(wwpn)s "
 "%(fcplun)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:227
+#: ../blivet3/zfcp.py:227
 #, python-format
 msgid ""
 "Could not remove LUN %(fcplun)s at WWPN %(wwpn)s on zFCP device %(devnum)s "
 "(%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:245
+#: ../blivet3/zfcp.py:245
 #, python-format
 msgid "Could not remove WWPN %(wwpn)s on zFCP device %(devnum)s (%(e)s)."
 msgstr ""
 
-#: ../blivet/zfcp.py:271
+#: ../blivet3/zfcp.py:271
 #, python-format
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
 msgstr ""
 
-#: ../blivet/errors.py:210
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
+#: ../blivet3/iscsi.py:215
+msgid "Unable to change iSCSI initiator name once set"
 msgstr ""
 
-#: ../blivet/errors.py:217
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
+#: ../blivet3/iscsi.py:217
+msgid "Must provide an iSCSI initiator name"
 msgstr ""
 
-#: ../blivet/errors.py:223
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+#: ../blivet3/iscsi.py:408
+msgid "iSCSI not available"
+msgstr ""
+
+#: ../blivet3/iscsi.py:410
+msgid "No initiator name set"
+msgstr ""
+
+#: ../blivet3/iscsi.py:528
+msgid "No iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet3/iscsi.py:548
+msgid "No new iSCSI nodes discovered"
+msgstr ""
+
+#: ../blivet3/iscsi.py:551
+msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
 #: ../blivet/iscsi.py:215
@@ -221,80 +253,72 @@ msgstr ""
 msgid "Executing %(action)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:322
+#: ../blivet3/deviceaction.py:322
 msgid "create device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:381
+#: ../blivet3/deviceaction.py:381
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:465
+#: ../blivet3/deviceaction.py:465
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:554
+#: ../blivet3/deviceaction.py:554
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:594
+#: ../blivet3/deviceaction.py:594
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:624
+#: ../blivet3/deviceaction.py:624
 #, python-format
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:654
+#: ../blivet3/deviceaction.py:654
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:701
+#: ../blivet3/deviceaction.py:701
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:806
+#: ../blivet3/deviceaction.py:806
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:842
+#: ../blivet3/deviceaction.py:842
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:849
+#: ../blivet3/deviceaction.py:849
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:893
+#: ../blivet3/deviceaction.py:893
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:958
+#: ../blivet3/deviceaction.py:958
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:1028
+#: ../blivet3/deviceaction.py:1028
 msgid "configure format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:1079
+#: ../blivet3/deviceaction.py:1079
 msgid "configure device"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:57
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:58
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devices/raid.py:58
+#: ../blivet3/devices/raid.py:58
 #, python-format
 msgid ""
 "RAID level %(raid_level)s requires that device have at least %(min_members)d "
@@ -305,75 +329,83 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../blivet/devices/raid.py:79
+#: ../blivet3/devices/raid.py:79
 #, python-format
 msgid ""
 "RAID level %(raid_level)s is an invalid value. Must be one of (%(levels)s)."
 msgstr ""
 
-#: ../blivet/devices/raid.py:104
+#: ../blivet3/devices/raid.py:104
 #, python-format
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:923
+#: ../blivet3/formats/fs.py:923
 msgid "EFI System Partition"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1127
+#: ../blivet3/formats/fs.py:1127
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1163
+#: ../blivet3/formats/fs.py:1163
 msgid "Linux HFS+ ESP"
 msgstr ""
 
-#: ../blivet/formats/prepboot.py:37
+#: ../blivet3/formats/prepboot.py:37
 msgid "PPC PReP Boot"
 msgstr ""
 
-#: ../blivet/formats/luks.py:58
+#: ../blivet3/formats/mdraid.py:43
+msgid "software RAID"
+msgstr ""
+
+#: ../blivet3/formats/luks.py:58
 msgid "LUKS"
 msgstr ""
 
-#: ../blivet/formats/luks.py:59
+#: ../blivet3/formats/luks.py:59
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/luks.py:384
+#: ../blivet3/formats/luks.py:384
 msgid "DM Integrity"
 msgstr ""
 
-#: ../blivet/formats/__init__.py:148
-msgid "Unknown"
-msgstr ""
-
-#: ../blivet/formats/biosboot.py:35
+#: ../blivet3/formats/biosboot.py:35
 msgid "BIOS Boot"
 msgstr ""
 
-#: ../blivet/formats/dmraid.py:37
+#: ../blivet3/formats/dmraid.py:37
 msgid "dm-raid member device"
 msgstr ""
 
-#: ../blivet/formats/disklabel.py:50
+#: ../blivet3/formats/__init__.py:148
+msgid "Unknown"
+msgstr ""
+
+#: ../blivet3/formats/disklabel.py:50
 msgid "partition table"
 msgstr ""
 
 #. Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
-#: ../blivet/formats/disklabel.py:311
+#: ../blivet3/formats/disklabel.py:311
 #, python-format
 msgid "Unsupported %(name)s"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:43
-msgid "software RAID"
-msgstr ""
-
-#: ../blivet/formats/multipath.py:40
+#: ../blivet3/formats/multipath.py:40
 msgid "multipath member device"
 msgstr ""
 
 #: ../blivet/formats/lvmpv.py:49
 msgid "physical volume (LVM)"
+msgstr ""
+
+#: ../blivet3/devicelibs/lvm.py:57
+msgid "Generic"
+msgstr ""
+
+#: ../blivet3/devicelibs/lvm.py:58
+msgid "Performance"
 msgstr ""
