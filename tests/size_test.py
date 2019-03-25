@@ -36,9 +36,9 @@ from decimal import Decimal
 import gettext
 _BS = lambda x: gettext.translation("libbytesize", fallback=True).gettext(x) if x != "" else ""
 
-from blivet import size
-from blivet.size import Size
-from blivet.size import B, KiB, MiB, GiB, TiB
+from blivet3 import size
+from blivet3.size import Size
+from blivet3.size import B, KiB, MiB, GiB, TiB
 
 
 class SizeTestCase(unittest.TestCase):

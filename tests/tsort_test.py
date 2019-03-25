@@ -1,6 +1,6 @@
 
 import unittest
-import blivet.tsort
+import blivet3.tsort
 
 
 class TopologicalSortTestCase(unittest.TestCase):

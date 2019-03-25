@@ -1,6 +1,6 @@
 import unittest
 
-import blivet.devicelibs.mdraid as mdraid
+import blivet3.devicelibs.mdraid as mdraid
 
 
 class MDRaidTestCase(unittest.TestCase):

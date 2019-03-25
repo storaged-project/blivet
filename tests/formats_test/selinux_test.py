@@ -9,8 +9,8 @@ else:
 import unittest
 import selinux
 
-import blivet
-import blivet.formats.fs as fs
+import blivet3
+import blivet3.formats.fs as fs
 
 
 class SELinuxContextTestCase(unittest.TestCase):
@@ -25,7 +25,7 @@ class SELinuxContextTestCase(unittest.TestCase):
         super(SELinuxContextTestCase, self).setUp()
         self.addCleanup(self._clean_up)
 
-    @patch("blivet.util.mount", return_value=0)
+    @patch("blivet3.util.mount", return_value=0)
     @patch.object(fs.FS, "_pre_setup", return_value=True)
     @patch("os.access", return_value=True)
     # pylint: disable=unused-argument

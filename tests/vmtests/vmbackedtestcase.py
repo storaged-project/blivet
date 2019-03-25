@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from blivet import Blivet
+from blivet3 import Blivet
 
 
 @unittest.skipUnless(os.environ.get("VM_ENVIRONMENT"), "vm only test")

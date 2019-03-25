@@ -63,7 +63,7 @@ First Steps
 
 First, create an instance of the :class:`~.Blivet` class::
 
-    import blivet
+    import blivet3
     b = blivet.Blivet()
 
 Next, scan the system's storage configuration and store it in the tree::
@@ -100,7 +100,7 @@ That's it. Now you have actually removed /dev/sda3 from the disk.
 Here's an alternative approach that uses the lower-level
 :class:`~.devicetree.DeviceTree` class directly::
 
-    import blivet
+    import blivet3
     dt = blivet.devicetree.DeviceTree()
     dt.populate()
     sda3 = dt.get_device_by_name("sda3")
@@ -112,7 +112,7 @@ Here's an alternative approach that uses the lower-level
 
 Here's the Blivet approach again for comparison::
 
-    import blivet
+    import blivet3
     b = blivet.Blivet() # contains a DeviceTree instance
     b.reset()   # calls DeviceTree.populate()
     sda3 = b.devicetree.get_device_by_name("sda3")
@@ -125,8 +125,8 @@ Scheduling a Series of Actions
 
 Start out as before::
 
-    import blivet
-    from blivet.size import Size
+    import blivet3
+    from blivet3.size import Size
     b = blivet.Blivet()
     b.reset()
     sda3 = b.devicetree.get_device_by_name("sda3")

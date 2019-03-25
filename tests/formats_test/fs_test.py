@@ -2,8 +2,8 @@ import os
 import tempfile
 import unittest
 
-import blivet.formats.fs as fs
-from blivet.size import Size, ROUND_DOWN
+import blivet3.formats.fs as fs
+from blivet3.size import Size, ROUND_DOWN
 
 from tests import loopbackedtestcase
 

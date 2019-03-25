@@ -4,7 +4,7 @@ from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,impo
 import time
 from unittest import TestCase
 
-from blivet.events.manager import Event, EventManager
+from blivet3.events.manager import Event, EventManager
 
 
 class FakeEventManager(EventManager):
@@ -24,7 +24,7 @@ class FakeEventManager(EventManager):
 class EventManagerTest(TestCase):
     def testEventMask(self):
         handler_cb = Mock()
-        with patch("blivet.events.manager.validate_cb", return_value=True):
+        with patch("blivet3.events.manager.validate_cb", return_value=True):
             mgr = FakeEventManager(handler_cb=handler_cb)
 
         device = "sdc"

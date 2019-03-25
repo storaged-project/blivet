@@ -2,11 +2,11 @@
 
 import unittest
 
-from blivet.devices import DiskDevice
-from blivet.devices import LUKSDevice
-from blivet.devices import MDRaidArrayDevice
+from blivet3.devices import DiskDevice
+from blivet3.devices import LUKSDevice
+from blivet3.devices import MDRaidArrayDevice
 
-from blivet.formats import get_format
+from blivet3.formats import get_format
 
 
 class DevicePackagesTestCase(unittest.TestCase):

@@ -5,17 +5,17 @@ from six.moves.mock import patch, sentinel, DEFAULT  # pylint: disable=no-name-i
 import six
 import unittest
 
-from blivet.actionlist import ActionList
-from blivet.deviceaction import ActionDestroyFormat
-from blivet.devices import DiskDevice
-from blivet.devices import DiskFile
-from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices import PartitionDevice
-from blivet.devicetree import DeviceTree
-from blivet.formats import get_format
-from blivet.size import Size
-from blivet.util import sparsetmpfile
+from blivet3.actionlist import ActionList
+from blivet3.deviceaction import ActionDestroyFormat
+from blivet3.devices import DiskDevice
+from blivet3.devices import DiskFile
+from blivet3.devices import LVMLogicalVolumeDevice
+from blivet3.devices import LVMVolumeGroupDevice
+from blivet3.devices import PartitionDevice
+from blivet3.devicetree import DeviceTree
+from blivet3.formats import get_format
+from blivet3.size import Size
+from blivet3.util import sparsetmpfile
 
 
 class UnsupportedDiskLabelTestCase(unittest.TestCase):
@@ -25,7 +25,7 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
         disk1.format._supported = False
 
         if six.PY3:
-            with self.assertLogs("blivet", level="INFO") as cm:
+            with self.assertLogs("blivet3.", level="INFO") as cm:
                 partition1 = PartitionDevice("testpart1", size=Size("150 GiB"), exists=True,
                                              parents=[disk1], fmt=get_format("ext4", exists=True))
             self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
@@ -34,7 +34,7 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
                                          parents=[disk1], fmt=get_format("ext4", exists=True))
 
         if six.PY3:
-            with self.assertLogs("blivet", level="INFO") as cm:
+            with self.assertLogs("blivet3.", level="INFO") as cm:
                 partition2 = PartitionDevice("testpart2", size=Size("100 GiB"), exists=True,
                                              parents=[disk1], fmt=get_format("lvmpv", exists=True))
             self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
@@ -97,13 +97,13 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
 
         # the lv's destroy method should call blockdev.lvm.lvremove as usual
         with patch.object(self.lv, "_pre_destroy"):
-            with patch("blivet.devices.lvm.blockdev.lvm.lvremove") as lvremove:
+            with patch("blivet3.devices.lvm.blockdev.lvm.lvremove") as lvremove:
                 self.lv.destroy()
                 self.assertTrue(lvremove.called)
 
         # the vg's destroy method should call blockdev.lvm.vgremove as usual
         with patch.object(self.vg, "_pre_destroy"):
-            with patch.multiple("blivet.devices.lvm.blockdev.lvm",
+            with patch.multiple("blivet3.devices.lvm.blockdev.lvm",
                                 vgreduce=DEFAULT,
                                 vgdeactivate=DEFAULT,
                                 vgremove=DEFAULT) as mocks:
@@ -158,7 +158,7 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
         self.assertIsNotNone(devicetree.get_device_by_id(self.partition2.id, hidden=True,
                                                          incomplete=True))
         self.assertEqual(len(devicetree.get_dependent_devices(self.disk1)), 4)
-        with patch('blivet.devicetree.ActionDestroyFormat.apply'):
+        with patch('blivet3.devicetree.ActionDestroyFormat.apply'):
             devicetree.recursive_remove(self.disk1)
             self.assertTrue(self.disk1 in devicetree.devices)
             self.assertFalse(self.partition1 in devicetree.devices)

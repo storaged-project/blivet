@@ -6,8 +6,8 @@ import six
 import unittest
 from decimal import Decimal
 
-from blivet import errors
-from blivet import util
+from blivet3 import errors
+from blivet3 import util
 
 
 class MiscTest(unittest.TestCase):
@@ -141,7 +141,7 @@ class DependencyGuardTestCase(unittest.TestCase):
     def test_dependency_guard(self):
         guard = TestDependencyGuard()
         if six.PY3:
-            with self.assertLogs("blivet", level="WARNING") as cm:
+            with self.assertLogs("blivet3", level="WARNING") as cm:
                 self.assertEqual(self._test_dependency_guard_non_critical(), None)
             self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
         else:

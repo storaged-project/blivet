@@ -11,28 +11,28 @@ from gi.repository import BlockDev as blockdev
 
 from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 
-import blivet
+import blivet3
 
-from blivet.errors import BTRFSValueError
-from blivet.errors import DeviceError
+from blivet3.errors import BTRFSValueError
+from blivet3.errors import DeviceError
 
-from blivet.devices import BTRFSSnapShotDevice
-from blivet.devices import BTRFSSubVolumeDevice
-from blivet.devices import BTRFSVolumeDevice
-from blivet.devices import DiskDevice
-from blivet.devices import MDBiosRaidArrayDevice
-from blivet.devices import MDContainerDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.devices import OpticalDevice
-from blivet.devices import StorageDevice
-from blivet.devices import ParentList
-from blivet.devices import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
-from blivet.devices.lvm import LVMCacheRequest, LVMCache
-from blivet.devicelibs import btrfs
-from blivet.devicelibs import mdraid
-from blivet.size import Size
+from blivet3.devices import BTRFSSnapShotDevice
+from blivet3.devices import BTRFSSubVolumeDevice
+from blivet3.devices import BTRFSVolumeDevice
+from blivet3.devices import DiskDevice
+from blivet3.devices import MDBiosRaidArrayDevice
+from blivet3.devices import MDContainerDevice
+from blivet3.devices import MDRaidArrayDevice
+from blivet3.devices import OpticalDevice
+from blivet3.devices import StorageDevice
+from blivet3.devices import ParentList
+from blivet3.devices import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
+from blivet3.devices.lvm import LVMCacheRequest, LVMCache
+from blivet3.devicelibs import btrfs
+from blivet3.devicelibs import mdraid
+from blivet3.size import Size
 
-from blivet.formats import get_format
+from blivet3.formats import get_format
 
 BTRFS_MIN_MEMBER_SIZE = get_format("btrfs").min_size
 

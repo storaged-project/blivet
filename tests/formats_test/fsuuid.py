@@ -4,9 +4,9 @@ import six
 from unittest import skipIf
 
 from tests import loopbackedtestcase
-from blivet.errors import FSError, FSWriteUUIDError
-from blivet.size import Size
-from blivet.util import capture_output
+from blivet3.errors import FSError, FSWriteUUIDError
+from blivet3.size import Size
+from blivet3.util import capture_output
 
 
 @six.add_metaclass(abc.ABCMeta)

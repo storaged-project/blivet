@@ -1,9 +1,9 @@
 import six
 import unittest
 
-import blivet.devicelibs.raid as raid
-import blivet.errors as errors
-from blivet.size import Size
+import blivet3.devicelibs.raid as raid
+import blivet3.errors as errors
+from blivet3.size import Size
 
 
 class RaidTestCase(unittest.TestCase):

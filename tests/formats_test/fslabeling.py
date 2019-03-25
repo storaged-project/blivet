@@ -3,8 +3,8 @@ import abc
 import six
 
 from tests import loopbackedtestcase
-from blivet.errors import FSError, FSReadLabelError
-from blivet.size import Size
+from blivet3.errors import FSError, FSReadLabelError
+from blivet3.size import Size
 
 
 @six.add_metaclass(abc.ABCMeta)

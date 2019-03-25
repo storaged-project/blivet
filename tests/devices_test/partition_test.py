@@ -9,13 +9,13 @@ import parted
 
 from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 
-from blivet.devices import DiskFile
-from blivet.devices import PartitionDevice
-from blivet.devices import StorageDevice
-from blivet.errors import DeviceError
-from blivet.formats import get_format
-from blivet.size import Size
-from blivet.util import sparsetmpfile
+from blivet3.devices import DiskFile
+from blivet3.devices import PartitionDevice
+from blivet3.devices import StorageDevice
+from blivet3.errors import DeviceError
+from blivet3.formats import get_format
+from blivet3.size import Size
+from blivet3.util import sparsetmpfile
 
 
 Weighted = namedtuple("Weighted", ["fstype", "mountpoint", "true_funcs", "weight"])
@@ -177,7 +177,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
                 disk.format.end_alignment.isAligned(free, max_end_sector),
                 True)
 
-    @patch("blivet.devices.partition.PartitionDevice.read_current_size", lambda part: part.size)
+    @patch("blivet3.devices.partition.PartitionDevice.read_current_size", lambda part: part.size)
     def test_extended_min_size(self):
         with sparsetmpfile("extendedtest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)
@@ -216,8 +216,8 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))
 
-    @patch("blivet.devices.partition.PartitionDevice.update_size", lambda part: None)
-    @patch("blivet.devices.partition.PartitionDevice.probe", lambda part: None)
+    @patch("blivet3.devices.partition.PartitionDevice.update_size", lambda part: None)
+    @patch("blivet3.devices.partition.PartitionDevice.probe", lambda part: None)
     def test_ctor_parted_partition_error_handling(self):
         disk = StorageDevice("testdisk", exists=True)
         disk._partitionable = True
@@ -238,7 +238,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertRaises(DeviceError, PartitionDevice, "testpart1", exists=True, parents=[disk])
             self.assertEqual(len(disk.children), 0, msg="device is still attached to disk in spite of ctor error")
 
-    @patch("blivet.devices.partition.arch")
+    @patch("blivet3.devices.partition.arch")
     def test_weight_1(self, *patches):
         arch = patches[0]
 
@@ -355,7 +355,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             part = PartitionDevice('weight_test')
             part._format = Mock(name="fmt", type=spec.fstype, mountpoint=spec.mountpoint,
                                 mountable=spec.mountpoint is not None)
-            with patch('blivet.devices.partition.arch') as _arch:
+            with patch('blivet3.devices.partition.arch') as _arch:
                 for func in arch_funcs:
                     f = getattr(_arch, func)
                     f.return_value = func in spec.true_funcs

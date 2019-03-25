@@ -1,8 +1,8 @@
 import os
 
-import blivet
-from blivet.size import Size
-from blivet.util import set_up_logging, create_sparse_tempfile
+import blivet3
+from blivet3.size import Size
+from blivet3.util import set_up_logging, create_sparse_tempfile
 
 set_up_logging()
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)

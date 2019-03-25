@@ -1,10 +1,10 @@
 
 import unittest
 
-from blivet.devices import StorageDevice
-from blivet import errors
-from blivet.formats import get_format
-from blivet.size import Size
+from blivet3.devices import StorageDevice
+from blivet3 import errors
+from blivet3.formats import get_format
+from blivet3.size import Size
 
 
 class StorageDeviceSizeTest(unittest.TestCase):

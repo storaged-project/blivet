@@ -4,13 +4,13 @@ import six
 from six.moves.mock import patch, Mock, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-from blivet.devices import StorageDevice
-from blivet.devices import DiskDevice, PartitionDevice
-from blivet.devices import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.errors import DeviceError
-from blivet.formats import get_device_format_class
-from blivet.size import Size
+from blivet3.devices import StorageDevice
+from blivet3.devices import DiskDevice, PartitionDevice
+from blivet3.devices import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
+from blivet3.devices import MDRaidArrayDevice
+from blivet3.errors import DeviceError
+from blivet3.formats import get_device_format_class
+from blivet3.size import Size
 
 
 # pylint: disable=no-member
@@ -27,7 +27,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
     #
     def set_patches(self):
         self.patchers["update_sysfs_path"] = patch.object(self.device, "update_sysfs_path")
-        self.patchers["udev"] = patch("blivet.devices.storage.udev")
+        self.patchers["udev"] = patch("blivet3.devices.storage.udev")
         self.patchers["update_size"] = patch.object(self.device, "update_size")
         self.patchers["setup_parents"] = patch.object(self.device, "setup_parents")
         self.patchers["teardown_parents"] = patch.object(self.device, "teardown_parents")
@@ -253,7 +253,7 @@ class PartitionDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
                                                          new=PropertyMock())
         self.patchers["disk"] = patch.object(self.device_class, "disk", new=PropertyMock())
 
-    @patch("blivet.devices.partition.DeviceFormat")
+    @patch("blivet3.devices.partition.DeviceFormat")
     def test_create(self, *args):  # pylint: disable=unused-argument,arguments-differ
         with patch.object(self.device, "_wipe"):
             super(PartitionDeviceMethodsTestCase, self).test_create()
@@ -299,7 +299,7 @@ class LVMVolumeGroupDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
     def test_create(self):
         super(LVMVolumeGroupDeviceMethodsTestCase, self).test_create()
 
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._create()
             self.assertTrue(lvm.vgcreate.called)
 
@@ -307,13 +307,13 @@ class LVMVolumeGroupDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
         with patch.object(self.device, "teardown"):
             super(LVMVolumeGroupDeviceMethodsTestCase, self).test_destroy()
 
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._destroy()
             self.assertTrue(lvm.vgreduce.called)
             self.assertTrue(lvm.vgremove.called)
 
     def test_teardown(self):
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._teardown()
             self.assertTrue(lvm.vgdeactivate.called)
 
@@ -338,21 +338,21 @@ class LVMLogicalVolumeDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
 
     def test_setup(self):
         super(LVMLogicalVolumeDeviceMethodsTestCase, self).test_setup()
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._setup()
             self.assertTrue(lvm.lvactivate.called)
 
     def test_teardown(self):
-        with patch("blivet.devicelibs.lvm.lvmetad_socket_exists", return_value=False):
+        with patch("blivet3.devicelibs.lvm.lvmetad_socket_exists", return_value=False):
             super(LVMLogicalVolumeDeviceMethodsTestCase, self).test_teardown()
 
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._teardown()
             self.assertTrue(lvm.lvdeactivate.called)
 
     def test_create(self):
         super(LVMLogicalVolumeDeviceMethodsTestCase, self).test_create()
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._create()
             self.assertTrue(lvm.lvcreate.called)
 
@@ -360,7 +360,7 @@ class LVMLogicalVolumeDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
         with patch.object(self.device, "teardown"):
             super(LVMLogicalVolumeDeviceMethodsTestCase, self).test_destroy()
 
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             self.device._destroy()
             self.assertTrue(lvm.lvremove.called)
 
@@ -382,18 +382,18 @@ class MDRaidArrayDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
 
     def set_patches(self):
         super(MDRaidArrayDeviceMethodsTestCase, self).set_patches()
-        self.patchers["md"] = patch("blivet.devices.md.blockdev.md")
+        self.patchers["md"] = patch("blivet3.devices.md.blockdev.md")
         self.patchers["is_disk"] = patch.object(self.device_class, "is_disk",
                                                 new=PropertyMock(return_value=False))
-        self.patchers["pvs_info"] = patch("blivet.devices.md.pvs_info")
-        self.patchers["lvm"] = patch("blivet.devices.md.blockdev.lvm")
+        self.patchers["pvs_info"] = patch("blivet3.devices.md.pvs_info")
+        self.patchers["lvm"] = patch("blivet3.devices.md.blockdev.lvm")
 
     @property
     def teardown_method_mock(self):
         return self.patches["md"].deactivate
 
     def test_teardown(self):
-        with patch("blivet.devices.md.os.path.exists") as exists:
+        with patch("blivet3.devices.md.os.path.exists") as exists:
             exists.return_value = True
             super(MDRaidArrayDeviceMethodsTestCase, self).test_teardown()
 
@@ -404,7 +404,7 @@ class MDRaidArrayDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
         self.assertTrue(self.patches["md"].activate.called)
 
     def test_create(self):
-        with patch("blivet.devices.md.DeviceFormat"):
+        with patch("blivet3.devices.md.DeviceFormat"):
             super(MDRaidArrayDeviceMethodsTestCase, self).test_create()
         self.device._create()
         self.assertTrue(self.patches["md"].create.called)

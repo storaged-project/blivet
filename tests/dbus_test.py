@@ -6,15 +6,15 @@ from unittest import TestCase
 
 import dbus
 
-from blivet.dbus.action import DBusAction
-from blivet.dbus.blivet import DBusBlivet
-from blivet.dbus.device import DBusDevice
-from blivet.dbus.format import DBusFormat
-from blivet.dbus.object import DBusObject
-from blivet.dbus.constants import ACTION_INTERFACE, BLIVET_INTERFACE, DEVICE_INTERFACE, FORMAT_INTERFACE
-from blivet.dbus.constants import ACTION_OBJECT_PATH_BASE
-from blivet.dbus.constants import DEVICE_OBJECT_PATH_BASE, DEVICE_REMOVED_OBJECT_PATH_BASE
-from blivet.dbus.constants import FORMAT_OBJECT_PATH_BASE, FORMAT_REMOVED_OBJECT_PATH_BASE
+from blivet3.dbus.action import DBusAction
+from blivet3.dbus.blivet import DBusBlivet
+from blivet3.dbus.device import DBusDevice
+from blivet3.dbus.format import DBusFormat
+from blivet3.dbus.object import DBusObject
+from blivet3.dbus.constants import ACTION_INTERFACE, BLIVET_INTERFACE, DEVICE_INTERFACE, FORMAT_INTERFACE
+from blivet3.dbus.constants import ACTION_OBJECT_PATH_BASE
+from blivet3.dbus.constants import DEVICE_OBJECT_PATH_BASE, DEVICE_REMOVED_OBJECT_PATH_BASE
+from blivet3.dbus.constants import FORMAT_OBJECT_PATH_BASE, FORMAT_REMOVED_OBJECT_PATH_BASE
 
 
 def mock_dbus_device(obj_id):
@@ -27,7 +27,7 @@ def mock_dbus_device(obj_id):
 
 class DBusBlivetTestCase(TestCase):
     @patch.object(DBusObject, "_init_dbus_object")
-    @patch("blivet.dbus.blivet.callbacks")
+    @patch("blivet3.dbus.blivet.callbacks")
     def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         self.dbus_object = DBusBlivet(Mock(name="ObjectManager"))
         self.dbus_object._blivet = Mock()
@@ -63,7 +63,7 @@ class DBusBlivetTestCase(TestCase):
         self.dbus_object._blivet.reset_mock()
         dbus_device = mock_dbus_device(23)
         with patch.object(self.dbus_object._manager, "get_object_by_path", return_value=dbus_device):
-            with patch("blivet.dbus.blivet.isinstance", return_value=True):
+            with patch("blivet3.dbus.blivet.isinstance", return_value=True):
                 self.dbus_object.RemoveDevice(dbus_device.object_path)
 
         self.dbus_object._blivet.devicetree.recursive_remove.assert_called_once_with(dbus_device._device)
@@ -73,7 +73,7 @@ class DBusBlivetTestCase(TestCase):
         self.dbus_object._blivet.reset_mock()
         dbus_device = mock_dbus_device(22)
         with patch.object(self.dbus_object._manager, "get_object_by_path", return_value=dbus_device):
-            with patch("blivet.dbus.blivet.isinstance", return_value=True):
+            with patch("blivet3.dbus.blivet.isinstance", return_value=True):
                 self.dbus_object.InitializeDisk(dbus_device.object_path)
 
         self.dbus_object._blivet.devicetree.recursive_remove.assert_called_once_with(dbus_device._device)
@@ -97,7 +97,7 @@ class DBusBlivetTestCase(TestCase):
                   "fstype": "xfs",
                   "name": "testdevice",
                   "raid_level": "raid0"}
-        with patch("blivet.dbus.blivet.isinstance", return_value=True):
+        with patch("blivet3.dbus.blivet.isinstance", return_value=True):
             self.dbus_object.Factory(kwargs)
         self.dbus_object._blivet.factory_device.assert_called_once_with(**kwargs)
         self.dbus_object._blivet.reset_mock()
@@ -106,7 +106,7 @@ class DBusBlivetTestCase(TestCase):
 @patch.object(DBusObject, 'connection')
 class DBusObjectTestCase(TestCase):
     @patch.object(DBusObject, "_init_dbus_object")
-    @patch("blivet.dbus.blivet.callbacks")
+    @patch("blivet3.dbus.blivet.callbacks")
     def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         self.obj = DBusObject(Mock(name="ObjectManager"))
         self.obj._manager.get_object_by_id.return_value = Mock(name="DBusObject", object_path="/an/object/path")
@@ -125,7 +125,7 @@ class DBusObjectTestCase(TestCase):
 @patch.object(DBusObject, 'connection')
 @patch.object(DBusObject, 'add_to_connection')
 @patch.object(DBusObject, 'remove_from_connection')
-@patch("blivet.dbus.blivet.callbacks")
+@patch("blivet3.dbus.blivet.callbacks")
 class DBusDeviceTestCase(DBusObjectTestCase):
     @patch.object(DBusObject, "_init_dbus_object")
     def setUp(self, *args):
@@ -150,7 +150,7 @@ class DBusDeviceTestCase(DBusObjectTestCase):
 @patch.object(DBusObject, 'connection')
 @patch.object(DBusObject, 'add_to_connection')
 @patch.object(DBusObject, 'remove_from_connection')
-@patch("blivet.dbus.blivet.callbacks")
+@patch("blivet3.dbus.blivet.callbacks")
 class DBusFormatTestCase(DBusObjectTestCase):
     @patch.object(DBusObject, "_init_dbus_object")
     def setUp(self, *args):
@@ -169,7 +169,7 @@ class DBusFormatTestCase(DBusObjectTestCase):
         self.assertEqual(self.obj.object_path, "%s/%d" % (FORMAT_OBJECT_PATH_BASE, self._format_id))
 
 
-@patch("blivet.dbus.blivet.callbacks")
+@patch("blivet3.dbus.blivet.callbacks")
 class DBusActionTestCase(DBusObjectTestCase):
     @patch.object(DBusObject, "_init_dbus_object")
     def setUp(self, *args):

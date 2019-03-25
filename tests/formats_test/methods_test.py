@@ -4,13 +4,13 @@ import six
 from six.moves.mock import patch, sentinel, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-from blivet.errors import DeviceFormatError
-from blivet.formats import DeviceFormat
-from blivet.formats.luks import LUKS
-from blivet.formats.lvmpv import LVMPhysicalVolume
-from blivet.formats.mdraid import MDRaidMember
-from blivet.formats.swap import SwapSpace
-from blivet.formats.fs import EFIFS, Ext4FS, XFS
+from blivet3.errors import DeviceFormatError
+from blivet3.formats import DeviceFormat
+from blivet3.formats.luks import LUKS
+from blivet3.formats.lvmpv import LVMPhysicalVolume
+from blivet3.formats.mdraid import MDRaidMember
+from blivet3.formats.swap import SwapSpace
+from blivet3.formats.fs import EFIFS, Ext4FS, XFS
 
 
 class FormatMethodsTestCase(unittest.TestCase):
@@ -27,7 +27,7 @@ class FormatMethodsTestCase(unittest.TestCase):
     def set_patches(self):
         # self.patchers["update_sysfs_path"] = patch.object(self.device, "update_sysfs_path")
         self.patchers["status"] = patch.object(self.format_class, "status", new=PropertyMock(return_value=False))
-        self.patchers["os"] = patch("blivet.formats.os")
+        self.patchers["os"] = patch("blivet3.formats.os")
 
     def start_patches(self):
         for target, patcher in self.patchers.items():
@@ -65,7 +65,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         pass
 
     def _test_destroy_backend(self):
-        with patch("blivet.formats.run_program") as run_program:
+        with patch("blivet3.formats.run_program") as run_program:
             run_program.return_value = 0
             self.format.exists = True
             self.format.destroy()
@@ -282,12 +282,12 @@ class FSMethodsTestCase(FormatMethodsTestCase):
 
     def set_patches(self):
         super(FSMethodsTestCase, self).set_patches()
-        self.patchers["udev"] = patch("blivet.formats.fs.udev")
-        self.patchers["util"] = patch("blivet.formats.fs.util")
+        self.patchers["udev"] = patch("blivet3.formats.fs.udev")
+        self.patchers["util"] = patch("blivet3.formats.fs.util")
         self.patchers["system_mountpoint"] = patch.object(self.format_class,
                                                           "system_mountpoint",
                                                           new=PropertyMock(return_value='/fake/mountpoint'))
-        self.patchers["fs_os"] = patch("blivet.formats.fs.os")
+        self.patchers["fs_os"] = patch("blivet3.formats.fs.os")
 
     def setUp(self):
         if self.format_class is None:
@@ -359,7 +359,7 @@ class LUKSMethodsTestCase(FormatMethodsTestCase):
         super(LUKSMethodsTestCase, self).set_patches()
         self.patchers["configured"] = patch.object(self.format_class, "configured", new=PropertyMock(return_value=True))
         self.patchers["has_key"] = patch.object(self.format_class, "has_key", new=PropertyMock(return_value=True))
-        self.patchers["blockdev"] = patch("blivet.formats.luks.blockdev")
+        self.patchers["blockdev"] = patch("blivet3.formats.luks.blockdev")
 
     def _test_create_backend(self):
         self.format.exists = False
@@ -380,7 +380,7 @@ class LVMPhysicalVolumeMethodsTestCase(FormatMethodsTestCase):
 
     def set_patches(self):
         super(LVMPhysicalVolumeMethodsTestCase, self).set_patches()
-        self.patchers["blockdev"] = patch("blivet.formats.lvmpv.blockdev")
+        self.patchers["blockdev"] = patch("blivet3.formats.lvmpv.blockdev")
 
     def _test_destroy_backend(self):
         self.format.exists = True
@@ -402,7 +402,7 @@ class MDRaidMemberMethodsTestCase(FormatMethodsTestCase):
 
     def set_patches(self):
         super(MDRaidMemberMethodsTestCase, self).set_patches()
-        self.patchers["blockdev"] = patch("blivet.formats.mdraid.blockdev")
+        self.patchers["blockdev"] = patch("blivet3.formats.mdraid.blockdev")
 
     def _test_destroy_backend(self):
         self.format.exists = True
@@ -416,7 +416,7 @@ class SwapMethodsTestCase(FormatMethodsTestCase):
 
     def set_patches(self):
         super(SwapMethodsTestCase, self).set_patches()
-        self.patchers["blockdev"] = patch("blivet.formats.swap.blockdev")
+        self.patchers["blockdev"] = patch("blivet3.formats.swap.blockdev")
 
     def _test_create_backend(self):
         self.format.exists = False

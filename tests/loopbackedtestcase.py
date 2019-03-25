@@ -3,7 +3,7 @@ import os
 import subprocess
 import tempfile
 
-from blivet.size import Size
+from blivet3.size import Size
 
 
 def make_store(file_name, num_blocks=102400, block_size=1024):

@@ -182,7 +182,7 @@ class DeviceFactory(object):
         group exists on disk its size will not be changed, but if it has not
         been written to disk it will be adjusted to hold the new logical volume::
 
-            import blivet
+            import blivet3
 
             _blivet = blivet.Blivet()
             _blivet.reset()

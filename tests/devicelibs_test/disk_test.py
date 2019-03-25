@@ -5,8 +5,8 @@ import six
 from six.moves.mock import Mock, patch, sentinel
 import unittest
 
-from blivet.devicelibs import disk as disklib
-from blivet.size import Size
+from blivet3.devicelibs import disk as disklib
+from blivet3.size import Size
 
 
 class FakeLsmError(Exception):
@@ -29,14 +29,14 @@ class DiskLibTestCase(unittest.TestCase):
     def test_lsm_dependency_guard(self):
         """Validate handling of missing lsm dependency."""
         # If lsm cannot be imported update_volume_info should yield an empty volume list.
-        with patch("blivet.devicelibs.disk._lsm_required._check_avail", return_value=False):
+        with patch("blivet3.devicelibs.disk._lsm_required._check_avail", return_value=False):
             disklib.update_volume_info()
             self.assertEqual(disklib.volumes, dict())
 
     def test_lsm_error_handling(self):
         """Validate handling of potential lsm errors."""
-        with patch("blivet.devicelibs.disk._lsm_required._check_avail", return_value=True):
-            with patch("blivet.devicelibs.disk.lsm") as _lsm:
+        with patch("blivet3.devicelibs.disk._lsm_required._check_avail", return_value=True):
+            with patch("blivet3.devicelibs.disk.lsm") as _lsm:
                 _lsm.LsmError = FakeLsmError
 
                 # verify that we end up with an empty dict if lsm.Client() raises LsmError
@@ -95,8 +95,8 @@ class DiskLibTestCase(unittest.TestCase):
         def system_by_id(sys_id):
             return six.next((sys for sys in _client_systems if sys.id == sys_id), None)
 
-        with patch("blivet.devicelibs.disk._lsm_required._check_avail", return_value=True):
-            with patch("blivet.devicelibs.disk.lsm") as _lsm:
+        with patch("blivet3.devicelibs.disk._lsm_required._check_avail", return_value=True):
+            with patch("blivet3.devicelibs.disk.lsm") as _lsm:
                 _lsm.Volume.RAID_TYPE_RAID0 = sentinel.RAID_TYPE_RAID0
                 _lsm.Volume.RAID_TYPE_OTHER = sentinel.RAID_TYPE_OTHER
                 _lsm.Capabilities.VOLUME_RAID_INFO = sentinel.VOLUME_RAID_INFO

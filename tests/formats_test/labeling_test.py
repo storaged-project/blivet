@@ -1,9 +1,9 @@
 import unittest
 
 from tests import loopbackedtestcase
-from blivet.formats import device_formats
-import blivet.formats.fs as fs
-import blivet.formats.swap as swap
+from blivet3.formats import device_formats
+import blivet3.formats.fs as fs
+import blivet3.formats.swap as swap
 
 from . import fslabeling
 

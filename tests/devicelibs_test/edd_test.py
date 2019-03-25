@@ -5,8 +5,8 @@ import inspect
 import logging
 import copy
 
-from blivet import arch
-from blivet.devicelibs import edd
+from blivet3 import arch
+from blivet3.devicelibs import edd
 from tests import lib
 
 

@@ -1,7 +1,7 @@
 import unittest
 
-import blivet.formats.fs as fs
-import blivet.formats.swap as swap
+import blivet3.formats.fs as fs
+import blivet3.formats.swap as swap
 
 from . import fsuuid
 

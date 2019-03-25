@@ -5,16 +5,16 @@ import six
 from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-import blivet
+import blivet3
 
-from blivet.devices import StorageDevice
-from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices.lvm import LVMCacheRequest
-from blivet.devices.lvm import LVPVSpec, LVMInternalLVtype
-from blivet.size import Size
-from blivet.devicelibs import raid
-from blivet import errors
+from blivet3.devices import StorageDevice
+from blivet3.devices import LVMLogicalVolumeDevice
+from blivet3.devices import LVMVolumeGroupDevice
+from blivet3.devices.lvm import LVMCacheRequest
+from blivet3.devices.lvm import LVPVSpec, LVMInternalLVtype
+from blivet3.size import Size
+from blivet3.devicelibs import raid
+from blivet3 import errors
 
 DEVICE_CLASSES = [
     LVMLogicalVolumeDevice,
@@ -529,7 +529,7 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
         self.assertEqual(pool.metadata_size, Size("50 MiB"))
         self.assertIs(pool.vg, vg)
 
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(pool, "_pre_create"):
                 pool.create()
                 self.assertTrue(lvm.thpool_convert.called)
@@ -584,18 +584,18 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
 
         # both component LVs don't exist
         with self.assertRaises(errors.DeviceError):
-            with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
                 pool.create()
 
         # lv2 will still not exist
         lv1.exists = True
         with self.assertRaises(errors.DeviceError):
-            with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
                 pool.create()
 
         # both component LVs exist, should just work
         lv2.exists = True
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+        with patch("blivet3.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(pool, "_pre_create"):
                 pool.create()
                 self.assertTrue(lvm.thpool_convert.called)

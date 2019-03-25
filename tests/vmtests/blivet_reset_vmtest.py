@@ -2,12 +2,12 @@ import unittest
 
 from .vmbackedtestcase import VMBackedTestCase
 
-from blivet.size import Size
-from blivet import devicefactory
-from blivet import util
+from blivet3.size import Size
+from blivet3 import devicefactory
+from blivet3 import util
 
-from blivet.udev import trigger
-from blivet.devices.lvm import LVMLogicalVolumeDevice
+from blivet3.udev import trigger
+from blivet3.devices.lvm import LVMLogicalVolumeDevice
 
 
 def recursive_getattr(x, attr, default=None):

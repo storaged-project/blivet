@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-import blivet.formats as formats
+import blivet3.formats as formats
 
 
 class FormatsTestCase(unittest.TestCase):

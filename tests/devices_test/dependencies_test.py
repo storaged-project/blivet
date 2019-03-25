@@ -8,34 +8,34 @@ else:
 import unittest
 import os
 import six
-import blivet
+import blivet3
 import gi
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
-from blivet.errors import DependencyError
+from blivet3.errors import DependencyError
 
-from blivet.deviceaction import ActionCreateDevice
-from blivet.deviceaction import ActionDestroyDevice
-from blivet.deviceaction import ActionResizeDevice
+from blivet3.deviceaction import ActionCreateDevice
+from blivet3.deviceaction import ActionDestroyDevice
+from blivet3.deviceaction import ActionResizeDevice
 
-from blivet.deviceaction import ActionCreateFormat
-from blivet.deviceaction import ActionDestroyFormat
+from blivet3.deviceaction import ActionCreateFormat
+from blivet3.deviceaction import ActionDestroyFormat
 
-from blivet.devices import DiskDevice
-from blivet.devices import DiskFile
-from blivet.devices import LUKSDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.devices import PartitionDevice
-from blivet.devices import StorageDevice
+from blivet3.devices import DiskDevice
+from blivet3.devices import DiskFile
+from blivet3.devices import LUKSDevice
+from blivet3.devices import MDRaidArrayDevice
+from blivet3.devices import PartitionDevice
+from blivet3.devices import StorageDevice
 
-from blivet.formats import get_format
+from blivet3.formats import get_format
 
-from blivet.size import Size
+from blivet3.size import Size
 
-from blivet.tasks import availability
+from blivet3.tasks import availability
 
-from blivet.util import create_sparse_tempfile
+from blivet3.util import create_sparse_tempfile
 
 
 class DeviceDependenciesTestCase(unittest.TestCase):

@@ -1,7 +1,7 @@
 
 import unittest
-from blivet.devices import ParentList
-from blivet.devices import Device
+from blivet3.devices import ParentList
+from blivet3.devices import Device
 
 
 class ParentListTestCase(unittest.TestCase):

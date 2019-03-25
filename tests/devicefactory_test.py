@@ -4,21 +4,21 @@ import unittest
 from decimal import Decimal
 import os
 
-import blivet
+import blivet3
 
-from blivet import devicefactory
-from blivet.devicelibs import raid
-from blivet.devices import DiskDevice
-from blivet.devices import DiskFile
-from blivet.devices import LUKSDevice
-from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.devices import PartitionDevice
-from blivet.devices.lvm import DEFAULT_THPOOL_RESERVE
-from blivet.errors import RaidError
-from blivet.formats import get_format
-from blivet.size import Size
-from blivet.util import create_sparse_tempfile
+from blivet3 import devicefactory
+from blivet3.devicelibs import raid
+from blivet3.devices import DiskDevice
+from blivet3.devices import DiskFile
+from blivet3.devices import LUKSDevice
+from blivet3.devices import LVMLogicalVolumeDevice
+from blivet3.devices import MDRaidArrayDevice
+from blivet3.devices import PartitionDevice
+from blivet3.devices.lvm import DEFAULT_THPOOL_RESERVE
+from blivet3.errors import RaidError
+from blivet3.formats import get_format
+from blivet3.size import Size
+from blivet3.util import create_sparse_tempfile
 
 """
     Things we're still not testing:

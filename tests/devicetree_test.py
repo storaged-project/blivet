@@ -4,17 +4,17 @@ from six.moves.mock import Mock, patch, sentinel  # pylint: disable=no-name-in-m
 import six
 import unittest
 
-from blivet.actionlist import ActionList
-from blivet.errors import DeviceTreeError
-from blivet.devicelibs import lvm
-from blivet.devices import DiskDevice
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices import StorageDevice
-from blivet.devices import MultipathDevice
-from blivet.devices.lib import Tags
-from blivet.devicetree import DeviceTree
-from blivet.formats import get_format
-from blivet.size import Size
+from blivet3.actionlist import ActionList
+from blivet3.errors import DeviceTreeError
+from blivet3.devicelibs import lvm
+from blivet3.devices import DiskDevice
+from blivet3.devices import LVMVolumeGroupDevice
+from blivet3.devices import StorageDevice
+from blivet3.devices import MultipathDevice
+from blivet3.devices.lib import Tags
+from blivet3.devicetree import DeviceTree
+from blivet3.formats import get_format
+from blivet3.size import Size
 
 """
     TODO:
@@ -107,7 +107,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.devices, list())
 
         # things are called, updated as expected when a device is added
-        with patch("blivet.devicetree.callbacks") as callbacks:
+        with patch("blivet3.devicetree.callbacks") as callbacks:
             dt._add_device(dev1)
             self.assertTrue(callbacks.device_added.called)
 
@@ -145,7 +145,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         six.assertRaisesRegex(self, ValueError, "not in tree", dt._remove_device, dev1)
 
         dt._add_device(dev1)
-        with patch("blivet.devicetree.callbacks") as callbacks:
+        with patch("blivet3.devicetree.callbacks") as callbacks:
             dt._remove_device(dev1)
             self.assertTrue(callbacks.device_removed.called)
 

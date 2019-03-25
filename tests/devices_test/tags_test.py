@@ -3,9 +3,9 @@ import test_compat  # pylint: disable=unused-import
 from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-from blivet.devices import DiskDevice, FcoeDiskDevice, iScsiDiskDevice, MultipathDevice, StorageDevice, ZFCPDiskDevice
-from blivet.devices.lib import Tags
-from blivet.devices.device import Device
+from blivet3.devices import DiskDevice, FcoeDiskDevice, iScsiDiskDevice, MultipathDevice, StorageDevice, ZFCPDiskDevice
+from blivet3.devices.lib import Tags
+from blivet3.devices.device import Device
 
 
 class DeviceTagsTest(unittest.TestCase):
@@ -39,7 +39,7 @@ class DeviceTagsTest(unittest.TestCase):
         #
         # automatically-set tags for DiskDevice
         #
-        with patch('blivet.devices.disk.util') as patched_util:
+        with patch('blivet3.devices.disk.util') as patched_util:
             patched_util.get_sysfs_attr.return_value = None
             d = DiskDevice('test1')
             self.assertIn(Tags.local, d.tags)

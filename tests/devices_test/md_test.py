@@ -1,12 +1,12 @@
 import six
 import unittest
 
-import blivet
+import blivet3
 
-from blivet.devices import StorageDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.size import Size
-from blivet.devicelibs import mdraid
+from blivet3.devices import StorageDevice
+from blivet3.devices import MDRaidArrayDevice
+from blivet3.size import Size
+from blivet3.devicelibs import mdraid
 
 DEVICE_CLASSES = [
     MDRaidArrayDevice,

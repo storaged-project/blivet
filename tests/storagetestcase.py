@@ -4,12 +4,12 @@ from mock import Mock
 
 import parted
 
-import blivet as blivet
-from blivet.formats import get_format
+import blivet3 as blivet
+from blivet3.formats import get_format
 
 # device classes for brevity's sake -- later on, that is
-from blivet.devices import StorageDevice
-from blivet.devices import PartitionDevice
+from blivet3.devices import StorageDevice
+from blivet3.devices import PartitionDevice
 
 
 class StorageTestCase(unittest.TestCase):

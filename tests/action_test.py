@@ -7,29 +7,29 @@ else:
     from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
-import blivet
-from blivet.formats import get_format
-from blivet.size import Size
+import blivet3
+from blivet3.formats import get_format
+from blivet3.size import Size
 
 # device classes for brevity's sake -- later on, that is
-from blivet.devices import StorageDevice
-from blivet.devices import DiskDevice
-from blivet.devices import PartitionDevice
-from blivet.devices import MDRaidArrayDevice
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices import LVMLogicalVolumeDevice
+from blivet3.devices import StorageDevice
+from blivet3.devices import DiskDevice
+from blivet3.devices import PartitionDevice
+from blivet3.devices import MDRaidArrayDevice
+from blivet3.devices import LVMVolumeGroupDevice
+from blivet3.devices import LVMLogicalVolumeDevice
 
 # action classes
-from blivet.deviceaction import ActionCreateDevice
-from blivet.deviceaction import ActionResizeDevice
-from blivet.deviceaction import ActionDestroyDevice
-from blivet.deviceaction import ActionCreateFormat
-from blivet.deviceaction import ActionResizeFormat
-from blivet.deviceaction import ActionDestroyFormat
-from blivet.deviceaction import ActionAddMember
-from blivet.deviceaction import ActionRemoveMember
-from blivet.deviceaction import ActionConfigureFormat
-from blivet.deviceaction import ActionConfigureDevice
+from blivet3.deviceaction import ActionCreateDevice
+from blivet3.deviceaction import ActionResizeDevice
+from blivet3.deviceaction import ActionDestroyDevice
+from blivet3.deviceaction import ActionCreateFormat
+from blivet3.deviceaction import ActionResizeFormat
+from blivet3.deviceaction import ActionDestroyFormat
+from blivet3.deviceaction import ActionAddMember
+from blivet3.deviceaction import ActionRemoveMember
+from blivet3.deviceaction import ActionConfigureFormat
+from blivet3.deviceaction import ActionConfigureDevice
 
 DEVICE_CLASSES = [
     DiskDevice,

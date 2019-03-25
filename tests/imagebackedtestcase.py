@@ -2,9 +2,9 @@
 import os
 import unittest
 
-from blivet import Blivet
-from blivet import util
-from blivet.size import Size
+from blivet3 import Blivet
+from blivet3 import util
+from blivet3.size import Size
 
 
 @unittest.skip("disabled until it can be converted to run in a vm")

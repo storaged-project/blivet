@@ -6,9 +6,9 @@ import os
 import tempfile
 
 from tests import loopbackedtestcase
-from blivet.errors import FSError, FSResizeError, DeviceFormatError
-from blivet.size import Size, ROUND_DOWN
-from blivet.formats import fs
+from blivet3.errors import FSError, FSResizeError, DeviceFormatError
+from blivet3.size import Size, ROUND_DOWN
+from blivet3.formats import fs
 
 
 def can_resize(an_fs):

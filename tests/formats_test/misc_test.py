@@ -1,8 +1,8 @@
 import unittest
 from decimal import Decimal
 
-from blivet.formats.fs import FS, Ext2FS, Ext3FS, Ext4FS, BTRFS, FATFS
-from blivet.size import Size
+from blivet3.formats.fs import FS, Ext2FS, Ext3FS, Ext4FS, BTRFS, FATFS
+from blivet3.size import Size
 
 
 class FSOverheadTestCase(unittest.TestCase):

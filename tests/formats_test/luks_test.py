@@ -3,9 +3,9 @@ import test_compat  # pylint: disable=unused-import
 from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-from blivet.formats.luks import LUKS
+from blivet3.formats.luks import LUKS
 
-from blivet.size import Size
+from blivet3.size import Size
 
 from tests import loopbackedtestcase
 
@@ -67,7 +67,7 @@ class LUKSNodevTestCase(unittest.TestCase):
         self.assertEqual(fmt.options, None)
 
         # flags.discard_new=True --> discard if creating new
-        with patch("blivet.flags.flags.discard_new", True):
+        with patch("blivet3.flags.flags.discard_new", True):
             fmt = LUKS(exists=True)
             self.assertEqual(fmt.options, None)
 

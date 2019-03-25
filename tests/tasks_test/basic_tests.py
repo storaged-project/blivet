@@ -1,7 +1,7 @@
 import unittest
 
-import blivet.tasks.task as task
-import blivet.tasks.availability as availability
+import blivet3.tasks.task as task
+import blivet3.tasks.availability as availability
 
 
 class BasicUnavailableApplication(task.BasicApplication):

@@ -8,21 +8,21 @@ import unittest
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
-from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
-from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
-from blivet.devices import PartitionDevice, StorageDevice, NVDIMMNamespaceDevice
-from blivet.devicetree import DeviceTree
-from blivet.formats import get_device_format_class, get_format, DeviceFormat
-from blivet.formats.disklabel import DiskLabel
-from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
-from blivet.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
-from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
-from blivet.populator.helpers import LVMFormatPopulator, MDFormatPopulator, NVDIMMNamespaceDevicePopulator
-from blivet.populator.helpers import get_format_helper, get_device_helper
-from blivet.populator.helpers.boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
-from blivet.populator.helpers.formatpopulator import FormatPopulator
-from blivet.populator.helpers.disklabel import DiskLabelFormatPopulator
-from blivet.size import Size
+from blivet3.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
+from blivet3.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
+from blivet3.devices import PartitionDevice, StorageDevice, NVDIMMNamespaceDevice
+from blivet3.devicetree import DeviceTree
+from blivet3.formats import get_device_format_class, get_format, DeviceFormat
+from blivet3.formats.disklabel import DiskLabel
+from blivet3.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
+from blivet3.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
+from blivet3.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
+from blivet3.populator.helpers import LVMFormatPopulator, MDFormatPopulator, NVDIMMNamespaceDevicePopulator
+from blivet3.populator.helpers import get_format_helper, get_device_helper
+from blivet3.populator.helpers.boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
+from blivet3.populator.helpers.formatpopulator import FormatPopulator
+from blivet3.populator.helpers.disklabel import DiskLabelFormatPopulator
+from blivet3.size import Size
 
 
 class PopulatorHelperTestCase(unittest.TestCase):
@@ -32,13 +32,13 @@ class PopulatorHelperTestCase(unittest.TestCase):
 class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DMDevicePopulator
 
-    @patch("blivet.udev.device_is_dm_luks", return_value=False)
-    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
-    @patch("blivet.udev.device_is_dm_lvm", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=False)
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
-    @patch("blivet.udev.device_is_dm_raid", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=True)
+    @patch("blivet3.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet3.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=False)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.udev.device_is_dm_raid", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=True)
     def test_match(self, *args):
         """Test matching of dm device populator."""
         device_is_dm = args[0]
@@ -52,15 +52,15 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(None))
         device_is_dm_luks.return_value = False
 
-    @patch("blivet.udev.device_is_dm_luks", return_value=False)
-    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
-    @patch("blivet.udev.device_is_dm_lvm", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=False)
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
-    @patch("blivet.udev.device_is_dm_raid", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=True)
+    @patch("blivet3.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet3.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=False)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.udev.device_is_dm_raid", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for dm devices."""
         device_is_dm = args[0]
@@ -82,9 +82,9 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DMDevice, "status", return_value=True)
     @patch.object(DMDevice, "update_sysfs_path")
     @patch.object(DeviceTree, "_add_slave_devices")
-    @patch("blivet.udev.device_is_dm_livecd", return_value=False)
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
+    @patch("blivet3.udev.device_is_dm_livecd", return_value=False)
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
     def test_run(self, *args):
         """Test dm device populator."""
         device_is_dm_livecd = args[2]
@@ -135,15 +135,15 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         # Test intentionally left empty
         pass
 
-    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_dm_luks", return_value=False)
-    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
-    @patch("blivet.udev.device_is_dm_lvm", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=True)
+    @patch("blivet3.populator.helpers.loop.blockdev.loop.get_backing_file")
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet3.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for loop devices."""
         device_is_loop = args[0]
@@ -168,9 +168,9 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(FileDevice, "status", return_value=True)
     @patch.object(LoopDevice, "status", return_value=True)
-    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
+    @patch("blivet3.populator.helpers.loop.blockdev.loop.get_backing_file")
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
     def test_run(self, *args):
         """Test loop device populator."""
         device_get_name = args[1]
@@ -209,7 +209,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
 class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = LVMDevicePopulator
 
-    @patch("blivet.udev.device_is_dm_lvm", return_value=True)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=True)
     def test_match(self, *args):
         """Test matching of lvm device populator."""
         device_is_dm_lvm = args[0]
@@ -217,13 +217,13 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_lvm.return_value = False
         self.assertFalse(self.helper_class.match(None))
 
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_dm_luks", return_value=False)
-    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
-    @patch("blivet.udev.device_is_dm_lvm", return_value=True)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet3.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for lvm devices."""
         device_is_dm_lvm = args[0]
@@ -241,8 +241,8 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(DeviceTree, "_add_slave_devices")
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_lv_vg_name")
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_get_lv_vg_name")
     def test_run(self, *args):
         """Test lvm device populator."""
         device_get_lv_vg_name = args[0]
@@ -299,7 +299,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
 class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = OpticalDevicePopulator
 
-    @patch("blivet.udev.device_is_cdrom", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=True)
     def test_match(self, *args):
         """Test matching of optical device populator."""
         device_is_cdrom = args[0]
@@ -307,14 +307,14 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_cdrom.return_value = False
         self.assertFalse(self.helper_class.match(None))
 
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_dm_lvm", return_value=False)
-    @patch("blivet.udev.device_is_dm_luks", return_value=False)
-    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_cdrom", return_value=True)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet3.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_cdrom", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for optical devices."""
         device_is_cdrom = args[0]
@@ -330,10 +330,10 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
         # a failure because the ordering is not complete, meaning any of several device helpers
         # could be the first helper class checked.
 
-    @patch("blivet.udev.device_get_major", return_value=99)
-    @patch("blivet.udev.device_get_minor", return_value=17)
-    @patch("blivet.udev.device_get_sysfs_path", return_value='')
-    @patch("blivet.udev.device_get_name")
+    @patch("blivet3.udev.device_get_major", return_value=99)
+    @patch("blivet3.udev.device_get_minor", return_value=17)
+    @patch("blivet3.udev.device_get_sysfs_path", return_value='')
+    @patch("blivet3.udev.device_get_name")
     def test_run(self, *args):
         """Test optical device populator."""
         device_get_name = args[0]
@@ -356,8 +356,8 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
     """Test partition device populator match method"""
     helper_class = PartitionDevicePopulator
 
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=True)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=True)
     def test_match(self, *args):
         """Test matching for partition device populator."""
         device_is_partition = args[0]
@@ -369,16 +369,16 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_partition.return_value = True
         self.assertTrue(self.helper_class.match(None))
 
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_dm_luks", return_value=False)
-    @patch("blivet.udev.device_is_dm_integrity", return_value=False)
-    @patch("blivet.udev.device_is_dm_lvm", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=False)
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=True)
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_luks", return_value=False)
+    @patch("blivet3.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet3.udev.device_is_dm_lvm", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=False)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for partitions."""
         device_is_partition = args[0]
@@ -394,7 +394,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         # verify that setting one of the required False return values to True prevents success
         # as of now, loop is always checked before partition
         device_is_loop.return_value = True
-        with patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file", return_value=True):
+        with patch("blivet3.populator.helpers.loop.blockdev.loop.get_backing_file", return_value=True):
             self.assertNotEqual(get_device_helper(data), self.helper_class)
 
         device_is_loop.return_value = False
@@ -404,12 +404,12 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DiskLabel, "parted_device")
     @patch.object(PartitionDevice, "probe")
     # TODO: fix the naming of the lvm filter functions
-    @patch("blivet.devicelibs.lvm.lvm_cc_addFilterRejectRegexp")
-    @patch("blivet.udev.device_get_major", return_value=88)
-    @patch("blivet.udev.device_get_minor", return_value=19)
+    @patch("blivet3.devicelibs.lvm.lvm_cc_addFilterRejectRegexp")
+    @patch("blivet3.udev.device_get_major", return_value=88)
+    @patch("blivet3.udev.device_get_minor", return_value=19)
     @patch.object(DeviceTree, "get_device_by_name")
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_partition_disk")
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_get_partition_disk")
     def test_run(self, *args):
         """Test partition device populator."""
         device_get_partition_disk = args[0]
@@ -459,12 +459,12 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DiskDevicePopulator
 
     @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_is_disk", return_value=True)
     def test_match(self, *args):
         """Test matching of disk device populator."""
         device_is_disk = args[0]
@@ -473,12 +473,12 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(None))
 
     @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_is_disk", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for disks."""
         device_is_disk = args[0]
@@ -497,9 +497,9 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertNotEqual(get_device_helper(data), self.helper_class)
         device_is_cdrom.return_value = False
 
-    @patch("blivet.udev.device_get_major", return_value=99)
-    @patch("blivet.udev.device_get_minor", return_value=222)
-    @patch("blivet.udev.device_get_name")
+    @patch("blivet3.udev.device_get_major", return_value=99)
+    @patch("blivet3.udev.device_get_minor", return_value=222)
+    @patch("blivet3.udev.device_get_name")
     def test_run(self, *args):
         """Test disk device populator."""
         device_get_name = args[0]
@@ -526,13 +526,13 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = NVDIMMNamespaceDevicePopulator
 
     @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
-    @patch("blivet.udev.device_is_nvdimm_namespace", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_is_disk", return_value=True)
+    @patch("blivet3.udev.device_is_nvdimm_namespace", return_value=True)
     def test_match(self, *args):
         """Test matching of NVDIMM namespace device populator."""
         device_is_nvdimm_namespace = args[0]
@@ -541,13 +541,13 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(None))
 
     @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
-    @patch("blivet.udev.device_is_nvdimm_namespace", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_is_disk", return_value=True)
+    @patch("blivet3.udev.device_is_nvdimm_namespace", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for NVDIMM namespaces."""
         device_is_nvdimm_namespace = args[0]
@@ -559,7 +559,7 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertNotEqual(get_device_helper(data), self.helper_class)
         device_is_nvdimm_namespace.return_value = True
 
-    @patch("blivet.udev.device_get_name")
+    @patch("blivet3.udev.device_get_name")
     def test_run(self, *args):
         """Test disk device populator."""
         device_get_name = args[0]
@@ -576,8 +576,8 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
         nvdimm_data = Mock(mode=blockdev.NVDIMMNamespaceMode.SECTOR, devname='dummy',
                            uuid='test-uuid', sector_size=512)
 
-        with patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data):
-            with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
+        with patch("blivet3.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data):
+            with patch("blivet3.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
                 device = helper.run()
 
         self.assertIsInstance(device, NVDIMMNamespaceDevice)
@@ -592,8 +592,8 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
 class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = MDDevicePopulator
 
-    @patch("blivet.udev.device_get_md_container", return_value=None)
-    @patch("blivet.udev.device_is_md", return_value=True)
+    @patch("blivet3.udev.device_get_md_container", return_value=None)
+    @patch("blivet3.udev.device_is_md", return_value=True)
     def test_match(self, *args):
         """Test matching of md device populator."""
         device_is_md = args[0]
@@ -613,13 +613,13 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_md_container.return_value = True
         self.assertEqual(self.helper_class.match(None), False)
 
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_get_md_container", return_value=None)
-    @patch("blivet.udev.device_is_md", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=False)
+    @patch("blivet3.udev.device_is_disk", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_get_md_container", return_value=None)
+    @patch("blivet3.udev.device_is_md", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for md arrays."""
         device_is_md = args[0]
@@ -638,9 +638,9 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
 
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(DeviceTree, "_add_slave_devices")
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_md_uuid")
-    @patch("blivet.udev.device_get_md_name")
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.udev.device_get_md_uuid")
+    @patch("blivet3.udev.device_get_md_name")
     def test_run(self, *args):
         """Test md device populator."""
         device_get_md_name = args[0]
@@ -663,10 +663,10 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
 
 class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = MultipathDevicePopulator
-    match_auto_patches = ["blivet.udev.device_is_dm_mpath", "blivet.udev.device_is_dm_partition"]
+    match_auto_patches = ["blivet3.udev.device_is_dm_mpath", "blivet3.udev.device_is_dm_partition"]
 
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=True)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=True)
     def test_match(self, *args):
         """Test matching of multipath device populator."""
         device_is_dm_mpath = args[0]
@@ -687,13 +687,13 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_partition.return_value = False
         self.assertEqual(MultipathDevicePopulator.match(None), False)
 
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=True)
-    @patch("blivet.udev.device_is_dm_mpath", return_value=True)
+    @patch("blivet3.udev.device_is_cdrom", return_value=False)
+    @patch("blivet3.udev.device_is_loop", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_is_md", return_value=False)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.udev.device_is_dm", return_value=True)
+    @patch("blivet3.udev.device_is_dm_mpath", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for multipaths."""
         device_is_dm_mpath = args[0]
@@ -710,9 +710,9 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         # a failure because the ordering is not complete, meaning any of several device helpers
         # could be the first helper class checked.
 
-    @patch("blivet.udev.device_get_sysfs_path")
+    @patch("blivet3.udev.device_get_sysfs_path")
     @patch.object(DeviceTree, "_add_slave_devices")
-    @patch("blivet.udev.device_get_name")
+    @patch("blivet3.udev.device_get_name")
     def test_run(self, *args):
         """Test multipath device populator."""
         device_get_name = args[0]
@@ -766,13 +766,13 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
         data = dict()
         device = Mock()
 
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             self.assertTrue(self.helper_class.match(data, device),
                             msg="Failed to match %s against %s" % (self.udev_type, self.helper_name))
 
-    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_dm_partition", return_value=False)
+    @patch("blivet3.static_data.mpath_members.is_mpath_member", return_value=False)
+    @patch("blivet3.udev.device_is_partition", return_value=False)
+    @patch("blivet3.udev.device_is_dm_partition", return_value=False)
     # pylint: disable=unused-argument
     def test_get_helper(self, *args):
         if self.udev_type is None:
@@ -781,7 +781,7 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
         data = dict()
         device = Mock()
 
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             self.assertEqual(get_format_helper(data, device),
                              self.helper_class,
                              msg="get_format_helper failed for %s" % self.udev_type)
@@ -795,7 +795,7 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
         data = dict()
         device = Mock()
 
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
@@ -827,9 +827,9 @@ class HFSPopulatorTestCase(FormatPopulatorTestCase):
 class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
     helper_class = DiskLabelFormatPopulator
 
-    @patch("blivet.udev.device_is_biosraid_member", return_value=False)
-    @patch("blivet.udev.device_get_format", return_value=None)
-    @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
+    @patch("blivet3.udev.device_is_biosraid_member", return_value=False)
+    @patch("blivet3.udev.device_get_format", return_value=None)
+    @patch("blivet3.udev.device_get_disklabel_type", return_value="dos")
     def test_match(self, *args):
         """Test matching for disklabel format populator."""
         device_get_disklabel_type = args[0]
@@ -863,10 +863,10 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(data, device))
         device_get_format.return_value = None
 
-    @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
-    @patch("blivet.udev.device_is_biosraid_member", return_value=False)
-    @patch("blivet.udev.device_get_format", return_value=None)
-    @patch("blivet.udev.device_get_disklabel_type", return_value="dos")
+    @patch("blivet3.static_data.mpath_members.is_mpath_member", return_value=False)
+    @patch("blivet3.udev.device_is_biosraid_member", return_value=False)
+    @patch("blivet3.udev.device_get_format", return_value=None)
+    @patch("blivet3.udev.device_get_disklabel_type", return_value="dos")
     def test_get_helper(self, *args):
         """Test get_format_helper for disklabels."""
         device_get_disklabel_type = args[0]
@@ -895,7 +895,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         blockdev.lvm.vgs = self._vgs
         blockdev.lvm.lvs = self._lvs
 
-    @patch("blivet.udev.device_get_name")
+    @patch("blivet3.udev.device_get_name")
     @patch.object(DeviceFormat, "_device_check", return_value=None)
     @patch.object(DeviceTree, "get_device_by_uuid")
     def test_run(self, *args):
@@ -919,7 +919,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         self.addCleanup(self._clean_up)
 
         # base case: pv format with no vg
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
@@ -941,9 +941,9 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         vg_device.lvs = []
         get_device_by_uuid.return_value = vg_device
 
-        with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
+        with patch("blivet3.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
             mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
-            with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+            with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
                 helper = self.helper_class(devicetree, data, device)
                 self.assertFalse(device in vg_device.parents)
                 helper.run()
@@ -966,11 +966,11 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_free_count = 0
         pv_info.vg_pv_count = 1
 
-        with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
+        with patch("blivet3.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
             mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
-            with patch("blivet.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
+            with patch("blivet3.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
                 mock_vgs_cache.return_value = {pv_info.vg_uuid: Mock()}
-                with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+                with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
                     helper = self.helper_class(devicetree, data, device)
                     helper.run()
                     self.assertEqual(device.format.type,
@@ -1014,13 +1014,13 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
             return six.next((d for d in devicetree.devices if d.uuid == uuid), None)
         get_device_by_uuid.side_effect = gdbu
 
-        with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
+        with patch("blivet3.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
             mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
-            with patch("blivet.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
+            with patch("blivet3.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
                 mock_vgs_cache.return_value = {pv_info.vg_uuid: Mock()}
-                with patch("blivet.static_data.lvm_info.LVsInfo.cache", new_callable=PropertyMock) as mock_lvs_cache:
+                with patch("blivet3.static_data.lvm_info.LVsInfo.cache", new_callable=PropertyMock) as mock_lvs_cache:
                     mock_lvs_cache.return_value = lv_info
-                    with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+                    with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
                         self.assertEqual(devicetree.get_device_by_name(pv_info.vg_name, incomplete=True), None)
                         helper = self.helper_class(devicetree, data, device)
                         helper.run()
@@ -1051,11 +1051,11 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
     def _clean_up(self):
         blockdev.md.examine = self._examine
 
-    @patch("blivet.udev.device_get_name")
-    @patch("blivet.util.canonicalize_UUID", side_effect=lambda x: x)
+    @patch("blivet3.udev.device_get_name")
+    @patch("blivet3.util.canonicalize_UUID", side_effect=lambda x: x)
     @patch.object(MDRaidArrayDevice, "mdadm_format_uuid", None)
-    @patch("blivet.udev.device_is_md")
-    @patch("blivet.udev.get_devices")
+    @patch("blivet3.udev.device_is_md")
+    @patch("blivet3.udev.get_devices")
     @patch.object(DeviceTree, "get_device_by_uuid")
     def test_run(self, *args):
         """Test md format populator."""
@@ -1084,7 +1084,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         md_device = Mock()
         get_device_by_uuid.return_value = md_device
 
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
@@ -1110,7 +1110,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         md_udev = {"MD_LEVEL": md_info.level, "MD_UUID": sentinel.md_uuid, "MD_DEVNAME": array_name}
         get_devices.return_value = [md_udev]
 
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             helper = self.helper_class(devicetree, data, device)
             helper.run()
             self.assertEqual(device.format.type,
@@ -1137,7 +1137,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         device2.size = Size("10g")
         devicetree._add_device(device2)
 
-        with patch("blivet.udev.device_get_format", return_value=self.udev_type):
+        with patch("blivet3.udev.device_get_format", return_value=self.udev_type):
             helper = self.helper_class(devicetree, data, device2)
             helper.run()
             self.assertEqual(device2.format.type,
@@ -1227,7 +1227,7 @@ class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
             self.assertFalse(self.helper_class.match(data, partition))
             partition._parted_partition = orig
 
-    @patch("blivet.udev.device_get_disklabel_type", return_value=None)
+    @patch("blivet3.udev.device_get_disklabel_type", return_value=None)
     # pylint: disable=unused-argument
     def test_get_helper(self, *args):
         if self.helper_class is None:

@@ -2,10 +2,10 @@
 
 import unittest
 
-from blivet.devices import NetworkStorageDevice
-from blivet.devices import StorageDevice
+from blivet3.devices import NetworkStorageDevice
+from blivet3.devices import StorageDevice
 
-from blivet.formats import get_format
+from blivet3.formats import get_format
 
 
 class FakeNetDev(StorageDevice, NetworkStorageDevice):

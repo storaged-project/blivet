@@ -5,11 +5,11 @@ from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-err
 import six
 import unittest
 
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import StorageDevice
-from blivet.size import Size
-import blivet
+from blivet3.devices import LVMVolumeGroupDevice
+from blivet3.devices import LVMLogicalVolumeDevice
+from blivet3.devices import StorageDevice
+from blivet3.size import Size
+import blivet3
 
 
 class DeviceNameTestCase(unittest.TestCase):

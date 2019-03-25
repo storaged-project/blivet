@@ -6,33 +6,33 @@ import unittest
 
 import parted
 
-from blivet.partitioning import add_partition
-from blivet.partitioning import get_next_partition_type
-from blivet.partitioning import do_partitioning
-from blivet.partitioning import allocate_partitions
-from blivet.partitioning import get_free_regions
-from blivet.partitioning import resolve_disk_tags
-from blivet.partitioning import Request
-from blivet.partitioning import Chunk
-from blivet.partitioning import LVRequest
-from blivet.partitioning import VGChunk
-from blivet.partitioning import DiskChunk
-from blivet.partitioning import PartitionRequest
+from blivet3.partitioning import add_partition
+from blivet3.partitioning import get_next_partition_type
+from blivet3.partitioning import do_partitioning
+from blivet3.partitioning import allocate_partitions
+from blivet3.partitioning import get_free_regions
+from blivet3.partitioning import resolve_disk_tags
+from blivet3.partitioning import Request
+from blivet3.partitioning import Chunk
+from blivet3.partitioning import LVRequest
+from blivet3.partitioning import VGChunk
+from blivet3.partitioning import DiskChunk
+from blivet3.partitioning import PartitionRequest
 
-from blivet.devices import StorageDevice
-from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import DiskDevice
-from blivet.devices import DiskFile
-from blivet.devices import PartitionDevice
-from blivet.devices.lvm import LVMCacheRequest
+from blivet3.devices import StorageDevice
+from blivet3.devices import LVMVolumeGroupDevice
+from blivet3.devices import LVMLogicalVolumeDevice
+from blivet3.devices import DiskDevice
+from blivet3.devices import DiskFile
+from blivet3.devices import PartitionDevice
+from blivet3.devices.lvm import LVMCacheRequest
 
 from tests.imagebackedtestcase import ImageBackedTestCase
-from blivet.blivet import Blivet
-from blivet.util import sparsetmpfile
-from blivet.formats import get_format
-from blivet.size import Size
-from blivet.flags import flags
+from blivet3.blivet import Blivet
+from blivet3.util import sparsetmpfile
+from blivet3.formats import get_format
+from blivet3.size import Size
+from blivet3.flags import flags
 
 # disklabel-type-specific constants
 # keys: disklabel type string

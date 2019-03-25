@@ -4,10 +4,10 @@ import test_compat
 from six.moves.mock import patch
 import unittest
 
-from blivet.devices import DiskDevice
-from blivet.devicelibs import disk as disklib
-from blivet.devicelibs import raid
-from blivet.size import Size
+from blivet3.devices import DiskDevice
+from blivet3.devicelibs import disk as disklib
+from blivet3.devicelibs import raid
+from blivet3.size import Size
 
 
 class DiskDeviceRAIDPropertiesTestCase(unittest.TestCase):
@@ -27,7 +27,7 @@ class DiskDeviceRAIDPropertiesTestCase(unittest.TestCase):
         test2 = DiskDevice("test2")
         test3 = DiskDevice("test3")
         # DiskDevice attributes should have the same values as the corresponding LSMInfo, or None
-        with patch("blivet.devices.disk.disklib") as _disklib:
+        with patch("blivet3.devices.disk.disklib") as _disklib:
             _disklib.volumes = volumes
 
             test1_volume = volumes[test1.path]
