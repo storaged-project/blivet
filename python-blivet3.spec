@@ -92,15 +92,6 @@ Requires: python3-gobject-base
 Requires: systemd-udev
 Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 
-Obsoletes: blivet-data < 1:2.0.0
-
-%if %{without python2}
-Obsoletes: python2-blivet < 1:2.0.2-2
-Obsoletes: python-blivet < 1:2.0.2-2
-%else
-Obsoletes: python-blivet < 1:2.0.0
-%endif
-
 %description -n python3-%{realname}
 The python3-%{realname} is a python3 package for examining and modifying storage
 configuration.
