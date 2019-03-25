@@ -24,7 +24,7 @@ MSGFMT		= msgfmt --statistics --verbose
 # What do we need to do
 POFILES		= $(wildcard *.po)
 MOFILES		= $(patsubst %.po,%.mo,$(POFILES))
-PYSRC		= $(wildcard ../blivet/*.py ../blivet/*/*.py)
+PYSRC		= $(wildcard ../blivet3/*.py ../blivet3/*/*.py)
 SRCFILES 	= $(PYSRC)
 
 all::  refresh-po $(MOFILES)

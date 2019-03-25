@@ -42,7 +42,7 @@ def findall(dirname=os.curdir):
 filelist.findall = findall
 
 # Extend the sdist command
-class blivet_sdist(sdist):
+class blivet3_sdist(sdist):
     def run(self):
         # Build the .mo files
         subprocess.check_call(['make', '-C', 'po'])
@@ -68,12 +68,12 @@ data_files = [
 ]
 
 
-setup(name='blivet',
+setup(name='blivet3',
       version='3.1.3',
-      cmdclass={"sdist": blivet_sdist},
+      cmdclass={"sdist": blivet3_sdist},
       description='Python module for system storage configuration',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://github.com/storaged-project/blivet',
       data_files=data_files,
-      packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers']
+      packages=['blivet3', 'blivet3.dbus', 'blivet3.devices', 'blivet3.devicelibs', 'blivet3.events', 'blivet3.formats', 'blivet3.populator', 'blivet3.static_data', 'blivet3.tasks', 'blivet3.populator.helpers']
      )

@@ -26,7 +26,7 @@ import shutil
 import subprocess
 import sys
 
-def getArchiveTag(spec, name="blivet"):
+def getArchiveTag(spec, name="blivet3"):
     """ Get the last tag from the .spec file
     """
     f = open(spec)
@@ -45,7 +45,7 @@ def getArchiveTag(spec, name="blivet"):
 
     return "-".join([name, version, release])
 
-def getArchiveTagOffset(spec, offset, name="blivet"):
+def getArchiveTagOffset(spec, offset, name="blivet3"):
     tag = getArchiveTag(spec, name)
 
     if not tag.count("-") >= 2:

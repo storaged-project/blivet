@@ -1,8 +1,8 @@
 PYTHON?=python3
 PKG_INSTALL?=dnf
 
-PKGNAME=blivet
-SPECFILE=python-blivet.spec
+PKGNAME=blivet3
+SPECFILE=python-blivet3.spec
 VERSION=$(shell $(PYTHON) setup.py --version)
 RPMVERSION=$(shell rpmspec -q --queryformat "%{version}\n" $(SPECFILE) | head -1)
 RPMRELEASE=$(shell rpmspec --undefine '%dist' -q --queryformat "%{release}\n" $(SPECFILE) | head -1)
@@ -51,8 +51,8 @@ test:
 coverage:
 	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
 	PYTHONPATH=.:tests/ $(COVERAGE) run --branch -m unittest discover -v -s tests/ -p '*_test.py'
-	$(COVERAGE) report --include="blivet/*" --show-missing
-	$(COVERAGE) report --include="blivet/*" > coverage-report.log
+	$(COVERAGE) report --include="blivet3/*" --show-missing
+	$(COVERAGE) report --include="blivet3/*" > coverage-report.log
 
 pylint:
 	@echo "*** Running pylint ***"
@@ -69,7 +69,7 @@ pep8:
 	else \
 		echo "You need to install pycodestyle/pep8 to run this check."; exit 1; \
 	fi ; \
-	$$pep8 --ignore=E501,E402,E731,W504 blivet/ tests/ examples/
+	$$pep8 --ignore=E501,E402,E731,W504 blivet3/ tests/ examples/
 
 canary: po-fallback
 	@echo "*** Running translation-canary tests ***"
@@ -83,7 +83,7 @@ check:
 	exit $$status
 
 clean:
-	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
+	-rm *.tar.gz blivet3/*.pyc blivet3/*/*.pyc ChangeLog
 	$(MAKE) -C po clean
 	$(PYTHON) setup.py -q clean --all
 
