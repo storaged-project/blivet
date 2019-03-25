@@ -27,7 +27,7 @@ from ..size import Size
 from ..tasks import availability
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .storage import StorageDevice
 from .dm import DMCryptDevice, DMIntegrityDevice

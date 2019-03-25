@@ -31,7 +31,7 @@ import copy
 
 from .. import util
 
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 testdata_log = logging.getLogger("testdata")
 testdata_log.setLevel(logging.DEBUG)
 

@@ -28,7 +28,7 @@ from ...errors import FSError
 from .populatorhelper import PopulatorHelper
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class FormatPopulator(PopulatorHelper):

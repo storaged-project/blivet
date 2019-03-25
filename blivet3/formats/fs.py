@@ -58,7 +58,7 @@ from ..mounts import mounts_cache
 from .fslib import kernel_filesystems, update_kernel_filesystems
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class FS(DeviceFormat):

@@ -40,7 +40,7 @@ from . import DeviceFormat, register_device_format
 from ..size import Size
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class DiskLabel(DeviceFormat):

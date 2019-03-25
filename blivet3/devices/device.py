@@ -28,7 +28,7 @@ from ..storage_log import log_method_call
 from ..threads import SynchronizedMeta
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .lib import ParentList
 

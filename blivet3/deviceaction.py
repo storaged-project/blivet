@@ -39,7 +39,7 @@ from .threads import SynchronizedMeta
 from .static_data import luks_data
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 # The values are just hints as to the ordering.
 # Eg: fsmod and devmod ordering depends on the mod (shrink -v- grow)

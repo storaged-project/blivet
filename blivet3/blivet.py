@@ -49,7 +49,7 @@ from .threads import SynchronizedMeta
 from .static_data import luks_data
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 @six.add_metaclass(SynchronizedMeta)

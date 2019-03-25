@@ -30,7 +30,7 @@ from ...storage_log import log_exception_info, log_method_call
 from .formatpopulator import FormatPopulator
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class DiskLabelFormatPopulator(FormatPopulator):

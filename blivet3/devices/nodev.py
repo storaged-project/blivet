@@ -22,7 +22,7 @@
 from ..storage_log import log_method_call
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from ..size import Size
 from .storage import StorageDevice

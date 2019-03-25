@@ -32,7 +32,7 @@ from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 CACHE_AVAILABILITY = True
 

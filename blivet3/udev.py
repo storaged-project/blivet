@@ -37,7 +37,7 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 global_udev = pyudev.Context()
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 device_name_blacklist = []
 """ device name regexes to ignore; this should be empty by default """

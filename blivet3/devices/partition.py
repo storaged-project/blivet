@@ -38,7 +38,7 @@ from ..formats import DeviceFormat, get_format
 from ..size import Size, MiB
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .device import Device
 from .storage import StorageDevice

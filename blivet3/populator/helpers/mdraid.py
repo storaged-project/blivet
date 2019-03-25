@@ -38,7 +38,7 @@ from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class MDDevicePopulator(DevicePopulator):

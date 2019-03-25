@@ -50,7 +50,7 @@ from ..tasks import fsck
 from ..tasks import fsminsize
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 device_formats = {}
 

@@ -25,7 +25,7 @@ from . import util
 from .devicelibs import btrfs
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class _MountinfoCache(object):

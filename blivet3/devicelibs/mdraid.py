@@ -25,7 +25,7 @@ from . import raid
 from ..tasks import availability
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 # these defaults were determined empirically
 MD_SUPERBLOCK_SIZE = Size("2 MiB")

@@ -30,7 +30,7 @@ from ..tasks import availability
 from ..util import total_memory, available_memory
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 LUKS_METADATA_SIZE = Size("2 MiB")
 MIN_CREATE_ENTROPY = 256  # bits

@@ -38,7 +38,7 @@ from ..flags import flags
 from .changes import disable_callbacks, enable_callbacks
 
 import logging
-event_log = logging.getLogger("blivet.event")
+event_log = logging.getLogger("blivet3.event")
 
 
 def validate_cb(cb, kwargs=None, arg_count=None):

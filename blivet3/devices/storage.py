@@ -34,7 +34,7 @@ from ..formats import get_format, DeviceFormat
 from ..size import Size
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .device import Device
 from .network import NetworkStorageDevice
@@ -54,7 +54,7 @@ class StorageDevice(Device):
     _resizable = False
     """Whether this type of device is inherently resizable."""
 
-    _type = "blivet"
+    _type = "blivet3"
     _dev_dir = "/dev"
     _format_immutable = False
     _partitionable = False

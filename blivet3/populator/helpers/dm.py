@@ -27,7 +27,7 @@ from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class DMDevicePopulator(DevicePopulator):

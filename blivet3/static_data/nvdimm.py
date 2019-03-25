@@ -26,7 +26,7 @@ from gi.repository import GLib
 from .. import util
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class NVDIMMDependencyGuard(util.DependencyGuard):

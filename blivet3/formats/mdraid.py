@@ -33,7 +33,7 @@ from ..i18n import N_
 from ..tasks import availability
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class MDRaidMember(DeviceFormat):

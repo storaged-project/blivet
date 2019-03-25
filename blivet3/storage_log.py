@@ -5,7 +5,7 @@ import traceback
 
 from .flags import flags
 
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 log.addHandler(logging.NullHandler())
 
 

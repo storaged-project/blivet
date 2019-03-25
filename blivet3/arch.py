@@ -36,7 +36,7 @@ import os
 from .storage_log import log_exception_info
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"

@@ -37,7 +37,7 @@ gi.require_version("GLib", "2.0")
 from gi.repository import GLib
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 # Note that stage2 copies all files under /sbin to /usr/sbin
 ISCSID = ""

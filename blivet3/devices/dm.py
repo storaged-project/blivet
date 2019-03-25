@@ -34,7 +34,7 @@ from .. import udev
 from ..tasks import availability
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .storage import StorageDevice
 from .lib import LINUX_SECTOR_SIZE, get_majors_by_device_type

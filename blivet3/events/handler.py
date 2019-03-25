@@ -33,8 +33,8 @@ from .changes import data as event_data
 from .manager import event_manager
 
 import logging
-log = logging.getLogger("blivet")
-event_log = logging.getLogger("blivet.event")
+log = logging.getLogger("blivet3")
+event_log = logging.getLogger("blivet3.event")
 
 
 @add_metaclass(SynchronizedMeta)

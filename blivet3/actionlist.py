@@ -35,7 +35,7 @@ from . import tsort
 from .threads import blivet_lock, SynchronizedMeta
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 def with_flag(flag_attr):

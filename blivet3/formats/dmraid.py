@@ -27,7 +27,7 @@ from ..i18n import N_
 from . import DeviceFormat, register_device_format
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class DMRaidMember(DeviceFormat):

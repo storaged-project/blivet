@@ -34,7 +34,7 @@ from .formatpopulator import FormatPopulator
 from ...static_data import luks_data
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class LUKSDevicePopulator(DevicePopulator):

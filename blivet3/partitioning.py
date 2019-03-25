@@ -37,7 +37,7 @@ from .i18n import _
 from .util import stringize, unicodeize, compare
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 def partition_compare(part1, part2):

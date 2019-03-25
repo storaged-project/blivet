@@ -25,7 +25,7 @@ from ..size import Size
 from ..tasks import availability
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 # this is the volume id btrfs always assigns to the top-level volume/tree
 MAIN_VOLUME_ID = 5

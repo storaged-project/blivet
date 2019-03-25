@@ -46,7 +46,7 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 # policy value of >0 is a fixed size request
 SIZE_POLICY_MAX = -1

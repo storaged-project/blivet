@@ -46,7 +46,7 @@ from .storage_log import log_method_call, log_method_return
 from .threads import SynchronizedMeta
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 

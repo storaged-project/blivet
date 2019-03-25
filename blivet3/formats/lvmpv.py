@@ -39,7 +39,7 @@ from .. import udev
 from ..static_data.lvm_info import pvs_info
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class LVMPhysicalVolume(DeviceFormat):

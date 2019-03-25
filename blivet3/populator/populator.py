@@ -50,7 +50,7 @@ from ..static_data import lvs_info, pvs_info, vgs_info, luks_data, mpath_members
 from ..callbacks import callbacks
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 def parted_exn_handler(exn_type, exn_options, exn_msg):

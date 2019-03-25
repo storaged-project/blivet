@@ -39,7 +39,7 @@ from ..tasks import availability
 from ..fcoe import fcoe
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .lib import Tags
 from .storage import StorageDevice

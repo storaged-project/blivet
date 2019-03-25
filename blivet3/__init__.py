@@ -30,7 +30,7 @@ import syslog
 from . import util, arch
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 program_log = logging.getLogger("program")
 testdata_log = logging.getLogger("testdata")
 

@@ -46,7 +46,7 @@ from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
 from ..tasks import availability
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 from .lib import LINUX_SECTOR_SIZE, ParentList
 from .device import Device

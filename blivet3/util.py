@@ -28,10 +28,10 @@ from gi.repository import BlockDev as blockdev
 import six
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 program_log = logging.getLogger("program")
 testdata_log = logging.getLogger("testdata")
-console_log = logging.getLogger("blivet.console")
+console_log = logging.getLogger("blivet3.console")
 
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
@@ -706,7 +706,7 @@ def dedup_list(alist):
 ##
 
 
-def set_up_logging(log_dir="/tmp", log_prefix="blivet", console_logs=None):
+def set_up_logging(log_dir="/tmp", log_prefix="blivet3", console_logs=None):
     """ Configure the blivet logger to write out a log file.
 
         :keyword str log_dir: path to directory where log files are
@@ -763,7 +763,7 @@ def create_sparse_tempfile(name, size):
         :param :class:`~.size.Size` size: the file size
         :returns: the path to the newly created file
     """
-    (fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-%s" % name)
+    (fd, path) = tempfile.mkstemp(prefix="blivet3.", suffix="-%s" % name)
     os.close(fd)
     create_sparse_file(path, size)
     return path

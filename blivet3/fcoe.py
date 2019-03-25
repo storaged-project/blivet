@@ -24,7 +24,7 @@ import logging
 import time
 import shutil
 from .i18n import _
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 _fcoe_module_loaded = False
 

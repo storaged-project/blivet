@@ -38,7 +38,7 @@ from ..size import Size, KiB
 from ..static_data import luks_data
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class LUKS2PBKDFArgs(object):

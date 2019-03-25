@@ -39,7 +39,7 @@ from .formatpopulator import FormatPopulator
 from ...static_data import lvs_info, pvs_info, vgs_info
 
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class LVMDevicePopulator(DevicePopulator):

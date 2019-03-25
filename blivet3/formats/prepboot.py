@@ -27,7 +27,7 @@ from . import DeviceFormat, register_device_format
 from parted import PARTITION_PREP
 import os
 import logging
-log = logging.getLogger("blivet")
+log = logging.getLogger("blivet3")
 
 
 class PPCPRePBoot(DeviceFormat):
