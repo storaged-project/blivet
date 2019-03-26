@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-03 13:31+0200\n"
+"POT-Creation-Date: 2019-03-26 08:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../blivet/__init__.py:1449
+#: ../blivet/__init__.py:1452
 msgid "You must create a new filesystem on the root device."
 msgstr ""
 
-#: ../blivet/__init__.py:3145
+#: ../blivet/__init__.py:3148
 #, python-format
 msgid "Linux on %s"
 msgstr ""
 
-#: ../blivet/__init__.py:3150
+#: ../blivet/__init__.py:3153
 msgid "Unknown Linux"
 msgstr ""
 
-#: ../blivet/__init__.py:3152
+#: ../blivet/__init__.py:3155
 #, python-format
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
@@ -182,6 +182,27 @@ msgstr ""
 msgid "bytes"
 msgstr ""
 
+#: ../blivet/errors.py:169
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
+msgstr ""
+
+#: ../blivet/errors.py:175
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
+msgstr ""
+
+#: ../blivet/errors.py:180
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
 #. not enough free space for the requested partition
 #: ../blivet/partitioning.py:215 ../blivet/partitioning.py:385
 #: ../blivet/partitioning.py:439
@@ -249,27 +270,6 @@ msgstr ""
 msgid "not enough space for LVM requests"
 msgstr ""
 
-#: ../blivet/errors.py:169
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:175
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:180
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
 #: ../blivet/fcoe.py:119
 msgid "FCoE not available"
 msgstr ""
@@ -297,7 +297,7 @@ msgid ""
 "target."
 msgstr ""
 
-#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1155
+#: ../blivet/platform.py:219 ../blivet/formats/fs.py:1156
 msgid "EFI System Partition"
 msgstr ""
 
@@ -532,60 +532,16 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/formats/fs.py:554
-#, python-format
-msgid "Unknown return code: %d."
-msgstr ""
-
-#: ../blivet/formats/fs.py:576
-#, python-format
-msgid "%(type)s filesystem check failure on %(device)s: "
-msgstr ""
-
-#: ../blivet/formats/fs.py:956
-msgid "File system errors left uncorrected."
-msgstr ""
-
-#: ../blivet/formats/fs.py:957
-msgid "Operational error."
-msgstr ""
-
-#: ../blivet/formats/fs.py:958
-msgid "Usage or syntax error."
-msgstr ""
-
-#: ../blivet/formats/fs.py:959
-msgid "e2fsck cancelled by user request."
-msgstr ""
-
-#: ../blivet/formats/fs.py:960
-msgid "Shared library error."
-msgstr ""
-
-#: ../blivet/formats/fs.py:1128
-msgid ""
-"Recoverable errors have been detected or dosfsck has discovered an internal "
-"inconsistency."
-msgstr ""
-
-#: ../blivet/formats/fs.py:1130
-msgid "Usage error."
-msgstr ""
-
-#: ../blivet/formats/fs.py:1399
-msgid "Apple Bootstrap"
-msgstr ""
-
-#: ../blivet/formats/fs.py:1431
-msgid "Linux HFS+ ESP"
-msgstr ""
-
 #: ../blivet/formats/prepboot.py:36
 msgid "PPC PReP Boot"
 msgstr ""
 
 #: ../blivet/formats/dmraid.py:36
 msgid "dm-raid member device"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:40
+msgid "software RAID"
 msgstr ""
 
 #: ../blivet/formats/biosboot.py:33
@@ -617,12 +573,56 @@ msgstr ""
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/lvmpv.py:40
-msgid "physical volume (LVM)"
+#: ../blivet/formats/fs.py:555
+#, python-format
+msgid "Unknown return code: %d."
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:40
-msgid "software RAID"
+#: ../blivet/formats/fs.py:577
+#, python-format
+msgid "%(type)s filesystem check failure on %(device)s: "
+msgstr ""
+
+#: ../blivet/formats/fs.py:957
+msgid "File system errors left uncorrected."
+msgstr ""
+
+#: ../blivet/formats/fs.py:958
+msgid "Operational error."
+msgstr ""
+
+#: ../blivet/formats/fs.py:959
+msgid "Usage or syntax error."
+msgstr ""
+
+#: ../blivet/formats/fs.py:960
+msgid "e2fsck cancelled by user request."
+msgstr ""
+
+#: ../blivet/formats/fs.py:961
+msgid "Shared library error."
+msgstr ""
+
+#: ../blivet/formats/fs.py:1129
+msgid ""
+"Recoverable errors have been detected or dosfsck has discovered an internal "
+"inconsistency."
+msgstr ""
+
+#: ../blivet/formats/fs.py:1131
+msgid "Usage error."
+msgstr ""
+
+#: ../blivet/formats/fs.py:1400
+msgid "Apple Bootstrap"
+msgstr ""
+
+#: ../blivet/formats/fs.py:1432
+msgid "Linux HFS+ ESP"
+msgstr ""
+
+#: ../blivet/formats/lvmpv.py:40
+msgid "physical volume (LVM)"
 msgstr ""
 
 #: ../blivet/devicelibs/lvm.py:59

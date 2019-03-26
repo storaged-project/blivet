@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.72
+Version: 0.61.15.73
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -67,6 +67,30 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Mar 26 2019 Vojtech Trefny <vtrefny@redhat.com> - 0.61.15.73-1
+- Use --yes when calling pvresize (vtrefny)
+  Related: rhbz#1657000
+- Fix typo in partitioning test cleanup. (dlehman)
+  Related: rhbz#1657000
+- Remove selinux test that doesn't do anything meaningful. (dlehman)
+  Related: rhbz#1657000
+- Improve parsing of mdadm detail output. (dlehman)
+  Related: rhbz#1657000
+- Update btrfs tests to use sufficiently large loop devices. (dlehman)
+  Related: rhbz#1657000
+- vfat labels apparently cannot contain lower case characters. (dlehman)
+  Related: rhbz#1657000
+- Check label format regardless of mechanism used to set it. (dlehman)
+  Related: rhbz#1657000
+- Adapt to presence or absence of python-mock. (dlehman)
+  Related: rhbz#1657000
+- Fixed KS forcing zerombr onto RO disk (japokorn)
+  Resolves: rhbz#1544425
+- Tell LVM to wipe cachepool metadata when attaching the cachepool (vtrefny)
+  Resolves: rhbz#1643531
+- Add dependency on python-six (vtrefny)
+  Resolves: rhbz#1647173
+
 * Mon Sep 03 2018 Vojtech Trefny <vtrefny@redhat.com> - 0.61.15.72-1
 - Install ndctl when NVDIMMs are used. (dlehman)
   Related: rhbz#1600496
