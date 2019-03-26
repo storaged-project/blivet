@@ -17,7 +17,7 @@
 %endif
 
 Summary:  A python module for system storage configuration
-Name: python-blivet
+Name: python-blivet3
 Url: https://storageapis.wordpress.com/projects/blivet
 Version: 3.1.3
 
@@ -27,9 +27,9 @@ Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPLv2+
 Group: System Environment/Libraries
-%global realname blivet
+%global realname blivet3
 %global realversion %{version}%{?prerelease}
-Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
+Source0: http://github.com/storaged-project/blivet/archive/blivet-%{realversion}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -50,9 +50,6 @@ storage configuration.
 Summary: Data for the %{realname} python module.
 
 BuildRequires: systemd
-
-Conflicts: python-blivet < 1:2.0.0
-Conflicts: python3-blivet < 1:2.0.0
 
 %description -n %{realname}-data
 The %{realname}-data package provides data files required by the %{realname}
@@ -75,19 +72,19 @@ Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: python3-blockdev >= %{libblockdevver}
+%if 0%{?rhel} > 7 || 0%{?fedora}
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
 Recommends: libblockdev-dm >= %{libblockdevver}
-Recommends: libblockdev-fs >= %{libblockdevver}
 Recommends: libblockdev-kbd >= %{libblockdevver}
 Recommends: libblockdev-loop >= %{libblockdevver}
 Recommends: libblockdev-lvm >= %{libblockdevver}
 Recommends: libblockdev-mdraid >= %{libblockdevver}
 Recommends: libblockdev-mpath >= %{libblockdevver}
 Recommends: libblockdev-nvdimm >= %{libblockdevver}
-Recommends: libblockdev-part >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
 Recommends: libblockdev-s390 >= %{libblockdevver}
+%endif
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
@@ -126,6 +123,7 @@ Requires: parted >= %{partedver}
 Requires: python2-pyparted >= %{pypartedver}
 Requires: python2-libselinux
 Requires: python2-blockdev >= %{libblockdevver}
+%if 0%{?rhel} > 7 || 0%{?fedora}
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
 Recommends: libblockdev-dm >= %{libblockdevver}
@@ -139,6 +137,7 @@ Recommends: libblockdev-nvdimm >= %{libblockdevver}
 Recommends: libblockdev-part >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
 Recommends: libblockdev-s390 >= %{libblockdevver}
+%endif
 Requires: python2-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof
@@ -148,16 +147,13 @@ Requires: %{realname}-data = %{epoch}:%{version}-%{release}
 Requires: systemd-udev
 Requires: python2-gobject-base
 
-Obsoletes: blivet-data < 1:2.0.0
-Obsoletes: python-blivet < 1:2.0.0
-
 %description -n python2-%{realname}
 The python2-%{realname} is a python2 package for examining and modifying storage
 configuration.
 %endif
 
 %prep
-%autosetup -n %{realname}-%{realversion} -p1
+%autosetup -n blivet-%{realversion} -p1
 
 %build
 %{?with_python2:make PYTHON=%{__python2}}
