@@ -44,6 +44,7 @@ Requires: python-pyblock >= %{pythonpyblockver}
 Requires: device-mapper-multipath
 Requires: lsof
 Requires: python-blockdev
+Requires: python-six
 
 %description
 The python-blivet package is a python module for examining and modifying
