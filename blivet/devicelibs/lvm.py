@@ -271,7 +271,7 @@ def pvcreate(device, data_alignment=None):
         raise LVMError("pvcreate failed for %s: %s" % (device, msg))
 
 def pvresize(device, size):
-    args = ["pvresize",
+    args = ["pvresize", "--yes",
             "--setphysicalvolumesize", ("%dm" % size.convertTo(spec="mib")),
             device]
 

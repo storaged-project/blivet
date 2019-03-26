@@ -74,7 +74,7 @@ class FATFSLabeling(FSLabeling):
     label_app = property(lambda s: fslabel.DosFsLabel)
 
     def labelFormatOK(self, label):
-        return len(label) < 12
+        return len(label) < 12 and label.upper() == label
 
     def labelingArgs(self, label):
         return ["-n", label]

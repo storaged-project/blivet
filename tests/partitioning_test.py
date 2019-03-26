@@ -1,7 +1,13 @@
 #!/usr/bin/python
 
 import unittest
-from mock import Mock, patch
+
+try:
+    from mock import Mock, patch
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 
 import parted
 
@@ -54,6 +60,7 @@ class PartitioningTestCase(unittest.TestCase):
 
         return disk
 
+    @unittest.skipUnless(has_mock, "Python mock module not available.")
     def testNextPartitionType(self):
         #
         # DOS
@@ -133,6 +140,7 @@ class PartitioningTestCase(unittest.TestCase):
         disk = self.getDisk(disk_type="mac")
         self.assertEqual(getNextPartitionType(disk, no_primary=True), None)
 
+    @unittest.skipUnless(has_mock, "Python mock module not available.")
     def testAddPartition(self):
         with sparsetmpfile("addparttest", Size("50 MiB")) as disk_file:
             disk = DiskFile(disk_file)
@@ -246,6 +254,7 @@ class PartitioningTestCase(unittest.TestCase):
                                     Size("10 MiB"), all_free[1].start)
 
 
+    @unittest.skipUnless(has_mock, "Python mock module not available.")
     def testChunk(self):
         dev1 = Mock()
         attrs = {"req_grow": True,
@@ -436,7 +445,7 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
     def testImplicitExtendedPartitionsInstallerMode(self):
         flags.installer_mode = True
         self.testImplicitExtendedPartitions()
-        flags.install_mode = False
+        flags.installer_mode = False
 
     def testExplicitExtendedPartitions(self):
         """ Verify that explicitly requested extended partitions work. """

@@ -1,6 +1,11 @@
 import unittest
-from mock import patch
-from mock import PropertyMock
+try:
+    from mock import patch
+    from mock import PropertyMock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
 from pykickstart.version import returnClassForVersion
 from blivet import Blivet
 from blivet.devices import PartitionDevice
@@ -8,6 +13,7 @@ from blivet import formats
 from blivet.size import Size
 
 
+@unittest.skipUnless(has_mock, "Python mock module not available.")
 class BlivetTestCase(unittest.TestCase):
     '''
     Define tests for the Blivet class

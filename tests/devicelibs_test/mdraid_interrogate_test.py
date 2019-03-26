@@ -201,7 +201,7 @@ class MDDetailTestCase(MDRaidInterrogateTestCase):
         info = mdraid.mddetail(self._dev_name)
 
         # info contains values for exactly names
-        self._matchNames(info.keys(), names, ['RESYNC STATUS'])
+        self._matchNames(info.keys(), names, ['RESYNC STATUS', 'SEQ', 'CONTAINER GUID', 'VIRTUAL DISKS'])
 
         # check names with predictable values
         self.assertEqual(info['RAID LEVEL'], str(level))
