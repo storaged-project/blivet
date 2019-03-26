@@ -153,6 +153,11 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.disk1_file = create_sparse_tempfile("disk1", Size("2GiB"))
         self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())  # pylint: disable=no-value-for-parameter
 
+        loaded_plugins = self.load_all_plugins()
+        if not all(p in loaded_plugins for p in ("btrfs", "crypto", "lvm", "md")):
+            # we don't have all plugins needed for this test case
+            self.skipTest("Missing libblockdev plugins needed from weak dependencies test.")
+
     def _clean_up(self):
         # reload all libblockdev plugins
         self.load_all_plugins()
