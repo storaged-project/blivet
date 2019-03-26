@@ -19,6 +19,13 @@ from blivet.devices import MDRaidArrayDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
 
+# format classes
+from blivet.formats.fs import Ext2FS
+from blivet.formats.fs import Ext3FS
+from blivet.formats.fs import Ext4FS
+from blivet.formats.fs import FATFS
+from blivet.formats.fs import XFS
+
 # action classes
 from blivet.deviceaction import ActionCreateDevice
 from blivet.deviceaction import ActionResizeDevice
@@ -39,8 +46,17 @@ DEVICE_CLASSES = [
     LVMLogicalVolumeDevice
 ]
 
+FORMAT_CLASSES = [
+    Ext2FS,
+    Ext3FS,
+    Ext4FS,
+    FATFS,
+    XFS
+]
+
 
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+@unittest.skipUnless(not any(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
 
     """ DeviceActionTestSuite """
