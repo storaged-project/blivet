@@ -1,4 +1,4 @@
-import blivet3
+import blivet3 as blivet
 from blivet3.util import set_up_logging
 
 set_up_logging()

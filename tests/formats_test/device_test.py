@@ -1,6 +1,6 @@
 import unittest
 
-import blivet3
+import blivet3 as blivet
 
 
 class DeviceFormatTestCase(unittest.TestCase):

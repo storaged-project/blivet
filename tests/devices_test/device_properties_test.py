@@ -11,7 +11,7 @@ from gi.repository import BlockDev as blockdev
 
 from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 
-import blivet3
+import blivet3 as blivet
 
 from blivet3.errors import BTRFSValueError
 from blivet3.errors import DeviceError

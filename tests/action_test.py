@@ -7,7 +7,7 @@ else:
     from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
-import blivet3
+import blivet3 as blivet
 from blivet3.formats import get_format
 from blivet3.size import Size
 

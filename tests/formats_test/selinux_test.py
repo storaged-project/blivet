@@ -9,7 +9,7 @@ else:
 import unittest
 import selinux
 
-import blivet3
+import blivet3 as blivet
 import blivet3.formats.fs as fs
 
 

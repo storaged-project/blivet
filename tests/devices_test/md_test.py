@@ -1,7 +1,7 @@
 import six
 import unittest
 
-import blivet3
+import blivet3 as blivet
 
 from blivet3.devices import StorageDevice
 from blivet3.devices import MDRaidArrayDevice

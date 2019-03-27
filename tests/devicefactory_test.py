@@ -4,7 +4,7 @@ import unittest
 from decimal import Decimal
 import os
 
-import blivet3
+import blivet3 as blivet
 
 from blivet3 import devicefactory
 from blivet3.devicelibs import raid

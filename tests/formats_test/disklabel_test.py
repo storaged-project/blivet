@@ -4,7 +4,7 @@ import parted
 from six.moves import mock  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-import blivet3
+import blivet3 as blivet
 from blivet3.size import Size
 
 patch = mock.patch

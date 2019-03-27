@@ -9,7 +9,7 @@ from blivet3.devices import LVMVolumeGroupDevice
 from blivet3.devices import LVMLogicalVolumeDevice
 from blivet3.devices import StorageDevice
 from blivet3.size import Size
-import blivet3
+import blivet3 as blivet
 
 
 class DeviceNameTestCase(unittest.TestCase):

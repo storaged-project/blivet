@@ -8,7 +8,7 @@ else:
 import unittest
 import os
 import six
-import blivet3
+import blivet3 as blivet
 import gi
 gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev

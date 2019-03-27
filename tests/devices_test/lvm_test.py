@@ -5,7 +5,7 @@ import six
 from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
 
-import blivet3
+import blivet3 as blivet
 
 from blivet3.devices import StorageDevice
 from blivet3.devices import LVMLogicalVolumeDevice
