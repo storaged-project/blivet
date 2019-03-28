@@ -50,7 +50,11 @@ def device_to_dict(device):
     # Sice blivet uses Device.properties only (with couple of exceptions)
     # this is a functional workaround. (japokorn May 2017)
 
-    result = dict(device.properties)
+    try:
+        result = dict(device.properties)
+    except AttributeError:
+        result = dict(device)
+
     result["SYS_NAME"] = device.sys_name
     result["SYS_PATH"] = device.sys_path
     return result
