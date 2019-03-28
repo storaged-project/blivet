@@ -910,7 +910,7 @@ class DeviceTreeBase(object):
             for tag in tags:
                 if tag not in Tags.__members__:
                     raise ValueError("unknown ignoredisk tag '@%s' encountered" % tag)
-                if Tags(tag) in disk.tags:
+                if tag in disk.tags:
                     return True
             return False
 

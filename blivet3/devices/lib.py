@@ -18,15 +18,19 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
-from enum import Enum
+try:
+    from enum import Enum
+except ImportError:
+    Enum = None
+
 import os
+import six
 
 from .. import errors
 from .. import udev
 from ..size import Size
 
 LINUX_SECTOR_SIZE = Size(512)
-
 
 class Tags(str, Enum):
     """Tags that describe various classes of disk."""
@@ -37,6 +41,17 @@ class Tags(str, Enum):
     ssd = 'ssd'
     usb = 'usb'
 
+class Py2Tags(object):
+    __members__ = ('local', 'nvdimm', 'remote', 'removable', 'ssd', 'usb')
+
+    def __getattribute__(self, attr):
+        if attr in Py2Tags.__members__:
+            return attr
+        else:
+            return super(Py2Tags, self).__getattribute__(attr)
+
+if six.PY2:
+    Tags = Py2Tags()
 
 def _collect_device_major_data():
     by_major = {}
