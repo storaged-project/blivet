@@ -319,6 +319,7 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(req2.growth, 0)
         self.assertEqual(req3.growth, 35)
 
+    @unittest.skip("needs pyparted commit 810c4a28")
     def test_msdos_disk_chunk1(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
@@ -372,6 +373,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(requests[0].growth, 30712)
             self.assertEqual(requests[1].growth, 92136)
 
+    @unittest.skip("needs pyparted commit 810c4a28")
     def test_msdos_disk_chunk2(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:

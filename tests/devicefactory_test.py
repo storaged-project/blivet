@@ -36,6 +36,7 @@ from blivet3.util import create_sparse_tempfile
 """
 
 
+@unittest.skip("needs pyparted commit 810c4a28")
 class DeviceFactoryTestCase(unittest.TestCase):
     device_type = None
     """ device type constant to pass to devicefactory.get_device_factory """
