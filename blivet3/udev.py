@@ -63,9 +63,9 @@ def device_to_dict(device):
 def get_device(sysfs_path=None, device_node=None):
     try:
         if sysfs_path is not None:
-            device = pyudev.Devices.from_sys_path(global_udev, sysfs_path)
+            device = pyudev.device.Device.from_sys_path(global_udev, sysfs_path)
         elif device_node is not None:
-            device = pyudev.Devices.from_device_file(global_udev, device_node)
+            device = pyudev.device.Device.from_device_file(global_udev, device_node)
     except pyudev.DeviceNotFoundError as e:
         log.error(e)
         result = None
