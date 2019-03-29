@@ -23,13 +23,13 @@ try:
 
     # create an lv named data in a vg named testvg
     device = b.factory_device(blivet.devicefactory.DEVICE_TYPE_LVM,
-                              Size("50GiB"), disks=[disk1, disk2],
+                              size=Size("50GiB"), disks=[disk1, disk2],
                               fstype="xfs", mountpoint="/data")
     print(b.devicetree)
 
     # change testvg to have an md RAID1 pv instead of partition pvs
     device = b.factory_device(blivet.devicefactory.DEVICE_TYPE_LVM,
-                              Size("50GiB"), disks=[disk1, disk2],
+                              size=Size("50GiB"), disks=[disk1, disk2],
                               fstype="xfs", mountpoint="/data",
                               container_raid_level="raid1",
                               device=device)
