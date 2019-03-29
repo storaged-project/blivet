@@ -1,6 +1,6 @@
 import os
 
-import blivet3
+import blivet3 as blivet
 from blivet3.size import Size
 from blivet3.util import set_up_logging, create_sparse_tempfile
 from blivet3.devices.lvm import LVMCacheRequest

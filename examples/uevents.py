@@ -1,6 +1,6 @@
 import time
 
-import blivet3
+import blivet3 as blivet
 from blivet3.events.manager import event_manager
 from blivet3.util import set_up_logging
 
