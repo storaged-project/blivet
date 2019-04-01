@@ -69,6 +69,7 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
 
         self.mdraid_method = availability.BLOCKDEV_MDRAID_PLUGIN._method
         self.dm_method = availability.BLOCKDEV_DM_PLUGIN._method
+        self.hfsplus_method = availability.MKFS_HFSPLUS_APP._method
         self.cache_availability = availability.CACHE_AVAILABILITY
 
         self.addCleanup(self._clean_up)
@@ -101,10 +102,12 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
     def _clean_up(self):
         availability.BLOCKDEV_MDRAID_PLUGIN._method = self.mdraid_method
         availability.BLOCKDEV_DM_PLUGIN._method = self.dm_method
+        availability.MKFS_HFSPLUS_APP._method = self.hfsplus_method
 
         availability.CACHE_AVAILABILITY = False
         availability.BLOCKDEV_MDRAID_PLUGIN.available  # pylint: disable=pointless-statement
         availability.BLOCKDEV_DM_PLUGIN.available  # pylint: disable=pointless-statement
+        availability.MKFS_HFSPLUS_APP.available  # pylint: disable=pointless-statement
 
         availability.CACHE_AVAILABILITY = self.cache_availability
 
@@ -149,6 +152,11 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.addCleanup(self._clean_up)
         self.disk1_file = create_sparse_tempfile("disk1", Size("2GiB"))
         self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())  # pylint: disable=no-value-for-parameter
+
+        loaded_plugins = self.load_all_plugins()
+        if not all(p in loaded_plugins for p in ("btrfs", "crypto", "lvm", "md")):
+            # we don't have all plugins needed for this test case
+            self.skipTest("Missing libblockdev plugins needed from weak dependencies test.")
 
     def _clean_up(self):
         # reload all libblockdev plugins
