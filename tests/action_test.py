@@ -1182,7 +1182,6 @@ class DeviceActionTestCase(StorageTestCase):
 
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
-        pass
 
     def test_lv_from_lvs_actions(self):
         self.destroy_all_devices()

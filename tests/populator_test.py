@@ -133,7 +133,6 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         # LoopDevicePopulator.match just runs the check if device is loop
         # The backing file check is now performed in the "run" method.
         # Test intentionally left empty
-        pass
 
     @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
     @patch("blivet.udev.device_get_name")

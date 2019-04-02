@@ -65,4 +65,3 @@ class PopulatorHelper(object):
             This method should handle any changes to an existing format instance.
             It should not handle reformatting.
         """
-        pass
