@@ -1242,6 +1242,7 @@ class Iso9660FS(FS):
 
     """ ISO9660 filesystem. """
     _type = "iso9660"
+    _modules = ["iso9660"]
     _supported = True
     _mount_class = fsmount.Iso9660FSMount
 
