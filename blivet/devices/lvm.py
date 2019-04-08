@@ -77,7 +77,6 @@ DEFAULT_THPOOL_RESERVE = ThPoolReserveSpec(20, Size("1 GiB"), Size("100 GiB"))
 
 class NotTypeSpecific(Exception):
     """Exception class for invalid type-specific calls"""
-    pass
 
 
 class LVMVolumeGroupDevice(ContainerDevice):

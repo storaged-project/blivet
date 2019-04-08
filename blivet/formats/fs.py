@@ -1336,13 +1336,11 @@ class TmpFS(NoDevFS):
 
     def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """
-        pass
 
     def destroy(self, **kwargs):
         """ The device and its filesystem are automatically destroyed once the
         mountpoint is unmounted.
         """
-        pass
 
     def _size_option(self, size):
         """ Returns a size option string appropriate for mounting tmpfs.
