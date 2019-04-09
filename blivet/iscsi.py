@@ -552,7 +552,7 @@ class iSCSI(object):
 
         self.stabilize()
 
-    def write(self, root, storage):  # pylint: disable=unused-argument
+    def write(self, root, storage=None):  # pylint: disable=unused-argument
         if not self.initiator_set:
             return
 

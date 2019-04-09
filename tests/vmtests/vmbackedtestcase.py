@@ -34,8 +34,6 @@ class VMBackedTestCase(unittest.TestCase):
             clear_partitions gets called from create_storage later.
         """
 
-        pass
-
     def _set_up_storage(self):
         """ Schedule creation of storage devices on the disk images.
 
@@ -44,7 +42,6 @@ class VMBackedTestCase(unittest.TestCase):
                 The disk images should already be in a populated devicetree.
 
         """
-        pass
 
     def set_up_storage(self):
         """ Create a device stack on top of disk images for this test to run on.

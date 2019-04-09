@@ -1242,6 +1242,7 @@ class Iso9660FS(FS):
 
     """ ISO9660 filesystem. """
     _type = "iso9660"
+    _modules = ["iso9660"]
     _supported = True
     _mount_class = fsmount.Iso9660FSMount
 
@@ -1336,13 +1337,11 @@ class TmpFS(NoDevFS):
 
     def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """
-        pass
 
     def destroy(self, **kwargs):
         """ The device and its filesystem are automatically destroyed once the
         mountpoint is unmounted.
         """
-        pass
 
     def _size_option(self, size):
         """ Returns a size option string appropriate for mounting tmpfs.
