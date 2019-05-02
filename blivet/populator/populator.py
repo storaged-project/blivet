@@ -44,6 +44,7 @@ from .. import udev
 from .. import util
 from ..flags import flags
 from ..storage_log import log_method_call
+from ..tasks import availability
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
 from ..static_data import lvs_info, pvs_info, vgs_info, luks_data, mpath_members
@@ -426,7 +427,7 @@ class PopulatorMixin(object):
         self.drop_lvm_cache()
         mpath_members.drop_cache()
 
-        if flags.auto_dev_updates:
+        if flags.auto_dev_updates and availability.BLOCKDEV_MPATH_PLUGIN.available:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
 
         self.setup_disk_images()
