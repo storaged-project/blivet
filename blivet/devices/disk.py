@@ -421,6 +421,11 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             :keyword port: port of the target
             :type: str
         """
+        # Backward compatibility attributes - to be removed
+        self.node = kwargs.pop("node")
+        self.ibft = kwargs.pop("ibft")
+        self.nic = kwargs.pop("nic")
+
         self.initiator = kwargs.pop("initiator")
         self.offload = kwargs.pop("offload")
         name = kwargs.pop("name")

@@ -96,6 +96,25 @@ class iScsiDevicePopulator(DiskDevicePopulator):
         kwargs["iface"] = udev.device_get_iscsi_nic(self.data)
         kwargs["offload"] = kwargs["initiator"] != iscsi.initiator
         log.info("%s is an iscsi disk", kwargs["name"])
+
+        # Backward compatibility attributes - to be removed
+        if kwargs["offload"]:
+            # qla4xxx partial offload
+            kwargs["node"] = None
+            kwargs["ibft"] = False
+            kwargs["nic"] = "offload:not_accessible_via_iscsiadm"
+        else:
+            node = iscsi.get_node(kwargs["target"],
+                                  kwargs["address"],
+                                  kwargs["port"],
+                                  kwargs["iface"])
+            kwargs["node"] = node
+            kwargs["ibft"] = node in iscsi.ibft_nodes
+            if node:
+                kwargs["nic"] = iscsi.ifaces.get(node.iface, node.iface)
+            else:
+                kwargs["nic"] = ""
+
         return kwargs
 
 
