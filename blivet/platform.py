@@ -350,8 +350,9 @@ class S390(Platform):
         # the device is FBA DASD
         if dasd.is_fba_dasd(device.name):
             return "msdos"
-        # the device is DASD
-        elif parted.Device(path=device.path).type == parted.DEVICE_DASD:
+        # the device is DASD or has DASD disklabel
+        elif (parted.Device(path=device.path).type == parted.DEVICE_DASD or
+              parted.Disk(device=parted.Device(path=device.path)).type == "dasd"):
             return "dasd"
 
         # other types of devices
