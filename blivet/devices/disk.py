@@ -430,7 +430,12 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         self.offload = kwargs.pop("offload")
         name = kwargs.pop("name")
         self.target = kwargs.pop("target")
-        self.lun = int(kwargs.pop("lun"))
+        try:
+            self.lun = int(kwargs.pop("lun"))
+        except TypeError as e:
+            log.warning("Failed to set lun attribute of iscsi disk: %s", e)
+            self.lun = None
+
         self.address = kwargs.pop("address")
         self.port = kwargs.pop("port")
         self.iface = kwargs.pop("iface")
