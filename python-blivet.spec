@@ -29,6 +29,7 @@ License: LGPLv2+
 %global realname blivet
 %global realversion %{version}%{?prerelease}
 Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
+Source1: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}-tests.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -165,7 +166,8 @@ configuration.
 %endif
 
 %prep
-%autosetup -n %{realname}-%{realversion} -p1
+%autosetup -n %{realname}-%{realversion} -N
+%autosetup -n %{realname}-%{realversion} -b1 -p1
 
 %build
 %{?with_python2:make PYTHON=%{__python2}}
