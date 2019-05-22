@@ -77,6 +77,9 @@ class Flags(object):
         # (so far only for LUKS)
         self.discard_new = False
 
+        # whether cdroms should be protected
+        self.protect_cdroms = False
+
         self.boot_cmdline = {}
 
         self.update_from_boot_cmdline()

@@ -24,6 +24,7 @@ import os
 from .. import errors
 from .. import util
 from ..storage_log import log_method_call
+from ..flags import flags
 
 import logging
 log = logging.getLogger("blivet")
@@ -81,3 +82,16 @@ class OpticalDevice(StorageDevice):
             util.run_program(["eject", self.name])
         except OSError as e:
             log.warning("error ejecting cdrom %s: %s", self.name, e)
+
+    @property
+    def protected(self):
+        protected = super(OpticalDevice, self).protected
+
+        if flags.protect_cdroms:
+            return True
+        else:
+            return protected
+
+    @protected.setter
+    def protected(self, value):
+        self._protected = value
