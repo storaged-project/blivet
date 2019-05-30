@@ -350,9 +350,16 @@ class S390(Platform):
         # the device is FBA DASD
         if dasd.is_fba_dasd(device.name):
             return "msdos"
+
         # the device is DASD or has DASD disklabel
-        elif (parted.Device(path=device.path).type == parted.DEVICE_DASD or
-              parted.Disk(device=parted.Device(path=device.path)).type == "dasd"):
+        dev = parted.Device(path=device.path)
+        try:
+            disk = parted.Disk(device=dev)
+        except Exception:  # pylint: disable=broad-except
+            log.info("unable to check existing disklabel on %s", device.name)
+            disk = None
+
+        if dev.type == parted.DEVICE_DASD or disk and disk.type == "dasd":
             return "dasd"
 
         # other types of devices
