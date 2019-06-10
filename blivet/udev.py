@@ -790,6 +790,16 @@ def device_get_iscsi_name(info):
     return "-".join(path_components[name_field:len(path_components) - 2])
 
 
+def device_get_iscsi_lun(info):
+    lun = 0
+    path_components = device_get_path(info).split("-")
+    idx = list(reversed(path_components)).index("lun")
+    if idx > 0:
+        lun = path_components[-idx]
+
+    return lun
+
+
 def device_get_iscsi_address(info):
     address_field = 1
     if device_is_partoff_iscsi(info):
