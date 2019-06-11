@@ -875,7 +875,7 @@ class Blivet(object):
 
             LVM limits lv names to 128 characters. I don't know the limits for
             the other various device types, so I'm going to pick a number so
-            that we don't have to have an entire fucking library to determine
+            that we don't have to have an entire library to determine
             device name limits.
         """
         max_len = 96    # No, you don't need longer names than this. Really.
