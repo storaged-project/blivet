@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.3
+Version: 3.1.4
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,31 @@ configuration.
 %endif
 
 %changelog
+* Tue Jun 11 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.4-1
+- Don't call fnmatch with None (#1698937) (vponcova)
+- Do not crash on non-int lun argument when creating iscsi disk object.
+  (rvykydal)
+- Make iscsi device attribute modifications backward compatible. (rvykydal)
+- Do not store iscsi module nodeinfo in device object. (rvykydal)
+- Only call mpath plugin when it is available. (#1697378) (dlehman)
+- Include tests archive where appropriate in make targets. (dlehman)
+- Add spec file logic to include unit tests in SRPM. (dlehman)
+- Add a target to create an archive of the unit tests. (dlehman)
+- Remove profanity from an old comment. (dlehman)
+- Fix mounting of the filesystem iso9660 (vponcova)
+- Remove unnecessary pass statements (vtrefny)
+- Check for format tools availability in action_test (vtrefny)
+- Skip weak dependencies test if we don't have all libblockdev plugins
+  (vtrefny)
+- Properly clean after availability test case (vtrefny)
+- Ensure correct type of mpath cache member list. (dlehman)
+- Do not crash if 'dm.get_member_raid_sets' fails (#1684851) (vtrefny)
+- Fix supported disklabels in 'test_platform_label_types' on EFI (vtrefny)
+- Support legacy MBR (msdos) as part of UEFI to enable hybrid builds
+  (pbrobinson)
+- Automatically adjust size of growable devices for new format (vtrefny)
+- spec: Remove obsolete Group tag and bump min libblockdev version (vtrefny)
+
 * Wed Feb 27 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.3-1
 - Don't crash if blockdev mpath plugin isn't available. (#1672971) (dlehman)
 - iscsi: Add default value to unused 'storage' argument in 'write' (vtrefny)
