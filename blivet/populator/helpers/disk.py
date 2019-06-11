@@ -87,28 +87,34 @@ class iScsiDevicePopulator(DiskDevicePopulator):
     def _get_kwargs(self):
         from ...iscsi import iscsi
         kwargs = super(iScsiDevicePopulator, self)._get_kwargs()
-        name = udev.device_get_name(self.data)
-        initiator = udev.device_get_iscsi_initiator(self.data)
-        target = udev.device_get_iscsi_name(self.data)
-        address = udev.device_get_iscsi_address(self.data)
-        port = udev.device_get_iscsi_port(self.data)
-        nic = udev.device_get_iscsi_nic(self.data)
-        kwargs["initiator"] = initiator
-        if initiator == iscsi.initiator:
-            node = iscsi.get_node(target, address, port, nic)
-            kwargs["node"] = node
-            kwargs["ibft"] = node in iscsi.ibft_nodes
-            kwargs["nic"] = iscsi.ifaces.get(node.iface, node.iface)
-        else:
+        kwargs["initiator"] = udev.device_get_iscsi_initiator(self.data)
+        kwargs["address"] = udev.device_get_iscsi_address(self.data)
+        kwargs["port"] = udev.device_get_iscsi_port(self.data)
+        kwargs["target"] = udev.device_get_iscsi_name(self.data)
+        kwargs["lun"] = udev.device_get_iscsi_lun(self.data)
+        kwargs["name"] = udev.device_get_name(self.data)
+        kwargs["iface"] = udev.device_get_iscsi_nic(self.data)
+        kwargs["offload"] = kwargs["initiator"] != iscsi.initiator
+        log.info("%s is an iscsi disk", kwargs["name"])
+
+        # Backward compatibility attributes - to be removed
+        if kwargs["offload"]:
             # qla4xxx partial offload
             kwargs["node"] = None
             kwargs["ibft"] = False
             kwargs["nic"] = "offload:not_accessible_via_iscsiadm"
-            kwargs["fw_address"] = address
-            kwargs["fw_port"] = port
-            kwargs["fw_name"] = name
+        else:
+            node = iscsi.get_node(kwargs["target"],
+                                  kwargs["address"],
+                                  kwargs["port"],
+                                  kwargs["iface"])
+            kwargs["node"] = node
+            kwargs["ibft"] = node in iscsi.ibft_nodes
+            if node:
+                kwargs["nic"] = iscsi.ifaces.get(node.iface, node.iface)
+            else:
+                kwargs["nic"] = ""
 
-        log.info("%s is an iscsi disk", name)
         return kwargs
 
 

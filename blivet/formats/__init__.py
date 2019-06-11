@@ -408,7 +408,6 @@ class DeviceFormat(ObjectID):
 
     def update_size_info(self):
         """ Update this format's current and minimum size (for resize). """
-        pass
 
     def do_resize(self):
         """ Resize this filesystem based on this instance's target_size attr.
@@ -485,7 +484,6 @@ class DeviceFormat(ObjectID):
 
     def _pre_resize(self):
         """ Do whatever needs to be done before the format is resized """
-        pass
 
     def _post_resize(self):
         # XXX must be a smarter way to do this
@@ -534,7 +532,6 @@ class DeviceFormat(ObjectID):
     # pylint: disable=unused-argument
     def _create(self, **kwargs):
         """ Type-specific create method. """
-        pass
 
     # pylint: disable=unused-argument
     def _post_create(self, **kwargs):

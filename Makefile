@@ -119,11 +119,18 @@ archive: po-pull
 	rm -rf $(PKGNAME)-$(VERSION)
 	git checkout -- po/$(PKGNAME).pot
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
+	@make tests-archive
+
+tests-archive:
+	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) tests/ | gzip -9 > $(PKGNAME)-$(VERSION)-tests.tar.gz
+	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
 
 local: po-pull
 	@make -B ChangeLog
 	$(PYTHON) setup.py -q sdist --dist-dir .
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
+	git ls-files tests/ | tar -T- -czf $(PKGNAME)-$(VERSION)-tests.tar.gz
+	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
 
 rpmlog:
 	@git log --pretty="format:- %s (%ae)" $(RELEASE_TAG).. |sed -e 's/@.*)/)/'

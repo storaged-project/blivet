@@ -374,7 +374,6 @@ class StorageDevice(Device):
 
     def _setup(self, orig=False):
         """ Perform device-specific setup operations. """
-        pass
 
     def setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -417,7 +416,6 @@ class StorageDevice(Device):
 
     def _teardown(self, recursive=None):
         """ Perform device-specific teardown operations. """
-        pass
 
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
@@ -448,7 +446,6 @@ class StorageDevice(Device):
 
     def _create(self):
         """ Perform device-specific create operations. """
-        pass
 
     def create(self):
         """ Create the device. """
@@ -484,7 +481,6 @@ class StorageDevice(Device):
 
     def _destroy(self):
         """ Perform device-specific destruction operations. """
-        pass
 
     def destroy(self):
         """ Destroy the device. """
@@ -721,7 +717,12 @@ class StorageDevice(Device):
             if fmt.max_size and fmt.max_size < self.size:
                 raise errors.DeviceError("device is too large for new format")
             elif fmt.min_size and fmt.min_size > self.size:
-                raise errors.DeviceError("device is too small for new format")
+                if self.growable:
+                    log.info("%s: using size %s instead of %s to accommodate "
+                             "format minimum size", self.name, fmt.min_size, self.size)
+                    self.size = fmt.min_size
+                else:
+                    raise errors.DeviceError("device is too small for new format")
 
         if self._format != fmt:
             callbacks.format_removed(device=self, fmt=self._format)
@@ -767,7 +768,6 @@ class StorageDevice(Device):
 
     def pre_commit_fixup(self, current_fmt=False):
         """ Do any necessary pre-commit fixups."""
-        pass
 
     @property
     def format_immutable(self):

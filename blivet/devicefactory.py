@@ -509,7 +509,6 @@ class DeviceFactory(object):
 
     def _set_device_size(self):
         """ Set the size of the factory device. """
-        pass
 
     #
     # methods related to container/parent devices
@@ -615,11 +614,9 @@ class DeviceFactory(object):
 
     def _get_new_container(self, *args, **kwargs):
         """ Type-specific container device instantiation. """
-        pass
 
     def _check_container_size(self):
         """ Raise an exception if the container cannot hold its devices. """
-        pass
 
     def _reconfigure_container(self):
         """ Reconfigure a defined container required by this factory device. """
@@ -745,7 +742,6 @@ class DeviceFactory(object):
 
     def _get_new_device(self, *args, **kwargs):
         """ Type-specific device instantiation. """
-        pass
 
     def _reconfigure_device(self):
         """ Reconfigure a defined factory device. """
@@ -853,7 +849,6 @@ class DeviceFactory(object):
 
     def _post_create(self):
         """ Hook for post-creation operations. """
-        pass
 
     def _get_child_factory_args(self):
         return []

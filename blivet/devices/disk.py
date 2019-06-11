@@ -406,45 +406,43 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
             :keyword format: this device's formatting
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword str wwn: the disk's WWN
-            :keyword node: ???
+            :keyword target: the name of the iscsi target
+            :type target: str
+            :keyword lun: lun of the target
             :type node: str
-            :keyword ibft: use iBFT
-            :type ibft: bool
-            :keyword nic: name of NIC to use
-            :type nic: str
+            :keyword iface: name of network interface to use for operation
+            :type iface: str
             :keyword initiator: initiator name
             :type initiator: str
-            :keyword fw_name: qla4xxx partial offload
-            :keyword fw_address: qla4xxx partial offload
-            :keyword fw_port: qla4xxx partial offload
+            :keyword offload: a partial offload device (qla4xxx)
+            :type: bool
+            :keyword address: ip address of the target
+            :type: str
+            :keyword port: port of the target
+            :type: str
         """
+        # Backward compatibility attributes - to be removed
         self.node = kwargs.pop("node")
         self.ibft = kwargs.pop("ibft")
         self.nic = kwargs.pop("nic")
-        self.initiator = kwargs.pop("initiator")
-        self.offload = False
 
-        if self.node is None:
-            # qla4xxx partial offload
-            self.offload = True
-            name = kwargs.pop("fw_name")
-            address = kwargs.pop("fw_address")
-            port = kwargs.pop("fw_port")
-            DiskDevice.__init__(self, device, **kwargs)
-            NetworkStorageDevice.__init__(self,
-                                          host_address=address,
-                                          nic=self.nic)
-            log.debug("created new iscsi disk %s %s:%s using fw initiator %s",
-                      name, address, port, self.initiator)
-        else:
-            DiskDevice.__init__(self, device, **kwargs)
-            NetworkStorageDevice.__init__(self, host_address=self.node.address,
-                                          nic=self.nic)
-            log.debug("created new iscsi disk %s %s:%d via %s:%s", self.node.name,
-                      self.node.address,
-                      self.node.port,
-                      self.node.iface,
-                      self.nic)
+        self.initiator = kwargs.pop("initiator")
+        self.offload = kwargs.pop("offload")
+        name = kwargs.pop("name")
+        self.target = kwargs.pop("target")
+        try:
+            self.lun = int(kwargs.pop("lun"))
+        except TypeError as e:
+            log.warning("Failed to set lun attribute of iscsi disk: %s", e)
+            self.lun = None
+
+        self.address = kwargs.pop("address")
+        self.port = kwargs.pop("port")
+        self.iface = kwargs.pop("iface")
+        DiskDevice.__init__(self, device, **kwargs)
+        NetworkStorageDevice.__init__(self, host_address=self.address, nic=self.iface)
+        log.debug("created new iscsi disk %s from target: %s lun: %s portal: %s:%s interface: %s partial offload: %s)",
+                  name, self.target, self.lun, self.address, self.port, self.iface, self.offload)
 
         self._clear_local_tags()
 

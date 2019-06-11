@@ -38,19 +38,13 @@ DBUS_INTRO_IFACE = "org.freedesktop.DBus.Introspectable"
 class SafeDBusError(Exception):
     """Class for exceptions defined in this module."""
 
-    pass
-
 
 class DBusCallError(SafeDBusError):
     """Class for the errors related to calling methods over DBus."""
 
-    pass
-
 
 class DBusPropertyError(DBusCallError):
     """Class for the errors related to getting property values over DBus."""
-
-    pass
 
 
 def get_new_system_connection():

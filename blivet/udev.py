@@ -164,11 +164,13 @@ def resolve_glob(glob):
         name = device_get_name(dev)
         path = device_get_devname(dev)
 
-        if fnmatch.fnmatch(name, glob) or fnmatch.fnmatch(path, glob):
+        if name and fnmatch.fnmatch(name, glob):
+            ret.append(name)
+        elif path and fnmatch.fnmatch(path, glob):
             ret.append(name)
         else:
             for link in device_get_symlinks(dev):
-                if fnmatch.fnmatch(link, glob):
+                if link and fnmatch.fnmatch(link, glob):
                     ret.append(name)
 
     return ret
@@ -788,6 +790,16 @@ def device_get_iscsi_name(info):
 
     # Tricky, the name itself contains atleast 1 - char
     return "-".join(path_components[name_field:len(path_components) - 2])
+
+
+def device_get_iscsi_lun(info):
+    lun = 0
+    path_components = device_get_path(info).split("-")
+    idx = list(reversed(path_components)).index("lun")
+    if idx > 0:
+        lun = path_components[-idx]
+
+    return lun
 
 
 def device_get_iscsi_address(info):

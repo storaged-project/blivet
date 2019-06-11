@@ -53,7 +53,12 @@ class DMRaidFormatPopulator(FormatPopulator):
         minor = udev.device_get_minor(self.data)
 
         # Have we already created the DMRaidArrayDevice?
-        rs_names = blockdev.dm.get_member_raid_sets(name, uuid, major, minor)
+        try:
+            rs_names = blockdev.dm.get_member_raid_sets(name, uuid, major, minor)
+        except blockdev.DMError as e:
+            log.error("Failed to get RAID sets information for '%s': %s", name, str(e))
+            return
+
         if len(rs_names) == 0:
             log.warning("dmraid member %s does not appear to belong to any "
                         "array", self.device.name)

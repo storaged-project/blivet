@@ -62,7 +62,8 @@ class DeviceTagsTest(unittest.TestCase):
         #
         # automatically-set tags for networked storage devices
         #
-        iscsi_kwarg_names = ["initiator", "nic", "node", "ibft", "fw_name", "fw_address", "fw_port"]
+        iscsi_kwarg_names = ["initiator", "name", "offload", "target", "address", "port",
+                             "lun", "iface", "node", "ibft", "nic"]
         iscsi_device = iScsiDiskDevice('test5', **dict((k, None) for k in iscsi_kwarg_names))
         self.assertIn(Tags.remote, iscsi_device.tags)
         self.assertNotIn(Tags.local, iscsi_device.tags)

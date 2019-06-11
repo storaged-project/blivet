@@ -58,7 +58,6 @@ class ImageBackedTestCase(unittest.TestCase):
                 The disk images should already be in a populated devicetree.
 
         """
-        pass
 
     def set_up_storage(self):
         """ Create a device stack on top of disk images for this test to run on.

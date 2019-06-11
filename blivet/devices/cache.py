@@ -42,38 +42,30 @@ class Cache(object):
     @abc.abstractproperty
     def size(self):
         """Size of the cache"""
-        pass
 
     @abc.abstractproperty
     def exists(self):
         """Whether the cache (device) exists or not"""
-        pass
 
     @abc.abstractproperty
     def stats(self):
         """Statistics for the cache
         :rtype: :class:`CacheStats`
         """
-        pass
 
     @abc.abstractproperty
     def mode(self):
         """Mode of the cache (writeback/writethrough...)
         :rtype: str
         """
-        pass
 
     @abc.abstractproperty
     def backing_device_name(self):
         """Name of the backing (big/slow) device of the cache (if any)"""
 
-        pass
-
     @abc.abstractproperty
     def cache_device_name(self):
         """Name of the cache (small/fast) device of the cache (if any)"""
-
-        pass
 
     @abc.abstractmethod
     def detach(self):
@@ -81,7 +73,6 @@ class Cache(object):
         :returns: identifier of the detached cache that can be later used for attaching it back
 
         """
-        pass
 
 
 @add_metaclass(abc.ABCMeta)
@@ -96,27 +87,22 @@ class CacheStats(object):
     @abc.abstractproperty
     def block_size(self):
         """block size of the cache"""
-        pass
 
     @abc.abstractproperty
     def size(self):
         """size of the cache"""
-        pass
 
     @abc.abstractproperty
     def used(self):
         """how much of the cache is used"""
-        pass
 
     @abc.abstractproperty
     def hits(self):
         """number of hits"""
-        pass
 
     @abc.abstractproperty
     def misses(self):
         """number of misses"""
-        pass
 
 
 @add_metaclass(abc.ABCMeta)
@@ -129,14 +115,11 @@ class CacheRequest(object):
     @abc.abstractproperty
     def size(self):
         """Requested size"""
-        pass
 
     @abc.abstractproperty
     def fast_devs(self):
         """Devices (type-specific) to allocate/create the cache on"""
-        pass
 
     @abc.abstractproperty
     def mode(self):
         """Mode the cache should use"""
-        pass
