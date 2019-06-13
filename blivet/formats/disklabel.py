@@ -261,6 +261,15 @@ class DiskLabel(DeviceFormat):
             elif self.parted_device.type == parted.DEVICE_DASD:
                 # the device is DASD
                 return "dasd"
+            elif util.detect_virt():
+                # check for dasds exported into qemu as normal virtio/scsi disks
+                try:
+                    _parted_disk = parted.Disk(device=self.parted_device)
+                except (_ped.DiskLabelException, _ped.IOException, NotImplementedError):
+                    pass
+                else:
+                    if _parted_disk.type == "dasd":
+                        return "dasd"
 
         for lt in label_types:
             if self._label_type_size_check(lt):
