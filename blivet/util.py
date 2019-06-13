@@ -1,4 +1,5 @@
 import copy
+from distutils.spawn import find_executable
 import functools
 import glob
 import itertools
@@ -1100,3 +1101,16 @@ class DependencyGuard(object):
                     return None
             return decorated
         return decorator
+
+
+def detect_virt():
+    """ Return True if we are running in a virtual machine. """
+    in_vm = False
+    detect_virt_prog = find_executable('systemd-detect-virt')
+    if detect_virt_prog:
+        try:
+            in_vm = run_program([detect_virt_prog, "--vm"]) == 0
+        except OSError:
+            pass
+
+    return in_vm
