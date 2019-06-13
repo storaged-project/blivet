@@ -1,5 +1,4 @@
 import copy
-from distutils.spawn import find_executable
 import functools
 import glob
 import itertools
@@ -20,6 +19,7 @@ from collections import namedtuple
 from enum import Enum
 
 from .errors import DependencyError
+from . import safe_dbus
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -37,6 +37,12 @@ console_log = logging.getLogger("blivet.console")
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
+
+
+SYSTEMD_SERVICE = "org.freedesktop.systemd1"
+SYSTEMD_MANAGER_PATH = "/org/freedesktop/systemd1/Manager"
+SYSTEMD_MANAGER_IFACE = "org.freedesktop.systemd1.Manager"
+VIRT_PROP_NAME = "Virtualization"
 
 
 class Path(str):
@@ -1105,12 +1111,10 @@ class DependencyGuard(object):
 
 def detect_virt():
     """ Return True if we are running in a virtual machine. """
-    in_vm = False
-    detect_virt_prog = find_executable('systemd-detect-virt')
-    if detect_virt_prog:
-        try:
-            in_vm = run_program([detect_virt_prog, "--vm"]) == 0
-        except OSError:
-            pass
+    try:
+        vm = safe_dbus.get_property_sync(SYSTEMD_SERVICE, SYSTEMD_MANAGER_PATH,
+                                         SYSTEMD_MANAGER_IFACE, VIRT_PROP_NAME)
+    except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
+        vm = None
 
-    return in_vm
+    return vm in ('qemu', 'kvm')
