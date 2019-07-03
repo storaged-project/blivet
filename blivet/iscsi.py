@@ -22,7 +22,6 @@ from . import udev
 from . import util
 from .flags import flags
 from .i18n import _
-from .storage_log import log_exception_info
 from . import safe_dbus
 import os
 import re
@@ -160,7 +159,7 @@ class iSCSI(object):
                 initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
                 self._initiator = initiatorname
             except Exception:  # pylint: disable=broad-except
-                log_exception_info(fmt_str="failed to get initiator name from iscsi firmware")
+                log.info("No iSCSI firmware initiator found")
 
     # So that users can write iscsi() to get the singleton instance
     def __call__(self):
@@ -278,7 +277,7 @@ class iSCSI(object):
                                           'GetManagedObjects',
                                           None)[0]
         except safe_dbus.DBusCallError:
-            log_exception_info(log.info, "iscsi: Failed to get active sessions.")
+            log.info("iscsi: Failed to get active sessions.")
             return []
 
         sessions = (obj for obj in objects.keys() if re.match(r'.*/iscsi/session[0-9]+$', obj))
@@ -303,7 +302,7 @@ class iSCSI(object):
         try:
             found_nodes, _n_nodes = self._call_initiator_method("DiscoverFirmware", args)
         except safe_dbus.DBusCallError:
-            log_exception_info(log.info, "iscsi: No IBFT info found.")
+            log.info("iscsi: No IBFT info found.")
             # an exception here means there is no ibft firmware, just return
             return
 
