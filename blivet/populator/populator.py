@@ -37,6 +37,7 @@ from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
 from ..devices import MultipathDevice
 from ..devices import NoDevice
+from ..devices import StorageDevice
 from ..devicelibs import disk as disklib
 from ..devicelibs import lvm
 from .. import formats
@@ -262,7 +263,20 @@ class PopulatorMixin(object):
             helper_class = self._get_device_helper(info)
 
         if helper_class is not None:
-            device = helper_class(self, info).run()
+            try:
+                device = helper_class(self, info).run()
+            except DeviceTreeError as e:
+                log.error("error handling device %s: %s", name, str(e))
+                device = self.get_device_by_name(name, incomplete=True, hidden=True)
+                if device is None:
+                    try:
+                        parents = self._add_slave_devices(info)
+                    except DeviceTreeError:
+                        parents = []
+
+                    device = StorageDevice(name, parents=parents, uuid=udev.device_get_uuid(info),
+                                           exists=True)
+                    self._add_device(device)
 
         if not device:
             log.debug("no device obtained for %s", name)
@@ -302,7 +316,10 @@ class PopulatorMixin(object):
 
         helper_class = self._get_format_helper(info, device=device)
         if helper_class is not None:
-            helper_class(self, info, device).run()
+            try:
+                helper_class(self, info, device).run()
+            except DeviceTreeError as e:
+                log.error("error handling formatting on %s: %s", device.name, str(e))
 
         log.info("got format: %s", device.format)
 
