@@ -11,6 +11,7 @@ from blivet.devices import DiskDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import StorageDevice
 from blivet.devices import MultipathDevice
+from blivet.devices import PartitionDevice
 from blivet.devices.lib import Tags
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
@@ -121,7 +122,13 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         # adding a device with the same UUID
         dev_clone = StorageDevice("dev_clone", exists=False, uuid=sentinel.dev1_uuid, parents=[])
-        six.assertRaisesRegex(self, DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
+        with patch("blivet.devicetree.flags") as flags:
+            flags.allow_inconsistent_config = False
+            six.assertRaisesRegex(self, DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
+
+            flags.allow_inconsistent_config = True
+            dt._add_device(dev_clone)
+            dt._remove_device(dev_clone)
 
         dev2 = StorageDevice("dev2", exists=False, parents=[])
         dev3 = StorageDevice("dev3", exists=False, parents=[dev1, dev2])
@@ -198,6 +205,23 @@ class DeviceTreeTestCase(unittest.TestCase):
         dt.hide(dev3)
         self.assertIsNone(dt.get_device_by_name("dev3"))
         self.assertEqual(dt.get_device_by_name("dev3", hidden=True), dev3)
+
+    def test_get_device_by_uuid(self):
+        # basic tests: device uuid, format uuid
+        dt = DeviceTree()
+
+        dev1 = PartitionDevice('part1', uuid=sentinel.uuid1)
+        dev2 = PartitionDevice('part2', uuid=sentinel.uuid2)
+        dt._add_device(dev1)
+        dt._add_device(dev2)
+
+        self.assertIsNone(dt.get_device_by_uuid(sentinel.uuid3))
+        self.assertEqual(dt.get_device_by_uuid(sentinel.uuid1), dev1)
+        self.assertEqual(dt.get_device_by_uuid(sentinel.uuid2), dev2)
+
+        # multiple matches -> DuplicateUUIDError
+        dev2.uuid = sentinel.uuid1
+        self.assertRaises(DuplicateUUIDError, dt.get_device_by_uuid, sentinel.uuid1)
 
     def test_recursive_remove(self):
         dt = DeviceTree()
