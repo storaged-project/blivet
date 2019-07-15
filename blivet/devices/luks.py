@@ -68,6 +68,12 @@ class LUKSDevice(DMCryptDevice):
         return self.slave
 
     @property
+    def slave(self):
+        if self._has_integrity:
+            return self.parents[0].parents[0]
+        return self.parents[0]
+
+    @property
     def size(self):
         if not self.exists:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
@@ -76,6 +82,10 @@ class LUKSDevice(DMCryptDevice):
         else:
             size = self.current_size
         return size
+
+    @property
+    def _has_integrity(self):
+        return self.parents[0].type == "integrity/dm-crypt"
 
     def _set_target_size(self, newsize):
         if not isinstance(newsize, Size):
