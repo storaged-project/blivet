@@ -171,3 +171,11 @@ class IntegrityDevice(DMIntegrityDevice):
         DMIntegrityDevice.__init__(self, name, fmt=fmt, size=size,
                                    parents=parents, sysfs_path=sysfs_path,
                                    uuid=None, exists=exists)
+
+    def _post_teardown(self, recursive=False):
+        if not recursive:
+            # we need to propagate the teardown "down" to the parent that
+            # actually has the LUKS format to close the LUKS device
+            self.teardown_parents(recursive=recursive)
+
+        StorageDevice._post_teardown(self, recursive=recursive)
