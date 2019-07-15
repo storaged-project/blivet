@@ -124,7 +124,7 @@ class LUKSDevice(DMCryptDevice):
     def resizable(self):
         """ Can this device be resized? """
         return (self._resizable and self.exists and self.format.resizable and
-                self.slave.resizable)
+                self.slave.resizable and not self._has_integrity)
 
     def resize(self):
         # size of LUKSDevice depends on size of the LUKS format on backing
@@ -156,7 +156,7 @@ class IntegrityDevice(DMIntegrityDevice):
 
     """ A mapped integrity device. """
     _type = "integrity/dm-crypt"
-    _resizable = True
+    _resizable = False
     _packages = ["cryptsetup"]
     _external_dependencies = [availability.BLOCKDEV_CRYPTO_PLUGIN]
 
