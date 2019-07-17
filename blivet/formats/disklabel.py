@@ -329,6 +329,13 @@ class DiskLabel(DeviceFormat):
         """ Device status. """
         return False
 
+    @property
+    def supports_names(self):
+        if not self.supported or not self.parted_disk:
+            return False
+
+        return self.parted_disk.supportsFeature(parted.DISK_TYPE_PARTITION_NAME)
+
     def _create(self, **kwargs):
         """ Create the device. """
         log_method_call(self, device=self.device,
