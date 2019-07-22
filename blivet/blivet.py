@@ -807,8 +807,16 @@ class Blivet(object):
         if device.protected:
             raise ValueError("cannot modify protected device")
 
-        self.devicetree.actions.add(ActionDestroyFormat(device))
-        self.devicetree.actions.add(ActionCreateFormat(device, fmt))
+        destroy_ac = ActionDestroyFormat(device)
+        create_ac = ActionCreateFormat(device, fmt)
+
+        self.devicetree.actions.add(destroy_ac)
+        try:
+            self.devicetree.actions.add(create_ac)
+        except Exception as e:
+            # creating the format failed, revert the destroy action too
+            self.devicetree.actions.remove(destroy_ac)
+            raise e
 
     def reset_device(self, device):
         """ Cancel all scheduled actions and reset formatting.
