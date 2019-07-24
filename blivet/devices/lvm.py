@@ -1567,32 +1567,43 @@ class LVMThinPoolMixin(object):
         return self._lvs[:]     # we don't want folks changing our list
 
     @util.requires_property("is_thin_pool")
-    def autoset_md_size(self):
+    def autoset_md_size(self, enforced=False):
         """ If self._metadata_size not set already, it calculates the recommended value
         and sets it while subtracting the size from self.size.
 
         """
 
-        if self._metadata_size != 0:
+        if self._metadata_size != 0 and not enforced:
             return  # Metadata size already set
 
-        log.debug("Auto-setting thin pool metadata size")
+        log.debug("Auto-setting thin pool metadata size%s", (" (enforced)" if enforced else ""))
+
+        if self._size <= Size(0):
+            log.debug("Thin pool size not bigger than 0, just setting metadata size to 0")
+            self._metadata_size = 0
+            return
 
         # we need to know chunk size to calculate recommended metadata size
         if self._chunk_size == 0:
             self._chunk_size = Size(blockdev.LVM_DEFAULT_CHUNK_SIZE)
             log.debug("Using default chunk size: %s", self._chunk_size)
 
+        old_md_size = self._metadata_size
         self._metadata_size = Size(blockdev.lvm.get_thpool_meta_size(self._size,
                                                                      self._chunk_size,
                                                                      100))  # snapshots
-        log.debug("Recommended metadata size: %s", self._metadata_size)
+        log.debug("Recommended metadata size: %s MiB", self._metadata_size.convert_to("MiB"))
 
         self._metadata_size = self.vg.align(self._metadata_size, roundup=True)
-        log.debug("Rounded metadata size to extents: %s", self._metadata_size)
+        log.debug("Rounded metadata size to extents: %s MiB", self._metadata_size.convert_to("MiB"))
 
-        log.debug("Adjusting size from %s to %s", self.size, self.size - self._metadata_size)
-        self.size = self.size - self._metadata_size
+        if self._metadata_size == old_md_size:
+            log.debug("Rounded metadata size unchanged")
+        else:
+            new_size = self.size - (self._metadata_size - old_md_size)
+            log.debug("Adjusting size from %s MiB to %s MiB",
+                      self.size.convert_to("MiB"), new_size.convert_to("MiB"))
+            self.size = new_size
 
     def _pre_create(self):
         # make sure all the LVs this LV should be created from exist (if any)
