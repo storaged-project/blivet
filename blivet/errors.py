@@ -206,6 +206,13 @@ class UnusableConfigurationError(StorageError):
         self.dev_name = dev_name
 
 
+class DuplicateUUIDError(UnusableConfigurationError, ValueError):
+    suggestion = N_("This is usually caused by cloning the device image resulting "
+                    "in duplication of the UUID value which should be unique. "
+                    "In that case you can either disconnect one of the devices or "
+                    "reformat it.")
+
+
 class DiskLabelScanError(UnusableConfigurationError):
     suggestion = N_("For some reason we were unable to locate a disklabel on a "
                     "disk that the kernel is reporting partitions on. It is "

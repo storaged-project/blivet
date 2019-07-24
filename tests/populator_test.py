@@ -1191,6 +1191,7 @@ class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
 
         if fmt_class._name:
             partition._parted_partition = FakePartedPart(partition, fmt_class._name)
+            partition.disk = Mock(format=Mock(supports_names=True))
 
         self.assertTrue(self.helper_class.match(data, partition))
 
@@ -1245,6 +1246,7 @@ class BootFormatPopulatorTestCase(PopulatorHelperTestCase):
         partition._size = fmt_class._min_size
         if fmt_class._name:
             partition._parted_partition = FakePartedPart(partition, fmt_class._name)
+            partition.disk = Mock(format=Mock(supports_names=True))
         self.assertEqual(get_format_helper(data, partition), self.helper_class)
 
 
