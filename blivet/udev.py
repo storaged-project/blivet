@@ -848,24 +848,26 @@ def device_get_iscsi_nic(info):
 
 
 def device_get_iscsi_initiator(info):
-    initiator = None
+    initiator_name = None
     if device_is_partoff_iscsi(info):
         host = re.match(r'.*/(host\d+)', device_get_sysfs_path(info)).groups()[0]
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
-                initiator = open(initiator_file).read().strip()
+                initiator = open(initiator_file, "rb").read().strip()
+                initiator_name = initiator.decode("utf-8", errors="replace")
                 log.debug("found offload iscsi initiatorname %s in file %s",
-                          initiator, initiator_file)
-                if initiator.lstrip("(").rstrip(")").lower() == "null":
-                    initiator = None
-    if initiator is None:
+                          initiator_name, initiator_file)
+                if initiator_name.lstrip("(").rstrip(")").lower() == "null":
+                    initiator_name = None
+    if initiator_name is None:
         session = device_get_iscsi_session(info)
         if session:
             initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
-                             session).read().strip()
-            log.debug("found iscsi initiatorname %s", initiator)
-    return initiator
+                             session, "rb").read().strip()
+            initiator_name = initiator.decode("utf-8", errors="replace")
+            log.debug("found iscsi initiatorname %s", initiator_name)
+    return initiator_name
 
 
 # fcoe disks have ID_PATH in the form of:

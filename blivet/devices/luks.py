@@ -68,6 +68,12 @@ class LUKSDevice(DMCryptDevice):
         return self.slave
 
     @property
+    def slave(self):
+        if self._has_integrity:
+            return self.parents[0].parents[0]
+        return self.parents[0]
+
+    @property
     def size(self):
         if not self.exists:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
@@ -76,6 +82,10 @@ class LUKSDevice(DMCryptDevice):
         else:
             size = self.current_size
         return size
+
+    @property
+    def _has_integrity(self):
+        return self.parents[0].type == "integrity/dm-crypt"
 
     def _set_target_size(self, newsize):
         if not isinstance(newsize, Size):
@@ -114,7 +124,7 @@ class LUKSDevice(DMCryptDevice):
     def resizable(self):
         """ Can this device be resized? """
         return (self._resizable and self.exists and self.format.resizable and
-                self.slave.resizable)
+                self.slave.resizable and not self._has_integrity)
 
     def resize(self):
         # size of LUKSDevice depends on size of the LUKS format on backing
@@ -146,7 +156,7 @@ class IntegrityDevice(DMIntegrityDevice):
 
     """ A mapped integrity device. """
     _type = "integrity/dm-crypt"
-    _resizable = True
+    _resizable = False
     _packages = ["cryptsetup"]
     _external_dependencies = [availability.BLOCKDEV_CRYPTO_PLUGIN]
 
@@ -171,3 +181,11 @@ class IntegrityDevice(DMIntegrityDevice):
         DMIntegrityDevice.__init__(self, name, fmt=fmt, size=size,
                                    parents=parents, sysfs_path=sysfs_path,
                                    uuid=None, exists=exists)
+
+    def _post_teardown(self, recursive=False):
+        if not recursive:
+            # we need to propagate the teardown "down" to the parent that
+            # actually has the LUKS format to close the LUKS device
+            self.teardown_parents(recursive=recursive)
+
+        StorageDevice._post_teardown(self, recursive=recursive)

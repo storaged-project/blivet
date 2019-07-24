@@ -32,7 +32,7 @@ from gi.repository import BlockDev as blockdev
 
 from .actionlist import ActionList
 from .callbacks import callbacks
-from .errors import DeviceError, DeviceTreeError, StorageError
+from .errors import DeviceError, DeviceTreeError, StorageError, DuplicateUUIDError
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
@@ -150,12 +150,18 @@ class DeviceTreeBase(object):
             :param newdev: the device to add
             :type newdev: a subclass of :class:`~.devices.StorageDevice`
 
-            Raise ValueError if the device's identifier is already
+            Raise DeviceTreeError if the device's identifier is already
             in the list.
         """
         if newdev.uuid and newdev.uuid in [d.uuid for d in self._devices] and \
            not isinstance(newdev, NoDevice):
-            raise ValueError("device is already in tree")
+            # Just found a device with already existing UUID. Is it the same device?
+            dev = self.get_device_by_uuid(newdev.uuid, incomplete=True, hidden=True)
+            if dev.name == newdev.name:
+                raise DeviceTreeError("Trying to add already existing device.")
+            else:
+                raise DuplicateUUIDError("Duplicate UUID '%s' found for devices: "
+                                         "'%s' and '%s'." % (newdev.uuid, newdev.name, dev.name))
 
         # make sure this device's parent devices are in the tree already
         for parent in newdev.parents:
