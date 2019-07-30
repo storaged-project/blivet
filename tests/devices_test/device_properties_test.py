@@ -33,6 +33,7 @@ from blivet.devicelibs import mdraid
 from blivet.size import Size
 
 from blivet.formats import get_format
+from blivet.formats.fs import FS
 
 BTRFS_MIN_MEMBER_SIZE = get_format("btrfs").min_size
 
@@ -599,7 +600,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
             "media_present": xform(self.assertTrue),
             "metadata_level": lambda d, a: self.assertFalse(hasattr(d, a)),
             "type": xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
-            "vol_id": xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
+            "vol_id": xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))
+        }
         self._state_functions.update(state_functions)
 
     def setUp(self):
@@ -759,6 +761,8 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
             "parents": xform(lambda x, m: self.assertEqual(len(x), 1, m) and
                              self.assertIsInstance(x, ParentList) and
                              self.assertIsInstance(x[0], LVMVolumeGroupDevice)),
+            "size": xform(lambda x, m: self.assertEqual(x, FS._min_size, m)),
+            "target_size": xform(lambda x, m: self.assertEqual(x, FS._min_size, m))
         }
 
         self._state_functions.update(state_functions)

@@ -34,7 +34,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev1_label = "dev1_label"
         dev1_uuid = "1234-56-7890"
         fmt1 = get_format("ext4", label=dev1_label, uuid=dev1_uuid)
-        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1)
+        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1, size=fmt1.min_size)
         dt._add_device(dev1)
 
         dev2_label = "dev2_label"
