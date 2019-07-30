@@ -130,7 +130,10 @@ class LUKS(DeviceFormat):
         self._key_file = kwargs.get("key_file")
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
-        self.min_luks_entropy = kwargs.get("min_luks_entropy", 0)
+        self.min_luks_entropy = kwargs.get("min_luks_entropy")
+
+        if self.min_luks_entropy is None:
+            self.min_luks_entropy = luks_data.min_entropy
 
         if not self.map_name and self.exists and self.uuid:
             self.map_name = "luks-%s" % self.uuid
