@@ -553,6 +553,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return super(LVMVolumeGroupDevice, self).protected
 
+    @protected.setter
+    def protected(self, value):
+        self._protected = value
+
     def remove_hook(self, modparent=True):
         if modparent:
             for pv in self.pvs:
