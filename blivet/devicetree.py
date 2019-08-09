@@ -1792,7 +1792,12 @@ class DeviceTree(object):
                 dm_array.parents.append(device)
             else:
                 # Activate the Raid set.
-                rs.activate(mknod=True)
+                try:
+                    rs.activate(mknod=True)
+                except Exception as e: # pylint: disable=broad-except
+                    log.warning("Failed to activate the RAID set '%s': %s", rs.name, str(e))
+                    return
+
                 dm_array = DMRaidArrayDevice(rs.name,
                                              raidSet=rs,
                                              parents=[device])
