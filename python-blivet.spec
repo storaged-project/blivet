@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: http://fedoraproject.org/wiki/blivet
-Version: 0.61.15.74
+Version: 0.61.15.75
 Release: 1%{?dist}
 Epoch: 1
 License: LGPLv2+
@@ -67,6 +67,10 @@ make DESTDIR=%{buildroot} install
 %{python_sitelib}/*
 
 %changelog
+* Tue Aug 13 2019 Vojtech Trefny <vtrefny@redhat.com> - 0.61.15.75-1
+- Always set default key size to 512 bits for ciphers with XTS mode (vtrefny)
+  Resolves: rhbz#1716674
+
 * Tue Jun 18 2019 David Lehman <dlehman@redhat.com> - 0.61.15.74-1
 - Handle exceptions raised from parted.Disk ctor. (dlehman)
   Related: rhbz#1677383

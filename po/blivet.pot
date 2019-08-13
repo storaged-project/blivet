@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-18 12:57-0400\n"
+"POT-Creation-Date: 2019-08-13 13:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,151 +35,25 @@ msgstr ""
 msgid "%(product)s Linux %(version)s for %(arch)s"
 msgstr ""
 
-#. Decimal prefixes for different size increments, along with the name
-#. and accepted abbreviation for the prefix.  These prefixes are all
-#. for 'bytes'.
-#: ../blivet/size.py:42
-msgid "kilo"
+#: ../blivet/errors.py:169
+msgid ""
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
 msgstr ""
 
-#: ../blivet/size.py:42
-msgid "k"
+#: ../blivet/errors.py:175
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
 msgstr ""
 
-#: ../blivet/size.py:43
-msgid "mega"
-msgstr ""
-
-#: ../blivet/size.py:43
-msgid "M"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "giga"
-msgstr ""
-
-#: ../blivet/size.py:44
-msgid "G"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "tera"
-msgstr ""
-
-#: ../blivet/size.py:45
-msgid "T"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "peta"
-msgstr ""
-
-#: ../blivet/size.py:46
-msgid "P"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "exa"
-msgstr ""
-
-#: ../blivet/size.py:47
-msgid "E"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "zetta"
-msgstr ""
-
-#: ../blivet/size.py:48
-msgid "Z"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "yotta"
-msgstr ""
-
-#: ../blivet/size.py:49
-msgid "Y"
-msgstr ""
-
-#. Binary prefixes for the different size increments.  Same structure
-#. as the above list.
-#: ../blivet/size.py:53
-msgid "kibi"
-msgstr ""
-
-#: ../blivet/size.py:53
-msgid "Ki"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "mebi"
-msgstr ""
-
-#: ../blivet/size.py:54
-msgid "Mi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "gibi"
-msgstr ""
-
-#: ../blivet/size.py:55
-msgid "Gi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "tebi"
-msgstr ""
-
-#: ../blivet/size.py:56
-msgid "Ti"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "pebi"
-msgstr ""
-
-#: ../blivet/size.py:57
-msgid "Pi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "exbi"
-msgstr ""
-
-#: ../blivet/size.py:58
-msgid "Ei"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "zebi"
-msgstr ""
-
-#: ../blivet/size.py:59
-msgid "Zi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "yobi"
-msgstr ""
-
-#: ../blivet/size.py:60
-msgid "Yi"
-msgstr ""
-
-#. Handle 'B' separately so that it can be localized without translating
-#. both 'B' and 'b'
-#: ../blivet/size.py:64
-msgid "B"
-msgstr ""
-
-#: ../blivet/size.py:65 ../blivet/size.py:100
-msgid "byte"
-msgstr ""
-
-#: ../blivet/size.py:65 ../blivet/size.py:101
-msgid "bytes"
+#: ../blivet/errors.py:180
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
 #. not enough free space for the requested partition
@@ -251,27 +125,6 @@ msgstr ""
 
 #: ../blivet/fcoe.py:119
 msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/errors.py:169
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:175
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:180
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
 #: ../blivet/platform.py:52
@@ -475,6 +328,153 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
+#. Decimal prefixes for different size increments, along with the name
+#. and accepted abbreviation for the prefix.  These prefixes are all
+#. for 'bytes'.
+#: ../blivet/size.py:42
+msgid "kilo"
+msgstr ""
+
+#: ../blivet/size.py:42
+msgid "k"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "mega"
+msgstr ""
+
+#: ../blivet/size.py:43
+msgid "M"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "giga"
+msgstr ""
+
+#: ../blivet/size.py:44
+msgid "G"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "tera"
+msgstr ""
+
+#: ../blivet/size.py:45
+msgid "T"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "peta"
+msgstr ""
+
+#: ../blivet/size.py:46
+msgid "P"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "exa"
+msgstr ""
+
+#: ../blivet/size.py:47
+msgid "E"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "zetta"
+msgstr ""
+
+#: ../blivet/size.py:48
+msgid "Z"
+msgstr ""
+
+#: ../blivet/size.py:49
+msgid "yotta"
+msgstr ""
+
+#: ../blivet/size.py:49
+msgid "Y"
+msgstr ""
+
+#. Binary prefixes for the different size increments.  Same structure
+#. as the above list.
+#: ../blivet/size.py:53
+msgid "kibi"
+msgstr ""
+
+#: ../blivet/size.py:53
+msgid "Ki"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "mebi"
+msgstr ""
+
+#: ../blivet/size.py:54
+msgid "Mi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "gibi"
+msgstr ""
+
+#: ../blivet/size.py:55
+msgid "Gi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "tebi"
+msgstr ""
+
+#: ../blivet/size.py:56
+msgid "Ti"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "pebi"
+msgstr ""
+
+#: ../blivet/size.py:57
+msgid "Pi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "exbi"
+msgstr ""
+
+#: ../blivet/size.py:58
+msgid "Ei"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "zebi"
+msgstr ""
+
+#: ../blivet/size.py:59
+msgid "Zi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "yobi"
+msgstr ""
+
+#: ../blivet/size.py:60
+msgid "Yi"
+msgstr ""
+
+#. Handle 'B' separately so that it can be localized without translating
+#. both 'B' and 'b'
+#: ../blivet/size.py:64
+msgid "B"
+msgstr ""
+
+#: ../blivet/size.py:65 ../blivet/size.py:100
+msgid "byte"
+msgstr ""
+
+#: ../blivet/size.py:65 ../blivet/size.py:101
+msgid "bytes"
+msgstr ""
+
 #: ../blivet/deviceaction.py:282
 msgid "create device"
 msgstr ""
@@ -532,6 +532,47 @@ msgstr ""
 msgid "remove container member"
 msgstr ""
 
+#: ../blivet/formats/prepboot.py:36
+msgid "PPC PReP Boot"
+msgstr ""
+
+#: ../blivet/formats/dmraid.py:36
+msgid "dm-raid member device"
+msgstr ""
+
+#: ../blivet/formats/mdraid.py:40
+msgid "software RAID"
+msgstr ""
+
+#: ../blivet/formats/biosboot.py:33
+msgid "BIOS Boot"
+msgstr ""
+
+#: ../blivet/formats/__init__.py:148
+msgid "Unknown"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:44
+msgid "partition table"
+msgstr ""
+
+#: ../blivet/formats/disklabel.py:232
+#, python-format
+msgid "Unsupported %(name)s"
+msgstr ""
+
+#: ../blivet/formats/multipath.py:38
+msgid "multipath member device"
+msgstr ""
+
+#: ../blivet/formats/luks.py:46
+msgid "LUKS"
+msgstr ""
+
+#: ../blivet/formats/luks.py:47
+msgid "Encrypted"
+msgstr ""
+
 #: ../blivet/formats/fs.py:555
 #, python-format
 msgid "Unknown return code: %d."
@@ -580,49 +621,21 @@ msgstr ""
 msgid "Linux HFS+ ESP"
 msgstr ""
 
-#: ../blivet/formats/prepboot.py:36
-msgid "PPC PReP Boot"
-msgstr ""
-
-#: ../blivet/formats/dmraid.py:36
-msgid "dm-raid member device"
-msgstr ""
-
-#: ../blivet/formats/biosboot.py:33
-msgid "BIOS Boot"
-msgstr ""
-
-#: ../blivet/formats/__init__.py:148
-msgid "Unknown"
-msgstr ""
-
-#: ../blivet/formats/disklabel.py:44
-msgid "partition table"
-msgstr ""
-
-#: ../blivet/formats/disklabel.py:232
-#, python-format
-msgid "Unsupported %(name)s"
-msgstr ""
-
-#: ../blivet/formats/multipath.py:38
-msgid "multipath member device"
-msgstr ""
-
-#: ../blivet/formats/luks.py:46
-msgid "LUKS"
-msgstr ""
-
-#: ../blivet/formats/luks.py:47
-msgid "Encrypted"
-msgstr ""
-
 #: ../blivet/formats/lvmpv.py:40
 msgid "physical volume (LVM)"
 msgstr ""
 
-#: ../blivet/formats/mdraid.py:40
-msgid "software RAID"
+#: ../blivet/devicelibs/lvm.py:59
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:60
+msgid "Performance"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:466
+#, python-format
+msgid "vginfo failed for %s"
 msgstr ""
 
 #: ../blivet/devicelibs/dasd.py:296
@@ -638,17 +651,4 @@ msgstr ""
 #: ../blivet/devicelibs/dasd.py:309
 #, python-format
 msgid "Could not set DASD device %(dev)s online (%(e)s)."
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:59
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:60
-msgid "Performance"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:466
-#, python-format
-msgid "vginfo failed for %s"
 msgstr ""
