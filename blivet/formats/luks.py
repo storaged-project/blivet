@@ -89,10 +89,11 @@ class LUKS(DeviceFormat):
         self.key_size = kwargs.get("key_size")
         self.mapName = kwargs.get("name")
 
-        if not self.exists and not self.cipher:
-            self.cipher = "aes-xts-plain64"
-            if not self.key_size:
-                # default to the max (512 bits) for aes-xts
+        if not self.exists:
+            if not self.cipher:
+                self.cipher = "aes-xts-plain64"
+            if not self.key_size and "xts" in self.cipher:
+                # default to the max (512 bits) for xts
                 self.key_size = 512
 
         # FIXME: these should both be lists, but managing them will be a pain
