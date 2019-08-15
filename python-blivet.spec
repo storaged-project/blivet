@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.4
+Version: 3.1.5
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,30 @@ configuration.
 %endif
 
 %changelog
+* Thu Aug 15 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.5-1
+- Move dependencies code from StorageDevice to Device (vtrefny)
+- Always use luks_data.min_entropy as a default minimum entropy (vponcova)
+- Add 'protected' property setter to LVMVolumeGroupDevice (#1729363) (vtrefny)
+- fix of LV max size calculation (japokorn)
+- Added min size for partitions (japokorn)
+- Improved non-unique UUID handling (japokorn)
+- Check if disklabel supports partition names (#1723228) (vtrefny)
+- format_device: Revert destroy action if create fails (#1727589) (vtrefny)
+- Do not allow resizing of LUKS devices with integrity (vtrefny)
+- Return underlying block device as 'slave' for LUKS with integrity (vtrefny)
+- Fix removing LUKS devices with integrity (vtrefny)
+- Check status before activating dmraid set in populate. (#1723979) (dlehman)
+- Use DBus call to see if we're in a vm. (dlehman)
+- Use dasd disklabel for vm disks backed by dasds. (dlehman)
+- Add a function to detect if running in a vm. (dlehman)
+- Remove teardown_all from the populate method (vponcova)
+- Correctly handle non-unicode iSCSI initiator names (vtrefny)
+- Add, test and use a new method to get size with reserve (vpodzime)
+- Beware non-positive sizes in thpool metadata size calculations (vpodzime)
+- Log sizes in MiB in thpool auto metadata size calculations (vpodzime)
+- Recalculate thpool's metadata size on resize in LVMThinPFactory (vpodzime)
+- Move the thpool reserve calculations to LVMFactory (vpodzime)
+
 * Tue Jun 11 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.4-1
 - Don't call fnmatch with None (#1698937) (vponcova)
 - Do not crash on non-int lun argument when creating iscsi disk object.
