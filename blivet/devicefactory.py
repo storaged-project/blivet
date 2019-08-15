@@ -332,7 +332,11 @@ class DeviceFactory(object):
             setattr(self, setting, value)
 
         self.fstype = None  # not included in default_settings b/c of special handling below
-        self.min_luks_entropy = kwargs.get("min_luks_entropy") or luks_data.min_entropy
+        self.min_luks_entropy = kwargs.get("min_luks_entropy")
+
+        if self.min_luks_entropy is None:
+            self.min_luks_entropy = luks_data.min_entropy
+
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
         self.pbkdf_args = kwargs.get("pbkdf_args", None)
 
