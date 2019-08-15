@@ -71,6 +71,7 @@ class Device(util.ObjectID):
 
     _type = "device"
     _packages = []
+    _external_dependencies = []
 
     def __init__(self, name, parents=None):
         """
@@ -312,3 +313,48 @@ class Device(util.ObjectID):
 
         # By default anything goes
         return True
+
+    #
+    # dependencies
+    #
+    @classmethod
+    def type_external_dependencies(cls):
+        """ A list of external dependencies of this device type.
+
+            :returns: a set of external dependencies
+            :rtype: set of availability.ExternalResource
+
+            The external dependencies include the dependencies of this
+            device type and of all superclass device types.
+        """
+        return set(
+            d for p in cls.__mro__ if issubclass(p, Device) for d in p._external_dependencies
+        )
+
+    @classmethod
+    def unavailable_type_dependencies(cls):
+        """ A set of unavailable dependencies for this type.
+
+            :return: the unavailable external dependencies for this type
+            :rtype: set of availability.ExternalResource
+        """
+        return set(e for e in cls.type_external_dependencies() if not e.available)
+
+    @property
+    def external_dependencies(self):
+        """ A list of external dependencies of this device and its parents.
+
+            :returns: the external dependencies of this device and all parents.
+            :rtype: set of availability.ExternalResource
+        """
+        return set(d for p in self.ancestors for d in p.type_external_dependencies())
+
+    @property
+    def unavailable_dependencies(self):
+        """ Any unavailable external dependencies of this device or its
+            parents.
+
+            :returns: A list of unavailable external dependencies.
+            :rtype: set of availability.external_resource
+        """
+        return set(e for e in self.external_dependencies if not e.available)

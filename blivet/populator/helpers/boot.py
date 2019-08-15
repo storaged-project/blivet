@@ -59,6 +59,7 @@ class MacEFIFormatPopulator(BootFormatPopulator):
         fmt = formats.get_format(cls._type_specifier)
         try:
             return (super(MacEFIFormatPopulator, MacEFIFormatPopulator).match(data, device) and
+                    device.disk.format.supports_names and
                     device.parted_partition.name == fmt.name)
         except AttributeError:
             # just in case device.parted_partition has no name attr

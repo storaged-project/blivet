@@ -159,3 +159,24 @@ class Size(bytesize.Size):
                 raise ValueError("invalid rounding size: %s" % size)
 
         return Size(bytesize.Size.round_to_nearest(self, size, rounding))
+
+    def ensure_percent_reserve(self, percent):
+        """Get a new size with given space reserve.
+
+            :param percent: number of percent to reserve
+            :returns: a new size with :param:`percent` space reserve
+            :rtype: :class:`Size`
+
+            Best described with an example:
+            >>> Size("80 GiB").ensure_percent_reserve(20)
+            Size (100 GiB)
+
+            This method returns a new size in which there's a :param:`percent`%
+            reserve (on top of the original size). In other words::
+
+              with_reserve - orig_size == with_reserve * (percent / 100)
+
+            except that due to float arithmetics the numbers are unlikely to be
+            exactly equal.
+        """
+        return Size(self * (1 / (1 - (percent / 100))))

@@ -71,6 +71,7 @@ class FS(DeviceFormat):
     _uuidfs = None                       # functionality for UUIDs
     _fsck_class = fsck.UnimplementedFSCK
     _mkfs_class = fsmkfs.UnimplementedFSMkfs
+    _min_size = Size("2 MiB")            # default minimal size
     _mount_class = fsmount.FSMount
     _readlabel_class = fsreadlabel.UnimplementedFSReadLabel
     _sync_class = fssync.UnimplementedFSSync
@@ -1256,6 +1257,7 @@ class NoDevFS(FS):
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
     _selinux_supported = False
+    _min_size = Size(0)
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)

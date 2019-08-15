@@ -416,9 +416,6 @@ class PopulatorMixin(object):
             parted.clear_exn_handler()
             self._hide_ignored_disks()
 
-        if flags.auto_dev_updates:
-            self.teardown_all()
-
     def _populate(self):
         log.info("DeviceTree.populate: ignored_disks is %s ; exclusive_disks is %s",
                  self.ignored_disks, self.exclusive_disks)

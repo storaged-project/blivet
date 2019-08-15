@@ -206,7 +206,9 @@ class iSCSI(object):
         if self._initiator != "":
             return self._initiator
 
-        return self._call_initiator_method("GetInitiatorName")[0]
+        # udisks returns initiatorname as a NULL terminated bytearray
+        raw_initiator = bytes(self._call_initiator_method("GetInitiatorNameRaw")[0][:-1])
+        return raw_initiator.decode("utf-8", errors="replace")
 
     @initiator.setter
     @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)

@@ -301,7 +301,7 @@ class DeviceActionTestCase(StorageTestCase):
                                name="sdc1", size=Size("100 GiB"),
                                parents=[sdc], exists=True)
 
-        sdc1_format = self.new_format("ext2", device=sdc1.path, mountpoint="/")
+        sdc1_format = self.new_format("ext2", device=sdc1.path, mountpoint="/", size=Size("100 GiB"))
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
         create_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):

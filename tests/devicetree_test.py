@@ -5,7 +5,7 @@ import six
 import unittest
 
 from blivet.actionlist import ActionList
-from blivet.errors import DeviceTreeError
+from blivet.errors import DeviceTreeError, DuplicateUUIDError
 from blivet.devicelibs import lvm
 from blivet.devices import DiskDevice
 from blivet.devices import LVMVolumeGroupDevice
@@ -34,7 +34,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev1_label = "dev1_label"
         dev1_uuid = "1234-56-7890"
         fmt1 = get_format("ext4", label=dev1_label, uuid=dev1_uuid)
-        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1)
+        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1, size=fmt1.min_size)
         dt._add_device(dev1)
 
         dev2_label = "dev2_label"
@@ -117,7 +117,11 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev1.add_hook.called)  # pylint: disable=no-member
 
         # adding an already-added device fails
-        six.assertRaisesRegex(self, ValueError, "already in tree", dt._add_device, dev1)
+        six.assertRaisesRegex(self, DeviceTreeError, "Trying to add already existing device.", dt._add_device, dev1)
+
+        # adding a device with the same UUID
+        dev_clone = StorageDevice("dev_clone", exists=False, uuid=sentinel.dev1_uuid, parents=[])
+        six.assertRaisesRegex(self, DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
 
         dev2 = StorageDevice("dev2", exists=False, parents=[])
         dev3 = StorageDevice("dev3", exists=False, parents=[dev1, dev2])

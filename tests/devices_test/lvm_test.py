@@ -87,13 +87,16 @@ class LVMDeviceTest(unittest.TestCase):
         vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
         cache_req = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
-        lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
+        lv = LVMLogicalVolumeDevice("testlv",
+                                    parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"),
-                                    exists=False, cache_request=cache_req)
+                                    size=Size(blivet.formats.get_format("xfs").min_size),
+                                    exists=False,
+                                    cache_request=cache_req)
 
         # the cache reserves space for its metadata from the requested size, but
         # it may require (and does in this case) a pmspare LV to be allocated
-        self.assertEqual(lv.vg_space_used, Size("504 MiB"))
+        self.assertEqual(lv.vg_space_used, Size("508 MiB"))
 
         # check that the LV behaves like a cached LV
         self.assertTrue(lv.cached)
