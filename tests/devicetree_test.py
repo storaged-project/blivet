@@ -1,6 +1,6 @@
 import test_compat  # pylint: disable=unused-import
 
-from six.moves.mock import Mock, patch, sentinel  # pylint: disable=no-name-in-module,import-error
+from six.moves.mock import Mock, patch, PropertyMock, sentinel  # pylint: disable=no-name-in-module,import-error
 import six
 import unittest
 
@@ -15,6 +15,7 @@ from blivet.devices.lib import Tags
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
 from blivet.size import Size
+from blivet.static_data.lvm_info import lvs_info, LVsInfo
 
 """
     TODO:
@@ -34,7 +35,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev1_label = "dev1_label"
         dev1_uuid = "1234-56-7890"
         fmt1 = get_format("ext4", label=dev1_label, uuid=dev1_uuid)
-        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1)
+        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1, size=fmt1.min_size)
         dt._add_device(dev1)
 
         dev2_label = "dev2_label"
@@ -59,14 +60,41 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt.resolve_device(dev3.name), dev3)
 
+    def test_device_name(self):
+        # check that devicetree.names property contains all device's names
+
+        # mock lvs_info to avoid blockdev call allowing run as non-root
+        with patch.object(LVsInfo, 'cache', new_callable=PropertyMock) as mock_lvs_cache:
+            mock_lvs_cache.return_value = {"sdmock": "dummy"}
+
+            tree = DeviceTree()
+            dev_names = ["sda", "sdb", "sdc"]
+
+            for dev_name in dev_names:
+                dev = DiskDevice(dev_name)
+                tree._add_device(dev)
+                self.assertTrue(dev in tree.devices)
+
+            # frobnicate a bit with the hidden status of the devices:
+            # * hide sda
+            # * hide and unhide again sdb
+            # * leave sdc unchanged
+            tree.hide(tree.get_device_by_name("sda"))
+            tree.hide(tree.get_device_by_name("sdb"))
+            tree.unhide(tree.get_device_by_name("sdb", hidden=True))
+
+            # some lvs names may be already present in the system (mocked)
+            lv_info = list(lvs_info.cache.keys())
+
+            # all devices should still be present in the tree.names
+            self.assertEqual(sorted(tree.names), sorted(lv_info + dev_names))
+
     def test_reset(self):
         dt = DeviceTree()
         names = ["fakedev1", "fakedev2"]
         for name in names:
             device = Mock(name=name, spec=StorageDevice, parents=[], exists=True)
             dt._devices.append(device)
-
-        dt.names = names[:]
 
         dt.actions._actions.append(Mock(name="fake action"))
 

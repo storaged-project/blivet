@@ -214,6 +214,15 @@ class SizeTestCase(unittest.TestCase):
         s = Size("10 MiB")
         self.assertEqual(s, cPickle.loads(cPickle.dumps(s)))
 
+    def test_ensure_percent_reserve(self):
+        s = Size("8 GiB")
+        self.assertAlmostEqual(s.ensure_percent_reserve(20), Size("10 GiB"), delta=Size("1 MiB"))
+
+        for s in (Size("4 GiB"), Size("5 GiB"), Size("100 GiB")):
+            for percent in (10, 15, 20, 35, 80):
+                with_reserve = s.ensure_percent_reserve(percent)
+                self.assertAlmostEqual(with_reserve - s, with_reserve * (percent / 100), delta=Size("1 MiB"))
+
 
 # es_ES uses latin-characters but a comma as the radix separator
 # kk_KZ uses non-latin characters and is case-sensitive
