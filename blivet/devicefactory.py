@@ -462,6 +462,10 @@ class DeviceFactory(object):
     def _normalize_size(self):
         if self.size is None:
             self._handle_no_size()
+        elif self.size == Size(0):
+            # zero size means we're adjusting the container after removing
+            # a device from it so we don't want to change the size here
+            return
 
         size = self.size
         fmt = get_format(self.fstype)
