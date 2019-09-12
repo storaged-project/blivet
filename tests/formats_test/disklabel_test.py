@@ -163,16 +163,18 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_efi.return_value = False
 
         arch.is_s390.return_value = True
-        with mock.patch.object(dl, '_label_type_size_check') as size_check:
-            size_check.return_value = True
-            with mock.patch("blivet.formats.disklabel.blockdev.s390") as _s390:
-                _s390.dasd_is_fba.return_value = False
-                self.assertEqual(dl._get_best_label_type(), "msdos")
+        with mock.patch('blivet.util.detect_virt') as virt:
+            virt.return_value = False
+            with mock.patch.object(dl, '_label_type_size_check') as size_check:
+                size_check.return_value = True
+                with mock.patch("blivet.formats.disklabel.blockdev.s390") as _s390:
+                    _s390.dasd_is_fba.return_value = False
+                    self.assertEqual(dl._get_best_label_type(), "msdos")
 
-                _s390.dasd_is_fba.return_value = True
-                self.assertEqual(dl._get_best_label_type(), "msdos")
+                    _s390.dasd_is_fba.return_value = True
+                    self.assertEqual(dl._get_best_label_type(), "msdos")
 
-                _s390.dasd_is_fba.return_value = False
-                dl._parted_device.type = parted.DEVICE_DASD
-                self.assertEqual(dl._get_best_label_type(), "dasd")
+                    _s390.dasd_is_fba.return_value = False
+                    dl._parted_device.type = parted.DEVICE_DASD
+                    self.assertEqual(dl._get_best_label_type(), "dasd")
         arch.is_s390.return_value = False
