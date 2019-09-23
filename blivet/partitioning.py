@@ -170,7 +170,7 @@ def get_next_partition_type(disk, no_primary=None):
 
 def get_best_free_space_region(disk, part_type, req_size, start=None,
                                boot=None, best_free=None, grow=None,
-                               alignment=None):
+                               use_the_best=0, alignment=None):
     """ Return the "best" free region on the specified disk.
 
         For non-boot partitions, we return the largest free region on the
@@ -201,15 +201,17 @@ def get_best_free_space_region(disk, part_type, req_size, start=None,
         :type grow: bool
         :keyword alignment: disk alignment requirements
         :type alignment: :class:`parted.Alignment`
+        :keyword use_the_best: which region will the partition take
+        :type use_the_best: long
 
     """
     log.debug("get_best_free_space_region: disk=%s part_type=%d req_size=%s "
-              "boot=%s best=%s grow=%s start=%s",
+              "boot=%s best=%s grow=%s start=%s use_the_best=%s",
               disk.device.path, part_type, req_size, boot, best_free, grow,
-              start)
+              start, use_the_best)
     extended = disk.getExtendedPartition()
     alignment = alignment or parted.Alignment(offset=0, grainSize=1)
-
+    free_list = []
     for free_geom in disk.getFreeSpaceRegions():
         # align the start sector of the free region since we will be aligning
         # the start sector of the partition
@@ -265,24 +267,28 @@ def get_best_free_space_region(disk, part_type, req_size, start=None,
                   Size(free_geom.getLength(unit="B")))
         free_size = Size(free_geom.getLength(unit="B"))
 
-        # For boot partitions, we want the first suitable region we find.
-        # For growable or extended partitions, we want the largest possible
-        # free region.
-        # For all others, we want the smallest suitable free region.
-        if grow or part_type == parted.PARTITION_EXTENDED:
-            op = gt
-        else:
-            op = lt
         if req_size <= free_size:
-            if not best_free or op(free_geom.length, best_free.length):
-                best_free = free_geom
-
-                if boot:
-                    # if this is a bootable partition we want to
-                    # use the first freespace region large enough
-                    # to satisfy the request
-                    break
-
+            free_list.append(free_geom)
+            if boot:
+                # if this is a bootable partition we want to
+                # use the first freespace region large enough
+                # to satisfy the request
+               best_free = free_list[0]
+               break
+    # For boot partitions, we want the first suitable region we find.
+    # For growable or extended partitions, we want the largest possible
+    # free region.
+    # For all others, we want the smallest suitable free region.
+    if (grow or part_type == parted.PARTITION_EXTENDED):
+        op = True
+    else:
+        op = False
+    
+    free_list.sort(key = (lambda b: b.length),reverse=op)
+    if use_the_best + 1 <= len(free_list):
+        best_free = free_list[use_the_best]
+    else:
+        best_free = free_list[ len(free_list) -1 ]
     return best_free
 
 
@@ -800,6 +806,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                                               best_free=current_free,
                                               boot=boot,
                                               grow=_part.req_grow,
+                                              use_the_best=_part.use_the_best,
                                               alignment=alignment)
 
             if best == free and not _part.req_primary and \
@@ -816,6 +823,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                                                       best_free=current_free,
                                                       boot=boot,
                                                       grow=_part.req_grow,
+                                                      use_the_best=_part.use_the_best,
                                                       alignment=alignment)
 
             if best and free != best:
@@ -853,6 +861,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                                                                    start=_part.req_start_sector,
                                                                    boot=boot,
                                                                    grow=_part.req_grow,
+                                                                   use_the_best=_part.use_the_best,
                                                                    alignment=alignment)
                                 if not _free:
                                     log.info("not enough space after adding "
@@ -980,6 +989,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                                               start=_part.req_start_sector,
                                               boot=boot,
                                               grow=_part.req_grow,
+                                              use_the_best=_part.use_the_best,
                                               alignment=disklabel.alignment)
             if not free:
                 raise PartitioningError(_("not enough free space after "

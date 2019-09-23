@@ -1191,34 +1191,43 @@ class PartitionSetFactory(PartitionFactory):
         ##
         new_members = []
         fmt_args = {}
+        use_the_best = 0
+        free_space_count = 1
         for disk in add_disks:
-            if self.encrypted:
-                member_format = "luks"
-                fmt_args["luks_version"] = self.luks_version
-                fmt_args["pbkdf_args"] = self.pbkdf_args
-            else:
-                member_format = self.fstype
+            if self.parent_factory.name == "LVM":
+               free_spaces = disk.format.parted_disk.getFreeSpaceRegions()
+               # we only want to handle the freespace regions that are big enough
+               free_list = [free for free in free_spaces if free.getLength(unit="B") > 500]
+               free_space_count = len(free_list)
 
-            try:
-                member = self.storage.new_partition(parents=[disk], grow=True,
-                                                    size=base_size,
-                                                    fmt_type=member_format,
-                                                    fmt_args=fmt_args)
-            except (StorageError, blockdev.BlockDevError) as e:
-                log.error("failed to create new member partition: %s", e)
-                continue
+            for i in range(free_space_count):
+                 if self.encrypted:
+                     member_format = "luks"
+                     fmt_args["luks_version"] = self.luks_version
+                     fmt_args["pbkdf_args"] = self.pbkdf_args
+                 else:
+                     member_format = self.fstype
 
-            self.storage.create_device(member)
-            if self.encrypted:
-                fmt = get_format(self.fstype)
-                member = LUKSDevice("luks-%s" % member.name,
-                                    parents=[member], fmt=fmt)
-                self.storage.create_device(member)
+                 try:
+                     member = self.storage.new_partition(parents=[disk], grow=True,
+                                                         size=base_size, use_the_best=i,
+                                                         fmt_type=member_format,
+                                                         fmt_args=fmt_args)
+                 except (StorageError, blockdev.BlockDevError) as e:
+                     log.error("failed to create new member partition: %s", e)
+                     continue
 
-            members.append(member)
-            new_members.append(member)
-            if container:
-                container.parents.append(member)
+                 self.storage.create_device(member)
+                 if self.encrypted:
+                     fmt = get_format(self.fstype)
+                     member = LUKSDevice("luks-%s" % member.name,
+                                         parents=[member], fmt=fmt)
+                     self.storage.create_device(member)
+ 
+                 members.append(member)
+                 new_members.append(member)
+                 if container:
+                    container.parents.append(member)
 
         ##
         # Remove members from dropped disks.
@@ -1263,6 +1272,7 @@ class LVMFactory(DeviceFactory):
     child_factory_class = PartitionSetFactory
     child_factory_fstype = "lvmpv"
     size_set_class = TotalSizeSet
+    name = "LVM"
 
     def __init__(self, storage, **kwargs):
         super(LVMFactory, self).__init__(storage, **kwargs)

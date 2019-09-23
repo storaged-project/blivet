@@ -70,7 +70,7 @@ class PartitionDevice(StorageDevice):
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=None, disk_tags=None):
+                 part_type=None, primary=False, weight=None, disk_tags=None,use_the_best=0):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -112,6 +112,8 @@ class PartitionDevice(StorageDevice):
             :type weight: int or NoneType
             :keyword disk_tags: (str) tags defining candidate disk set
             :type disk_tags: iterable
+            :keyword use_the_best: which region will the partition take
+            :type use_the_best: long
 
             .. note::
 
@@ -150,6 +152,7 @@ class PartitionDevice(StorageDevice):
         self._part_type = None
         self._parted_partition = None
         self._orig_path = None
+        self.use_the_best = use_the_best
 
         if not exists and size is None:
             if start is not None and end is not None:
