@@ -265,12 +265,6 @@ class UnrecognizedFSTabEntryError(StorageError):
 class FSTabTypeMismatchError(StorageError):
     pass
 
-# probing
-
-
-class UnknownSourceDeviceError(StorageError):
-    pass
-
 # factories
 
 
