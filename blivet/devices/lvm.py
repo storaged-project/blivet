@@ -2299,7 +2299,7 @@ class LVMCache(Cache):
             raise ValueError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
 
     @property
-    def size(self):
+    def size(self):  # pylint: disable=invalid-overridden-method
         # self.stats is always dynamically fetched so store and reuse the value here
         stats = self.stats
         if stats:
@@ -2319,11 +2319,11 @@ class LVMCache(Cache):
         return self.size + self.md_size
 
     @property
-    def exists(self):
+    def exists(self):  # pylint: disable=invalid-overridden-method
         return self._exists
 
     @property
-    def stats(self):
+    def stats(self):  # pylint: disable=invalid-overridden-method
         # to get the stats we need the cached LV to exist and be activated
         if self._exists and self._cached_lv.status:
             return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
@@ -2331,7 +2331,7 @@ class LVMCache(Cache):
             return None
 
     @property
-    def mode(self):
+    def mode(self):  # pylint: disable=invalid-overridden-method
         if not self._exists:
             return self._mode
         else:
@@ -2339,14 +2339,14 @@ class LVMCache(Cache):
             return blockdev.lvm.cache_get_mode_str(stats.mode)
 
     @property
-    def backing_device_name(self):
+    def backing_device_name(self):  # pylint: disable=invalid-overridden-method
         if self._exists:
             return self._cached_lv.name
         else:
             return None
 
     @property
-    def cache_device_name(self):
+    def cache_device_name(self):  # pylint: disable=invalid-overridden-method
         if self._exists:
             vg_name = self._cached_lv.vg.name
             return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
@@ -2394,23 +2394,23 @@ class LVMCacheStats(CacheStats):
 
     # common properties for all caches
     @property
-    def block_size(self):
+    def block_size(self):  # pylint: disable=invalid-overridden-method
         return self._block_size
 
     @property
-    def size(self):
+    def size(self):  # pylint: disable=invalid-overridden-method
         return self._cache_size
 
     @property
-    def used(self):
+    def used(self):  # pylint: disable=invalid-overridden-method
         return self._cache_used
 
     @property
-    def hits(self):
+    def hits(self):  # pylint: disable=invalid-overridden-method
         return self._read_hits + self._write_hits
 
     @property
-    def misses(self):
+    def misses(self):  # pylint: disable=invalid-overridden-method
         return self._read_misses + self._write_misses
 
     # LVM cache specific properties
@@ -2466,11 +2466,11 @@ class LVMCacheRequest(CacheRequest):
                 self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
 
     @property
-    def size(self):
+    def size(self):  # pylint: disable=invalid-overridden-method
         return self._size
 
     @property
-    def fast_devs(self):
+    def fast_devs(self):  # pylint: disable=invalid-overridden-method
         return [spec.pv for spec in self._pv_specs]
 
     @property
@@ -2483,5 +2483,5 @@ class LVMCacheRequest(CacheRequest):
         return self._pv_specs
 
     @property
-    def mode(self):
+    def mode(self):  # pylint: disable=invalid-overridden-method
         return self._mode
