@@ -172,6 +172,7 @@ class NoDevFSMount(FSMount):
 
 class NFSMount(FSMount):
 
+    @property
     def _availability_errors(self):
         return ["nfs filesystem can't be mounted"]
 
