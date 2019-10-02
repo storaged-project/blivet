@@ -181,7 +181,6 @@ blivet
     * :class:`~blivet.errors.SwapSpaceError`
     * :class:`~blivet.errors.ThreadError`
     * :class:`~blivet.errors.UdevError`
-    * :class:`~blivet.errors.UnknownSourceDeviceError`
     * :class:`~blivet.errors.UnrecognizedFSTabEntryError`
     * :class:`~blivet.errors.UnusableConfigurationError`
 

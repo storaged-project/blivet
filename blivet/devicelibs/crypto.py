@@ -40,7 +40,7 @@ EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_CRYPTO_PLUGIN]
 
 LUKS_VERSIONS = {"luks1": BlockDev.CryptoLUKSVersion.LUKS1,
                  "luks2": BlockDev.CryptoLUKSVersion.LUKS2}
-DEFAULT_LUKS_VERSION = "luks1"
+DEFAULT_LUKS_VERSION = "luks2"
 
 
 def calculate_luks2_max_memory():

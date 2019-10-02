@@ -40,7 +40,7 @@ program_log_lock = Lock()
 
 
 SYSTEMD_SERVICE = "org.freedesktop.systemd1"
-SYSTEMD_MANAGER_PATH = "/org/freedesktop/systemd1/Manager"
+SYSTEMD_MANAGER_PATH = "/org/freedesktop/systemd1"
 SYSTEMD_MANAGER_IFACE = "org.freedesktop.systemd1.Manager"
 VIRT_PROP_NAME = "Virtualization"
 
@@ -1115,6 +1115,6 @@ def detect_virt():
         vm = safe_dbus.get_property_sync(SYSTEMD_SERVICE, SYSTEMD_MANAGER_PATH,
                                          SYSTEMD_MANAGER_IFACE, VIRT_PROP_NAME)
     except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
-        vm = None
-
-    return vm in ('qemu', 'kvm')
+        return False
+    else:
+        return vm[0] in ('qemu', 'kvm')

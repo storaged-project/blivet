@@ -81,3 +81,21 @@ class LUKSNodevTestCase(unittest.TestCase):
             # add with comma after other option(s)
             fmt = LUKS(exists=False, options="blah")
             self.assertEqual(fmt.options, "blah,discard")
+
+    def test_key_size(self):
+        # default cipher is AES-XTS with 512b key
+        fmt = LUKS()
+        self.assertEqual(fmt.cipher, "aes-xts-plain64")
+        self.assertEqual(fmt.key_size, 512)
+
+        # setting cipher shouldn't change the key size
+        fmt = LUKS(cipher="aes-xts-plain64")
+        self.assertEqual(fmt.key_size, 512)
+
+        # all XTS mode ciphers should default to 512
+        fmt = LUKS(cipher="serpent-xts-plain64")
+        self.assertEqual(fmt.key_size, 512)
+
+        # no default for non-XTS modes
+        fmt = LUKS(cipher="aes-cbc-plain64")
+        self.assertEqual(fmt.key_size, 0)
