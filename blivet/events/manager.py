@@ -298,7 +298,7 @@ class UdevEventManager(EventManager):
         self._pyudev_observer = None
 
     @property
-    def enabled(self):
+    def enabled(self):  # pylint: disable=invalid-overridden-method
         return self._pyudev_observer and self._pyudev_observer.monitor.started
 
     def enable(self):
