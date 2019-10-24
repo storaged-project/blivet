@@ -2,7 +2,7 @@
 import test_compat  # pylint: disable=unused-import
 
 import six
-from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
+from six.moves.mock import patch, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import unittest
 
 import blivet
@@ -351,6 +351,17 @@ class LVMDeviceTest(unittest.TestCase):
         lv.target_size = orig_size
         self.assertEqual(lv.target_size, orig_size)
         self.assertEqual(lv.size, orig_size)
+
+    def test_lvm_inconsistent_sector_size(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1024 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("1024 MiB"))
+
+        with patch("blivet.devices.StorageDevice.sector_size", new_callable=PropertyMock) as mock_property:
+            mock_property.__get__ = lambda _mock, pv, _class: 512 if pv.name == "pv1" else 4096
+            with six.assertRaisesRegex(self, ValueError, "The volume group testvg cannot be created."):
+                LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
 
 class TypeSpecificCallsTest(unittest.TestCase):

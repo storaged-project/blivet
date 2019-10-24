@@ -729,6 +729,13 @@ class PartitionDevice(StorageDevice):
     def protected(self, value):
         self._protected = value
 
+    @property
+    def sector_size(self):
+        if self.disk:
+            return self.disk.sector_size
+
+        return super(PartitionDevice, self).sector_size
+
     def _pre_resize(self):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
