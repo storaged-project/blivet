@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.5
+Version: 3.1.6
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,15 @@ configuration.
 %endif
 
 %changelog
+* Fri Oct 25 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.6-1
+- Do not allow creating VGs with PVs with different sector size (vtrefny)
+- Add a new "sector_size" property to storage devices. (vtrefny)
+- Ignore invalid-overridden-method warning for abstract properties (vtrefny)
+- Change NFSMount._availability_errors to a property (vtrefny)
+- Fix util.detect_virt function (vtrefny)
+- Do not try to normalize size for zero size device factories (vtrefny)
+- Always set default key size to 512 bits for ciphers with XTS mode (vtrefny)
+
 * Thu Aug 15 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.5-1
 - Move dependencies code from StorageDevice to Device (vtrefny)
 - Always use luks_data.min_entropy as a default minimum entropy (vponcova)

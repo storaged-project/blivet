@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 07:42+0200\n"
+"POT-Creation-Date: 2019-10-25 07:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,65 +18,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: ../blivet/partitioning.py:450
-msgid "unable to allocate aligned partition"
+#: ../blivet/fcoe.py:121
+msgid "FCoE not available"
 msgstr ""
 
-#: ../blivet/partitioning.py:458
-msgid "requested size exceeds maximum allowed"
-msgstr ""
-
-#: ../blivet/partitioning.py:576
-#, python-format
-msgid "disk %s inaccessible"
-msgstr ""
-
-#: ../blivet/partitioning.py:637
-#, python-format
+#: ../blivet/errors.py:210
 msgid ""
-"partition is too small for %(format)s formatting (allowable size is "
-"%(min_size)s to %(max_size)s)"
+"This is usually caused by cloning the device image resulting in duplication "
+"of the UUID value which should be unique. In that case you can either "
+"disconnect one of the devices or reformat it."
 msgstr ""
 
-#: ../blivet/partitioning.py:642
-#, python-format
+#: ../blivet/errors.py:217
 msgid ""
-"partition is too large for %(format)s formatting (allowable size is "
-"%(min_size)s to %(max_size)s)"
+"For some reason we were unable to locate a disklabel on a disk that the "
+"kernel is reporting partitions on. It is unclear what the exact problem is. "
+"Please file a bug at http://bugzilla.redhat.com"
 msgstr ""
 
-#: ../blivet/partitioning.py:950
-msgid "Unable to allocate requested partition scheme."
+#: ../blivet/errors.py:224
+msgid ""
+"Either restore the disklabel to a completely working state or remove it "
+"completely.\n"
+"Hint: parted can restore it or wipefs can remove it."
 msgstr ""
 
-#: ../blivet/partitioning.py:985
-msgid "not enough free space after creating extended partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:992
-msgid "failed to allocate aligned partition"
-msgstr ""
-
-#: ../blivet/partitioning.py:1193
-msgid "cannot reclaim more than request has grown"
-msgstr ""
-
-#: ../blivet/partitioning.py:1407
-msgid "DiskChunk requests must be of type PartitionRequest"
-msgstr ""
-
-#: ../blivet/partitioning.py:1420
-msgid "partitions allocated outside disklabel limits"
-msgstr ""
-
-#: ../blivet/partitioning.py:1505
-msgid "VGChunk requests must be of type LVRequest"
-msgstr ""
-
-#. by now we have allocated the PVs so if there isn't enough
-#. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2013
-msgid "not enough space for LVM requests"
+#: ../blivet/errors.py:230
+msgid ""
+"Rename one of the volume groups so the names are distinct.\n"
+"Hint 1: vgrename accepts UUID in place of the old name.\n"
+"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
 msgstr ""
 
 #: ../blivet/zfcp.py:62
@@ -163,38 +134,6 @@ msgstr ""
 msgid "Could not set zFCP device %(devnum)s offline (%(e)s)."
 msgstr ""
 
-#: ../blivet/fcoe.py:121
-msgid "FCoE not available"
-msgstr ""
-
-#: ../blivet/errors.py:210
-msgid ""
-"This is usually caused by cloning the device image resulting in duplication "
-"of the UUID value which should be unique. In that case you can either "
-"disconnect one of the devices or reformat it."
-msgstr ""
-
-#: ../blivet/errors.py:217
-msgid ""
-"For some reason we were unable to locate a disklabel on a disk that the "
-"kernel is reporting partitions on. It is unclear what the exact problem is. "
-"Please file a bug at http://bugzilla.redhat.com"
-msgstr ""
-
-#: ../blivet/errors.py:224
-msgid ""
-"Either restore the disklabel to a completely working state or remove it "
-"completely.\n"
-"Hint: parted can restore it or wipefs can remove it."
-msgstr ""
-
-#: ../blivet/errors.py:230
-msgid ""
-"Rename one of the volume groups so the names are distinct.\n"
-"Hint 1: vgrename accepts UUID in place of the old name.\n"
-"Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
-msgstr ""
-
 #: ../blivet/iscsi.py:217
 msgid "Unable to change iSCSI initiator name once set"
 msgstr ""
@@ -221,6 +160,67 @@ msgstr ""
 
 #: ../blivet/iscsi.py:553
 msgid "Could not log in to any of the discovered nodes"
+msgstr ""
+
+#: ../blivet/partitioning.py:450
+msgid "unable to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:458
+msgid "requested size exceeds maximum allowed"
+msgstr ""
+
+#: ../blivet/partitioning.py:576
+#, python-format
+msgid "disk %s inaccessible"
+msgstr ""
+
+#: ../blivet/partitioning.py:637
+#, python-format
+msgid ""
+"partition is too small for %(format)s formatting (allowable size is "
+"%(min_size)s to %(max_size)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:642
+#, python-format
+msgid ""
+"partition is too large for %(format)s formatting (allowable size is "
+"%(min_size)s to %(max_size)s)"
+msgstr ""
+
+#: ../blivet/partitioning.py:950
+msgid "Unable to allocate requested partition scheme."
+msgstr ""
+
+#: ../blivet/partitioning.py:985
+msgid "not enough free space after creating extended partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:992
+msgid "failed to allocate aligned partition"
+msgstr ""
+
+#: ../blivet/partitioning.py:1193
+msgid "cannot reclaim more than request has grown"
+msgstr ""
+
+#: ../blivet/partitioning.py:1407
+msgid "DiskChunk requests must be of type PartitionRequest"
+msgstr ""
+
+#: ../blivet/partitioning.py:1420
+msgid "partitions allocated outside disklabel limits"
+msgstr ""
+
+#: ../blivet/partitioning.py:1505
+msgid "VGChunk requests must be of type LVRequest"
+msgstr ""
+
+#. by now we have allocated the PVs so if there isn't enough
+#. space in the VG we have a real problem
+#: ../blivet/partitioning.py:2013
+msgid "not enough space for LVM requests"
 msgstr ""
 
 #: ../blivet/deviceaction.py:194
@@ -293,14 +293,6 @@ msgstr ""
 msgid "configure device"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:57
-msgid "Generic"
-msgstr ""
-
-#: ../blivet/devicelibs/lvm.py:58
-msgid "Performance"
-msgstr ""
-
 #: ../blivet/devices/raid.py:58
 #, python-format
 msgid ""
@@ -347,7 +339,7 @@ msgstr ""
 msgid "Encrypted"
 msgstr ""
 
-#: ../blivet/formats/luks.py:387
+#: ../blivet/formats/luks.py:388
 msgid "DM Integrity"
 msgstr ""
 
@@ -383,4 +375,12 @@ msgstr ""
 
 #: ../blivet/formats/lvmpv.py:49
 msgid "physical volume (LVM)"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:57
+msgid "Generic"
+msgstr ""
+
+#: ../blivet/devicelibs/lvm.py:58
+msgid "Performance"
 msgstr ""
