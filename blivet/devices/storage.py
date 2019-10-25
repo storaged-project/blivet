@@ -191,6 +191,21 @@ class StorageDevice(Device):
         return self
 
     @property
+    def sector_size(self):
+        """ Logical sector (block) size of this device """
+        if not self.exists:
+            if self.parents:
+                return self.parents[0].sector_size
+            else:
+                return LINUX_SECTOR_SIZE
+
+        block_size = util.get_sysfs_attr(self.sysfs_path, "queue/logical_block_size")
+        if block_size:
+            return int(block_size)
+        else:
+            return LINUX_SECTOR_SIZE
+
+    @property
     def controllable(self):
         return self._controllable and not flags.testing and not self.unavailable_type_dependencies()
 

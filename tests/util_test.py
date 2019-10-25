@@ -37,6 +37,10 @@ class MiscTest(unittest.TestCase):
         # real deduplication
         self.assertEqual([1, 2, 3, 4, 5, 6], util.dedup_list([1, 2, 3, 4, 2, 2, 2, 1, 3, 5, 3, 6, 6, 2, 3, 1, 5]))
 
+    def test_detect_virt(self):
+        in_virt = not util.run_program(["systemd-detect-virt", "--vm"])
+        self.assertEqual(util.detect_virt(), in_virt)
+
 
 class TestDefaultNamedtuple(unittest.TestCase):
     def test_default_namedtuple(self):
