@@ -8,6 +8,7 @@ from blivet.events.manager import Event, EventManager
 
 
 class FakeEventManager(EventManager):
+    @property
     def enabled(self):
         return False
 
