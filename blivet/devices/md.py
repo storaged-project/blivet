@@ -19,9 +19,12 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import math
 import os
 import six
 import time
+
+from six.moves import reduce
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -194,6 +197,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise errors.DeviceError(e)
 
         self._level = level
+
+    @property
+    def sector_size(self):
+        if not self.exists:
+            # Least common multiple of parents' sector sizes
+            return reduce(lambda a, b: a * b // math.gcd(a, b), (int(p.sector_size) for p in self.parents))
+
+        return super(MDRaidArrayDevice, self).sector_size
 
     @property
     def chunk_size(self):

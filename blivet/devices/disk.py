@@ -687,7 +687,7 @@ class NVDIMMNamespaceDevice(DiskDevice):
         """
         self.mode = kwargs.pop("mode")
         self.devname = kwargs.pop("devname")
-        self.sector_size = kwargs.pop("sector_size")
+        self._sector_size = kwargs.pop("sector_size")
 
         DiskDevice.__init__(self, device, **kwargs)
 
@@ -710,3 +710,7 @@ class NVDIMMNamespaceDevice(DiskDevice):
                % {'devname': self.devname,
                   'mode': self.mode,
                   'path': self.path}
+
+    @property
+    def sector_size(self):
+        return self._sector_size
