@@ -1074,6 +1074,7 @@ class XFS(FS):
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
     _uuidfs = fsuuid.XFSUUID()
+    _min_size = Size("16 MiB")
     _max_size = Size("16 EiB")
     _formattable = True
     _linux_native = True
