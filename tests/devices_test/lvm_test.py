@@ -363,6 +363,35 @@ class LVMDeviceTest(unittest.TestCase):
             with six.assertRaisesRegex(self, ValueError, "The volume group testvg cannot be created."):
                 LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
+    def test_skip_activate(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("data_lv", parents=[vg], size=Size("500 MiB"), exists=True)
+
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+
+        lv.ignore_skip_activation += 1
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+
+        lv.ignore_skip_activation += 1
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+
+        lv.ignore_skip_activation -= 2
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):

@@ -640,6 +640,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
         self._raid_level = None
+        self.ignore_skip_activation = 0
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -1429,12 +1430,6 @@ class LVMSnapshotMixin(object):
         # the old snapshot cannot be setup and torn down
         pass
 
-    def _setup(self, orig=False):
-        """ Open, or set up, a device. """
-        log_method_call(self, self.name, orig=orig, status=self.status,
-                        controllable=self.controllable)
-        blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=True)
-
     @old_snapshot_specific
     def teardown(self, recursive=False):
         # the old snapshot cannot be setup and torn down
@@ -2043,12 +2038,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     def display_lv_name(self):
         return self.lvname
 
-    @type_specific
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm.lvactivate(self.vg.name, self._name)
+        ignore_skip_activation = self.is_snapshot_lv or self.ignore_skip_activation > 0
+        blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation)
 
     @type_specific
     def _pre_create(self):
