@@ -33,7 +33,6 @@ from blivet.devicelibs import mdraid
 from blivet.size import Size
 
 from blivet.formats import get_format
-from blivet.formats.fs import FS
 
 BTRFS_MIN_MEMBER_SIZE = get_format("btrfs").min_size
 
@@ -761,8 +760,8 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
             "parents": xform(lambda x, m: self.assertEqual(len(x), 1, m) and
                              self.assertIsInstance(x, ParentList) and
                              self.assertIsInstance(x[0], LVMVolumeGroupDevice)),
-            "size": xform(lambda x, m: self.assertEqual(x, FS._min_size, m)),
-            "target_size": xform(lambda x, m: self.assertEqual(x, FS._min_size, m))
+            "size": xform(lambda x, m: self.assertEqual(x, self.fmt._min_size, m)),
+            "target_size": xform(lambda x, m: self.assertEqual(x, self.fmt._min_size, m))
         }
 
         self._state_functions.update(state_functions)
@@ -771,8 +770,9 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        self.fmt = blivet.formats.get_format("xfs")
         self.lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
-                                         fmt=blivet.formats.get_format("xfs"))
+                                         fmt=self.fmt)
 
         pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
                             size=Size("1 GiB"))
