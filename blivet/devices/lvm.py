@@ -1012,6 +1012,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         # set up the vg's pvs so lvm can remove the lv
         self.vg.setup_parents(orig=True)
 
+    def set_rw(self):
+        """ Run lvchange as needed to ensure the lv is not read-only. """
+        lvm.ensure_lv_is_writable(self.vg.name, self.lvname)
+
     @property
     def lvname(self):
         """ The LV's name (not including VG name). """
