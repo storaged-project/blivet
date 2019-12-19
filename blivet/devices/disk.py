@@ -439,6 +439,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         self.address = kwargs.pop("address")
         self.port = kwargs.pop("port")
         self.iface = kwargs.pop("iface")
+        self.id_path = kwargs.pop("id_path")
         DiskDevice.__init__(self, device, **kwargs)
         NetworkStorageDevice.__init__(self, host_address=self.address, nic=self.iface)
         log.debug("created new iscsi disk %s from target: %s lun: %s portal: %s:%s interface: %s partial offload: %s)",
@@ -503,6 +504,7 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
         """
         self.nic = kwargs.pop("nic")
         self.identifier = kwargs.pop("identifier")
+        self.id_path = kwargs.pop("id_path")
         DiskDevice.__init__(self, device, **kwargs)
         NetworkStorageDevice.__init__(self, nic=self.nic)
         log.debug("created new fcoe disk %s (%s) @ %s",
@@ -687,6 +689,7 @@ class NVDIMMNamespaceDevice(DiskDevice):
         """
         self.mode = kwargs.pop("mode")
         self.devname = kwargs.pop("devname")
+        self.id_path = kwargs.pop("id_path")
         self._sector_size = kwargs.pop("sector_size")
 
         DiskDevice.__init__(self, device, **kwargs)

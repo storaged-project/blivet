@@ -428,6 +428,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return self.align(reserved, roundup=True)
 
+    @reserved_space.setter
+    def reserved_space(self, value):
+        if self.exists:
+            raise ValueError("Can't set reserved space for an existing VG")
+
+        self._reserved_space = value
+
+    @property
+    def reserved_percent(self):
+        """ Reserved space in this VG in percent """
+        return self._reserved_percent
+
+    @reserved_percent.setter
+    def reserved_percent(self, value):
+        if self.exists:
+            raise ValueError("Can't set reserved percent for an existing VG")
+
+        self._reserved_percent = value
+
     def _get_pv_usable_space(self, pv):
         if isinstance(pv, MDRaidArrayDevice):
             return self.align(pv.size - 2 * pv.format.pe_start)

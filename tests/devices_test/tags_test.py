@@ -63,11 +63,11 @@ class DeviceTagsTest(unittest.TestCase):
         # automatically-set tags for networked storage devices
         #
         iscsi_kwarg_names = ["initiator", "name", "offload", "target", "address", "port",
-                             "lun", "iface", "node", "ibft", "nic"]
+                             "lun", "iface", "node", "ibft", "nic", "id_path"]
         iscsi_device = iScsiDiskDevice('test5', **dict((k, None) for k in iscsi_kwarg_names))
         self.assertIn(Tags.remote, iscsi_device.tags)
         self.assertNotIn(Tags.local, iscsi_device.tags)
-        fcoe_device = FcoeDiskDevice('test6', nic=None, identifier=None)
+        fcoe_device = FcoeDiskDevice('test6', nic=None, identifier=None, id_path=None)
         self.assertIn(Tags.remote, fcoe_device.tags)
         self.assertNotIn(Tags.local, fcoe_device.tags)
         zfcp_device = ZFCPDiskDevice('test7', hba_id=None, wwpn=None, fcp_lun=None)

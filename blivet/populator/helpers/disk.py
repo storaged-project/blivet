@@ -95,6 +95,7 @@ class iScsiDevicePopulator(DiskDevicePopulator):
         kwargs["name"] = udev.device_get_name(self.data)
         kwargs["iface"] = udev.device_get_iscsi_nic(self.data)
         kwargs["offload"] = kwargs["initiator"] != iscsi.initiator
+        kwargs["id_path"] = udev.device_get_path(self.data)
         log.info("%s is an iscsi disk", kwargs["name"])
 
         # Backward compatibility attributes - to be removed
@@ -132,6 +133,7 @@ class FCoEDevicePopulator(DiskDevicePopulator):
         kwargs = super(FCoEDevicePopulator, self)._get_kwargs()
         kwargs["nic"] = udev.device_get_fcoe_nic(self.data)
         kwargs["identifier"] = udev.device_get_fcoe_identifier(self.data)
+        kwargs["id_path"] = udev.device_get_path(self.data)
         log.info("%s is an fcoe disk", udev.device_get_name(self.data))
         return kwargs
 
@@ -243,6 +245,7 @@ class NVDIMMNamespaceDevicePopulator(DiskDevicePopulator):
         kwargs["devname"] = ninfo.dev
         kwargs["uuid"] = ninfo.uuid
         kwargs["sector_size"] = ninfo.sector_size
+        kwargs["id_path"] = udev.device_get_path(self.data)
 
         log.info("%s is an NVDIMM namespace device", udev.device_get_name(self.data))
         return kwargs

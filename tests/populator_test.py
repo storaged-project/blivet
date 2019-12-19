@@ -566,7 +566,7 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
         devicetree = DeviceTree()
 
         # set up some fake udev data to verify handling of specific entries
-        data = {'SYS_PATH': 'dummy', 'DEVNAME': 'dummy'}
+        data = {'SYS_PATH': 'dummy', 'DEVNAME': 'dummy', 'ID_PATH': 'dummy'}
 
         device_name = "nop"
         device_get_name.return_value = device_name
