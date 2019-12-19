@@ -10,11 +10,7 @@ RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
 RELEASE_TAG=$(PKGNAME)-$(RPMVERSION)-$(RPMRELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-ifeq ($(PYTHON),python3)
-  COVERAGE=coverage3
-else
-  COVERAGE=coverage
-endif
+COVERAGE=$(PYTHON) -m coverage
 
 ZANATA_PULL_ARGS = --transdir ./po/
 ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
