@@ -33,6 +33,7 @@ import getopt
 import getpass
 import os
 import re
+import six
 import subprocess
 import sys
 import textwrap
@@ -89,8 +90,12 @@ class MakeBumpVer:
     def _gitConfig(self, field):
         proc = subprocess.Popen(['git', 'config', field],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
-        return proc[0].strip('\n')
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
+
+        return out.strip('\n')
 
     def _incrementVersion(self):
         fields = self.version.split('.')
@@ -101,8 +106,11 @@ class MakeBumpVer:
     def _isRHEL(self):
         proc = subprocess.Popen(['git', 'branch'],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
-        lines = [x for x in proc[0].strip('\n').split('\n')
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
+        lines = [x for x in out.strip('\n').split('\n')
                  if x.startswith("*")]
 
         if lines == [] or len(lines) > 1:
@@ -121,9 +129,12 @@ class MakeBumpVer:
         proc = subprocess.Popen(['git', 'log', '-1',
                                  "--pretty=format:%s" % field, commit],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
 
-        ret = proc[0].strip('\n').split('\n')
+        ret = out.strip('\n').split('\n')
 
         if len(ret) == 1 and ret[0].find('@') != -1:
             ret = [ret[0].split('@')[0]]
@@ -234,8 +245,11 @@ class MakeBumpVer:
         git_range = "%s-%s-%s.." % (self.name, self.version, self.release)
         proc = subprocess.Popen(['git', 'log', '--pretty=oneline', '--no-merges', git_range],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
-        lines = proc[0].strip('\n').split('\n')
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
+        lines = out.strip('\n').split('\n')
 
         if self.ignore:
             ignore_commits = self.ignore.split(',')
