@@ -113,3 +113,9 @@ class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
     def test_creating_swap_space_empty(self):
         swp = swap.SwapSpace(device=self.loop_devices[0], label="")
         self.assertIsNone(swp.create())
+
+    def test_relabel(self):
+        swp = swap.SwapSpace(device=self.loop_devices[0])
+        self.assertIsNone(swp.create())
+        swp.label = "label"
+        swp.write_label()
