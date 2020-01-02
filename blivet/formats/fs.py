@@ -123,6 +123,7 @@ class FS(DeviceFormat):
         self._writeuuid = self._writeuuid_class(self)
 
         self._current_info = None  # info obtained by _info task
+        self._chrooted_mountpoint = None
 
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts")
@@ -138,8 +139,6 @@ class FS(DeviceFormat):
                             self.device)
 
         self._target_size = self._size
-
-        self._chrooted_mountpoint = None
 
         if self.supported:
             self.load_module()
