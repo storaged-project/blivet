@@ -3,5 +3,5 @@ Description=Blivet Service
 
 [Service]
 Type=dbus
-BusName=com.redhat.Blivet1
+BusName=com.redhat.Blivet0
 ExecStart=/usr/libexec/blivetd
