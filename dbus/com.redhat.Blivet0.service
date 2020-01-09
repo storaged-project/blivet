@@ -1,5 +1,5 @@
 [D-BUS Service]
-Name=com.redhat.Blivet1
+Name=com.redhat.Blivet0
 Exec=/usr/libexec/blivetd
 User=root
 SystemdService=blivet.service
