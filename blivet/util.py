@@ -569,17 +569,17 @@ def insert_colons(a_string):
         return suffix
 
 
-def md5_file(filename):
+def sha256_file(filename):
 
-    md5 = hashlib.md5()
+    sha256 = hashlib.sha256()
     with open(filename, "rb") as f:
 
         block = f.read(65536)
         while block:
-            md5.update(block)
+            sha256.update(block)
             block = f.read(65536)
 
-    return md5.hexdigest()
+    return sha256.hexdigest()
 
 
 class ObjectID(object):
