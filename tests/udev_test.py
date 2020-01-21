@@ -26,12 +26,12 @@ class UdevTest(unittest.TestCase):
         for device in devices:
             self.assertNotEqual(blivet.udev.get_device(device.sys_path), None)
 
-    def udev_settle_test(self):
+    def test_udev_settle(self):
         import blivet.udev
         blivet.udev.settle()
         self.assertTrue(blivet.udev.util.run_program.called)
 
-    def udev_trigger_test(self):
+    def test_udev_trigger(self):
         import blivet.udev
         blivet.udev.trigger()
         self.assertTrue(blivet.udev.util.run_program.called)
