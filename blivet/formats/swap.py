@@ -20,8 +20,10 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import os
+
 from parted import PARTITION_SWAP, fileSystemType
-from ..errors import FSWriteUUIDError
+from ..errors import FSWriteUUIDError, SwapSpaceError
 from ..storage_log import log_method_call
 from ..tasks import availability
 from ..tasks import fsuuid
@@ -52,6 +54,8 @@ class SwapSpace(DeviceFormat):
 
     # see rhbz#744129 for details
     _max_size = Size("128 GiB")
+
+    config_actions_map = {"label": "write_label"}
 
     def __init__(self, **kwargs):
         """
@@ -105,9 +109,42 @@ class SwapSpace(DeviceFormat):
         """Returns True as mkswap can write a label to the swap space."""
         return True
 
+    def relabels(self):
+        """Returns True as mkswap can write a label to the swap space."""
+        return True and self._plugin.available
+
     def label_format_ok(self, label):
         """Returns True since no known restrictions on the label."""
         return True
+
+    def write_label(self, dry_run=False):
+        """ Create a label for this format.
+
+            :raises: SwapSpaceError
+
+            If self.label is None, this means accept the default, so raise
+            an SwapSpaceError in this case.
+
+            Raises a SwapSpaceError if the label can not be set.
+        """
+
+        if not self._plugin.available:
+            raise SwapSpaceError("application to set label on swap format is not available")
+
+        if not dry_run:
+            if not self.exists:
+                raise SwapSpaceError("swap has not been created")
+
+            if not os.path.exists(self.device):
+                raise SwapSpaceError("device does not exist")
+
+            if self.label is None:
+                raise SwapSpaceError("makes no sense to write a label when accepting default label")
+
+            if not self.label_format_ok(self.label):
+                raise SwapSpaceError("bad label format")
+
+            blockdev.swap.mkswap(self.device, self.label)
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="the label for this swap space")
