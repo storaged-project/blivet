@@ -42,6 +42,10 @@ formats
     * :class:`~blivet.formats.disklabel.DiskLabel` (see :ref:`inherited public API <DeviceFormatAPI>`)
         * :attr:`~blivet.formats.disklabel.DiskLabel.label_type`
         * :attr:`~blivet.formats.disklabel.DiskLabel.sector_size`
+        * :meth:`~blivet.formats.disklabel.DiskLabel.get_alignment`
+        * :meth:`~blivet.formats.disklabel.DiskLabel.get_end_alignment`
+        * :meth:`~blivet.formats.disklabel.DiskLabel.get_minimal_alignment`
+        * :meth:`~blivet.formats.disklabel.DiskLabel.get_optimal_alignment`
 
 * :mod:`~blivet.formats.dmraid`
     * :class:`~blivet.formats.dmraid.DMRaidMember` (see :ref:`inherited public API <DeviceFormatAPI>`)

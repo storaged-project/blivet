@@ -409,7 +409,11 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
         else:
             _size = size
 
-        alignment = disklabel.get_alignment(size=_size)
+        try:
+            alignment = disklabel.get_alignment(size=_size)
+        except AlignmentError:
+            alignment = disklabel.get_minimal_alignment()
+
         end_alignment = disklabel.get_end_alignment(alignment=alignment)
     else:
         alignment = parted.Alignment(grainSize=1, offset=0)
@@ -647,7 +651,12 @@ def do_partitioning(storage, boot_disk=None):
 
 def align_size_for_disklabel(size, disklabel):
     # Align the base size to the disk's grain size.
-    grain_size = Size(disklabel.alignment.grainSize)
+    try:
+        alignment = disklabel.get_alignment(size=size)
+    except AlignmentError:
+        alignment = disklabel.get_minimal_alignment()
+
+    grain_size = Size(alignment.grainSize)
     grains, rem = divmod(size, grain_size)
     return (grains * grain_size) + (grain_size if rem else Size(0))
 
@@ -752,7 +761,10 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
             disklabel = disklabels[_disk.path]
             best = None
             current_free = free
-            alignment = disklabel.get_alignment(size=_part.req_size)
+            try:
+                alignment = disklabel.get_alignment(size=_part.req_size)
+            except AlignmentError:
+                alignment = disklabel.get_minimal_alignment()
 
             # for growable requests, we don't want to pass the current free
             # geometry to get_best_free_region -- this allows us to try the

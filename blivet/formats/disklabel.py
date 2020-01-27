@@ -469,7 +469,7 @@ class DiskLabel(DeviceFormat):
 
         return self._disk_label_alignment
 
-    def _get_minimal_alignment(self):
+    def get_minimal_alignment(self):
         """ Return the device's minimal alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
@@ -491,7 +491,7 @@ class DiskLabel(DeviceFormat):
 
         return self._minimal_alignment
 
-    def _get_optimal_alignment(self):
+    def get_optimal_alignment(self):
         """ Return the device's optimal alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
@@ -509,7 +509,7 @@ class DiskLabel(DeviceFormat):
                 # if there is no optimal alignment, use the minimal alignment,
                 # which has already been intersected with the disklabel
                 # alignment
-                alignment = self._get_minimal_alignment()
+                alignment = self.get_minimal_alignment()
             else:
                 try:
                     alignment = optimal_alignment.intersect(disklabel_alignment)
@@ -531,13 +531,13 @@ class DiskLabel(DeviceFormat):
                                                          small to be aligned
         """
         # default to the optimal alignment
-        alignment = self._get_optimal_alignment()
+        alignment = self.get_optimal_alignment()
         if size is None:
             return alignment
 
         # use the minimal alignment if the requested size is smaller than the
         # optimal io size
-        minimal_alignment = self._get_minimal_alignment()
+        minimal_alignment = self.get_minimal_alignment()
         optimal_grain_size = Size(alignment.grainSize * self.sector_size)
         minimal_grain_size = Size(minimal_alignment.grainSize * self.sector_size)
         if size < minimal_grain_size:
