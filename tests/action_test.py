@@ -1025,12 +1025,28 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionDestroyFormat
         original_format = lv_root.format
         action = ActionDestroyFormat(lv_root)
+        orig_ignore_skip = lv_root.ignore_skip_activation
         self.assertEqual(lv_root.format, original_format)
         self.assertNotEqual(lv_root.format.type, None)
         action.apply()
         self.assertEqual(lv_root.format.type, None)
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 1)
         action.cancel()
         self.assertEqual(lv_root.format, original_format)
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip)
+
+        # ActionDestroyDevice
+        action1 = ActionDestroyFormat(lv_root)
+        orig_ignore_skip = lv_root.ignore_skip_activation
+        action1.apply()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 1)
+        action2 = ActionDestroyDevice(lv_root)
+        action2.apply()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 2)
+        action2.cancel()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 1)
+        action1.cancel()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip)
 
         sdc = self.storage.devicetree.get_device_by_name("sdc")
         sdc.format = None
