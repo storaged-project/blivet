@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-25 07:48+0200\n"
+"POT-Creation-Date: 2020-01-29 13:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-
-#: ../blivet/fcoe.py:121
-msgid "FCoE not available"
-msgstr ""
 
 #: ../blivet/errors.py:210
 msgid ""
@@ -48,6 +44,10 @@ msgid ""
 "Rename one of the volume groups so the names are distinct.\n"
 "Hint 1: vgrename accepts UUID in place of the old name.\n"
 "Hint 2: You can get the VG UUIDs by running 'pvs -o +vg_uuid'."
+msgstr ""
+
+#: ../blivet/fcoe.py:121
+msgid "FCoE not available"
 msgstr ""
 
 #: ../blivet/zfcp.py:62
@@ -236,60 +236,60 @@ msgstr ""
 msgid "destroy device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:465
+#: ../blivet/deviceaction.py:484
 msgid "resize device"
 msgstr ""
 
-#: ../blivet/deviceaction.py:554
+#: ../blivet/deviceaction.py:573
 msgid "create format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:594
+#: ../blivet/deviceaction.py:613
 #, python-format
 msgid "Creating %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:621
+#: ../blivet/deviceaction.py:640
 #, python-format
 msgid "Not enough entropy to create LUKS format. %d bits are needed."
 msgstr ""
 
-#: ../blivet/deviceaction.py:651
+#: ../blivet/deviceaction.py:670
 #, python-format
 msgid "Created %(type)s on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:698
+#: ../blivet/deviceaction.py:717
 msgid "destroy format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:803
+#: ../blivet/deviceaction.py:830
 msgid "resize format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:839
+#: ../blivet/deviceaction.py:869
 #, python-format
 msgid "Resizing filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:846
+#: ../blivet/deviceaction.py:876
 #, python-format
 msgid "Resized filesystem on %(device)s"
 msgstr ""
 
-#: ../blivet/deviceaction.py:890
+#: ../blivet/deviceaction.py:923
 msgid "add container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:955
+#: ../blivet/deviceaction.py:988
 msgid "remove container member"
 msgstr ""
 
-#: ../blivet/deviceaction.py:1025
+#: ../blivet/deviceaction.py:1058
 msgid "configure format"
 msgstr ""
 
-#: ../blivet/deviceaction.py:1076
+#: ../blivet/deviceaction.py:1114
 msgid "configure device"
 msgstr ""
 
@@ -315,7 +315,7 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:924
+#: ../blivet/formats/fs.py:923
 msgid "EFI System Partition"
 msgstr ""
 
@@ -377,10 +377,10 @@ msgstr ""
 msgid "physical volume (LVM)"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:57
+#: ../blivet/devicelibs/lvm.py:59
 msgid "Generic"
 msgstr ""
 
-#: ../blivet/devicelibs/lvm.py:58
+#: ../blivet/devicelibs/lvm.py:60
 msgid "Performance"
 msgstr ""

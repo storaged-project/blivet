@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.1.6
+Version: 3.1.7
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,23 @@ configuration.
 %endif
 
 %changelog
+* Wed Jan 29 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.1.7-1
+- Use SHA256 instead of MD5 for /proc/mounts hash calculation (vtrefny)
+- Fix udev test names so they actually get run. (dlehman)
+- Add recognition of Dell FW RAID to udev.device_is_disk. (dlehman)
+- Fix Blivet DBus service version in service and config files (vtrefny)
+- Make sure _chrooted_mountpoint attribute is defined before using it (vtrefny)
+- Allow running 'write_label' in dry run mode on non-existing devices (vtrefny)
+- Make 'makeupdates' and 'makebumpver' scripts Python 3 compatible (vtrefny)
+- Do not hardcode coverage executable name (vtrefny)
+- Make sure LVs are writable before wiping. (dlehman)
+- Override LVM skip-activation to allow for thorough removal. (dlehman)
+- Add setters for requested_size/percent form LVMVolumeGroupDevice (vtrefny)
+- Set min size for XFS to 16 MiB (vtrefny)
+- Revert "Ignore invalid-overridden-method warning for abstract properties"
+  (vtrefny)
+- Fix invalid-overridden-method in events_test (vtrefny)
+
 * Fri Oct 25 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.6-1
 - Do not allow creating VGs with PVs with different sector size (vtrefny)
 - Add a new "sector_size" property to storage devices. (vtrefny)
