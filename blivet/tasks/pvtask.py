@@ -26,10 +26,11 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 from ..errors import PhysicalVolumeError
-from ..size import Size
+from ..size import Size, B
 
 from . import availability
 from . import task
+from . import dfresize
 
 
 class PVSize(task.BasicApplication):
@@ -61,3 +62,26 @@ class PVSize(task.BasicApplication):
             raise PhysicalVolumeError(e)
 
         return Size(pv_size)
+
+
+class PVResize(task.BasicApplication, dfresize.DFResizeTask):
+    """ Handle resize of the LVMPV format. """
+
+    description = "resize the LVMPV format"
+
+    ext = availability.BLOCKDEV_LVM_PLUGIN
+    unit = B
+
+    def __init__(self, a_pv):
+        """ Initializer.
+
+            :param :class:`~.formats.lvmpv.LVMPhysicalVolume` a_pv: a LVMPV format object
+        """
+        self.pv = a_pv
+
+    def do_task(self):
+        """ Resizes the LVMPV format. """
+        try:
+            blockdev.lvm.pvresize(self.pv.device, self.pv.target_size.convert_to(self.unit))
+        except blockdev.LVMError as e:
+            raise PhysicalVolumeError(e)

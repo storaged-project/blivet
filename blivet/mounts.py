@@ -165,13 +165,13 @@ class MountsCache(object):
                     self.mountpoints[(devspec, None)].append(mountpoint)
 
     def _cache_check(self):
-        """ Computes the MD5 hash on /proc/mounts and updates the cache on change
+        """ Computes the SHA256 hash on /proc/mounts and updates the cache on change
         """
 
-        md5hash = util.md5_file("/proc/mounts")
+        sha256hash = util.sha256_file("/proc/mounts")
 
-        if md5hash != self.mounts_hash:
-            self.mounts_hash = md5hash
+        if sha256hash != self.mounts_hash:
+            self.mounts_hash = sha256hash
             self._get_active_mounts()
 
 

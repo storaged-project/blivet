@@ -250,6 +250,10 @@ class DeviceFormat(ObjectID):
         """Returns False by default since most formats are non-labeling."""
         return False
 
+    def relabels(self):
+        """Returns False by default since most formats are non-labeling."""
+        return False
+
     def label_format_ok(self, label):
         """Checks whether the format of the label is OK for whatever
            application is used by blivet to write a label for this format.
