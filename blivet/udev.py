@@ -364,7 +364,7 @@ def device_is_disk(info):
                  device_is_dm_lvm(info) or
                  device_is_dm_crypt(info) or
                  (device_is_md(info) and
-                  not device_get_md_container(info))))
+                  (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_slaves(info))))))
 
 
 def device_is_partition(info):
@@ -441,6 +441,20 @@ def device_get_minor(info):
 
 def device_get_devname(info):
     return info.get('DEVNAME')
+
+
+def device_get_slaves(info):
+    """ Return a list of udev device objects representing this device's slaves. """
+    slaves_dir = device_get_sysfs_path(info) + "/slaves/"
+    names = list()
+    if os.path.isdir(slaves_dir):
+        names = os.listdir(slaves_dir)
+
+    slaves = list()
+    for name in names:
+        slaves.append(get_device(device_node="/dev/" + name))
+
+    return slaves
 
 
 def device_get_md_level(info):
