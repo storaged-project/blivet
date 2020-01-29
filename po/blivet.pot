@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 13:22+0100\n"
+"POT-Creation-Date: 2020-01-29 14:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -162,64 +162,64 @@ msgstr ""
 msgid "Could not log in to any of the discovered nodes"
 msgstr ""
 
-#: ../blivet/partitioning.py:450
+#: ../blivet/partitioning.py:454
 msgid "unable to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:458
+#: ../blivet/partitioning.py:462
 msgid "requested size exceeds maximum allowed"
 msgstr ""
 
-#: ../blivet/partitioning.py:576
+#: ../blivet/partitioning.py:580
 #, python-format
 msgid "disk %s inaccessible"
 msgstr ""
 
-#: ../blivet/partitioning.py:637
+#: ../blivet/partitioning.py:641
 #, python-format
 msgid ""
 "partition is too small for %(format)s formatting (allowable size is "
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:642
+#: ../blivet/partitioning.py:646
 #, python-format
 msgid ""
 "partition is too large for %(format)s formatting (allowable size is "
 "%(min_size)s to %(max_size)s)"
 msgstr ""
 
-#: ../blivet/partitioning.py:950
+#: ../blivet/partitioning.py:962
 msgid "Unable to allocate requested partition scheme."
 msgstr ""
 
-#: ../blivet/partitioning.py:985
+#: ../blivet/partitioning.py:997
 msgid "not enough free space after creating extended partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:992
+#: ../blivet/partitioning.py:1004
 msgid "failed to allocate aligned partition"
 msgstr ""
 
-#: ../blivet/partitioning.py:1193
+#: ../blivet/partitioning.py:1205
 msgid "cannot reclaim more than request has grown"
 msgstr ""
 
-#: ../blivet/partitioning.py:1407
+#: ../blivet/partitioning.py:1419
 msgid "DiskChunk requests must be of type PartitionRequest"
 msgstr ""
 
-#: ../blivet/partitioning.py:1420
+#: ../blivet/partitioning.py:1432
 msgid "partitions allocated outside disklabel limits"
 msgstr ""
 
-#: ../blivet/partitioning.py:1505
+#: ../blivet/partitioning.py:1517
 msgid "VGChunk requests must be of type LVRequest"
 msgstr ""
 
 #. by now we have allocated the PVs so if there isn't enough
 #. space in the VG we have a real problem
-#: ../blivet/partitioning.py:2013
+#: ../blivet/partitioning.py:2025
 msgid "not enough space for LVM requests"
 msgstr ""
 
@@ -315,15 +315,15 @@ msgstr ""
 msgid "Cannot remove a member from existing %s array"
 msgstr ""
 
-#: ../blivet/formats/fs.py:923
+#: ../blivet/formats/fs.py:932
 msgid "EFI System Partition"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1128
+#: ../blivet/formats/fs.py:1137
 msgid "Apple Bootstrap"
 msgstr ""
 
-#: ../blivet/formats/fs.py:1164
+#: ../blivet/formats/fs.py:1173
 msgid "Linux HFS+ ESP"
 msgstr ""
 

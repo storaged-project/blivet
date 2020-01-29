@@ -1,3 +1,28 @@
+3.2.0
+======
+* `Alignment to Minimal I/O Size`
+* `LVMPhysicalVolume Resizable`
+* `LUKS2`
+* `Removed`
+** `blivet.errors.UnknownSourceDeviceError`
+
+Alignment to Minimal I/O Size
+------------------------------
+Newly created devices smaller than min I/O size are now automatically
+aligned up.
+
+LVMPhysicalVolume Resizable
+----------------------------
+LVM Physical Volume format can now be resized by Blivet.
+
+LUKS2
+------
+LUKS2 is now used as default encryption if not specified otherwise.
+
+Removed
+--------
+* ``blivet.errors.UnknownSourceDeviceError``
+
 3.1.0
 ======
 * `LUKS2`
