@@ -179,6 +179,8 @@ class PartitioningTestCase(unittest.TestCase):
             min_str = 'parted.Device.minimumAlignment'
             opt_al = parted.Alignment(offset=0, grainSize=8192)  # 4 MiB
             min_al = parted.Alignment(offset=0, grainSize=2048)  # 1 MiB
+            disk.format._minimal_alignment = None  # drop cache
+            disk.format._optimal_alignment = None  # drop cache
             with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
                 optimal_end = disk.format.get_end_alignment(alignment=optimal)
                 minimal_end = disk.format.get_end_alignment(alignment=minimal)
@@ -189,6 +191,38 @@ class PartitioningTestCase(unittest.TestCase):
                 part = add_partition(disk.format, free, parted.PARTITION_NORMAL,
                                      size)
                 self.assertEqual(part.geometry.length, length)
+                self.assertEqual(optimal.isAligned(free, part.geometry.start),
+                                 False)
+                self.assertEqual(minimal.isAligned(free, part.geometry.start),
+                                 True)
+                self.assertEqual(optimal_end.isAligned(free, part.geometry.end),
+                                 False)
+                self.assertEqual(minimal_end.isAligned(free, part.geometry.end),
+                                 True)
+
+                disk.format.remove_partition(part)
+                self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # adding a partition smaller than the minimal io size should yield
+            # a partition whose size is aligned up to the minimal io size
+            #
+            opt_str = 'parted.Device.optimumAlignment'
+            min_str = 'parted.Device.minimumAlignment'
+            opt_al = parted.Alignment(offset=0, grainSize=8192)  # 4 MiB
+            min_al = parted.Alignment(offset=0, grainSize=2048)  # 1 MiB
+            disk.format._minimal_alignment = None  # drop cache
+            disk.format._optimal_alignment = None  # drop cache
+            with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
+                optimal_end = disk.format.get_end_alignment(alignment=optimal)
+                minimal_end = disk.format.get_end_alignment(alignment=minimal)
+
+                sector_size = Size(disk.format.sector_size)
+                length = 1024  # 512 KiB
+                size = Size(sector_size * length)
+                part = add_partition(disk.format, free, parted.PARTITION_NORMAL,
+                                     size)
+                self.assertEqual(part.geometry.length, min_al.grainSize)
                 self.assertEqual(optimal.isAligned(free, part.geometry.start),
                                  False)
                 self.assertEqual(minimal.isAligned(free, part.geometry.start),

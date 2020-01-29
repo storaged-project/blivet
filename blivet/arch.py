@@ -72,7 +72,7 @@ def get_ppc_machine():
                 'Cell': 'pSeries',
                 'Momentum': 'pSeries',
                 'PS3': 'PS3',
-                'PowerNV': 'pSeries'
+                'PowerNV': 'PowerNV'
                 }
     machine = None
     platform = None
@@ -328,6 +328,10 @@ def is_pmac():
 
 def is_ipseries():
     return is_ppc() and get_ppc_machine() in ("iSeries", "pSeries")
+
+
+def is_powernv():
+    return is_ppc() and get_ppc_machine() == "PowerNV"
 
 
 def get_arch():

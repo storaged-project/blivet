@@ -55,10 +55,19 @@ from ..i18n import N_
 from .. import udev
 from ..mounts import mounts_cache
 
-from .fslib import kernel_filesystems, update_kernel_filesystems
+from .fslib import kernel_filesystems
 
 import logging
 log = logging.getLogger("blivet")
+
+import gi
+gi.require_version("GLib", "2.0")
+gi.require_version("BlockDev", "2.0")
+
+from gi.repository import GLib
+from gi.repository import BlockDev
+
+AVAILABLE_FILESYSTEMS = kernel_filesystems
 
 
 class FS(DeviceFormat):
@@ -141,7 +150,7 @@ class FS(DeviceFormat):
         self._target_size = self._size
 
         if self.supported:
-            self.load_module()
+            self.check_module()
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -444,27 +453,27 @@ class FS(DeviceFormat):
 
         self._fsck.do_task()
 
-    def load_module(self):
-        """Load whatever kernel module is required to support this filesystem."""
-        if not self._modules or self.mount_type in kernel_filesystems:
+    def check_module(self):
+        """Check if kernel module required to support this filesystem is available."""
+        if not self._modules or self.mount_type in AVAILABLE_FILESYSTEMS:
             return
 
         for module in self._modules:
             try:
-                rc = util.run_program(["modprobe", module])
-            except OSError as e:
-                log.error("Could not load kernel module %s: %s", module, e)
+                succ = BlockDev.utils_have_kernel_module(module)
+            except GLib.GError as e:
+                log.error("Could not check kernel module availability %s: %s", module, e)
                 self._supported = False
                 return
 
-            if rc:
-                log.error("Could not load kernel module %s", module)
+            if not succ:
+                log.debug("Kernel module %s not available", module)
                 self._supported = False
                 return
 
-        # If we successfully loaded a kernel module for this filesystem, we
-        # also need to update the list of supported filesystems.
-        update_kernel_filesystems()
+        # If we successfully tried to load a kernel module for this filesystem, we
+        # also need to update the list of supported filesystems to avoid unnecessary check.
+        AVAILABLE_FILESYSTEMS.extend(self._modules)
 
     @property
     def system_mountpoint(self):

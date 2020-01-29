@@ -41,8 +41,8 @@ class DiskLabelTestCase(unittest.TestCase):
 
         # make sure the private methods all return the expected values
         self.assertEqual(dl._get_disk_label_alignment(), disklabel_alignment)
-        self.assertEqual(dl._get_minimal_alignment(), minimal_alignment)
-        self.assertEqual(dl._get_optimal_alignment(), optimal_alignment)
+        self.assertEqual(dl.get_minimal_alignment(), minimal_alignment)
+        self.assertEqual(dl.get_optimal_alignment(), optimal_alignment)
 
         # validate result when passing a start alignment to get_end_alignment
         self.assertEqual(dl.get_end_alignment(alignment=optimal_alignment),
@@ -61,7 +61,7 @@ class DiskLabelTestCase(unittest.TestCase):
                          minimal_end_alignment)
 
         # test the old deprecated properties' values
-        self.assertEqual(dl.alignment, dl._get_optimal_alignment())
+        self.assertEqual(dl.alignment, dl.get_optimal_alignment())
         self.assertEqual(dl.end_alignment, dl.get_end_alignment())
 
     @patch("blivet.formats.disklabel.arch")

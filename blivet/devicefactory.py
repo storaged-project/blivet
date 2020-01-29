@@ -960,13 +960,11 @@ class DeviceFactory(object):
         _blivet_copy = self.storage.copy()
         self.__devices = _blivet_copy.devicetree._devices
         self.__actions = _blivet_copy.devicetree._actions
-        self.__names = _blivet_copy.devicetree.names
         self.__roots = _blivet_copy.roots
 
     def _revert_devicetree(self):
         self.storage.devicetree._devices = self.__devices
         self.storage.devicetree._actions = self.__actions
-        self.storage.devicetree.names = self.__names
         self.storage.roots = self.__roots
 
 
