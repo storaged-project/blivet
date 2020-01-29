@@ -428,6 +428,25 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return self.align(reserved, roundup=True)
 
+    @reserved_space.setter
+    def reserved_space(self, value):
+        if self.exists:
+            raise ValueError("Can't set reserved space for an existing VG")
+
+        self._reserved_space = value
+
+    @property
+    def reserved_percent(self):
+        """ Reserved space in this VG in percent """
+        return self._reserved_percent
+
+    @reserved_percent.setter
+    def reserved_percent(self, value):
+        if self.exists:
+            raise ValueError("Can't set reserved percent for an existing VG")
+
+        self._reserved_percent = value
+
     def _get_pv_usable_space(self, pv):
         if isinstance(pv, MDRaidArrayDevice):
             return self.align(pv.size - 2 * pv.format.pe_start)
@@ -640,6 +659,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         self.uuid = uuid
         self.seg_type = seg_type or "linear"
         self._raid_level = None
+        self.ignore_skip_activation = 0
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -1010,6 +1030,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         StorageDevice._pre_destroy(self)
         # set up the vg's pvs so lvm can remove the lv
         self.vg.setup_parents(orig=True)
+
+    def set_rw(self):
+        """ Run lvchange as needed to ensure the lv is not read-only. """
+        lvm.ensure_lv_is_writable(self.vg.name, self.lvname)
 
     @property
     def lvname(self):
@@ -1428,12 +1452,6 @@ class LVMSnapshotMixin(object):
     def setup(self, orig=False):
         # the old snapshot cannot be setup and torn down
         pass
-
-    def _setup(self, orig=False):
-        """ Open, or set up, a device. """
-        log_method_call(self, self.name, orig=orig, status=self.status,
-                        controllable=self.controllable)
-        blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=True)
 
     @old_snapshot_specific
     def teardown(self, recursive=False):
@@ -2043,12 +2061,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     def display_lv_name(self):
         return self.lvname
 
-    @type_specific
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm.lvactivate(self.vg.name, self._name)
+        ignore_skip_activation = self.is_snapshot_lv or self.ignore_skip_activation > 0
+        blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation)
 
     @type_specific
     def _pre_create(self):
@@ -2311,7 +2329,7 @@ class LVMCache(Cache):
             raise ValueError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
 
     @property
-    def size(self):  # pylint: disable=invalid-overridden-method
+    def size(self):
         # self.stats is always dynamically fetched so store and reuse the value here
         stats = self.stats
         if stats:
@@ -2331,11 +2349,11 @@ class LVMCache(Cache):
         return self.size + self.md_size
 
     @property
-    def exists(self):  # pylint: disable=invalid-overridden-method
+    def exists(self):
         return self._exists
 
     @property
-    def stats(self):  # pylint: disable=invalid-overridden-method
+    def stats(self):
         # to get the stats we need the cached LV to exist and be activated
         if self._exists and self._cached_lv.status:
             return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
@@ -2343,7 +2361,7 @@ class LVMCache(Cache):
             return None
 
     @property
-    def mode(self):  # pylint: disable=invalid-overridden-method
+    def mode(self):
         if not self._exists:
             return self._mode
         else:
@@ -2351,14 +2369,14 @@ class LVMCache(Cache):
             return blockdev.lvm.cache_get_mode_str(stats.mode)
 
     @property
-    def backing_device_name(self):  # pylint: disable=invalid-overridden-method
+    def backing_device_name(self):
         if self._exists:
             return self._cached_lv.name
         else:
             return None
 
     @property
-    def cache_device_name(self):  # pylint: disable=invalid-overridden-method
+    def cache_device_name(self):
         if self._exists:
             vg_name = self._cached_lv.vg.name
             return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
@@ -2406,23 +2424,23 @@ class LVMCacheStats(CacheStats):
 
     # common properties for all caches
     @property
-    def block_size(self):  # pylint: disable=invalid-overridden-method
+    def block_size(self):
         return self._block_size
 
     @property
-    def size(self):  # pylint: disable=invalid-overridden-method
+    def size(self):
         return self._cache_size
 
     @property
-    def used(self):  # pylint: disable=invalid-overridden-method
+    def used(self):
         return self._cache_used
 
     @property
-    def hits(self):  # pylint: disable=invalid-overridden-method
+    def hits(self):
         return self._read_hits + self._write_hits
 
     @property
-    def misses(self):  # pylint: disable=invalid-overridden-method
+    def misses(self):
         return self._read_misses + self._write_misses
 
     # LVM cache specific properties
@@ -2478,11 +2496,11 @@ class LVMCacheRequest(CacheRequest):
                 self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
 
     @property
-    def size(self):  # pylint: disable=invalid-overridden-method
+    def size(self):
         return self._size
 
     @property
-    def fast_devs(self):  # pylint: disable=invalid-overridden-method
+    def fast_devs(self):
         return [spec.pv for spec in self._pv_specs]
 
     @property
@@ -2495,5 +2513,5 @@ class LVMCacheRequest(CacheRequest):
         return self._pv_specs
 
     @property
-    def mode(self):  # pylint: disable=invalid-overridden-method
+    def mode(self):
         return self._mode

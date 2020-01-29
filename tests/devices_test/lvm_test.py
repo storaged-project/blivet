@@ -87,21 +87,23 @@ class LVMDeviceTest(unittest.TestCase):
         vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
         cache_req = LVMCacheRequest(Size("512 MiB"), [pv2], "writethrough")
+        xfs_fmt = blivet.formats.get_format("xfs")
         lv = LVMLogicalVolumeDevice("testlv",
                                     parents=[vg],
-                                    fmt=blivet.formats.get_format("xfs"),
-                                    size=Size(blivet.formats.get_format("xfs").min_size),
+                                    fmt=xfs_fmt,
+                                    size=Size(xfs_fmt.min_size),
                                     exists=False,
                                     cache_request=cache_req)
-
-        # the cache reserves space for its metadata from the requested size, but
-        # it may require (and does in this case) a pmspare LV to be allocated
-        self.assertEqual(lv.vg_space_used, Size("508 MiB"))
+        self.assertEqual(lv.size, xfs_fmt.min_size)
 
         # check that the LV behaves like a cached LV
         self.assertTrue(lv.cached)
         cache = lv.cache
         self.assertIsNotNone(cache)
+
+        # the cache reserves space for its metadata from the requested size, but
+        # it may require (and does in this case) a pmspare LV to be allocated
+        self.assertEqual(lv.vg_space_used, lv.cache.size + lv.cache.md_size + lv.size)
 
         # check parameters reported by the (non-existing) cache
         # 512 MiB - 8 MiB (metadata) - 8 MiB (pmspare)
@@ -362,6 +364,35 @@ class LVMDeviceTest(unittest.TestCase):
             mock_property.__get__ = lambda _mock, pv, _class: 512 if pv.name == "pv1" else 4096
             with six.assertRaisesRegex(self, ValueError, "The volume group testvg cannot be created."):
                 LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+    def test_skip_activate(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("data_lv", parents=[vg], size=Size("500 MiB"), exists=True)
+
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+
+        lv.ignore_skip_activation += 1
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+
+        lv.ignore_skip_activation += 1
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+
+        lv.ignore_skip_activation -= 2
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            with patch.object(lv, "_pre_setup"):
+                lv.setup()
+                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
 
 
 class TypeSpecificCallsTest(unittest.TestCase):

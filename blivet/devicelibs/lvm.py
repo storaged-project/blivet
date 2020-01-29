@@ -38,7 +38,9 @@ from . import raid
 from ..size import Size
 from ..i18n import N_
 from ..flags import flags
+from ..static_data import lvs_info
 from ..tasks import availability
+from ..util import run_program
 
 # some of lvm's defaults that we have no way to ask it for
 LVM_PE_START = Size("1 MiB")
@@ -185,6 +187,22 @@ def determine_parent_lv(internal_lv, lvs, lv_info):
 
 def lvmetad_socket_exists():
     return os.path.exists(LVMETAD_SOCKET_PATH)
+
+
+def ensure_lv_is_writable(vg_name, lv_name):
+    lv_info = lvs_info.cache.get("%s-%s" % (vg_name, lv_name))
+    if lv_info is None:
+        return
+
+    if lv_info.attr[1] == 'w':
+        return
+
+    try:
+        rc = run_program(['lvchange', '-prw', "%s/%s" % (vg_name, lv_name)])
+    except OSError:
+        rc = -1
+
+    return rc == 0
 
 
 def is_lvm_name_valid(name):

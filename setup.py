@@ -62,7 +62,7 @@ class blivet_sdist(sdist):
 
 data_files = [
     ('/etc/dbus-1/system.d', ['dbus/blivet.conf']),
-    ('/usr/share/dbus-1/system-services', ['dbus/com.redhat.Blivet1.service']),
+    ('/usr/share/dbus-1/system-services', ['dbus/com.redhat.Blivet0.service']),
     ('/usr/libexec', ['dbus/blivetd']),
     ('/usr/lib/systemd/system', ['dbus/blivet.service'])
 ]

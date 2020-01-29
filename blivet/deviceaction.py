@@ -393,9 +393,28 @@ class ActionDestroyDevice(DeviceAction):
 
         super(ActionDestroyDevice, self)._check_device_dependencies()
 
+    def apply(self):
+        """ apply changes related to the action to the device(s) """
+        if self._applied:
+            return
+
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
+        super(ActionDestroyDevice, self).apply()
+
     def execute(self, callbacks=None):
         super(ActionDestroyDevice, self).execute(callbacks=callbacks)
         self.device.destroy()
+
+    def cancel(self):
+        if not self._applied:
+            return
+
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
+
+        super(ActionDestroyDevice, self).cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -712,6 +731,9 @@ class ActionDestroyFormat(DeviceAction):
             return
 
         self.device.format = None
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
         super(ActionDestroyFormat, self).apply()
 
     def execute(self, callbacks=None):
@@ -720,6 +742,9 @@ class ActionDestroyFormat(DeviceAction):
         super(ActionDestroyFormat, self).execute(callbacks=callbacks)
         status = self.device.status
         self.device.setup(orig=True)
+        if hasattr(self.device, 'set_rw'):
+            self.device.set_rw()
+
         self.format.destroy()
         udev.settle()
         if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
@@ -736,6 +761,8 @@ class ActionDestroyFormat(DeviceAction):
             return
 
         self.device.format = self.orig_format
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
         super(ActionDestroyFormat, self).cancel()
 
     @property
@@ -831,6 +858,9 @@ class ActionResizeFormat(DeviceAction):
             return
 
         self.device.format.target_size = self._target_size
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
         super(ActionResizeFormat, self).apply()
 
     def execute(self, callbacks=None):
@@ -851,6 +881,9 @@ class ActionResizeFormat(DeviceAction):
             return
 
         self.device.format.target_size = self.orig_size
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
+
         super(ActionResizeFormat, self).cancel()
 
     def requires(self, action):
@@ -1053,6 +1086,9 @@ class ActionConfigureFormat(DeviceAction):
             return
 
         setattr(self.device.format, self.attr, self.new_value)
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
         super(ActionConfigureFormat, self).apply()
 
     def cancel(self):
@@ -1060,6 +1096,8 @@ class ActionConfigureFormat(DeviceAction):
             return
 
         setattr(self.device.format, self.attr, self.old_value)
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
 
     def execute(self, callbacks=None):
         super(ActionConfigureFormat, self).execute(callbacks=callbacks)
