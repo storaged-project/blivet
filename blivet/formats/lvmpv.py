@@ -56,8 +56,10 @@ class LVMPhysicalVolume(DeviceFormat):
     _packages = ["lvm2"]                # required packages
     _ks_mountpoint = "pv."
     _plugin = availability.BLOCKDEV_LVM_PLUGIN
+    _resizable = True
 
     _size_info_class = pvtask.PVSize
+    _resize_class = pvtask.PVResize
 
     def __init__(self, **kwargs):
         """
@@ -86,6 +88,7 @@ class LVMPhysicalVolume(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
 
         self._size_info = self._size_info_class(self)
+        self._resize = self._resize_class(self)
 
         self.vg_name = kwargs.get("vg_name")
         self.vg_uuid = kwargs.get("vg_uuid")
@@ -148,13 +151,17 @@ class LVMPhysicalVolume(DeviceFormat):
     def update_size_info(self):
         """ Update this format's current size. """
 
-        if not self.status:
+        self._resizable = False
+
+        if not self.exists:
             return
 
         try:
             self._size = self._size_info.do_task()
         except PhysicalVolumeError as e:
             log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+        else:
+            self._resizable = True
 
     @property
     def free(self):
