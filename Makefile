@@ -12,28 +12,17 @@ VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 COVERAGE=$(PYTHON) -m coverage
 
-ZANATA_PULL_ARGS = --transdir ./po/
-ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
-
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 all:
 	$(MAKE) -C po
 
 po-pull:
-	@which zanata >/dev/null 2>&1 || ( echo "You need to install Zanata client to download translation files"; exit 1 )
-	zanata pull $(ZANATA_PULL_ARGS)
+	git submodule update --init po
+	git submodule update --remote --merge po
 
-po-empty:
-	for lingua in $$(gawk 'match($$0, /locale>(.*)<\/locale/, ary) {print ary[1]}' ./zanata.xml) ; do \
-		[ -f ./po/$$lingua.po ] || \
-		msginit -i ./po/$(PKGNAME).pot -o ./po/$$lingua.po --no-translator || \
-		exit 1 ; \
-	done
-
-# Try to fetch the real .po files, but if that fails use the empty ones
-po-fallback:
-	$(MAKE) po-pull || $(MAKE) po-empty
+potfile:
+	make -C po $(PKGNAME).pot
 
 install-requires:
 	@echo "*** Installing the dependencies required for testing and analysis ***"
@@ -67,7 +56,7 @@ pep8:
 	fi ; \
 	$$pep8 --ignore=E501,E402,E731,W504 blivet/ tests/ examples/
 
-canary: po-fallback
+canary:
 	@echo "*** Running translation-canary tests ***"
 	PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/blivet.pot
 
@@ -113,7 +102,6 @@ archive: po-pull
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
 	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) setup.py -q sdist --dist-dir .. )
 	rm -rf $(PKGNAME)-$(VERSION)
-	git checkout -- po/$(PKGNAME).pot
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	@make tests-archive
 
@@ -147,10 +135,8 @@ bumpver: po-pull
 		opts="$${opts} -d" ; \
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
-	make -C po $(PKGNAME).pot ; \
-	zanata push $(ZANATA_PUSH_ARGS)
 
-scratch-bumpver: po-empty
+scratch-bumpver:
 	@opts="-n $(PKGNAME) -v $(RPMVERSION) -r $(RPMRELEASE) --newrelease $(RC_RELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
 		opts="$${opts} -i $(IGNORE)" ; \
@@ -165,9 +151,8 @@ scratch-bumpver: po-empty
 		opts="$${opts} -d" ; \
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
-	make -C po $(PKGNAME).pot
 
-scratch: po-empty
+scratch:
 	@rm -f ChangeLog
 	@make ChangeLog
 	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
