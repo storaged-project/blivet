@@ -58,7 +58,11 @@ pep8:
 
 canary:
 	@echo "*** Running translation-canary tests ***"
-	PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/blivet.pot
+	@if [ ! -e po/$(PKGNAME).pot ]; then \
+		echo "Translation files not present. Skipping" ; \
+	else \
+		PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/$(PKGNAME).pot; \
+	fi ; \
 
 check:
 	@status=0; \
