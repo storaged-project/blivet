@@ -202,7 +202,7 @@ def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
     if "DM_NAME" in udev_info:
         name = udev_info["DM_NAME"]
-    elif "MD_DEVNAME" in udev_info:
+    elif "MD_DEVNAME" in udev_info and os.path.exists(device_get_sysfs_path(udev_info) + "/md"):
         mdname = udev_info["MD_DEVNAME"]
         if device_is_partition(udev_info):
             # for partitions on named RAID we want to use the raid name, not
