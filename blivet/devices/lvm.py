@@ -418,10 +418,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
             reserved = self._reserved_percent * Decimal('0.01') * self.size
         elif self._reserved_space > Size(0):
             reserved = self._reserved_space
-        elif self._thpool_reserve and any(lv.is_thin_pool for lv in self._lvs):
-            reserved = min(max(self._thpool_reserve.percent * Decimal(0.01) * self.size,
-                               self._thpool_reserve.min),
-                           self._thpool_reserve.max)
+
+        if self._thpool_reserve and any(lv.is_thin_pool for lv in self._lvs):
+            reserved += min(max(self._thpool_reserve.percent * Decimal(0.01) * self.size,
+                                self._thpool_reserve.min),
+                            self._thpool_reserve.max)
 
         # reserve space for the pmspare LV LVM creates behind our back
         reserved += self.pmspare_size
