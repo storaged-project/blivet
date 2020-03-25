@@ -406,7 +406,7 @@ def device_get_bus(udev_info):
 
 
 def device_get_path(info):
-    return info["ID_PATH"]
+    return info.get("ID_PATH", "")
 
 
 def device_get_symlinks(info):
