@@ -423,7 +423,10 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
     sector_size = Size(disklabel.sector_size)
     if start is not None:
         if end is None:
-            end = start + size_to_sectors(size, sector_size) - 1
+            if size is None:
+                end = free.end
+            else:
+                end = start + size_to_sectors(size, sector_size) - 1
     else:
         start = free.start
 
@@ -973,7 +976,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
         if part_type == parted.PARTITION_EXTENDED and \
            part_type != _part.req_part_type:
             log.debug("creating extended partition")
-            ext = add_partition(disklabel, free, part_type, None)
+            ext = add_partition(disklabel, free, part_type, None, start=_part.req_start_sector)
 
             # extedned partition took all free space - make the size request smaller
             if aligned_size > (ext.geometry.length - disklabel.alignment.grainSize) * disklabel.sector_size:
@@ -989,13 +992,17 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
             free = get_best_free_space_region(disklabel.parted_disk,
                                               part_type,
                                               aligned_size,
-                                              start=_part.req_start_sector,
+                                              start=None,
                                               boot=boot,
                                               grow=_part.req_grow,
                                               alignment=disklabel.alignment)
             if not free:
                 raise PartitioningError(_("not enough free space after "
                                           "creating extended partition"))
+
+            # extended partition now starts at the requested start sector, just create
+            # the logical one as a first in the extended
+            _part.req_start_sector = None
 
         try:
             partition = add_partition(disklabel, free, part_type, aligned_size,
