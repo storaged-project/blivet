@@ -22,7 +22,7 @@
 
 from ... import formats
 from ... import udev
-from ...devices import PartitionDevice
+from ...devices import PartitionDevice, MDRaidArrayDevice
 
 from .formatpopulator import FormatPopulator
 
@@ -39,7 +39,7 @@ class BootFormatPopulator(FormatPopulator):
 
         fmt = formats.get_format(cls._type_specifier)
         return (udev.device_get_format(data) == cls._base_type_specifier and
-                isinstance(device, PartitionDevice) and
+                isinstance(device, (PartitionDevice, MDRaidArrayDevice)) and
                 (device.bootable or not cls._bootable) and
                 fmt.min_size <= device.size <= fmt.max_size)
 
