@@ -846,6 +846,10 @@ class DeviceFactory(object):
 
         safe_new_name = self.storage.safe_device_name(self.device_name)
         if self.device.name != safe_new_name:
+            if not safe_new_name:
+                log.error("not renaming '%s' to invalid name '%s'",
+                          self.device.name, self.device_name)
+                return
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
                           self.device.name, safe_new_name)
