@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.2.0
+Version: 3.2.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,14 @@ configuration.
 %endif
 
 %changelog
+* Mon Apr 06 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.1-1
+- Correctly recognize EFI format on an MD RAID device (#1695913) (vtrefny)
+- Do not set empty name instead of invalid one in devicefactory (#1813710)
+  (vtrefny)
+- Fix crash for devices without ID_PATH udev property (#1814920) (vtrefny)
+- Allow for reserved vg space and a growable thin pool. (#1783946) (dlehman)
+- Fix name resolution for md member partitions. (#1798792) (dlehman)
+
 * Wed Jan 29 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.0-1
 - Align base sizes up if smaller than min I/O size. (dlehman)
 - Make minimal and optimal alignment getters public. (dlehman)
