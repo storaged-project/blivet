@@ -486,6 +486,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         return (self.member_devices <= len(self.members)) or not self.exists
 
+    @property
+    def bootable(self):
+        return (self.level == raid.RAID1 and
+                self.metadata_version in ("0.90", "1.0") and
+                all(getattr(p, "bootable", False) for p in self.parents))
+
     def _post_setup(self):
         super(MDRaidArrayDevice, self)._post_setup()
         self.update_sysfs_path()
