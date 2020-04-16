@@ -857,7 +857,7 @@ class DeviceFactory(object):
 
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
-            self.device.name = safe_new_name
+            self.raw_device.name = safe_new_name
 
     def _post_create(self):
         """ Hook for post-creation operations. """
@@ -1473,7 +1473,7 @@ class LVMFactory(DeviceFactory):
             safe_new_name = safe_new_name[len(self.vg.name) + 1:]
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
-            self.device.name = safe_new_name
+            self.raw_device.name = safe_new_name
 
     def _configure(self):
         self._set_container()  # just sets self.container based on the specs
