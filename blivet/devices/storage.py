@@ -752,10 +752,11 @@ class StorageDevice(Device):
 
         netdev_option = "_netdev"
         option_list = self._format.options.split(",")
+        user_options = self._format._user_mountopts.split(",")
         is_netdev = any(isinstance(a, NetworkStorageDevice)
                         for a in self.ancestors)
         has_netdev_option = netdev_option in option_list
-        if not is_netdev and has_netdev_option:
+        if not is_netdev and has_netdev_option and netdev_option not in user_options:
             option_list.remove(netdev_option)
             self._format.options = ",".join(option_list)
         elif is_netdev and not has_netdev_option:
