@@ -37,3 +37,27 @@ class NetDevMountOptionTestCase(unittest.TestCase):
         dev.create()
 
         self.assertTrue("_netdev" in dev.format.options.split(","))
+
+    def test_net_dev_update_remove(self):
+        """ Verify netdev mount option is removed after removing the netdev parent. """
+        netdev = FakeNetDev("net1")
+        dev = StorageDevice("dev1", parents=[netdev], fmt=get_format("ext4"))
+        self.assertTrue("_netdev" in dev.format.options.split(","))
+
+        dev.parents.remove(netdev)
+
+        # these create methods shouldn't write anything to disk
+        netdev.create()
+        dev.create()
+
+        self.assertFalse("_netdev" in dev.format.options.split(","))
+
+    def test_net_device_manual(self):
+        """ Verify netdev mount option is not removed if explicitly set by the user. """
+        dev = StorageDevice("dev1", fmt=get_format("ext4", mountopts="_netdev"))
+        self.assertTrue("_netdev" in dev.format.options.split(","))
+
+        # these create methods shouldn't write anything to disk
+        dev.create()
+
+        self.assertTrue("_netdev" in dev.format.options.split(","))
