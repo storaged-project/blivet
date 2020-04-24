@@ -394,6 +394,17 @@ class LVMDeviceTest(unittest.TestCase):
                 lv.setup()
                 self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
 
+    def test_vg_is_empty(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1024 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        self.assertTrue(vg.is_empty)
+
+        LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                               fmt=blivet.formats.get_format("xfs"),
+                               exists=False)
+        self.assertFalse(vg.is_empty)
+
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):
