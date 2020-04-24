@@ -1434,6 +1434,8 @@ class LVMFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(LVMFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        kwargs["luks_version"] = self.luks_version
+
         if self.container_raid_level:
             # md pv
             kwargs["raid_level"] = self.container_raid_level
@@ -1859,6 +1861,7 @@ class BTRFSFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(BTRFSFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        kwargs["luks_version"] = self.luks_version
         return kwargs
 
     def _get_new_device(self, *args, **kwargs):
