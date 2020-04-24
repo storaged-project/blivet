@@ -42,6 +42,7 @@ from .devicetree import DeviceTree
 from .formats import get_default_filesystem_type
 from .flags import flags
 from .formats import get_format
+from .util import capture_output
 from . import arch
 from . import devicefactory
 from . import __version__
@@ -74,6 +75,14 @@ class Blivet(object):
 
         self._next_id = 0
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
+
+        try:
+            options = "NAME,SIZE,OWNER,GROUP,MODE,FSTYPE,LABEL,UUID,PARTUUID,FSAVAIL,FSUSE%,MOUNTPOINT"
+            out = capture_output(["lsblk", "--bytes", "-a", "-o", options])
+        except Exception:  # pylint: disable=broad-except
+            pass
+        else:
+            log.debug("lsblk output:\n%s", out)
 
         # these will both be empty until our reset method gets called
         self.devicetree = DeviceTree(ignored_disks=self.ignored_disks,
