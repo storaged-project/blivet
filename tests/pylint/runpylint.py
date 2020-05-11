@@ -18,7 +18,8 @@ class BlivetLintConfig(PocketLintConfig):
                                FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
                                FalsePositive(r"Parameters differ from overridden 'do_task' method$"),
                                FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify)'"),
-                               FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$")
+                               FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$"),
+                               FalsePositive(r"Instance of 'GError' has no 'message' member")  # overriding currently broken local pylint disable
                                ]
 
     @property
