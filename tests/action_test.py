@@ -56,7 +56,7 @@ FORMAT_CLASSES = [
 
 
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
-@unittest.skipUnless(not any(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
+@unittest.skipUnless(all(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
 
     """ DeviceActionTestSuite """
