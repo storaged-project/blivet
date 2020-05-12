@@ -405,6 +405,40 @@ class LVMDeviceTest(unittest.TestCase):
                                exists=False)
         self.assertFalse(vg.is_empty)
 
+    def test_lvm_vdo_pool(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        pool = LVMLogicalVolumeDevice("testpool", parents=[vg], size=Size("512 MiB"),
+                                      seg_type="vdo-pool", exists=True)
+        self.assertTrue(pool.is_vdo_pool)
+
+        free = vg.free_space
+        lv = LVMLogicalVolumeDevice("testlv", parents=[pool], size=Size("2 GiB"),
+                                    seg_type="vdo", exists=True)
+        self.assertTrue(lv.is_vdo_lv)
+        self.assertEqual(lv.vg, vg)
+        self.assertEqual(lv.pool, pool)
+
+        # free space in the vg shouldn't be affected by the vdo lv
+        self.assertEqual(lv.vg_space_used, 0)
+        self.assertEqual(free, vg.free_space)
+
+        self.assertListEqual(pool.lvs, [lv])
+
+        # now try to destroy both the pool and the vdo lv
+        # for the lv this should be a no-op, destroying the pool should destroy both
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            lv.destroy()
+            lv.remove_hook()
+            self.assertFalse(lv.exists)
+            self.assertFalse(lvm.lvremove.called)
+            self.assertListEqual(pool.lvs, [])
+
+            pool.destroy()
+            self.assertFalse(pool.exists)
+            self.assertTrue(lvm.lvremove.called)
+
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):
