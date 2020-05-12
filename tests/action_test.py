@@ -870,7 +870,7 @@ class DeviceActionTestCase(StorageTestCase):
                                   name="testlv2", parents=[testvg])
         testlv2.format = self.new_format("ext4", device=testlv2.path,
                                          exists=True, device_instance=testlv2)
-        shrink_lv2 = ActionResizeDevice(testlv2, testlv2.size - Size("10 GiB"))
+        shrink_lv2 = ActionResizeDevice(testlv2, testlv2.size - Size("10 GiB") + Ext4FS._min_size)
         shrink_lv2.apply()
 
         self.assertTrue(grow_lv.requires(shrink_lv2))
