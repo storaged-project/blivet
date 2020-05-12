@@ -237,6 +237,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         return True
 
+    @property
+    def is_empty(self):
+        return len(self.lvs) == 0
+
     def _pre_setup(self, orig=False):
         if self.exists and not self.complete:
             raise errors.DeviceError("cannot activate VG with missing PV(s)", self.name)

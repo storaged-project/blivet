@@ -361,3 +361,15 @@ class PartitionDeviceTestCase(unittest.TestCase):
                     f.return_value = func in spec.true_funcs
 
                 self.assertEqual(part.weight, spec.weight)
+
+    @patch("blivet.devices.partition.PartitionDevice.update_size", lambda part: None)
+    @patch("blivet.devices.partition.PartitionDevice.probe", lambda part: None)
+    def test_disk_is_empty(self):
+        disk = StorageDevice("testdisk", exists=True)
+        disk._partitionable = True
+        with patch.object(disk, "_format") as fmt:
+            fmt.type = "disklabel"
+            self.assertTrue(disk.is_empty)
+
+            PartitionDevice("testpart1", exists=True, parents=[disk])
+            self.assertFalse(disk.is_empty)

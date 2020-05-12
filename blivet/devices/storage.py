@@ -810,6 +810,13 @@ class StorageDevice(Device):
         return self._is_disk
 
     @property
+    def is_empty(self):
+        if not self.partitioned:
+            return self.format.type is None and len(self.children) == 0
+
+        return all(p.type == "partition" and p.is_magic for p in self.children)
+
+    @property
     def partitionable(self):
         return self._partitionable
 
