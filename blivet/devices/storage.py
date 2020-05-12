@@ -752,10 +752,11 @@ class StorageDevice(Device):
 
         netdev_option = "_netdev"
         option_list = self._format.options.split(",")
+        user_options = self._format._user_mountopts.split(",")
         is_netdev = any(isinstance(a, NetworkStorageDevice)
                         for a in self.ancestors)
         has_netdev_option = netdev_option in option_list
-        if not is_netdev and has_netdev_option:
+        if not is_netdev and has_netdev_option and netdev_option not in user_options:
             option_list.remove(netdev_option)
             self._format.options = ",".join(option_list)
         elif is_netdev and not has_netdev_option:
@@ -807,6 +808,13 @@ class StorageDevice(Device):
     @property
     def is_disk(self):
         return self._is_disk
+
+    @property
+    def is_empty(self):
+        if not self.partitioned:
+            return self.format.type is None and len(self.children) == 0
+
+        return all(p.type == "partition" and p.is_magic for p in self.children)
 
     @property
     def partitionable(self):

@@ -857,7 +857,7 @@ class DeviceFactory(object):
 
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
-            self.device.name = safe_new_name
+            self.raw_device.name = safe_new_name
 
     def _post_create(self):
         """ Hook for post-creation operations. """
@@ -1434,6 +1434,8 @@ class LVMFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(LVMFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        kwargs["luks_version"] = self.luks_version
+
         if self.container_raid_level:
             # md pv
             kwargs["raid_level"] = self.container_raid_level
@@ -1473,7 +1475,7 @@ class LVMFactory(DeviceFactory):
             safe_new_name = safe_new_name[len(self.vg.name) + 1:]
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
-            self.device.name = safe_new_name
+            self.raw_device.name = safe_new_name
 
     def _configure(self):
         self._set_container()  # just sets self.container based on the specs
@@ -1859,6 +1861,7 @@ class BTRFSFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(BTRFSFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        kwargs["luks_version"] = self.luks_version
         return kwargs
 
     def _get_new_device(self, *args, **kwargs):
