@@ -835,6 +835,9 @@ class DeviceFactory(object):
             if parent_container:
                 parent_container.parents.append(self.device)
                 parent_container.parents.remove(orig_device)
+        elif self.encrypted and isinstance(self.device, LUKSDevice) and \
+                self.device.slave.format.luks_version != self.luks_version:
+            self.device.slave.format.luks_version = self.luks_version
 
     def _set_name(self):
         if not self.device_name:
@@ -1174,6 +1177,10 @@ class PartitionSetFactory(PartitionFactory):
                     container.parents.append(luks_member)
                     container.parents.remove(member)
 
+                continue
+
+            if member_encrypted and self.encrypted and self.luks_version != member.slave.format.luks_version:
+                member.slave.format.luks_version = self.luks_version
                 continue
 
         ##
