@@ -25,6 +25,7 @@ from ..devicelibs import crypto
 from ..storage_log import log_method_call
 from ..size import Size
 from ..tasks import availability
+from ..errors import DeviceError
 
 import logging
 log = logging.getLogger("blivet")
@@ -73,8 +74,7 @@ class LUKSDevice(DMCryptDevice):
             return self.parents[0].parents[0]
         return self.parents[0]
 
-    @property
-    def size(self):
+    def _get_size(self):
         if not self.exists:
             size = self.slave.size - crypto.LUKS_METADATA_SIZE
         elif self.resizable and self.target_size != Size(0):
@@ -82,6 +82,17 @@ class LUKSDevice(DMCryptDevice):
         else:
             size = self.current_size
         return size
+
+    def _set_size(self, newsize):
+        if not self.exists and not self.slave.exists:
+            self.slave.size = newsize + crypto.LUKS_METADATA_SIZE
+
+            # just run the StorageDevice._set_size to make sure we are in the format limits
+            super(LUKSDevice, self)._set_size(newsize - crypto.LUKS_METADATA_SIZE)
+        else:
+            raise DeviceError("Cannot set size for an existing LUKS device")
+
+    size = property(_get_size, _set_size)
 
     @property
     def _has_integrity(self):
