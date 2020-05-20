@@ -155,7 +155,11 @@ class DeviceTreeBase(object):
                dev.name not in names:
                 names.append(dev.name)
 
-        names.extend(n for n in lv_info if n not in names)
+        # include LVs that are not in the devicetree and not scheduled for removal
+        removed_names = [ac.device.name for ac in self.actions.find(action_type="destroy",
+                                                                    object_type="device")]
+        names.extend(n for n in lv_info if n not in names and n not in removed_names)
+
         return names
 
     def _add_device(self, newdev, new=True):

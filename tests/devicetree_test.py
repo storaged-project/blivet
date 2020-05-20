@@ -6,9 +6,11 @@ import unittest
 
 from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError, DuplicateUUIDError
+from blivet.deviceaction import ACTION_TYPE_DESTROY, ACTION_OBJECT_DEVICE
 from blivet.devicelibs import lvm
 from blivet.devices import DiskDevice
 from blivet.devices import LVMVolumeGroupDevice
+from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import StorageDevice
 from blivet.devices import MultipathDevice
 from blivet.devices.lib import Tags
@@ -65,15 +67,25 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         # mock lvs_info to avoid blockdev call allowing run as non-root
         with patch.object(LVsInfo, 'cache', new_callable=PropertyMock) as mock_lvs_cache:
-            mock_lvs_cache.return_value = {"sdmock": "dummy"}
+            mock_lvs_cache.return_value = {"sdmock": "dummy", "testvg-testlv": "dummy"}
 
             tree = DeviceTree()
             dev_names = ["sda", "sdb", "sdc"]
 
             for dev_name in dev_names:
-                dev = DiskDevice(dev_name)
+                dev = DiskDevice(dev_name, size=Size("1 GiB"))
                 tree._add_device(dev)
                 self.assertTrue(dev in tree.devices)
+                self.assertTrue(dev.name in tree.names)
+
+            dev.format = get_format("lvmpv", device=dev.path)
+            vg = LVMVolumeGroupDevice("testvg", parents=[dev])
+            tree._add_device(vg)
+            dev_names.append(vg.name)
+
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg])
+            tree._add_device(lv)
+            dev_names.append(lv.name)
 
             # frobnicate a bit with the hidden status of the devices:
             # * hide sda
@@ -87,7 +99,13 @@ class DeviceTreeTestCase(unittest.TestCase):
             lv_info = list(lvs_info.cache.keys())
 
             # all devices should still be present in the tree.names
-            self.assertEqual(sorted(tree.names), sorted(lv_info + dev_names))
+            self.assertEqual(set(tree.names), set(lv_info + dev_names))
+
+            # "remove" the LV, it should no longer be in the list
+            tree.actions._actions.append(Mock(device=lv, type=ACTION_TYPE_DESTROY,
+                                              obj=ACTION_OBJECT_DEVICE))
+            tree._remove_device(lv)
+            self.assertFalse(lv.name in tree.names)
 
     def test_reset(self):
         dt = DeviceTree()
