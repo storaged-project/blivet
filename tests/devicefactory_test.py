@@ -443,6 +443,22 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
+        # enable, disable and enable container encryption
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
     def _get_size_delta(self, devices=None):
         if not devices:
             delta = Size("2 MiB") * len(self.b.disks)
@@ -567,6 +583,22 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
         # kwargs["encrypted"] = False
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable, disable and enable container encryption
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 

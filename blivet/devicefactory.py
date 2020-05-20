@@ -1151,6 +1151,8 @@ class PartitionSetFactory(PartitionFactory):
         for member in members[:]:
             member_encrypted = isinstance(member, LUKSDevice)
             if member_encrypted and not self.encrypted:
+                if container:
+                    container.parents.remove(member)
                 self.storage.destroy_device(member)
                 members.remove(member)
                 self.storage.format_device(member.slave,
@@ -1158,7 +1160,6 @@ class PartitionSetFactory(PartitionFactory):
                 members.append(member.slave)
                 if container:
                     container.parents.append(member.slave)
-                    container.parents.remove(member)
 
                 continue
 
