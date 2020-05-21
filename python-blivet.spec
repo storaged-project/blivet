@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.2.1
+Version: 3.2.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,19 @@ configuration.
 %endif
 
 %changelog
+* Thu May 21 2020 Jan Pokorny <japokorn@redhat.com> - 3.2.2-1
+- Allow setting size for non-existing LUKS devices (vtrefny)
+- Fix toggling container encryption in devicefactory (#1827254) (vtrefny)
+- Do no include destroyed devices in list of names (#1830515) (vtrefny)
+- Fix changing LUKS version in devicefactory (#1834373) (vtrefny)
+- Add "is_empty" property to StorageDevice (vtrefny)
+- Mark warning "'GError' has no 'message' member" as false positive (vtrefny)
+- Use the specified LUKS version for container encryption (vponcova)
+- Log current storage state before reset using lsblk (vtrefny)
+- Do not remove _netdev mount option specified manually by users (vtrefny)
+- Fix renaming encrypted devices in the DeviceFactory (vtrefny)
+- Fix typo in string formatter in EddEntry (vtrefny)
+
 * Mon Apr 06 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.1-1
 - Correctly recognize EFI format on an MD RAID device (#1695913) (vtrefny)
 - Do not set empty name instead of invalid one in devicefactory (#1813710)
