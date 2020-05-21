@@ -204,13 +204,21 @@ configuration.
 - Fix renaming encrypted devices in the DeviceFactory (vtrefny)
 - Fix typo in string formatter in EddEntry (vtrefny)
 
+* Tue Apr 21 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.1-2
+- Invalidate LVM caches in blivet device discovery loop (#1824418)
+
 * Mon Apr 06 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.1-1
 - Correctly recognize EFI format on an MD RAID device (#1695913) (vtrefny)
-- Do not set empty name instead of invalid one in devicefactory (#1813710)
-  (vtrefny)
+- Do not set empty name instead of invalid one in devicefactory (#1813710) (vtrefny)
 - Fix crash for devices without ID_PATH udev property (#1814920) (vtrefny)
 - Allow for reserved vg space and a growable thin pool. (#1783946) (dlehman)
 - Fix name resolution for md member partitions. (#1798792) (dlehman)
+
+* Wed Mar 11 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.0-3
+- Fix name resolution for md member partitions. (#1798792)
+
+* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.2.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
 * Wed Jan 29 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.0-1
 - Align base sizes up if smaller than min I/O size. (dlehman)
@@ -251,6 +259,15 @@ configuration.
 - Do not try to normalize size for zero size device factories (vtrefny)
 - Always set default key size to 512 bits for ciphers with XTS mode (vtrefny)
 
+* Thu Oct 03 2019 Miro Hrončok <mhroncok@redhat.com> - 1:3.1.5-4
+- Rebuilt for Python 3.8.0rc1 (#1748018)
+
+* Tue Aug 27 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.5-3
+- Do not try to normalize size for zero size device factories (#1743753)
+
+* Fri Aug 16 2019 Miro Hrončok <mhroncok@redhat.com> - 1:3.1.5-2
+- Rebuilt for Python 3.8
+
 * Thu Aug 15 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.5-1
 - Move dependencies code from StorageDevice to Device (vtrefny)
 - Always use luks_data.min_entropy as a default minimum entropy (vponcova)
@@ -275,10 +292,16 @@ configuration.
 - Recalculate thpool's metadata size on resize in LVMThinPFactory (vpodzime)
 - Move the thpool reserve calculations to LVMFactory (vpodzime)
 
+* Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.1.4-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Thu Jul 11 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.4-2
+- Remove teardown_all from the populate method (vponcova)
+- initial PowerNV class support (dan)
+
 * Tue Jun 11 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.4-1
 - Don't call fnmatch with None (#1698937) (vponcova)
-- Do not crash on non-int lun argument when creating iscsi disk object.
-  (rvykydal)
+- Do not crash on non-int lun argument when creating iscsi disk object. (rvykydal)
 - Make iscsi device attribute modifications backward compatible. (rvykydal)
 - Do not store iscsi module nodeinfo in device object. (rvykydal)
 - Only call mpath plugin when it is available. (#1697378) (dlehman)
@@ -289,16 +312,20 @@ configuration.
 - Fix mounting of the filesystem iso9660 (vponcova)
 - Remove unnecessary pass statements (vtrefny)
 - Check for format tools availability in action_test (vtrefny)
-- Skip weak dependencies test if we don't have all libblockdev plugins
-  (vtrefny)
+- Skip weak dependencies test if we don't have all libblockdev plugins (vtrefny)
 - Properly clean after availability test case (vtrefny)
 - Ensure correct type of mpath cache member list. (dlehman)
 - Do not crash if 'dm.get_member_raid_sets' fails (#1684851) (vtrefny)
 - Fix supported disklabels in 'test_platform_label_types' on EFI (vtrefny)
-- Support legacy MBR (msdos) as part of UEFI to enable hybrid builds
-  (pbrobinson)
+- Support legacy MBR (msdos) as part of UEFI to enable hybrid builds (pbrobinson)
 - Automatically adjust size of growable devices for new format (vtrefny)
 - spec: Remove obsolete Group tag and bump min libblockdev version (vtrefny)
+
+* Thu Mar 21 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.3-3
+- Ensure correct type of mpath cache member list
+
+* Mon Mar 11 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.3-2
+- Support legacy MBR (msdos) as part of UEFI to enable hybrid builds (pbrobinson)
 
 * Wed Feb 27 2019 Vojtech Trefny <vtrefny@redhat.com> - 3.1.3-1
 - Don't crash if blockdev mpath plugin isn't available. (#1672971) (dlehman)
@@ -317,6 +344,9 @@ configuration.
 - Use udev to determine if disk is a multipath member. (dlehman)
 - Require libfc instead of fcoe for offloaded FCoE. (#1575953) (dlehman)
 
+* Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.1.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Wed Dec 12 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.2-1
 - Fix reading LV attributes in LVMVolumeGroupDevice.status (vtrefny)
 - Do not try to login to iBFTs with active session (vtrefny)
@@ -329,8 +359,7 @@ configuration.
 - Fix failing populator test without nvdimm plugin (vtrefny)
 - Add 'srpm' and 'rpm' targets to Makefile for building (S)RPMs (vtrefny)
 - Fix crash on reset on systems without nvdimm plugin (vtrefny)
-- Use the size info of internal LVs when getting space usage for existing LVs
-  (v.podzimek)
+- Use the size info of internal LVs when getting space usage for existing LVs (v.podzimek)
 - Calculate the number of RAID PVs from the origin for cached LVs (v.podzimek)
 - Make raid_level a property of an LV object (v.podzimek)
 - Add a test for DeviceTree.get_related_disks. (dlehman)
@@ -350,6 +379,9 @@ configuration.
 - Remove Anaconda flags (vponcova)
 - Remove square brackets when matching internal LVs (v.podzimek)
 
+* Mon Oct 08 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.1-2
+- Fix options for ISCSI functions (#1632656) (vtrefny)
+
 * Wed Sep 26 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.1-1
 - Check device dependencies only for device actions (vtrefny)
 - Allow removing btrfs volumes without btrfs support (vtrefny)
@@ -364,33 +396,29 @@ configuration.
 - arch: arm: drop omap specifics for partitioning (pbrobinson)
 - Create a separate availability check for dmraid support (vtrefny)
 
-* Fri Aug 10 2018 David Lehman <dlehman@redhat.com> - 3.1.0-1
+* Thu Aug 30 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.0-2
+- arm: add support for EFI on ARMv7 (probinson)
+- Aarch64 platforms: Fix gpt defaults for 64 bit arm platforms (probinson)
+- arch: arm: drop get_arm_machine function (probinson)
+- arch: arm: drop omap specifics for partitioning (probinson)
+
+* Mon Aug 13 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.0-1
 - Allow configuring default LUKS2 PBKDF arguments using luks_data (vtrefny)
-  Related: rhbz#1561352
 - Fix the populate_kickstart method in LUKS (vtrefny)
-  Related: rhbz#1561352
 - Allow specifying extra arguments for PBKDF when creating LUKS2 (vtrefny)
-  Related: rhbz#1561352
 - Add support for LUKS2 to DeviceFactory (vtrefny)
-  Resolves: rhbz#1561352
 - DeviceFactory: use min_luks_entropy from kwargs (vtrefny)
-  Related: rhbz#1561352
 - Fix passing 'min_luks_entropy' when creating LUKS format (vtrefny)
-  Related: rhbz#1561352
 - Use passphrase/key file when resizing LUKS2 format (vtrefny)
-  Related: rhbz#1561352
 - Require libblockdev 2.17 (vtrefny)
-  Related: rhbz#1561352
 - Add support for LUKS2 format (vtrefny)
-  Related: rhbz#1561352
 - Add initial support for DM Integrity "format" (vtrefny)
-  Related: rhbz#1561352
 - Do not try to add LUKSDevice in LUKSFormatPopulator (vtrefny)
-  Related: rhbz#1561352
 - Add support for dm-integrity devices (vtrefny)
-  Related: rhbz#1561352
 - Fixed various issues preventing successful build (japokorn)
-  Related: rhbz#1561352
+
+* Thu Aug  2 2018 Peter Robinson <pbrobinson@fedoraproject.org> 3.1.0-0.5.b2
+- Bump release to fix upgrade path
 
 * Mon Jul 30 2018 David Lehman <dlehman@redhat.com> - 3.1.0-0.1.b2
 - Do not ignore "Image out-of-sync" internal LVs (vtrefny)
@@ -415,6 +443,15 @@ configuration.
 - Find and remove stale LVM metadata immediately after creating md array. (dlehman)
 - Adapt mock imports for compatibility w/ python2 & python3. (dlehman)
 - Use py2-compatible syntax to get system architecture. (dlehman)
+
+* Tue Jul 17 2018 Vojtech Trefny <vtrefny@redhat.com> - 3.1.0-0.4.b1
+- Force command line based libblockdev LVM plugin (vtrefny)
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.1.0-0.3.b1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Fri Jun 15 2018 Miro Hrončok <mhroncok@redhat.com> - 1:3.1.0-0.2.b1
+- Rebuilt for Python 3.7
 
 * Wed May 02 2018 David Lehman <dlehman@redhat.com> - 3.1.0-0.1.b1
 - Add 'nvdimm' tag for NVDIMM namespaces (vtrefny)
