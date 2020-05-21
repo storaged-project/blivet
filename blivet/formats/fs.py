@@ -135,9 +135,11 @@ class FS(DeviceFormat):
         self._chrooted_mountpoint = None
 
         self.mountpoint = kwargs.get("mountpoint")
-        self.mountopts = kwargs.get("mountopts")
+        self.mountopts = kwargs.get("mountopts", "")
         self.label = kwargs.get("label")
         self.fsprofile = kwargs.get("fsprofile")
+
+        self._user_mountopts = self.mountopts
 
         if flags.auto_dev_updates and self._resize.available:
             # if you want current/min size you have to call update_size_info

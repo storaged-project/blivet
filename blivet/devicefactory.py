@@ -835,6 +835,9 @@ class DeviceFactory(object):
             if parent_container:
                 parent_container.parents.append(self.device)
                 parent_container.parents.remove(orig_device)
+        elif self.encrypted and isinstance(self.device, LUKSDevice) and \
+                self.device.slave.format.luks_version != self.luks_version:
+            self.device.slave.format.luks_version = self.luks_version
 
     def _set_name(self):
         if not self.device_name:
@@ -857,7 +860,7 @@ class DeviceFactory(object):
 
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
-            self.device.name = safe_new_name
+            self.raw_device.name = safe_new_name
 
     def _post_create(self):
         """ Hook for post-creation operations. """
@@ -1148,6 +1151,8 @@ class PartitionSetFactory(PartitionFactory):
         for member in members[:]:
             member_encrypted = isinstance(member, LUKSDevice)
             if member_encrypted and not self.encrypted:
+                if container:
+                    container.parents.remove(member)
                 self.storage.destroy_device(member)
                 members.remove(member)
                 self.storage.format_device(member.slave,
@@ -1155,7 +1160,6 @@ class PartitionSetFactory(PartitionFactory):
                 members.append(member.slave)
                 if container:
                     container.parents.append(member.slave)
-                    container.parents.remove(member)
 
                 continue
 
@@ -1174,6 +1178,10 @@ class PartitionSetFactory(PartitionFactory):
                     container.parents.append(luks_member)
                     container.parents.remove(member)
 
+                continue
+
+            if member_encrypted and self.encrypted and self.luks_version != member.slave.format.luks_version:
+                member.slave.format.luks_version = self.luks_version
                 continue
 
         ##
@@ -1434,6 +1442,8 @@ class LVMFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(LVMFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        kwargs["luks_version"] = self.luks_version
+
         if self.container_raid_level:
             # md pv
             kwargs["raid_level"] = self.container_raid_level
@@ -1473,7 +1483,7 @@ class LVMFactory(DeviceFactory):
             safe_new_name = safe_new_name[len(self.vg.name) + 1:]
             log.debug("renaming device '%s' to '%s'",
                       self.device.name, safe_new_name)
-            self.device.name = safe_new_name
+            self.raw_device.name = safe_new_name
 
     def _configure(self):
         self._set_container()  # just sets self.container based on the specs
@@ -1859,6 +1869,7 @@ class BTRFSFactory(DeviceFactory):
     def _get_child_factory_kwargs(self):
         kwargs = super(BTRFSFactory, self)._get_child_factory_kwargs()
         kwargs["encrypted"] = self.container_encrypted
+        kwargs["luks_version"] = self.luks_version
         return kwargs
 
     def _get_new_device(self, *args, **kwargs):

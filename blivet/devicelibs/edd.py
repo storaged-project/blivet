@@ -219,7 +219,7 @@ class EddEntry(object):
         if self.ieee1394_eui64 is not None:
             s += "%(nl)s%(t)s1394_eui: %(ieee1394_eui64)s"
         if any([self.fibre_wwid, self.fibre_lun]):
-            s += "%(nl)s%(t)sfibre wwid: %(fibre_wwid)s lun: %s(fibre_lun)s"
+            s += "%(nl)s%(t)sfibre wwid: %(fibre_wwid)s lun: %(fibre_lun)s"
         if self.i2o_identity is not None:
             s += "%(nl)s%(t)si2o_identity: %(i2o_identity)s"
         if any([self.sas_address, self.sas_lun]):
