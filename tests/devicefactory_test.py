@@ -7,7 +7,7 @@ import os
 import blivet
 
 from blivet import devicefactory
-from blivet.devicelibs import raid
+from blivet.devicelibs import raid, crypto
 from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
@@ -101,6 +101,9 @@ class DeviceFactoryTestCase(unittest.TestCase):
         self.assertEqual(device.encrypted,
                          kwargs.get("encrypted", False) or
                          kwargs.get("container_encrypted", False))
+        if kwargs.get("encrypted", False):
+            self.assertEqual(device.slave.format.luks_version,
+                             kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
 
@@ -151,6 +154,15 @@ class DeviceFactoryTestCase(unittest.TestCase):
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
         kwargs["size"] = Size("650 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # Change LUKS version
+        kwargs["luks_version"] = "luks1"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["luks_version"] = "luks2"
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
@@ -328,6 +340,10 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             self.assertEqual(pv.encrypted, kwargs.get("container_encrypted", False))
             self.assertIsInstance(pv, member_class)
 
+            if pv.encrypted:
+                self.assertEqual(pv.slave.format.luks_version,
+                                 kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
+
     def test_device_factory(self):
         super(LVMFactoryTestCase, self).test_device_factory()
 
@@ -377,6 +393,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             # members in the next test.
             kwargs["encrypted"] = True
             kwargs["device"] = device
+            kwargs["luks_version"] = "luks1"
             device = self._factory_device(device_type, **kwargs)
             self._validate_factory_device(device, device_type, **kwargs)
 
@@ -414,6 +431,31 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
         # expand it back to all disks
         kwargs["disks"] = self.b.disks
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # Change LUKS version
+        kwargs["luks_version"] = "luks1"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["luks_version"] = "luks2"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable, disable and enable container encryption
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
@@ -541,6 +583,22 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
         # kwargs["encrypted"] = False
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable, disable and enable container encryption
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
