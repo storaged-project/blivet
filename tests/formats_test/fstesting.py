@@ -156,8 +156,8 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         # FIXME: BTRFS fails to mount
         if isinstance(an_fs, fs.BTRFS):
             self.skipTest("no mounting filesystem %s" % an_fs.name)
-        if not an_fs.formattable:
-            self.skipTest("can not create filesystem %s" % an_fs.name)
+        if not an_fs.formattable or not an_fs.mountable:
+            self.skipTest("can not create or mount filesystem %s" % an_fs.name)
         an_fs.device = self.loop_devices[0]
         self.assertIsNone(an_fs.create())
         self.assertTrue(an_fs.test_mount())
