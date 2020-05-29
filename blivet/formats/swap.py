@@ -52,8 +52,7 @@ class SwapSpace(DeviceFormat):
     _linux_native = True                # for clearpart
     _plugin = availability.BLOCKDEV_SWAP_PLUGIN
 
-    # see rhbz#744129 for details
-    _max_size = Size("128 GiB")
+    _max_size = Size("16 TiB")
 
     config_actions_map = {"label": "write_label"}
 
