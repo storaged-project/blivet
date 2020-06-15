@@ -413,5 +413,13 @@ class Integrity(DeviceFormat):
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
 
+        self.map_name = kwargs.get("name")
+
+    @property
+    def status(self):
+        if not self.exists or not self.map_name:
+            return False
+        return os.path.exists("/dev/mapper/%s" % self.map_name)
+
 
 register_device_format(Integrity)
