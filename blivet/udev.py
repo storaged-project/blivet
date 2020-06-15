@@ -457,6 +457,20 @@ def device_get_slaves(info):
     return slaves
 
 
+def device_get_holders(info):
+    """ Return a list of udev device objects representing this device's holders. """
+    holders_dir = device_get_sysfs_path(info) + "/holders/"
+    names = list()
+    if os.path.isdir(holders_dir):
+        names = os.listdir(holders_dir)
+
+    holders = list()
+    for name in names:
+        holders.append(get_device(device_node="/dev/" + name))
+
+    return holders
+
+
 def device_get_md_level(info):
     """ Returns the RAID level of the array of which this device is a member.
 
