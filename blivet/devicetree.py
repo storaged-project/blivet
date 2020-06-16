@@ -907,6 +907,33 @@ class DeviceTreeBase(object):
                 hidden.add_hook(new=False)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
 
+    def expand_taglist(self, taglist):
+        """ Expands tags in input list into devices.
+
+            :param taglist: list of strings
+            :returns: set of devices
+            :rtype: set of strings
+
+            Raise ValueError if unknown tag encountered in taglist
+
+            .. note::
+
+                Returns empty set if taglist is empty
+        """
+        result = set()
+        devices = self._devices[:]
+        for item in taglist:
+            if item.startswith('@'):
+                tag = item[1:]
+                if tag not in Tags.__members__:
+                    raise ValueError("unknown tag '@%s' encountered" % tag)
+                for device in devices:
+                    if tag in device.tags:
+                        result.add(device.name)
+            else:
+                result.add(item)
+        return result
+
     def _is_ignored_disk(self, disk):
         """ Checks config for lists of exclusive and ignored disks
             and returns if the given one should be ignored

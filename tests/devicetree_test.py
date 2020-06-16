@@ -316,6 +316,31 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(tree._is_ignored_disk(fake_ssd))
         self.assertFalse(tree._is_ignored_disk(fake_local))
 
+    def test_expand_taglist(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda")
+        sdb = DiskDevice("sdb")
+        sdc = DiskDevice("sdc")
+        sdd = DiskDevice("sdd")
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+        tree._add_device(sdc)
+        tree._add_device(sdd)
+
+        sda.tags = {Tags.remote}
+        sdb.tags = {Tags.ssd}
+        sdc.tags = {Tags.local, Tags.ssd}
+        sdd.tags = set()
+
+        self.assertEqual(tree.expand_taglist(["sda", "sdb"]), {"sda", "sdb"})
+        self.assertEqual(tree.expand_taglist(["@local"]), {"sdc"})
+        self.assertEqual(tree.expand_taglist(["@ssd"]), {"sdb", "sdc"})
+        self.assertEqual(tree.expand_taglist(["@ssd", "sdd", "@local"]), {"sdb", "sdc", "sdd"})
+        with self.assertRaises(ValueError):
+            tree.expand_taglist(["sdd", "@invalid_tag"])
+
     def test_hide_ignored_disks(self):
         tree = DeviceTree()
 
