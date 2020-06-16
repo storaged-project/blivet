@@ -934,9 +934,11 @@ class PartitionDevice(StorageDevice):
 
     @property
     def resizable(self):
-        if self.disk.type == 'dasd' or not self.disklabel_supported:
+        if not self.exists:
             return False
-        elif self.is_extended and self.exists:
+        elif self.disk.type == 'dasd' or not self.disklabel_supported:
+            return False
+        elif self.is_extended:
             return True
         else:
             return super(PartitionDevice, self).resizable
