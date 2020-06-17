@@ -20,6 +20,8 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import copy
+
 from six import add_metaclass
 
 from . import util
@@ -669,6 +671,8 @@ class ActionCreateFormat(DeviceAction):
         if callbacks and callbacks.create_format_post:
             msg = _("Created %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_post(CreateFormatPostData(msg))
+
+        self.device.original_format = copy.deepcopy(self.device.format)
 
     def cancel(self):
         if not self._applied:
