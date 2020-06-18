@@ -196,6 +196,9 @@ class PartitionDeviceTestCase(unittest.TestCase):
             extended_device.exists = True
             extended_device.parted_partition = extended
 
+            # existing extended partition should be always resizable
+            self.assertTrue(extended_device.resizable)
+
             # no logical partitions --> min size should be max of 1 KiB and grain_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(max(grain_size, Size("1 KiB"))))

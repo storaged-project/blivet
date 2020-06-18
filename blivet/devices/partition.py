@@ -934,8 +934,14 @@ class PartitionDevice(StorageDevice):
 
     @property
     def resizable(self):
-        return super(PartitionDevice, self).resizable and \
-            self.disk.type != 'dasd' and self.disklabel_supported
+        if not self.exists:
+            return False
+        elif self.disk.type == 'dasd' or not self.disklabel_supported:
+            return False
+        elif self.is_extended:
+            return True
+        else:
+            return super(PartitionDevice, self).resizable
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
