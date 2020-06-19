@@ -76,5 +76,12 @@ setup(name='blivet',
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://github.com/storaged-project/blivet',
       data_files=data_files,
-      packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers']
+      packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'],
+      install_requires=['pyudev', 'six'],
+      classifiers=["Development Status :: 5 - Production/Stable",
+                   "Intended Audience :: Developers",
+                   "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+                   "Programming Language :: Python :: 2",
+                   "Programming Language :: Python :: 3",
+                   "Operating System :: POSIX :: Linux"]
      )
