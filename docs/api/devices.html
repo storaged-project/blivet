@@ -1,35 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>devices &#8212; Blivet 2.1.8 documentation</title>
-    
+    <meta charset="utf-8" />
+    <title>devices &#8212; Blivet 3.2.2 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '2.1.8',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="events" href="events.html" />
     <link rel="prev" title="blivet" href="blivet.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -45,7 +34,7 @@
         <li class="right" >
           <a href="blivet.html" title="blivet"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 2.1.8 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.2.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../api.html" >Public API</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="blivet.html" accesskey="U">blivet</a> &#187;</li> 
       </ul>
@@ -59,41 +48,22 @@
   <div class="section" id="devices">
 <h1>devices<a class="headerlink" href="#devices" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.btrfs" title="blivet.devices.btrfs"><code class="xref py py-mod docutils literal"><span class="pre">btrfs</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSSubVolumeDevice" title="blivet.devices.btrfs.BTRFSSubVolumeDevice"><code class="xref py py-class docutils literal"><span class="pre">BTRFSSubVolumeDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><code class="xref py py-attr docutils literal"><span class="pre">vol_id</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSSubVolumeDevice.volume" title="blivet.devices.btrfs.BTRFSSubVolumeDevice.volume"><code class="xref py py-attr docutils literal"><span class="pre">volume</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.btrfs" title="blivet.devices.btrfs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">btrfs</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSSubVolumeDevice" title="blivet.devices.btrfs.BTRFSSubVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">vol_id</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSSubVolumeDevice.volume" title="blivet.devices.btrfs.BTRFSSubVolumeDevice.volume"><code class="xref py py-attr docutils literal notranslate"><span class="pre">volume</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice" title="blivet.devices.btrfs.BTRFSVolumeDevice"><code class="xref py py-class docutils literal"><span class="pre">BTRFSVolumeDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.data_level" title="blivet.devices.btrfs.BTRFSVolumeDevice.data_level"><code class="xref py py-attr docutils literal"><span class="pre">data_level</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume" title="blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume"><code class="xref py py-attr docutils literal"><span class="pre">default_subvolume</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.members" title="blivet.devices.btrfs.BTRFSVolumeDevice.members"><code class="xref py py-attr docutils literal"><span class="pre">members</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.metadata_level" title="blivet.devices.btrfs.BTRFSVolumeDevice.metadata_level"><code class="xref py py-attr docutils literal"><span class="pre">metadata_level</span></code></a></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.disk" title="blivet.devices.disk"><code class="xref py py-mod docutils literal"><span class="pre">disk</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal"><span class="pre">DiskDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.model" title="blivet.devices.storage.StorageDevice.model"><code class="xref py py-attr docutils literal"><span class="pre">model</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.vendor" title="blivet.devices.storage.StorageDevice.vendor"><code class="xref py py-attr docutils literal"><span class="pre">vendor</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice" title="blivet.devices.btrfs.BTRFSVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">BTRFSVolumeDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.data_level" title="blivet.devices.btrfs.BTRFSVolumeDevice.data_level"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data_level</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume" title="blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume"><code class="xref py py-attr docutils literal notranslate"><span class="pre">default_subvolume</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.members" title="blivet.devices.btrfs.BTRFSVolumeDevice.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.metadata_level" title="blivet.devices.btrfs.BTRFSVolumeDevice.metadata_level"><code class="xref py py-attr docutils literal notranslate"><span class="pre">metadata_level</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
@@ -102,31 +72,13 @@
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.file" title="blivet.devices.file"><code class="xref py py-mod docutils literal"><span class="pre">file</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.file.DirectoryDevice" title="blivet.devices.file.DirectoryDevice"><code class="xref py py-class docutils literal"><span class="pre">DirectoryDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.file.FileDevice" title="blivet.devices.file.FileDevice"><code class="xref py py-class docutils literal"><span class="pre">FileDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.file.SparseFileDevice" title="blivet.devices.file.SparseFileDevice"><code class="xref py py-class docutils literal"><span class="pre">SparseFileDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.loop" title="blivet.devices.loop"><code class="xref py py-mod docutils literal"><span class="pre">loop</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.loop.LoopDevice" title="blivet.devices.loop.LoopDevice"><code class="xref py py-class docutils literal"><span class="pre">LoopDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.luks" title="blivet.devices.luks"><code class="xref py py-mod docutils literal"><span class="pre">luks</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.luks.LUKSDevice" title="blivet.devices.luks.LUKSDevice"><code class="xref py py-class docutils literal"><span class="pre">LUKSDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.dm.DMDevice.map_name" title="blivet.devices.dm.DMDevice.map_name"><code class="xref py py-attr docutils literal"><span class="pre">map_name</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.disk" title="blivet.devices.disk"><code class="xref py py-mod docutils literal notranslate"><span class="pre">disk</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.model" title="blivet.devices.storage.StorageDevice.model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.vendor" title="blivet.devices.storage.StorageDevice.vendor"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vendor</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">wwn</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -135,62 +87,86 @@
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.lvm" title="blivet.devices.lvm"><code class="xref py py-mod docutils literal"><span class="pre">lvm</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache" title="blivet.devices.lvm.LVMCache"><code class="xref py py-class docutils literal"><span class="pre">LVMCache</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.backing_device_name" title="blivet.devices.lvm.LVMCache.backing_device_name"><code class="xref py py-attr docutils literal"><span class="pre">backing_device_name</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.cache_device_name" title="blivet.devices.lvm.LVMCache.cache_device_name"><code class="xref py py-attr docutils literal"><span class="pre">cache_device_name</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.exists" title="blivet.devices.lvm.LVMCache.exists"><code class="xref py py-attr docutils literal"><span class="pre">exists</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.md_size" title="blivet.devices.lvm.LVMCache.md_size"><code class="xref py py-attr docutils literal"><span class="pre">md_size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.mode" title="blivet.devices.lvm.LVMCache.mode"><code class="xref py py-attr docutils literal"><span class="pre">mode</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.size" title="blivet.devices.lvm.LVMCache.size"><code class="xref py py-attr docutils literal"><span class="pre">size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.stats" title="blivet.devices.lvm.LVMCache.stats"><code class="xref py py-attr docutils literal"><span class="pre">stats</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.file" title="blivet.devices.file"><code class="xref py py-mod docutils literal notranslate"><span class="pre">file</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.file.DirectoryDevice" title="blivet.devices.file.DirectoryDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DirectoryDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.file.FileDevice" title="blivet.devices.file.FileDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.file.SparseFileDevice" title="blivet.devices.file.SparseFileDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">SparseFileDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest" title="blivet.devices.lvm.LVMCacheRequest"><code class="xref py py-class docutils literal"><span class="pre">LVMCacheRequest</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest.fast_devs" title="blivet.devices.lvm.LVMCacheRequest.fast_devs"><code class="xref py py-attr docutils literal"><span class="pre">fast_devs</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest.pv_space_requests" title="blivet.devices.lvm.LVMCacheRequest.pv_space_requests"><code class="xref py py-attr docutils literal"><span class="pre">pv_space_requests</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest.mode" title="blivet.devices.lvm.LVMCacheRequest.mode"><code class="xref py py-attr docutils literal"><span class="pre">mode</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.loop" title="blivet.devices.loop"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loop</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.loop.LoopDevice" title="blivet.devices.loop.LoopDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoopDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal"><span class="pre">LVMLogicalVolumeDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.cache" title="blivet.devices.lvm.LVMLogicalVolumeBase.cache"><code class="xref py py-attr docutils literal"><span class="pre">cache</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.cached" title="blivet.devices.lvm.LVMLogicalVolumeBase.cached"><code class="xref py py-attr docutils literal"><span class="pre">cached</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMInternalLogicalVolumeMixin.is_internal_lv" title="blivet.devices.lvm.LVMInternalLogicalVolumeMixin.is_internal_lv"><code class="xref py py-attr docutils literal"><span class="pre">is_internal_lv</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.is_raid_lv" title="blivet.devices.lvm.LVMLogicalVolumeBase.is_raid_lv"><code class="xref py py-attr docutils literal"><span class="pre">is_raid_lv</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMSnapshotMixin.is_snapshot_lv" title="blivet.devices.lvm.LVMSnapshotMixin.is_snapshot_lv"><code class="xref py py-attr docutils literal"><span class="pre">is_snapshot_lv</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMThinLogicalVolumeMixin.is_thin_lv" title="blivet.devices.lvm.LVMThinLogicalVolumeMixin.is_thin_lv"><code class="xref py py-attr docutils literal"><span class="pre">is_thin_lv</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMThinPoolMixin.is_thin_pool" title="blivet.devices.lvm.LVMThinPoolMixin.is_thin_pool"><code class="xref py py-attr docutils literal"><span class="pre">is_thin_pool</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.dm.DMDevice.map_name" title="blivet.devices.dm.DMDevice.map_name"><code class="xref py py-attr docutils literal"><span class="pre">map_name</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.metadata_size" title="blivet.devices.lvm.LVMLogicalVolumeBase.metadata_size"><code class="xref py py-attr docutils literal"><span class="pre">metadata_size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.vg" title="blivet.devices.lvm.LVMLogicalVolumeDevice.vg"><code class="xref py py-attr docutils literal"><span class="pre">vg</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.luks" title="blivet.devices.luks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">luks</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.luks.LUKSDevice" title="blivet.devices.luks.LUKSDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LUKSDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.dm.DMDevice.map_name" title="blivet.devices.dm.DMDevice.map_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">map_name</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice" title="blivet.devices.lvm.LVMVolumeGroupDevice"><code class="xref py py-class docutils literal"><span class="pre">LVMVolumeGroupDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.cached_lvs" title="blivet.devices.lvm.LVMVolumeGroupDevice.cached_lvs"><code class="xref py py-attr docutils literal"><span class="pre">cached_lvs</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.complete" title="blivet.devices.lvm.LVMVolumeGroupDevice.complete"><code class="xref py py-attr docutils literal"><span class="pre">complete</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.extents" title="blivet.devices.lvm.LVMVolumeGroupDevice.extents"><code class="xref py py-attr docutils literal"><span class="pre">extents</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.free_extents" title="blivet.devices.lvm.LVMVolumeGroupDevice.free_extents"><code class="xref py py-attr docutils literal"><span class="pre">free_extents</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.free_space" title="blivet.devices.lvm.LVMVolumeGroupDevice.free_space"><code class="xref py py-attr docutils literal"><span class="pre">free_space</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.lvs" title="blivet.devices.lvm.LVMVolumeGroupDevice.lvs"><code class="xref py py-attr docutils literal"><span class="pre">lvs</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.pv_free_info" title="blivet.devices.lvm.LVMVolumeGroupDevice.pv_free_info"><code class="xref py py-attr docutils literal"><span class="pre">pv_free_info</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.thinlvs" title="blivet.devices.lvm.LVMVolumeGroupDevice.thinlvs"><code class="xref py py-attr docutils literal"><span class="pre">thinlvs</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.thinpools" title="blivet.devices.lvm.LVMVolumeGroupDevice.thinpools"><code class="xref py py-attr docutils literal"><span class="pre">thinpools</span></code></a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.lvm" title="blivet.devices.lvm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lvm</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache" title="blivet.devices.lvm.LVMCache"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMCache</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.backing_device_name" title="blivet.devices.lvm.LVMCache.backing_device_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">backing_device_name</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.cache_device_name" title="blivet.devices.lvm.LVMCache.cache_device_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cache_device_name</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.exists" title="blivet.devices.lvm.LVMCache.exists"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exists</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.md_size" title="blivet.devices.lvm.LVMCache.md_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">md_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.mode" title="blivet.devices.lvm.LVMCache.mode"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mode</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.size" title="blivet.devices.lvm.LVMCache.size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.stats" title="blivet.devices.lvm.LVMCache.stats"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stats</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest" title="blivet.devices.lvm.LVMCacheRequest"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMCacheRequest</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest.fast_devs" title="blivet.devices.lvm.LVMCacheRequest.fast_devs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">fast_devs</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest.pv_space_requests" title="blivet.devices.lvm.LVMCacheRequest.pv_space_requests"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pv_space_requests</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheRequest.mode" title="blivet.devices.lvm.LVMCacheRequest.mode"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mode</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.cache" title="blivet.devices.lvm.LVMLogicalVolumeBase.cache"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cache</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.cached" title="blivet.devices.lvm.LVMLogicalVolumeBase.cached"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cached</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMInternalLogicalVolumeMixin.is_internal_lv" title="blivet.devices.lvm.LVMInternalLogicalVolumeMixin.is_internal_lv"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_internal_lv</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.is_raid_lv" title="blivet.devices.lvm.LVMLogicalVolumeBase.is_raid_lv"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_raid_lv</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMSnapshotMixin.is_snapshot_lv" title="blivet.devices.lvm.LVMSnapshotMixin.is_snapshot_lv"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_snapshot_lv</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMThinLogicalVolumeMixin.is_thin_lv" title="blivet.devices.lvm.LVMThinLogicalVolumeMixin.is_thin_lv"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_thin_lv</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMThinPoolMixin.is_thin_pool" title="blivet.devices.lvm.LVMThinPoolMixin.is_thin_pool"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_thin_pool</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.dm.DMDevice.map_name" title="blivet.devices.dm.DMDevice.map_name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">map_name</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.metadata_size" title="blivet.devices.lvm.LVMLogicalVolumeBase.metadata_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">metadata_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.vg" title="blivet.devices.lvm.LVMLogicalVolumeDevice.vg"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vg</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice" title="blivet.devices.lvm.LVMVolumeGroupDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.cached_lvs" title="blivet.devices.lvm.LVMVolumeGroupDevice.cached_lvs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cached_lvs</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.complete" title="blivet.devices.lvm.LVMVolumeGroupDevice.complete"><code class="xref py py-attr docutils literal notranslate"><span class="pre">complete</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.extents" title="blivet.devices.lvm.LVMVolumeGroupDevice.extents"><code class="xref py py-attr docutils literal notranslate"><span class="pre">extents</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.free_extents" title="blivet.devices.lvm.LVMVolumeGroupDevice.free_extents"><code class="xref py py-attr docutils literal notranslate"><span class="pre">free_extents</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.free_space" title="blivet.devices.lvm.LVMVolumeGroupDevice.free_space"><code class="xref py py-attr docutils literal notranslate"><span class="pre">free_space</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.lvs" title="blivet.devices.lvm.LVMVolumeGroupDevice.lvs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lvs</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.pv_free_info" title="blivet.devices.lvm.LVMVolumeGroupDevice.pv_free_info"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pv_free_info</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.thinlvs" title="blivet.devices.lvm.LVMVolumeGroupDevice.thinlvs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">thinlvs</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.thinpools" title="blivet.devices.lvm.LVMVolumeGroupDevice.thinpools"><code class="xref py py-attr docutils literal notranslate"><span class="pre">thinpools</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
@@ -201,55 +177,49 @@
 </li>
 </ul>
 <ul class="simple" id="mdraidarraydeviceapi">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.md" title="blivet.devices.md"><code class="xref py py-mod docutils literal"><span class="pre">md</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal"><span class="pre">MDRaidArrayDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.complete" title="blivet.devices.md.MDRaidArrayDevice.complete"><code class="xref py py-attr docutils literal"><span class="pre">complete</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.degraded" title="blivet.devices.md.MDRaidArrayDevice.degraded"><code class="xref py py-attr docutils literal"><span class="pre">degraded</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.level" title="blivet.devices.md.MDRaidArrayDevice.level"><code class="xref py py-attr docutils literal"><span class="pre">level</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.member_devices" title="blivet.devices.md.MDRaidArrayDevice.member_devices"><code class="xref py py-attr docutils literal"><span class="pre">member_devices</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.member_status" title="blivet.devices.md.MDRaidArrayDevice.member_status"><code class="xref py py-meth docutils literal"><span class="pre">member_status()</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.members" title="blivet.devices.md.MDRaidArrayDevice.members"><code class="xref py py-attr docutils literal"><span class="pre">members</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.spares" title="blivet.devices.md.MDRaidArrayDevice.spares"><code class="xref py py-attr docutils literal"><span class="pre">spares</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.total_devices" title="blivet.devices.md.MDRaidArrayDevice.total_devices"><code class="xref py py-attr docutils literal"><span class="pre">total_devices</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.md" title="blivet.devices.md"><code class="xref py py-mod docutils literal notranslate"><span class="pre">md</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDRaidArrayDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.complete" title="blivet.devices.md.MDRaidArrayDevice.complete"><code class="xref py py-attr docutils literal notranslate"><span class="pre">complete</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.degraded" title="blivet.devices.md.MDRaidArrayDevice.degraded"><code class="xref py py-attr docutils literal notranslate"><span class="pre">degraded</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.level" title="blivet.devices.md.MDRaidArrayDevice.level"><code class="xref py py-attr docutils literal notranslate"><span class="pre">level</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.member_devices" title="blivet.devices.md.MDRaidArrayDevice.member_devices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">member_devices</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.member_status" title="blivet.devices.md.MDRaidArrayDevice.member_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">member_status()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.members" title="blivet.devices.md.MDRaidArrayDevice.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.spares" title="blivet.devices.md.MDRaidArrayDevice.spares"><code class="xref py py-attr docutils literal notranslate"><span class="pre">spares</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.total_devices" title="blivet.devices.md.MDRaidArrayDevice.total_devices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">total_devices</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDBiosRaidArrayDevice" title="blivet.devices.md.MDBiosRaidArrayDevice"><code class="xref py py-class docutils literal"><span class="pre">MDBiosRaidArrayDevice</span></code></a> (see <a class="reference internal" href="#mdraidarraydeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.md.MDBiosRaidArrayDevice" title="blivet.devices.md.MDBiosRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDBiosRaidArrayDevice</span></code></a> (see <a class="reference internal" href="#mdraidarraydeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.nfs" title="blivet.devices.nfs"><code class="xref py py-mod docutils literal"><span class="pre">nfs</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.nfs.NFSDevice" title="blivet.devices.nfs.NFSDevice"><code class="xref py py-class docutils literal"><span class="pre">NFSDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.nfs" title="blivet.devices.nfs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nfs</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.nfs.NFSDevice" title="blivet.devices.nfs.NFSDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFSDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.optical" title="blivet.devices.optical"><code class="xref py py-mod docutils literal"><span class="pre">optical</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.optical.OpticalDevice" title="blivet.devices.optical.OpticalDevice"><code class="xref py py-class docutils literal"><span class="pre">OpticalDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.optical" title="blivet.devices.optical"><code class="xref py py-mod docutils literal notranslate"><span class="pre">optical</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.optical.OpticalDevice" title="blivet.devices.optical.OpticalDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpticalDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.partition" title="blivet.devices.partition"><code class="xref py py-mod docutils literal"><span class="pre">partition</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice" title="blivet.devices.partition.PartitionDevice"><code class="xref py py-class docutils literal"><span class="pre">PartitionDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.bootable" title="blivet.devices.partition.PartitionDevice.bootable"><code class="xref py py-attr docutils literal"><span class="pre">bootable</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_extended" title="blivet.devices.partition.PartitionDevice.is_extended"><code class="xref py py-attr docutils literal"><span class="pre">is_extended</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_logical" title="blivet.devices.partition.PartitionDevice.is_logical"><code class="xref py py-attr docutils literal"><span class="pre">is_logical</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_primary" title="blivet.devices.partition.PartitionDevice.is_primary"><code class="xref py py-attr docutils literal"><span class="pre">is_primary</span></code></a></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.partition" title="blivet.devices.partition"><code class="xref py py-mod docutils literal notranslate"><span class="pre">partition</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice" title="blivet.devices.partition.PartitionDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitionDevice</span></code></a> (see <a class="reference internal" href="#storagedeviceapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.bootable" title="blivet.devices.partition.PartitionDevice.bootable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bootable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_extended" title="blivet.devices.partition.PartitionDevice.is_extended"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_extended</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_logical" title="blivet.devices.partition.PartitionDevice.is_logical"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_logical</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_primary" title="blivet.devices.partition.PartitionDevice.is_primary"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_primary</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
@@ -260,46 +230,44 @@
 </li>
 </ul>
 <ul class="simple" id="storagedeviceapi">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.storage" title="blivet.devices.storage"><code class="xref py py-mod docutils literal"><span class="pre">storage</span></code></a></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal"><span class="pre">StorageDevice</span></code></a></dt>
-<dd><ul class="first last">
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.align_target_size" title="blivet.devices.storage.StorageDevice.align_target_size"><code class="xref py py-meth docutils literal"><span class="pre">align_target_size()</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.device.Device.ancestors" title="blivet.devices.device.Device.ancestors"><code class="xref py py-attr docutils literal"><span class="pre">ancestors</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">children</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.current_size" title="blivet.devices.storage.StorageDevice.current_size"><code class="xref py py-attr docutils literal"><span class="pre">current_size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.device.Device.depends_on" title="blivet.devices.device.Device.depends_on"><code class="xref py py-meth docutils literal"><span class="pre">depends_on()</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.direct" title="blivet.devices.storage.StorageDevice.direct"><code class="xref py py-attr docutils literal"><span class="pre">direct</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.disks" title="blivet.devices.storage.StorageDevice.disks"><code class="xref py py-attr docutils literal"><span class="pre">disks</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.encrypted" title="blivet.devices.storage.StorageDevice.encrypted"><code class="xref py py-attr docutils literal"><span class="pre">encrypted</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">exists</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.format" title="blivet.devices.storage.StorageDevice.format"><code class="xref py py-attr docutils literal"><span class="pre">format</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.format_immutable" title="blivet.devices.storage.StorageDevice.format_immutable"><code class="xref py py-attr docutils literal"><span class="pre">format_immutable</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.fstab_spec" title="blivet.devices.storage.StorageDevice.fstab_spec"><code class="xref py py-attr docutils literal"><span class="pre">fstab_spec</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.is_disk" title="blivet.devices.storage.StorageDevice.is_disk"><code class="xref py py-attr docutils literal"><span class="pre">is_disk</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">is_leaf</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.max_size" title="blivet.devices.storage.StorageDevice.max_size"><code class="xref py py-attr docutils literal"><span class="pre">max_size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.min_size" title="blivet.devices.storage.StorageDevice.min_size"><code class="xref py py-attr docutils literal"><span class="pre">min_size</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">name</span></code></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">parents</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.partitionable" title="blivet.devices.storage.StorageDevice.partitionable"><code class="xref py py-attr docutils literal"><span class="pre">partitionable</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.partitioned" title="blivet.devices.storage.StorageDevice.partitioned"><code class="xref py py-attr docutils literal"><span class="pre">partitioned</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.path" title="blivet.devices.storage.StorageDevice.path"><code class="xref py py-attr docutils literal"><span class="pre">path</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.protected" title="blivet.devices.storage.StorageDevice.protected"><code class="xref py py-attr docutils literal"><span class="pre">protected</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.raw_device" title="blivet.devices.storage.StorageDevice.raw_device"><code class="xref py py-attr docutils literal"><span class="pre">raw_device</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">read_only</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.resizable" title="blivet.devices.storage.StorageDevice.resizable"><code class="xref py py-attr docutils literal"><span class="pre">resizable</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.resize" title="blivet.devices.storage.StorageDevice.resize"><code class="xref py py-meth docutils literal"><span class="pre">resize()</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.setup" title="blivet.devices.storage.StorageDevice.setup"><code class="xref py py-meth docutils literal"><span class="pre">setup()</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.size" title="blivet.devices.storage.StorageDevice.size"><code class="xref py py-attr docutils literal"><span class="pre">size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.status" title="blivet.devices.storage.StorageDevice.status"><code class="xref py py-attr docutils literal"><span class="pre">status</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">sysfs_path</span></code></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.device.Device.tags" title="blivet.devices.device.Device.tags"><code class="xref py py-attr docutils literal"><span class="pre">tags</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.target_size" title="blivet.devices.storage.StorageDevice.target_size"><code class="xref py py-attr docutils literal"><span class="pre">target_size</span></code></a></li>
-<li><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.teardown" title="blivet.devices.storage.StorageDevice.teardown"><code class="xref py py-meth docutils literal"><span class="pre">teardown()</span></code></a></li>
-<li><code class="xref py py-attr docutils literal"><span class="pre">uuid</span></code></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#module-blivet.devices.storage" title="blivet.devices.storage"><code class="xref py py-mod docutils literal notranslate"><span class="pre">storage</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.align_target_size" title="blivet.devices.storage.StorageDevice.align_target_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">align_target_size()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.device.Device.ancestors" title="blivet.devices.device.Device.ancestors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ancestors</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">children</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.current_size" title="blivet.devices.storage.StorageDevice.current_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.device.Device.depends_on" title="blivet.devices.device.Device.depends_on"><code class="xref py py-meth docutils literal notranslate"><span class="pre">depends_on()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.direct" title="blivet.devices.storage.StorageDevice.direct"><code class="xref py py-attr docutils literal notranslate"><span class="pre">direct</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.disks" title="blivet.devices.storage.StorageDevice.disks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">disks</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.encrypted" title="blivet.devices.storage.StorageDevice.encrypted"><code class="xref py py-attr docutils literal notranslate"><span class="pre">encrypted</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">exists</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.format" title="blivet.devices.storage.StorageDevice.format"><code class="xref py py-attr docutils literal notranslate"><span class="pre">format</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.format_immutable" title="blivet.devices.storage.StorageDevice.format_immutable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">format_immutable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.fstab_spec" title="blivet.devices.storage.StorageDevice.fstab_spec"><code class="xref py py-attr docutils literal notranslate"><span class="pre">fstab_spec</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.is_disk" title="blivet.devices.storage.StorageDevice.is_disk"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_disk</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_leaf</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.max_size" title="blivet.devices.storage.StorageDevice.max_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.min_size" title="blivet.devices.storage.StorageDevice.min_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">min_size</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">parents</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.partitionable" title="blivet.devices.storage.StorageDevice.partitionable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">partitionable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.partitioned" title="blivet.devices.storage.StorageDevice.partitioned"><code class="xref py py-attr docutils literal notranslate"><span class="pre">partitioned</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.path" title="blivet.devices.storage.StorageDevice.path"><code class="xref py py-attr docutils literal notranslate"><span class="pre">path</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.protected" title="blivet.devices.storage.StorageDevice.protected"><code class="xref py py-attr docutils literal notranslate"><span class="pre">protected</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.raw_device" title="blivet.devices.storage.StorageDevice.raw_device"><code class="xref py py-attr docutils literal notranslate"><span class="pre">raw_device</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">read_only</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.resizable" title="blivet.devices.storage.StorageDevice.resizable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">resizable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.resize" title="blivet.devices.storage.StorageDevice.resize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resize()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.setup" title="blivet.devices.storage.StorageDevice.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.size" title="blivet.devices.storage.StorageDevice.size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.status" title="blivet.devices.storage.StorageDevice.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">status</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">sysfs_path</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.device.Device.tags" title="blivet.devices.device.Device.tags"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tags</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.target_size" title="blivet.devices.storage.StorageDevice.target_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">target_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.teardown" title="blivet.devices.storage.StorageDevice.teardown"><code class="xref py py-meth docutils literal notranslate"><span class="pre">teardown()</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">uuid</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -331,13 +299,13 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -359,14 +327,14 @@
         <li class="right" >
           <a href="blivet.html" title="blivet"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 2.1.8 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.2.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../api.html" >Public API</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="blivet.html" >blivet</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2016, Red Hat, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+        &#169; Copyright 2013-2020, Red Hat, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

@@ -1,0 +1,328 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>DBus Interface &#8212; Blivet 3.2.2 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Testing Blivet" href="testing.html" />
+    <link rel="prev" title="formats" href="api/formats.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Testing Blivet"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api/formats.html" title="formats"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.2.2 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dbus-interface">
+<h1>DBus Interface<a class="headerlink" href="#dbus-interface" title="Permalink to this headline">¶</a></h1>
+<p>New in blivet-2.2 is an experimental (see the <a class="reference internal" href="#todo"><span class="std std-ref">To Do List</span></a>) DBus interface. This
+interface provides methods for examining blivet’s <code class="docutils literal notranslate"><span class="pre">DeviceTree</span></code>, creating
+devices using blivet’s <code class="docutils literal notranslate"><span class="pre">DeviceFactory</span></code>, and removing devices.</p>
+<p>The interface uses the bus name <code class="docutils literal notranslate"><span class="pre">com.redhat.Blivet0</span></code>.</p>
+<ul>
+<li><p>com.redhat.Blivet0.Blivet</p>
+<blockquote>
+<div><ul>
+<li><p>Methods</p>
+<blockquote>
+<div><ul>
+<li><p>Reset()</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Reset the model to match the running system.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Exit()</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Stop the associated service.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>ListDevices() -&gt; <code class="docutils literal notranslate"><span class="pre">'ao'</span></code></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>List the devices in the current model.</p></li>
+<li><p>Return a list of device object paths.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>ResolveDevice(<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) -&gt; <code class="docutils literal notranslate"><span class="pre">'o'</span></code></p>
+<blockquote>
+<div><ul>
+<li><p>Resolve a flexible device specification to a device object path.</p></li>
+<li><p>Raise com.redhat.Blivet1.DeviceLookupFailed if no matching device was found.</p></li>
+<li><p>Arguments</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>spec - device specification (eg: ‘sda’, ‘LABEL=swap’)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Return the object path of the matching device.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="simple">
+<dt>RemoveDevice(<code class="docutils literal notranslate"><span class="pre">'o'</span></code>)</dt><dd><ul class="simple">
+<li><p>Remove a device specified by object path.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>InitializeDisk(<code class="docutils literal notranslate"><span class="pre">'o'</span></code>)</dt><dd><ul class="simple">
+<li><p>Create a disklabel on a disk specified by object path.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Factory(<code class="docutils literal notranslate"><span class="pre">'a{sv}'</span></code>) -&gt; <code class="docutils literal notranslate"><span class="pre">'o'</span></code></dt><dd><ul>
+<li><p>Configure a non-existent device based on a top-down specification.</p></li>
+<li><p>Return the object path to the configured device.</p></li>
+<li><p>Optional Arguments</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>size (<code class="docutils literal notranslate"><span class="pre">'t'</span></code>) - Device target size in bytes.</p></li>
+<li><p>disks (<code class="docutils literal notranslate"><span class="pre">'ao'</span></code>) - list of object paths of disks to use</p></li>
+<li><p>device (<code class="docutils literal notranslate"><span class="pre">'o'</span></code>) - object path of already configured device to modify</p></li>
+<li><p>name (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - name of device (eg: ‘testdata’)</p></li>
+<li><p>raid_level (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - raid level as a string (eg: ‘raid0’)</p></li>
+<li><p>encrypted (<code class="docutils literal notranslate"><span class="pre">'b'</span></code>) - encrypt device?</p></li>
+<li><p>fstype (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - file system type (eg: ‘xfs’, ‘swap’)</p></li>
+<li><p>label (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - file system label</p></li>
+<li><p>container_name (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - name of container device</p></li>
+<li><p>container_size (<code class="docutils literal notranslate"><span class="pre">'t'</span></code>) - size of container device in bytes (omit for automatic sizing)</p></li>
+<li><p>container_encrypted (<code class="docutils literal notranslate"><span class="pre">'b'</span></code>) - encrypt container device?</p></li>
+<li><p>container_raid_level (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - raid level as a string</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Commit()</dt><dd><ul class="simple">
+<li><p>Commit all scheduled changes to disk.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Properties</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>com.redhat.Blivet0.Device</p>
+<blockquote>
+<div><ul>
+<li><p>Methods</p>
+<blockquote>
+<div><ul>
+<li><p>Setup()</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Active the device.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Teardown()</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Deactivate the device.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Properties</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Name (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - The device’s name (eg: ‘sdb3’)</p></li>
+<li><p>Path (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Full device node path (eg: ‘/dev/mapper/fedora-root’)</p></li>
+<li><p>Type (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Device type (eg: ‘lvmlv’)</p></li>
+<li><p>Size (<code class="docutils literal notranslate"><span class="pre">'t'</span></code>) - Device size in bytes.</p></li>
+<li><p>ID (<code class="docutils literal notranslate"><span class="pre">'i'</span></code>) - Device ID. (used to formulate object path)</p></li>
+<li><p>UUID (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Device UUID (not file system or other formatting UUID)</p></li>
+<li><p>Status (<code class="docutils literal notranslate"><span class="pre">'b'</span></code>) - Is the device active and ready for use?</p></li>
+<li><p>RaidLevel (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - RAID level as a string (eg: ‘raid1’)</p></li>
+<li><p>Parents (<code class="docutils literal notranslate"><span class="pre">'ao'</span></code>) - Object paths of devices on which this device resides.</p></li>
+<li><p>Children (<code class="docutils literal notranslate"><span class="pre">'ao'</span></code>) - Object paths of devices that reside (in any part) on this device.</p></li>
+<li><p>Format (<code class="docutils literal notranslate"><span class="pre">'o'</span></code>) - Object path for this device’s formatting.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>com.redhat.Blivet0.Format</p>
+<blockquote>
+<div><ul>
+<li><p>Methods</p>
+<blockquote>
+<div><ul>
+<li><p>Setup()</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Mount or otherwise activate the formatting.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Teardown()</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Unmount or otherwise deactivate the formatting.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Properties</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Device (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - The full path to the device node. (eg: ‘/dev/mapper/fedora-root’)</p></li>
+<li><p>Type (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Format type. (eg: ‘ext4’)</p></li>
+<li><p>ID (<code class="docutils literal notranslate"><span class="pre">'i'</span></code>) - A unique ID. (Used internally and to formulate object paths.)</p></li>
+<li><p>UUID (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - UUID associated with the formatting.</p></li>
+<li><p>Label (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Label associated with the formatting.</p></li>
+<li><p>Mountable (<code class="docutils literal notranslate"><span class="pre">'b'</span></code>) - Whether this formatting is something that can be mounted.</p></li>
+<li><p>Mountpoint (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Mountpoint associated with this device/formatting.</p></li>
+<li><p>Status (<code class="docutils literal notranslate"><span class="pre">'b'</span></code>) - Whether this formatting is current active or mounted.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>com.redhat.Blivet0.Action</p>
+<blockquote>
+<div><ul>
+<li><p>Methods</p></li>
+<li><p>Properties</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Description (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Description of action. (eg: “[1] Destroy device partition sdb3 (id 7)”)</p></li>
+<li><p>Device (<code class="docutils literal notranslate"><span class="pre">'o'</span></code>) - Object path of device this action operates on.</p></li>
+<li><p>Format (<code class="docutils literal notranslate"><span class="pre">'o'</span></code>) - Object path of formatting this action operates on.</p></li>
+<li><p>Type (<code class="docutils literal notranslate"><span class="pre">'s'</span></code>) - Type of action. (eg: “Create Format”)</p></li>
+<li><p>ID (<code class="docutils literal notranslate"><span class="pre">'i'</span></code>) - A unique ID. (Used internally and to formulate object paths.)</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="section" id="to-do-list">
+<span id="todo"></span><h2>To Do List<a class="headerlink" href="#to-do-list" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>testing</p></li>
+<li><p>PolicyKit integration</p></li>
+<li><p>implement signals</p></li>
+<li><p>show properties when introspecting</p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">DBus Interface</a><ul>
+<li><a class="reference internal" href="#to-do-list">To Do List</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api/formats.html"
+                        title="previous chapter">formats</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="testing.html"
+                        title="next chapter">Testing Blivet</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dbus.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Testing Blivet"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api/formats.html" title="formats"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.2.2 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2013-2020, Red Hat, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+    </div>
+  </body>
+</html>

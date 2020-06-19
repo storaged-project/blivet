@@ -17,6 +17,7 @@ devices
     * :class:`~blivet.devices.disk.DiskDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
         * :attr:`~blivet.devices.storage.StorageDevice.model`
         * :attr:`~blivet.devices.storage.StorageDevice.vendor`
+        * :attr:`~blivet.devices.storage.DiskDevice.wwn`
 
 * :mod:`~blivet.devices.file`
     * :class:`~blivet.devices.file.DirectoryDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)

@@ -1,38 +1,46 @@
-blivet.static_data package
-==========================
+blivet.static\_data package
+===========================
 
 Submodules
 ----------
 
-blivet.static_data.luks_data module
------------------------------------
+blivet.static\_data.luks\_data module
+-------------------------------------
 
 .. automodule:: blivet.static_data.luks_data
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-blivet.static_data.lvm_info module
-----------------------------------
-
-.. automodule:: blivet.static_data.lvm_info
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-blivet.static_data.mpath_info module
+blivet.static\_data.lvm\_info module
 ------------------------------------
 
+.. automodule:: blivet.static_data.lvm_info
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+blivet.static\_data.mpath\_info module
+--------------------------------------
+
 .. automodule:: blivet.static_data.mpath_info
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+blivet.static\_data.nvdimm module
+---------------------------------
+
+.. automodule:: blivet.static_data.nvdimm
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
 Module contents
 ---------------
 
 .. automodule:: blivet.static_data
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

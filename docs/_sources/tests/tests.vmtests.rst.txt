@@ -1,0 +1,38 @@
+tests.vmtests package
+=====================
+
+Submodules
+----------
+
+tests.vmtests.blivet\_reset\_vmtest module
+------------------------------------------
+
+.. automodule:: tests.vmtests.blivet_reset_vmtest
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.vmtests.runvmtests module
+-------------------------------
+
+.. automodule:: tests.vmtests.runvmtests
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.vmtests.vmbackedtestcase module
+-------------------------------------
+
+.. automodule:: tests.vmtests.vmbackedtestcase
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: tests.vmtests
+   :members:
+   :undoc-members:
+   :show-inheritance:

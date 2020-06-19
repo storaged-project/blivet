@@ -1,38 +1,46 @@
-tests.devicelibs_test package
-=============================
+tests.devicelibs\_test package
+==============================
 
 Submodules
 ----------
 
-tests.devicelibs_test.edd_test module
--------------------------------------
-
-.. automodule:: tests.devicelibs_test.edd_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.devicelibs_test.mdraid_test module
+tests.devicelibs\_test.disk\_test module
 ----------------------------------------
 
-.. automodule:: tests.devicelibs_test.mdraid_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: tests.devicelibs_test.disk_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devicelibs_test.raid_test module
---------------------------------------
+tests.devicelibs\_test.edd\_test module
+---------------------------------------
+
+.. automodule:: tests.devicelibs_test.edd_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devicelibs\_test.mdraid\_test module
+------------------------------------------
+
+.. automodule:: tests.devicelibs_test.mdraid_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devicelibs\_test.raid\_test module
+----------------------------------------
 
 .. automodule:: tests.devicelibs_test.raid_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
 Module contents
 ---------------
 
 .. automodule:: tests.devicelibs_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

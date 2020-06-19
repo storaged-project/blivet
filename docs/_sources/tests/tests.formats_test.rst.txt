@@ -1,102 +1,126 @@
-tests.formats_test package
-==========================
+tests.formats\_test package
+===========================
 
 Submodules
 ----------
 
-tests.formats_test.device_test module
--------------------------------------
-
-.. automodule:: tests.formats_test.device_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.formats_test.disklabel_test module
-----------------------------------------
-
-.. automodule:: tests.formats_test.disklabel_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.formats_test.fs_test module
----------------------------------
-
-.. automodule:: tests.formats_test.fs_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.formats_test.fslabeling module
-------------------------------------
-
-.. automodule:: tests.formats_test.fslabeling
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.formats_test.fstesting module
------------------------------------
-
-.. automodule:: tests.formats_test.fstesting
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.formats_test.init_test module
------------------------------------
-
-.. automodule:: tests.formats_test.init_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.formats_test.labeling_test module
+tests.formats\_test.device\_test module
 ---------------------------------------
 
-.. automodule:: tests.formats_test.labeling_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: tests.formats_test.device_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.formats_test.luks_test module
+tests.formats\_test.disklabel\_test module
+------------------------------------------
+
+.. automodule:: tests.formats_test.disklabel_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.fs\_test module
 -----------------------------------
+
+.. automodule:: tests.formats_test.fs_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.fslabeling module
+-------------------------------------
+
+.. automodule:: tests.formats_test.fslabeling
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.fstesting module
+------------------------------------
+
+.. automodule:: tests.formats_test.fstesting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.fsuuid module
+---------------------------------
+
+.. automodule:: tests.formats_test.fsuuid
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.init\_test module
+-------------------------------------
+
+.. automodule:: tests.formats_test.init_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.labeling\_test module
+-----------------------------------------
+
+.. automodule:: tests.formats_test.labeling_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.luks\_test module
+-------------------------------------
 
 .. automodule:: tests.formats_test.luks_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.formats_test.methods_test module
+tests.formats\_test.lvmpv\_test module
 --------------------------------------
+
+.. automodule:: tests.formats_test.lvmpv_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.methods\_test module
+----------------------------------------
 
 .. automodule:: tests.formats_test.methods_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.formats_test.misc_test module
------------------------------------
+tests.formats\_test.misc\_test module
+-------------------------------------
 
 .. automodule:: tests.formats_test.misc_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.formats_test.selinux_test module
---------------------------------------
+tests.formats\_test.selinux\_test module
+----------------------------------------
 
 .. automodule:: tests.formats_test.selinux_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.formats\_test.uuid\_test module
+-------------------------------------
+
+.. automodule:: tests.formats_test.uuid_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
 Module contents
 ---------------
 
 .. automodule:: tests.formats_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

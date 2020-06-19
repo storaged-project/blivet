@@ -1,102 +1,110 @@
-tests.devices_test package
-==========================
+tests.devices\_test package
+===========================
 
 Submodules
 ----------
 
-tests.devices_test.dependencies_test module
--------------------------------------------
-
-.. automodule:: tests.devices_test.dependencies_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.devices_test.device_methods_test module
+tests.devices\_test.dependencies\_test module
 ---------------------------------------------
 
-.. automodule:: tests.devices_test.device_methods_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: tests.devices_test.dependencies_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devices_test.device_names_test module
--------------------------------------------
-
-.. automodule:: tests.devices_test.device_names_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.devices_test.device_packages_test module
-----------------------------------------------
-
-.. automodule:: tests.devices_test.device_packages_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.devices_test.device_properties_test module
+tests.devices\_test.device\_methods\_test module
 ------------------------------------------------
 
-.. automodule:: tests.devices_test.device_properties_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: tests.devices_test.device_methods_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devices_test.lvm_test module
-----------------------------------
+tests.devices\_test.device\_names\_test module
+----------------------------------------------
+
+.. automodule:: tests.devices_test.device_names_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devices\_test.device\_packages\_test module
+-------------------------------------------------
+
+.. automodule:: tests.devices_test.device_packages_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devices\_test.device\_properties\_test module
+---------------------------------------------------
+
+.. automodule:: tests.devices_test.device_properties_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devices\_test.disk\_test module
+-------------------------------------
+
+.. automodule:: tests.devices_test.disk_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devices\_test.lvm\_test module
+------------------------------------
 
 .. automodule:: tests.devices_test.lvm_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devices_test.md_test module
----------------------------------
+tests.devices\_test.md\_test module
+-----------------------------------
 
 .. automodule:: tests.devices_test.md_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devices_test.network_test module
---------------------------------------
-
-.. automodule:: tests.devices_test.network_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tests.devices_test.partition_test module
+tests.devices\_test.network\_test module
 ----------------------------------------
 
-.. automodule:: tests.devices_test.partition_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: tests.devices_test.network_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devices_test.size_test module
------------------------------------
+tests.devices\_test.partition\_test module
+------------------------------------------
+
+.. automodule:: tests.devices_test.partition_test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.devices\_test.size\_test module
+-------------------------------------
 
 .. automodule:: tests.devices_test.size_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-tests.devices_test.tags_test module
------------------------------------
+tests.devices\_test.tags\_test module
+-------------------------------------
 
 .. automodule:: tests.devices_test.tags_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
 Module contents
 ---------------
 
 .. automodule:: tests.devices_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
