@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import setuptools  # pylint: disable=unused-import
 from distutils.core import setup
 from distutils import filelist
 from distutils.command.sdist import sdist
