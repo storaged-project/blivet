@@ -69,10 +69,16 @@ data_files = [
 ]
 
 
+with open("README.md", "r") as f:
+    long_description = f.read()
+
+
 setup(name='blivet',
       version='2.0.2',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://github.com/storaged-project/blivet',
       data_files=data_files,
