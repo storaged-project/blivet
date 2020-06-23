@@ -185,8 +185,9 @@ def __is_blacklisted_blockdev(dev_name):
         if any(re.search(expr, dev_name) for expr in device_name_blacklist):
             return True
 
-    if os.path.exists("/sys/class/block/%s/device/model" % (dev_name,)):
-        model = open("/sys/class/block/%s/device/model" % (dev_name,)).read()
+    model_path = "/sys/class/block/%s/device/model" % dev_name
+    if os.path.exists(model_path):
+        model = open(model_path, encoding="utf-8", errors="replace").read()
         for bad in ("IBM *STMF KERNEL", "SCEI Flash-5", "DGC LUNZ"):
             if model.find(bad) != -1:
                 log.info("ignoring %s with model %s", dev_name, model)
