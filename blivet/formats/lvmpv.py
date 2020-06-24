@@ -26,6 +26,7 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 import os
+import time
 
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
@@ -137,6 +138,9 @@ class LVMPhysicalVolume(DeviceFormat):
             DeviceFormat._destroy(self, **kwargs)
         finally:
             udev.settle()
+            # LVM now has async pvscan jobs so udev.settle doesn't help and if we try to remove
+            # the partition immediately after the pvremove we get an error
+            time.sleep(5)
 
     @property
     def destroyable(self):
