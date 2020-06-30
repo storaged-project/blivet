@@ -81,7 +81,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(DMDevice, "status", return_value=True)
     @patch.object(DMDevice, "update_sysfs_path")
-    @patch.object(DeviceTree, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_is_dm_livecd", return_value=False)
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
@@ -92,7 +92,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         devicetree = DeviceTree()
 
-        # The general case for dm devices is that adding the slave/parent devices
+        # The general case for dm devices is that adding the parent devices
         # will result in the dm device itself being in the tree.
         device = Mock()
         devicetree.get_device_by_name.return_value = device
@@ -100,7 +100,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), device)
-        self.assertEqual(devicetree._add_slave_devices.call_count, 1)  # pylint: disable=no-member
+        self.assertEqual(devicetree._add_parent_devices.call_count, 1)  # pylint: disable=no-member
         self.assertEqual(devicetree.get_device_by_name.call_count, 1)  # pylint: disable=no-member
         # since we faked the lookup as if the device was already in the tree
         # the helper should not have added it, meaning it shouldn't be there
@@ -109,7 +109,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # The other case is adding a live media image
         parent = Mock()
         parent.parents = []
-        devicetree._add_slave_devices.return_value = [parent]
+        devicetree._add_parent_devices.return_value = [parent]
         devicetree._add_device(parent)
         devicetree.get_device_by_name.return_value = None
         device_name = "livedevice"
@@ -239,7 +239,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # could be the first helper class checked.
 
     @patch.object(DeviceTree, "get_device_by_name")
-    @patch.object(DeviceTree, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_lv_vg_name")
     def test_run(self, *args):
@@ -251,7 +251,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         devicetree = DeviceTree()
         data = Mock()
 
-        # Add slave/parent devices and then look up the device.
+        # Add parent devices and then look up the device.
         device_get_name.return_value = sentinel.lv_name
         devicetree.get_device_by_name.return_value = None
 
@@ -271,7 +271,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
              call(sentinel.vg_name),
              call(sentinel.lv_name)])
 
-        # Add slave/parent devices, but the device is still not in the tree
+        # Add parent devices, but the device is still not in the tree
         get_device_by_name.side_effect = None
         get_device_by_name.return_value = None
         self.assertEqual(helper.run(), None)
@@ -636,7 +636,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         # could be the first helper class checked.
 
     @patch.object(DeviceTree, "get_device_by_name")
-    @patch.object(DeviceTree, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_md_uuid")
     @patch("blivet.udev.device_get_md_name")
@@ -647,7 +647,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         devicetree = DeviceTree()
 
-        # base case: _add_slave_devices gets the array into the tree
+        # base case: _add_parent_devices gets the array into the tree
         data = Mock()
         device = Mock()
         device.parents = []
@@ -710,12 +710,12 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
         # could be the first helper class checked.
 
     @patch("blivet.udev.device_get_sysfs_path")
-    @patch.object(DeviceTree, "_add_slave_devices")
+    @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     def test_run(self, *args):
         """Test multipath device populator."""
         device_get_name = args[0]
-        add_slave_devices = args[1]
+        add_parent_devices = args[1]
 
         devicetree = DeviceTree()
         # set up some fake udev data to verify handling of specific entries
@@ -730,13 +730,13 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         device_name = "mpathtest"
         device_get_name.return_value = device_name
-        slave_1 = Mock(tags=set(), wwn=wwn[2:])
-        slave_1.parents = []
-        slave_2 = Mock(tags=set(), wwn=wwn[2:])
-        slave_2.parents = []
-        devicetree._add_device(slave_1)
-        devicetree._add_device(slave_2)
-        add_slave_devices.return_value = [slave_1, slave_2]
+        parent_1 = Mock(tags=set(), wwn=wwn[2:])
+        parent_1.parents = []
+        parent_2 = Mock(tags=set(), wwn=wwn[2:])
+        parent_2.parents = []
+        devicetree._add_device(parent_1)
+        devicetree._add_device(parent_2)
+        add_parent_devices.return_value = [parent_1, parent_2]
 
         helper = self.helper_class(devicetree, data)
 

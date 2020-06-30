@@ -365,7 +365,7 @@ def device_is_disk(info):
                  device_is_dm_lvm(info) or
                  device_is_dm_crypt(info) or
                  (device_is_md(info) and
-                  (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_slaves(info))))))
+                  (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_parents(info))))))
 
 
 def device_is_partition(info):
@@ -444,18 +444,18 @@ def device_get_devname(info):
     return info.get('DEVNAME')
 
 
-def device_get_slaves(info):
-    """ Return a list of udev device objects representing this device's slaves. """
-    slaves_dir = device_get_sysfs_path(info) + "/slaves/"
+def device_get_parents(info):
+    """ Return a list of udev device objects representing this device's parents. """
+    parents_dir = device_get_sysfs_path(info) + "/slaves/"
     names = list()
-    if os.path.isdir(slaves_dir):
-        names = os.listdir(slaves_dir)
+    if os.path.isdir(parents_dir):
+        names = os.listdir(parents_dir)
 
-    slaves = list()
+    parents = list()
     for name in names:
-        slaves.append(get_device(device_node="/dev/" + name))
+        parents.append(get_device(device_node="/dev/" + name))
 
-    return slaves
+    return parents
 
 
 def device_get_md_level(info):
@@ -713,7 +713,7 @@ def device_get_partition_disk(info):
     disk = None
     majorminor = info.get("ID_PART_ENTRY_DISK")
     sysfs_path = device_get_sysfs_path(info)
-    slaves_dir = "%s/slaves" % sysfs_path
+    parents_dir = "%s/slaves" % sysfs_path
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
@@ -721,8 +721,8 @@ def device_get_partition_disk(info):
                 disk = device_get_name(device)
                 break
     elif device_is_dm_partition(info):
-        if os.path.isdir(slaves_dir):
-            parents = os.listdir(slaves_dir)
+        if os.path.isdir(parents_dir):
+            parents = os.listdir(parents_dir)
             if len(parents) == 1:
                 disk = resolve_devspec(parents[0].replace('!', '/'))
     else:

@@ -31,7 +31,7 @@ import parted
 
 from .errors import DeviceError, PartitioningError, AlignmentError
 from .flags import flags
-from .devices import Device, PartitionDevice, LUKSDevice, device_path_to_name
+from .devices import Device, PartitionDevice, device_path_to_name
 from .size import Size
 from .i18n import _
 from .util import stringize, unicodeize, compare
@@ -1626,15 +1626,7 @@ class TotalSizeSet(object):
             :param size: the target combined size
             :type size: :class:`~.size.Size`
         """
-        self.devices = []
-        for device in devices:
-            if isinstance(device, LUKSDevice):
-                partition = device.slave
-            else:
-                partition = device
-
-            self.devices.append(partition)
-
+        self.devices = [d.raw_device for d in devices]
         self.size = size
 
         self.requests = []
@@ -1672,15 +1664,7 @@ class SameSizeSet(object):
             :keyword max_size: the maximum size for growable devices
             :type max_size: :class:`~.size.Size`
         """
-        self.devices = []
-        for device in devices:
-            if isinstance(device, LUKSDevice):
-                partition = device.slave
-            else:
-                partition = device
-
-            self.devices.append(partition)
-
+        self.devices = [d.raw_device for d in devices]
         self.size = size / len(devices)
         self.grow = grow
         self.max_size = max_size

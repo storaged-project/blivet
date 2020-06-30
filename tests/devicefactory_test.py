@@ -102,7 +102,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
                          kwargs.get("encrypted", False) or
                          kwargs.get("container_encrypted", False))
         if kwargs.get("encrypted", False):
-            self.assertEqual(device.slave.format.luks_version,
+            self.assertEqual(device.parents[0].format.luks_version,
                              kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
@@ -322,7 +322,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = args[0]
 
         if kwargs.get("encrypted"):
-            container = device.slave.container
+            container = device.parents[0].container
         else:
             container = device.container
 
@@ -341,7 +341,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             self.assertIsInstance(pv, member_class)
 
             if pv.encrypted:
-                self.assertEqual(pv.slave.format.luks_version,
+                self.assertEqual(pv.parents[0].format.luks_version,
                                  kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
     def test_device_factory(self):
@@ -502,7 +502,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
         device = args[0]
 
         if kwargs.get("encrypted", False):
-            thinlv = device.slave
+            thinlv = device.parents[0]
         else:
             thinlv = device
 

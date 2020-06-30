@@ -52,12 +52,12 @@ class MDDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
 
         try:
-            self._devicetree._add_slave_devices(self.data)
+            self._devicetree._add_parent_devices(self.data)
         except NoSlavesError:
-            log.error("no slaves found for mdarray %s, skipping", name)
+            log.error("no parents found for mdarray %s, skipping", name)
             return None
 
-        # try to get the device again now that we've got all the slaves
+        # try to get the device again now that we've got all the parents
         device = self._devicetree.get_device_by_name(name, incomplete=flags.allow_imperfect_devices)
 
         if device is None:
@@ -74,8 +74,8 @@ class MDDevicePopulator(DevicePopulator):
             device.name = name
 
         if device is None:
-            # if we get here, we found all of the slave devices and
-            # something must be wrong -- if all of the slaves are in
+            # if we get here, we found all of the parent devices and
+            # something must be wrong -- if all of the parents are in
             # the tree, this device should be as well
             if name is None:
                 name = udev.device_get_name(self.data)
