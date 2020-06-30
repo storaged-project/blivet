@@ -39,7 +39,7 @@ from gi.repository import BlockDev as blockdev
 global_udev = pyudev.Context()
 log = logging.getLogger("blivet")
 
-device_name_blacklist = []
+ignored_device_names = []
 """ device name regexes to ignore; this should be empty by default """
 
 
@@ -77,7 +77,7 @@ def get_devices(subsystem="block"):
 
     result = []
     for device in global_udev.list_devices(subsystem=subsystem):
-        if not __is_blacklisted_blockdev(device.sys_name):
+        if not __is_ignored_blockdev(device.sys_name):
             dev = device_to_dict(device)
             result.append(dev)
 
@@ -176,13 +176,13 @@ def resolve_glob(glob):
     return ret
 
 
-def __is_blacklisted_blockdev(dev_name):
+def __is_ignored_blockdev(dev_name):
     """Is this a blockdev we never want for an install?"""
     if dev_name.startswith("ram") or dev_name.startswith("fd"):
         return True
 
-    if device_name_blacklist:
-        if any(re.search(expr, dev_name) for expr in device_name_blacklist):
+    if ignored_device_names:
+        if any(re.search(expr, dev_name) for expr in ignored_device_names):
             return True
 
     model_path = "/sys/class/block/%s/device/model" % dev_name

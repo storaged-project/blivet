@@ -315,7 +315,7 @@ class PopulatorMixin(object):
                 continue
 
             # Make sure lvm doesn't get confused by PVs that belong to
-            # incomplete VGs. We will remove the PVs from the blacklist when/if
+            # incomplete VGs. We will remove the PVs from the reject list when/if
             # the time comes to remove the incomplete VG and its PVs.
             for pv in vg.pvs:
                 lvm.lvm_cc_addFilterRejectRegexp(pv.name)
