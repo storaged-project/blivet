@@ -54,12 +54,6 @@ class Cache(object):
         """
 
     @abc.abstractproperty
-    def mode(self):
-        """Mode of the cache (writeback/writethrough...)
-        :rtype: str
-        """
-
-    @abc.abstractproperty
     def backing_device_name(self):
         """Name of the backing (big/slow) device of the cache (if any)"""
 
