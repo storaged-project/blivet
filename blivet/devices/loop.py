@@ -29,6 +29,7 @@ import os
 from .. import errors
 from ..storage_log import log_method_call
 from ..tasks import availability
+from ..util import deprecated
 
 import logging
 log = logging.getLogger("blivet")
@@ -123,3 +124,8 @@ class LoopDevice(StorageDevice):
         StorageDevice._post_teardown(self, recursive=recursive)
         self.name = "tmploop%d" % self.id
         self.sysfs_path = ''
+
+    @deprecated("3.3", "parents[0] refers to the same device")
+    @property
+    def slave(self):
+        return self.parents[0]

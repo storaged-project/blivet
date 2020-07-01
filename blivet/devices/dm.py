@@ -31,6 +31,7 @@ from .. import errors
 from .. import util
 from ..storage_log import log_method_call
 from .. import udev
+from ..util import deprecated
 from ..tasks import availability
 
 import logging
@@ -153,6 +154,12 @@ class DMDevice(StorageDevice):
 
         log_method_call(self, self.name, status=self.status)
         super(DMDevice, self)._set_name(value)
+
+    @deprecated("3.3", "parents[0] refers to the same device")
+    @property
+    def slave(self):
+        """ This device's backing device. """
+        return self.parents[0]
 
 
 class DMLinearDevice(DMDevice):

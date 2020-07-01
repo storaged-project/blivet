@@ -26,6 +26,7 @@ from ..storage_log import log_method_call
 from ..size import Size
 from ..tasks import availability
 from ..errors import DeviceError
+from ..util import deprecated
 
 import logging
 log = logging.getLogger("blivet")
@@ -69,6 +70,11 @@ class LUKSDevice(DMCryptDevice):
         if self._has_integrity:
             return self.parents[0].parents[0]
         return self.parents[0]
+
+    @deprecated("3.3", "'raw_device' property provides the same functionality")
+    @property
+    def slave(self):
+        return self.raw_device
 
     def _get_size(self):
         if not self.exists:
