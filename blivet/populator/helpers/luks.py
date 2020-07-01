@@ -128,3 +128,16 @@ class LUKSFormatPopulator(FormatPopulator):
 class IntegrityFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "integrity"
+
+    def _get_kwargs(self):
+        kwargs = super(IntegrityFormatPopulator, self)._get_kwargs()
+
+        holders = udev.device_get_holders(self.data)
+        if holders:
+            kwargs["name"] = udev.device_get_name(holders[0])
+        else:
+            # this is just a fallback for closed and non-existing integrity devices
+            # similar to LUKS devices where we assume the name of the active device
+            # is luks-<UUID> (integrity format has no UUID so we are using name here)
+            kwargs["name"] = "integrity-%s" % udev.device_get_name(self.data)
+        return kwargs
