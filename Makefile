@@ -1,6 +1,8 @@
 PYTHON?=python3
 PKG_INSTALL?=dnf
 
+L10N_REPOSITORY=https://github.com/storaged-project/blivet-weblate
+
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
 VERSION=$(shell $(PYTHON) setup.py --version)
@@ -12,28 +14,46 @@ VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 COVERAGE=$(PYTHON) -m coverage
 
-ZANATA_PULL_ARGS = --transdir ./po/
-ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
-
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 all:
 	$(MAKE) -C po
 
 po-pull:
-	@which zanata >/dev/null 2>&1 || ( echo "You need to install Zanata client to download translation files"; exit 1 )
-	zanata pull $(ZANATA_PULL_ARGS)
+	git submodule update --init po
+	git submodule update --remote --merge po
 
-po-empty:
-	for lingua in $$(gawk 'match($$0, /locale>(.*)<\/locale/, ary) {print ary[1]}' ./zanata.xml) ; do \
-		[ -f ./po/$$lingua.po ] || \
-		msginit -i ./po/$(PKGNAME).pot -o ./po/$$lingua.po --no-translator || \
-		exit 1 ; \
-	done
-
-# Try to fetch the real .po files, but if that fails use the empty ones
-po-fallback:
-	$(MAKE) po-pull || $(MAKE) po-empty
+potfile:
+	make -C po $(PKGNAME).pot
+	# This algorithm will make these steps:
+	# - clone localization repository
+	# - copy pot file to this repository
+	# - check if pot file is changed (ignore the POT-Creation-Date otherwise it's always changed)
+	# - if not changed:
+	#   - remove cloned repository
+	# - if changed:
+	#   - add pot file
+	#   - commit pot file
+	#   - tell user to verify this file and push to the remote from the temp dir
+	TEMP_DIR=$$(mktemp --tmpdir -d $(PKGNAME)-localization-XXXXXXXXXX) || exit 1 ; \
+	git clone --depth 1 -b master -- $(L10N_REPOSITORY) $$TEMP_DIR || exit 2 ; \
+	cp po/$(PKGNAME).pot $$TEMP_DIR/ || exit 3 ; \
+	pushd $$TEMP_DIR ; \
+	git difftool --trust-exit-code -y -x "diff -u -I '^\"POT-Creation-Date: .*$$'" HEAD ./$(PKGNAME).pot &>/dev/null ; \
+	if [ $$? -eq 0  ] ; then \
+		popd ; \
+		echo "Pot file is up to date" ; \
+		rm -rf $$TEMP_DIR ; \
+		git submodule foreach git checkout -- blivet.pot ; \
+	else \
+		git add ./$(PKGNAME).pot && \
+		git commit -m "Update $(PKGNAME).pot" && \
+		popd && \
+		git submodule foreach git checkout -- blivet.pot ; \
+		echo "Pot file updated for the localization repository $(L10N_REPOSITORY)" && \
+		echo "Please confirm and push:" && \
+		echo "$$TEMP_DIR" ; \
+	fi ;
 
 install-requires:
 	@echo "*** Installing the dependencies required for testing and analysis ***"
@@ -65,11 +85,15 @@ pep8:
 	else \
 		echo "You need to install pycodestyle/pep8 to run this check."; exit 1; \
 	fi ; \
-	$$pep8 --ignore=E501,E402,E731,W504 blivet/ tests/ examples/
+	$$pep8 --ignore=E501,E402,E731,W504,E741 blivet/ tests/ examples/
 
-canary: po-fallback
+canary:
 	@echo "*** Running translation-canary tests ***"
-	PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/blivet.pot
+	@if [ ! -e po/$(PKGNAME).pot ]; then \
+		echo "Translation files not present. Skipping" ; \
+	else \
+		PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/$(PKGNAME).pot; \
+	fi ; \
 
 check:
 	@status=0; \
@@ -113,7 +137,6 @@ archive: po-pull
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
 	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) setup.py -q sdist --dist-dir .. )
 	rm -rf $(PKGNAME)-$(VERSION)
-	git checkout -- po/$(PKGNAME).pot
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	@make tests-archive
 
@@ -147,10 +170,8 @@ bumpver: po-pull
 		opts="$${opts} -d" ; \
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
-	make -C po $(PKGNAME).pot ; \
-	zanata push $(ZANATA_PUSH_ARGS)
 
-scratch-bumpver: po-empty
+scratch-bumpver:
 	@opts="-n $(PKGNAME) -v $(RPMVERSION) -r $(RPMRELEASE) --newrelease $(RC_RELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
 		opts="$${opts} -i $(IGNORE)" ; \
@@ -165,9 +186,8 @@ scratch-bumpver: po-empty
 		opts="$${opts} -d" ; \
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
-	make -C po $(PKGNAME).pot
 
-scratch: po-empty
+scratch:
 	@rm -f ChangeLog
 	@make ChangeLog
 	@rm -rf $(PKGNAME)-$(VERSION).tar.gz

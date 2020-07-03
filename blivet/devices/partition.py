@@ -35,7 +35,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, get_format
-from ..size import Size, MiB
+from ..size import Size, MiB, ROUND_DOWN
 
 import logging
 log = logging.getLogger("blivet")
@@ -934,8 +934,14 @@ class PartitionDevice(StorageDevice):
 
     @property
     def resizable(self):
-        return super(PartitionDevice, self).resizable and \
-            self.disk.type != 'dasd' and self.disklabel_supported
+        if not self.exists:
+            return False
+        elif self.disk.type == 'dasd' or not self.disklabel_supported:
+            return False
+        elif self.is_extended:
+            return True
+        else:
+            return super(PartitionDevice, self).resizable
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
@@ -961,7 +967,8 @@ class PartitionDevice(StorageDevice):
         data.resize = (self.exists and self.target_size and
                        self.target_size != self.current_size)
         if not self.exists:
-            data.size = self.req_base_size.convert_to(MiB)
+            # round this to nearest MiB before doing anything else
+            data.size = self.req_base_size.round_to_nearest(MiB, rounding=ROUND_DOWN).convert_to(spec=MiB)
             data.grow = self.req_grow
             if self.req_grow:
                 data.max_size_mb = self.req_max_size.convert_to(MiB)
@@ -974,4 +981,6 @@ class PartitionDevice(StorageDevice):
             data.on_part = self.name                     # by-id
 
             if data.resize:
-                data.size = self.size.convert_to(MiB)
+                # on s390x in particular, fractional sizes are reported, which
+                # cause issues when writing to ks.cfg
+                data.size = self.size.round_to_nearest(MiB, rounding=ROUND_DOWN).convert_to(spec=MiB)

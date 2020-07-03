@@ -1103,7 +1103,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # check if we have a cache pool internal LV
             for lv in self._internal_lvs:
                 if lv.int_lv_type == LVMInternalLVtype.cache_pool:
-                    self._cache = LVMCache(self, size=lv.size, exists=True)
+                    if self.seg_type == "cache":
+                        self._cache = LVMCache(self, size=lv.size, exists=True)
+                    elif self.seg_type == "writecache":
+                        self._cache = LVMWriteCache(self, size=lv.size, exists=True)
 
         return self._cache
 
@@ -2265,6 +2268,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
 class LVMCache(Cache):
 
+    type = "cache"
+
     """Class providing the cache-related functionality of a cached LV"""
 
     def __init__(self, cached_lv, size=None, md_size=None, exists=False, pvs=None, mode=None):
@@ -2406,6 +2411,52 @@ class LVMCache(Cache):
         ret = blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname)
         blockdev.lvm.cache_detach(vg_name, self._cached_lv.lvname, False)
         return ret
+
+
+class LVMWriteCache(Cache):
+
+    type = "writecache"
+
+    def __init__(self, cached_lv, size, exists):
+        self._cached_lv = cached_lv
+        self._exists = exists
+        self._size = size
+
+        if not self._exists:
+            raise ValueError("Only preexisting LVM writecache devices are currently supported.")
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def md_size(self):
+        # there are no metadata for writecache
+        return Size(0)
+
+    @property
+    def vg_space_used(self):
+        return self.size
+
+    @property
+    def exists(self):
+        return self._exists
+
+    @property
+    def stats(self):
+        return None
+
+    @property
+    def backing_device_name(self):
+        return self._cached_lv.name
+
+    @property
+    def cache_device_name(self):
+        vg_name = self._cached_lv.vg.name
+        return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
+
+    def detach(self):
+        raise NotImplementedError
 
 
 class LVMCacheStats(CacheStats):

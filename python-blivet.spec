@@ -179,14 +179,14 @@ configuration.
 %if %{with python2}
 %files -n python2-%{realname}
 %license COPYING
-%doc README ChangeLog examples
+%doc README.md ChangeLog examples
 %{python2_sitelib}/*
 %endif
 
 %if %{with python3}
 %files -n python3-%{realname}
 %license COPYING
-%doc README ChangeLog examples
+%doc README.md ChangeLog examples
 %{python3_sitelib}/*
 %endif
 
