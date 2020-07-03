@@ -77,7 +77,7 @@ class Blivet(object):
         self._dump_file = "%s/storage.state" % tempfile.gettempdir()
 
         try:
-            options = "NAME,SIZE,OWNER,GROUP,MODE,FSTYPE,LABEL,UUID,PARTUUID,FSAVAIL,FSUSE%,MOUNTPOINT"
+            options = "NAME,SIZE,OWNER,GROUP,MODE,FSTYPE,LABEL,UUID,PARTUUID,MOUNTPOINT"
             out = capture_output(["lsblk", "--bytes", "-a", "-o", options])
         except Exception:  # pylint: disable=broad-except
             pass
