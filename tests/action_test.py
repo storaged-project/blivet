@@ -56,7 +56,7 @@ FORMAT_CLASSES = [
 
 
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
-@unittest.skipUnless(not any(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
+@unittest.skipUnless(all(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
 
     """ DeviceActionTestSuite """
@@ -870,7 +870,7 @@ class DeviceActionTestCase(StorageTestCase):
                                   name="testlv2", parents=[testvg])
         testlv2.format = self.new_format("ext4", device=testlv2.path,
                                          exists=True, device_instance=testlv2)
-        shrink_lv2 = ActionResizeDevice(testlv2, testlv2.size - Size("10 GiB"))
+        shrink_lv2 = ActionResizeDevice(testlv2, testlv2.size - Size("10 GiB") + Ext4FS._min_size)
         shrink_lv2.apply()
 
         self.assertTrue(grow_lv.requires(shrink_lv2))
@@ -1251,6 +1251,45 @@ class DeviceActionTestCase(StorageTestCase):
         self.storage.devicetree.actions.remove(remove_pool)
         self.assertEqual(set(self.storage.lvs), {pool})
         self.assertEqual(set(pool._internal_lvs), {lv1, lv2})
+
+    def test_lvm_vdo_destroy(self):
+        self.destroy_all_devices()
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               size=Size("50 GiB"), parents=[sdc],
+                               fmt=blivet.formats.get_format("lvmpv"))
+        self.schedule_create_device(sdc1)
+
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="vg", parents=[sdc1])
+        self.schedule_create_device(vg)
+
+        pool = self.new_device(device_class=LVMLogicalVolumeDevice,
+                               name="data", parents=[vg],
+                               size=Size("10 GiB"),
+                               seg_type="vdo-pool", exists=True)
+        self.storage.devicetree._add_device(pool)
+        lv = self.new_device(device_class=LVMLogicalVolumeDevice,
+                             name="meta", parents=[pool],
+                             size=Size("50 GiB"),
+                             seg_type="vdo", exists=True)
+        self.storage.devicetree._add_device(lv)
+
+        remove_lv = self.schedule_destroy_device(lv)
+        self.assertListEqual(pool.lvs, [])
+        self.assertNotIn(lv, vg.lvs)
+
+        # cancelling the action should put lv back to both vg and pool lvs
+        self.storage.devicetree.actions.remove(remove_lv)
+        self.assertListEqual(pool.lvs, [lv])
+        self.assertIn(lv, vg.lvs)
+
+        # can't remove non-leaf pool
+        with self.assertRaises(ValueError):
+            self.schedule_destroy_device(pool)
+
+        self.schedule_destroy_device(lv)
+        self.schedule_destroy_device(pool)
 
 
 class ConfigurationActionsTest(unittest.TestCase):
