@@ -145,6 +145,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.edd_dict, dict())
 
     @patch.object(StorageDevice, "add_hook")
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_add_device(self, *args):  # pylint: disable=unused-argument
         dt = DeviceTree()
 
@@ -186,6 +187,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev3.name in dt.names)
 
     @patch.object(StorageDevice, "remove_hook")
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_remove_device(self, *args):  # pylint: disable=unused-argument
         dt = DeviceTree()
 
