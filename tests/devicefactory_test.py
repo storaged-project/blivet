@@ -350,7 +350,12 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
                 self.assertEqual(pv.slave.format.luks_version,
                                  kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
-    def test_device_factory(self):
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         super(LVMFactoryTestCase, self).test_device_factory()
 
         ##
@@ -465,6 +470,14 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
+        super(LVMFactoryTestCase, self).test_factory_defaults()
+
     def _get_size_delta(self, devices=None):
         if not devices:
             delta = Size("2 MiB") * len(self.b.disks)
@@ -473,7 +486,12 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
         return delta
 
-    def test_get_container(self):
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_get_container(self, *args):  # pylint: disable=unused-argument
         for disk in self.b.disks:
             self.b.format_device(disk, get_format("lvmpv"))
 
@@ -494,6 +512,22 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         vg._complete = True
         self.assertEqual(factory.get_container(), None)
         self.assertEqual(factory.get_container(allow_existing=True), vg)
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_get_free_disk_space(self, *args):
+        super(LVMFactoryTestCase, self).test_get_free_disk_space()
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
+        super(LVMFactoryTestCase, self).test_normalize_size()
 
 
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
@@ -533,7 +567,7 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
     device_class = MDRaidArrayDevice
 
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
-    def test_device_factory(self, *args):  # pylint: disable=unused-argument
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         # RAID0 across two disks
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,

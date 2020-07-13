@@ -336,13 +336,15 @@ class LVMLogicalVolumeDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
     def destroy_calls_udev_settle(self):
         return False
 
-    def test_setup(self):
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_setup(self, *args):  # pylint: disable=unused-argument,arguments-differ
         super(LVMLogicalVolumeDeviceMethodsTestCase, self).test_setup()
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             self.device._setup()
             self.assertTrue(lvm.lvactivate.called)
 
-    def test_teardown(self):
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_teardown(self, *args):  # pylint: disable=unused-argument,arguments-differ
         with patch("blivet.devicelibs.lvm.lvmetad_socket_exists", return_value=False):
             super(LVMLogicalVolumeDeviceMethodsTestCase, self).test_teardown()
 

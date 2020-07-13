@@ -138,7 +138,9 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
         self.assertFalse(self.partition1.exists)
         self.assertFalse(self.partition2.exists)
 
-    def test_recursive_remove(self):
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    def test_recursive_remove(self, *args):  # pylint: disable=unused-argument
         devicetree = DeviceTree()
         devicetree._add_device(self.disk1)
         devicetree._add_device(self.partition1)
