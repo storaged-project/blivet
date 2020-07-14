@@ -455,5 +455,6 @@ TUNE2FS_APP = application_by_version("tune2fs", E2FSPROGS_VERSION)
 XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")
+XFSRESIZE_APP = application("xfs_growfs")
 
 MOUNT_APP = application("mount")
