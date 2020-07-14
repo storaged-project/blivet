@@ -2,8 +2,13 @@ import os
 import tempfile
 import unittest
 
+import parted
+
 import blivet.formats.fs as fs
 from blivet.size import Size, ROUND_DOWN
+from blivet.errors import DeviceFormatError
+from blivet.formats import get_format
+from blivet.devices import PartitionDevice, DiskDevice
 
 from tests import loopbackedtestcase
 
@@ -49,6 +54,92 @@ class ReiserFSTestCase(fstesting.FSAsRoot):
 
 class XFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.XFS
+
+    def can_resize(self, an_fs):
+        resize_tasks = (an_fs._resize, an_fs._size_info)
+        return not any(t.availability_errors for t in resize_tasks)
+
+    def _create_partition(self, disk, size):
+        disk.format = get_format("disklabel", device=disk.path, label_type="msdos")
+        disk.format.create()
+        pstart = disk.format.alignment.grainSize
+        pend = pstart + int(Size(size) / disk.format.parted_device.sectorSize)
+        disk.format.add_partition(pstart, pend, parted.PARTITION_NORMAL)
+        disk.format.parted_disk.commit()
+        part = disk.format.parted_disk.getPartitionBySector(pstart)
+
+        device = PartitionDevice(os.path.basename(part.path))
+        device.disk = disk
+        device.exists = True
+        device.parted_partition = part
+
+        return device
+
+    def _remove_partition(self, partition, disk):
+        disk.format.remove_partition(partition.parted_partition)
+        disk.format.parted_disk.commit()
+
+    def test_resize(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
+        an_fs.update_size_info()
+
+        self._test_sizes(an_fs)
+        # CHECKME: target size is still 0 after updated_size_info is called.
+        self.assertEqual(an_fs.size, Size(0) if an_fs.resizable else an_fs._size)
+
+        if not self.can_resize(an_fs):
+            self.assertFalse(an_fs.resizable)
+            # Not resizable, so can not do resizing actions.
+            with self.assertRaises(DeviceFormatError):
+                an_fs.target_size = Size("64 MiB")
+            with self.assertRaises(DeviceFormatError):
+                an_fs.do_resize()
+        else:
+            disk = DiskDevice(os.path.basename(self.loop_devices[0]))
+            part = self._create_partition(disk, Size("50 MiB"))
+            an_fs = self._fs_class()
+            an_fs.device = part.path
+            self.assertIsNone(an_fs.create())
+            an_fs.update_size_info()
+
+            self.assertTrue(an_fs.resizable)
+
+            # grow the partition so we can grow the filesystem
+            self._remove_partition(part, disk)
+            part = self._create_partition(disk, size=part.size + Size("40 MiB"))
+
+            # Try a reasonable target size
+            TARGET_SIZE = Size("64 MiB")
+            an_fs.target_size = TARGET_SIZE
+            self.assertEqual(an_fs.target_size, TARGET_SIZE)
+            self.assertNotEqual(an_fs._size, TARGET_SIZE)
+            self.assertIsNone(an_fs.do_resize())
+            ACTUAL_SIZE = TARGET_SIZE.round_to_nearest(an_fs._resize.unit, rounding=ROUND_DOWN)
+            self.assertEqual(an_fs.size, ACTUAL_SIZE)
+            self.assertEqual(an_fs._size, ACTUAL_SIZE)
+            self._test_sizes(an_fs)
+
+            self._remove_partition(part, disk)
+
+        # and no errors should occur when checking
+        self.assertIsNone(an_fs.do_check())
+
+    def test_shrink(self):
+        self.skipTest("Not checking resize for this test category.")
+
+    def test_too_small(self):
+        self.skipTest("Not checking resize for this test category.")
+
+    def test_no_explicit_target_size2(self):
+        self.skipTest("Not checking resize for this test category.")
+
+    def test_too_big2(self):
+        # XXX this tests assumes that resizing to max size - 1 B will fail, but xfs_grow won't
+        self.skipTest("Not checking resize for this test category.")
 
 
 class HFSTestCase(fstesting.FSAsRoot):
