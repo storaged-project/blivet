@@ -898,7 +898,7 @@ class Blivet(object):
         max_len = 96    # No, you don't need longer names than this. Really.
         tmp = name.strip()
         tmp = tmp.replace("/", "_")
-        tmp = re.sub("[^0-9a-zA-Z._-]", "", tmp)
+        tmp = re.sub("[^0-9a-zA-Z._-@]", "", tmp)
 
         # Remove any '-' or '_' prefixes
         tmp = re.sub("^[-_]*", "", tmp)
