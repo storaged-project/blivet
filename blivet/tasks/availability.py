@@ -456,5 +456,6 @@ XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")
 XFSRESIZE_APP = application("xfs_growfs")
+XFSREPAIR_APP = application("xfs_repair")
 
 MOUNT_APP = application("mount")
