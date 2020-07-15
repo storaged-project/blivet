@@ -1224,6 +1224,24 @@ class ExFATFS(FS):
 register_device_format(ExFATFS)
 
 
+class F2FS(FS):
+
+    """ f2fs filesystem. """
+    _type = "f2fs"
+    _labelfs = fslabeling.F2FSLabeling()
+    _formattable = True
+    _linux_native = True
+    _supported = True
+    _min_size = Size("1 MiB")
+    _max_size = Size("16 TiB")
+    _packages = ["f2fs-tools"]
+    _fsck_class = fsck.F2FSFSCK
+    _mkfs_class = fsmkfs.F2FSMkfs
+
+
+register_device_format(F2FS)
+
+
 # if this isn't going to be mountable it might as well not be here
 class NFS(FS):
 

@@ -148,5 +148,13 @@ class NTFSFSCK(FSCK):
         return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
 
 
+class F2FSFSCK(FSCK):
+    ext = availability.FSCK_F2FS_APP
+    options = ["-a"]
+
+    def _error_message(self, rc):
+        return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
+
+
 class UnimplementedFSCK(fstask.UnimplementedFSTask):
     pass

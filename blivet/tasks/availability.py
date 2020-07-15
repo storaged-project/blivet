@@ -456,4 +456,7 @@ XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")
 
+FSCK_F2FS_APP = application("fsck.f2fs")
+MKFS_F2FS_APP = application("mkfs.f2fs")
+
 MOUNT_APP = application("mount")
