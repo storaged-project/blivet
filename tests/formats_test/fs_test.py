@@ -123,10 +123,10 @@ class XFSTestCase(fstesting.FSAsRoot):
             self.assertEqual(an_fs._size, ACTUAL_SIZE)
             self._test_sizes(an_fs)
 
-            self._remove_partition(part, disk)
+            # and no errors should occur when checking
+            self.assertIsNone(an_fs.do_check())
 
-        # and no errors should occur when checking
-        self.assertIsNone(an_fs.do_check())
+            self._remove_partition(part, disk)
 
     def test_shrink(self):
         self.skipTest("Not checking resize for this test category.")

@@ -1085,6 +1085,7 @@ class XFS(FS):
     _supported = True
     _resizable = True
     _packages = ["xfsprogs"]
+    _fsck_class = fsck.XFSCK
     _info_class = fsinfo.XFSInfo
     _mkfs_class = fsmkfs.XFSMkfs
     _readlabel_class = fsreadlabel.XFSReadLabel
