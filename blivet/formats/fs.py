@@ -60,12 +60,6 @@ from .fslib import kernel_filesystems
 import logging
 log = logging.getLogger("blivet")
 
-import gi
-gi.require_version("GLib", "2.0")
-gi.require_version("BlockDev", "2.0")
-
-from gi.repository import GLib
-from gi.repository import BlockDev
 
 AVAILABLE_FILESYSTEMS = kernel_filesystems
 
@@ -462,13 +456,13 @@ class FS(DeviceFormat):
 
         for module in self._modules:
             try:
-                succ = BlockDev.utils_have_kernel_module(module)
-            except GLib.GError as e:
+                rc = util.run_program(["modprobe", "--dry-run", module])
+            except OSError as e:
                 log.error("Could not check kernel module availability %s: %s", module, e)
                 self._supported = False
                 return
 
-            if not succ:
+            if rc:
                 log.debug("Kernel module %s not available", module)
                 self._supported = False
                 return
