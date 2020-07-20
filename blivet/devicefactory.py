@@ -847,7 +847,8 @@ class DeviceFactory(object):
                 swap=(self.fstype == "swap"),
                 mountpoint=self.mountpoint)
 
-        safe_new_name = self.storage.safe_device_name(self.device_name)
+        safe_new_name = self.storage.safe_device_name(self.device_name,
+                                                      get_device_type(self.device))
         if self.device.name != safe_new_name:
             if not safe_new_name:
                 log.error("not renaming '%s' to invalid name '%s'",
@@ -1468,7 +1469,7 @@ class LVMFactory(DeviceFactory):
                 mountpoint=self.mountpoint)
 
         lvname = "%s-%s" % (self.vg.name, self.device_name)
-        safe_new_name = self.storage.safe_device_name(lvname)
+        safe_new_name = self.storage.safe_device_name(lvname, DEVICE_TYPE_LVM)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
