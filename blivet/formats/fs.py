@@ -1217,6 +1217,13 @@ class NTFS(FS):
 register_device_format(NTFS)
 
 
+class ExFATFS(FS):
+    _type = "exfat"
+
+
+register_device_format(ExFATFS)
+
+
 # if this isn't going to be mountable it might as well not be here
 class NFS(FS):
 
