@@ -123,6 +123,18 @@ class Ext2FSCK(FSCK):
         return "\n".join(msgs) or None
 
 
+class XFSCK(FSCK):
+    _fsck_errors = {1: "Runtime error encountered during repair operation.",
+                    2: "XFS repair was unable to proceed due to a dirty log."}
+
+    ext = availability.XFSREPAIR_APP
+    options = []
+
+    def _error_message(self, rc):
+        msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
+        return "\n".join(msgs) or None
+
+
 class HFSPlusFSCK(FSCK):
     _fsck_errors = {3: "Quick check found a dirty filesystem; no repairs done.",
                     4: "Root filesystem was dirty. System should be rebooted.",

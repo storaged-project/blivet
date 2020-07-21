@@ -1083,11 +1083,14 @@ class XFS(FS):
     _formattable = True
     _linux_native = True
     _supported = True
+    _resizable = True
     _packages = ["xfsprogs"]
+    _fsck_class = fsck.XFSCK
     _info_class = fsinfo.XFSInfo
     _mkfs_class = fsmkfs.XFSMkfs
     _readlabel_class = fsreadlabel.XFSReadLabel
     _size_info_class = fssize.XFSSize
+    _resize_class = fsresize.XFSResize
     _sync_class = fssync.XFSSync
     _writelabel_class = fswritelabel.XFSWriteLabel
     _writeuuid_class = fswriteuuid.XFSWriteUUID
