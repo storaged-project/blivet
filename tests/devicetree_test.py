@@ -1,6 +1,7 @@
 import test_compat  # pylint: disable=unused-import
 
 from six.moves.mock import Mock, patch, PropertyMock, sentinel  # pylint: disable=no-name-in-module,import-error
+import os
 import six
 import unittest
 
@@ -107,6 +108,7 @@ class DeviceTreeTestCase(unittest.TestCase):
             tree._remove_device(lv)
             self.assertFalse(lv.name in tree.names)
 
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
     def test_reset(self):
         dt = DeviceTree()
         names = ["fakedev1", "fakedev2"]
@@ -145,6 +147,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.edd_dict, dict())
 
     @patch.object(StorageDevice, "add_hook")
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_add_device(self, *args):  # pylint: disable=unused-argument
         dt = DeviceTree()
 
@@ -186,6 +189,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev3.name in dt.names)
 
     @patch.object(StorageDevice, "remove_hook")
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_remove_device(self, *args):  # pylint: disable=unused-argument
         dt = DeviceTree()
 
