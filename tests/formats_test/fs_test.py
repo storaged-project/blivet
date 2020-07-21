@@ -72,6 +72,10 @@ class NTFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NTFS
 
 
+class F2FSTestCase(fstesting.FSAsRoot):
+    _fs_class = fs.F2FS
+
+
 @unittest.skip("Unable to create because device fails device_check().")
 class NFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NFS

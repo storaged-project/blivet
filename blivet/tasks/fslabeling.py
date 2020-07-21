@@ -114,3 +114,12 @@ class NTFSLabeling(FSLabeling):
     @classmethod
     def label_format_ok(cls, label):
         return len(label) < 129
+
+
+class F2FSLabeling(FSLabeling):
+
+    default_label = ""
+
+    @classmethod
+    def label_format_ok(cls, label):
+        return len(label) < 513
