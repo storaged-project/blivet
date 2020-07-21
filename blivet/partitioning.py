@@ -28,6 +28,7 @@ import gi
 gi.require_version("BlockDev", "2.0")
 
 import parted
+import _ped
 
 from .errors import DeviceError, PartitioningError, AlignmentError
 from .flags import flags
@@ -466,8 +467,13 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
                                  type=part_type,
                                  geometry=new_geom)
     constraint = parted.Constraint(exactGeom=new_geom)
-    disklabel.parted_disk.addPartition(partition=partition,
-                                       constraint=constraint)
+
+    try:
+        disklabel.parted_disk.addPartition(partition=partition,
+                                           constraint=constraint)
+    except _ped.PartitionException as e:
+        raise PartitioningError(_("failed to add partition to disk: %s") % str(e))
+
     return partition
 
 
