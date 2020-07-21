@@ -27,6 +27,8 @@ from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
 from blivet.devices.lvm import LVMCacheRequest
 
+from blivet.errors import PartitioningError
+
 from tests.imagebackedtestcase import ImageBackedTestCase
 from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
@@ -254,7 +256,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a logical partition to a primary free region
             #
-            with six.assertRaisesRegex(self, parted.PartitionException,
+            with six.assertRaisesRegex(self, PartitioningError,
                                        "no extended partition"):
                 part = add_partition(disk.format, free, parted.PARTITION_LOGICAL,
                                      Size("10 MiB"))
@@ -286,7 +288,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a primary partition to an extended free region
             #
-            with six.assertRaisesRegex(self, parted.PartitionException, "overlap"):
+            with six.assertRaisesRegex(self, PartitioningError, "overlap"):
                 part = add_partition(disk.format, all_free[1],
                                      parted.PARTITION_NORMAL,
                                      Size("10 MiB"), all_free[1].start)

@@ -1103,7 +1103,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # check if we have a cache pool internal LV
             for lv in self._internal_lvs:
                 if lv.int_lv_type == LVMInternalLVtype.cache_pool:
-                    self._cache = LVMCache(self, size=lv.size, exists=True)
+                    if self.seg_type == "cache":
+                        self._cache = LVMCache(self, size=lv.size, exists=True)
+                    elif self.seg_type == "writecache":
+                        self._cache = LVMWriteCache(self, size=lv.size, exists=True)
 
         return self._cache
 
@@ -1789,8 +1792,132 @@ class LVMThinLogicalVolumeMixin(object):
         data.pool_name = self.pool.lvname
 
 
+class LVMVDOPoolMixin(object):
+    def __init__(self):
+        self._lvs = []
+
+    @property
+    def is_vdo_pool(self):
+        return self.seg_type == "vdo-pool"
+
+    @property
+    def type(self):
+        return "lvmvdopool"
+
+    @property
+    def resizable(self):
+        return False
+
+    @util.requires_property("is_vdo_pool")
+    def _add_log_vol(self, lv):
+        """ Add an LV to this VDO pool. """
+        if lv in self._lvs:
+            raise ValueError("lv is already part of this VDO pool")
+
+        self.vg._add_log_vol(lv)
+        log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
+        self._lvs.append(lv)
+
+    @util.requires_property("is_vdo_pool")
+    def _remove_log_vol(self, lv):
+        """ Remove an LV from this VDO pool. """
+        if lv not in self._lvs:
+            raise ValueError("specified lv is not part of this VDO pool")
+
+        self._lvs.remove(lv)
+        self.vg._remove_log_vol(lv)
+
+    @property
+    @util.requires_property("is_vdo_pool")
+    def lvs(self):
+        """ A list of this VDO pool's LVs """
+        return self._lvs[:]     # we don't want folks changing our list
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return False
+
+    def _create(self):
+        """ Create the device. """
+        raise NotImplementedError
+
+
+class LVMVDOLogicalVolumeMixin(object):
+    def __init__(self):
+        pass
+
+    def _init_check(self):
+        pass
+
+    def _check_parents(self):
+        """Check that this device has parents as expected"""
+        if isinstance(self.parents, (list, ParentList)):
+            if len(self.parents) != 1:
+                raise ValueError("constructor requires a single vdo-pool LV")
+
+            container = self.parents[0]
+        else:
+            container = self.parents
+
+        if not container or not isinstance(container, LVMLogicalVolumeDevice) or not container.is_vdo_pool:
+            raise ValueError("constructor requires a vdo-pool LV")
+
+    @property
+    def vg_space_used(self):
+        return Size(0)    # the pool's size is already accounted for in the vg
+
+    @property
+    def is_vdo_lv(self):
+        return self.seg_type == "vdo"
+
+    @property
+    def vg(self):
+        # parents[0] is the pool, not the VG so set the VG here
+        return self.pool.vg
+
+    @property
+    def type(self):
+        return "vdolv"
+
+    @property
+    def resizable(self):
+        return False
+
+    @property
+    @util.requires_property("is_vdo_lv")
+    def pool(self):
+        return self.parents[0]
+
+    def _create(self):
+        """ Create the device. """
+        raise NotImplementedError
+
+    def _destroy(self):
+        # nothing to do here, VDO LV is destroyed automatically together with
+        # the VDO pool
+        pass
+
+    def remove_hook(self, modparent=True):
+        if modparent:
+            self.pool._remove_log_vol(self)
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).remove_hook(modparent=modparent)
+
+    def add_hook(self, new=True):
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).add_hook(new=new)
+        if new:
+            return
+
+        if self not in self.pool.lvs:
+            self.pool._add_log_vol(self)
+
+
 class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin, LVMSnapshotMixin,
-                             LVMThinPoolMixin, LVMThinLogicalVolumeMixin):
+                             LVMThinPoolMixin, LVMThinLogicalVolumeMixin, LVMVDOPoolMixin,
+                             LVMVDOLogicalVolumeMixin):
     """ An LVM Logical Volume """
 
     # generally resizable, see :property:`resizable` for details
@@ -1879,6 +2006,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
                                       percent, cache_request, pvs, from_lvs)
+        LVMVDOPoolMixin.__init__(self)
+        LVMVDOLogicalVolumeMixin.__init__(self)
 
         LVMInternalLogicalVolumeMixin._init_check(self)
         LVMSnapshotMixin._init_check(self)
@@ -1905,6 +2034,10 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             ret.append(LVMThinPoolMixin)
         if self.is_thin_lv:
             ret.append(LVMThinLogicalVolumeMixin)
+        if self.is_vdo_pool:
+            ret.append(LVMVDOPoolMixin)
+        if self.is_vdo_lv:
+            ret.append(LVMVDOLogicalVolumeMixin)
         return ret
 
     def _try_specific_call(self, name, *args, **kwargs):
@@ -2066,6 +2199,11 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     def display_lv_name(self):
         return self.lvname
 
+    @property
+    @type_specific
+    def pool(self):
+        return super(LVMLogicalVolumeDevice, self).pool
+
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
@@ -2167,6 +2305,19 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         udev.settle()
         blockdev.lvm.lvresize(self.vg.name, self._name, self.size)
 
+    @type_specific
+    def _add_log_vol(self, lv):
+        pass
+
+    @type_specific
+    def _remove_log_vol(self, lv):
+        pass
+
+    @property
+    @type_specific
+    def lvs(self):
+        return []
+
     @property
     @type_specific
     def direct(self):
@@ -2264,6 +2415,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
 
 class LVMCache(Cache):
+
+    type = "cache"
 
     """Class providing the cache-related functionality of a cached LV"""
 
@@ -2406,6 +2559,52 @@ class LVMCache(Cache):
         ret = blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname)
         blockdev.lvm.cache_detach(vg_name, self._cached_lv.lvname, False)
         return ret
+
+
+class LVMWriteCache(Cache):
+
+    type = "writecache"
+
+    def __init__(self, cached_lv, size, exists):
+        self._cached_lv = cached_lv
+        self._exists = exists
+        self._size = size
+
+        if not self._exists:
+            raise ValueError("Only preexisting LVM writecache devices are currently supported.")
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def md_size(self):
+        # there are no metadata for writecache
+        return Size(0)
+
+    @property
+    def vg_space_used(self):
+        return self.size
+
+    @property
+    def exists(self):
+        return self._exists
+
+    @property
+    def stats(self):
+        return None
+
+    @property
+    def backing_device_name(self):
+        return self._cached_lv.name
+
+    @property
+    def cache_device_name(self):
+        vg_name = self._cached_lv.vg.name
+        return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
+
+    def detach(self):
+        raise NotImplementedError
 
 
 class LVMCacheStats(CacheStats):
