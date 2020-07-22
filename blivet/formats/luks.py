@@ -44,11 +44,12 @@ log = logging.getLogger("blivet")
 class LUKS2PBKDFArgs(object):
     """ PBKDF arguments for LUKS 2 format """
 
-    def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0):  # pylint: disable=redefined-builtin
+    def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0, hash_fn=None):  # pylint: disable=redefined-builtin
         self.type = type
         self.max_memory_kb = max_memory_kb
         self.iterations = iterations
         self.time_ms = time_ms
+        self.hash_fn = hash_fn
 
 
 class LUKS(DeviceFormat):
@@ -297,7 +298,7 @@ class LUKS(DeviceFormat):
 
         if self.pbkdf_args:
             pbkdf = blockdev.CryptoLUKSPBKDF(type=self.pbkdf_args.type,
-                                             hash=None,
+                                             hash=self.pbkdf_args.hash_fn,
                                              max_memory_kb=self.pbkdf_args.max_memory_kb,
                                              iterations=self.pbkdf_args.iterations,
                                              time_ms=self.pbkdf_args.time_ms)
