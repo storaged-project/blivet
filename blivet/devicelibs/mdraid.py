@@ -31,6 +31,8 @@ log = logging.getLogger("blivet")
 MD_SUPERBLOCK_SIZE = Size("2 MiB")
 MD_CHUNK_SIZE = Size("512 KiB")
 
+safe_name_characters = "0-9a-zA-Z._-"
+
 
 class MDRaidLevels(raid.RAIDLevels):
 

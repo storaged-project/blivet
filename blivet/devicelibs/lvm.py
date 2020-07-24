@@ -63,6 +63,8 @@ EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_LVM_PLUGIN]
 
 LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 
+safe_name_characters = "0-9a-zA-Z._-"
+
 # Start config_args handling code
 #
 # Theoretically we can handle all that can be handled with the LVM --config
