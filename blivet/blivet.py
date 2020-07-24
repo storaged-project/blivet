@@ -46,6 +46,7 @@ from .util import capture_output
 from . import arch
 from . import devicefactory
 from . import __version__
+from . import devicelibs
 from .threads import SynchronizedMeta
 from .static_data import luks_data
 
@@ -514,7 +515,7 @@ class Blivet(object):
 
         name = kwargs.pop("name", None)
         if name:
-            safe_name = self.safe_device_name(name)
+            safe_name = self.safe_device_name(name, devicefactory.DEVICE_TYPE_MD)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
                             safe_name, name)
@@ -547,7 +548,7 @@ class Blivet(object):
 
         name = kwargs.pop("name", None)
         if name:
-            safe_name = self.safe_device_name(name)
+            safe_name = self.safe_device_name(name, devicefactory.DEVICE_TYPE_LVM)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
                             safe_name, name)
@@ -610,9 +611,9 @@ class Blivet(object):
         name = kwargs.pop("name", None)
         if name:
             # make sure the specified name is sensible
-            safe_vg_name = self.safe_device_name(vg.name)
+            safe_vg_name = self.safe_device_name(vg.name, devicefactory.DEVICE_TYPE_LVM)
             full_name = "%s-%s" % (safe_vg_name, name)
-            safe_name = self.safe_device_name(full_name)
+            safe_name = self.safe_device_name(full_name, devicefactory.DEVICE_TYPE_LVM)
             if safe_name != full_name:
                 new_name = safe_name[len(safe_vg_name) + 1:]
                 log.warning("using '%s' instead of specified name '%s'",
@@ -887,7 +888,7 @@ class Blivet(object):
         for action in actions:
             self.devicetree.actions.add(action)
 
-    def safe_device_name(self, name):
+    def safe_device_name(self, name, device_type=None):
         """ Convert a device name to something safe and return that.
 
             LVM limits lv names to 128 characters. I don't know the limits for
@@ -895,10 +896,23 @@ class Blivet(object):
             that we don't have to have an entire library to determine
             device name limits.
         """
+
+        if device_type in (devicefactory.DEVICE_TYPE_LVM, devicefactory.DEVICE_TYPE_LVM_THINP):
+            allowed = devicelibs.lvm.safe_name_characters
+        elif device_type == devicefactory.DEVICE_TYPE_MD:
+            allowed = devicelibs.mdraid.safe_name_characters
+        elif device_type == devicefactory.DEVICE_TYPE_BTRFS:
+            allowed = devicelibs.btrfs.safe_name_characters
+        else:
+            allowed = "0-9a-zA-Z._-"
+
         max_len = 96    # No, you don't need longer names than this. Really.
         tmp = name.strip()
-        tmp = tmp.replace("/", "_")
-        tmp = re.sub("[^0-9a-zA-Z._-]", "", tmp)
+
+        if "/" not in allowed:
+            tmp = tmp.replace("/", "_")
+
+        tmp = re.sub("[^%s]" % allowed, "", tmp)
 
         # Remove any '-' or '_' prefixes
         tmp = re.sub("^[-_]*", "", tmp)

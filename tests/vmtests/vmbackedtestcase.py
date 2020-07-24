@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from blivet import Blivet
+from blivet import Blivet, udev
 
 
 @unittest.skipUnless(os.environ.get("VM_ENVIRONMENT"), "vm only test")
@@ -49,6 +49,9 @@ class VMBackedTestCase(unittest.TestCase):
             This will write the configuration to whatever disk images are
             defined in set_up_disks.
         """
+
+        udev.device_name_blacklist = [r'^zram']
+
         #
         # create disk images
         #

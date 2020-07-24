@@ -1006,3 +1006,9 @@ def device_is_nvdimm_namespace(info):
     devname = info.get("DEVNAME", "")
     ninfo = blockdev.nvdimm_namespace_get_devname(devname)
     return ninfo is not None
+
+
+def device_is_hidden(info):
+    sysfs_path = device_get_sysfs_path(info)
+    hidden = util.get_sysfs_attr(sysfs_path, "hidden")
+    return bool(hidden)
