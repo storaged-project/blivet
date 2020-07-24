@@ -40,5 +40,8 @@ metadata_levels = raid.RAIDLevels(["raid0", "raid1", "raid10", "single", "dup"])
 EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_BTRFS_PLUGIN]
 
 
+safe_name_characters = "0-9a-zA-Z._@/-"
+
+
 def is_btrfs_name_valid(name):
     return '\x00' not in name
